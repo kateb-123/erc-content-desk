@@ -11,6 +11,8 @@ import { buildSubmission, validateSubmission } from '../js/intake.js';
 import { appendRow } from '../lib/sheets.js';
 
 const MAX_CONTENT_LENGTH = 20000;
+const MAX_SUBMITTER_LENGTH = 200;
+const MAX_NOTE_LENGTH = 500;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -18,11 +20,19 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { content = '', submitter = '', note = '' } = req.body || {};
+  const bodyContent = req.body?.content ?? '';
+  const bodySubmitter = req.body?.submitter ?? '';
+  const bodyNote = req.body?.note ?? '';
 
-  const errors = validateSubmission({ content, submitter });
-  if (String(content).length > MAX_CONTENT_LENGTH) {
+  const errors = validateSubmission({ content: bodyContent, submitter: bodySubmitter });
+  if (String(bodyContent).length > MAX_CONTENT_LENGTH) {
     errors.push(`Keep it under ${MAX_CONTENT_LENGTH} characters.`);
+  }
+  if (String(bodySubmitter).length > MAX_SUBMITTER_LENGTH) {
+    errors.push(`Name must be under ${MAX_SUBMITTER_LENGTH} characters.`);
+  }
+  if (String(bodyNote).length > MAX_NOTE_LENGTH) {
+    errors.push(`Note must be under ${MAX_NOTE_LENGTH} characters.`);
   }
   if (errors.length) {
     res.status(400).json({ ok: false, errors });
@@ -32,7 +42,7 @@ export default async function handler(req, res) {
   const id = randomUUID();
   try {
     await appendRow(buildSubmission({
-      content, submitter, note, id, submittedAt: new Date().toISOString(),
+      content: bodyContent, submitter: bodySubmitter, note: bodyNote, id, submittedAt: new Date().toISOString(),
     }));
   } catch (err) {
     console.error('submit failed', err);

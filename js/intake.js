@@ -8,23 +8,33 @@ import { blankRow } from './schema.js';
 
 const URL_PATTERN = /https?:\/\/[^\s<>"')]+/;
 
-export function validateSubmission({ content = '', submitter = '' } = {}) {
+export function validateSubmission({ content, submitter } = {}) {
   const errors = [];
-  if (!String(content).trim()) errors.push('Add a link or paste some text.');
-  if (!String(submitter).trim()) errors.push('Add your name.');
+  const normalizedContent = (content ?? '');
+  const normalizedSubmitter = (submitter ?? '');
+  if (!String(normalizedContent).trim()) errors.push('Add a link or paste some text.');
+  if (!String(normalizedSubmitter).trim()) errors.push('Add your name.');
   return errors;
 }
 
 export function buildSubmission({ content, submitter, note = '', submittedAt, id }) {
-  const text = String(content).trim();
+  const normalizedContent = (content ?? '');
+  const normalizedSubmitter = (submitter ?? '');
+  const normalizedNote = (note ?? '');
+  const text = String(normalizedContent).trim();
   const match = text.match(URL_PATTERN);
+  let url = match ? match[0] : '';
+  // Strip trailing punctuation that can end a sentence but not a URL
+  if (url) {
+    url = url.replace(/[.,;:!?\]]+$/, '');
+  }
   return blankRow({
     id,
     status: 'new',
-    submitter: String(submitter).trim(),
+    submitter: String(normalizedSubmitter).trim(),
     submitted_at: submittedAt,
-    note: String(note).trim(),
+    note: String(normalizedNote).trim(),
     original_text: text,
-    link: match ? match[0] : '',
+    link: url,
   });
 }

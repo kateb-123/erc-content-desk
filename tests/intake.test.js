@@ -55,3 +55,72 @@ test('a new submission carries no CSV fields yet', () => {
   assert.equal(row.blurb, '');
   assert.equal(row.newsletter, false);
 });
+
+test('URL extraction strips trailing punctuation from end of sentence', () => {
+  const rowPeriod = buildSubmission({
+    content: 'Check this out at https://example.com/policy.',
+    submitter: 'Kate',
+    submittedAt: 't',
+    id: 'i1',
+  });
+  assert.equal(rowPeriod.link, 'https://example.com/policy', 'should strip trailing period');
+
+  const rowComma = buildSubmission({
+    content: 'Read it at https://example.com/docs, then decide',
+    submitter: 'Kate',
+    submittedAt: 't',
+    id: 'i2',
+  });
+  assert.equal(rowComma.link, 'https://example.com/docs', 'should strip trailing comma');
+
+  const rowQuestion = buildSubmission({
+    content: 'Ever seen https://example.com/faq?',
+    submitter: 'Kate',
+    submittedAt: 't',
+    id: 'i3',
+  });
+  assert.equal(rowQuestion.link, 'https://example.com/faq', 'should strip trailing question mark');
+});
+
+test('URL extraction preserves trailing slash and alphanumeric characters', () => {
+  const rowSlash = buildSubmission({
+    content: 'Visit https://example.com/policies/',
+    submitter: 'Kate',
+    submittedAt: 't',
+    id: 'i4',
+  });
+  assert.equal(rowSlash.link, 'https://example.com/policies/', 'should keep trailing slash');
+
+  const rowDigit = buildSubmission({
+    content: 'See https://example.com/page123',
+    submitter: 'Kate',
+    submittedAt: 't',
+    id: 'i5',
+  });
+  assert.equal(rowDigit.link, 'https://example.com/page123', 'should keep trailing digit');
+
+  const rowLetter = buildSubmission({
+    content: 'Read https://example.com/policy',
+    submitter: 'Kate',
+    submittedAt: 't',
+    id: 'i6',
+  });
+  assert.equal(rowLetter.link, 'https://example.com/policy', 'should keep trailing letter');
+});
+
+test('validateSubmission with null content reports validation error', () => {
+  const errors = validateSubmission({ content: null, submitter: 'Kate' });
+  assert.ok(errors.length > 0, 'should have validation errors');
+  assert.ok(errors.some(e => e.includes('Add a link')), 'should mention missing content');
+});
+
+test('buildSubmission with null content does not produce string "null"', () => {
+  const row = buildSubmission({
+    content: null,
+    submitter: 'Kate',
+    submittedAt: 't',
+    id: 'i',
+  });
+  assert.notEqual(row.original_text, 'null', 'original_text should not be the string "null"');
+  assert.equal(row.original_text, '', 'original_text should be empty string when content is null');
+});
