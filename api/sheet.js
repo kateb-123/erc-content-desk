@@ -2,8 +2,8 @@
  * GET  /api/sheet   -> every row, newest sheet order preserved
  * PATCH /api/sheet  -> save changed rows in place (matched by _rowNumber)
  *
- * The browser sends whole rows back. Writes are per-row PUTs rather than a batch
- * update so a single bad row can't take the rest down with it.
+ * The browser sends whole rows back. Writes are per-row and already-written rows
+ * are not rolled back, so a failure partway through leaves the sheet partially updated.
  */
 
 import { readAllRows, updateRow } from '../lib/sheets.js';
@@ -28,13 +28,23 @@ export default async function handler(req, res) {
         return;
       }
       for (const row of rows) {
-        if (!row._rowNumber) {
+        if (typeof row !== 'object' || row === null || !row._rowNumber) {
           res.status(400).json({ ok: false, error: 'Every row needs a _rowNumber from a read.' });
           return;
         }
       }
-      for (const row of rows) await updateRow(row);
-      res.status(200).json({ ok: true, saved: rows.length });
+      let saved = 0;
+      for (let i = 0; i < rows.length; i++) {
+        try {
+          await updateRow(rows[i]);
+          saved++;
+        } catch (err) {
+          console.error(`Failed to write row ${i}`, err);
+          res.status(502).json({ ok: false, error: 'Couldn\'t reach the sheet.', saved });
+          return;
+        }
+      }
+      res.status(200).json({ ok: true, saved });
       return;
     }
 
