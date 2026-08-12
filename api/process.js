@@ -23,6 +23,8 @@ const MAX_RESUMES = 3;
 
 const anthropic = new Anthropic();
 
+class ItemError extends Error {}
+
 async function extractOne(row) {
   let messages = [{ role: 'user', content: buildExtractionPrompt(row) }];
   let response;
@@ -49,16 +51,22 @@ async function extractOne(row) {
   }
 
   if (response.stop_reason === 'refusal') {
-    throw new Error('Claude declined this item. Fill it in by hand.');
+    throw new ItemError('Claude declined this item. Fill it in by hand.');
   }
   if (response.stop_reason === 'max_tokens') {
-    throw new Error('Response ran long and got cut off. Try trimming the pasted text.');
+    throw new ItemError('Response ran long and got cut off. Try trimming the pasted text.');
   }
 
   const block = response.content.find(b => b.type === 'text');
-  if (!block) throw new Error('Claude returned no text.');
+  if (!block) throw new ItemError('Claude returned no text.');
 
-  return normalizeExtraction(parseExtraction(block.text));
+  let extracted;
+  try {
+    extracted = parseExtraction(block.text);
+  } catch (err) {
+    throw new ItemError(err.message);
+  }
+  return normalizeExtraction(extracted);
 }
 
 export default async function handler(req, res) {
@@ -92,8 +100,12 @@ export default async function handler(req, res) {
       processed += 1;
       for (const w of rowWarnings) warnings.push(`${row.headline || row.link || row.id}: ${w}`);
     } catch (err) {
-      console.error('process: item failed', row.id, err);
-      failures.push({ id: row.id, error: err.message });
+      if (err instanceof ItemError) {
+        failures.push({ id: row.id, error: err.message });
+      } else {
+        console.error('process: item failed', row.id, err);
+        failures.push({ id: row.id, error: 'Something went wrong on this item. It stays in the keeper list — try again.' });
+      }
     }
   }
 
