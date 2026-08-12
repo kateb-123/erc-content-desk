@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Share something — ERC Content Desk</title>
+  <link rel="stylesheet" href="/css/styles.css?v=1" />
+</head>
+<body class="submit-page">
+  <main class="card">
+    <h1>Share something</h1>
+    <p class="lede">A link, an email you got, a paragraph you copied — any shape is fine. We sort it out on our end.</p>
+
+    <form id="submit-form" novalidate>
+      <label for="content">Link or text</label>
+      <textarea id="content" name="content" rows="5" placeholder="https://www.edweek.org/policy/..."></textarea>
+
+      <label for="submitter">Your name</label>
+      <input id="submitter" name="submitter" type="text" autocomplete="name" />
+
+      <label for="note">Anything we should know (optional)</label>
+      <input id="note" name="note" type="text" placeholder="Deadline is Oct 1" />
+
+      <button type="submit" id="submit-btn">Send to the queue</button>
+    </form>
+
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+  </main>
+
+  <script type="module" src="/js/submit.js?v=1"></script>
+</body>
+</html>
