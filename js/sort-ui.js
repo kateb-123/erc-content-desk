@@ -64,17 +64,38 @@ function decisionRow(row, onDecide) {
 
   const keepBtn = el('button', 'keep-btn', 'Keep');
   keepBtn.addEventListener('click', () => {
+    // Disable all controls in this row before invoking callback
+    newsletterBox.disabled = true;
+    hubBox.disabled = true;
+    keepBtn.disabled = true;
+    trashBtn.disabled = true;
     onDecide(row, { newsletter: newsletterBox.checked, hub: hubBox.checked, trashed: false });
   });
 
   const trashBtn = el('button', 'trash-btn', 'Trash');
-  trashBtn.addEventListener('click', () => onDecide(row, { trashed: true }));
+  trashBtn.addEventListener('click', () => {
+    // Disable all controls in this row before invoking callback
+    newsletterBox.disabled = true;
+    hubBox.disabled = true;
+    keepBtn.disabled = true;
+    trashBtn.disabled = true;
+    onDecide(row, { trashed: true });
+  });
 
   controls.append(newsletterLabel, hubLabel, keepBtn, trashBtn);
   return controls;
 }
 
 export function renderSort(container, { rows, onDecide, onUndecide, onProcess, processing }) {
+  // Preserve open state of expanded details before replacing
+  const openIds = new Set();
+  for (const details of container.querySelectorAll('details.sort-item[data-id]')) {
+    if (details.open) {
+      openIds.add(details.dataset.id);
+    }
+  }
+  const decidedWrapWasOpen = container.querySelector('details.decided-wrap')?.open ?? false;
+
   container.replaceChildren();
 
   const waiting = pendingRows(rows);
@@ -103,6 +124,7 @@ export function renderSort(container, { rows, onDecide, onUndecide, onProcess, p
   for (const row of waiting) {
     const item = document.createElement('details');
     item.className = 'sort-item';
+    item.dataset.id = row.id;
 
     const summary = document.createElement('summary');
     summary.append(el('span', 'sort-summary-text', summaryLine(row)));
@@ -117,6 +139,11 @@ export function renderSort(container, { rows, onDecide, onUndecide, onProcess, p
     }
     item.append(controls);
     container.append(item);
+
+    // Restore open state if this row was expanded before
+    if (openIds.has(row.id)) {
+      item.open = true;
+    }
   }
 
   if (decided.length) {
@@ -132,10 +159,18 @@ export function renderSort(container, { rows, onDecide, onUndecide, onProcess, p
       line.append(el('span', 'decided-text', summaryLine(row)));
       line.append(el('span', 'decided-dest', `${row.status} · ${dests}`));
       const undo = el('button', '', 'Undo');
-      undo.addEventListener('click', () => onUndecide(row));
+      undo.addEventListener('click', () => {
+        undo.disabled = true;
+        onUndecide(row);
+      });
       line.append(undo);
       wrap.append(line);
     }
     container.append(wrap);
+
+    // Restore open state of decided-wrap if it was expanded before
+    if (decidedWrapWasOpen) {
+      wrap.open = true;
+    }
   }
 }
