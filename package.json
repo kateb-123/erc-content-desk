@@ -1,0 +1,13 @@
+{
+  "name": "erc-content-desk",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "google-auth-library": "^9.15.0"
+  }
+}
