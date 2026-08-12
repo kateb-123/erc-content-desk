@@ -6,8 +6,10 @@
 
 import { fetchRows, saveRows } from './sheet-client.js';
 import { renderQueue } from './queue-ui.js';
+import { renderSort } from './sort-ui.js';
+import { keep, trash, undecide } from './workflow.js';
 
-const state = { rows: [], screen: 'queue' };
+const state = { rows: [], screen: 'queue', processing: false };
 
 const statusEl = document.getElementById('desk-status');
 const screens = {
@@ -65,6 +67,19 @@ async function addToQueue({ content, submitter }) {
   await reload();
 }
 
+async function decide(row, { newsletter = false, hub = false, trashed = false }) {
+  const next = trashed ? trash(row) : keep(row, { newsletter, hub });
+  await persist([next]);
+}
+
+async function reverseDecision(row) {
+  await persist([undecide(row)]);
+}
+
+async function processKeepers() {
+  setStatus('Process is not wired up yet.', 'error');
+}
+
 function render() {
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
   for (const tab of document.querySelectorAll('.screen-tab')) {
@@ -72,6 +87,15 @@ function render() {
   }
   if (state.screen === 'queue') {
     renderQueue(screens.queue, { rows: state.rows, onAdd: addToQueue, onRefresh: reload });
+  }
+  if (state.screen === 'sort') {
+    renderSort(screens.sort, {
+      rows: state.rows,
+      onDecide: decide,
+      onUndecide: reverseDecision,
+      onProcess: processKeepers,
+      processing: state.processing,
+    });
   }
 }
 
