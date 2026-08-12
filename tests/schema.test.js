@@ -100,9 +100,11 @@ test('isValidSubtype guards against Object.prototype keys and returns false', ()
 });
 
 test('isHubEligible guards against Object.prototype keys and returns false', () => {
-  assert.equal(isHubEligible('__proto__'), false);
-  assert.equal(isHubEligible('constructor'), false);
-  assert.equal(isHubEligible('toString'), false);
-  assert.equal(isHubEligible('valueOf'), false);
-  assert.equal(isHubEligible('hasOwnProperty'), false);
+  assert.strictEqual(isHubEligible('__proto__'), false);
+  assert.strictEqual(isHubEligible('constructor'), false);
+  assert.strictEqual(isHubEligible('toString'), false);
+  assert.strictEqual(isHubEligible('valueOf'), false);
+  assert.strictEqual(isHubEligible('hasOwnProperty'), false);
+  assert.strictEqual(isHubEligible('headline'), true);
+  assert.strictEqual(isHubEligible('spotlight'), false);
 });

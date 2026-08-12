@@ -115,5 +115,5 @@ export function isValidSubtype(type, subtype) {
 }
 
 export function isHubEligible(type) {
-  return Object.prototype.hasOwnProperty.call(TYPES, type) && TYPES[type].hubEligible;
+  return Boolean(Object.prototype.hasOwnProperty.call(TYPES, type) && TYPES[type].hubEligible);
 }
