@@ -82,3 +82,27 @@ test('every type/subtype pair maps to a newsletter section and group', () => {
   assert.deepEqual(NEWSLETTER_MAP['headline|Texas'], ['headlines', 'texas']);
   assert.deepEqual(NEWSLETTER_MAP['research|ERC Research'], ['research', 'brief']);
 });
+
+test('subtypesFor guards against Object.prototype keys and returns empty array', () => {
+  assert.deepEqual(subtypesFor('__proto__'), []);
+  assert.deepEqual(subtypesFor('constructor'), []);
+  assert.deepEqual(subtypesFor('toString'), []);
+  assert.deepEqual(subtypesFor('valueOf'), []);
+  assert.deepEqual(subtypesFor('hasOwnProperty'), []);
+});
+
+test('isValidSubtype guards against Object.prototype keys and returns false', () => {
+  assert.equal(isValidSubtype('constructor', 'anything'), false);
+  assert.equal(isValidSubtype('__proto__', 'anything'), false);
+  assert.equal(isValidSubtype('toString', 'anything'), false);
+  assert.equal(isValidSubtype('valueOf', 'anything'), false);
+  assert.equal(isValidSubtype('hasOwnProperty', 'anything'), false);
+});
+
+test('isHubEligible guards against Object.prototype keys and returns false', () => {
+  assert.equal(isHubEligible('__proto__'), false);
+  assert.equal(isHubEligible('constructor'), false);
+  assert.equal(isHubEligible('toString'), false);
+  assert.equal(isHubEligible('valueOf'), false);
+  assert.equal(isHubEligible('hasOwnProperty'), false);
+});

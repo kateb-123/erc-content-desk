@@ -103,7 +103,7 @@ export function valuesToRow(values) {
 }
 
 export function subtypesFor(type) {
-  return TYPES[type] ? TYPES[type].subtypes.slice() : [];
+  return Object.prototype.hasOwnProperty.call(TYPES, type) ? TYPES[type].subtypes.slice() : [];
 }
 
 export function isValidType(type) {
@@ -115,5 +115,5 @@ export function isValidSubtype(type, subtype) {
 }
 
 export function isHubEligible(type) {
-  return Boolean(TYPES[type] && TYPES[type].hubEligible);
+  return Object.prototype.hasOwnProperty.call(TYPES, type) && TYPES[type].hubEligible;
 }
