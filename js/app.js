@@ -77,7 +77,28 @@ async function reverseDecision(row) {
 }
 
 async function processKeepers() {
-  setStatus('Process is not wired up yet.', 'error');
+  state.processing = true;
+  setStatus('Claude is reading the keepers — this takes a moment per item…');
+  render();
+  try {
+    const res = await fetch('/api/process', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+
+    const notes = [`Processed ${data.processed} item${data.processed === 1 ? '' : 's'}.`];
+    if (data.failures.length) notes.push(`${data.failures.length} failed — check the Queue and try again.`);
+    if (data.warnings.length) notes.push(data.warnings.join(' '));
+    setStatus(notes.join(' '), data.failures.length ? 'error' : 'ok');
+  } catch (err) {
+    setStatus(err.message, 'error');
+  } finally {
+    state.processing = false;
+  }
+  await reload();
 }
 
 function render() {
