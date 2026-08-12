@@ -70,3 +70,27 @@ button:disabled { opacity: .5; cursor: default; }
 .status-ok { color: var(--ok); }
 .status-error { color: var(--err); }
 .status-busy { color: var(--muted); }
+
+.desk { max-width: 68rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.desk-header h1 { font-size: 1.2rem; margin: 0 0 .75rem; }
+
+.screen-nav { display: flex; gap: .25rem; border-bottom: 1px solid var(--line); }
+.screen-tab { border: none; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: .5rem .9rem; color: var(--muted); }
+.screen-tab.is-active { color: var(--ink); border-bottom-color: var(--accent); }
+
+.screen-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0 1rem; }
+.screen-head h2 { font-size: 1.1rem; margin: 0; }
+.screen-head .lede { margin: 0; flex: 1; }
+
+.adder { background: #fff; border: 1px dashed var(--line); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; }
+.adder label { margin-top: 0; }
+.adder-row { display: flex; gap: .5rem; margin-top: .5rem; }
+.adder-row input { flex: 1; }
+
+.grid { width: 100%; border-collapse: collapse; font-size: .85rem; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.grid th { text-align: left; font-weight: 500; color: var(--muted); padding: .5rem .6rem; border-bottom: 1px solid var(--line); }
+.grid td { padding: .5rem .6rem; border-top: 1px solid var(--line); vertical-align: top; }
+.grid td.blank { color: var(--line); }
+.grid td.wrap { max-width: 22rem; }
+
+.empty { color: var(--muted); padding: 2rem; text-align: center; }

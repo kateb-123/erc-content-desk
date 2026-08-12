@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ERC Content Desk</title>
+  <link rel="stylesheet" href="/css/styles.css?v=1" />
+</head>
+<body class="desk">
+  <header class="desk-header">
+    <h1>ERC Content Desk</h1>
+    <nav class="screen-nav" aria-label="Screens">
+      <button data-screen="queue" class="screen-tab is-active">Queue</button>
+      <button data-screen="sort" class="screen-tab">Sort</button>
+      <button data-screen="build" class="screen-tab">Build</button>
+      <button data-screen="downloads" class="screen-tab">Downloads</button>
+    </nav>
+    <p id="desk-status" class="status" role="status" aria-live="polite"></p>
+  </header>
+
+  <main>
+    <section id="screen-queue" class="screen"></section>
+    <section id="screen-sort" class="screen" hidden></section>
+    <section id="screen-build" class="screen" hidden></section>
+    <section id="screen-downloads" class="screen" hidden></section>
+  </main>
+
+  <!-- Bump ?v when you change the JS so browsers load the new code. -->
+  <script type="module" src="/js/app.js?v=1"></script>
+</body>
+</html>
