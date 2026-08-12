@@ -76,3 +76,37 @@ test('normalizeExtraction coerces every value to a string', () => {
   const { fields } = normalizeExtraction({ headline: 'X', type: 'headline', subtype: 'Texas', blurb: 'b', date: 2026 });
   assert.equal(fields.date, '2026');
 });
+
+test('a subtype arriving with no type key is dropped and warned about', () => {
+  const { fields, warnings } = normalizeExtraction({
+    headline: 'X', subtype: 'Report', blurb: 'b',
+  });
+  assert.equal(fields.subtype, '');
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /subtype|type/i);
+});
+
+test('an invalid type drops the subtype too, not just the type', () => {
+  const { fields, warnings } = normalizeExtraction({
+    headline: 'X', type: 'newsletter', subtype: 'Whatever', blurb: 'b',
+  });
+  assert.equal(fields.type, '');
+  assert.equal(fields.subtype, '');
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /newsletter/);
+  assert.match(warnings[0], /subtype/i);
+});
+
+test('needs_review is present in schema.properties but absent from required', () => {
+  assert.ok(EXTRACTION_SCHEMA.properties.needs_review, 'needs_review should be in properties');
+  assert.ok(!EXTRACTION_SCHEMA.required.includes('needs_review'), 'needs_review should not be required');
+});
+
+test('needs_review: true produces a warning and does not appear in fields', () => {
+  const { fields, warnings } = normalizeExtraction({
+    headline: 'X', type: 'headline', subtype: 'Texas', blurb: 'b', needs_review: true,
+  });
+  assert.equal(fields.needs_review, undefined);
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /needs_review|thin|review/i);
+});
