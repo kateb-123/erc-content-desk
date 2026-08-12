@@ -48,6 +48,37 @@ test('keep does not mutate its input', () => {
   assert.equal(before.newsletter, false);
 });
 
+test('trash does not mutate its input', () => {
+  const before = blankRow({ id: 'a', status: 'kept', newsletter: true, hub: true });
+  trash(before);
+  assert.equal(before.status, 'kept');
+  assert.equal(before.newsletter, true);
+  assert.equal(before.hub, true);
+});
+
+test('undecide does not mutate its input', () => {
+  const before = blankRow({ id: 'a', status: 'kept', newsletter: true, hub: false });
+  undecide(before);
+  assert.equal(before.status, 'kept');
+  assert.equal(before.newsletter, true);
+  assert.equal(before.hub, false);
+});
+
+test('applyExtracted does not mutate its input', () => {
+  const before = blankRow({ id: 'a', status: 'kept', headline: 'Original', hub: true });
+  applyExtracted(before, { headline: 'New headline', type: 'headline', subtype: 'Texas', blurb: 'A blurb.' });
+  assert.equal(before.status, 'kept');
+  assert.equal(before.headline, 'Original');
+  assert.equal(before.hub, true);
+});
+
+test('markUsed does not mutate its input', () => {
+  const before = blankRow({ id: 'a', status: 'processed', newsletter: true, hub: true, newsletter_used_at: '' });
+  markUsed(before, 'newsletter', '2026-08-12T10:00:00Z');
+  assert.equal(before.newsletter_used_at, '');
+  assert.equal(before.status, 'processed');
+});
+
 test('trash clears the destinations so a trashed row can never be built', () => {
   const row = trash(blankRow({ id: 'a', status: 'kept', newsletter: true, hub: true }));
   assert.equal(row.status, 'trashed');
