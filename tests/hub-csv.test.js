@@ -12,6 +12,9 @@ test('commas, quotes, and newlines are quoted the way the hub CSV does it', () =
   assert.equal(escapeCell('Promotion, Retention'), '"Promotion, Retention"');
   assert.equal(escapeCell('She said "no"'), '"She said ""no"""');
   assert.equal(escapeCell('line one\nline two'), '"line one\nline two"');
+  // A blurb quoting someone mid-sentence hits both rules at once.
+  assert.equal(escapeCell('He said "yes, maybe"'), '"He said ""yes, maybe"""');
+  assert.equal(escapeCell('line one\rline two'), '"line one\rline two"');
 });
 
 test('the header is exactly the hub column list', () => {
@@ -28,6 +31,20 @@ test('rows are written in column order with no workflow columns', () => {
   assert.equal(lines.length, 2);
   assert.ok(lines[1].startsWith('2026-07-28,A report,https://x.test,research,Report,TEA,'));
   assert.ok(!csv.includes('Kate'));
+});
+
+test('every column lands in its own position, not just the leading few', () => {
+  // The hub reads news.csv by position, so a swap anywhere in the 14 columns
+  // corrupts the public feed. Give each column a distinct value and check all
+  // of them, rather than only the ones a sample row happens to fill.
+  const marked = {};
+  CSV_COLUMNS.forEach((col, i) => { marked[col] = `v${i}-${col}`; });
+  const csv = rowsToCsv([blankRow({ ...marked, submitter: 'Kate', status: 'processed' })]);
+  const cells = csv.trim().split('\n')[1].split(',');
+  assert.equal(cells.length, CSV_COLUMNS.length);
+  CSV_COLUMNS.forEach((col, i) => {
+    assert.equal(cells[i], `v${i}-${col}`, `column ${i} should be ${col}`);
+  });
 });
 
 test('hubCsvFor takes only processed, hub-flagged, not-yet-downloaded rows', () => {
