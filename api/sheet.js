@@ -36,10 +36,36 @@ export default async function handler(req, res) {
           return;
         }
       }
+
+      // _rowNumber is advisory, not authoritative: a sort or delete made
+      // directly in the Sheet shifts every row below it, so re-resolve each
+      // incoming row against its id — read fresh, right now — before writing
+      // anywhere. Rows whose id no longer exists are never written.
+      let current;
+      try {
+        current = await readAllRows();
+      } catch (err) {
+        console.error('sheet PATCH: could not re-read the sheet', err);
+        res.status(502).json({ ok: false, error: "Couldn't reach the sheet." });
+        return;
+      }
+      const rowNumberById = new Map(current.map(r => [r.id, r._rowNumber]));
+
+      const toWrite = [];
+      let unmatchedCount = 0;
+      for (const row of rows) {
+        const liveRowNumber = rowNumberById.get(row.id);
+        if (liveRowNumber === undefined) {
+          unmatchedCount += 1;
+          continue;
+        }
+        toWrite.push({ ...row, _rowNumber: liveRowNumber });
+      }
+
       let saved = 0;
-      for (let i = 0; i < rows.length; i++) {
+      for (let i = 0; i < toWrite.length; i++) {
         try {
-          await updateRow(rows[i]);
+          await updateRow(toWrite[i]);
           saved++;
         } catch (err) {
           console.error(`Failed to write row ${i}`, err);
@@ -47,6 +73,15 @@ export default async function handler(req, res) {
           return;
         }
       }
+
+      if (unmatchedCount) {
+        res.status(409).json({
+          ok: false,
+          error: `${unmatchedCount} row${unmatchedCount === 1 ? '' : 's'} couldn't be matched to the sheet — reload and try again.`,
+        });
+        return;
+      }
+
       res.status(200).json({ ok: true, saved });
       return;
     }

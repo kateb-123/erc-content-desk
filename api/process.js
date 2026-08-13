@@ -86,8 +86,10 @@ export default async function handler(req, res) {
   }
 
   let candidates;
+  let rowNumberById;
   try {
     const all = await readAllRows();
+    rowNumberById = new Map(all.map(r => [r.id, r._rowNumber]));
     const wanted = req.body && Array.isArray(req.body.ids) ? new Set(req.body.ids) : null;
     candidates = keepersAwaitingProcess(all).filter(r => !wanted || wanted.has(r.id));
   } catch (err) {
@@ -106,7 +108,15 @@ export default async function handler(req, res) {
   for (const row of candidates) {
     try {
       const { fields, warnings: rowWarnings } = await extractOne(row);
-      await updateRow(applyExtracted(row, fields));
+      // A run spans minutes; re-resolve _rowNumber against id — advisory,
+      // not authoritative — immediately before writing, in case someone
+      // sorted or deleted rows in the Sheet while this item was in flight.
+      const liveRowNumber = rowNumberById.get(row.id);
+      if (liveRowNumber === undefined) {
+        failures.push({ id: row.id, error: "This row is no longer in the sheet, so it wasn't saved. Reload and try again." });
+        continue;
+      }
+      await updateRow(applyExtracted({ ...row, _rowNumber: liveRowNumber }, fields));
       processed += 1;
       for (const w of rowWarnings) warnings.push(`${row.headline || row.link || row.id}: ${w}`);
     } catch (err) {
