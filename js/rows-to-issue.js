@@ -64,8 +64,11 @@ function placements(rows) {
  * type/subtype stays in the draft instead of vanishing unbuilt.
  */
 export function mappedNewsletterRows(rows) {
+  // One probe issue for the whole call — createEmptyIssue() always yields the
+  // same section keys, so building one per row was pure allocation.
+  const { sections } = createEmptyIssue();
   return placements(rows)
-    .filter(([, sectionKey]) => Boolean(createEmptyIssue().sections[sectionKey]))
+    .filter(([, sectionKey]) => Boolean(sections[sectionKey]))
     .map(([row]) => row);
 }
 
