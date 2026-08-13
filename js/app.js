@@ -61,6 +61,13 @@ export async function persist(changed) {
     setStatus('Saved.', 'ok');
   } catch (err) {
     setStatus(err.message, 'error');
+    // A partial save (some rows written, then a failure) leaves the sheet
+    // ahead of local state. Resync with what the sheet actually holds, then
+    // put the error back — reload() would otherwise overwrite it with its
+    // own "Loading…"/"" status.
+    await reload();
+    setStatus(err.message, 'error');
+    return;
   }
   render();
 }
