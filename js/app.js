@@ -7,9 +7,22 @@
 import { fetchRows, saveRows } from './sheet-client.js';
 import { renderQueue } from './queue-ui.js';
 import { renderSort } from './sort-ui.js';
-import { keep, trash, undecide } from './workflow.js';
+import { renderBuild } from './build-ui.js';
+import { renderDownloads } from './downloads-ui.js';
+import { keep, trash, undecide, readyFor, markUsed } from './workflow.js';
+import { mappedNewsletterRows } from './rows-to-issue.js';
 
-const state = { rows: [], screen: 'queue', processing: false };
+const DRAFT_KEY = 'erc-content-desk-draft';
+
+function loadDraft() {
+  try {
+    return { date: '', intro: '', ...JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}') };
+  } catch (err) {
+    return { date: '', intro: '' };
+  }
+}
+
+const state = { rows: [], screen: 'queue', processing: false, draft: loadDraft() };
 
 const statusEl = document.getElementById('desk-status');
 const screens = {
@@ -101,6 +114,34 @@ async function processKeepers() {
   await reload();
 }
 
+function downloadFile(filename, text, mime) {
+  const url = URL.createObjectURL(new Blob([text], { type: mime }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function updateDraft(draft) {
+  state.draft = draft;
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+}
+
+async function exportNewsletter(html) {
+  downloadFile('erc-newsletter.html', html, 'text/html');
+  const stamp = new Date().toISOString();
+  // Only the rows that actually rendered — an uncategorised row stays in the
+  // draft rather than being retired without ever appearing in an issue.
+  await persist(mappedNewsletterRows(state.rows).map(r => markUsed(r, 'newsletter', stamp)));
+}
+
+async function exportHubCsv(csv) {
+  downloadFile('news.csv', csv, 'text/csv');
+  const stamp = new Date().toISOString();
+  await persist(readyFor(state.rows, 'hub').map(r => markUsed(r, 'hub', stamp)));
+}
+
 function render() {
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
   for (const tab of document.querySelectorAll('.screen-tab')) {
@@ -117,6 +158,17 @@ function render() {
       onProcess: processKeepers,
       processing: state.processing,
     });
+  }
+  if (state.screen === 'build') {
+    renderBuild(screens.build, {
+      rows: state.rows,
+      draft: state.draft,
+      onDraftChange: updateDraft,
+      onExport: exportNewsletter,
+    });
+  }
+  if (state.screen === 'downloads') {
+    renderDownloads(screens.downloads, { rows: state.rows, onDownloadHub: exportHubCsv });
   }
 }
 
