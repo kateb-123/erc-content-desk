@@ -7,10 +7,13 @@
  */
 
 import { readAllRows, updateRow } from '../lib/sheets.js';
+import { checkDeskPassword } from './_auth.js';
 
 const MAX_ROWS_PER_PATCH = 200;
 
 export default async function handler(req, res) {
+  if (!checkDeskPassword(req, res)) return;
+
   try {
     if (req.method === 'GET') {
       res.status(200).json({ ok: true, rows: await readAllRows() });

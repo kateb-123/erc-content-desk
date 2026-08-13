@@ -14,6 +14,7 @@ import {
 } from '../lib/extract.js';
 import { readAllRows, updateRow } from '../lib/sheets.js';
 import { applyExtracted, keepersAwaitingProcess } from '../js/workflow.js';
+import { checkDeskPassword } from './_auth.js';
 
 const MODEL = 'claude-opus-5';
 /** Bounds one request's spend. Raise it once you know what a real batch costs. */
@@ -70,6 +71,8 @@ async function extractOne(row) {
 }
 
 export default async function handler(req, res) {
+  if (!checkDeskPassword(req, res)) return;
+
   if (req.method !== 'POST') {
     res.status(405).json({ ok: false, error: 'Use POST.' });
     return;
