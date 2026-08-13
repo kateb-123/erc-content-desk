@@ -17,10 +17,17 @@ import { applyExtracted, keepersAwaitingProcess } from '../js/workflow.js';
 import { checkDeskPassword } from './_auth.js';
 
 const MODEL = 'claude-opus-5';
-/** Bounds one request's spend. Raise it once you know what a real batch costs. */
-const MAX_ITEMS_PER_RUN = Number(process.env.MAX_ITEMS_PER_RUN || 25);
+/**
+ * Bounds one request's spend, and — since each item is a non-streaming Opus
+ * call that can run 20-60s — keeps a full run inside Vercel's 300s ceiling.
+ * Raise it only alongside a move to background/streaming execution.
+ */
+const MAX_ITEMS_PER_RUN = Number(process.env.MAX_ITEMS_PER_RUN || 3);
 /** web_fetch can pause a long turn; resume a few times, then give up. */
 const MAX_RESUMES = 3;
+
+/** Vercel's per-invocation ceiling; matches the sequential-call budget above. */
+export const config = { maxDuration: 300 };
 
 const anthropic = new Anthropic();
 
