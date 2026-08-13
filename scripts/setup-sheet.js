@@ -10,7 +10,7 @@ import { writeHeader, headerValues } from '../lib/sheets.js';
 
 async function main() {
   // Check environment variables
-  const required = ['SHEET_ID', 'GOOGLE_SERVICE_ACCOUNT_EMAIL', 'GOOGLE_PRIVATE_KEY'];
+  const required = ['SHEET_API_URL', 'SHEET_API_TOKEN'];
   const missing = required.filter(name => !process.env[name]);
 
   if (missing.length > 0) {
@@ -28,17 +28,16 @@ async function main() {
     const message = err.message || String(err);
     console.error('Error writing header:', message);
 
-    // Check if it looks like a permissions error
+    // Check if it looks like an access/deployment error
     if (
-      message.includes('403') ||
-      message.includes('Forbidden') ||
-      message.includes('permission') ||
-      message.includes('cannot edit')
+      message.includes('Unauthorized') ||
+      message.includes("wasn't JSON") ||
+      message.includes('HTTP')
     ) {
       console.error();
-      console.error('This looks like a permissions error. Make sure the Google Sheet is shared');
-      console.error('with the service account as an Editor:');
-      console.error(`  ${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL}`);
+      console.error('This looks like a deployment or token problem. Check that SHEET_API_URL points at the');
+      console.error("Apps Script web app's deployed URL, and that SHEET_API_TOKEN matches the SHEET_API_TOKEN");
+      console.error('script property set in the Apps Script project. See README.md for setup steps.');
     }
 
     process.exit(1);

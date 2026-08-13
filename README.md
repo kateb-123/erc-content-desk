@@ -16,33 +16,56 @@ A web app and submission queue for managing content in the ERC newsletter and th
 
 ## Setup
 
-### 1. Create a Google Cloud service account
+The app talks to the Sheet through a small Google Apps Script web app that runs
+inside the Sheet itself, under your own Google account. This is deliberate: it
+needs no Google Cloud project and no service account, so it works even on a
+Google account where Google Cloud is disabled.
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/).
-2. Create a new project (or use an existing one).
-3. Enable the Google Sheets API.
-4. Create a Service Account and download its JSON key file.
-5. From the JSON key file, note the `client_email` (the service account email) and `private_key` values.
-
-### 2. Create and share the Google Sheet
+### 1. Create the Google Sheet
 
 1. Go to [Google Sheets](https://sheets.google.com/) and create a new spreadsheet.
-2. Rename the first sheet tab to `Items` (or your chosen name).
-3. Right-click the sheet tab → "Share" and share it with the service account email as an **Editor**.
-4. Copy the spreadsheet ID from the URL (the long alphanumeric string between `/d/` and `/edit`).
+2. This will hold your data; you don't need to name the tab or add headers by hand — setup does that for you.
 
-### 3. Set environment variables in Vercel
+### 2. Paste in the Apps Script
+
+1. In the Sheet, go to **Extensions → Apps Script**. This opens a script editor bound to this Sheet.
+2. Delete the placeholder contents of `Code.gs` and paste in the contents of this repo's `apps-script/Code.gs`.
+3. Save the project (File → Save, or Ctrl/Cmd+S).
+
+### 3. Set the shared secret
+
+The script checks a secret token on every request — this is what actually protects your
+data, since anyone with the deployed URL can technically reach it (see step 4).
+
+1. In the Apps Script editor, click the gear icon (**Project Settings**) in the left sidebar.
+2. Scroll to **Script Properties** → **Add script property**.
+3. Property name: `SHEET_API_TOKEN`. Value: a long random string you make up (a password
+   generator works well). Save it somewhere — you'll need to set the same value in Vercel.
+
+### 4. Deploy as a web app
+
+1. In the Apps Script editor, click **Deploy → New deployment**.
+2. Click the gear icon next to "Select type" and choose **Web app**.
+3. Set **Execute as: Me** (your account) and **Who has access: Anyone**.
+   - This looks alarming, but it's correct: Apps Script web apps don't check the caller's
+     identity when access is "Anyone" — that's exactly why the token from step 3 exists.
+     Without the right token, every request is rejected before it touches the Sheet.
+   - "Execute as: Me" is what lets the script edit the Sheet under your identity, without
+     the app needing any credentials of its own.
+4. Click **Deploy**, and authorize the script when Google prompts you (it needs permission
+   to edit this Sheet).
+5. Copy the **Web app URL** it gives you — it ends in `/exec`.
+
+### 5. Set environment variables in Vercel
 
 1. Go to your Vercel project settings.
 2. Add these environment variables:
-   - `SHEET_ID` — the ID from step 2
-   - `SHEET_NAME` — the sheet tab name (defaults to `Items`)
-   - `GOOGLE_SERVICE_ACCOUNT_EMAIL` — from the JSON key file
-   - `GOOGLE_PRIVATE_KEY` — from the JSON key file (include the `-----BEGIN` and `-----END` lines)
+   - `SHEET_API_URL` — the web app URL from step 4 (ends in `/exec`)
+   - `SHEET_API_TOKEN` — the same value you set as the `SHEET_API_TOKEN` script property in step 3
    - `ANTHROPIC_API_KEY` — from [Anthropic Console](https://console.anthropic.com/)
    - `DESK_PASSWORD` — a shared password to protect the `/` desk screens
 
-### 4. Run the setup script
+### 6. Run the setup script
 
 After deploying to Vercel (or locally, if testing), run:
 
@@ -52,9 +75,15 @@ npm run setup
 
 This writes the header row to your Google Sheet. It is safe to run multiple times.
 
-### 5. Deploy
+### 7. Deploy
 
 Push to your Vercel project and deploy.
+
+### If you change the Apps Script later
+
+Any time you edit `Code.gs` (in this repo or directly in the Apps Script editor), you must
+**Deploy → Manage deployments → edit → New version** for the change to take effect — saving
+the file alone updates the editor but not the live web app.
 
 ## The two pages
 
@@ -94,4 +123,4 @@ Tests require no credentials and run in Node's test runner.
 - **Statuses:** `new`, `kept`, `processed`, `trashed`
 - **Types and subtypes:** controlled by `TYPES` in `js/schema.js`; subtypes must match the hub's `news.csv`
 - **Boolean columns:** `newsletter` and `hub` are stored as "TRUE" or empty string in the Sheet
-- **Service account:** must have Editor access to the Sheet; permissions are checked on every API call
+- **Sheet access:** via the Apps Script web app in `apps-script/Code.gs`; every request is checked against the `SHEET_API_TOKEN` script property, which must match the `SHEET_API_TOKEN` environment variable in Vercel
