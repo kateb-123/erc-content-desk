@@ -148,7 +148,13 @@ function handleRead(sheet) {
   }
 
   var numDataRows = lastRow - 1;
-  var values = sheet.getRange(2, 1, numDataRows, lastColumn).getValues();
+  // getDisplayValues, not getValues: getValues returns Google's typed values,
+  // so a date cell comes back as a Date object and would stringify to
+  // "Mon Jul 28 2026 00:00:00 GMT-0500 (...)" instead of "2026-07-28",
+  // corrupting the date column and the public hub CSV built from it.
+  // Display values give us exactly what the sheet shows, as text — which is
+  // also what the app writes back, so a round trip changes nothing.
+  var values = sheet.getRange(2, 1, numDataRows, lastColumn).getDisplayValues();
   var rows = values.map(function (rowValues, i) {
     return { rowNumber: i + 2, values: rowValues };
   });
