@@ -9,8 +9,9 @@ import { renderQueue } from './queue-ui.js';
 import { renderSort } from './sort-ui.js';
 import { renderBuild } from './build-ui.js';
 import { renderDownloads } from './downloads-ui.js';
-import { keep, trash, undecide, readyFor, markUsed } from './workflow.js';
+import { keep, trash, undecide, markUsed } from './workflow.js';
 import { mappedNewsletterRows } from './rows-to-issue.js';
+import { hubExportableRows } from './hub-csv.js';
 import { getDeskPassword, clearDeskPassword } from './desk-auth.js';
 
 const DRAFT_KEY = 'erc-content-desk-draft';
@@ -144,7 +145,10 @@ async function exportNewsletter(html) {
 async function exportHubCsv(csv) {
   downloadFile('news.csv', csv, 'text/csv');
   const stamp = new Date().toISOString();
-  await persist(readyFor(state.rows, 'hub').map(r => markUsed(r, 'hub', stamp)));
+  // Same set the CSV was built from — hubCsvFor and this both go through
+  // hubExportableRows, so a row can never be stamped downloaded without also
+  // being in the file (or vice versa).
+  await persist(hubExportableRows(state.rows).map(r => markUsed(r, 'hub', stamp)));
 }
 
 function render() {

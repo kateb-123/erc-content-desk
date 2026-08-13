@@ -5,7 +5,7 @@
  * the 14 CSV_COLUMNS, in order, header row first. Workflow columns never ship.
  */
 
-import { CSV_COLUMNS } from './schema.js';
+import { CSV_COLUMNS, isHubEligible } from './schema.js';
 import { readyFor } from './workflow.js';
 
 export function escapeCell(value) {
@@ -22,8 +22,19 @@ export function rowsToCsv(rows) {
   return `${lines.join('\n')}\n`;
 }
 
+/**
+ * readyFor(rows, 'hub') alone is not enough to ship: when Claude returns a
+ * type outside the vocabulary, extract.js blanks both type and subtype, and
+ * the hub flag survives that (it's only cleared when a *known* type turns
+ * out to be newsletter-only — see applyExtracted). Filter those uncategorised
+ * rows out here so they can never reach the public news.csv.
+ */
+export function hubExportableRows(rows) {
+  return readyFor(rows, 'hub').filter(r => r.type && r.subtype && isHubEligible(r.type));
+}
+
 export function hubCsvFor(rows) {
-  const pending = readyFor(rows, 'hub').slice().sort((a, b) => {
+  const pending = hubExportableRows(rows).slice().sort((a, b) => {
     if (!a.date && !b.date) return 0;
     if (!a.date) return 1;
     if (!b.date) return -1;

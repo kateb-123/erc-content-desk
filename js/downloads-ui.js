@@ -3,13 +3,14 @@
  * erc-policy-exchange repo herself; this only produces the file.
  */
 
-import { hubCsvFor } from './hub-csv.js';
+import { hubCsvFor, hubExportableRows } from './hub-csv.js';
 import { readyFor } from './workflow.js';
 
 export function renderDownloads(container, { rows, onDownloadHub }) {
   container.replaceChildren();
 
-  const pending = readyFor(rows, 'hub');
+  const pending = hubExportableRows(rows);
+  const heldBack = readyFor(rows, 'hub').filter(r => !pending.includes(r));
 
   const head = document.createElement('div');
   head.className = 'screen-head';
@@ -18,6 +19,13 @@ export function renderDownloads(container, { rows, onDownloadHub }) {
     <p class="lede">${pending.length} item${pending.length === 1 ? '' : 's'} waiting for the policy hub.</p>
   `;
   container.append(head);
+
+  if (heldBack.length > 0) {
+    const warn = document.createElement('p');
+    warn.className = 'warn';
+    warn.textContent = `${heldBack.length} kept item${heldBack.length === 1 ? " doesn't" : "s don't"} have a category yet, so ${heldBack.length === 1 ? 'it stays' : 'they stay'} out of this file. Set the type and subtype in the Sheet to bring ${heldBack.length === 1 ? 'it' : 'them'} in.`;
+    container.append(warn);
+  }
 
   if (!pending.length) {
     const empty = document.createElement('p');

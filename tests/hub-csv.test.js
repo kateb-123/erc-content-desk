@@ -1,7 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { blankRow, CSV_COLUMNS } from '../js/schema.js';
-import { escapeCell, rowsToCsv, hubCsvFor } from '../js/hub-csv.js';
+import {
+  escapeCell, rowsToCsv, hubCsvFor, hubExportableRows,
+} from '../js/hub-csv.js';
 
 test('plain values are written bare', () => {
   assert.equal(escapeCell('Teacher pay'), 'Teacher pay');
@@ -49,10 +51,18 @@ test('every column lands in its own position, not just the leading few', () => {
 
 test('hubCsvFor takes only processed, hub-flagged, not-yet-downloaded rows', () => {
   const rows = [
-    blankRow({ headline: 'In', status: 'processed', hub: true, date: '2026-07-01' }),
-    blankRow({ headline: 'Newsletter only', status: 'processed', newsletter: true, date: '2026-07-02' }),
-    blankRow({ headline: 'Not processed', status: 'kept', hub: true, date: '2026-07-03' }),
-    blankRow({ headline: 'Already sent', status: 'processed', hub: true, hub_used_at: '2026-07-04', date: '2026-07-04' }),
+    blankRow({
+      headline: 'In', status: 'processed', hub: true, date: '2026-07-01', type: 'research', subtype: 'Report',
+    }),
+    blankRow({
+      headline: 'Newsletter only', status: 'processed', newsletter: true, date: '2026-07-02', type: 'research', subtype: 'Report',
+    }),
+    blankRow({
+      headline: 'Not processed', status: 'kept', hub: true, date: '2026-07-03', type: 'research', subtype: 'Report',
+    }),
+    blankRow({
+      headline: 'Already sent', status: 'processed', hub: true, hub_used_at: '2026-07-04', date: '2026-07-04', type: 'research', subtype: 'Report',
+    }),
   ];
   const csv = hubCsvFor(rows);
   assert.ok(csv.includes('In'));
@@ -63,12 +73,48 @@ test('hubCsvFor takes only processed, hub-flagged, not-yet-downloaded rows', () 
 
 test('hubCsvFor sorts newest first, blank dates last', () => {
   const rows = [
-    blankRow({ headline: 'Older', status: 'processed', hub: true, date: '2026-06-01' }),
-    blankRow({ headline: 'Newer', status: 'processed', hub: true, date: '2026-08-01' }),
-    blankRow({ headline: 'Undated', status: 'processed', hub: true, date: '' }),
+    blankRow({
+      headline: 'Older', status: 'processed', hub: true, date: '2026-06-01', type: 'research', subtype: 'Report',
+    }),
+    blankRow({
+      headline: 'Newer', status: 'processed', hub: true, date: '2026-08-01', type: 'research', subtype: 'Report',
+    }),
+    blankRow({
+      headline: 'Undated', status: 'processed', hub: true, date: '', type: 'research', subtype: 'Report',
+    }),
   ];
   const lines = hubCsvFor(rows).trim().split('\n');
   assert.ok(lines[1].includes('Newer'));
   assert.ok(lines[2].includes('Older'));
   assert.ok(lines[3].includes('Undated'));
+});
+
+test('hubExportableRows excludes a hub-flagged processed row with a blank type', () => {
+  // The real-world failure path: Claude returns a type outside the
+  // vocabulary, extract.js blanks both type and subtype, and the hub flag
+  // survives because it's only cleared for a *known* newsletter-only type.
+  const rows = [
+    blankRow({
+      id: 'a', headline: 'Uncategorised', status: 'processed', hub: true, type: '', subtype: '',
+    }),
+  ];
+  assert.deepEqual(hubExportableRows(rows).map(r => r.id), []);
+});
+
+test('hubExportableRows excludes a hub-flagged row with a newsletter-only type', () => {
+  const rows = [
+    blankRow({
+      id: 'a', headline: 'ERC happy hour', status: 'processed', hub: true, type: 'spotlight', subtype: 'This & That',
+    }),
+  ];
+  assert.deepEqual(hubExportableRows(rows).map(r => r.id), []);
+});
+
+test('hubExportableRows includes a valid hub-eligible row', () => {
+  const rows = [
+    blankRow({
+      id: 'a', headline: 'A study', status: 'processed', hub: true, type: 'research', subtype: 'Report',
+    }),
+  ];
+  assert.deepEqual(hubExportableRows(rows).map(r => r.id), ['a']);
 });
