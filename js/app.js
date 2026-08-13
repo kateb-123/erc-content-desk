@@ -84,6 +84,10 @@ async function addToQueue({ content, submitter }) {
     if (!data.ok) throw new Error(data.errors.join(' '));
   } catch (err) {
     setStatus(err.message, 'error');
+    // No reload on this path (nothing changed on the server), but the Queue
+    // screen still needs a fresh render so the disabled "Add to queue"
+    // button — disabled before this call went out — becomes usable again.
+    render();
     return;
   }
   await reload();

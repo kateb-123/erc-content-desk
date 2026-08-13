@@ -52,8 +52,13 @@ export function renderQueue(container, { rows, onAdd, onRefresh }) {
       <button type="submit">Add to queue</button>
     </div>
   `;
+  const addBtn = adder.querySelector('button[type="submit"]');
   adder.addEventListener('submit', async event => {
     event.preventDefault();
+    // Disable before invoking the callback, matching the Sort screen's
+    // decision buttons — otherwise a second click before the POST resolves
+    // adds the same item twice.
+    addBtn.disabled = true;
     const content = adder.querySelector('#queue-content').value;
     const submitter = adder.querySelector('#queue-submitter').value;
     await onAdd({ content, submitter });
