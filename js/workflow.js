@@ -19,7 +19,7 @@ export function pendingRows(rows) {
 }
 
 export function decidedRows(rows) {
-  return rows.filter(r => r.status === 'kept' || r.status === 'processed');
+  return rows.filter(r => r.status === 'kept' || r.status === 'processed' || r.status === 'trashed');
 }
 
 export function keepersAwaitingProcess(rows) {

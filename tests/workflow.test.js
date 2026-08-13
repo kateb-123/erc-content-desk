@@ -11,14 +11,17 @@ test('pendingRows are the undecided ones', () => {
   assert.deepEqual(pendingRows(rows).map(r => r.id), ['a']);
 });
 
-test('decidedRows are kept and processed, not trashed', () => {
+test('decidedRows are everything with a decision made — kept, processed, and trashed', () => {
+  // A trashed row still needs to show up somewhere (with a working Undo) —
+  // decidedRows used to drop it, which made a mis-click on Trash
+  // unrecoverable without editing the Sheet by hand.
   const rows = [
     blankRow({ id: 'a', status: 'new' }),
     blankRow({ id: 'b', status: 'kept' }),
     blankRow({ id: 'c', status: 'processed' }),
     blankRow({ id: 'd', status: 'trashed' }),
   ];
-  assert.deepEqual(decidedRows(rows).map(r => r.id), ['b', 'c']);
+  assert.deepEqual(decidedRows(rows).map(r => r.id), ['b', 'c', 'd']);
 });
 
 test('keep moves a row to kept and records the destinations', () => {

@@ -155,9 +155,14 @@ export function renderSort(container, { rows, onDecide, onUndecide, onProcess, p
 
     for (const row of decided) {
       const line = el('div', 'decided-row');
-      const dests = [row.newsletter && 'newsletter', row.hub && 'hub'].filter(Boolean).join(' + ') || 'none';
+      // A trashed row has no destinations by definition (trash() clears
+      // both flags) — showing "trashed · none" reads as if nothing was
+      // decided, so just say trashed.
+      const destText = row.status === 'trashed'
+        ? 'trashed'
+        : `${row.status} · ${[row.newsletter && 'newsletter', row.hub && 'hub'].filter(Boolean).join(' + ') || 'none'}`;
       line.append(el('span', 'decided-text', summaryLine(row)));
-      line.append(el('span', 'decided-dest', `${row.status} · ${dests}`));
+      line.append(el('span', 'decided-dest', destText));
       const undo = el('button', '', 'Undo');
       undo.addEventListener('click', () => {
         undo.disabled = true;
