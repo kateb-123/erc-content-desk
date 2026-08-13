@@ -37,7 +37,10 @@ export function renderDownloads(container, { rows, onDownloadHub }) {
   const button = document.createElement('button');
   button.className = 'primary';
   button.textContent = 'Download news.csv and mark sent';
-  button.addEventListener('click', () => onDownloadHub(csv));
+  button.addEventListener('click', () => {
+    button.disabled = true;
+    onDownloadHub(csv);
+  });
   container.append(button);
 
   const hint = document.createElement('p');

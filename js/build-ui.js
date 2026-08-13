@@ -13,7 +13,10 @@ export function renderBuild(container, { rows, draft, onDraftChange, onExport })
   container.replaceChildren();
 
   const pending = mappedNewsletterRows(rows);
-  const unplaced = readyFor(rows, 'newsletter').length - pending.length;
+  const readyRows = readyFor(rows, 'newsletter');
+  const unplacedRows = readyRows.filter(r => !pending.includes(r));
+  const introUnplaced = unplacedRows.filter(r => r.type === 'intro').length;
+  const otherUnplaced = unplacedRows.filter(r => r.type !== 'intro').length;
 
   const head = document.createElement('div');
   head.className = 'screen-head';
@@ -23,10 +26,17 @@ export function renderBuild(container, { rows, draft, onDraftChange, onExport })
   `;
   container.append(head);
 
-  if (unplaced > 0) {
+  if (introUnplaced > 0) {
     const warn = document.createElement('p');
     warn.className = 'warn';
-    warn.textContent = `${unplaced} kept item${unplaced === 1 ? " doesn't" : "s don't"} have a category yet, so ${unplaced === 1 ? 'it stays' : 'they stay'} out of this issue. Set the type and subtype in the Sheet to bring ${unplaced === 1 ? 'it' : 'them'} in.`;
+    warn.textContent = `${introUnplaced} item${introUnplaced === 1 ? ' is' : 's are'} marked as intro — the intro text goes in the field below, so ${introUnplaced === 1 ? 'it stays' : 'they stay'} out of the issue.`;
+    container.append(warn);
+  }
+
+  if (otherUnplaced > 0) {
+    const warn = document.createElement('p');
+    warn.className = 'warn';
+    warn.textContent = `${otherUnplaced} kept item${otherUnplaced === 1 ? " doesn't" : "s don't"} have a category yet, so ${otherUnplaced === 1 ? 'it stays' : 'they stay'} out of this issue. Set the type and subtype in the Sheet to bring ${otherUnplaced === 1 ? 'it' : 'them'} in.`;
     container.append(warn);
   }
 
@@ -71,7 +81,10 @@ export function renderBuild(container, { rows, draft, onDraftChange, onExport })
   const download = document.createElement('button');
   download.className = 'primary';
   download.textContent = 'Download HTML and mark built';
-  download.addEventListener('click', () => onExport(html));
+  download.addEventListener('click', () => {
+    download.disabled = true;
+    onExport(html);
+  });
 
   actions.append(copy, download);
   container.append(actions);
