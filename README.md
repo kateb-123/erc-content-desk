@@ -63,7 +63,6 @@ data, since anyone with the deployed URL can technically reach it (see step 4).
    - `SHEET_API_URL` — the web app URL from step 4 (ends in `/exec`)
    - `SHEET_API_TOKEN` — the same value you set as the `SHEET_API_TOKEN` script property in step 3
    - `ANTHROPIC_API_KEY` — from [Anthropic Console](https://console.anthropic.com/)
-   - `DESK_PASSWORD` — a shared password to protect the `/` desk screens
 
 ### 6. Run the setup script
 
@@ -87,7 +86,7 @@ the file alone updates the editor but not the live web app.
 
 ## The two pages
 
-**`/`** — The team desk. Requires the `DESK_PASSWORD` in the `x-desk-password` header (the desk interface handles this). Shows the queue, sort, build, and download screens.
+**`/`** — The team desk. Reachable by anyone with the URL, so share the URL only with the team. The Anthropic key is never exposed to the browser, but the Process button spends real money per item, so treat the URL as semi-private. Shows the queue, sort, build, and download screens.
 
 **`/submit`** — The public submission form. Deliberately open to anyone with the link. Appends to the Google Sheet, no password needed.
 

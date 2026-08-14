@@ -12,7 +12,6 @@ import { renderDownloads } from './downloads-ui.js';
 import { keep, trash, undecide, markUsed } from './workflow.js';
 import { mappedNewsletterRows } from './rows-to-issue.js';
 import { hubExportableRows } from './hub-csv.js';
-import { getDeskPassword, clearDeskPassword } from './desk-auth.js';
 
 const DRAFT_KEY = 'erc-content-desk-draft';
 
@@ -109,13 +108,9 @@ async function processKeepers() {
   try {
     const res = await fetch('/api/process', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-desk-password': getDeskPassword() },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
     });
-    if (res.status === 401) {
-      clearDeskPassword();
-      throw new Error('Wrong password. Reload the page and try again.');
-    }
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
 

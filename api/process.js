@@ -14,7 +14,6 @@ import {
 } from './_lib/extract.js';
 import { readAllRows, updateRow } from './_lib/sheets.js';
 import { applyExtracted, keepersAwaitingProcess } from '../js/workflow.js';
-import { checkDeskPassword } from './_auth.js';
 
 const MODEL = 'claude-opus-5';
 /**
@@ -78,8 +77,6 @@ async function extractOne(row) {
 }
 
 export default async function handler(req, res) {
-  if (!checkDeskPassword(req, res)) return;
-
   if (req.method !== 'POST') {
     res.status(405).json({ ok: false, error: 'Use POST.' });
     return;
