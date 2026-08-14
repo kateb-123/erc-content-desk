@@ -4,7 +4,7 @@
  * testable offline.
  */
 
-import { CSV_COLUMNS, TYPES, isValidType, isValidSubtype, subtypesFor } from '../js/schema.js';
+import { CSV_COLUMNS, TYPES, isValidType, isValidSubtype, subtypesFor } from '../../js/schema.js';
 
 /**
  * Fed to output_config.format so the response is guaranteed-parseable JSON.

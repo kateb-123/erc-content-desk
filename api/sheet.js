@@ -6,7 +6,7 @@
  * are not rolled back, so a failure partway through leaves the sheet partially updated.
  */
 
-import { readAllRows, updateRow } from '../lib/sheets.js';
+import { readAllRows, updateRow } from './_lib/sheets.js';
 import { checkDeskPassword } from './_auth.js';
 
 const MAX_ROWS_PER_PATCH = 200;

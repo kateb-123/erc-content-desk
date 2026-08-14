@@ -1,6 +1,6 @@
 import { test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { readAllRows, appendRow, updateRow, writeHeader, headerValues } from '../lib/sheets.js';
+import { readAllRows, appendRow, updateRow, writeHeader, headerValues } from '../api/_lib/sheets.js';
 import { SHEET_COLUMNS, blankRow } from '../js/schema.js';
 
 /**

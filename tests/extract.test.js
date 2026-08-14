@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { blankRow } from '../js/schema.js';
-import { EXTRACTION_SCHEMA, buildExtractionPrompt, parseExtraction, normalizeExtraction } from '../lib/extract.js';
+import { EXTRACTION_SCHEMA, buildExtractionPrompt, parseExtraction, normalizeExtraction } from '../api/_lib/extract.js';
 
 test('the schema is strict and covers every CSV field Claude may fill', () => {
   assert.equal(EXTRACTION_SCHEMA.type, 'object');

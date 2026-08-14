@@ -8,11 +8,11 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import { ERC_VOICE } from '../lib/voice.js';
+import { ERC_VOICE } from './_lib/voice.js';
 import {
   EXTRACTION_SCHEMA, buildExtractionPrompt, parseExtraction, normalizeExtraction,
-} from '../lib/extract.js';
-import { readAllRows, updateRow } from '../lib/sheets.js';
+} from './_lib/extract.js';
+import { readAllRows, updateRow } from './_lib/sheets.js';
 import { applyExtracted, keepersAwaitingProcess } from '../js/workflow.js';
 import { checkDeskPassword } from './_auth.js';
 

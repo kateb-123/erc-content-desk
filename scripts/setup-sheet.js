@@ -6,7 +6,7 @@
  * and reports success or a helpful error.
  */
 
-import { writeHeader, headerValues } from '../lib/sheets.js';
+import { writeHeader, headerValues } from '../api/_lib/sheets.js';
 
 async function main() {
   // Check environment variables

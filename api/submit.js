@@ -8,7 +8,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { buildSubmission, validateSubmission } from '../js/intake.js';
-import { appendRow } from '../lib/sheets.js';
+import { appendRow } from './_lib/sheets.js';
 
 const MAX_CONTENT_LENGTH = 20000;
 const MAX_SUBMITTER_LENGTH = 200;

@@ -13,7 +13,7 @@
  * header cell in Google Sheets does not silently shift the data.
  */
 
-import { SHEET_COLUMNS, rowToValues, valuesToRow } from '../js/schema.js';
+import { SHEET_COLUMNS, rowToValues, valuesToRow } from '../../js/schema.js';
 
 function sheetApiUrl() {
   const url = process.env.SHEET_API_URL;
