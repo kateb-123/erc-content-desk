@@ -8,25 +8,48 @@
 </head>
 <body class="submit-page">
   <main class="card">
-    <h1>Share something</h1>
-    <p class="lede">A link, an email you got, a paragraph you copied — any shape is fine. We sort it out on our end.</p>
-
+    <h1>Share something with the ERC</h1>
+    <p class="lede">Events, research, opportunities, headlines — if it belongs in the newsletter or on the Policy Exchange, drop it here.</p>
     <form id="submit-form" novalidate>
-      <label for="content">Link or text</label>
-      <textarea id="content" name="content" rows="5" placeholder="https://www.edweek.org/policy/..."></textarea>
-
-      <label for="submitter">Your name</label>
-      <input id="submitter" name="submitter" type="text" autocomplete="name" />
-
-      <label for="note">Anything we should know (optional)</label>
-      <input id="note" name="note" type="text" placeholder="Deadline is Oct 1" />
-
-      <button type="submit" id="submit-btn">Send to the queue</button>
+      <label for="title">Title</label>
+      <input id="title" name="title" type="text" autocomplete="off">
+      <label for="blurb">Blurb / details <span class="hint">(paste whatever you have — dates, abstract, the whole announcement; headlines can skip this)</span></label>
+      <textarea id="blurb" name="blurb" rows="6"></textarea>
+      <label for="link">Link</label>
+      <input id="link" name="link" type="url" autocomplete="off">
+      <div class="type-row">
+        <div>
+          <label for="type">Type</label>
+          <select id="type" name="type"><option value="">Pick one…</option></select>
+        </div>
+        <div>
+          <label for="subtype">Subtype</label>
+          <select id="subtype" name="subtype" disabled><option value="">Pick a type first</option></select>
+        </div>
+      </div>
+      <label class="check"><input id="spotlight" type="checkbox">
+        ⭐ Requesting ERC Spotlight / newsletter feature</label>
+      <label for="submitter">Your name or initials</label>
+      <input id="submitter" name="submitter" type="text" autocomplete="off">
+      <button id="submit-btn" type="submit" class="primary">Submit</button>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
     </form>
 
-    <p id="status" class="status" role="status" aria-live="polite"></p>
+    <details class="bulk-door">
+      <summary>Have a whole doc? Paste it here.</summary>
+      <p class="hint">Paste an entire document — it gets split into individual items you confirm before anything is saved.</p>
+      <textarea id="bulk-text" rows="10"></textarea>
+      <button id="bulk-split-btn" type="button">Split into items</button>
+      <div id="bulk-review" hidden>
+        <p id="bulk-summary"></p>
+        <ul id="bulk-list"></ul>
+        <button id="bulk-confirm-btn" type="button" class="primary">Add all to the queue</button>
+        <button id="bulk-cancel-btn" type="button">Cancel</button>
+      </div>
+      <p id="bulk-status" class="status" role="status" aria-live="polite"></p>
+    </details>
   </main>
 
-  <script type="module" src="/js/submit.js?v=1"></script>
+  <script type="module" src="/js/submit.js?v=2"></script>
 </body>
 </html>
