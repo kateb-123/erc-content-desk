@@ -21,6 +21,14 @@ test('only kept events and opportunities with blurbs are candidates', () => {
   assert.deepEqual(rewriteCandidates(rows).map(r => r.id), ['a', 'b']);
 });
 
+test('a kept event that has already been published is not a candidate', () => {
+  const rows = [
+    kept({ id: 'a', type: 'event', blurb: 'x', published_at: '2026-08-01T00:00:00.000Z' }),
+    kept({ id: 'b', type: 'opportunity', blurb: 'x' }),
+  ];
+  assert.deepEqual(rewriteCandidates(rows).map(r => r.id), ['b']);
+});
+
 test('the batched prompt lists every candidate with its id', () => {
   const rows = [kept({ id: 'a1', type: 'event', headline: 'Webinar', blurb: 'Long blurb.' })];
   const prompt = buildRewritePrompt(rows);

@@ -12,7 +12,8 @@ export const REWRITE_MODEL = 'claude-opus-5';
 
 export function rewriteCandidates(rows) {
   return rows.filter(r =>
-    r.status === 'kept' && (r.type === 'event' || r.type === 'opportunity') && r.blurb);
+    r.status === 'kept' && (r.type === 'event' || r.type === 'opportunity') && r.blurb
+    && !r.published_at);
 }
 
 export const REWRITE_SCHEMA = {

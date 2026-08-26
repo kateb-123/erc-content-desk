@@ -42,6 +42,9 @@ export default async function handler(req, res) {
     if (response.stop_reason === 'refusal') {
       return res.status(502).json({ ok: false, error: 'Claude declined the rewrite. Edit the blurbs by hand this time.' });
     }
+    if (response.stop_reason === 'max_tokens') {
+      return res.status(502).json({ ok: false, error: 'Too many items to rewrite in one go — publish what you have and rewrite the next batch separately.' });
+    }
     const text = response.content.find(b => b.type === 'text')?.text ?? '';
     const { rewrites, warnings } = normalizeRewrites(parseRewrites(text), candidates);
     return res.status(200).json({ ok: true, rewrites, warnings });
