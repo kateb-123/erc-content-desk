@@ -12,55 +12,40 @@ export const CSV_COLUMNS = [
 ];
 
 export const WORKFLOW_COLUMNS = [
-  'id', 'status', 'submitter', 'submitted_at', 'note', 'original_text',
-  'newsletter', 'hub', 'newsletter_used_at', 'hub_used_at',
+  'id', 'status', 'submitter', 'submitted_at', 'spotlight_request',
+  'note', 'original_text', 'published_at', 'newsletter_issue',
 ];
 
 export const SHEET_COLUMNS = [...CSV_COLUMNS, ...WORKFLOW_COLUMNS];
 
-export const BOOLEAN_COLUMNS = ['newsletter', 'hub'];
+export const BOOLEAN_COLUMNS = ['spotlight_request'];
 
-export const STATUSES = ['new', 'kept', 'processed', 'trashed'];
+export const STATUSES = ['new', 'kept', 'circleback', 'trashed'];
 
 /**
- * Type vocabulary. Subtypes for the four hub types are exactly the values that
- * appear in the live hub CSV — do not invent new ones without adding them to
- * the hub's own data first. `spotlight` and `intro` are newsletter-only.
+ * Type vocabulary. Every type is hub-eligible in v2 — all keeps publish to
+ * the Exchange. ERC Spotlight is a per-row flag (spotlight_request), not a type.
  */
 export const TYPES = {
   opportunity: {
     subtypes: ['Funding & Grants', 'Fellowships & Programs', 'Call for Proposals'],
     extraFields: ['deadline'],
-    hubEligible: true,
   },
   research: {
     subtypes: ['Working Paper', 'Peer-Reviewed', 'Report', 'ERC Research'],
     extraFields: ['authors'],
-    hubEligible: true,
   },
   headline: {
     subtypes: ['National', 'Texas'],
     extraFields: ['medium'],
-    hubEligible: true,
   },
   event: {
-    subtypes: ['Online'],
+    subtypes: ['A&M', 'Off-Campus', 'Webinar-Online'],
     extraFields: ['time', 'location'],
-    hubEligible: true,
-  },
-  spotlight: {
-    subtypes: ['Programs & Opportunities', 'Events', 'This & That'],
-    extraFields: ['time', 'location'],
-    hubEligible: false,
-  },
-  intro: {
-    subtypes: ['Intro'],
-    extraFields: [],
-    hubEligible: false,
   },
 };
 
-/** `${type}|${subtype}` -> [newsletter section key, newsletter group key]. */
+/** `${type}|${subtype}` -> [newsletter section key, group key] (see js/model.js). */
 export const NEWSLETTER_MAP = {
   'opportunity|Funding & Grants': ['opportunities', 'funding'],
   'opportunity|Fellowships & Programs': ['opportunities', 'fellowships'],
@@ -71,11 +56,9 @@ export const NEWSLETTER_MAP = {
   'research|ERC Research': ['research', 'brief'],
   'headline|National': ['headlines', 'federal'],
   'headline|Texas': ['headlines', 'texas'],
-  'event|Online': ['events', 'offcampus'],
-  'spotlight|Programs & Opportunities': ['spotlight', 'programs'],
-  'spotlight|Events': ['spotlight', 'events'],
-  'spotlight|This & That': ['spotlight', 'thisandthat'],
-  'intro|Intro': ['intro', ''],
+  'event|A&M': ['events', 'tamu'],
+  'event|Off-Campus': ['events', 'offcampus'],
+  'event|Webinar-Online': ['events', 'offcampus'],
 };
 
 export function blankRow(overrides = {}) {
@@ -112,8 +95,4 @@ export function isValidType(type) {
 
 export function isValidSubtype(type, subtype) {
   return subtypesFor(type).includes(subtype);
-}
-
-export function isHubEligible(type) {
-  return Boolean(Object.prototype.hasOwnProperty.call(TYPES, type) && TYPES[type].hubEligible);
 }
