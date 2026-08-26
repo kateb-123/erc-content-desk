@@ -86,9 +86,13 @@ export function renderSort(container, props) {
     card.append(a);
   }
 
-  // Untyped/mistyped rescue: type + subtype pickers persist through onDecide-free edits
-  if (!row.type || !row.subtype) {
-    const fix = el('p', 'item-note', 'This one needs a type — set it below before deciding.');
+  // Type/subtype pickers + "Set type" render on every card so mistyped rows
+  // (valid type, wrong or blank subtype) have a correction surface too, not
+  // just untyped ones.
+  {
+    const hintText = (!row.type || !row.subtype)
+      ? 'Type: pick or fix before deciding.' : 'Type:';
+    const fix = el('p', 'item-note', hintText);
     const typeSel = document.createElement('select');
     typeSel.replaceChildren(new Option('Type…', ''),
       ...Object.keys(TYPES).map(t => new Option(t, t, false, t === row.type)));
