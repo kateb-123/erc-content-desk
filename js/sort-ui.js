@@ -20,9 +20,13 @@ function el(tag, className, text) {
   return node;
 }
 
+export function detachSortKeys() {
+  if (keyHandler) { document.removeEventListener('keydown', keyHandler); keyHandler = null; }
+}
+
 export function renderSort(container, props) {
   container.replaceChildren();
-  if (keyHandler) { document.removeEventListener('keydown', keyHandler); keyHandler = null; }
+  detachSortKeys();
   const { rows, stack, lastDecision, onPickStack, onDecide, onUndo } = props;
   const pending = pendingRows(rows);
 
@@ -94,7 +98,10 @@ export function renderSort(container, props) {
     fillSubs();
     typeSel.addEventListener('change', fillSubs);
     const apply = el('button', '', 'Set type');
-    apply.addEventListener('click', () => props.onEditType?.(row, typeSel.value, subSel.value));
+    apply.addEventListener('click', () => {
+      for (const x of card.querySelectorAll('button')) x.disabled = true;
+      props.onEditType?.(row, typeSel.value, subSel.value);
+    });
     fix.append(' ', typeSel, ' ', subSel, ' ', apply);
     card.append(fix);
   }
@@ -103,7 +110,7 @@ export function renderSort(container, props) {
   const mk = (label, cls, action) => {
     const b = el('button', cls, label);
     b.addEventListener('click', () => {
-      for (const x of actions.querySelectorAll('button')) x.disabled = true;
+      for (const x of card.querySelectorAll('button')) x.disabled = true;
       onDecide(row, action);
     });
     return b;

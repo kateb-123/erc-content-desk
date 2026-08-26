@@ -1,7 +1,7 @@
 /** Entry point. Owns all state; screens are pure renderers. */
 import { fetchDesk, saveRows } from './sheet-client.js';
 import { renderQueue } from './queue-ui.js';
-import { renderSort } from './sort-ui.js';
+import { renderSort, detachSortKeys } from './sort-ui.js';
 import { renderFinalize } from './finalize-ui.js';
 import { renderPublish } from './publish-ui.js';
 import { renderBuild } from './build-ui.js';
@@ -182,6 +182,7 @@ async function exportNewsletter(html, pickedIds, issueDate) {
 }
 
 export function render() {
+  if (state.screen !== 'sort') detachSortKeys();
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
   for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {
     tab.classList.toggle('is-active', tab.dataset.screen === state.screen);
