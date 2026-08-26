@@ -70,7 +70,10 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, published: published.length, skipped: skipped.length });
   } catch (err) {
     console.error('publish failed', err);
-    const message = (/GITHUB_TOKEN|GitHub/.test(err.message) || err.conflict)
+    if (err.conflict) {
+      return res.status(502).json({ ok: false, error: 'The Exchange changed while this publish was running — run the check again and publish once more.' });
+    }
+    const message = /GITHUB_TOKEN|GitHub/.test(err.message)
       ? "Couldn't reach the Exchange on GitHub. Check the GITHUB_TOKEN setup."
       : "Couldn't reach the sheet.";
     return res.status(502).json({ ok: false, error: message });
