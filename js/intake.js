@@ -1,40 +1,40 @@
 /**
- * Turning whatever someone pasted into a row. This runs before any Claude call,
- * so it stays deliberately dumb: keep the text verbatim, pull out a URL if one
- * is obviously there, and leave every CSV field blank for the Process step.
+ * Submit-form fields -> validated v2 row. The form is structured now (title /
+ * blurb / link / type / subtype / spotlight / name), so there is no URL
+ * sniffing — what the submitter typed is what we store. original_text keeps
+ * the blurb verbatim so extraction can never lose anything.
  */
+import { blankRow, isValidType, isValidSubtype } from './schema.js';
 
-import { blankRow } from './schema.js';
+const s = v => String(v ?? '').trim();
 
-const URL_PATTERN = /https?:\/\/[^\s<>"')]+/;
-
-export function validateSubmission({ content, submitter } = {}) {
+export function validateSubmission({ title, blurb, link, type, subtype, submitter } = {}) {
   const errors = [];
-  const normalizedContent = (content ?? '');
-  const normalizedSubmitter = (submitter ?? '');
-  if (!String(normalizedContent).trim()) errors.push('Add a link or paste some text.');
-  if (!String(normalizedSubmitter).trim()) errors.push('Add your name.');
+  if (!s(title)) errors.push('Add a title.');
+  if (!s(link)) errors.push('Add a link.');
+  if (!isValidType(s(type))) errors.push('Pick a type.');
+  else if (!isValidSubtype(s(type), s(subtype))) errors.push('Pick a subtype.');
+  if (!s(blurb) && s(type) !== 'headline') {
+    errors.push('Add a blurb — headlines are the only type that can skip it.');
+  }
+  if (!s(submitter)) errors.push('Add your name or initials.');
   return errors;
 }
 
-export function buildSubmission({ content, submitter, note = '', submittedAt, id }) {
-  const normalizedContent = (content ?? '');
-  const normalizedSubmitter = (submitter ?? '');
-  const normalizedNote = (note ?? '');
-  const text = String(normalizedContent).trim();
-  const match = text.match(URL_PATTERN);
-  let url = match ? match[0] : '';
-  // Strip trailing punctuation that can end a sentence but not a URL
-  if (url) {
-    url = url.replace(/[.,;:!?\]]+$/, '');
-  }
+export function buildSubmission({
+  title, blurb, link, type, subtype, spotlight, submitter, submittedAt, id,
+} = {}) {
   return blankRow({
     id,
     status: 'new',
-    submitter: String(normalizedSubmitter).trim(),
+    headline: s(title),
+    blurb: s(blurb),
+    original_text: s(blurb),
+    link: s(link),
+    type: s(type),
+    subtype: s(subtype),
+    spotlight_request: Boolean(spotlight),
+    submitter: s(submitter),
     submitted_at: submittedAt,
-    note: String(normalizedNote).trim(),
-    original_text: text,
-    link: url,
   });
 }
