@@ -1,169 +1,106 @@
-import { test } from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import { blankRow } from '../js/schema.js';
 import {
-  pendingRows, decidedRows, keepersAwaitingProcess, readyFor,
-  keep, trash, undecide, applyExtracted, markUsed, counts,
+  pendingRows, circlebackRows, decidedRows,
+  keep, trash, circleback, undecide, applyExtracted,
+  readyToPublish, publishedRows, buildPool,
+  markPublished, markNewsletterIssue,
+  staleCirclebacks, duplicateFlags, counts,
 } from '../js/workflow.js';
 
-test('pendingRows are the undecided ones', () => {
-  const rows = [blankRow({ id: 'a', status: 'new' }), blankRow({ id: 'b', status: 'kept' })];
+const row = o => blankRow({ id: 'r1', status: 'new', ...o });
+
+test('keep, trash, circleback, undecide set status without mutating input', () => {
+  const r = row();
+  assert.equal(keep(r).status, 'kept');
+  assert.equal(trash(r).status, 'trashed');
+  assert.equal(circleback(r).status, 'circleback');
+  assert.equal(undecide(circleback(r)).status, 'new');
+  assert.equal(r.status, 'new');
+});
+
+test('circleback appends a note on its own line', () => {
+  const r = row({ note: 'from Andy' });
+  assert.equal(circleback(r, 'ask Kathy').note, 'from Andy\nask Kathy');
+  assert.equal(circleback(row(), 'ask Kathy').note, 'ask Kathy');
+  assert.equal(circleback(r).note, 'from Andy');
+});
+
+test('applyExtracted merges only non-empty CSV fields and never touches status', () => {
+  const r = row({ headline: 'Typed title', blurb: 'typed' });
+  const out = applyExtracted(r, { date: '2026-09-01', headline: '', bogus: 'x', time: 305 });
+  assert.equal(out.date, '2026-09-01');
+  assert.equal(out.headline, 'Typed title');   // empty extraction never clobbers
+  assert.equal(out.time, '305');               // string-coerced
+  assert.equal(out.bogus, undefined);
+  assert.equal(out.status, 'new');
+  assert.equal(r.date, '');
+});
+
+test('filters split by status and publish state', () => {
+  const rows = [
+    row({ id: 'a', status: 'new' }),
+    row({ id: 'b', status: 'circleback' }),
+    row({ id: 'c', status: 'kept' }),
+    row({ id: 'd', status: 'kept', published_at: '2026-09-01T00:00:00.000Z' }),
+    row({ id: 'e', status: 'kept', published_at: '2026-09-01T00:00:00.000Z', newsletter_issue: '2026-09-01' }),
+    row({ id: 'f', status: 'trashed' }),
+  ];
   assert.deepEqual(pendingRows(rows).map(r => r.id), ['a']);
+  assert.deepEqual(circlebackRows(rows).map(r => r.id), ['b']);
+  assert.deepEqual(decidedRows(rows).map(r => r.id), ['c', 'd', 'e', 'f']);
+  assert.deepEqual(readyToPublish(rows).map(r => r.id), ['c']);
+  assert.deepEqual(publishedRows(rows).map(r => r.id), ['d', 'e']);
+  assert.deepEqual(buildPool(rows).map(r => r.id), ['d']);
 });
 
-test('decidedRows are everything with a decision made — kept, processed, and trashed', () => {
-  // A trashed row still needs to show up somewhere (with a working Undo) —
-  // decidedRows used to drop it, which made a mis-click on Trash
-  // unrecoverable without editing the Sheet by hand.
+test('markPublished and markNewsletterIssue stamp pure copies', () => {
+  const r = row({ status: 'kept' });
+  const p = markPublished(r, '2026-09-01T12:00:00.000Z');
+  assert.equal(p.published_at, '2026-09-01T12:00:00.000Z');
+  assert.equal(r.published_at, '');
+  const n = markNewsletterIssue(p, '2026-09-01');
+  assert.equal(n.newsletter_issue, '2026-09-01');
+  assert.equal(p.newsletter_issue, '');
+});
+
+test('staleCirclebacks flags past-dated parked events only', () => {
   const rows = [
-    blankRow({ id: 'a', status: 'new' }),
-    blankRow({ id: 'b', status: 'kept' }),
-    blankRow({ id: 'c', status: 'processed' }),
-    blankRow({ id: 'd', status: 'trashed' }),
+    row({ id: 'a', status: 'circleback', type: 'event', date: '2026-08-01' }),
+    row({ id: 'b', status: 'circleback', type: 'event', date: '2026-09-09' }),
+    row({ id: 'c', status: 'circleback', type: 'research', date: '2026-08-01' }),
+    row({ id: 'd', status: 'circleback', type: 'event', date: '' }),
   ];
-  assert.deepEqual(decidedRows(rows).map(r => r.id), ['b', 'c', 'd']);
+  assert.deepEqual(staleCirclebacks(rows, '2026-08-26').map(r => r.id), ['a']);
 });
 
-test('keep moves a row to kept and records the destinations', () => {
-  const row = keep(blankRow({ id: 'a', status: 'new', type: 'headline' }), { newsletter: true, hub: true });
-  assert.equal(row.status, 'kept');
-  assert.equal(row.newsletter, true);
-  assert.equal(row.hub, true);
-});
-
-test('keep never sets hub on a known newsletter-only type', () => {
-  const row = keep(blankRow({ id: 'a', type: 'spotlight' }), { newsletter: true, hub: true });
-  assert.equal(row.newsletter, true);
-  assert.equal(row.hub, false);
-});
-
-test('keep honours hub when the type is not known yet', () => {
-  // This is the real Sort-screen case: type is blank until Process runs, so an
-  // eligibility check here would silently drop every hub tick the team makes.
-  const row = keep(blankRow({ id: 'a', type: '' }), { newsletter: false, hub: true });
-  assert.equal(row.hub, true);
-});
-
-test('keep does not mutate its input', () => {
-  const before = blankRow({ id: 'a', status: 'new' });
-  keep(before, { newsletter: true, hub: false });
-  assert.equal(before.status, 'new');
-  assert.equal(before.newsletter, false);
-});
-
-test('trash does not mutate its input', () => {
-  const before = blankRow({ id: 'a', status: 'kept', newsletter: true, hub: true });
-  trash(before);
-  assert.equal(before.status, 'kept');
-  assert.equal(before.newsletter, true);
-  assert.equal(before.hub, true);
-});
-
-test('undecide does not mutate its input', () => {
-  const before = blankRow({ id: 'a', status: 'kept', newsletter: true, hub: false });
-  undecide(before);
-  assert.equal(before.status, 'kept');
-  assert.equal(before.newsletter, true);
-  assert.equal(before.hub, false);
-});
-
-test('applyExtracted does not mutate its input', () => {
-  const before = blankRow({ id: 'a', status: 'kept', headline: 'Original', hub: true });
-  applyExtracted(before, { headline: 'New headline', type: 'headline', subtype: 'Texas', blurb: 'A blurb.' });
-  assert.equal(before.status, 'kept');
-  assert.equal(before.headline, 'Original');
-  assert.equal(before.hub, true);
-});
-
-test('markUsed does not mutate its input', () => {
-  const before = blankRow({ id: 'a', status: 'processed', newsletter: true, hub: true, newsletter_used_at: '' });
-  markUsed(before, 'newsletter', '2026-08-12T10:00:00Z');
-  assert.equal(before.newsletter_used_at, '');
-  assert.equal(before.status, 'processed');
-});
-
-test('trash clears the destinations so a trashed row can never be built', () => {
-  const row = trash(blankRow({ id: 'a', status: 'kept', newsletter: true, hub: true }));
-  assert.equal(row.status, 'trashed');
-  assert.equal(row.newsletter, false);
-  assert.equal(row.hub, false);
-});
-
-test('undecide returns a row to the pending pile', () => {
-  const row = undecide(blankRow({ id: 'a', status: 'kept', newsletter: true }));
-  assert.equal(row.status, 'new');
-  assert.equal(row.newsletter, false);
-});
-
-test('keepersAwaitingProcess is kept rows only, not already-processed ones', () => {
+test('duplicateFlags maps later same-link rows to the earliest submission', () => {
   const rows = [
-    blankRow({ id: 'a', status: 'kept' }),
-    blankRow({ id: 'b', status: 'processed' }),
-    blankRow({ id: 'c', status: 'new' }),
+    row({ id: 'a', link: 'https://x.org/1', submitted_at: '2026-08-01T00:00:00.000Z' }),
+    row({ id: 'b', link: 'https://x.org/1', submitted_at: '2026-08-02T00:00:00.000Z' }),
+    row({ id: 'c', link: 'https://x.org/2', submitted_at: '2026-08-03T00:00:00.000Z' }),
+    row({ id: 'd', link: '', submitted_at: '2026-08-04T00:00:00.000Z' }),
+    row({ id: 'e', link: '', submitted_at: '2026-08-05T00:00:00.000Z' }),
   ];
-  assert.deepEqual(keepersAwaitingProcess(rows).map(r => r.id), ['a']);
+  const flags = duplicateFlags(rows);
+  assert.equal(flags.get('b'), 'a');
+  assert.equal(flags.has('a'), false);
+  assert.equal(flags.has('c'), false);
+  assert.equal(flags.has('d'), false); // blank links never flag
+  assert.equal(flags.has('e'), false);
 });
 
-test('applyExtracted fills CSV fields, advances status, and preserves the original', () => {
-  const before = blankRow({ id: 'a', status: 'kept', original_text: 'raw pasted text', submitter: 'Priya' });
-  const row = applyExtracted(before, { headline: 'Clean headline', type: 'headline', subtype: 'Texas', blurb: 'A blurb.' });
-  assert.equal(row.status, 'processed');
-  assert.equal(row.headline, 'Clean headline');
-  assert.equal(row.blurb, 'A blurb.');
-  assert.equal(row.original_text, 'raw pasted text');
-  assert.equal(row.submitter, 'Priya');
-});
-
-test('applyExtracted ignores keys that are not CSV columns', () => {
-  const row = applyExtracted(blankRow({ id: 'a', status: 'kept' }), { headline: 'Ok', status: 'trashed', id: 'hacked' });
-  assert.equal(row.status, 'processed');
-  assert.equal(row.id, 'a');
-});
-
-test('applyExtracted drops the hub flag once the type turns out to be newsletter-only', () => {
-  // The team ticks Hub before the type is known. If Claude then classifies the
-  // item as ERC-internal, it must not end up in the public hub CSV.
-  const row = applyExtracted(blankRow({ id: 'a', status: 'kept', newsletter: true, hub: true }), {
-    headline: 'ERC happy hour', type: 'spotlight', subtype: 'This & That', blurb: 'b',
-  });
-  assert.equal(row.hub, false);
-  assert.equal(row.newsletter, true);
-});
-
-test('applyExtracted keeps the hub flag for a hub-eligible type', () => {
-  const row = applyExtracted(blankRow({ id: 'a', status: 'kept', hub: true }), {
-    headline: 'A study', type: 'research', subtype: 'Report', blurb: 'b',
-  });
-  assert.equal(row.hub, true);
-});
-
-test('readyFor returns processed rows flagged for that destination and not yet used', () => {
+test('counts summarizes the v2 buckets', () => {
   const rows = [
-    blankRow({ id: 'a', status: 'processed', newsletter: true, hub: true }),
-    blankRow({ id: 'b', status: 'processed', newsletter: true, newsletter_used_at: '2026-08-01' }),
-    blankRow({ id: 'c', status: 'kept', newsletter: true }),
-    blankRow({ id: 'd', status: 'processed', hub: true }),
-  ];
-  assert.deepEqual(readyFor(rows, 'newsletter').map(r => r.id), ['a']);
-  assert.deepEqual(readyFor(rows, 'hub').map(r => r.id), ['a', 'd']);
-});
-
-test('markUsed stamps one destination and leaves the other alone', () => {
-  const row = markUsed(blankRow({ id: 'a', status: 'processed', newsletter: true, hub: true }), 'newsletter', '2026-08-12T10:00:00Z');
-  assert.equal(row.newsletter_used_at, '2026-08-12T10:00:00Z');
-  assert.equal(row.hub_used_at, '');
-  assert.equal(row.status, 'processed');
-});
-
-test('counts summarises the whole sheet', () => {
-  const rows = [
-    blankRow({ status: 'new' }),
-    blankRow({ status: 'new' }),
-    blankRow({ status: 'kept' }),
-    blankRow({ status: 'processed', newsletter: true }),
-    blankRow({ status: 'trashed' }),
+    row({ id: 'a' }),
+    row({ id: 'b', status: 'circleback' }),
+    row({ id: 'c', status: 'kept' }),
+    row({ id: 'd', status: 'kept', published_at: 'x' }),
+    row({ id: 'e', status: 'trashed' }),
   ];
   assert.deepEqual(counts(rows), {
-    pending: 2, kept: 1, processed: 1, trashed: 1, newsletterReady: 1, hubReady: 0,
+    pending: 1, circleback: 1, kept: 2, trashed: 1,
+    readyToPublish: 1, published: 1, pool: 1,
   });
 });

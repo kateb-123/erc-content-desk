@@ -1,82 +1,111 @@
 /**
- * Status transitions for a Content Desk row.
- *
- * new -> kept -> processed        (a keep, then Claude fills the CSV fields)
- * new -> trashed
- *
- * "Used" is per destination, not a status: one row can feed both the newsletter
- * and the hub, and each consumes it independently.
- *
- * Every function here is pure and returns a new object.
+ * Status transitions and derived views over sheet rows. Everything here is
+ * pure — callers persist the returned copies. v2 statuses:
+ * new -> kept | circleback | trashed; kept rows then gain published_at
+ * (Publish screen) and newsletter_issue (Build screen).
  */
-
-import { CSV_COLUMNS, isHubEligible } from './schema.js';
-
-const DESTINATIONS = ['newsletter', 'hub'];
+import { CSV_COLUMNS } from './schema.js';
 
 export function pendingRows(rows) {
   return rows.filter(r => r.status === 'new');
 }
 
+export function circlebackRows(rows) {
+  return rows.filter(r => r.status === 'circleback');
+}
+
 export function decidedRows(rows) {
-  return rows.filter(r => r.status === 'kept' || r.status === 'processed' || r.status === 'trashed');
+  return rows.filter(r => r.status === 'kept' || r.status === 'trashed');
 }
 
-export function keepersAwaitingProcess(rows) {
-  return rows.filter(r => r.status === 'kept');
-}
-
-export function keep(row, { newsletter = false, hub = false } = {}) {
-  // A pending row has no type yet — Process assigns it. So only veto the hub
-  // flag when we actually know the type and it is newsletter-only; otherwise
-  // every hub tick made on the Sort screen would be silently discarded.
-  const hubAllowed = !row.type || isHubEligible(row.type);
-  return {
-    ...row,
-    status: 'kept',
-    newsletter: Boolean(newsletter),
-    hub: Boolean(hub) && hubAllowed,
-  };
+export function keep(row) {
+  return { ...row, status: 'kept' };
 }
 
 export function trash(row) {
-  return { ...row, status: 'trashed', newsletter: false, hub: false };
+  return { ...row, status: 'trashed' };
+}
+
+export function circleback(row, note = '') {
+  const trimmed = String(note ?? '').trim();
+  const existing = String(row.note ?? '');
+  const merged = trimmed ? (existing ? `${existing}\n${trimmed}` : trimmed) : existing;
+  return { ...row, status: 'circleback', note: merged };
 }
 
 export function undecide(row) {
-  return { ...row, status: 'new', newsletter: false, hub: false };
+  return { ...row, status: 'new' };
 }
 
-/** Merge Claude's output. Only CSV columns are writable — workflow columns are ours. */
+/**
+ * Merge extracted CSV fields into a row. Only non-empty extracted values are
+ * applied, so extraction can never blank out what a submitter typed. Status
+ * is untouched — extraction runs at submit time on 'new' rows.
+ */
 export function applyExtracted(row, fields) {
   const next = { ...row };
   for (const col of CSV_COLUMNS) {
-    if (fields[col] !== undefined && fields[col] !== null) next[col] = String(fields[col]);
+    const value = fields?.[col];
+    if (value === undefined || value === null || String(value) === '') continue;
+    next[col] = String(value);
   }
-  next.status = 'processed';
-  // Now that the type is known, re-check hub eligibility: the team ticked Hub
-  // before anyone knew this was ERC-internal content.
-  if (next.hub && next.type && !isHubEligible(next.type)) next.hub = false;
   return next;
 }
 
-export function readyFor(rows, dest) {
-  if (!DESTINATIONS.includes(dest)) throw new Error(`unknown destination: ${dest}`);
-  return rows.filter(r => r.status === 'processed' && r[dest] && !r[`${dest}_used_at`]);
+export function readyToPublish(rows) {
+  return rows.filter(r => r.status === 'kept' && !r.published_at);
 }
 
-export function markUsed(row, dest, timestamp) {
-  if (!DESTINATIONS.includes(dest)) throw new Error(`unknown destination: ${dest}`);
-  return { ...row, [`${dest}_used_at`]: timestamp };
+export function publishedRows(rows) {
+  return rows.filter(r => r.status === 'kept' && Boolean(r.published_at));
+}
+
+export function buildPool(rows) {
+  return publishedRows(rows).filter(r => !r.newsletter_issue);
+}
+
+export function markPublished(row, timestamp) {
+  return { ...row, published_at: timestamp };
+}
+
+export function markNewsletterIssue(row, issueDate) {
+  return { ...row, newsletter_issue: issueDate };
+}
+
+/** Parked events whose date has already passed — quietly flagged in the UI. */
+export function staleCirclebacks(rows, todayIso) {
+  return circlebackRows(rows).filter(
+    r => r.type === 'event' && r.date && r.date < todayIso,
+  );
+}
+
+/**
+ * Duplicate detection across ALL history: rows are never deleted, so a link
+ * match against every row is the duplicate index. Returns Map<id, priorId>
+ * pointing each later submission at the earliest one with the same link.
+ */
+export function duplicateFlags(rows) {
+  const ordered = [...rows].sort((a, b) =>
+    String(a.submitted_at).localeCompare(String(b.submitted_at)));
+  const firstByLink = new Map();
+  const flags = new Map();
+  for (const row of ordered) {
+    const link = String(row.link ?? '').trim();
+    if (!link) continue;
+    if (firstByLink.has(link)) flags.set(row.id, firstByLink.get(link));
+    else firstByLink.set(link, row.id);
+  }
+  return flags;
 }
 
 export function counts(rows) {
   return {
     pending: pendingRows(rows).length,
+    circleback: circlebackRows(rows).length,
     kept: rows.filter(r => r.status === 'kept').length,
-    processed: rows.filter(r => r.status === 'processed').length,
     trashed: rows.filter(r => r.status === 'trashed').length,
-    newsletterReady: readyFor(rows, 'newsletter').length,
-    hubReady: readyFor(rows, 'hub').length,
+    readyToPublish: readyToPublish(rows).length,
+    published: publishedRows(rows).length,
+    pool: buildPool(rows).length,
   };
 }
