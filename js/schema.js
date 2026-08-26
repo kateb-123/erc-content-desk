@@ -96,3 +96,7 @@ export function isValidType(type) {
 export function isValidSubtype(type, subtype) {
   return subtypesFor(type).includes(subtype);
 }
+
+export function isHubEligible(type) {
+  return isValidType(type);
+}
