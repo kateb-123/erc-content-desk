@@ -30,6 +30,17 @@ test('subtype must belong to the chosen type', () => {
   assert.ok(validateSubmission({ ...good, subtype: 'Texas' }).includes('Pick a subtype.'));
 });
 
+test('allowBlankSubtype lets a valid type through with no subtype, but not by default', () => {
+  const blank = { ...good, subtype: '' };
+  assert.ok(validateSubmission(blank).includes('Pick a subtype.'));
+  assert.ok(!validateSubmission(blank, { allowBlankSubtype: true }).includes('Pick a subtype.'));
+});
+
+test('allowBlankSubtype does not excuse a non-blank invalid subtype', () => {
+  const bad = { ...good, subtype: 'Texas' };
+  assert.ok(validateSubmission(bad, { allowBlankSubtype: true }).includes('Pick a subtype.'));
+});
+
 test('buildSubmission fills a v2 row, trimmed and null-safe', () => {
   const row = buildSubmission({
     ...good, title: '  Study on tutoring  ', spotlight: true,

@@ -40,7 +40,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ ok: false, errors: ['That submission is too long.'] });
       }
     }
-    const errors = validateSubmission(body);
+    const errors = validateSubmission(body, { allowBlankSubtype: true });
     if (errors.length) return res.status(400).json({ ok: false, errors });
 
     let row = buildSubmission({

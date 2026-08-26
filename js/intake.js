@@ -8,12 +8,17 @@ import { blankRow, isValidType, isValidSubtype } from './schema.js';
 
 const s = v => String(v ?? '').trim();
 
-export function validateSubmission({ title, blurb, link, type, subtype, submitter } = {}) {
+export function validateSubmission(
+  { title, blurb, link, type, subtype, submitter } = {},
+  { allowBlankSubtype = false } = {},
+) {
   const errors = [];
   if (!s(title)) errors.push('Add a title.');
   if (!s(link)) errors.push('Add a link.');
   if (!isValidType(s(type))) errors.push('Pick a type.');
-  else if (!isValidSubtype(s(type), s(subtype))) errors.push('Pick a subtype.');
+  else if (!(allowBlankSubtype && !s(subtype)) && !isValidSubtype(s(type), s(subtype))) {
+    errors.push('Pick a subtype.');
+  }
   if (!s(blurb) && s(type) !== 'headline') {
     errors.push('Add a blurb — headlines are the only type that can skip it.');
   }
