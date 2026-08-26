@@ -97,3 +97,9 @@ export async function updateRow(row) {
 export async function writeHeader() {
   await callSheetApi('header', { values: headerValues() });
 }
+
+/** Raw display values from the named "schedule" tab (row 2 down). */
+export async function readScheduleRows() {
+  const body = await callSheetApi('read', { sheetName: 'schedule' });
+  return (body.rows ?? []).map(r => r.values ?? []);
+}

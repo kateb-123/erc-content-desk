@@ -6,13 +6,13 @@ async function json(res) {
   return data;
 }
 
-export async function fetchRows() {
+/** GET the whole desk: rows plus the newsletter schedule. */
+export async function fetchDesk() {
   try {
-    return (await json(await fetch('/api/sheet'))).rows;
+    const data = await json(await fetch('/api/sheet'));
+    return { rows: data.rows ?? [], schedule: data.schedule ?? [] };
   } catch (err) {
-    if (err instanceof TypeError) {
-      throw new Error('Couldn\'t reach the server. Check your connection.');
-    }
+    if (err instanceof TypeError) throw new Error("Couldn't reach the server. Check your connection.");
     throw err;
   }
 }

@@ -6,15 +6,22 @@
  * are not rolled back, so a failure partway through leaves the sheet partially updated.
  */
 
-import { readAllRows, updateRow } from './_lib/sheets.js';
+import { readAllRows, readScheduleRows, updateRow } from './_lib/sheets.js';
+import { normalizeSchedule } from '../js/schedule.js';
 
 const MAX_ROWS_PER_PATCH = 200;
 
 export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
-      res.status(200).json({ ok: true, rows: await readAllRows() });
-      return;
+      const rows = await readAllRows();
+      let schedule = [];
+      try {
+        schedule = normalizeSchedule(await readScheduleRows());
+      } catch (err) {
+        console.error('schedule read failed (tab missing?)', err);
+      }
+      return res.status(200).json({ ok: true, rows, schedule });
     }
 
     if (req.method === 'PATCH') {

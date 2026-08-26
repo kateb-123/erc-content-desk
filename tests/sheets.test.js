@@ -1,6 +1,6 @@
 import { test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { readAllRows, appendRow, updateRow, writeHeader, headerValues } from '../api/_lib/sheets.js';
+import { readAllRows, appendRow, updateRow, writeHeader, headerValues, readScheduleRows } from '../api/_lib/sheets.js';
 import { SHEET_COLUMNS, blankRow } from '../js/schema.js';
 
 /**
@@ -146,4 +146,14 @@ test('error messages never include the token', async () => {
   } catch (err) {
     assert.ok(!err.message.includes('test-token'));
   }
+});
+
+test('readScheduleRows reads the schedule tab by name', async () => {
+  const fetchFake = fakeFetch({ status: 200, ok: true, text: JSON.stringify({ ok: true, rows: [{ rowNumber: 2, values: ['2026-09-01'] }] }) });
+  global.fetch = fetchFake;
+  const rows = await readScheduleRows();
+  assert.deepEqual(rows, [['2026-09-01']]);
+  const body = JSON.parse(fetchFake.calls().options.body);
+  assert.equal(body.action, 'read');
+  assert.equal(body.sheetName, 'schedule');
 });
