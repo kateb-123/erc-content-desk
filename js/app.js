@@ -195,6 +195,8 @@ export function render() {
       ...common, stack: state.sortStack, lastDecision: state.lastDecision,
       onPickStack: stack => { state.sortStack = stack; render(); },
       onDecide: decide, onUndo: undoLast,
+      onEditType: (row, type, subtype) => editField(row, 'type', type)
+        .then(() => subtype && editField(state.rows.find(r => r.id === row.id), 'subtype', subtype)),
     });
   } else if (state.screen === 'finalize') {
     renderFinalize(screens.finalize, {
