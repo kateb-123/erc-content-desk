@@ -14,8 +14,10 @@ import {
 } from './_lib/extract.js';
 import { appendRow } from './_lib/sheets.js';
 
+export const config = { maxDuration: 60 };
+
 const MAX_FIELD_LENGTH = 20000;
-const anthropic = new Anthropic();
+const anthropic = new Anthropic({ timeout: 20_000, maxRetries: 1 });
 
 async function extractInto(row) {
   const response = await anthropic.messages.create({
