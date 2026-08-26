@@ -44,3 +44,14 @@ test('normalizeExtraction keeps only the metadata fields and surfaces needs_revi
   assert.equal('headline' in fields, false);
   assert.equal(warnings.length, 1);
 });
+
+test('the prompt does not duplicate raw text when both blurb and original_text are present', () => {
+  const row = blankRow({
+    headline: 'AEI debate', type: 'event', subtype: 'Webinar-Online',
+    blurb: 'Sept 2, 6:30pm ET, hybrid.', original_text: 'Sept 2, 6:30pm ET, hybrid.',
+    link: 'https://aei.org/e', submitter: 'KB',
+  });
+  const prompt = buildExtractionPrompt(row);
+  const occurrences = prompt.split('Sept 2, 6:30pm ET, hybrid.').length - 1;
+  assert.equal(occurrences, 1, 'raw text should appear exactly once in the prompt');
+});

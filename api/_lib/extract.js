@@ -33,16 +33,12 @@ export function buildExtractionPrompt(row) {
     `Link: ${row.link || '(none)'}`,
     'Submitted text:',
     '---',
-  ];
-  if (row.blurb) parts.push(row.blurb);
-  if (row.original_text) parts.push(row.original_text);
-  if (!row.blurb && !row.original_text) parts.push('(none — the title and link are all we have)');
-  parts.push(
+    row.original_text || row.blurb || '(none — the title and link are all we have)',
     '---',
     'Rules: work only from the text above — do not fetch the link.',
     'Never invent a date, deadline, author, time, location, or source; use "" when the text does not state it.',
     'Dates are YYYY-MM-DD. Event times are Central Time, written like "1:00 PM CT" — convert from ET/PT when the zone is given.',
-  );
+  ];
   return parts.join('\n');
 }
 
