@@ -151,3 +151,4 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .rewrite-pair .old { color: #777; text-decoration: line-through wavy rgba(0,0,0,0.15); }
 .pick-row { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.3rem 0; }
 .pick-row select { margin-left: auto; }
+.table-scroll { overflow-x: auto; }
