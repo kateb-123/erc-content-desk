@@ -144,7 +144,8 @@ async function publishNow() {
     if (!data.ok) throw new Error(data.error);
     const message = `Published ${data.published} new item(s)` +
       (data.skipped ? ` — ${data.skipped} already on the Exchange` : '') +
-      '. The site updates in about a minute.';
+      '. The site updates in about a minute.' +
+      (data.warning ? ` ${data.warning}` : '');
     state.publishPreview = null;
     state.busy = false;
     // reload() writes its own 'Loading…'/'' status; the confirmation message

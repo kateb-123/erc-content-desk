@@ -59,13 +59,23 @@ export default async function handler(req, res) {
       }
     }
 
-    // Stamp published_at — dupes too: they are already on the hub.
+    // Stamp published_at — dupes too: they are already on the hub. The
+    // GitHub commit above already succeeded, so a stamping failure here must
+    // not report total failure — the rows are live either way.
     const now = new Date().toISOString();
     const rowNumberById = new Map(all.map(r => [r.id, r._rowNumber]));
-    for (const row of [...published, ...skipped]) {
-      const liveRowNumber = rowNumberById.get(row.id);
-      if (!liveRowNumber) continue;
-      await updateRow(markPublished({ ...row, _rowNumber: liveRowNumber }, now));
+    try {
+      for (const row of [...published, ...skipped]) {
+        const liveRowNumber = rowNumberById.get(row.id);
+        if (!liveRowNumber) continue;
+        await updateRow(markPublished({ ...row, _rowNumber: liveRowNumber }, now));
+      }
+    } catch (err) {
+      console.error('publish stamping failed', err);
+      return res.status(200).json({
+        ok: true, published: published.length, skipped: skipped.length,
+        warning: 'Published, but the bookkeeping stamps failed for some rows — publish again to finish stamping (already-published rows are skipped safely).',
+      });
     }
     return res.status(200).json({ ok: true, published: published.length, skipped: skipped.length });
   } catch (err) {
