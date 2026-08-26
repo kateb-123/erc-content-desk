@@ -1,37 +1,36 @@
-/**
- * Desk entry point. Owns the row list, the current screen, and the save cycle.
- * Every screen module is a pure render function that takes a container and
- * callbacks — screens never fetch or mutate state themselves.
- */
-
-import { fetchRows, saveRows } from './sheet-client.js';
+/** Entry point. Owns all state; screens are pure renderers. */
+import { fetchDesk, saveRows } from './sheet-client.js';
 import { renderQueue } from './queue-ui.js';
 import { renderSort } from './sort-ui.js';
+import { renderFinalize } from './finalize-ui.js';
+import { renderPublish } from './publish-ui.js';
 import { renderBuild } from './build-ui.js';
-import { renderDownloads } from './downloads-ui.js';
-import { keep, trash, undecide, markUsed } from './workflow.js';
-import { mappedNewsletterRows } from './rows-to-issue.js';
-import { hubExportableRows } from './hub-csv.js';
+import { keep, trash, circleback, undecide, markNewsletterIssue } from './workflow.js';
+import { nextIssueDate } from './schedule.js';
 
 const DRAFT_KEY = 'erc-content-desk-draft';
 
-function loadDraft() {
-  try {
-    return { date: '', intro: '', ...JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}') };
-  } catch (err) {
-    return { date: '', intro: '' };
-  }
-}
-
-const state = { rows: [], screen: 'queue', processing: false, draft: loadDraft() };
-
-const statusEl = document.getElementById('desk-status');
-const screens = {
-  queue: document.getElementById('screen-queue'),
-  sort: document.getElementById('screen-sort'),
-  build: document.getElementById('screen-build'),
-  downloads: document.getElementById('screen-downloads'),
+const state = {
+  rows: [],
+  schedule: [],
+  screen: 'queue',
+  busy: false,
+  sortStack: '',            // '' = stack picker; else a type key
+  lastDecision: null,       // { id, prevStatus }
+  rewrites: null,           // null = not fetched; [] after; [{id, blurb}]
+  publishPreview: null,
+  picks: new Map(),         // id -> sectionKey (Build)
+  draft: loadDraft(),       // { date, intro }
 };
+
+const screens = Object.fromEntries(['queue', 'sort', 'finalize', 'publish', 'build']
+  .map(name => [name, document.querySelector(`#screen-${name}`)]));
+const statusEl = document.querySelector('#desk-status');
+
+function loadDraft() {
+  try { return { date: '', intro: '', ...JSON.parse(localStorage.getItem(DRAFT_KEY) ?? '{}') }; }
+  catch { return { date: '', intro: '' }; }
+}
 
 export function setStatus(message, kind = 'busy') {
   statusEl.textContent = message;
@@ -39,161 +38,190 @@ export function setStatus(message, kind = 'busy') {
 }
 
 export async function reload() {
-  setStatus('Loading the sheet…');
+  setStatus('Loading…');
   try {
-    state.rows = await fetchRows();
-    setStatus('');
+    const { rows, schedule } = await fetchDesk();
+    state.rows = rows;
+    state.schedule = schedule;
+    setStatus('', 'ok');
   } catch (err) {
     setStatus(err.message, 'error');
   }
   render();
 }
 
-/** Save changed rows, then merge them back into local state without a full reload. */
+/** Persist changed rows, then merge the saved copies back in by _rowNumber. */
 export async function persist(changed) {
   if (!changed.length) return;
-  setStatus(`Saving ${changed.length} row${changed.length === 1 ? '' : 's'}…`);
   try {
     await saveRows(changed);
-    const byNumber = new Map(changed.map(r => [r._rowNumber, r]));
-    state.rows = state.rows.map(r => byNumber.get(r._rowNumber) || r);
-    setStatus('Saved.', 'ok');
+    const byRowNumber = new Map(changed.map(r => [r._rowNumber, r]));
+    state.rows = state.rows.map(r => byRowNumber.get(r._rowNumber) ?? r);
+    render();
   } catch (err) {
     setStatus(err.message, 'error');
-    // A partial save (some rows written, then a failure) leaves the sheet
-    // ahead of local state. Resync with what the sheet actually holds, then
-    // put the error back — reload() would otherwise overwrite it with its
-    // own "Loading…"/"" status.
     await reload();
     setStatus(err.message, 'error');
-    return;
   }
-  render();
 }
 
-async function addToQueue({ content, submitter }) {
-  setStatus('Adding…');
-  try {
-    const res = await fetch('/api/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, submitter, note: '' }),
-    });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.errors.join(' '));
-  } catch (err) {
-    setStatus(err.message, 'error');
-    // No reload on this path (nothing changed on the server), but the Queue
-    // screen still needs a fresh render so the disabled "Add to queue"
-    // button — disabled before this call went out — becomes usable again.
-    render();
-    return;
-  }
-  await reload();
-}
-
-async function decide(row, { newsletter = false, hub = false, trashed = false }) {
-  const next = trashed ? trash(row) : keep(row, { newsletter, hub });
+async function decide(row, action, note = '') {
+  state.lastDecision = { id: row.id, prevStatus: row.status };
+  const next = action === 'keep' ? keep(row)
+    : action === 'trash' ? trash(row)
+    : circleback(row, note);
   await persist([next]);
 }
 
-async function reverseDecision(row) {
-  await persist([undecide(row)]);
+async function undoLast() {
+  const last = state.lastDecision;
+  if (!last) return;
+  const row = state.rows.find(r => r.id === last.id);
+  if (!row) return;
+  state.lastDecision = null;
+  await persist([{ ...row, status: last.prevStatus }]);
 }
 
-async function processKeepers() {
-  state.processing = true;
-  setStatus('Claude is reading the keepers — this takes a moment per item…');
+async function editField(row, field, value) {
+  await persist([{ ...row, [field]: value }]);
+}
+
+async function runRewrite() {
+  state.busy = true;
   render();
+  setStatus('Rewriting Events + Opportunities blurbs…');
   try {
-    const res = await fetch('/api/process', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
-    });
+    const res = await fetch('/api/rewrite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
-
-    const notes = [`Processed ${data.processed} item${data.processed === 1 ? '' : 's'}.`];
-    if (data.failures.length) notes.push(`${data.failures.length} failed — check the Queue and try again.`);
-    if (data.warnings.length) notes.push(data.warnings.join(' '));
-    setStatus(notes.join(' '), data.failures.length ? 'error' : 'ok');
+    state.rewrites = data.rewrites;
+    setStatus(data.warnings?.length ? data.warnings.join(' ') : `Got ${data.rewrites.length} rewrites — accept or keep the original.`, 'ok');
   } catch (err) {
     setStatus(err.message, 'error');
-  } finally {
-    state.processing = false;
   }
-  await reload();
+  state.busy = false;
+  render();
+}
+
+async function acceptRewrite(id, blurb) {
+  const row = state.rows.find(r => r.id === id);
+  if (!row) return;
+  state.rewrites = state.rewrites.filter(r => r.id !== id);
+  await editField(row, 'blurb', blurb);
+}
+
+function rejectRewrite(id) {
+  state.rewrites = state.rewrites.filter(r => r.id !== id);
+  render();
+}
+
+async function loadPublishPreview() {
+  state.busy = true;
+  render();
+  setStatus('Checking against the live Exchange…');
+  try {
+    const res = await fetch('/api/publish');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    state.publishPreview = data;
+    setStatus('', 'ok');
+  } catch (err) {
+    setStatus(err.message, 'error');
+  }
+  state.busy = false;
+  render();
+}
+
+async function publishNow() {
+  state.busy = true;
+  render();
+  setStatus('Publishing to the Exchange…');
+  try {
+    const res = await fetch('/api/publish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    state.publishPreview = null;
+    setStatus(`Published ${data.published} new item(s)` +
+      (data.skipped ? ` — ${data.skipped} already on the Exchange` : '') +
+      '. The site updates in about a minute.', 'ok');
+    state.busy = false;
+    await reload();
+    return;
+  } catch (err) {
+    setStatus(err.message, 'error');
+  }
+  state.busy = false;
+  render();
+}
+
+function updateDraft(draft) {
+  state.draft = { ...state.draft, ...draft };
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(state.draft));
 }
 
 function downloadFile(filename, text, mime) {
   const url = URL.createObjectURL(new Blob([text], { type: mime }));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.click();
+  const a = Object.assign(document.createElement('a'), { href: url, download: filename });
+  a.click();
   URL.revokeObjectURL(url);
 }
 
-function updateDraft(draft) {
-  state.draft = draft;
-  localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-}
-
-async function exportNewsletter(html) {
+async function exportNewsletter(html, pickedIds, issueDate) {
   downloadFile('erc-newsletter.html', html, 'text/html');
-  const stamp = new Date().toISOString();
-  // Only the rows that actually rendered — an uncategorised row stays in the
-  // draft rather than being retired without ever appearing in an issue.
-  await persist(mappedNewsletterRows(state.rows).map(r => markUsed(r, 'newsletter', stamp)));
+  const stamped = state.rows
+    .filter(r => pickedIds.includes(r.id))
+    .map(r => markNewsletterIssue(r, issueDate));
+  state.picks = new Map();
+  await persist(stamped);
+  setStatus(`Newsletter downloaded — ${stamped.length} item(s) stamped for the ${issueDate} issue.`, 'ok');
 }
 
-async function exportHubCsv(csv) {
-  downloadFile('news.csv', csv, 'text/csv');
-  const stamp = new Date().toISOString();
-  // Same set the CSV was built from — hubCsvFor and this both go through
-  // hubExportableRows, so a row can never be stamped downloaded without also
-  // being in the file (or vice versa).
-  await persist(hubExportableRows(state.rows).map(r => markUsed(r, 'hub', stamp)));
-}
-
-function render() {
+export function render() {
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
-  for (const tab of document.querySelectorAll('.screen-tab')) {
+  for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {
     tab.classList.toggle('is-active', tab.dataset.screen === state.screen);
   }
+  const today = new Date().toISOString().slice(0, 10);
+  const common = { rows: state.rows, schedule: state.schedule, today };
   if (state.screen === 'queue') {
-    renderQueue(screens.queue, { rows: state.rows, onAdd: addToQueue, onRefresh: reload });
-  }
-  if (state.screen === 'sort') {
+    renderQueue(screens.queue, { ...common, nextIssue: nextIssueDate(state.schedule, today), onRefresh: reload });
+  } else if (state.screen === 'sort') {
     renderSort(screens.sort, {
-      rows: state.rows,
-      onDecide: decide,
-      onUndecide: reverseDecision,
-      onProcess: processKeepers,
-      processing: state.processing,
+      ...common, stack: state.sortStack, lastDecision: state.lastDecision,
+      onPickStack: stack => { state.sortStack = stack; render(); },
+      onDecide: decide, onUndo: undoLast,
     });
-  }
-  if (state.screen === 'build') {
+  } else if (state.screen === 'finalize') {
+    renderFinalize(screens.finalize, {
+      ...common, rewrites: state.rewrites, busy: state.busy,
+      onEdit: editField, onRewrite: runRewrite,
+      onAcceptRewrite: acceptRewrite, onRejectRewrite: rejectRewrite,
+    });
+  } else if (state.screen === 'publish') {
+    renderPublish(screens.publish, {
+      ...common, preview: state.publishPreview, busy: state.busy,
+      onPreview: loadPublishPreview, onPublish: publishNow,
+    });
+  } else {
     renderBuild(screens.build, {
-      rows: state.rows,
-      draft: state.draft,
+      ...common, draft: state.draft, picks: state.picks,
+      onTogglePick: (id, sectionKey) => {
+        if (state.picks.has(id)) state.picks.delete(id);
+        else state.picks.set(id, sectionKey);
+        render();
+      },
+      onMovePick: (id, sectionKey) => { state.picks.set(id, sectionKey); render(); },
       onDraftChange: updateDraft,
       onExport: exportNewsletter,
     });
   }
-  if (state.screen === 'downloads') {
-    renderDownloads(screens.downloads, { rows: state.rows, onDownloadHub: exportHubCsv });
-  }
 }
 
-for (const tab of document.querySelectorAll('.screen-tab')) {
+for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {
   tab.addEventListener('click', () => {
     state.screen = tab.dataset.screen;
     render();
   });
 }
-
-export { state, render };
 
 reload();

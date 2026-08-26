@@ -1,100 +1,85 @@
-/**
- * Queue — everything that has arrived and not yet been decided on.
- *
- * Shown in the CSV's own shape so the empty cells make the pipeline legible:
- * type, headline, and blurb stay blank until the Process step fills them.
- */
+/** Queue: everything new, structured and grouped, circle-backs pinned on top. */
+import { pendingRows, circlebackRows, duplicateFlags, staleCirclebacks } from './workflow.js';
+import { TYPES } from './schema.js';
+import { isoToDisplay } from './rows-to-issue.js';
 
-import { pendingRows } from './workflow.js';
+const GROUP_LABELS = {
+  research: 'New Ed Policy Research', event: 'Events',
+  opportunity: 'Opportunities', headline: 'Headlines', '': 'Untyped',
+};
 
-function cell(text, className = '') {
-  const td = document.createElement('td');
-  td.textContent = text;
-  if (className) td.className = className;
-  return td;
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
 }
 
-function preview(row) {
-  const text = row.original_text || row.link || '';
-  return text.length > 90 ? `${text.slice(0, 90)}…` : text;
+function itemRow(row, { dupes }) {
+  const details = el('details', 'queue-item');
+  const summary = el('summary');
+  if (row.spotlight_request) summary.append(el('span', 'badge badge-star', '⭐'));
+  if (dupes.has(row.id)) summary.append(el('span', 'badge badge-dupe', 'possible duplicate'));
+  summary.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
+  summary.append(el('span', 'item-meta',
+    [row.subtype, row.source, row.date && isoToDisplay(row.date), row.submitter]
+      .filter(Boolean).join(' · ')));
+  details.append(summary);
+  const body = el('div', 'item-body');
+  if (row.blurb) body.append(el('p', 'item-blurb', row.blurb));
+  if (row.note) body.append(el('p', 'item-note', `Note: ${row.note}`));
+  if (row.original_text && row.original_text !== row.blurb) {
+    const orig = el('details', 'item-original');
+    orig.append(el('summary', '', 'Original text'), el('pre', '', row.original_text));
+    body.append(orig);
+  }
+  if (row.link) {
+    const a = el('a', 'source-link', 'Open source ↗');
+    a.href = row.link; a.target = '_blank'; a.rel = 'noreferrer';
+    body.append(a);
+  }
+  details.append(body);
+  return details;
 }
 
-function shortDate(iso) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  return Number.isNaN(d.valueOf()) ? '' : d.toLocaleDateString();
-}
-
-export function renderQueue(container, { rows, onAdd, onRefresh }) {
+export function renderQueue(container, { rows, nextIssue, today, onRefresh }) {
   container.replaceChildren();
+  const pending = pendingRows(rows);
+  const parked = circlebackRows(rows);
+  const dupes = duplicateFlags(rows);
+  const stale = new Set(staleCirclebacks(rows, today).map(r => r.id));
 
-  const waiting = pendingRows(rows);
-
-  const head = document.createElement('div');
-  head.className = 'screen-head';
-  head.innerHTML = `
-    <h2>Queue</h2>
-    <p class="lede">${waiting.length} item${waiting.length === 1 ? '' : 's'} waiting to be sorted. The weekly scrape lands here too.</p>
-  `;
-  const refresh = document.createElement('button');
-  refresh.textContent = 'Refresh';
-  refresh.addEventListener('click', onRefresh);
+  const head = el('div', 'screen-head');
+  head.append(el('h2', '', 'Queue'));
+  head.append(el('p', 'lede', (nextIssue ? `Next issue: ${isoToDisplay(nextIssue)} — ` : '') +
+    `${pending.length} in queue${parked.length ? `, ${parked.length} parked` : ''}`));
+  const refresh = el('button', '', 'Refresh');
+  refresh.addEventListener('click', () => { refresh.disabled = true; onRefresh(); });
   head.append(refresh);
   container.append(head);
 
-  const adder = document.createElement('form');
-  adder.className = 'adder';
-  adder.innerHTML = `
-    <label for="queue-content">Add anything — a link, an email, a paragraph</label>
-    <textarea id="queue-content" rows="3" placeholder="Paste it here in whatever shape it arrived"></textarea>
-    <div class="adder-row">
-      <input id="queue-submitter" type="text" placeholder="Who's adding it" />
-      <button type="submit">Add to queue</button>
-    </div>
-  `;
-  const addBtn = adder.querySelector('button[type="submit"]');
-  adder.addEventListener('submit', async event => {
-    event.preventDefault();
-    // Disable before invoking the callback, matching the Sort screen's
-    // decision buttons — otherwise a second click before the POST resolves
-    // adds the same item twice.
-    addBtn.disabled = true;
-    const content = adder.querySelector('#queue-content').value;
-    const submitter = adder.querySelector('#queue-submitter').value;
-    await onAdd({ content, submitter });
-  });
-  container.append(adder);
+  if (parked.length) {
+    const wrap = el('section', 'queue-group queue-parked');
+    wrap.append(el('h3', '', `Circle back (${parked.length})`));
+    for (const row of parked) {
+      const item = itemRow(row, { dupes });
+      if (stale.has(row.id)) item.querySelector('summary')
+        .append(el('span', 'badge badge-stale', 'date passed'));
+      wrap.append(item);
+    }
+    container.append(wrap);
+  }
 
-  if (!waiting.length) {
-    const empty = document.createElement('p');
-    empty.className = 'empty';
-    empty.textContent = 'Nothing waiting. Add something above, or head to Sort to work through what you kept.';
-    container.append(empty);
+  if (!pending.length) {
+    container.append(el('p', 'empty', 'Nothing waiting. Enjoy it.'));
     return;
   }
-
-  const table = document.createElement('table');
-  table.className = 'grid';
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th>Arrived</th><th>From</th><th>What came in</th><th>Type</th><th>Headline</th><th>Blurb</th>
-      </tr>
-    </thead>
-  `;
-  const body = document.createElement('tbody');
-  for (const row of waiting) {
-    const tr = document.createElement('tr');
-    tr.append(
-      cell(shortDate(row.submitted_at)),
-      cell(row.submitter),
-      cell(preview(row), 'wrap'),
-      cell(row.type, 'blank'),
-      cell(row.headline, 'blank'),
-      cell(row.blurb, 'blank'),
-    );
-    body.append(tr);
+  for (const type of [...Object.keys(TYPES), '']) {
+    const group = pending.filter(r => (r.type || '') === type);
+    if (!group.length) continue;
+    const wrap = el('section', 'queue-group');
+    wrap.append(el('h3', '', `${GROUP_LABELS[type]} (${group.length})`));
+    for (const row of group) wrap.append(itemRow(row, { dupes }));
+    container.append(wrap);
   }
-  table.append(body);
-  container.append(table);
 }
