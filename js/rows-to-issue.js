@@ -8,7 +8,6 @@
 
 import { createEmptyIssue } from './model.js';
 import { NEWSLETTER_MAP } from './schema.js';
-import { readyFor } from './workflow.js';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -44,49 +43,42 @@ function fieldsFor(row) {
   return fields;
 }
 
-/** [row, sectionKey, groupKey] for every draft row that has a place to go. */
-function placements(rows) {
-  const out = [];
-  for (const row of readyFor(rows, 'newsletter')) {
-    const mapping = NEWSLETTER_MAP[`${row.type}|${row.subtype}`];
-    if (!mapping) continue;
-    const [sectionKey, groupKey] = mapping;
-    // `intro` maps to no section — its text is typed on the Build screen.
-    if (!sectionKey || sectionKey === 'intro') continue;
-    out.push([row, sectionKey, groupKey]);
-  }
-  return out;
+/** Where a row lands by default: the ⭐ flag beats the type map. */
+export function defaultSection(row) {
+  if (row.spotlight_request) return 'spotlight';
+  return NEWSLETTER_MAP[`${row.type}|${row.subtype}`]?.[0] ?? '';
+}
+
+/** The group inside a section — only meaningful when the section fits the type. */
+export function groupFor(row, sectionKey) {
+  const entry = NEWSLETTER_MAP[`${row.type}|${row.subtype}`];
+  if (entry && entry[0] === sectionKey) return entry[1];
+  if (sectionKey === 'spotlight') return row.type === 'event' ? 'events' : 'thisandthat';
+  return '';
 }
 
 /**
- * Exactly the rows that rowsToIssue will render. The Build screen stamps
- * newsletter_used_at on these and no others, so a row with an unmapped
- * type/subtype stays in the draft instead of vanishing unbuilt.
+ * Build an issue from explicit picks. picks: [{ id, sectionKey }] — the Build
+ * screen's checkboxes plus any "move to…" overrides. Unpicked rows never
+ * appear; that is the whole point of v2's pick-based build.
  */
-export function mappedNewsletterRows(rows) {
-  // One probe issue for the whole call — createEmptyIssue() always yields the
-  // same section keys, so building one per row was pure allocation.
-  const { sections } = createEmptyIssue();
-  return placements(rows)
-    .filter(([, sectionKey]) => Boolean(sections[sectionKey]))
-    .map(([row]) => row);
-}
-
-export function rowsToIssue(rows, { date, intro, headerImageUrl = '' } = {}) {
+export function issueFromPicks(rows, picks, { date, intro } = {}) {
+  const byId = new Map(rows.map(r => [r.id, r]));
   const issue = createEmptyIssue();
-  issue.date = date || '';
-  issue.intro = intro || '';
-  issue.headerImageUrl = headerImageUrl;
-
-  let counter = 0;
-  for (const [row, sectionKey, groupKey] of placements(rows)) {
-    const section = issue.sections[sectionKey];
-    if (!section) continue;
-
-    counter += 1;
-    section.items.push({ id: `desk_${counter}`, group: groupKey, fields: fieldsFor(row) });
+  issue.date = date ?? '';
+  issue.intro = intro ?? '';
+  let seq = 0;
+  for (const pick of picks ?? []) {
+    const row = byId.get(pick.id);
+    const section = issue.sections[pick.sectionKey];
+    if (!row || !section) continue;
+    seq += 1;
+    section.items.push({
+      id: `desk_${seq}`,
+      group: groupFor(row, pick.sectionKey),
+      fields: fieldsFor(row),
+    });
     section.enabled = true;
   }
-
   return issue;
 }
