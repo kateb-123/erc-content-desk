@@ -18,7 +18,12 @@ if (process.env.MIGRATE_CONFIRM !== 'yes') {
   console.log('Dry run only. Re-run with MIGRATE_CONFIRM=yes to commit.');
   process.exit(0);
 }
-// Positional, quote-safe replacement: only the bare cell sequence event,Online
+const rawHits = text.split(',event,Online,').length - 1;
+if (rawHits !== hits) {
+  console.error(`Refusing to commit: raw text matches (${rawHits}) != parsed event/Online rows (${hits}). Inspect the CSV by hand.`);
+  process.exit(1);
+}
+// Positional replacement; the rawHits cross-check above refuses to run when raw and parsed counts diverge.
 const updated = text.replaceAll(',event,Online,', ',event,Webinar-Online,');
 await putHubCsv(updated, sha, "Vocabulary: event subtype 'Online' -> 'Webinar-Online' (Content Desk v2)");
 console.log('Committed. GitHub Pages will redeploy in about a minute.');

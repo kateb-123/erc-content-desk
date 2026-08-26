@@ -59,6 +59,14 @@ function migrateRow(values) {
 
 const { rows } = await call('read');
 console.log(`Read ${rows.length} data rows.`);
+const looksMigrated = rows.some(r => {
+  const v20 = String(r.values[20] ?? ''); const v21 = String(r.values[21] ?? '');
+  return (v20 && v20 !== 'TRUE') || (v21 && v21 !== 'TRUE');
+});
+if (looksMigrated) {
+  console.error('These rows do not look like v1 data (columns 21/22 are not blank/TRUE). Refusing to run — the sheet may already be migrated.');
+  process.exit(1);
+}
 const migrated = rows.map(r => ({ rowNumber: r.rowNumber, values: migrateRow(r.values) }));
 if (migrated[0]) {
   console.log('First row becomes:');
