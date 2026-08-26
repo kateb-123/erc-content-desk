@@ -6,6 +6,7 @@
  */
 import { readAllRows, updateRow } from './_lib/sheets.js';
 import { readyToPublish, markPublished } from '../js/workflow.js';
+import { isValidType, isValidSubtype } from '../js/schema.js';
 import { fetchHubCsv, putHubCsv, diffAgainstHub, appendRowsToCsv, parseCsv } from './_lib/hub.js';
 
 export const config = { maxDuration: 300 };
@@ -17,13 +18,18 @@ export default async function handler(req, res) {
     const all = await readAllRows();
     const candidates = readyToPublish(all);
 
+    // Split candidates into publishable (valid type/subtype) and notReady.
+    const publishable = candidates.filter(r => isValidType(r.type) && isValidSubtype(r.type, r.subtype));
+    const notReady = candidates.filter(r => !publishable.includes(r));
+
     if (req.method === 'GET') {
       const { text } = await fetchHubCsv();
-      const { newRows, skipped } = diffAgainstHub(text, candidates);
+      const { newRows, skipped } = diffAgainstHub(text, publishable);
       return res.status(200).json({
         ok: true,
         adding: newRows.map(label),
         skipped: skipped.map(label),
+        notReady: notReady.map(label),
         hubCount: Math.max(parseCsv(text).length - 1, 0),
       });
     }
@@ -31,14 +37,14 @@ export default async function handler(req, res) {
     if (req.method !== 'POST') {
       return res.status(405).json({ ok: false, error: 'Use GET or POST.' });
     }
-    if (!candidates.length) {
+    if (!publishable.length) {
       return res.status(200).json({ ok: true, published: 0, skipped: 0 });
     }
 
     let published = [], skipped = [];
     for (let attempt = 0; attempt < 2; attempt += 1) {
       const { text, sha } = await fetchHubCsv();
-      const diff = diffAgainstHub(text, candidates);
+      const diff = diffAgainstHub(text, publishable);
       published = diff.newRows;
       skipped = diff.skipped;
       if (!published.length) break;
@@ -64,7 +70,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, published: published.length, skipped: skipped.length });
   } catch (err) {
     console.error('publish failed', err);
-    const message = /GITHUB_TOKEN|GitHub/.test(err.message)
+    const message = (/GITHUB_TOKEN|GitHub/.test(err.message) || err.conflict)
       ? "Couldn't reach the Exchange on GitHub. Check the GITHUB_TOKEN setup."
       : "Couldn't reach the sheet.";
     return res.status(502).json({ ok: false, error: message });

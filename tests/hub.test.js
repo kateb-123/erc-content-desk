@@ -35,3 +35,12 @@ test('appendRowsToCsv appends lines and never touches existing content', () => {
   assert.equal(out.trimEnd().split('\n').length, 3);
   assert.ok(out.includes('2026-09-01,New,https://x.org/2,research,Report'));
 });
+
+test('appendRowsToCsv preserves input without trailing newline', () => {
+  const noTrail = CSV.trimEnd();
+  const row = blankRow({ date: '2026-09-01', headline: 'New', link: 'https://x.org/2', type: 'research', subtype: 'Report' });
+  const out = appendRowsToCsv(noTrail, [row]);
+  assert.equal(out.slice(0, noTrail.length), noTrail);
+  assert.ok(out.endsWith('\n'));
+  assert.equal(out.trimEnd().split('\n').length, 3);
+});

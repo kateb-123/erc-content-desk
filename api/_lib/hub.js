@@ -89,6 +89,6 @@ export async function putHubCsv(text, sha, message) {
       content: Buffer.from(text, 'utf8').toString('base64'),
     }),
   });
-  if (res.status === 409) throw Object.assign(new Error('hub CSV changed since read'), { conflict: true });
+  if (res.status === 409) throw Object.assign(new Error('GitHub conflict: hub CSV changed since read'), { conflict: true });
   if (!res.ok) throw new Error(`GitHub write failed: HTTP ${res.status}`);
 }
