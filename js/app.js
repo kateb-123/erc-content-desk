@@ -59,6 +59,8 @@ export async function persist(changed) {
     state.rows = state.rows.map(r => byRowNumber.get(r._rowNumber) ?? r);
     render();
   } catch (err) {
+    // Set the error, reload to resync with the sheet (which overwrites
+    // status), then set the error again so the user still sees what failed.
     setStatus(err.message, 'error');
     await reload();
     setStatus(err.message, 'error');
@@ -140,12 +142,15 @@ async function publishNow() {
     const res = await fetch('/api/publish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
-    state.publishPreview = null;
-    setStatus(`Published ${data.published} new item(s)` +
+    const message = `Published ${data.published} new item(s)` +
       (data.skipped ? ` — ${data.skipped} already on the Exchange` : '') +
-      '. The site updates in about a minute.', 'ok');
+      '. The site updates in about a minute.';
+    state.publishPreview = null;
     state.busy = false;
+    // reload() writes its own 'Loading…'/'' status; the confirmation message
+    // has to be set after it finishes, or reload() overwrites it.
     await reload();
+    setStatus(message, 'ok');
     return;
   } catch (err) {
     setStatus(err.message, 'error');
