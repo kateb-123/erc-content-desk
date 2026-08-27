@@ -2,17 +2,40 @@
 
 A web app and submission queue for managing content in the ERC newsletter and the ERC Policy Exchange hub. The app uses one Google Sheet as the source of truth, and Claude to automatically extract and structure submissions.
 
-## The flow
+## The flow (v2)
 
-**Submit** — Anyone with the link visits `/submit`, pastes a link or text, and it goes into the queue.
+**Submit** — Anyone with the link visits `/submit` and fills a short structured form
+(title, blurb, link, type + subtype, an optional ⭐ spotlight request, their name).
+Every submission is instantly filed by a small Claude call — dates, sources, times,
+locations land in their own columns. A "Have a whole doc?" side door splits an entire
+pasted document into individual items you confirm before anything saves.
 
-**Queue** — On the desk at `/`, the first screen shows new submissions waiting for human review.
+**Queue** — The desk's home screen: everything new, grouped by category with counts,
+possible duplicates flagged, circle-backs pinned on top. The header shows the next
+issue date from the Sheet's `schedule` tab.
 
-**Sort** — The second screen lets you decide what happens to each item: keep it (mark for processing), trash it, or adjust the type/subtype.
+**Sort** — Pick a stack, then one card at a time: **Keep** (K), **Circle back** (C),
+or **Trash** (T), with U to undo. Keeps are destined for the Ed Policy Exchange;
+the newsletter picks come later, in Build.
 
-**Process** — Click a button to run Claude over the keepers, extracting structured fields like headline, link, type, and deadline. This costs money and takes a minute or two.
+**Finalize** — The keeps as an editable table (click any cell to fix it), plus one
+batched Claude rewrite of Event + Opportunity blurbs in the ERC voice — shown
+side-by-side for accept/reject. Research abstracts and headlines are never rewritten.
 
-**Build / Downloads** — The final screens show processed items ready for the newsletter and hub, and let you download the data for publishing.
+**Publish** — Checks your keeps against the *live* `news.csv` on GitHub, shows exactly
+what will be added vs. skipped (duplicates) vs. not ready (missing a type), then one
+button appends the new rows and commits. Append-only: existing hub rows are never
+touched.
+
+**Build** — Tick this issue's items from the published pool (⭐ requests float up),
+items auto-slot into newsletter sections with a "move to…" override, type the intro,
+download Outlook-ready HTML. Building stamps each used item with its issue date, which
+is what resets the queue for the next cycle.
+
+**The Sheet** — one `queue` tab (14 hub columns + workflow columns) plus a hand-edited
+`schedule` tab of issue dates. Rows are never deleted; history is the duplicate index.
+One-time migration scripts from the v1 layout live in `scripts/` (already run in
+production, Aug 2026 — dry-run by default; see each script's header before touching).
 
 ## Setup
 
@@ -86,7 +109,7 @@ the file alone updates the editor but not the live web app.
 
 ## The two pages
 
-**`/`** — The team desk. Reachable by anyone with the URL, so share the URL only with the team. The Anthropic key is never exposed to the browser, but the Process button spends real money per item, so treat the URL as semi-private. Shows the queue, sort, build, and download screens.
+**`/`** — The team desk. Reachable by anyone with the URL, so share the URL only with the team. The Anthropic and GitHub keys are never exposed to the browser, but the rewrite and publish buttons do real work (small API spend; commits to the live Exchange), so treat the URL as semi-private. Shows the Queue, Sort, Finalize, Publish, and Build screens.
 
 **`/submit`** — The public submission form. Deliberately open to anyone with the link. Appends to the Google Sheet, no password needed.
 
@@ -102,9 +125,15 @@ If you delete or move rows in the Sheet while a desk tab is open, the tab should
 
 ## Cost
 
-The **Process** step calls the Anthropic API. Each item costs money — Claude is processing a link or pasted text to extract structured fields.
+Two things call the Anthropic API, both deliberately small:
 
-The default is 3 items per run (`MAX_ITEMS_PER_RUN=3`). Raising this value speeds up bulk processing but increases cost and runtime. Each item is a non-streaming Claude Opus call that can take 20–60 seconds, so keep the total under Vercel's 300-second timeout.
+- **Submitting** runs one tiny Haiku call per item (a fraction of a cent) to file the
+  metadata. A bulk doc split is one more Haiku call for the whole document — cents.
+- **Rewrite blurbs** (Finalize) is one batched Claude Opus call per issue, covering only
+  the kept Events + Opportunities that haven't been published yet — typically cents.
+
+There is no rewrite-everything step anymore; nothing spends money without a click
+except the per-submission filing.
 
 ## Running the tests
 
