@@ -5,6 +5,7 @@
 import { pendingRows, duplicateFlags } from './workflow.js';
 import { TYPES, subtypesFor } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
+import { safeHref } from './links.js';
 
 const STACK_LABELS = {
   research: 'New Research', event: 'Events',
@@ -80,9 +81,10 @@ export function renderSort(container, props) {
   ].filter(Boolean).join(' · ')));
   if (row.blurb) card.append(el('p', 'item-blurb', row.blurb));
   if (row.note) card.append(el('p', 'item-note', `Note: ${row.note}`));
-  if (row.link) {
+  const href = safeHref(row.link);
+  if (href) {
     const a = el('a', 'source-link', 'Open source ↗');
-    a.href = row.link; a.target = '_blank'; a.rel = 'noreferrer';
+    a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
     card.append(a);
   }
 

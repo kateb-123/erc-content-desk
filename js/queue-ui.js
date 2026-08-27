@@ -9,6 +9,7 @@ import { circlebackRows, duplicateFlags, staleCirclebacks } from './workflow.js'
 import { TYPE_LABELS } from './schema.js';
 import { nextIssueDate } from './schedule.js';
 import { isoToDisplay } from './rows-to-issue.js';
+import { safeHref } from './links.js';
 
 const openRows = new Set();
 
@@ -40,9 +41,10 @@ function detailCell(row) {
   ].filter(Boolean).join(' · ');
   if (meta) cell.append(el('span', 'item-meta', meta));
   if (row.note) cell.append(el('p', 'item-note', `Note: ${row.note}`));
-  if (row.link) {
+  const href = safeHref(row.link);
+  if (href) {
     const a = el('a', 'source-link', 'Open source ↗');
-    a.href = row.link;
+    a.href = href;
     a.target = '_blank';
     a.rel = 'noreferrer';
     cell.append(a);
