@@ -37,11 +37,12 @@ test('queueOrder puts rows with no submitted_at last', () => {
 
 test('queueOrder skips rows that are not pending and never mutates its input', () => {
   const rows = [
-    { id: 'a', status: 'kept', submitted_at: '2026-08-26T09:00:00Z' },
-    { id: 'b', status: 'circleback', submitted_at: '2026-08-25T09:00:00Z' },
-    { id: 'c', status: 'new', submitted_at: '2026-08-20T09:00:00Z' },
+    { id: 'a', status: 'new', submitted_at: '2026-08-20T09:00:00Z' },
+    { id: 'b', status: 'kept', submitted_at: '2026-08-26T09:00:00Z' },
+    { id: 'c', status: 'new', submitted_at: '2026-08-25T09:00:00Z' },
+    { id: 'd', status: 'circleback', submitted_at: '2026-08-22T09:00:00Z' },
   ];
   const before = rows.map(r => r.id);
-  assert.deepEqual(queueOrder(rows).map(r => r.id), ['c']);
+  assert.deepEqual(queueOrder(rows).map(r => r.id), ['c', 'a']);
   assert.deepEqual(rows.map(r => r.id), before);
 });
