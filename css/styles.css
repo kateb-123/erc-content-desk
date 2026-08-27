@@ -175,3 +175,21 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
   .home-grid { grid-template-columns: 1fr; }
   .home-panel { border-left: none; padding-left: 0; }
 }
+
+/* Queue table (bottom of Home) */
+.queue-section { margin-top: 2.5rem; }
+.queue-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin: 0 0 .75rem; }
+.queue-head h2 { font-size: 1.1rem; margin: 0; }
+.queue-head .lede { margin: 0; flex: 1; }
+.queue-table { width: 100%; border-collapse: collapse; font-size: .85rem; background: #fff; border: 1px solid var(--line); }
+.queue-table th { text-align: left; font-weight: 500; color: var(--muted); padding: .5rem .6rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.queue-table td { padding: .5rem .6rem; border-top: 1px solid var(--line); vertical-align: top; }
+.queue-table td.missing { color: var(--err); }
+.queue-row { cursor: pointer; }
+.queue-row:hover { background: #fbfaf7; }
+.caret-btn { border: none; background: none; padding: 0; color: var(--muted); cursor: pointer; }
+.queue-detail td { background: #fcfcfa; }
+.queue-detail .item-blurb { margin: 0 0 .4rem; }
+.queue-detail .item-meta { display: block; margin-bottom: .4rem; }
+.queue-detail .item-note { margin: 0 0 .4rem; }
+.parked-item { padding: .2rem 0; font-size: .9rem; }
