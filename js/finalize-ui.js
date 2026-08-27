@@ -60,13 +60,13 @@ export function renderFinalize(container, { rows, rewrites, busy, onEdit, onRewr
     const table = el('table', 'grid finalize-table');
     const thead = el('thead');
     const headRow = el('tr');
-    for (const col of ['⭐', ...EDITABLE, 'subtype']) headRow.append(el('th', '', col));
+    for (const col of ['Spotlight', ...EDITABLE, 'subtype']) headRow.append(el('th', '', col));
     thead.append(headRow);
     table.append(thead);
     const tbody = el('tbody');
     for (const row of group) {
       const tr = el('tr');
-      tr.append(el('td', '', row.spotlight_request ? '⭐' : ''));
+      tr.append(el('td', '', row.spotlight_request ? 'yes' : ''));
       for (const field of EDITABLE) {
         const td = el('td', '', row[field]);
         td.contentEditable = 'plaintext-only';

@@ -36,7 +36,7 @@ export function renderSort(container, props) {
 
   if (!stack) {
     head.append(el('p', 'lede', pending.length
-      ? 'Pick a stack to sort.' : 'Nothing to sort. 🎉'));
+      ? 'Pick a stack to sort.' : 'Nothing to sort.'));
     const grid = el('div', 'stack-grid');
     for (const type of [...Object.keys(TYPES), '']) {
       const count = pending.filter(r => (r.type || '') === type).length;
@@ -70,7 +70,7 @@ export function renderSort(container, props) {
   const card = el('div', 'sort-card');
   const dupes = duplicateFlags(rows);
   const badges = el('div');
-  if (row.spotlight_request) badges.append(el('span', 'badge badge-star', '⭐ spotlight requested'));
+  if (row.spotlight_request) badges.append(el('span', 'badge badge-star', 'spotlight requested'));
   if (dupes.has(row.id)) badges.append(el('span', 'badge badge-dupe', 'possible duplicate — check before keeping'));
   card.append(badges);
   card.append(el('h3', '', row.headline || '(untitled)'));

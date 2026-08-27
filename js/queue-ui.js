@@ -18,7 +18,7 @@ function el(tag, className, text) {
 function itemRow(row, { dupes }) {
   const details = el('details', 'queue-item');
   const summary = el('summary');
-  if (row.spotlight_request) summary.append(el('span', 'badge badge-star', '⭐'));
+  if (row.spotlight_request) summary.append(el('span', 'badge badge-star', 'spotlight'));
   if (dupes.has(row.id)) summary.append(el('span', 'badge badge-dupe', 'possible duplicate'));
   summary.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
   summary.append(el('span', 'item-meta',

@@ -58,7 +58,7 @@ export function renderBuild(container, props) {
     const chosen = picks.get(row.id) ?? defaultSection(row);
     box.addEventListener('change', () => onTogglePick(row.id, chosen || 'headlines'));
     line.append(box);
-    if (row.spotlight_request) line.append(el('span', 'badge badge-star', '⭐'));
+    if (row.spotlight_request) line.append(el('span', 'badge badge-star', 'spotlight'));
     line.append(el('span', 'item-title', row.headline));
     line.append(el('span', 'item-meta', [row.subtype, row.date && isoToDisplay(row.date)]
       .filter(Boolean).join(' · ')));
@@ -73,7 +73,7 @@ export function renderBuild(container, props) {
   };
 
   if (starred.length) {
-    container.append(el('h3', '', '⭐ Requested features'));
+    container.append(el('h3', '', 'Requested features'));
     for (const row of starred) container.append(pickRow(row));
   }
   container.append(el('h3', '', 'Everything else'));
