@@ -1,13 +1,11 @@
 /** Entry point. Owns all state; screens are pure renderers. */
 import { fetchDesk, saveRows } from './sheet-client.js';
 import { renderHome } from './home-ui.js';
-import { renderQueue } from './queue-ui.js';
 import { renderSort, detachSortKeys } from './sort-ui.js';
 import { renderFinalize } from './finalize-ui.js';
 import { renderPublish } from './publish-ui.js';
 import { renderBuild } from './build-ui.js';
 import { keep, trash, circleback, undecide, markNewsletterIssue } from './workflow.js';
-import { nextIssueDate } from './schedule.js';
 
 const DRAFT_KEY = 'erc-content-desk-draft';
 
@@ -25,7 +23,7 @@ const state = {
   draft: loadDraft(),       // { date, intro }
 };
 
-const screens = Object.fromEntries(['home', 'queue', 'sort', 'finalize', 'publish', 'build']
+const screens = Object.fromEntries(['home', 'sort', 'finalize', 'publish', 'build']
   .map(name => [name, document.querySelector(`#screen-${name}`)]));
 const statusEl = document.querySelector('#desk-status');
 
@@ -198,9 +196,8 @@ export function render() {
       ...common, loaded: state.loaded,
       onGoTo: key => { state.screen = key; render(); },
       onSubmitted: reload,
+      onRefresh: reload,
     });
-  } else if (state.screen === 'queue') {
-    renderQueue(screens.queue, { ...common, nextIssue: nextIssueDate(state.schedule, today), onRefresh: reload });
   } else if (state.screen === 'sort') {
     renderSort(screens.sort, {
       ...common, stack: state.sortStack, lastDecision: state.lastDecision,

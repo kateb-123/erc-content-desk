@@ -177,6 +177,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 }
 
 /* Queue table (bottom of Home) */
+.item-title { font-weight: 500; }
 .queue-section { margin-top: 2.5rem; }
 .queue-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin: 0 0 .75rem; }
 .queue-head h2 { font-size: 1.1rem; margin: 0; }

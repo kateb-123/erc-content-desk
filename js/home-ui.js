@@ -4,6 +4,7 @@
  * the panel side rebuilds.
  */
 import { renderSubmitForm } from './submit-form.js';
+import { renderQueueTable } from './queue-ui.js';
 import { queueGlance } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
 import { isoToDisplay } from './rows-to-issue.js';
@@ -23,7 +24,7 @@ function goButton(label, key, onGoTo) {
   return btn;
 }
 
-export function renderHome(container, { rows, schedule, today, loaded, onGoTo, onSubmitted }) {
+export function renderHome(container, { rows, schedule, today, loaded, onGoTo, onSubmitted, onRefresh }) {
   let panel = container.querySelector('.home-panel');
   if (!panel) {
     const grid = el('div', 'home-grid');
@@ -35,7 +36,7 @@ export function renderHome(container, { rows, schedule, today, loaded, onGoTo, o
     renderSubmitForm(mount, { onSubmitted });
     panel = el('aside', 'home-panel');
     grid.append(formSide, panel);
-    container.replaceChildren(grid);
+    container.replaceChildren(grid, el('section', 'queue-section'));
   }
 
   panel.replaceChildren();
@@ -44,7 +45,12 @@ export function renderHome(container, { rows, schedule, today, loaded, onGoTo, o
   panel.append(el('p', 'panel-next', next ? isoToDisplay(next) : '—'));
 
   const queueItem = el('div', 'panel-item');
-  queueItem.append(goButton('Queue', 'queue', onGoTo));
+  const queueLink = el('button', 'panel-link', 'Queue');
+  queueLink.type = 'button';
+  queueLink.addEventListener('click', () => {
+    container.querySelector('.queue-section')?.scrollIntoView({ behavior: 'smooth' });
+  });
+  queueItem.append(queueLink);
   if (loaded) queueItem.append(el('div', 'panel-glance', queueGlance(rows)));
   panel.append(queueItem);
 
@@ -68,4 +74,6 @@ export function renderHome(container, { rows, schedule, today, loaded, onGoTo, o
   buildItem.append(goButton('Build newsletter ↗', 'build', onGoTo));
   buildItem.append(el('div', 'panel-glance', 'pulls from the same items'));
   panel.append(buildItem);
+
+  renderQueueTable(container.querySelector('.queue-section'), { rows, schedule, today, onRefresh });
 }
