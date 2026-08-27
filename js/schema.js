@@ -45,6 +45,14 @@ export const TYPES = {
   },
 };
 
+/** Display order Kate approved in the mockup — not Object.keys(TYPES) order. */
+export const TYPE_ORDER = ['research', 'event', 'opportunity', 'headline'];
+
+export const TYPE_LABELS = {
+  research: 'New Ed Policy Research', event: 'Event',
+  opportunity: 'Opportunity', headline: 'Headline',
+};
+
 /** `${type}|${subtype}` -> [newsletter section key, group key] (see js/model.js). */
 export const NEWSLETTER_MAP = {
   'opportunity|Funding & Grants': ['opportunities', 'funding'],

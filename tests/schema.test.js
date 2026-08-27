@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   CSV_COLUMNS, WORKFLOW_COLUMNS, SHEET_COLUMNS, BOOLEAN_COLUMNS, STATUSES, TYPES, NEWSLETTER_MAP,
+  TYPE_ORDER, TYPE_LABELS,
   blankRow, rowToValues, valuesToRow, subtypesFor, isValidType, isValidSubtype,
 } from '../js/schema.js';
 
@@ -101,4 +102,10 @@ test('isValidSubtype guards against Object.prototype keys and returns false', ()
   assert.equal(isValidSubtype('toString', 'anything'), false);
   assert.equal(isValidSubtype('valueOf', 'anything'), false);
   assert.equal(isValidSubtype('hasOwnProperty', 'anything'), false);
+});
+
+test('TYPE_ORDER covers every schema type exactly once, research first', () => {
+  assert.deepEqual([...TYPE_ORDER].sort(), Object.keys(TYPES).sort());
+  assert.equal(TYPE_ORDER[0], 'research');
+  for (const type of TYPE_ORDER) assert.ok(TYPE_LABELS[type]);
 });
