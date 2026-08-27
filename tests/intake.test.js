@@ -26,6 +26,21 @@ test('blurb is required except for headlines', () => {
     validateSubmission({ ...good, blurb: '', type: 'headline', subtype: 'Texas' }), []);
 });
 
+test('validateSubmission rejects a link that is not http(s)', () => {
+  const errors = validateSubmission({
+    title: 'T', blurb: 'B', link: 'javascript:alert(1)',
+    type: 'headline', subtype: 'Texas', submitter: 'KB',
+  });
+  assert.ok(errors.some(e => e.includes('web link')));
+});
+
+test('validateSubmission still accepts a normal https link', () => {
+  assert.deepEqual(validateSubmission({
+    title: 'T', blurb: 'B', link: 'https://example.org/a',
+    type: 'headline', subtype: 'Texas', submitter: 'KB',
+  }), []);
+});
+
 test('subtype must belong to the chosen type', () => {
   assert.ok(validateSubmission({ ...good, subtype: 'Texas' }).includes('Pick a subtype.'));
 });

@@ -5,6 +5,7 @@
  * the blurb verbatim so extraction can never lose anything.
  */
 import { blankRow, isValidType, isValidSubtype } from './schema.js';
+import { isSafeLink } from './links.js';
 
 const s = v => String(v ?? '').trim();
 
@@ -15,6 +16,7 @@ export function validateSubmission(
   const errors = [];
   if (!s(title)) errors.push('Add a title.');
   if (!s(link)) errors.push('Add a link.');
+  else if (!isSafeLink(link)) errors.push('That link needs to be a normal web link (http or https).');
   if (!isValidType(s(type))) errors.push('Pick a type.');
   else if (!(allowBlankSubtype && !s(subtype)) && !isValidSubtype(s(type), s(subtype))) {
     errors.push('Pick a subtype.');
