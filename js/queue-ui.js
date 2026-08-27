@@ -139,7 +139,9 @@ export function renderQueueTable(container, { rows, schedule, today, onRefresh }
   for (const label of ['Title', 'Type', 'Subtype', 'Submitted by', 'Date', '']) {
     headRow.append(el('th', '', label));
   }
-  table.append(el('thead')).lastChild.append(headRow);
+  const thead = el('thead');
+  thead.append(headRow);
+  table.append(thead);
   const body = el('tbody');
   const dupes = duplicateFlags(rows);
   for (const row of pending) body.append(...bodyRows(row, dupes, rerender));
