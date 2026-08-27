@@ -58,13 +58,21 @@ button {
 button:hover:not(:disabled) { border-color: var(--ink); }
 button:disabled { opacity: .5; cursor: default; }
 
-#submit-btn {
+.submit-form .submit-btn {
   width: 100%;
   margin-top: 1.5rem;
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
 }
+
+/* Radio type/subtype picker */
+.type-picker { border: none; padding: 0; margin: 1rem 0 0; }
+.type-picker legend { font-size: .85rem; color: var(--muted); padding: 0; margin-bottom: .25rem; }
+label.radio { display: block; margin: .15rem 0; font-size: .95rem; color: var(--ink); }
+.subtype-list { margin: .2rem 0 .4rem 1.6rem; padding-left: .8rem; border-left: 2px solid var(--line); }
+
+/* Bulk "whole doc" door */
+.bulk-door { margin-top: 1.25rem; border: 1px dashed var(--line); border-radius: var(--radius); padding: .75rem 1rem; background: #fff; }
+.bulk-door summary { cursor: pointer; color: var(--muted); }
+.bulk-door .bulk-status { min-height: 1.4rem; margin: 1rem 0 0; font-size: .9rem; }
 
 .status { min-height: 1.4rem; margin: 1rem 0 0; font-size: .9rem; }
 .status-ok { color: var(--ok); }
