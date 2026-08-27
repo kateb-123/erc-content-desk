@@ -160,3 +160,18 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .pick-row { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.3rem 0; }
 .pick-row select { margin-left: auto; }
 .table-scroll { overflow-x: auto; }
+
+/* Home screen */
+.home-grid { display: grid; grid-template-columns: 7fr 3fr; gap: 1.5rem; align-items: start; margin-top: 1.5rem; }
+.home-form h2 { font-size: 1.1rem; margin: 0 0 .25rem; }
+.home-panel { border-left: 1px solid var(--line); padding-left: 1.25rem; }
+.panel-label { font-size: .85rem; color: var(--muted); margin: 0; }
+.panel-next { font-weight: 600; margin: 0 0 1rem; }
+.panel-item { margin-bottom: .6rem; }
+.panel-link { border: none; background: none; padding: 0; color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: none; }
+.panel-glance { color: var(--muted); font-size: .85rem; }
+.home-panel hr { border: none; border-top: 1px solid var(--line); margin: 1rem 0; }
+@media (max-width: 720px) {
+  .home-grid { grid-template-columns: 1fr; }
+  .home-panel { border-left: none; padding-left: 0; }
+}
