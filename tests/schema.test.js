@@ -64,6 +64,10 @@ test('the four submission types carry the v2 subtype vocabulary', () => {
   assert.deepEqual(TYPES.research.subtypes, ['Working Paper', 'Peer-Reviewed', 'Report', 'ERC Research']);
 });
 
+test('opportunity subtypes include Other', () => {
+  assert.ok(subtypesFor('opportunity').includes('Other'));
+});
+
 test('every type/subtype pair maps to a newsletter section and group', () => {
   for (const [type, def] of Object.entries(TYPES)) {
     for (const subtype of def.subtypes) {

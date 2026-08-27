@@ -28,7 +28,7 @@ export const STATUSES = ['new', 'kept', 'circleback', 'trashed'];
  */
 export const TYPES = {
   opportunity: {
-    subtypes: ['Funding & Grants', 'Fellowships & Programs', 'Call for Proposals'],
+    subtypes: ['Funding & Grants', 'Fellowships & Programs', 'Call for Proposals', 'Other'],
     extraFields: ['deadline'],
   },
   research: {
@@ -50,6 +50,7 @@ export const NEWSLETTER_MAP = {
   'opportunity|Funding & Grants': ['opportunities', 'funding'],
   'opportunity|Fellowships & Programs': ['opportunities', 'fellowships'],
   'opportunity|Call for Proposals': ['opportunities', 'calls'],
+  'opportunity|Other': ['opportunities', 'misc'],
   'research|Working Paper': ['policy', 'working'],
   'research|Peer-Reviewed': ['policy', 'peer'],
   'research|Report': ['policy', 'misc'],

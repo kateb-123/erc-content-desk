@@ -60,14 +60,14 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
       <input id="sf-link" type="url" autocomplete="off">
       <fieldset class="type-picker"></fieldset>
       <label class="check"><input id="sf-spotlight" type="checkbox">
-        ⭐ Requesting ERC Spotlight / newsletter feature</label>
+        Requesting ERC Spotlight / newsletter feature</label>
       <label for="sf-submitter">Your name or initials</label>
       <input id="sf-submitter" type="text" autocomplete="off">
       <button type="submit" class="primary submit-btn">Submit</button>
       <p class="status" role="status" aria-live="polite"></p>
     </form>
     <details class="bulk-door">
-      <summary>📄 Have a whole doc? Add it here — it gets split into items you review first.</summary>
+      <summary>Have a whole doc? Add it here — it gets split into items you review first.</summary>
       <p class="hint">Paste an entire document — it gets split into individual items you confirm before anything is saved.</p>
       <textarea class="bulk-text" rows="10"></textarea>
       <button type="button" class="bulk-split-btn">Split into items</button>
