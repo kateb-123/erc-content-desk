@@ -1,16 +1,14 @@
 /**
- * The queue, as one table at the bottom of Home: parked circle-backs in a
- * small block above, then every pending row newest-first, each expanding in
- * place to its blurb and meta. Open rows live in module state so a re-render
- * (a refresh, a new submission) never collapses what you were reading.
+ * The queue, as one table at the bottom of Home: every pending row plus the
+ * circle-backs, newest-first, each expanding in place to its blurb and meta.
+ * Open rows live in module state so a re-render (a refresh, a new submission)
+ * never collapses what you were reading. Sort and filter are view state only.
  */
-import { queueGlance, queueOrder } from './home-panel.js';
-import { circlebackRows, duplicateFlags, staleCirclebacks } from './workflow.js';
+import { pendingRows, circlebackRows, duplicateFlags, staleCirclebacks } from './workflow.js';
 import { TYPE_LABELS } from './schema.js';
-import { nextIssueDate } from './schedule.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref } from './links.js';
-import { sortRows, filterRows, typeCounts } from './queue-view.js';
+import { sortRows, filterRows, typeCounts, isoToShort } from './queue-view.js';
 
 const openRows = new Set();
 
@@ -26,18 +24,13 @@ function el(tag, className, text) {
   return node;
 }
 
-/** The one-line summary under the heading. */
-function headline(rows, schedule, today) {
-  const next = nextIssueDate(schedule, today);
-  return queueGlance(rows) + (next ? ` · next issue ${isoToDisplay(next)}` : '');
-}
-
 /** Everything the expanded row shows, in one cell spanning the table. */
 function detailCell(row) {
   const cell = el('td');
-  cell.colSpan = 7;
+  cell.colSpan = 6;
   if (row.blurb) cell.append(el('p', 'item-blurb', row.blurb));
   const meta = [
+    row.subtype,
     row.source,
     row.authors,
     row.date && isoToDisplay(row.date),
@@ -64,9 +57,11 @@ function titleCell(row) {
   return cell;
 }
 
-/** Spotlight and duplicate badges live here now, not in the Title cell. */
-function noteCell(row, dupes) {
+/** All badges live here: circle-back state, spotlight, duplicate warning. */
+function noteCell(row, dupes, stale) {
   const cell = el('td', 'note-cell');
+  if (row.status === 'circleback') cell.append(el('span', 'badge', 'circle back'));
+  if (stale.has(row.id)) cell.append(el('span', 'badge badge-stale', 'date passed'));
   if (row.spotlight_request) cell.append(el('span', 'badge badge-star', 'spotlight'));
   if (dupes.has(row.id)) cell.append(el('span', 'badge badge-dupe', 'possible duplicate'));
   return cell;
@@ -74,19 +69,18 @@ function noteCell(row, dupes) {
 
 function submittedDate(row) {
   const iso = String(row.submitted_at ?? '').slice(0, 10);
-  return iso ? isoToDisplay(iso) : '—';
+  return isoToShort(iso) || '—';
 }
 
 /** One data row plus, when open, its detail row. */
-function bodyRows(row, dupes, rerender) {
+function bodyRows(row, dupes, stale, rerender) {
   const isOpen = openRows.has(row.id);
   const tr = el('tr', 'queue-row');
   tr.append(titleCell(row));
   tr.append(el('td', row.type ? '' : 'missing', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
-  tr.append(el('td', row.subtype ? '' : 'missing', row.subtype || '—'));
   tr.append(el('td', '', row.submitter || '—'));
   tr.append(el('td', '', submittedDate(row)));
-  tr.append(noteCell(row, dupes));
+  tr.append(noteCell(row, dupes, stale));
 
   const caretCell = el('td');
   const caret = el('button', 'caret-btn', isOpen ? '⌃' : '⌄');
@@ -107,24 +101,6 @@ function bodyRows(row, dupes, rerender) {
   const detail = el('tr', 'queue-detail');
   detail.append(detailCell(row));
   return [tr, detail];
-}
-
-function parkedBlock(rows, today) {
-  const parked = circlebackRows(rows);
-  if (!parked.length) return null;
-  const stale = new Set(staleCirclebacks(rows, today).map(r => r.id));
-  const wrap = el('section', 'queue-parked');
-  wrap.append(el('h3', '', `Circle back (${parked.length})`));
-  for (const row of parked) {
-    const line = el('div', 'parked-item');
-    line.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
-    const meta = [row.subtype, row.source, row.date && isoToDisplay(row.date), row.submitter]
-      .filter(Boolean).join(' · ');
-    if (meta) line.append(el('span', 'item-meta', ` ${meta}`));
-    if (stale.has(row.id)) line.append(el('span', 'badge badge-stale', 'date passed'));
-    wrap.append(line);
-  }
-  return wrap;
 }
 
 /** One row of checkboxes: All plus the four types plus Untyped, with counts. */
@@ -155,13 +131,12 @@ function filtersRow(counts, rerender) {
   return wrap;
 }
 
-export function renderQueueTable(container, { rows, schedule, today, onRefresh }) {
-  const rerender = () => renderQueueTable(container, { rows, schedule, today, onRefresh });
+export function renderQueueTable(container, { rows, today, onRefresh }) {
+  const rerender = () => renderQueueTable(container, { rows, today, onRefresh });
   container.replaceChildren();
 
   const head = el('div', 'queue-head');
   head.append(el('h2', '', 'In the queue'));
-  head.append(el('p', 'lede', headline(rows, schedule, today)));
   const refresh = el('button', '', 'Refresh');
   refresh.type = 'button';
   refresh.addEventListener('click', () => { refresh.disabled = true; onRefresh(); });
@@ -172,21 +147,17 @@ export function renderQueueTable(container, { rows, schedule, today, onRefresh }
   head.append(filterToggle);
   container.append(head);
 
-  const parked = parkedBlock(rows, today);
-  if (parked) container.append(parked);
-
-  const pending = queueOrder(rows);
-  if (!pending.length) {
+  const listed = [...pendingRows(rows), ...circlebackRows(rows)];
+  if (!listed.length) {
     container.append(el('p', 'empty', 'Nothing waiting. Enjoy it.'));
     return;
   }
-  if (filtersOpen) container.append(filtersRow(typeCounts(pending), rerender));
+  if (filtersOpen) container.append(filtersRow(typeCounts(listed), rerender));
 
   const table = el('table', 'queue-table');
   const SORTABLE = [
     { key: 'title', label: 'Title' },
     { key: 'type', label: 'Type' },
-    { key: 'subtype', label: 'Subtype' },
     { key: 'submitter', label: 'Submitted by' },
     { key: 'submitted', label: 'Submission date' },
   ];
@@ -213,8 +184,9 @@ export function renderQueueTable(container, { rows, schedule, today, onRefresh }
   table.append(thead);
   const body = el('tbody');
   const dupes = duplicateFlags(rows);
-  const visible = sortRows(filterRows(pending, selectedTypes), sortState.column, sortState.dir);
-  for (const row of visible) body.append(...bodyRows(row, dupes, rerender));
+  const stale = new Set(staleCirclebacks(rows, today).map(r => r.id));
+  const visible = sortRows(filterRows(listed, selectedTypes), sortState.column, sortState.dir);
+  for (const row of visible) body.append(...bodyRows(row, dupes, stale, rerender));
   table.append(body);
 
   const scroll = el('div', 'table-scroll');
