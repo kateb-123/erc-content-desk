@@ -29,7 +29,7 @@ function headline(rows, schedule, today) {
 /** Everything the expanded row shows, in one cell spanning the table. */
 function detailCell(row) {
   const cell = el('td');
-  cell.colSpan = 6;
+  cell.colSpan = 7;
   if (row.blurb) cell.append(el('p', 'item-blurb', row.blurb));
   const meta = [
     row.source,
@@ -52,11 +52,17 @@ function detailCell(row) {
   return cell;
 }
 
-function titleCell(row, dupes) {
+function titleCell(row) {
   const cell = el('td');
+  cell.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
+  return cell;
+}
+
+/** Spotlight and duplicate badges live here now, not in the Title cell. */
+function noteCell(row, dupes) {
+  const cell = el('td', 'note-cell');
   if (row.spotlight_request) cell.append(el('span', 'badge badge-star', 'spotlight'));
   if (dupes.has(row.id)) cell.append(el('span', 'badge badge-dupe', 'possible duplicate'));
-  cell.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
   return cell;
 }
 
@@ -69,11 +75,12 @@ function submittedDate(row) {
 function bodyRows(row, dupes, rerender) {
   const isOpen = openRows.has(row.id);
   const tr = el('tr', 'queue-row');
-  tr.append(titleCell(row, dupes));
+  tr.append(titleCell(row));
   tr.append(el('td', row.type ? '' : 'missing', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
   tr.append(el('td', row.subtype ? '' : 'missing', row.subtype || '—'));
   tr.append(el('td', '', row.submitter || '—'));
   tr.append(el('td', '', submittedDate(row)));
+  tr.append(noteCell(row, dupes));
 
   const caretCell = el('td');
   const caret = el('button', 'caret-btn', isOpen ? '⌃' : '⌄');
@@ -138,7 +145,7 @@ export function renderQueueTable(container, { rows, schedule, today, onRefresh }
 
   const table = el('table', 'queue-table');
   const headRow = el('tr');
-  for (const label of ['Title', 'Type', 'Subtype', 'Submitted by', 'Date', '']) {
+  for (const label of ['Title', 'Type', 'Subtype', 'Submitted by', 'Submission date', 'Note', '']) {
     headRow.append(el('th', '', label));
   }
   const thead = el('thead');
