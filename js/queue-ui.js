@@ -10,8 +10,14 @@ import { TYPE_LABELS } from './schema.js';
 import { nextIssueDate } from './schedule.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref } from './links.js';
+import { sortRows, filterRows, typeCounts } from './queue-view.js';
 
 const openRows = new Set();
+
+// View state only — resets on reload, never persisted.
+let sortState = { column: 'submitted', dir: 'desc' };
+const selectedTypes = new Set();
+let filtersOpen = false;
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -121,6 +127,34 @@ function parkedBlock(rows, today) {
   return wrap;
 }
 
+/** One row of checkboxes: All plus the four types plus Untyped, with counts. */
+function filtersRow(counts, rerender) {
+  const wrap = el('div', 'queue-filters');
+  const options = [
+    { key: 'all', label: 'All' },
+    { key: 'research', label: 'Research' },
+    { key: 'event', label: 'Events' },
+    { key: 'opportunity', label: 'Opportunities' },
+    { key: 'headline', label: 'Headlines' },
+    { key: 'untyped', label: 'Untyped' },
+  ];
+  for (const opt of options) {
+    const label = el('label', 'filter-option');
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    box.checked = opt.key === 'all' ? selectedTypes.size === 0 : selectedTypes.has(opt.key);
+    box.addEventListener('change', () => {
+      if (opt.key === 'all') selectedTypes.clear();
+      else if (selectedTypes.has(opt.key)) selectedTypes.delete(opt.key);
+      else selectedTypes.add(opt.key);
+      rerender();
+    });
+    label.append(box, document.createTextNode(` ${opt.label} (${counts[opt.key]})`));
+    wrap.append(label);
+  }
+  return wrap;
+}
+
 export function renderQueueTable(container, { rows, schedule, today, onRefresh }) {
   const rerender = () => renderQueueTable(container, { rows, schedule, today, onRefresh });
   container.replaceChildren();
@@ -132,6 +166,10 @@ export function renderQueueTable(container, { rows, schedule, today, onRefresh }
   refresh.type = 'button';
   refresh.addEventListener('click', () => { refresh.disabled = true; onRefresh(); });
   head.append(refresh);
+  const filterToggle = el('button', '', filtersOpen ? 'Hide filters' : 'Show filters');
+  filterToggle.type = 'button';
+  filterToggle.addEventListener('click', () => { filtersOpen = !filtersOpen; rerender(); });
+  head.append(filterToggle);
   container.append(head);
 
   const parked = parkedBlock(rows, today);
@@ -142,18 +180,41 @@ export function renderQueueTable(container, { rows, schedule, today, onRefresh }
     container.append(el('p', 'empty', 'Nothing waiting. Enjoy it.'));
     return;
   }
+  if (filtersOpen) container.append(filtersRow(typeCounts(pending), rerender));
 
   const table = el('table', 'queue-table');
+  const SORTABLE = [
+    { key: 'title', label: 'Title' },
+    { key: 'type', label: 'Type' },
+    { key: 'subtype', label: 'Subtype' },
+    { key: 'submitter', label: 'Submitted by' },
+    { key: 'submitted', label: 'Submission date' },
+  ];
   const headRow = el('tr');
-  for (const label of ['Title', 'Type', 'Subtype', 'Submitted by', 'Submission date', 'Note', '']) {
-    headRow.append(el('th', '', label));
+  for (const col of SORTABLE) {
+    const th = el('th');
+    const active = sortState.column === col.key;
+    if (active) th.setAttribute('aria-sort', sortState.dir === 'desc' ? 'descending' : 'ascending');
+    const glyph = active ? (sortState.dir === 'desc' ? '↓' : '↑') : '↕';
+    const btn = el('button', 'sort-btn', `${col.label} ${glyph}`);
+    btn.type = 'button';
+    btn.addEventListener('click', () => {
+      if (sortState.column === col.key) sortState.dir = sortState.dir === 'desc' ? 'asc' : 'desc';
+      else sortState = { column: col.key, dir: col.key === 'submitted' ? 'desc' : 'asc' };
+      rerender();
+    });
+    th.append(btn);
+    headRow.append(th);
   }
+  headRow.append(el('th', '', 'Note'));
+  headRow.append(el('th', '', ''));
   const thead = el('thead');
   thead.append(headRow);
   table.append(thead);
   const body = el('tbody');
   const dupes = duplicateFlags(rows);
-  for (const row of pending) body.append(...bodyRows(row, dupes, rerender));
+  const visible = sortRows(filterRows(pending, selectedTypes), sortState.column, sortState.dir);
+  for (const row of visible) body.append(...bodyRows(row, dupes, rerender));
   table.append(body);
 
   const scroll = el('div', 'table-scroll');
