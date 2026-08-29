@@ -17,9 +17,9 @@ const rows = [
   { id: 'erc2', status: 'new', type: 'research', subtype: 'ERC Research', submitted_at: '2026-08-23T09:00:00Z' },
 ];
 
-test('sortStream groups untyped first, then newsletter order, oldest first inside a group', () => {
+test('sortStream: ERC, then newsletter order, then to-review (untyped) last, oldest first inside a group', () => {
   assert.deepEqual(sortStream(rows).map(r => r.id),
-    ['erc2', 'erc1', 'u1', 'r1', 'r2', 'r3', 'e1', 'o1', 'h1', 'weird']);
+    ['erc2', 'erc1', 'r1', 'r2', 'r3', 'e1', 'o1', 'h1', 'u1', 'weird']);
 });
 
 test('sortStream drops non-pending rows and does not mutate its input', () => {

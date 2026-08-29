@@ -5,7 +5,8 @@
 import { TYPE_ORDER } from './schema.js';
 import { pendingRows } from './workflow.js';
 
-const GROUP_ORDER = ['', ...TYPE_ORDER];
+// Untyped ("To review") sinks to the end — typed groups sort first.
+const GROUP_ORDER = [...TYPE_ORDER, ''];
 
 function oldestFirst(a, b) {
   const left = String(a.submitted_at ?? '');
@@ -25,7 +26,7 @@ export function isErc(row) {
   return Boolean(row.spotlight_request) || row.subtype === 'ERC Research';
 }
 
-/** ERC leads, then untyped, then the newsletter's type order, oldest first in a group. */
+/** ERC leads, then the newsletter's type order, then to-review (untyped), oldest first in a group. */
 export function sortStream(rows) {
   const pending = pendingRows(rows);
   const erc = pending.filter(isErc).sort(oldestFirst);

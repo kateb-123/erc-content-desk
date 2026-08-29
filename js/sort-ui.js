@@ -11,8 +11,8 @@ import { safeHref } from './links.js';
 import { sortStream, sortCounts, filterStream, isErc } from './sort-view.js';
 
 const FILTER_LABELS = [
-  ['', 'All'], ['erc', 'ERC'], ['untyped', 'Untyped'], ['research', 'Research'],
-  ['event', 'Events'], ['opportunity', 'Opportunities'], ['headline', 'Headlines'],
+  ['', 'All'], ['erc', 'ERC'], ['research', 'Research'], ['event', 'Events'],
+  ['opportunity', 'Opportunities'], ['headline', 'Headlines'], ['untyped', 'To review'],
 ];
 
 let keyHandler = null;
@@ -92,7 +92,7 @@ export function renderSort(container, props) {
   const row = visible[0];
   const groupOf = r => isErc(r) ? 'erc' : (r.type && FILTER_LABELS.some(([k]) => k === r.type)) ? r.type : 'untyped';
   const groupKey = groupOf(row);
-  const groupLabel = FILTER_LABELS.find(([k]) => k === groupKey)?.[1] ?? 'Untyped';
+  const groupLabel = FILTER_LABELS.find(([k]) => k === groupKey)?.[1] ?? 'To review';
   const inGroup = visible.filter(r => groupOf(r) === groupKey).length;
   container.append(el('p', 'sort-group', `${groupLabel} — ${inGroup} to go`));
   const card = el('div', 'sort-card');
@@ -195,13 +195,16 @@ export function renderSort(container, props) {
     const typeChips = el('div', 'type-chips');
     const subWrap = el('div', 'sub-pick');
     const subChips = el('div', 'type-chips');
-    subWrap.append(el('p', 'pick-label', 'Now the subtype:'), subChips);
+    const subLabel = el('p', 'pick-label');
+    subWrap.append(subLabel, subChips);
     const saveBtn = el('button', 'save-type-btn', 'Save type');
     saveBtn.type = 'button';
     let pickedType = row.type || '';
     let pickedSub = row.subtype || '';
     const syncSave = () => saveBtn.classList.toggle('is-open', Boolean(pickedType && pickedSub));
     const renderSubs = () => {
+      // Name the picked type so switching (Event -> Opportunity) reads clearly.
+      subLabel.textContent = pickedType ? `${TYPE_LABELS[pickedType] ?? pickedType} — now the subtype:` : '';
       subChips.replaceChildren(...subtypesFor(pickedType).map(s => {
         const b = el('button', `type-chip${s === pickedSub ? ' is-picked' : ''}`, s);
         b.type = 'button';
