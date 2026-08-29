@@ -204,8 +204,9 @@ export function render() {
   } else if (state.screen === 'sort') {
     renderSort(screens.sort, {
       ...common, filter: state.sortFilter, sortedCount: state.sortedThisVisit,
-      lastDecision: state.lastDecision,
-      onFilter: key => { state.sortFilter = key; render(); },
+      lastDecision: state.lastDecision, browse: state.sortBrowse ?? 0,
+      onBrowse: pos => { state.sortBrowse = Math.max(0, pos); render(); },
+      onFilter: key => { state.sortFilter = key; state.sortBrowse = 0; render(); },
       onDecide: decide, onUndo: undoLast,
       // One PATCH for type + subtype + provenance together — sequential
       // round-trips re-render mid-save and reopen the picker.

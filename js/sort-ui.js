@@ -32,7 +32,7 @@ export function detachSortKeys() {
 export function renderSort(container, props) {
   container.replaceChildren();
   detachSortKeys();
-  const { rows, filter, sortedCount, lastDecision, onFilter, onDecide, onUndo } = props;
+  const { rows, filter, sortedCount, lastDecision, onFilter, onDecide, onUndo, browse = 0, onBrowse } = props;
   const rerenderSelf = () => renderSort(container, props);
 
   const stream = sortStream(rows);
@@ -51,10 +51,14 @@ export function renderSort(container, props) {
   bar.append(fill);
   container.append(bar);
 
+  // Browsing: ← → walks a viewing position through the stream without
+  // deciding anything. Deciding acts on the card in view; the position holds.
+  const idx = Math.max(0, Math.min(browse, visible.length - 1));
+
   // Sections are jump points into one continuous stream. The underline marks
   // where you jumped in; the darker text tracks the group you're passing
   // through as the stream flows on.
-  const currentGroup = visible.length ? sectionOf(visible[0]) : null;
+  const currentGroup = visible.length ? sectionOf(visible[idx]) : null;
   const filters = el('p', 'sort-filters');
   for (const [key, label] of FILTER_LABELS) {
     const count = key === '' ? counts.all : counts[key];
@@ -88,10 +92,11 @@ export function renderSort(container, props) {
     return;
   }
 
-  const row = visible[0];
+  const row = visible[idx];
   const groupKey = sectionOf(row);
   const groupLabel = FILTER_LABELS.find(([k]) => k === groupKey)?.[1] ?? 'To review';
   const inGroup = visible.filter(r => sectionOf(r) === groupKey).length;
+
   container.append(el('p', 'sort-group', `${groupLabel} — ${inGroup} to go`));
   const card = el('div', 'sort-card');
   const dupes = duplicateFlags(rows);
@@ -249,18 +254,50 @@ export function renderSort(container, props) {
   const trashBtn = mk('Trash', 'btn-trash', 'trash');
   actions.append(keepBtn, circleBtn, trashBtn);
   card.append(actions);
-  card.append(el('p', 'keys-hint', 'K keep · C circle back · T trash · U undo'));
+  card.append(el('p', 'keys-hint', 'K keep · C circle back · T trash · U undo · ← → browse'));
   if (lastDecision) {
     const undo = el('button', 'undo-link', 'Undo last (U)');
     undo.addEventListener('click', () => { undo.disabled = true; onUndo(); });
     card.append(undo);
   }
-  container.append(card);
+  // Carousel: arrows flank the card, dots below track the position. Browsing
+  // never decides anything — the card only leaves via Keep / Circle / Trash.
+  const carousel = el('div', 'sort-carousel');
+  const prev = el('button', 'carousel-arrow', '‹');
+  prev.type = 'button';
+  prev.disabled = idx === 0;
+  prev.setAttribute('aria-label', 'Previous card');
+  prev.addEventListener('click', () => onBrowse?.(idx - 1));
+  const next = el('button', 'carousel-arrow', '›');
+  next.type = 'button';
+  next.disabled = idx >= visible.length - 1;
+  next.setAttribute('aria-label', 'Next card');
+  next.addEventListener('click', () => onBrowse?.(idx + 1));
+  carousel.append(prev, card, next);
+  container.append(carousel);
+
+  // Dots track the current section only — one dot per card in this group.
+  const groupCards = visible.map((r, i) => i).filter(i => sectionOf(visible[i]) === groupKey);
+  if (groupCards.length > 1 && groupCards.length <= 15) {
+    const dots = el('div', 'carousel-dots');
+    for (const i of groupCards) {
+      const dot = el('button', `carousel-dot${i === idx ? ' is-current' : ''}`);
+      dot.type = 'button';
+      dot.setAttribute('aria-label', `${groupLabel} card ${groupCards.indexOf(i) + 1} of ${groupCards.length}`);
+      dot.addEventListener('click', () => onBrowse?.(i));
+      dots.append(dot);
+    }
+    container.append(dots);
+  } else if (groupCards.length > 15) {
+    container.append(el('p', 'browse-pos', `${groupCards.indexOf(idx) + 1} of ${groupCards.length} in ${groupLabel}`));
+  }
 
   attachKeys({
     k: () => keepBtn.click(),
     c: () => circleBtn.click(),
     t: () => trashBtn.click(),
     u: () => { if (lastDecision) onUndo(); },
+    arrowleft: () => { if (idx > 0) onBrowse?.(idx - 1); },
+    arrowright: () => { if (idx < visible.length - 1) onBrowse?.(idx + 1); },
   });
 }

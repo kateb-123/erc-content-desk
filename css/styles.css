@@ -182,6 +182,16 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .sort-bar-fill { height: 4px; background: var(--accent); border-radius: 2px; }
 .sort-filters { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .85rem; margin: 0 0 .8rem; }
 .sort-group { font-weight: 600; margin: .2rem 0 0; }
+.sort-carousel { display: flex; align-items: center; gap: .35rem; max-width: 700px; }
+.sort-carousel .sort-card { flex: 1; min-width: 0; }
+.carousel-arrow { border: none; background: none; padding: .5rem .45rem; font-size: 1.7rem; line-height: 1; color: var(--accent); cursor: pointer; }
+.carousel-arrow:hover:not(:disabled) { border: none; color: var(--ink); }
+.carousel-arrow:disabled { color: var(--line); opacity: 1; cursor: default; }
+.carousel-dots { display: flex; justify-content: center; gap: .3rem; max-width: 700px; margin: .2rem 0 0; }
+.carousel-dot { width: 20px; height: 20px; padding: 6px; border: none; border-radius: 50%; background: var(--line); background-clip: content-box; cursor: pointer; }
+.carousel-dot:hover:not(.is-current) { background-color: var(--muted); }
+.carousel-dot.is-current { background-color: var(--accent); }
+.browse-pos { color: var(--muted); font-size: .85rem; text-align: center; max-width: 700px; margin: .4rem 0 0; }
 .sort-filter { border: none; background: none; padding: 0; color: var(--muted); cursor: pointer; }
 .sort-filter.is-active { color: var(--ink); font-weight: 600; border-bottom: 2px solid var(--accent); }
 .sort-filter.is-here { color: var(--ink); }
