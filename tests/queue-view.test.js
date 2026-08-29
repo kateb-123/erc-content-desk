@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sortRows, filterRows, typeCounts, isoToShort } from '../js/queue-view.js';
+import { sortRows, isoToSlash } from '../js/queue-view.js';
 
 // Deliberately NOT pre-sorted in any tested order, so an in-place sort or a
 // wrong direction provably fails.
@@ -41,32 +41,15 @@ test('sortRows title falls back to link, empty sinks last', () => {
   assert.deepEqual(sortRows(mixed, 'title', 'asc').map(r => r.id), ['z', 'x', 'y']);
 });
 
-test('filterRows with empty set returns everything (All)', () => {
-  assert.deepEqual(filterRows(rows, new Set()).map(r => r.id), ['a', 'b', 'c', 'd']);
-});
-
-test('filterRows matches multiple checked types at once', () => {
-  const picked = filterRows(rows, new Set(['research', 'event']));
-  assert.deepEqual(picked.map(r => r.id).sort(), ['b', 'c']);
-});
-
-test('filterRows untyped matches rows with no type', () => {
-  assert.deepEqual(filterRows(rows, new Set(['untyped'])).map(r => r.id), ['d']);
-});
-
-test('typeCounts totals every bucket', () => {
-  assert.deepEqual(typeCounts(rows), {
-    all: 4, research: 1, event: 1, opportunity: 1, headline: 0, untyped: 1,
-  });
-});
-
-test('isoToShort abbreviates with a period, no year', () => {
-  assert.equal(isoToShort('2026-08-26'), 'Aug. 26');
-  assert.equal(isoToShort('2026-05-03'), 'May 3');
-  assert.equal(isoToShort(''), '');
-  assert.equal(isoToShort('2026-13-01'), '');
-});
-
 test('sortRows by submitter is stable and ascending', () => {
   assert.deepEqual(sortRows(rows, 'submitter', 'asc').map(r => r.id), ['c', 'b', 'd', 'a']);
+});
+
+test('isoToSlash renders M/D with no leading zeros and no year', () => {
+  assert.equal(isoToSlash('2026-08-26'), '8/26');
+  assert.equal(isoToSlash('2026-05-03'), '5/3');
+  assert.equal(isoToSlash('2026-12-09'), '12/9');
+  assert.equal(isoToSlash(''), '');
+  assert.equal(isoToSlash('2026-13-01'), '');
+  assert.equal(isoToSlash('garbage'), '');
 });

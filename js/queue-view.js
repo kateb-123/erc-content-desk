@@ -25,29 +25,12 @@ export function sortRows(rows, column, direction) {
   });
 }
 
-/** `selected` is a Set of type keys plus 'untyped'; empty means All. */
-export function filterRows(rows, selected) {
-  if (!selected || selected.size === 0) return rows.slice();
-  return rows.filter(r => selected.has(r.type ? r.type : 'untyped'));
-}
 
-/** Unfiltered per-type totals for the filter labels. */
-export function typeCounts(rows) {
-  const counts = { all: rows.length, research: 0, event: 0, opportunity: 0, headline: 0, untyped: 0 };
-  for (const r of rows) {
-    if (!r.type) counts.untyped++;
-    else if (counts[r.type] !== undefined) counts[r.type]++;
-  }
-  return counts;
-}
-
-const MONTHS = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
-
-/** '2026-08-26' -> 'Aug. 26'; anything unparseable -> ''. */
-export function isoToShort(iso) {
+/** '2026-08-26' -> '8/26' (no leading zeros, no year); unparseable -> ''. */
+export function isoToSlash(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso ?? ''));
   if (!m) return '';
-  const month = MONTHS[Number(m[2]) - 1];
-  if (!month) return '';
-  return `${month} ${Number(m[3])}`;
+  const month = Number(m[2]);
+  if (month < 1 || month > 12) return '';
+  return `${month}/${Number(m[3])}`;
 }
