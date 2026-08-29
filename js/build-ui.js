@@ -27,7 +27,7 @@ export function renderBuild(container, props) {
   const head = el('div', 'screen-head');
   head.append(el('h2', '', 'Build'));
   head.append(el('p', 'lede', pool.length
-    ? `Pick this issue's items — ${pool.length} published item(s) available.`
+    ? `Pick this issue's items — ${pool.length} item(s) available (published or newsletter-only).`
     : 'Nothing published and unused yet. Publish first, then build.'));
   container.append(head);
 

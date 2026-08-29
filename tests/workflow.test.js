@@ -47,6 +47,19 @@ test('filters split by status and publish state', () => {
   assert.deepEqual(buildPool(rows).map(r => r.id), ['d']);
 });
 
+test('buildPool also takes newsletter-only rows that never reach the Exchange', () => {
+  const rows = [
+    // held: kept, unpublished, spotlight A&M event -> newsletter-only, belongs in the pool
+    row({ id: 'g', status: 'kept', type: 'event', subtype: 'A&M', spotlight_request: true }),
+    // not held: kept, unpublished, non-spotlight -> stays out of the pool
+    row({ id: 'h', status: 'kept', type: 'event', subtype: 'A&M', spotlight_request: false }),
+    // published rows behave as before
+    row({ id: 'i', status: 'kept', published_at: '2026-09-01T00:00:00.000Z' }),
+    row({ id: 'j', status: 'kept', published_at: '2026-09-01T00:00:00.000Z', newsletter_issue: '2026-09-01' }),
+  ];
+  assert.deepEqual(buildPool(rows).map(r => r.id), ['g', 'i']);
+});
+
 test('markPublished and markNewsletterIssue stamp pure copies', () => {
   const r = row({ status: 'kept' });
   const p = markPublished(r, '2026-09-01T12:00:00.000Z');

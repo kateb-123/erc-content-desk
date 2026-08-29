@@ -2,7 +2,7 @@
  * Publish (the Final List): show exactly what will land on the Exchange,
  * checked against the LIVE news.csv, then one button. Append-only.
  */
-import { readyToPublish } from './workflow.js';
+import { readyToPublish, newsletterOnly } from './workflow.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -14,11 +14,14 @@ function el(tag, className, text) {
 export function renderPublish(container, { rows, preview, busy, onPreview, onPublish }) {
   container.replaceChildren();
   const candidates = readyToPublish(rows);
+  const held = candidates.filter(newsletterOnly);
+  const readyCount = candidates.length - held.length;
 
   const head = el('div', 'screen-head');
   head.append(el('h2', '', 'Publish'));
   head.append(el('p', 'lede', candidates.length
-    ? `${candidates.length} item(s) ready for the Ed Policy Exchange.`
+    ? `${readyCount} item(s) ready for the Ed Policy Exchange.`
+      + (held.length ? ` (+${held.length} newsletter-only)` : '')
     : 'Nothing waiting to publish.'));
   container.append(head);
   if (!candidates.length) return;

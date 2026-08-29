@@ -16,7 +16,11 @@ function oldestFirst(a, b) {
   return left.localeCompare(right);
 }
 
-/** ERC first: a spotlight request of any type, or ERC Research. */
+/**
+ * ERC first: a spotlight request of any type, or ERC Research. Broader than
+ * workflow.js's newsletterOnly (which is spotlight events only, minus
+ * webinars) — don't conflate the two.
+ */
 export function isErc(row) {
   return Boolean(row.spotlight_request) || row.subtype === 'ERC Research';
 }

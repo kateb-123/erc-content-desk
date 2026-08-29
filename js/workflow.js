@@ -66,7 +66,11 @@ export function withoutAutoFilled(list, cleared) {
     .filter(f => !cleared.includes(f)).join(',');
 }
 
-/** Newsletter-only: spotlight events stay off the public Exchange — webinars excepted. */
+/**
+ * Newsletter-only: spotlight events stay off the public Exchange — webinars
+ * excepted. Narrower than sort-view.js's isErc (which also counts ERC
+ * Research and non-event spotlights) — don't conflate the two.
+ */
 export function newsletterOnly(row) {
   return row.type === 'event' && Boolean(row.spotlight_request) && row.subtype !== 'Webinar-Online';
 }
@@ -80,7 +84,8 @@ export function publishedRows(rows) {
 }
 
 export function buildPool(rows) {
-  return publishedRows(rows).filter(r => !r.newsletter_issue);
+  return rows.filter(r => r.status === 'kept' && !r.newsletter_issue
+    && (Boolean(r.published_at) || newsletterOnly(r)));
 }
 
 export function markPublished(row, timestamp) {
