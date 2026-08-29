@@ -89,3 +89,21 @@ test('normalizeExtraction rejects prototype-chain names via the safe schema help
   const subtypeGuess = normalizeExtraction({ subtype: 'hasOwnProperty' }, typedRow);
   assert.equal('subtype' in subtypeGuess.fields, false);
 });
+
+test('the prompt uses hard imperatives when headline, blurb, or type are missing', () => {
+  const blankFields = blankRow({ link: 'https://example.org' });
+  const blankPrompt = buildExtractionPrompt(blankFields);
+  assert.ok(blankPrompt.includes('you MUST write `headline`'), 'prompt should demand headline when missing');
+  assert.ok(blankPrompt.includes('you MUST write `blurb`'), 'prompt should demand blurb when missing');
+  assert.ok(blankPrompt.includes('you MUST pick `type`'), 'prompt should demand type when missing');
+
+  const fullyProvided = blankRow({
+    headline: 'Test Title', blurb: 'Test blurb.', type: 'event', subtype: 'Webinar-Online',
+    link: 'https://example.org',
+  });
+  const filledPrompt = buildExtractionPrompt(fullyProvided);
+  assert.ok(filledPrompt.includes('Return "" for headline'), 'prompt should allow empty values when provided');
+  assert.equal(filledPrompt.includes('you MUST write `headline`'), false, 'prompt should not demand headline when provided');
+  assert.equal(filledPrompt.includes('you MUST write `blurb`'), false, 'prompt should not demand blurb when provided');
+  assert.equal(filledPrompt.includes('you MUST pick `type`'), false, 'prompt should not demand type when provided');
+});

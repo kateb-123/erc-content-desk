@@ -24,8 +24,8 @@ export const EXTRACTION_SCHEMA = {
     authors: { type: 'string', description: 'Research only: author list as written; else "".' },
     time: { type: 'string', description: 'Events only: start time in Central Time, e.g. "1:00 PM CT"; else "".' },
     location: { type: 'string', description: 'Events only: venue/city or "Virtual"; else "".' },
-    headline: { type: 'string', description: 'A clear, specific title for the item when none was provided; "" otherwise.' },
-    blurb: { type: 'string', description: '2-3 factual sentences describing the item, written from the text, when no blurb was provided; "" otherwise.' },
+    headline: { type: 'string', description: 'Required when no title was provided: a clear, specific title from the text. "" only when a title already exists.' },
+    blurb: { type: 'string', description: 'Required when no blurb was provided: 2-3 factual sentences from the text. "" only when a blurb already exists.' },
     type: { type: 'string', enum: ['', 'research', 'event', 'opportunity', 'headline'], description: 'Best-fit type when none was provided; "" if unsure.' },
     subtype: { type: 'string', description: 'Legal subtype for the type, from the lists in the prompt; "" if unsure.' },
     needs_review: { type: 'boolean', description: 'true if the text was too thin or confusing to file confidently.' },
@@ -52,7 +52,12 @@ export function buildExtractionPrompt(row, pageText = '') {
     'Rules: work only from the text above.',
     'Never invent a date, deadline, author, time, location, or source; use "" when the text does not state it.',
     'Dates are YYYY-MM-DD. Event times are Central Time, written like "1:00 PM CT" — convert from ET/PT when the zone is given.',
-    'When Title, blurb, or Type is "(none)", fill headline/blurb/type/subtype from the text; otherwise return "" for them.',
+  );
+  if (!row.headline) parts.push('No title was provided — you MUST write `headline`: a clear, specific title from the text.');
+  if (!row.blurb && !row.original_text) parts.push('No blurb was provided — you MUST write `blurb`: 2-3 factual sentences from the text.');
+  if (!row.type) parts.push('No type was provided — you MUST pick `type` (and a legal `subtype`) unless the text truly fits none.');
+  parts.push(
+    'Return "" for headline, blurb, type, and subtype when a value was already provided above.',
     'A subtype must come from the legal lists below (matched to the type); use "" if none fits:',
     subtypeLists,
   );
