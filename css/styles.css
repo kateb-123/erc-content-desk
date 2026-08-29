@@ -180,7 +180,15 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .sort-actions button { flex: 1; padding: 0.7rem; font-size: 1rem; }
 .sort-bar { max-width: 640px; height: 4px; background: #eee; border-radius: 2px; margin: .2rem 0 .6rem; }
 .sort-bar-fill { height: 4px; background: var(--accent); border-radius: 2px; }
-.sort-filters { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .85rem; margin: 0 0 .8rem; }
+.sort-body { display: flex; align-items: flex-start; gap: 2.5rem; margin-top: .6rem; }
+.sort-nav { display: flex; flex-direction: column; align-items: flex-start; gap: .45rem; min-width: 9.5rem; }
+.sort-main { flex: 1; min-width: 0; }
+@media (max-width: 700px) {
+  .sort-body { display: block; }
+  .sort-nav { flex-direction: row; flex-wrap: wrap; margin-bottom: .8rem; }
+}
+.decide-blocked { font-size: .85rem; color: #6b4e00; margin: .5rem 0 0; }
+.sort-actions button:disabled { opacity: .45; cursor: default; }
 .sort-group { font-weight: 600; margin: .2rem 0 0; }
 .sort-carousel { display: flex; align-items: center; gap: .35rem; max-width: 700px; }
 .sort-carousel .sort-card { flex: 1; min-width: 0; }

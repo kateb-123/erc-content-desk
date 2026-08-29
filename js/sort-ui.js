@@ -59,7 +59,8 @@ export function renderSort(container, props) {
   // where you jumped in; the darker text tracks the group you're passing
   // through as the stream flows on.
   const currentGroup = visible.length ? sectionOf(visible[idx]) : null;
-  const filters = el('p', 'sort-filters');
+  const body = el('div', 'sort-body');
+  const nav = el('nav', 'sort-nav');
   for (const [key, label] of FILTER_LABELS) {
     const count = key === '' ? counts.all : counts[key];
     let cls = 'sort-filter';
@@ -68,9 +69,11 @@ export function renderSort(container, props) {
     const btn = el('button', cls, `${label} (${count})`);
     btn.type = 'button';
     btn.addEventListener('click', () => onFilter(key));
-    filters.append(btn);
+    nav.append(btn);
   }
-  container.append(filters);
+  const main = el('div', 'sort-main');
+  body.append(nav, main);
+  container.append(body);
 
   const attachKeys = handlers => {
     keyHandler = event => {
@@ -82,11 +85,11 @@ export function renderSort(container, props) {
   };
 
   if (!visible.length) {
-    container.append(el('p', 'empty', sortedCount ? 'All sorted.' : 'Nothing to sort.'));
+    main.append(el('p', 'empty', sortedCount ? 'All sorted.' : 'Nothing to sort.'));
     if (lastDecision) {
       const undo = el('button', 'undo-link', 'Undo last (U)');
       undo.addEventListener('click', () => { undo.disabled = true; onUndo(); });
-      container.append(undo);
+      main.append(undo);
       attachKeys({ u: onUndo });
     }
     return;
@@ -97,7 +100,7 @@ export function renderSort(container, props) {
   const groupLabel = FILTER_LABELS.find(([k]) => k === groupKey)?.[1] ?? 'To review';
   const inGroup = visible.filter(r => sectionOf(r) === groupKey).length;
 
-  container.append(el('p', 'sort-group', `${groupLabel} — ${inGroup} to go`));
+  main.append(el('p', 'sort-group', `${groupLabel} — ${inGroup} to go`));
   const card = el('div', 'sort-card');
   const dupes = duplicateFlags(rows);
   const badges = el('div');
@@ -254,6 +257,15 @@ export function renderSort(container, props) {
   const trashBtn = mk('Trash', 'btn-trash', 'trash');
   actions.append(keepBtn, circleBtn, trashBtn);
   card.append(actions);
+
+  // A card with open work can't be decided: fix it first (or browse past it).
+  const blockers = [];
+  if (mustFix) blockers.push('set a type');
+  if (linkState === 'alert') blockers.push('check the link');
+  if (blockers.length) {
+    for (const b of [keepBtn, circleBtn, trashBtn]) b.disabled = true;
+    card.append(el('p', 'decide-blocked', `Before deciding: ${blockers.join(' · ')}.`));
+  }
   card.append(el('p', 'keys-hint', 'K keep · C circle back · T trash · U undo · ← → browse'));
   if (lastDecision) {
     const undo = el('button', 'undo-link', 'Undo last (U)');
@@ -274,7 +286,7 @@ export function renderSort(container, props) {
   next.setAttribute('aria-label', 'Next card');
   next.addEventListener('click', () => onBrowse?.(idx + 1));
   carousel.append(prev, card, next);
-  container.append(carousel);
+  main.append(carousel);
 
   // Dots track the current section only — one dot per card in this group.
   const groupCards = visible.map((r, i) => i).filter(i => sectionOf(visible[i]) === groupKey);
@@ -287,9 +299,9 @@ export function renderSort(container, props) {
       dot.addEventListener('click', () => onBrowse?.(i));
       dots.append(dot);
     }
-    container.append(dots);
+    main.append(dots);
   } else if (groupCards.length > 15) {
-    container.append(el('p', 'browse-pos', `${groupCards.indexOf(idx) + 1} of ${groupCards.length} in ${groupLabel}`));
+    main.append(el('p', 'browse-pos', `${groupCards.indexOf(idx) + 1} of ${groupCards.length} in ${groupLabel}`));
   }
 
   attachKeys({
