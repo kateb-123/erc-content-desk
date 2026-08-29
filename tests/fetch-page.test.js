@@ -56,6 +56,15 @@ test('resolvesPublic accepts a public address and rejects private/loopback/link-
   assert.equal(await resolvesPublic('x', async () => []), false);
 });
 
+test('resolvesPublic rejects the widened IPv4 blocklist and an fc00::/7 ULA address', async () => {
+  assert.equal(await resolvesPublic('x', async () => [{ address: '240.0.0.1', family: 4 }]), false);
+  assert.equal(await resolvesPublic('x', async () => [{ address: '255.255.255.255', family: 4 }]), false);
+  assert.equal(await resolvesPublic('x', async () => [{ address: '198.18.0.5', family: 4 }]), false);
+  assert.equal(await resolvesPublic('x', async () => [{ address: '198.19.0.5', family: 4 }]), false);
+  assert.equal(await resolvesPublic('x', async () => [{ address: '192.0.0.10', family: 4 }]), false);
+  assert.equal(await resolvesPublic('x', async () => [{ address: 'fd12::1', family: 6 }]), false);
+});
+
 test('fetchPageText follows one redirect to a fetchable public URL and returns its text', async () => {
   const fake = async (url) => {
     if (url === 'https://example.org/start') {
@@ -87,4 +96,42 @@ test('fetchPageText returns empty after more than 5 redirect hops', async () => 
   };
   assert.equal(await fetchPageText('https://example.org/start', fake, publicLookup), '');
   assert.equal(calls, 5);
+});
+
+test('fetchPageText enforces a shared time budget and bails before spending it', async () => {
+  const realNow = Date.now;
+  let calls = 0;
+  // First Date.now() call records the start; every call after that reports
+  // the budget as already blown, so no hop should ever call fetchImpl.
+  Date.now = () => { calls += 1; return calls === 1 ? 0 : 999999; };
+  const fake = async () => { throw new Error('fetchImpl should never be called once the budget is spent'); };
+  try {
+    assert.equal(await fetchPageText('https://example.org/x', fake, publicLookup), '');
+  } finally {
+    Date.now = realNow;
+  }
+});
+
+test('fetchPageText rejects a response whose content-length exceeds the memory cap', async () => {
+  const fake = async () => new Response(new ReadableStream({
+    start(controller) { controller.enqueue(new TextEncoder().encode('<p>short</p>')); controller.close(); },
+  }), { status: 200, headers: { 'Content-Type': 'text/html', 'Content-Length': '5000000' } });
+  assert.equal(await fetchPageText('https://example.org/x', fake, publicLookup), '');
+});
+
+test('fetchPageText reads a streaming body incrementally and truncates rather than hanging', async () => {
+  const chunk = '<p>' + 'x'.repeat(1000) + '</p>';
+  let cancelled = false;
+  const stream = new ReadableStream({
+    pull(controller) {
+      if (cancelled) return;
+      controller.enqueue(new TextEncoder().encode(chunk));
+    },
+    cancel() { cancelled = true; },
+  });
+  const fake = async () => new Response(stream, { status: 200, headers: { 'Content-Type': 'text/html' } });
+  const result = await fetchPageText('https://example.org/x', fake, publicLookup);
+  assert.ok(result.length > 0);
+  assert.ok(result.length <= 12000);
+  assert.equal(cancelled, true);
 });

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { blankRow } from '../js/schema.js';
 import {
   pendingRows, circlebackRows, decidedRows,
-  keep, trash, circleback, undecide, applyExtracted,
+  keep, trash, circleback, undecide,
   applyExtractedWithProvenance, withoutAutoFilled,
   readyToPublish, publishedRows, buildPool,
   markPublished, markNewsletterIssue,
@@ -28,16 +28,6 @@ test('circleback appends a note on its own line', () => {
   assert.equal(circleback(r).note, 'from Andy');
 });
 
-test('applyExtracted merges only non-empty CSV fields and never touches status', () => {
-  const r = row({ headline: 'Typed title', blurb: 'typed' });
-  const out = applyExtracted(r, { date: '2026-09-01', headline: '', bogus: 'x', time: 305 });
-  assert.equal(out.date, '2026-09-01');
-  assert.equal(out.headline, 'Typed title');   // empty extraction never clobbers
-  assert.equal(out.time, '305');               // string-coerced
-  assert.equal(out.bogus, undefined);
-  assert.equal(out.status, 'new');
-  assert.equal(r.date, '');
-});
 
 test('filters split by status and publish state', () => {
   const rows = [

@@ -207,7 +207,8 @@ export function render() {
         .then(() => subtype && editField(state.rows.find(r => r.id === row.id), 'subtype', subtype))
         .then(() => {
           const current = state.rows.find(r => r.id === row.id);
-          const cleared = withoutAutoFilled(current.auto_filled, ['type', 'subtype']);
+          if (!current) return undefined;
+          const cleared = withoutAutoFilled(current.auto_filled, subtype ? ['type', 'subtype'] : ['type']);
           if (cleared === String(current.auto_filled ?? '')) return undefined;
           return editField(current, 'auto_filled', cleared);
         }),

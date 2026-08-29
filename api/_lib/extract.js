@@ -4,7 +4,7 @@
  * the typed text. Offline-testable: no network calls here; api/submit.js owns
  * the Claude call. Runs on Haiku — a fraction of a cent per submission.
  */
-import { TYPES } from '../../js/schema.js';
+import { TYPES, isValidType, isValidSubtype } from '../../js/schema.js';
 
 const FIELD_KEYS = ['date', 'source', 'topic', 'deadline', 'medium', 'authors', 'time', 'location'];
 const GUESS_KEYS = ['headline', 'blurb', 'type', 'subtype'];
@@ -75,9 +75,9 @@ export function normalizeExtraction(extracted, row) {
     if (value === undefined || value === null || String(value) === '') continue;
     fields[key] = String(value);
   }
-  if (fields.type && !TYPES[fields.type]) delete fields.type;
+  if (fields.type && !isValidType(fields.type)) delete fields.type;
   const effectiveType = row?.type || fields.type || '';
-  if (fields.subtype && !(TYPES[effectiveType]?.subtypes ?? []).includes(fields.subtype)) {
+  if (fields.subtype && !isValidSubtype(effectiveType, fields.subtype)) {
     delete fields.subtype;
   }
   if (extracted?.needs_review === true) {

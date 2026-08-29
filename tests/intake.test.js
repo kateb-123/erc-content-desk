@@ -11,19 +11,40 @@ test('a complete submission validates clean', () => {
   assert.deepEqual(validateSubmission(good), []);
 });
 
-test('every missing field gets its own plain-English error', () => {
+test('missing link and submitter still get their own plain-English errors', () => {
   const errors = validateSubmission({});
-  assert.ok(errors.includes('Add a title.'));
   assert.ok(errors.includes('Add a link.'));
-  assert.ok(errors.includes('Pick a type.'));
   assert.ok(errors.includes('Add your name or initials.'));
 });
 
-test('blurb is required except for headlines', () => {
-  assert.ok(validateSubmission({ ...good, blurb: '' })
-    .includes('Add a blurb — headlines are the only type that can skip it.'));
+test('title is optional — a link-only submission validates clean', () => {
+  assert.deepEqual(validateSubmission({ link: 'https://x.org/p', submitter: 'KB' }), []);
+});
+
+test('blurb is optional for every type, including non-headlines', () => {
+  assert.deepEqual(validateSubmission({ ...good, blurb: '' }), []);
   assert.deepEqual(
     validateSubmission({ ...good, blurb: '', type: 'headline', subtype: 'Texas' }), []);
+});
+
+test('type is optional — a blank type validates clean', () => {
+  assert.deepEqual(
+    validateSubmission({ link: 'https://x.org/p', submitter: 'KB', type: '', subtype: '' }), []);
+});
+
+test('a non-blank invalid type is still rejected', () => {
+  const errors = validateSubmission({ link: 'https://x.org/p', submitter: 'KB', type: 'bogus' });
+  assert.ok(errors.includes('Pick a real type.'));
+});
+
+test('missing link is still rejected even with everything else present', () => {
+  const errors = validateSubmission({ ...good, link: '' });
+  assert.ok(errors.includes('Add a link.'));
+});
+
+test('missing submitter is still rejected even with everything else present', () => {
+  const errors = validateSubmission({ ...good, submitter: '' });
+  assert.ok(errors.includes('Add your name or initials.'));
 });
 
 test('validateSubmission rejects a link that is not http(s)', () => {

@@ -14,15 +14,11 @@ export function validateSubmission(
   { allowBlankSubtype = false } = {},
 ) {
   const errors = [];
-  if (!s(title)) errors.push('Add a title.');
   if (!s(link)) errors.push('Add a link.');
   else if (!isSafeLink(link)) errors.push('That link needs to be a normal web link (http or https).');
-  if (!isValidType(s(type))) errors.push('Pick a type.');
-  else if (!(allowBlankSubtype && !s(subtype)) && !isValidSubtype(s(type), s(subtype))) {
+  if (s(type) && !isValidType(s(type))) errors.push('Pick a real type.');
+  else if (s(type) && !(allowBlankSubtype && !s(subtype)) && !isValidSubtype(s(type), s(subtype))) {
     errors.push('Pick a subtype.');
-  }
-  if (!s(blurb) && s(type) !== 'headline') {
-    errors.push('Add a blurb — headlines are the only type that can skip it.');
   }
   if (!s(submitter)) errors.push('Add your name or initials.');
   return errors;

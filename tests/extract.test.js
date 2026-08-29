@@ -79,3 +79,13 @@ test('normalizeExtraction validates guessed typing against the schema', () => {
   const wrongForHuman = normalizeExtraction({ type: '', subtype: 'Texas' }, typedRow);
   assert.equal('subtype' in wrongForHuman.fields, false);
 });
+
+test('normalizeExtraction rejects prototype-chain names via the safe schema helpers', () => {
+  const row = blankRow({ type: '', subtype: '' });
+  const guessed = normalizeExtraction({ type: 'constructor', subtype: 'toString' }, row);
+  assert.equal('type' in guessed.fields, false);
+  assert.equal('subtype' in guessed.fields, false);
+  const typedRow = blankRow({ type: 'constructor', subtype: '' });
+  const subtypeGuess = normalizeExtraction({ subtype: 'hasOwnProperty' }, typedRow);
+  assert.equal('subtype' in subtypeGuess.fields, false);
+});

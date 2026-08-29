@@ -38,21 +38,12 @@ export function undecide(row) {
 }
 
 /**
- * Merge extracted CSV fields into a row. Only non-empty extracted values are
- * applied, so extraction can never blank out what a submitter typed. Status
- * is untouched — extraction runs at submit time on 'new' rows.
+ * Merge extracted CSV fields into a row, with provenance: only non-empty
+ * extracted values are applied, and only into columns the row left blank, so
+ * extraction can never overwrite what a submitter typed. Status is untouched
+ * — extraction runs at submit time on 'new' rows. Returns the merged row plus
+ * the list of CSV columns the machine filled (also stamped into auto_filled).
  */
-export function applyExtracted(row, fields) {
-  const next = { ...row };
-  for (const col of CSV_COLUMNS) {
-    const value = fields?.[col];
-    if (value === undefined || value === null || String(value) === '') continue;
-    next[col] = String(value);
-  }
-  return next;
-}
-
-/** applyExtracted plus provenance: which CSV columns the machine filled. */
 export function applyExtractedWithProvenance(row, fields) {
   const next = { ...row };
   const filled = [];

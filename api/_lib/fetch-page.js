@@ -18,6 +18,10 @@ const FETCH_TIMEOUT_MS = 8000;
 const MAX_RESPONSE_CHARS = 1_000_000;
 const MAX_REDIRECTS = 5;
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+/** Whole fetchPageText call (DNS + all hops) must finish inside this window,
+ * well under Vercel's maxDuration, so a slow/malicious chain can't strand
+ * the submission past the function timeout. */
+const TOTAL_BUDGET_MS = 10000;
 
 /** http(s) only, and never localhost, .local, or a literal-IP host. */
 export function isFetchableUrl(url) {
@@ -42,6 +46,10 @@ function isPrivateIPv4(addr) {
   if (a === 169 && b === 254) return true;
   if (a === 172 && b >= 16 && b <= 31) return true;
   if (a === 192 && b === 168) return true;
+  if (a === 192 && b === 0 && parts[2] === 0) return true; // 192.0.0.0/24
+  if (a === 198 && (b === 18 || b === 19)) return true; // 198.18.0.0/15
+  if (a === 240) return true; // 240.0.0.0/4 (reserved)
+  if (a === 255 && b === 255 && parts[2] === 255 && parts[3] === 255) return true; // 255.255.255.255
   return false;
 }
 
@@ -84,17 +92,47 @@ export function truncateForPrompt(text, cap = MAX_PAGE_CHARS) {
   return s.length <= cap ? s : s.slice(0, cap);
 }
 
+/** Read a response body incrementally, stopping once it exceeds the char cap.
+ * Falls back to res.text() (with the same cap) when the runtime gives no
+ * streaming reader. Cancels the reader once the cap is hit so the rest of
+ * the response is never buffered. */
+async function readBodyCapped(res, cap) {
+  if (!res.body || typeof res.body.getReader !== 'function') {
+    return (await res.text()).slice(0, cap);
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let text = '';
+  try {
+    while (text.length <= cap) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      text += decoder.decode(value, { stream: true });
+    }
+  } finally {
+    try { await reader.cancel(); } catch { /* best-effort */ }
+  }
+  return text.slice(0, cap);
+}
+
 /** Best-effort page text; '' on any failure. Follows redirects manually, re-validating each hop. */
 export async function fetchPageText(url, fetchImpl = fetch, lookupImpl) {
+  const startedAt = Date.now();
+  const remainingBudget = () => TOTAL_BUDGET_MS - (Date.now() - startedAt);
   try {
     let current = String(url ?? '');
     for (let hop = 0; hop < MAX_REDIRECTS; hop++) {
       if (!isFetchableUrl(current)) return '';
+
+      let remaining = remainingBudget();
+      if (remaining <= 0) return '';
       const parsed = new URL(current);
       if (!(await resolvesPublic(parsed.hostname, lookupImpl))) return '';
 
+      remaining = remainingBudget();
+      if (remaining <= 0) return '';
       const res = await fetchImpl(current, {
-        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        signal: AbortSignal.timeout(Math.min(FETCH_TIMEOUT_MS, remaining)),
         redirect: 'manual',
         headers: { 'User-Agent': 'ERC Content Desk (metadata reader)' },
       });
@@ -109,7 +147,9 @@ export async function fetchPageText(url, fetchImpl = fetch, lookupImpl) {
       if (!res.ok) return '';
       const type = String(res.headers.get('content-type') ?? '');
       if (!/text\/html|text\/plain|application\/xhtml/.test(type)) return '';
-      const body = (await res.text()).slice(0, MAX_RESPONSE_CHARS);
+      const contentLength = Number(res.headers.get('content-length'));
+      if (Number.isFinite(contentLength) && contentLength > MAX_RESPONSE_CHARS) return '';
+      const body = await readBodyCapped(res, MAX_RESPONSE_CHARS);
       const text = /html/.test(type) ? pageTextFromHtml(body) : body.replace(/\s+/g, ' ').trim();
       return truncateForPrompt(text);
     }
