@@ -1,5 +1,5 @@
 /**
- * Pure view helpers for the Home queue table: sorting, filtering, counts.
+ * Pure view helpers for the Home queue table: sorting and formatting dates.
  * View state only — callers keep the state; nothing here touches the Sheet.
  */
 import { TYPE_LABELS } from './schema.js';
