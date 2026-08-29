@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sortStream, sortCounts, filterStream } from '../js/sort-view.js';
+import { sortStream, sortCounts, streamFrom } from '../js/sort-view.js';
 
 // Shuffled on purpose: statuses mixed in, groups interleaved, dates unordered.
 const rows = [
@@ -35,14 +35,19 @@ test('sortCounts totals pending rows per bucket', () => {
   });
 });
 
-test('filterStream: all, untyped, and one type', () => {
+test('streamFrom: sections are jump points, not walls — the stream continues past the group and wraps', () => {
   const stream = sortStream(rows);
-  assert.equal(filterStream(stream, '').length, 10);
-  assert.deepEqual(filterStream(stream, 'untyped').map(r => r.id), ['u1']);
-  assert.deepEqual(filterStream(stream, 'research').map(r => r.id), ['erc2', 'r1', 'r2', 'r3']);
+  assert.deepEqual(streamFrom(stream, '').map(r => r.id), stream.map(r => r.id));
+  assert.deepEqual(streamFrom(stream, 'event').map(r => r.id),
+    ['e1', 'o1', 'h1', 'u1', 'weird', 'erc2', 'erc1', 'r1', 'r2', 'r3']);
+  assert.deepEqual(streamFrom(stream, 'untyped').map(r => r.id),
+    ['u1', 'weird', 'erc2', 'erc1', 'r1', 'r2', 'r3', 'e1', 'o1', 'h1']);
+  assert.deepEqual(streamFrom(stream, 'erc').map(r => r.id), stream.map(r => r.id));
 });
 
-test('isErc and the erc filter pick spotlight requests and ERC Research', () => {
-  const stream = sortStream(rows);
-  assert.deepEqual(filterStream(stream, 'erc').map(r => r.id), ['erc2', 'erc1']);
+test('streamFrom: an empty anchor group starts at the next group after it, keeping every card', () => {
+  const noEvents = rows.filter(r => !(r.type === 'event' && !r.spotlight_request));
+  const stream = sortStream(noEvents);
+  assert.deepEqual(streamFrom(stream, 'event').map(r => r.id),
+    ['o1', 'h1', 'u1', 'weird', 'erc2', 'erc1', 'r1', 'r2', 'r3']);
 });

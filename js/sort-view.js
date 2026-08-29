@@ -50,10 +50,26 @@ export function sortCounts(rows) {
   return counts;
 }
 
-/** '' = everything; 'erc' = spotlight/ERC Research; 'untyped' = rows with no type; else exact type match. */
-export function filterStream(stream, key) {
-  if (!key) return stream.slice();
-  if (key === 'erc') return stream.filter(isErc);
-  if (key === 'untyped') return stream.filter(r => !r.type);
-  return stream.filter(r => r.type === key);
+/** Which section a row belongs to: 'erc', a TYPE_ORDER type, or 'untyped'. */
+export function sectionOf(row) {
+  if (isErc(row)) return 'erc';
+  return TYPE_ORDER.includes(row.type) ? row.type : 'untyped';
+}
+
+const SECTION_ORDER = ['erc', ...TYPE_ORDER, 'untyped'];
+
+/**
+ * Sections are jump points, not walls: '' keeps the canonical stream; a key
+ * starts the stream at that section and continues through the rest, wrapping
+ * around, so sorting never stops until everything is decided. Anchoring on an
+ * empty section starts at the next section after it.
+ */
+export function streamFrom(stream, key) {
+  const at = SECTION_ORDER.indexOf(key);
+  if (at < 0) return stream.slice();
+  const rank = new Map(SECTION_ORDER.map((s, i) =>
+    [s, (i - at + SECTION_ORDER.length) % SECTION_ORDER.length]));
+  return stream.map((row, i) => ({ row, i }))
+    .sort((a, b) => (rank.get(sectionOf(a.row)) - rank.get(sectionOf(b.row))) || (a.i - b.i))
+    .map(x => x.row);
 }
