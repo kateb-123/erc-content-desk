@@ -14,6 +14,7 @@ export const CSV_COLUMNS = [
 export const WORKFLOW_COLUMNS = [
   'id', 'status', 'submitter', 'submitted_at', 'spotlight_request',
   'note', 'original_text', 'published_at', 'newsletter_issue', 'auto_filled',
+  'link_checked',
 ];
 
 export const SHEET_COLUMNS = [...CSV_COLUMNS, ...WORKFLOW_COLUMNS];

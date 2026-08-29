@@ -207,15 +207,15 @@ export function render() {
       lastDecision: state.lastDecision,
       onFilter: key => { state.sortFilter = key; render(); },
       onDecide: decide, onUndo: undoLast,
-      onEditType: (row, type, subtype) => editField(row, 'type', type)
-        .then(() => subtype && editField(state.rows.find(r => r.id === row.id), 'subtype', subtype))
-        .then(() => {
-          const current = state.rows.find(r => r.id === row.id);
-          if (!current) return undefined;
-          const cleared = withoutAutoFilled(current.auto_filled, subtype ? ['type', 'subtype'] : ['type']);
-          if (cleared === String(current.auto_filled ?? '')) return undefined;
-          return editField(current, 'auto_filled', cleared);
-        }),
+      // One PATCH for type + subtype + provenance together — sequential
+      // round-trips re-render mid-save and reopen the picker.
+      onEditType: (row, type, subtype) => persist([{
+        ...row, type, subtype: subtype || row.subtype,
+        auto_filled: withoutAutoFilled(row.auto_filled, subtype ? ['type', 'subtype'] : ['type']),
+      }]),
+      onVerifyLink: (row, newLink) => persist([{
+        ...row, ...(newLink ? { link: newLink } : {}), link_checked: 'human',
+      }]),
     });
   } else if (state.screen === 'finalize') {
     renderFinalize(screens.finalize, {

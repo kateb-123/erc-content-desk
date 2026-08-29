@@ -66,6 +66,23 @@ export function withoutAutoFilled(list, cleared) {
     .filter(f => !cleared.includes(f)).join(',');
 }
 
+/** What submit records in link_checked after trying to read the linked page. */
+export function linkCheckedFromFetch(pageText) {
+  return pageText ? 'ok' : 'failed';
+}
+
+/**
+ * How Sort treats a row's link. 'alert' = the desk recorded a failed read, an
+ * editor must Verify or Change the link; 'verified' = a human did; 'quiet'
+ * otherwise — including legacy rows with no link_checked value at all.
+ */
+export function linkCheckState(row) {
+  if (!String(row.link ?? '').trim()) return 'quiet';
+  if (row.link_checked === 'human') return 'verified';
+  if (row.link_checked === 'failed') return 'alert';
+  return 'quiet';
+}
+
 /**
  * Newsletter-only: spotlight events stay off the public Exchange — webinars
  * excepted. Narrower than sort-view.js's isErc (which also counts ERC

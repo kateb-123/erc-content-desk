@@ -7,7 +7,7 @@
 import { randomUUID } from 'node:crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import { buildSubmission, validateSubmission } from '../js/intake.js';
-import { applyExtractedWithProvenance } from '../js/workflow.js';
+import { applyExtractedWithProvenance, linkCheckedFromFetch } from '../js/workflow.js';
 import { fetchPageText } from './_lib/fetch-page.js';
 import {
   EXTRACT_MODEL, EXTRACTION_SCHEMA, buildExtractionPrompt,
@@ -52,6 +52,7 @@ export default async function handler(req, res) {
     const warnings = [];
     try {
       const pageText = row.link ? await fetchPageText(row.link) : '';
+      if (row.link) row = { ...row, link_checked: linkCheckedFromFetch(pageText) };
       const extracted = await extractInto(row, pageText);
       row = extracted.row;
       warnings.push(...extracted.warnings);

@@ -4,8 +4,8 @@
  * Trash with K / C / T shortcuts and U for undo. No stack picker; the
  * filters are quiet text buttons and the type pickers hide behind "change".
  */
-import { duplicateFlags } from './workflow.js';
-import { TYPES, TYPE_LABELS, subtypesFor } from './schema.js';
+import { duplicateFlags, linkCheckState } from './workflow.js';
+import { TYPE_ORDER, TYPE_LABELS, subtypesFor } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref } from './links.js';
 import { sortStream, sortCounts, filterStream, isErc } from './sort-view.js';
@@ -109,53 +109,130 @@ export function renderSort(container, props) {
   if (row.blurb) card.append(el('p', 'item-blurb', row.blurb));
   if (row.note) card.append(el('p', 'item-note', `Note: ${row.note}`));
 
-  // The quiet type line: current typing, auto-filed marker, change, source.
-  const typeLine = el('p', 'type-line');
-  typeLine.append(el('span', 'type-label',
-    `${row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'} · ${row.subtype || '—'}`));
-  const autoTyped = String(row.auto_filled ?? '').split(',')
-    .some(f => f === 'type' || f === 'subtype');
-  if (autoTyped) {
-    const flag = el('span', 'auto-flag', '!');
-    flag.title = 'Filed by the desk from the link/blurb — check it.';
-    flag.setAttribute('role', 'img');
-    flag.setAttribute('aria-label', 'Type was filed automatically — check it');
-    typeLine.append(' ', flag);
-  }
+  // The filing section: quiet type line, link-check alert, pill picker.
+  // No "— · —" placeholder — an untyped card's picker speaks for itself.
+  const fileRow = el('div', 'file-row');
+  const linkState = linkCheckState(row);
+  const href = safeHref(row.link);
   const mustFix = !row.type || !row.subtype;
   const fixOpen = mustFix || fixOpenId === row.id;
-  if (!fixOpen) {
-    const change = el('button', 'linkish', 'change');
-    change.type = 'button';
-    change.addEventListener('click', () => { fixOpenId = row.id; rerenderSelf(); });
-    typeLine.append(' ', change);
+
+  const typeLine = el('p', 'type-line');
+  if (row.type && row.subtype) {
+    typeLine.append(el('span', 'type-label',
+      `${TYPE_LABELS[row.type] ?? row.type} · ${row.subtype}`));
+    const autoTyped = String(row.auto_filled ?? '').split(',')
+      .some(f => f === 'type' || f === 'subtype');
+    if (autoTyped) {
+      const flag = el('span', 'auto-flag', '!');
+      flag.title = 'Filed by the desk from the link/blurb — check it.';
+      flag.setAttribute('role', 'img');
+      flag.setAttribute('aria-label', 'Type was filed automatically — check it');
+      typeLine.append(' ', flag);
+    }
+    if (!fixOpen) {
+      const change = el('button', 'linkish', 'change');
+      change.type = 'button';
+      change.addEventListener('click', () => { fixOpenId = row.id; rerenderSelf(); });
+      typeLine.append(' ', change);
+    }
   }
-  const href = safeHref(row.link);
-  if (href) {
+  // The alert strip carries the link while it needs checking.
+  if (href && linkState !== 'alert') {
     const a = el('a', 'source-link', 'Open source ↗');
     a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
-    typeLine.append(' · ', a);
+    typeLine.append(typeLine.childNodes.length ? ' · ' : '', a);
+    if (linkState === 'verified') typeLine.append(' ', el('span', 'link-verified', '✓ verified'));
   }
-  card.append(typeLine);
+  if (typeLine.childNodes.length) fileRow.append(typeLine);
+
+  if (linkState === 'alert') {
+    const alert = el('div', 'link-alert');
+    const line = el('p', 'alert-line');
+    line.append(el('span', 'alert-mark', '!'), ' Check link');
+    const actions = el('p', 'alert-actions');
+    if (href) {
+      const a = el('a', '', 'Open source ↗');
+      a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
+      a.addEventListener('click', () => actions.classList.add('is-open'));
+      line.append(' · ', a);
+    } else {
+      actions.classList.add('is-open');
+    }
+    const verify = el('button', 'alert-btn', 'Verify');
+    verify.type = 'button';
+    verify.addEventListener('click', () => {
+      for (const x of card.querySelectorAll('button')) x.disabled = true;
+      props.onVerifyLink?.(row);
+    });
+    const change = el('button', 'alert-btn', 'Change link');
+    change.type = 'button';
+    const changeRow = el('p', 'alert-change');
+    const input = document.createElement('input');
+    input.type = 'url';
+    input.placeholder = 'paste the right link';
+    const saveLink = el('button', 'alert-btn', 'Save link');
+    saveLink.type = 'button';
+    change.addEventListener('click', () => { changeRow.classList.add('is-open'); input.focus(); });
+    const saveFixed = () => {
+      const fixed = input.value.trim();
+      if (!safeHref(fixed)) { input.classList.add('is-invalid'); return; }
+      for (const x of card.querySelectorAll('button')) x.disabled = true;
+      props.onVerifyLink?.(row, fixed);
+    };
+    saveLink.addEventListener('click', saveFixed);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') saveFixed(); });
+    input.addEventListener('input', () => input.classList.remove('is-invalid'));
+    actions.append(verify, ' ', change);
+    changeRow.append(input, ' ', saveLink);
+    alert.append(line, actions, changeRow);
+    fileRow.append(alert);
+  }
 
   if (fixOpen) {
-    const fix = el('p', 'item-note', mustFix ? 'Type: pick or fix before deciding.' : 'Type:');
-    const typeSel = document.createElement('select');
-    typeSel.replaceChildren(new Option('Type…', ''),
-      ...Object.keys(TYPES).map(t => new Option(t, t, false, t === row.type)));
-    const subSel = document.createElement('select');
-    const fillSubs = () => subSel.replaceChildren(new Option('Subtype…', ''),
-      ...subtypesFor(typeSel.value).map(s => new Option(s, s, false, s === row.subtype)));
-    fillSubs();
-    typeSel.addEventListener('change', fillSubs);
-    const apply = el('button', '', 'Set type');
-    apply.addEventListener('click', () => {
+    const fix = el('div', 'type-pick');
+    fix.append(el('p', 'pick-label', mustFix ? 'Needs a type — tap one:' : 'Type — tap one:'));
+    const typeChips = el('div', 'type-chips');
+    const subWrap = el('div', 'sub-pick');
+    const subChips = el('div', 'type-chips');
+    subWrap.append(el('p', 'pick-label', 'Now the subtype:'), subChips);
+    const saveBtn = el('button', 'save-type-btn', 'Save type');
+    saveBtn.type = 'button';
+    let pickedType = row.type || '';
+    let pickedSub = row.subtype || '';
+    const syncSave = () => saveBtn.classList.toggle('is-open', Boolean(pickedType && pickedSub));
+    const renderSubs = () => {
+      subChips.replaceChildren(...subtypesFor(pickedType).map(s => {
+        const b = el('button', `type-chip${s === pickedSub ? ' is-picked' : ''}`, s);
+        b.type = 'button';
+        b.addEventListener('click', () => { pickedSub = s; renderSubs(); syncSave(); });
+        return b;
+      }));
+      subWrap.classList.toggle('is-open', Boolean(pickedType));
+    };
+    const renderTypes = () => {
+      typeChips.replaceChildren(...TYPE_ORDER.map(t => {
+        const b = el('button', `type-chip${t === pickedType ? ' is-picked' : ''}`, TYPE_LABELS[t] ?? t);
+        b.type = 'button';
+        b.addEventListener('click', () => {
+          if (pickedType !== t) { pickedType = t; pickedSub = ''; }
+          renderTypes(); renderSubs(); syncSave();
+        });
+        return b;
+      }));
+    };
+    renderTypes(); renderSubs(); syncSave();
+    saveBtn.addEventListener('click', () => {
       for (const x of card.querySelectorAll('button')) x.disabled = true;
-      props.onEditType?.(row, typeSel.value, subSel.value);
+      fix.replaceChildren(el('p', 'pick-saved', '✓ Saved'));
+      fixOpenId = null;
+      props.onEditType?.(row, pickedType, pickedSub);
     });
-    fix.append(' ', typeSel, ' ', subSel, ' ', apply);
-    card.append(fix);
+    fix.append(typeChips, subWrap, saveBtn);
+    fileRow.append(fix);
   }
+
+  if (fileRow.childNodes.length) card.append(fileRow);
 
   const actions = el('div', 'sort-actions');
   const mk = (label, cls, action) => {

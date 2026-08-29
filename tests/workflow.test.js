@@ -8,7 +8,7 @@ import {
   readyToPublish, publishedRows, buildPool,
   markPublished, markNewsletterIssue,
   staleCirclebacks, duplicateFlags, counts,
-  newsletterOnly,
+  newsletterOnly, linkCheckedFromFetch, linkCheckState,
 } from '../js/workflow.js';
 
 const row = o => blankRow({ id: 'r1', status: 'new', ...o });
@@ -127,6 +127,23 @@ test('withoutAutoFilled removes only the named fields', () => {
   assert.equal(withoutAutoFilled('source', ['type', 'subtype']), 'source');
   assert.equal(withoutAutoFilled('', ['type']), '');
   assert.equal(withoutAutoFilled(undefined, ['type']), '');
+});
+
+test('linkCheckedFromFetch maps page text to ok/failed', () => {
+  assert.equal(linkCheckedFromFetch('Some page text'), 'ok');
+  assert.equal(linkCheckedFromFetch(''), 'failed');
+  assert.equal(linkCheckedFromFetch(undefined), 'failed');
+});
+
+test('linkCheckState: alert only for unread links, verified only for human checks', () => {
+  const link = 'https://example.org/x';
+  assert.equal(linkCheckState(blankRow({ link, link_checked: 'failed' })), 'alert');
+  assert.equal(linkCheckState(blankRow({ link, link_checked: 'human' })), 'verified');
+  assert.equal(linkCheckState(blankRow({ link, link_checked: 'ok' })), 'quiet');
+  // Legacy rows (no value) stay quiet — the alert only fires on a recorded failure.
+  assert.equal(linkCheckState(blankRow({ link, link_checked: '' })), 'quiet');
+  // No link: nothing to check, even if a stale 'failed' value is present.
+  assert.equal(linkCheckState(blankRow({ link: '', link_checked: 'failed' })), 'quiet');
 });
 
 test('newsletterOnly holds spotlight events except webinars', () => {
