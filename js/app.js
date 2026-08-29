@@ -15,7 +15,8 @@ const state = {
   screen: 'home',
   loaded: false,
   busy: false,
-  sortStack: '',            // '' = stack picker; else a type key
+  sortFilter: '',           // '' = all; 'untyped' or a type key (view state)
+  sortedThisVisit: 0,       // decisions made since page load (view state)
   lastDecision: null,       // { id, prevStatus }
   rewrites: null,           // null = not fetched; [] after; [{id, blurb}]
   publishPreview: null,
@@ -70,6 +71,7 @@ export async function persist(changed) {
 
 async function decide(row, action, note = '') {
   state.lastDecision = { id: row.id, prevStatus: row.status };
+  state.sortedThisVisit += 1;
   const next = action === 'keep' ? keep(row)
     : action === 'trash' ? trash(row)
     : circleback(row, note);
@@ -82,6 +84,7 @@ async function undoLast() {
   const row = state.rows.find(r => r.id === last.id);
   if (!row) return;
   state.lastDecision = null;
+  state.sortedThisVisit = Math.max(0, state.sortedThisVisit - 1);
   await persist([{ ...row, status: last.prevStatus }]);
 }
 
@@ -200,8 +203,9 @@ export function render() {
     });
   } else if (state.screen === 'sort') {
     renderSort(screens.sort, {
-      ...common, stack: state.sortStack, lastDecision: state.lastDecision,
-      onPickStack: stack => { state.sortStack = stack; render(); },
+      ...common, filter: state.sortFilter, sortedCount: state.sortedThisVisit,
+      lastDecision: state.lastDecision,
+      onFilter: key => { state.sortFilter = key; render(); },
       onDecide: decide, onUndo: undoLast,
       onEditType: (row, type, subtype) => editField(row, 'type', type)
         .then(() => subtype && editField(state.rows.find(r => r.id === row.id), 'subtype', subtype))
