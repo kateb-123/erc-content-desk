@@ -77,6 +77,16 @@ test('allowBlankSubtype does not excuse a non-blank invalid subtype', () => {
   assert.ok(validateSubmission(bad, { allowBlankSubtype: true }).includes('Pick a subtype.'));
 });
 
+test('blank type with non-blank subtype is rejected', () => {
+  const errors = validateSubmission({ link: 'https://x.org/p', submitter: 'KB', type: '', subtype: 'Texas' });
+  assert.ok(errors.includes('Pick a type before a subtype.'));
+});
+
+test('blank type with blank subtype validates clean', () => {
+  assert.deepEqual(
+    validateSubmission({ link: 'https://x.org/p', submitter: 'KB', type: '', subtype: '' }), []);
+});
+
 test('buildSubmission fills a v2 row, trimmed and null-safe', () => {
   const row = buildSubmission({
     ...good, title: '  Study on tutoring  ', spotlight: true,
