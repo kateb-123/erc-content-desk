@@ -48,6 +48,16 @@ export function renderPublish(container, { rows, preview, busy, onPreview, onPub
     container.append(skipList);
   }
 
+  if (preview.newsletterOnly && preview.newsletterOnly.length) {
+    const holdList = el('section');
+    holdList.append(el('h3', '', `Newsletter only — holding ${preview.newsletterOnly.length}`));
+    const ulH = el('ul');
+    for (const item of preview.newsletterOnly) ulH.append(el('li', '', item.headline));
+    holdList.append(ulH);
+    holdList.append(el('p', 'hint', 'ERC spotlight events stay out of the Exchange; webinars are the exception.'));
+    container.append(holdList);
+  }
+
   if (preview.notReady && preview.notReady.length) {
     const notReadyList = el('section');
     notReadyList.append(el('h3', '', `Not ready — needs a type (${preview.notReady.length})`));

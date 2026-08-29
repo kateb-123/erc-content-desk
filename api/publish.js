@@ -5,7 +5,7 @@
  * Never modifies or deletes an existing hub row.
  */
 import { readAllRows, updateRow } from './_lib/sheets.js';
-import { readyToPublish, markPublished } from '../js/workflow.js';
+import { readyToPublish, markPublished, newsletterOnly } from '../js/workflow.js';
 import { isValidType, isValidSubtype } from '../js/schema.js';
 import { isSafeLink } from '../js/links.js';
 import { fetchHubCsv, putHubCsv, diffAgainstHub, appendRowsToCsv, parseCsv } from './_lib/hub.js';
@@ -20,9 +20,11 @@ export default async function handler(req, res) {
     const candidates = readyToPublish(all);
 
     // Split candidates into publishable (valid type/subtype and a safe link) and notReady.
-    const publishable = candidates.filter(r =>
+    const eligible = candidates.filter(r =>
       isValidType(r.type) && isValidSubtype(r.type, r.subtype) && isSafeLink(r.link));
-    const notReady = candidates.filter(r => !publishable.includes(r));
+    const held = eligible.filter(newsletterOnly);
+    const publishable = eligible.filter(r => !newsletterOnly(r));
+    const notReady = candidates.filter(r => !eligible.includes(r));
 
     if (req.method === 'GET') {
       const { text } = await fetchHubCsv();
@@ -32,6 +34,7 @@ export default async function handler(req, res) {
         adding: newRows.map(label),
         skipped: skipped.map(label),
         notReady: notReady.map(label),
+        newsletterOnly: held.map(label),
         hubCount: Math.max(parseCsv(text).length - 1, 0),
       });
     }

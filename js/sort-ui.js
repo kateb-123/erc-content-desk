@@ -8,10 +8,10 @@ import { duplicateFlags } from './workflow.js';
 import { TYPES, TYPE_LABELS, subtypesFor } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref } from './links.js';
-import { sortStream, sortCounts, filterStream } from './sort-view.js';
+import { sortStream, sortCounts, filterStream, isErc } from './sort-view.js';
 
 const FILTER_LABELS = [
-  ['', 'All'], ['untyped', 'Untyped'], ['research', 'Research'],
+  ['', 'All'], ['erc', 'ERC'], ['untyped', 'Untyped'], ['research', 'Research'],
   ['event', 'Events'], ['opportunity', 'Opportunities'], ['headline', 'Headlines'],
 ];
 
@@ -53,7 +53,9 @@ export function renderSort(container, props) {
 
   // With All selected, the current card's own group gets a gentle highlight
   // so you can see which pile you are passing through.
-  const currentGroup = visible.length ? (visible[0].type || 'untyped') : null;
+  const currentGroup = visible.length
+    ? (isErc(visible[0]) ? 'erc' : (visible[0].type || 'untyped'))
+    : null;
   const filters = el('p', 'sort-filters');
   for (const [key, label] of FILTER_LABELS) {
     const count = key === '' ? counts.all : counts[key];
@@ -88,6 +90,11 @@ export function renderSort(container, props) {
   }
 
   const row = visible[0];
+  const groupOf = r => isErc(r) ? 'erc' : (r.type && FILTER_LABELS.some(([k]) => k === r.type)) ? r.type : 'untyped';
+  const groupKey = groupOf(row);
+  const groupLabel = FILTER_LABELS.find(([k]) => k === groupKey)?.[1] ?? 'Untyped';
+  const inGroup = visible.filter(r => groupOf(r) === groupKey).length;
+  container.append(el('p', 'sort-group', `${groupLabel} — ${inGroup} to go`));
   const card = el('div', 'sort-card');
   const dupes = duplicateFlags(rows);
   const badges = el('div');

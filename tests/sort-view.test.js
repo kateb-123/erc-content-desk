@@ -13,11 +13,13 @@ const rows = [
   { id: 'o1', status: 'new', type: 'opportunity', submitted_at: '2026-08-23T08:00:00Z' },
   { id: 'weird', status: 'new', type: 'legacy-type', submitted_at: '2026-08-21T08:00:00Z' },
   { id: 'r3', status: 'new', type: 'research', submitted_at: '' },
+  { id: 'erc1', status: 'new', type: 'event', subtype: 'A&M', spotlight_request: true, submitted_at: '2026-08-24T09:00:00Z' },
+  { id: 'erc2', status: 'new', type: 'research', subtype: 'ERC Research', submitted_at: '2026-08-23T09:00:00Z' },
 ];
 
 test('sortStream groups untyped first, then newsletter order, oldest first inside a group', () => {
   assert.deepEqual(sortStream(rows).map(r => r.id),
-    ['u1', 'r1', 'r2', 'r3', 'e1', 'o1', 'h1', 'weird']);
+    ['erc2', 'erc1', 'u1', 'r1', 'r2', 'r3', 'e1', 'o1', 'h1', 'weird']);
 });
 
 test('sortStream drops non-pending rows and does not mutate its input', () => {
@@ -29,13 +31,18 @@ test('sortStream drops non-pending rows and does not mutate its input', () => {
 
 test('sortCounts totals pending rows per bucket', () => {
   assert.deepEqual(sortCounts(rows), {
-    all: 8, untyped: 1, research: 3, event: 1, opportunity: 1, headline: 1,
+    all: 10, erc: 2, untyped: 1, research: 4, event: 2, opportunity: 1, headline: 1,
   });
 });
 
 test('filterStream: all, untyped, and one type', () => {
   const stream = sortStream(rows);
-  assert.equal(filterStream(stream, '').length, 8);
+  assert.equal(filterStream(stream, '').length, 10);
   assert.deepEqual(filterStream(stream, 'untyped').map(r => r.id), ['u1']);
-  assert.deepEqual(filterStream(stream, 'research').map(r => r.id), ['r1', 'r2', 'r3']);
+  assert.deepEqual(filterStream(stream, 'research').map(r => r.id), ['erc2', 'r1', 'r2', 'r3']);
+});
+
+test('isErc and the erc filter pick spotlight requests and ERC Research', () => {
+  const stream = sortStream(rows);
+  assert.deepEqual(filterStream(stream, 'erc').map(r => r.id), ['erc2', 'erc1']);
 });

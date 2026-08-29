@@ -66,6 +66,11 @@ export function withoutAutoFilled(list, cleared) {
     .filter(f => !cleared.includes(f)).join(',');
 }
 
+/** Newsletter-only: spotlight events stay off the public Exchange — webinars excepted. */
+export function newsletterOnly(row) {
+  return row.type === 'event' && Boolean(row.spotlight_request) && row.subtype !== 'Webinar-Online';
+}
+
 export function readyToPublish(rows) {
   return rows.filter(r => r.status === 'kept' && !r.published_at);
 }

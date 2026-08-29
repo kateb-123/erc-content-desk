@@ -8,6 +8,7 @@ import {
   readyToPublish, publishedRows, buildPool,
   markPublished, markNewsletterIssue,
   staleCirclebacks, duplicateFlags, counts,
+  newsletterOnly,
 } from '../js/workflow.js';
 
 const row = o => blankRow({ id: 'r1', status: 'new', ...o });
@@ -113,4 +114,11 @@ test('withoutAutoFilled removes only the named fields', () => {
   assert.equal(withoutAutoFilled('source', ['type', 'subtype']), 'source');
   assert.equal(withoutAutoFilled('', ['type']), '');
   assert.equal(withoutAutoFilled(undefined, ['type']), '');
+});
+
+test('newsletterOnly holds spotlight events except webinars', () => {
+  assert.equal(newsletterOnly(blankRow({ type: 'event', subtype: 'A&M', spotlight_request: true })), true);
+  assert.equal(newsletterOnly(blankRow({ type: 'event', subtype: 'Webinar-Online', spotlight_request: true })), false);
+  assert.equal(newsletterOnly(blankRow({ type: 'event', subtype: 'A&M', spotlight_request: false })), false);
+  assert.equal(newsletterOnly(blankRow({ type: 'research', subtype: 'ERC Research', spotlight_request: true })), false);
 });
