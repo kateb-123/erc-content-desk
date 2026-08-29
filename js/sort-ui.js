@@ -95,6 +95,15 @@ export function renderSort(container, props) {
     const hintText = (!row.type || !row.subtype)
       ? 'Type: pick or fix before deciding.' : 'Type:';
     const fix = el('p', 'item-note', hintText);
+    const autoTyped = String(row.auto_filled ?? '').split(',')
+      .some(f => f === 'type' || f === 'subtype');
+    if (autoTyped) {
+      const flag = el('span', 'auto-flag', '!');
+      flag.title = 'Filed by the desk from the link/blurb — check it.';
+      flag.setAttribute('role', 'img');
+      flag.setAttribute('aria-label', 'Type was filed automatically — check it');
+      fix.prepend(flag, ' ');
+    }
     const typeSel = document.createElement('select');
     typeSel.replaceChildren(new Option('Type…', ''),
       ...Object.keys(TYPES).map(t => new Option(t, t, false, t === row.type)));

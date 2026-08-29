@@ -5,7 +5,7 @@ import { renderSort, detachSortKeys } from './sort-ui.js';
 import { renderFinalize } from './finalize-ui.js';
 import { renderPublish } from './publish-ui.js';
 import { renderBuild } from './build-ui.js';
-import { keep, trash, circleback, undecide, markNewsletterIssue } from './workflow.js';
+import { keep, trash, circleback, undecide, markNewsletterIssue, withoutAutoFilled } from './workflow.js';
 
 const DRAFT_KEY = 'erc-content-desk-draft';
 
@@ -204,7 +204,13 @@ export function render() {
       onPickStack: stack => { state.sortStack = stack; render(); },
       onDecide: decide, onUndo: undoLast,
       onEditType: (row, type, subtype) => editField(row, 'type', type)
-        .then(() => subtype && editField(state.rows.find(r => r.id === row.id), 'subtype', subtype)),
+        .then(() => subtype && editField(state.rows.find(r => r.id === row.id), 'subtype', subtype))
+        .then(() => {
+          const current = state.rows.find(r => r.id === row.id);
+          const cleared = withoutAutoFilled(current.auto_filled, ['type', 'subtype']);
+          if (cleared === String(current.auto_filled ?? '')) return undefined;
+          return editField(current, 'auto_filled', cleared);
+        }),
     });
   } else if (state.screen === 'finalize') {
     renderFinalize(screens.finalize, {

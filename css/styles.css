@@ -140,6 +140,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .badge-star { background: #fdf3d7; }
 .badge-dupe { background: #fde2e2; color: #8a1f1f; }
 .badge-stale { background: #f3e8ff; color: #5b21b6; }
+.auto-flag { display: inline-block; width: 1rem; height: 1rem; line-height: 1rem; text-align: center; border-radius: 50%; background: #fdf3d7; color: #7a5a00; font-weight: 700; font-size: .75rem; cursor: help; }
 .item-meta { color: #666; font-size: 0.85rem; }
 .item-body { padding: 0.3rem 0 0.8rem 1.2rem; }
 .sort-card { border: 1px solid #ddd; border-radius: 10px; padding: 1.2rem; max-width: 640px; margin: 1rem 0; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
