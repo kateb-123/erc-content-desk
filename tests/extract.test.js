@@ -6,15 +6,16 @@ import {
   parseExtraction, normalizeExtraction,
 } from '../api/_lib/extract.js';
 
-test('extraction runs on Haiku with a strict metadata-only schema', () => {
+test('extraction runs on Haiku and can also guess title, blurb, and typing', () => {
   assert.equal(EXTRACT_MODEL, 'claude-haiku-4-5');
   assert.equal(EXTRACTION_SCHEMA.additionalProperties, false);
   assert.deepEqual(Object.keys(EXTRACTION_SCHEMA.properties).sort(), [
-    'authors', 'date', 'deadline', 'location', 'medium',
-    'needs_review', 'source', 'time', 'topic',
+    'authors', 'blurb', 'date', 'deadline', 'headline', 'location', 'medium',
+    'needs_review', 'source', 'subtype', 'time', 'topic', 'type',
   ]);
-  assert.equal(EXTRACTION_SCHEMA.required.length, 9);
-  assert.equal('headline' in EXTRACTION_SCHEMA.properties, false);
+  assert.equal(EXTRACTION_SCHEMA.required.length, 13);
+  assert.deepEqual(EXTRACTION_SCHEMA.properties.type.enum,
+    ['', 'research', 'event', 'opportunity', 'headline']);
 });
 
 test('the prompt carries the typed fields and the raw text, and forbids invention', () => {
@@ -35,13 +36,13 @@ test('parseExtraction rejects non-JSON', () => {
   assert.throws(() => parseExtraction('sorry, here is prose'), /valid JSON/);
 });
 
-test('normalizeExtraction keeps only the metadata fields and surfaces needs_review', () => {
+test('normalizeExtraction keeps known fields, drops unknown keys, surfaces needs_review', () => {
   const { fields, warnings } = normalizeExtraction({
-    date: '2026-09-02', time: 305, headline: 'sneaky', needs_review: true, bogus: 'x',
-  });
-  assert.deepEqual(Object.keys(fields).sort(), ['date', 'time']);
+    date: '2026-09-02', time: 305, headline: 'A usable title', needs_review: true, bogus: 'x',
+  }, blankRow());
+  assert.deepEqual(Object.keys(fields).sort(), ['date', 'headline', 'time']);
   assert.equal(fields.time, '305');
-  assert.equal('headline' in fields, false);
+  assert.equal('bogus' in fields, false);
   assert.equal(warnings.length, 1);
 });
 
@@ -54,4 +55,27 @@ test('the prompt does not duplicate raw text when both blurb and original_text a
   const prompt = buildExtractionPrompt(row);
   const occurrences = prompt.split('Sept 2, 6:30pm ET, hybrid.').length - 1;
   assert.equal(occurrences, 1, 'raw text should appear exactly once in the prompt');
+});
+
+test('the prompt embeds the fetched page text and the legal subtype lists', () => {
+  const row = blankRow({ headline: 'X', type: '', subtype: '', link: 'https://a.org' });
+  const prompt = buildExtractionPrompt(row, 'PAGE TEXT SENTINEL about a fellowship deadline.');
+  assert.ok(prompt.includes('PAGE TEXT SENTINEL'));
+  assert.ok(prompt.includes('Funding & Grants'));
+  assert.ok(prompt.includes('Webinar-Online'));
+  const bare = buildExtractionPrompt(row);
+  assert.equal(bare.includes('PAGE TEXT SENTINEL'), false);
+});
+
+test('normalizeExtraction validates guessed typing against the schema', () => {
+  const row = blankRow({ type: '', subtype: '' });
+  const good = normalizeExtraction({ type: 'event', subtype: 'Webinar-Online' }, row);
+  assert.equal(good.fields.type, 'event');
+  assert.equal(good.fields.subtype, 'Webinar-Online');
+  const badSub = normalizeExtraction({ type: 'event', subtype: 'Funding & Grants' }, row);
+  assert.equal(badSub.fields.type, 'event');
+  assert.equal('subtype' in badSub.fields, false);
+  const typedRow = blankRow({ type: 'research', subtype: '' });
+  const wrongForHuman = normalizeExtraction({ type: '', subtype: 'Texas' }, typedRow);
+  assert.equal('subtype' in wrongForHuman.fields, false);
 });

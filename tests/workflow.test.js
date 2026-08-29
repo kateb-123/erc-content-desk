@@ -4,6 +4,7 @@ import { blankRow } from '../js/schema.js';
 import {
   pendingRows, circlebackRows, decidedRows,
   keep, trash, circleback, undecide, applyExtracted,
+  applyExtractedWithProvenance, withoutAutoFilled,
   readyToPublish, publishedRows, buildPool,
   markPublished, markNewsletterIssue,
   staleCirclebacks, duplicateFlags, counts,
@@ -103,4 +104,23 @@ test('counts summarizes the v2 buckets', () => {
     pending: 1, circleback: 1, kept: 2, trashed: 1,
     readyToPublish: 1, published: 1, pool: 1,
   });
+});
+
+test('applyExtractedWithProvenance fills blanks only and records what it filled', () => {
+  const row = blankRow({ headline: 'Kept title', type: '', source: '' });
+  const { row: next, filled } = applyExtractedWithProvenance(row, {
+    headline: 'Machine title', type: 'event', source: 'Brookings',
+  });
+  assert.equal(next.headline, 'Kept title');
+  assert.equal(next.type, 'event');
+  assert.equal(next.source, 'Brookings');
+  assert.deepEqual(filled.sort(), ['source', 'type']);
+  assert.equal(next.auto_filled, filled.join(','));
+});
+
+test('withoutAutoFilled removes only the named fields', () => {
+  assert.equal(withoutAutoFilled('type,subtype,source', ['type', 'subtype']), 'source');
+  assert.equal(withoutAutoFilled('source', ['type', 'subtype']), 'source');
+  assert.equal(withoutAutoFilled('', ['type']), '');
+  assert.equal(withoutAutoFilled(undefined, ['type']), '');
 });

@@ -4,7 +4,7 @@
  * new -> kept | circleback | trashed; kept rows then gain published_at
  * (Publish screen) and newsletter_issue (Build screen).
  */
-import { CSV_COLUMNS } from './schema.js';
+import { CSV_COLUMNS, SHEET_COLUMNS } from './schema.js';
 
 export function pendingRows(rows) {
   return rows.filter(r => r.status === 'new');
@@ -50,6 +50,29 @@ export function applyExtracted(row, fields) {
     next[col] = String(value);
   }
   return next;
+}
+
+/** applyExtracted plus provenance: which CSV columns the machine filled. */
+export function applyExtractedWithProvenance(row, fields) {
+  const next = { ...row };
+  const filled = [];
+  for (const col of CSV_COLUMNS) {
+    const value = fields?.[col];
+    if (value === undefined || value === null || String(value) === '') continue;
+    // Only fill if the row value is empty
+    if (!row[col]) {
+      next[col] = String(value);
+      filled.push(col);
+    }
+  }
+  filled.sort();
+  return { row: { ...next, auto_filled: filled.join(',') }, filled };
+}
+
+/** Drop the named fields from a comma-separated auto_filled list. */
+export function withoutAutoFilled(list, cleared) {
+  return String(list ?? '').split(',').map(s => s.trim()).filter(Boolean)
+    .filter(f => !cleared.includes(f)).join(',');
 }
 
 export function readyToPublish(rows) {

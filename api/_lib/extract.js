@@ -4,14 +4,17 @@
  * the typed text. Offline-testable: no network calls here; api/submit.js owns
  * the Claude call. Runs on Haiku — a fraction of a cent per submission.
  */
+import { TYPES } from '../../js/schema.js';
+
 const FIELD_KEYS = ['date', 'source', 'topic', 'deadline', 'medium', 'authors', 'time', 'location'];
+const GUESS_KEYS = ['headline', 'blurb', 'type', 'subtype'];
 
 export const EXTRACT_MODEL = 'claude-haiku-4-5';
 
 export const EXTRACTION_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: [...FIELD_KEYS, 'needs_review'],
+  required: [...FIELD_KEYS, ...GUESS_KEYS, 'needs_review'],
   properties: {
     date: { type: 'string', description: 'Event date or publication date as YYYY-MM-DD; "" if not stated.' },
     source: { type: 'string', description: 'Outlet, publisher, journal, or host organization; "" if not stated.' },
@@ -21,24 +24,38 @@ export const EXTRACTION_SCHEMA = {
     authors: { type: 'string', description: 'Research only: author list as written; else "".' },
     time: { type: 'string', description: 'Events only: start time in Central Time, e.g. "1:00 PM CT"; else "".' },
     location: { type: 'string', description: 'Events only: venue/city or "Virtual"; else "".' },
+    headline: { type: 'string', description: 'A clear, specific title for the item when none was provided; "" otherwise.' },
+    blurb: { type: 'string', description: '2-3 factual sentences describing the item, written from the text, when no blurb was provided; "" otherwise.' },
+    type: { type: 'string', enum: ['', 'research', 'event', 'opportunity', 'headline'], description: 'Best-fit type when none was provided; "" if unsure.' },
+    subtype: { type: 'string', description: 'Legal subtype for the type, from the lists in the prompt; "" if unsure.' },
     needs_review: { type: 'boolean', description: 'true if the text was too thin or confusing to file confidently.' },
   },
 };
 
-export function buildExtractionPrompt(row) {
+export function buildExtractionPrompt(row, pageText = '') {
+  const subtypeLists = Object.entries(TYPES)
+    .map(([t, def]) => `${t}: ${def.subtypes.join(', ')}`).join('\n');
   const parts = [
     'File this newsletter submission into its metadata columns.',
-    `Title: ${row.headline}`,
-    `Type: ${row.type} / ${row.subtype}`,
+    `Title: ${row.headline || '(none)'}`,
+    `Type: ${row.type || '(none)'} / ${row.subtype || '(none)'}`,
     `Link: ${row.link || '(none)'}`,
     'Submitted text:',
     '---',
     row.original_text || row.blurb || '(none — the title and link are all we have)',
     '---',
-    'Rules: work only from the text above — do not fetch the link.',
+  ];
+  if (pageText) {
+    parts.push('Text of the page behind the link:', '---', pageText, '---');
+  }
+  parts.push(
+    'Rules: work only from the text above.',
     'Never invent a date, deadline, author, time, location, or source; use "" when the text does not state it.',
     'Dates are YYYY-MM-DD. Event times are Central Time, written like "1:00 PM CT" — convert from ET/PT when the zone is given.',
-  ];
+    'When Title, blurb, or Type is "(none)", fill headline/blurb/type/subtype from the text; otherwise return "" for them.',
+    'A subtype must come from the legal lists below (matched to the type); use "" if none fits:',
+    subtypeLists,
+  );
   return parts.join('\n');
 }
 
@@ -50,13 +67,18 @@ export function parseExtraction(text) {
   }
 }
 
-export function normalizeExtraction(extracted) {
+export function normalizeExtraction(extracted, row) {
   const fields = {};
   const warnings = [];
-  for (const key of FIELD_KEYS) {
+  for (const key of [...FIELD_KEYS, ...GUESS_KEYS]) {
     const value = extracted?.[key];
     if (value === undefined || value === null || String(value) === '') continue;
     fields[key] = String(value);
+  }
+  if (fields.type && !TYPES[fields.type]) delete fields.type;
+  const effectiveType = row?.type || fields.type || '';
+  if (fields.subtype && !(TYPES[effectiveType]?.subtypes ?? []).includes(fields.subtype)) {
+    delete fields.subtype;
   }
   if (extracted?.needs_review === true) {
     warnings.push('Claude was unsure about this one — double-check its fields.');
