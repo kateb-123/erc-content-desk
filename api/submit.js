@@ -1,13 +1,14 @@
 /**
  * POST /api/submit — public, unauthenticated by design.
- * Validates the structured form, runs the small Haiku metadata extraction,
+ * Fetches the linked page and runs the Haiku enrichment (fills any blank field),
  * and appends one row. Extraction failure never loses a submission: the row
  * saves with just the typed fields and the caller gets a warning.
  */
 import { randomUUID } from 'node:crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import { buildSubmission, validateSubmission } from '../js/intake.js';
-import { applyExtracted } from '../js/workflow.js';
+import { applyExtractedWithProvenance } from '../js/workflow.js';
+import { fetchPageText } from './_lib/fetch-page.js';
 import {
   EXTRACT_MODEL, EXTRACTION_SCHEMA, buildExtractionPrompt,
   parseExtraction, normalizeExtraction,
@@ -19,16 +20,16 @@ export const config = { maxDuration: 60 };
 const MAX_FIELD_LENGTH = 20000;
 const anthropic = new Anthropic({ timeout: 20_000, maxRetries: 1 });
 
-async function extractInto(row) {
+async function extractInto(row, pageText) {
   const response = await anthropic.messages.create({
     model: EXTRACT_MODEL,
-    max_tokens: 1024,
+    max_tokens: 2048,
     output_config: { format: { type: 'json_schema', schema: EXTRACTION_SCHEMA } },
-    messages: [{ role: 'user', content: buildExtractionPrompt(row) }],
+    messages: [{ role: 'user', content: buildExtractionPrompt(row, pageText) }],
   });
   const text = response.content.find(b => b.type === 'text')?.text ?? '';
-  const { fields, warnings } = normalizeExtraction(parseExtraction(text));
-  return { row: applyExtracted(row, fields), warnings };
+  const { fields, warnings } = normalizeExtraction(parseExtraction(text), row);
+  return { row: applyExtractedWithProvenance(row, fields).row, warnings };
 }
 
 export default async function handler(req, res) {
@@ -50,7 +51,8 @@ export default async function handler(req, res) {
     });
     const warnings = [];
     try {
-      const extracted = await extractInto(row);
+      const pageText = row.link ? await fetchPageText(row.link) : '';
+      const extracted = await extractInto(row, pageText);
       row = extracted.row;
       warnings.push(...extracted.warnings);
     } catch (err) {
