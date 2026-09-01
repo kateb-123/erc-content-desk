@@ -195,3 +195,18 @@ test('clearNewsletterIssue is the un-send: the row rejoins the pool', () => {
   assert.equal(back.newsletter_issue, '');
   assert.deepEqual(buildPool([back]).map(r => r.id), ['a']);
 });
+
+test('mergeArchiveIndex replaces a re-saved issue and keeps newest first', async () => {
+  const { mergeArchiveIndex, archiveLabel } = await import('../api/_lib/archive.js');
+  const list = [
+    { date: '2026-08-25', file: '2026-08-25.html', label: 'August 25, 2026' },
+    { date: '2026-06-16', file: '2026-06-16.html', label: 'June 16, 2026' },
+  ];
+  const merged = mergeArchiveIndex(list, '2026-09-01');
+  assert.deepEqual(merged.map(e => e.date), ['2026-09-01', '2026-08-25', '2026-06-16']);
+  assert.equal(merged[0].label, 'September 1, 2026');
+  // re-save replaces, never duplicates
+  const again = mergeArchiveIndex(merged, '2026-08-25');
+  assert.equal(again.filter(e => e.date === '2026-08-25').length, 1);
+  assert.equal(archiveLabel('2025-11-17'), 'November 17, 2025');
+});

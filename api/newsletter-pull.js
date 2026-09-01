@@ -5,20 +5,10 @@
  * summary so the builder's mismatch message can point at the right date.
  * CORS admits the builder's origins only.
  */
+import { setCors } from './_lib/cors.js';
 import { readAllRows, readScheduleRows } from './_lib/sheets.js';
 import { normalizeSchedule } from '../js/schedule.js';
 import { issueForPull, stagedCounts } from '../js/rows-to-issue.js';
-
-// GitHub Pages today; the Vercel address joins this list when the builder moves.
-const ALLOWED_ORIGINS = new Set(['https://kateb-123.github.io']);
-
-function setCors(req, res) {
-  const origin = String(req.headers?.origin ?? '');
-  if (ALLOWED_ORIGINS.has(origin) || /^http:\/\/localhost(:\d+)?$/.test(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Vary', 'Origin');
-  }
-}
 
 export default async function handler(req, res) {
   setCors(req, res);
