@@ -51,12 +51,17 @@ textarea { resize: vertical; }
 
 button {
   font: inherit;
+  font-family: Outfit, "Segoe UI", sans-serif;
+  font-weight: 600;
   padding: .5rem 1rem;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: #fff;
   cursor: pointer;
 }
+
+/* Text-styled buttons read as prose, not chrome — they keep the body font. */
+.linkish, .sort-btn, .undo-link, .carousel-arrow { font-family: inherit; font-weight: inherit; }
 
 button:hover:not(:disabled) { border-color: var(--ink); }
 button:disabled { opacity: .5; cursor: default; }

@@ -50,7 +50,7 @@
   --bp-row-hover: #f4f8fb;
   --bp-heading-font: 'Outfit', 'Segoe UI', sans-serif;
   --bp-body-font: 'Karla', 'Segoe UI', sans-serif;
-  --bp-focus-ring: 0 0 0 3px rgba(29, 110, 165, 0.25);
+  --bp-focus-ring: 0 0 0 3px var(--bp-primary-tint);
 }
 
 body {
@@ -396,7 +396,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .upload-status {
   margin-top: 16px;
   padding: 12px 16px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 14px;
   line-height: 1.55;
 }
@@ -489,7 +489,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   align-items: center;
   gap: 10px;
   padding: 10px 8px;
-  border-radius: 10px;
+  border-radius: 12px;
   transition: background 0.12s;
 }
 
@@ -506,7 +506,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   gap: 10px;
   background: var(--bp-row-hover);
   border: 1px solid #dde5ec;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 8px 12px;
   margin: 8px 0 18px 30px;
 }
@@ -833,7 +833,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   line-height: 1.4;
   padding: 12px;
   border: 1px dashed #C9CDE8;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #FBFBFE;
 }
 
@@ -906,7 +906,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 /* --- Rich (WYSIWYG) prose editor --------------------------- */
 .rich-editor {
   border: 1px solid var(--bp-input-border);
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
 }
 .rich-toolbar {
@@ -1006,7 +1006,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   background: #2b2b3a;
   color: #fff;
   padding: 10px 16px;
-  border-radius: 10px;
+  border-radius: 12px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   font-size: 0.88rem;
   opacity: 0;
@@ -1059,7 +1059,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   display: inline-block;
   margin-top: 4px;
   padding: 10px 18px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 14px;
   font-family: var(--bp-body-font);
   opacity: 0;
@@ -1094,7 +1094,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   margin-bottom: 16px;
   background: #FBF8E4;
   border: 1px solid #E3D98F;
-  border-radius: 10px;
+  border-radius: 12px;
   font-family: var(--bp-body-font);
   font-size: 14px;
 }
@@ -1123,7 +1123,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   padding: 12px 16px;
   background: var(--bp-row-hover);
   border: 1px solid #dde5ec;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 14px;
   color: var(--bp-muted);
 }
@@ -1387,55 +1387,19 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 }
 
 /* ── Review / Bucket / Glance (function-first; style pass deferred) ───────── */
-.review-landing { max-width: 560px; }
-.review-freshline { font-size: 0.85rem; color: #666; margin-bottom: 12px; }
-.review-counts { display: flex; gap: 10px; margin: 12px 0 16px; }
-.review-pile { flex: 1; border: 1.5px solid #e2d5d5; border-radius: 8px; text-align: center; padding: 10px 4px; background: #fff; }
-.review-pile-n { font-size: 22px; font-weight: 800; color: #913B3B; }
-.review-pile-label { font-size: 0.75rem; color: #666; }
-.review-manual { font-size: 0.8rem; color: #888; margin-top: 10px; }
-.swipe-card { border: 1.5px solid #bbb; border-radius: 10px; background: #fff; padding: 16px; max-width: 560px; box-shadow: 2px 2px 0 #eee; }
-.swipe-src { color: #913B3B; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; }
-.swipe-title { font-weight: 700; margin: 6px 0; }
-.swipe-desc { color: #444; font-size: 0.9rem; white-space: pre-wrap; }
-.swipe-meta { color: #999; font-size: 0.78rem; margin-top: 8px; word-break: break-all; }
-.swipe-actions { display: flex; gap: 8px; margin-top: 14px; align-items: center; }
-.swipe-progress { font-size: 0.8rem; color: #888; margin-top: 10px; }
-.swipe-undo { margin-left: auto; }
-.closeread-open { margin-top: 12px; }
-.closeread-open-btn { text-decoration: none; display: inline-block; }
-.bucket-tabs { display: flex; gap: 6px; margin: 10px 0 14px; flex-wrap: wrap; }
-.bucket-tab { border: 1.5px solid #ccc; border-radius: 16px; padding: 4px 12px; background: #fff; color: #777; cursor: pointer; font-size: 0.85rem; }
-.bucket-tab--active { background: #913B3B; border-color: #913B3B; color: #fff; font-weight: 700; }
-.bucket-row { display: flex; gap: 10px; align-items: center; border: 1.5px solid #e5dcdc; border-radius: 8px; background: #fff; padding: 8px 10px; margin: 6px 0; }
-.bucket-row-text { flex: 1; font-size: 0.9rem; }
-.bucket-row-src { color: #999; font-size: 0.75rem; }
-.bucket-btns { display: flex; gap: 4px; flex-wrap: wrap; }
-.bucket-btn { border: 1.5px solid #ccc; border-radius: 12px; padding: 3px 9px; font-size: 0.75rem; font-weight: 600; color: #777; background: #fff; cursor: pointer; }
-.bucket-btn--on { background: #913B3B; border-color: #913B3B; color: #fff; }
-.bucket-tally { font-size: 0.8rem; color: #666; margin-top: 12px; }
-.glance-row { border-bottom: 1px dashed #e8e0e0; padding: 8px 2px; max-width: 540px; }
-.glance-line { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
-.glance-count { font-weight: 800; color: #913B3B; margin-left: 8px; }
-.glance-badge { font-size: 0.7rem; border-radius: 9px; padding: 1px 7px; font-weight: 700; cursor: pointer; border: none; margin-left: 4px; }
-.glance-badge--warn { background: #f5e9c8; color: #7a651f; }
-.glance-badge--info { background: #e7eff6; color: #2c5f8a; }
-.glance-badge--ok { background: #e3efe3; color: #2c5f2c; }
-.glance-note { margin-top: 6px; font-size: 0.8rem; color: #6b5d2a; background: #fdf6e3; border: 1px solid #eee0b0; border-radius: 6px; padding: 6px 9px; }
-
 /* Pull from the desk — the Outline door's quiet status line. */
-.pull-status { margin-left: 8px; color: var(--muted, #6b7280); font-size: 0.9rem; }
+.pull-status { margin-left: 8px; color: var(--bp-muted); font-size: 0.9rem; }
 
 /* Review step — what's in the issue, as a plain table. */
-.review-table { width: 100%; border-collapse: collapse; margin-top: 16px; background: #fff; border: 1px solid #e2e5ea; font-size: 0.92rem; }
-.review-table th { text-align: left; font-weight: 600; color: #5a6270; padding: 8px 10px; border-bottom: 1px solid #e2e5ea; }
-.review-table td { padding: 8px 10px; border-top: 1px solid #eef0f3; vertical-align: top; }
-.review-table-sub { display: block; font-size: 0.82rem; color: #6b7280; margin-top: 2px; font-weight: 400; }
+.review-table { width: 100%; border-collapse: collapse; margin-top: 16px; background: #fff; border: 1px solid var(--bp-line); font-size: 0.92rem; }
+.review-table th { text-align: left; font-weight: 600; color: var(--bp-muted); padding: 8px 10px; border-bottom: 1px solid var(--bp-line); }
+.review-table td { padding: 8px 10px; border-top: 1px solid var(--bp-hairline); vertical-align: top; }
+.review-table-sub { display: block; font-size: 0.82rem; color: var(--bp-muted); margin-top: 2px; font-weight: 400; }
 
 /* Edit-column add-on panels (Introduction, Add an item). */
-.addon-hint { margin: 0 0 10px; font-size: 0.85rem; color: #6b7280; }
+.addon-hint { margin: 0 0 10px; font-size: 0.85rem; color: var(--bp-muted); }
 .addon-field { display: block; margin-bottom: 10px; }
-.addon-field > span { display: block; font-size: 0.82rem; color: #5a6270; margin-bottom: 3px; }
+.addon-field > span { display: block; font-size: 0.82rem; color: var(--bp-muted); margin-bottom: 3px; }
 .addon-field .triage-field-input { width: 100%; box-sizing: border-box; }
 
 /* Header link to the archive — the inner row owns the centered column. */
