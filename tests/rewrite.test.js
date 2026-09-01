@@ -9,16 +9,25 @@ import { VOICE_EXAMPLES } from '../api/_lib/voice-examples.js';
 
 const kept = o => blankRow({ status: 'kept', ...o });
 
-test('only kept events and opportunities with blurbs are candidates', () => {
+test('kept events, opportunities, and description-less research are candidates', () => {
   const rows = [
     kept({ id: 'a', type: 'event', blurb: 'x' }),
     kept({ id: 'b', type: 'opportunity', blurb: 'x' }),
-    kept({ id: 'c', type: 'research', blurb: 'x' }),      // never rewritten
+    kept({ id: 'c', type: 'research', blurb: 'x' }),      // has an abstract — never rewritten
     kept({ id: 'd', type: 'headline', blurb: 'x' }),      // never rewritten
-    kept({ id: 'e', type: 'event', blurb: '' }),          // nothing to rewrite
+    kept({ id: 'e', type: 'event', blurb: '' }),          // drafted from its own facts
+    kept({ id: 'g', type: 'research', blurb: '', original_text: 'the announcement' }),
     blankRow({ id: 'f', status: 'new', type: 'event', blurb: 'x' }),
   ];
-  assert.deepEqual(rewriteCandidates(rows).map(r => r.id), ['a', 'b']);
+  assert.deepEqual(rewriteCandidates(rows).map(r => r.id), ['a', 'b', 'e', 'g']);
+});
+
+test('a checked rewrite is never a candidate again', () => {
+  const rows = [
+    kept({ id: 'a', type: 'event', blurb: 'x', rewrite_checked: '2026-08-31T00:00:00.000Z' }),
+    kept({ id: 'b', type: 'opportunity', blurb: 'x' }),
+  ];
+  assert.deepEqual(rewriteCandidates(rows).map(r => r.id), ['b']);
 });
 
 test('a kept event that has already been published is not a candidate', () => {
@@ -43,6 +52,18 @@ test('the prompt includes real voice examples ahead of the items', () => {
   const rows = [kept({ id: 'a1', type: 'event', headline: 'Webinar', blurb: 'Long blurb.' })];
   const prompt = buildRewritePrompt(rows);
   assert.ok(prompt.includes(VOICE_EXAMPLES[0].rewrite));
+});
+
+test('a description-less item brings its original text (capped) so Claude can draft', () => {
+  const rows = [kept({
+    id: 'a1', type: 'research', headline: 'Working paper', blurb: '',
+    original_text: `start ${'y'.repeat(2000)} ZZTAIL`, authors: 'Someone',
+  })];
+  const prompt = buildRewritePrompt(rows);
+  assert.ok(prompt.includes('original text:'));
+  assert.ok(prompt.includes('start'));
+  assert.ok(!prompt.includes('ZZTAIL'));        // capped, not the whole document
+  assert.ok(prompt.includes('Someone'));
 });
 
 test('normalizeRewrites drops unknown ids and empty blurbs', () => {

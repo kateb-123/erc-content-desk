@@ -1,10 +1,10 @@
 /**
- * Sort: one stream, one card at a time — untyped first, then the
+ * Sort: one stream, one card at a time — untyped last, otherwise the
  * newsletter's type order, oldest first within a group. Keep / Circle back /
- * Trash with K / C / T shortcuts and U for undo. No stack picker; the
- * filters are quiet text buttons and the type pickers hide behind "change".
+ * Trash by click only (no keyboard shortcuts — Kate's call, Aug 31). The
+ * section row is a jump point; the type pickers hide behind "change".
  */
-import { duplicateFlags, linkCheckState } from './workflow.js';
+import { duplicateFlags, linkCheckState, reshareFlags } from './workflow.js';
 import { TYPE_ORDER, TYPE_LABELS, subtypesFor } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref } from './links.js';
@@ -14,9 +14,45 @@ const FILTER_LABELS = [
   ['', 'All'], ['erc', 'ERC'], ['research', 'Research'], ['event', 'Events'],
   ['opportunity', 'Opportunities'], ['headline', 'Headlines'], ['untyped', 'To review'],
 ];
+const FILTER_KEYS = FILTER_LABELS.map(([k]) => k);
 
-let keyHandler = null;
 let fixOpenId = null;   // card id whose type pickers are open via "change"
+let lastFilter = null;  // detects a section jump so the card area slides like the screens do
+let railPos = null;     // the section rail's last spot, so it glides across re-renders
+
+// The section menu re-renders wholesale, so the rail glides FLIP-style: start
+// where it last sat, then transition to the active filter. Vertical, since
+// the menu lives on the left.
+function placeSortRail(nav) {
+  const active = nav.querySelector('.sort-filter.is-active');
+  const rail = nav.querySelector('.tab-rail');
+  if (!active || !rail) return;
+  const to = { y: active.offsetTop, h: active.offsetHeight };
+  if (railPos && (railPos.y !== to.y || railPos.h !== to.h)) {
+    rail.style.height = `${railPos.h}px`;
+    rail.style.transform = `translateY(${railPos.y}px)`;
+    void rail.offsetHeight;
+    rail.classList.add('is-ready');
+  }
+  rail.style.height = `${to.h}px`;
+  rail.style.transform = `translateY(${to.y}px)`;
+  railPos = to;
+}
+
+// "Settle": the decided card shrinks and fades in place as a floating copy
+// while the next card renders instantly underneath. Purely cosmetic.
+function settleOut(card) {
+  const rect = card.getBoundingClientRect();
+  const clone = card.cloneNode(true);
+  clone.classList.add('sort-exit-clone');
+  clone.style.left = `${rect.left}px`;
+  clone.style.top = `${rect.top}px`;
+  clone.style.width = `${rect.width}px`;
+  clone.setAttribute('aria-hidden', 'true');
+  clone.addEventListener('animationend', () => clone.remove(), { once: true });
+  setTimeout(() => clone.remove(), 600);
+  document.body.append(clone);
+}
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -25,13 +61,8 @@ function el(tag, className, text) {
   return node;
 }
 
-export function detachSortKeys() {
-  if (keyHandler) { document.removeEventListener('keydown', keyHandler); keyHandler = null; }
-}
-
 export function renderSort(container, props) {
   container.replaceChildren();
-  detachSortKeys();
   const { rows, filter, sortedCount, lastDecision, onFilter, onDecide, onUndo, browse = 0, onBrowse } = props;
   const rerenderSelf = () => renderSort(container, props);
 
@@ -41,15 +72,7 @@ export function renderSort(container, props) {
 
   const head = el('div', 'screen-head');
   head.append(el('h2', '', 'Sort'));
-  head.append(el('p', 'lede sort-progress', `${sortedCount} sorted · ${visible.length} to go`));
   container.append(head);
-
-  const total = sortedCount + visible.length;
-  const bar = el('div', 'sort-bar');
-  const fill = el('div', 'sort-bar-fill');
-  fill.style.width = `${total ? Math.round((100 * sortedCount) / total) : 100}%`;
-  bar.append(fill);
-  container.append(bar);
 
   // Browsing: ← → walks a viewing position through the stream without
   // deciding anything. Deciding acts on the card in view; the position holds.
@@ -59,7 +82,6 @@ export function renderSort(container, props) {
   // where you jumped in; the darker text tracks the group you're passing
   // through as the stream flows on.
   const currentGroup = visible.length ? sectionOf(visible[idx]) : null;
-  const body = el('div', 'sort-body');
   const nav = el('nav', 'sort-nav');
   for (const [key, label] of FILTER_LABELS) {
     const count = key === '' ? counts.all : counts[key];
@@ -71,26 +93,26 @@ export function renderSort(container, props) {
     btn.addEventListener('click', () => onFilter(key));
     nav.append(btn);
   }
+  const rail = el('span', 'tab-rail');
+  rail.setAttribute('aria-hidden', 'true');
+  nav.append(rail);
   const main = el('div', 'sort-main');
+  const body = el('div', 'sort-body');
   body.append(nav, main);
   container.append(body);
-
-  const attachKeys = handlers => {
-    keyHandler = event => {
-      if (event.target.matches('input, textarea, select, [contenteditable]')) return;
-      const action = handlers[event.key.toLowerCase()];
-      if (action) action();
-    };
-    document.addEventListener('keydown', keyHandler);
-  };
+  placeSortRail(nav);
+  if (lastFilter !== null && lastFilter !== filter) {
+    main.classList.add(FILTER_KEYS.indexOf(filter) > FILTER_KEYS.indexOf(lastFilter)
+      ? 'slide-in-right' : 'slide-in-left');
+  }
+  lastFilter = filter;
 
   if (!visible.length) {
     main.append(el('p', 'empty', sortedCount ? 'All sorted.' : 'Nothing to sort.'));
     if (lastDecision) {
-      const undo = el('button', 'undo-link', 'Undo last (U)');
+      const undo = el('button', 'undo-link', 'Undo last');
       undo.addEventListener('click', () => { undo.disabled = true; onUndo(); });
       main.append(undo);
-      attachKeys({ u: onUndo });
     }
     return;
   }
@@ -98,14 +120,24 @@ export function renderSort(container, props) {
   const row = visible[idx];
   const groupKey = sectionOf(row);
   const groupLabel = FILTER_LABELS.find(([k]) => k === groupKey)?.[1] ?? 'To review';
-  const inGroup = visible.filter(r => sectionOf(r) === groupKey).length;
+  // Dots track the current section only — and the heading names your spot in it.
+  const groupCards = visible.map((r, i) => i).filter(i => sectionOf(visible[i]) === groupKey);
+  const posInGroup = groupCards.indexOf(idx) + 1;
 
-  main.append(el('p', 'sort-group', `${groupLabel} — ${inGroup} to go`));
+  main.append(el('p', 'sort-group', groupLabel));
   const card = el('div', 'sort-card');
+  card.append(el('span', 'card-pos', `${posInGroup}/${groupCards.length}`));
   const dupes = duplicateFlags(rows);
+  const reshare = reshareFlags(rows, props.today ?? '');
   const badges = el('div');
   if (row.spotlight_request) badges.append(el('span', 'badge badge-star', 'spotlight requested'));
-  if (dupes.has(row.id)) badges.append(el('span', 'badge badge-dupe', 'possible duplicate — check before keeping'));
+  // One badge, most informative first: a past newsletter share beats the dupe tiers.
+  if (reshare.has(row.id)) {
+    badges.append(el('span', 'badge', 'In a past issue'));
+  } else if (dupes.has(row.id)) {
+    const prior = rows.find(r => r.id === dupes.get(row.id));
+    badges.append(el('span', 'badge badge-dupe', prior?.published_at ? 'Already live' : 'Possible duplicate'));
+  }
   card.append(badges);
   card.append(el('h3', '', row.headline || '(untitled)'));
   card.append(el('p', 'item-meta', [
@@ -131,7 +163,7 @@ export function renderSort(container, props) {
       .some(f => f === 'type' || f === 'subtype');
     if (autoTyped) {
       const flag = el('span', 'auto-flag', '!');
-      flag.title = 'Filed by the desk from the link/blurb — check it.';
+      flag.title = 'Filed by the desk from the link/description — check it.';
       flag.setAttribute('role', 'img');
       flag.setAttribute('aria-label', 'Type was filed automatically — check it');
       typeLine.append(' ', flag);
@@ -248,6 +280,7 @@ export function renderSort(container, props) {
     const b = el('button', cls, label);
     b.addEventListener('click', () => {
       for (const x of card.querySelectorAll('button')) x.disabled = true;
+      settleOut(card);
       onDecide(row, action);
     });
     return b;
@@ -266,9 +299,8 @@ export function renderSort(container, props) {
     for (const b of [keepBtn, circleBtn, trashBtn]) b.disabled = true;
     card.append(el('p', 'decide-blocked', `Before deciding: ${blockers.join(' · ')}.`));
   }
-  card.append(el('p', 'keys-hint', 'K keep · C circle back · T trash · U undo · ← → browse'));
   if (lastDecision) {
-    const undo = el('button', 'undo-link', 'Undo last (U)');
+    const undo = el('button', 'undo-link', 'Undo last');
     undo.addEventListener('click', () => { undo.disabled = true; onUndo(); });
     card.append(undo);
   }
@@ -288,8 +320,6 @@ export function renderSort(container, props) {
   carousel.append(prev, card, next);
   main.append(carousel);
 
-  // Dots track the current section only — one dot per card in this group.
-  const groupCards = visible.map((r, i) => i).filter(i => sectionOf(visible[i]) === groupKey);
   if (groupCards.length > 1 && groupCards.length <= 15) {
     const dots = el('div', 'carousel-dots');
     for (const i of groupCards) {
@@ -300,16 +330,6 @@ export function renderSort(container, props) {
       dots.append(dot);
     }
     main.append(dots);
-  } else if (groupCards.length > 15) {
-    main.append(el('p', 'browse-pos', `${groupCards.indexOf(idx) + 1} of ${groupCards.length} in ${groupLabel}`));
   }
 
-  attachKeys({
-    k: () => keepBtn.click(),
-    c: () => circleBtn.click(),
-    t: () => trashBtn.click(),
-    u: () => { if (lastDecision) onUndo(); },
-    arrowleft: () => { if (idx > 0) onBrowse?.(idx - 1); },
-    arrowright: () => { if (idx < visible.length - 1) onBrowse?.(idx + 1); },
-  });
 }

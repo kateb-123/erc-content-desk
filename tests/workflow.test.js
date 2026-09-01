@@ -8,7 +8,7 @@ import {
   readyToPublish, publishedRows, buildPool,
   markPublished, markNewsletterIssue,
   staleCirclebacks, duplicateFlags, counts,
-  newsletterOnly, linkCheckedFromFetch, linkCheckState,
+  newsletterOnly, linkCheckedFromFetch, linkCheckState, reshareFlags, clearNewsletterIssue,
 } from '../js/workflow.js';
 
 const row = o => blankRow({ id: 'r1', status: 'new', ...o });
@@ -151,4 +151,47 @@ test('newsletterOnly holds spotlight events except webinars', () => {
   assert.equal(newsletterOnly(blankRow({ type: 'event', subtype: 'Webinar-Online', spotlight_request: true })), false);
   assert.equal(newsletterOnly(blankRow({ type: 'event', subtype: 'A&M', spotlight_request: false })), false);
   assert.equal(newsletterOnly(blankRow({ type: 'research', subtype: 'ERC Research', spotlight_request: true })), false);
+});
+
+test('a row stamped into an issue is done with Publish — held rows drain', () => {
+  const rows = [
+    // stamped newsletter-only hold: out of readyToPublish entirely
+    blankRow({ id: 'a', status: 'kept', type: 'event', subtype: 'A&M', spotlight_request: true, newsletter_issue: '2026-09-01' }),
+    // unstamped hold: still a candidate (Publish lists it under Newsletter only)
+    blankRow({ id: 'b', status: 'kept', type: 'event', subtype: 'A&M', spotlight_request: true }),
+    // regular kept row, unpublished: still a candidate
+    blankRow({ id: 'c', status: 'kept', type: 'headline', subtype: 'Texas' }),
+  ];
+  assert.deepEqual(readyToPublish(rows).map(r => r.id), ['b', 'c']);
+});
+
+test('reshareFlags points a row at a same-link row already sent in a past issue', () => {
+  const today = '2026-09-01';
+  const rows = [
+    blankRow({ id: 'old', status: 'kept', link: 'https://x.org/a', newsletter_issue: '2026-08-18' }),
+    blankRow({ id: 'again', status: 'new', link: 'https://x.org/a' }),
+    blankRow({ id: 'staged', status: 'kept', link: 'https://x.org/b', newsletter_issue: '2026-10-06' }),
+    blankRow({ id: 'fresh', status: 'new', link: 'https://x.org/b' }),   // staged ahead ≠ re-share
+    blankRow({ id: 'nolink', status: 'new', link: '' }),
+  ];
+  const flags = reshareFlags(rows, today);
+  assert.equal(flags.get('again'), '2026-08-18');
+  assert.equal(flags.has('fresh'), false);      // future issue hasn't gone out
+  assert.equal(flags.has('old'), false);        // a row never flags itself
+  assert.equal(flags.has('nolink'), false);
+});
+
+test('an issue sent today already counts as shared', () => {
+  const rows = [
+    blankRow({ id: 'old', status: 'kept', link: 'https://x.org/a', newsletter_issue: '2026-09-01' }),
+    blankRow({ id: 'again', status: 'new', link: 'https://x.org/a' }),
+  ];
+  assert.equal(reshareFlags(rows, '2026-09-01').get('again'), '2026-09-01');
+});
+
+test('clearNewsletterIssue is the un-send: the row rejoins the pool', () => {
+  const row = blankRow({ id: 'a', status: 'kept', published_at: 'x', newsletter_issue: '2026-09-01' });
+  const back = clearNewsletterIssue(row);
+  assert.equal(back.newsletter_issue, '');
+  assert.deepEqual(buildPool([back]).map(r => r.id), ['a']);
 });

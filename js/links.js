@@ -21,3 +21,14 @@ export function isSafeLink(value) {
 export function safeHref(value) {
   return isSafeLink(value) ? String(value).trim() : '';
 }
+
+/**
+ * A schemeless link typed by a person ("wested.org/report") gets https://
+ * put in front; anything already carrying a scheme passes through untouched
+ * for isSafeLink to judge.
+ */
+export function withScheme(value) {
+  const trimmed = String(value ?? '').trim();
+  if (!trimmed) return '';
+  return /^[a-z][a-z0-9+.-]*:/i.test(trimmed) ? trimmed : `https://${trimmed.replace(/^\/+/, '')}`;
+}

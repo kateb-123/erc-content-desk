@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { blankRow } from '../js/schema.js';
 import { renderNewsletter } from '../js/template.js';
-import { defaultSection, groupFor, issueFromPicks, isoToDisplay } from '../js/rows-to-issue.js';
+import { defaultSection, groupFor, issueFromPicks, issueForPull, stagedCounts, isoToDisplay } from '../js/rows-to-issue.js';
 
 const pub = o => blankRow({
   status: 'kept', published_at: '2026-08-26T00:00:00.000Z', ...o,
@@ -67,4 +67,36 @@ test('the ported template renders an issue built from picks', () => {
   assert.ok(html.includes('AERA call for papers'), 'opportunity item is missing from the HTML');
   assert.ok(html.includes('Welcome back.'), 'intro is missing from the HTML');
   assert.ok(html.includes('https://x.test'), 'source link is missing from the HTML');
+});
+
+test('issueForPull serves everything stamped for the issue, builder-shaped', () => {
+  const rows = [
+    blankRow({ id: 'a', status: 'kept', headline: 'ERC brief', link: 'https://x.org/a', blurb: 'B.',
+      type: 'research', subtype: 'ERC Research', newsletter_issue: '2026-09-01' }),
+    blankRow({ id: 'b', status: 'kept', headline: 'Spotlight event', link: 'https://x.org/b', blurb: 'E.',
+      type: 'event', subtype: 'A&M', spotlight_request: true, newsletter_issue: '2026-09-01' }),
+    blankRow({ id: 'c', status: 'kept', headline: 'Other issue', link: 'https://x.org/c',
+      type: 'headline', subtype: 'Texas', newsletter_issue: '2026-10-06' }),
+    blankRow({ id: 'd', status: 'kept', headline: 'Unstamped', link: 'https://x.org/d', type: 'headline', subtype: 'Texas' }),
+    blankRow({ id: 'e', status: 'kept', headline: 'Stamped but untyped', link: 'https://x.org/e', newsletter_issue: '2026-09-01' }),
+  ];
+  const issue = issueForPull(rows, '2026-09-01');
+  assert.equal(issue.date, '2026-09-01');
+  assert.deepEqual(issue.sections.research.items.map(i => i.fields.title), ['ERC brief']);
+  assert.equal(issue.sections.research.items[0].group, 'brief');
+  assert.deepEqual(issue.sections.spotlight.items.map(i => i.fields.title), ['Spotlight event']);
+  assert.equal(issue.sections.spotlight.items[0].group, 'events');
+  // the untyped-but-stamped row lands visible in Headlines, never dropped
+  assert.deepEqual(issue.sections.headlines.items.map(i => i.fields.title), ['Stamped but untyped']);
+  assert.equal(issue.sections.events.enabled, false);
+});
+
+test('stagedCounts tallies stamps per issue', () => {
+  const rows = [
+    blankRow({ id: 'a', newsletter_issue: '2026-09-01' }),
+    blankRow({ id: 'b', newsletter_issue: '2026-09-01' }),
+    blankRow({ id: 'c', newsletter_issue: '2026-10-06' }),
+    blankRow({ id: 'd' }),
+  ];
+  assert.deepEqual(stagedCounts(rows), { '2026-09-01': 2, '2026-10-06': 1 });
 });

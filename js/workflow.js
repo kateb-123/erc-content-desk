@@ -93,7 +93,9 @@ export function newsletterOnly(row) {
 }
 
 export function readyToPublish(rows) {
-  return rows.filter(r => r.status === 'kept' && !r.published_at);
+  // A row stamped into an issue is done with Publish — newsletter-only holds
+  // drain here instead of sitting in the held list forever.
+  return rows.filter(r => r.status === 'kept' && !r.published_at && !r.newsletter_issue);
 }
 
 export function publishedRows(rows) {
@@ -111,6 +113,35 @@ export function markPublished(row, timestamp) {
 
 export function markNewsletterIssue(row, issueDate) {
   return { ...row, newsletter_issue: issueDate };
+}
+
+/** The un-send: clear the stamp and the row rejoins the pool (and Publish's held list). */
+export function clearNewsletterIssue(row) {
+  return { ...row, newsletter_issue: '' };
+}
+
+/**
+ * Re-share detection: a row whose link matches a DIFFERENT row already sent
+ * in an issue that has gone out (issue date <= today). Returns
+ * Map<id, thatIssueDate> — the note is informational, never a blocker.
+ */
+export function reshareFlags(rows, todayIso) {
+  const sentByLink = new Map();
+  for (const row of rows) {
+    const link = String(row.link ?? '').trim();
+    const issue = String(row.newsletter_issue ?? '').trim();
+    if (!link || !issue || issue > todayIso) continue;
+    const prior = sentByLink.get(link);
+    if (!prior || issue > prior.issue) sentByLink.set(link, { id: row.id, issue });
+  }
+  const flags = new Map();
+  for (const row of rows) {
+    const link = String(row.link ?? '').trim();
+    if (!link) continue;
+    const sent = sentByLink.get(link);
+    if (sent && sent.id !== row.id) flags.set(row.id, sent.issue);
+  }
+  return flags;
 }
 
 /** Parked events whose date has already passed — quietly flagged in the UI. */

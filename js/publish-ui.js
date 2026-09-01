@@ -1,8 +1,18 @@
 /**
- * Publish (the Final List): show exactly what will land on the Exchange,
- * checked against the LIVE news.csv, then one button. Append-only.
+ * Publish (the Final List): checked against the LIVE news.csv on arrival —
+ * the report is the page. Queue-style rows grouped by fate (adding / already
+ * live / newsletter-only / needs a type), each expandable for one last look.
+ * One deliberate click: Publish. Append-only. After publishing, Go to Build.
  */
-import { readyToPublish, newsletterOnly } from './workflow.js';
+import { readyToPublish } from './workflow.js';
+import { TYPE_LABELS } from './schema.js';
+import { isoToSlash } from './queue-view.js';
+import { detailBody, chevron } from './finalize-ui.js';
+import { checkSvg, gooLoader } from './icons.js';
+
+// View state only — resets on reload, never persisted.
+let expanded = new Set();
+let celebrated = ''; // which publish already played its confirmation — revisits stay still
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -11,70 +21,129 @@ function el(tag, className, text) {
   return node;
 }
 
-export function renderPublish(container, { rows, preview, busy, onPreview, onPublish }) {
+function itemRows(row, { cls, fix, rerender, onGoTo }) {
+  const isOpen = expanded.has(row.id);
+  const rowClass = ['f-item', cls, isOpen && 'is-open'].filter(Boolean).join(' ');
+
+  const tr = el('tr', rowClass);
+  const titleTd = el('td');
+  titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
+  if (row.source) titleTd.append(el('span', 'item-source', row.source));
+  if (fix) {
+    const jump = el('button', 'linkish p-fix', 'Fix in Finalize');
+    jump.type = 'button';
+    jump.addEventListener('click', event => { event.stopPropagation(); onGoTo('finalize'); });
+    titleTd.append(jump);
+  }
+  tr.append(titleTd);
+  const typeTd = el('td');
+  typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
+  if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
+  tr.append(typeTd);
+  tr.append(el('td', '', isoToSlash(String(row.submitted_at ?? '').slice(0, 10)) || '—'));
+  const caretTd = el('td', 'f-caret');
+  const caret = el('button', 'chevron-btn');
+  caret.type = 'button';
+  caret.setAttribute('aria-expanded', String(isOpen));
+  caret.setAttribute('aria-label', isOpen ? 'Hide details' : 'Show details');
+  caret.append(chevron());
+  caretTd.append(caret);
+  tr.append(caretTd);
+  tr.addEventListener('click', () => {
+    if (expanded.has(row.id)) expanded.delete(row.id);
+    else expanded.add(row.id);
+    rerender();
+  });
+
+  if (!isOpen) return [tr];
+  const detailTr = el('tr', `f-detail-row ${rowClass}`);
+  const td = el('td');
+  td.colSpan = 4;
+  td.append(detailBody(row, null));
+  detailTr.append(td);
+  return [tr, detailTr];
+}
+
+function group(container, title, rows, { cls, fix, hint, rerender, onGoTo }) {
+  if (!rows.length) return;
+  container.append(el('h3', 'p-group', title));
+  if (hint) container.append(el('p', 'hint p-group-hint', hint));
+  const table = el('table', 'queue-table finalize-table publish-table');
+  const tbody = el('tbody');
+  for (const row of rows) tbody.append(...itemRows(row, { cls, fix, rerender, onGoTo }));
+  table.append(tbody);
+  const scroll = el('div', 'table-scroll');
+  scroll.append(table);
+  container.append(scroll);
+}
+
+export function renderPublish(container, props) {
+  const { rows, preview, busy, justPublished, onPublish, onGoTo } = props;
+  const rerender = () => renderPublish(container, props);
   container.replaceChildren();
+
+  // The check's own grouping is the truth — rows looked up by the ids the
+  // endpoint returns, never re-derived (or headline-matched) client-side.
   const candidates = readyToPublish(rows);
-  const held = candidates.filter(newsletterOnly);
-  const readyCount = candidates.length - held.length;
+  const byId = new Map(rows.map(r => [r.id, r]));
+  const pick = list => (list ?? []).map(item => byId.get(item.id)).filter(Boolean);
+  const adding = pick(preview?.adding);
+  const held = pick(preview?.newsletterOnly);
+  const notReady = pick(preview?.notReady);
+  const skipped = pick(preview?.skipped);
 
-  const head = el('div', 'screen-head');
-  head.append(el('h2', '', 'Publish'));
-  head.append(el('p', 'lede', candidates.length
-    ? `${readyCount} item(s) ready for the Ed Policy Exchange.`
-      + (held.length ? ` (+${held.length} newsletter-only)` : '')
-    : 'Nothing waiting to publish.'));
+  const head = el('div', 'screen-head finalize-head');
+  const lead = el('div');
+  lead.append(el('h2', '', 'Publish'));
+  const lede = el('p', 'lede');
+  if (justPublished) {
+    const icon = checkSvg();
+    if (celebrated !== justPublished) {
+      celebrated = justPublished;
+      head.classList.add('pub-done-anim');
+      icon.classList.add('draw-check');
+    }
+    lede.append(icon, `Published ${justPublished} — the site updates in about a minute.`);
+  } else if (busy && !preview) {
+    lede.textContent = 'Checking the live Exchange…';
+  } else if (!candidates.length) {
+    lede.textContent = 'Nothing waiting to publish.';
+  } else {
+    lede.textContent = 'Checked against the live Exchange';
+  }
+  lead.append(lede);
+  head.append(lead);
+
+  if (justPublished || (!candidates.length && !busy)) {
+    const btn = el('button', 'primary', 'Send to newsletter');
+    btn.addEventListener('click', () => onGoTo('build'));
+    head.append(btn);
+  } else if (preview) {
+    const btn = el('button', 'primary', busy ? 'Publishing…' : `Publish ${adding.length} to the Exchange`);
+    btn.disabled = busy || !adding.length;
+    btn.addEventListener('click', () => { btn.disabled = true; onPublish(); });
+    head.append(btn);
+  }
   container.append(head);
-  if (!candidates.length) return;
 
-  if (!preview) {
-    const check = el('button', 'primary', busy ? 'Checking…' : 'Check against the live site');
-    check.disabled = busy;
-    check.addEventListener('click', () => { check.disabled = true; onPreview(); });
-    container.append(check);
-    container.append(el('p', 'hint', 'This reads the live news.csv first, so nothing ever gets overwritten or duplicated.'));
+  // Published: the job here is done — just the confirmation and the door to Build.
+  if (justPublished) return;
+
+  if (busy && !preview) {
+    container.append(el('p', 'rewrite-status', 'Reading the live news.csv so nothing gets overwritten or duplicated…'));
+    container.append(gooLoader());
     return;
   }
-
-  const addList = el('section');
-  addList.append(el('h3', '', `Adding ${preview.adding.length}`));
-  const ul = el('ul');
-  for (const item of preview.adding) ul.append(el('li', '', item.headline));
-  addList.append(ul);
-  container.append(addList);
-
-  if (preview.skipped.length) {
-    const skipList = el('section');
-    skipList.append(el('h3', '', `Already on the Exchange — skipping ${preview.skipped.length}`));
-    const ul2 = el('ul');
-    for (const item of preview.skipped) ul2.append(el('li', '', item.headline));
-    skipList.append(ul2);
-    container.append(skipList);
+  if (preview && skipped.length) {
+    container.append(el('p', 'hint', `Skipping ${skipped.length} already on the Exchange.`));
   }
 
-  if (preview.newsletterOnly && preview.newsletterOnly.length) {
-    const holdList = el('section');
-    holdList.append(el('h3', '', `Newsletter only — holding ${preview.newsletterOnly.length}`));
-    const ulH = el('ul');
-    for (const item of preview.newsletterOnly) ulH.append(el('li', '', item.headline));
-    holdList.append(ulH);
-    holdList.append(el('p', 'hint', 'ERC spotlight events stay out of the Exchange; webinars are the exception.'));
-    container.append(holdList);
-  }
-
-  if (preview.notReady && preview.notReady.length) {
-    const notReadyList = el('section');
-    notReadyList.append(el('h3', '', `Not ready — needs a type (${preview.notReady.length})`));
-    const ul3 = el('ul');
-    for (const item of preview.notReady) ul3.append(el('li', '', item.headline));
-    notReadyList.append(ul3);
-    notReadyList.append(el('p', 'hint', 'Fix these in Finalize, then check again.'));
-    container.append(notReadyList);
-  }
-
-  container.append(el('p', 'hint', `The Exchange currently has ${preview.hubCount} items. Publishing only ever adds rows.`));
-
-  const go = el('button', 'primary', busy ? 'Publishing…' : `Publish ${preview.adding.length} to the Exchange`);
-  go.disabled = busy || !preview.adding.length;
-  go.addEventListener('click', () => { go.disabled = true; onPublish(); });
-  container.append(go);
+  group(container, 'Adding', adding, { rerender, onGoTo });
+  group(container, 'Newsletter only', held, {
+    cls: 'p-held', rerender, onGoTo,
+    hint: 'Spotlight events stay off the Exchange — webinars excepted.',
+  });
+  group(container, 'Needs a type', notReady, {
+    cls: 'p-notready', fix: true, rerender, onGoTo,
+  });
 }

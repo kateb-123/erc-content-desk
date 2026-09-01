@@ -82,3 +82,24 @@ export function issueFromPicks(rows, picks, { date, intro } = {}) {
   }
   return issue;
 }
+
+/**
+ * Everything stamped for an issue, as the builder-shaped issue the pull door
+ * serves. An unmappable row (untyped but stamped — rare) lands in Headlines
+ * rather than vanishing: visible and movable beats silently missing.
+ */
+export function issueForPull(rows, issueDate) {
+  const stamped = rows.filter(r => String(r.newsletter_issue ?? '') === issueDate);
+  const picks = stamped.map(r => ({ id: r.id, sectionKey: defaultSection(r) || 'headlines' }));
+  return issueFromPicks(rows, picks, { date: issueDate });
+}
+
+/** How many rows are staged per issue — the mismatch message points at these. */
+export function stagedCounts(rows) {
+  const counts = {};
+  for (const row of rows) {
+    const issue = String(row.newsletter_issue ?? '').trim();
+    if (issue) counts[issue] = (counts[issue] || 0) + 1;
+  }
+  return counts;
+}

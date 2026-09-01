@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isSafeLink, safeHref } from '../js/links.js';
+import { isSafeLink, safeHref, withScheme } from '../js/links.js';
 
 test('isSafeLink accepts http and https only', () => {
   assert.equal(isSafeLink('https://example.org/a'), true);
@@ -33,4 +33,15 @@ test('safeHref returns the trimmed link when safe and an empty string otherwise'
   assert.equal(safeHref('  https://example.org/a  '), 'https://example.org/a');
   assert.equal(safeHref('javascript:alert(1)'), '');
   assert.equal(safeHref(undefined), '');
+});
+
+test('withScheme fills in https:// for schemeless links and leaves the rest alone', () => {
+  assert.equal(withScheme('wested.org/report'), 'https://wested.org/report');
+  assert.equal(withScheme('  example.org  '), 'https://example.org');
+  assert.equal(withScheme('//example.org'), 'https://example.org');
+  assert.equal(withScheme('http://example.org'), 'http://example.org');
+  assert.equal(withScheme('https://example.org'), 'https://example.org');
+  assert.equal(withScheme('javascript:alert(1)'), 'javascript:alert(1)'); // isSafeLink still rejects it
+  assert.equal(withScheme(''), '');
+  assert.equal(withScheme(undefined), '');
 });

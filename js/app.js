@@ -1,13 +1,12 @@
 /** Entry point. Owns all state; screens are pure renderers. */
 import { fetchDesk, saveRows } from './sheet-client.js';
 import { renderHome } from './home-ui.js';
-import { renderSort, detachSortKeys } from './sort-ui.js';
-import { renderFinalize } from './finalize-ui.js';
+import { renderSort } from './sort-ui.js';
+import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
 import { renderPublish } from './publish-ui.js';
-import { renderBuild } from './build-ui.js';
-import { keep, trash, circleback, undecide, markNewsletterIssue, withoutAutoFilled } from './workflow.js';
+import { renderNewsletter, resetNewsletterEntry } from './newsletter-ui.js';
+import { keep, trash, circleback, undecide, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled } from './workflow.js';
 
-const DRAFT_KEY = 'erc-content-desk-draft';
 
 const state = {
   rows: [],
@@ -18,20 +17,17 @@ const state = {
   sortFilter: '',           // '' = all; 'untyped' or a type key (view state)
   sortedThisVisit: 0,       // decisions made since page load (view state)
   lastDecision: null,       // { id, prevStatus }
-  rewrites: null,           // null = not fetched; [] after; [{id, blurb}]
+  rewriteReview: new Map(), // id -> the pre-rewrite description, until she checks it (view state)
+  verifiedIds: new Set(),   // rewrites she has checked this visit (view state)
+  reviewTotal: 0,           // size of the current check batch, for "2 of 4" (view state)
+  justPublished: 0,         // count from the last publish, until she leaves the screen (view state)
+  justSent: null,           // { count, issue, ids } from the last newsletter send (view state)
   publishPreview: null,
-  picks: new Map(),         // id -> sectionKey (Build)
-  draft: loadDraft(),       // { date, intro }
 };
 
 const screens = Object.fromEntries(['home', 'sort', 'finalize', 'publish', 'build']
   .map(name => [name, document.querySelector(`#screen-${name}`)]));
 const statusEl = document.querySelector('#desk-status');
-
-function loadDraft() {
-  try { return { date: '', intro: '', ...JSON.parse(localStorage.getItem(DRAFT_KEY) ?? '{}') }; }
-  catch { return { date: '', intro: '' }; }
-}
 
 export function setStatus(message, kind = 'busy') {
   statusEl.textContent = message;
@@ -78,6 +74,21 @@ async function decide(row, action, note = '') {
   await persist([next]);
 }
 
+function goTo(key) {
+  if (key === 'finalize' && state.screen !== 'finalize') resetFinalizeEntry();
+  if (key === 'build' && state.screen !== 'build') { resetNewsletterEntry(); state.justSent = null; }
+  if (key === 'publish' && state.screen !== 'publish') {
+    // The check is read-only, so arriving runs it — the report is the page.
+    state.publishPreview = null;
+    state.justPublished = 0;
+    state.screen = key;
+    loadPublishPreview();
+    return;
+  }
+  state.screen = key;
+  render();
+}
+
 async function undoLast() {
   const last = state.lastDecision;
   if (!last) return;
@@ -88,36 +99,25 @@ async function undoLast() {
   await persist([{ ...row, status: last.prevStatus }]);
 }
 
-async function editField(row, field, value) {
-  await persist([{ ...row, [field]: value }]);
-}
-
 async function runRewrite() {
   state.busy = true;
   render();
-  setStatus('Rewriting Events + Opportunities blurbs…');
+  setStatus('Rewriting descriptions…');
   try {
     const res = await fetch('/api/rewrite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
-    state.rewrites = data.rewrites;
-    setStatus(data.warnings?.length ? data.warnings.join(' ') : `Got ${data.rewrites.length} rewrites — accept or keep the original.`, 'ok');
+    const byId = new Map(data.rewrites.map(r => [r.id, r.blurb]));
+    const changed = state.rows.filter(r => byId.has(r.id)).map(r => ({ ...r, blurb: byId.get(r.id) }));
+    for (const r of changed) state.rewriteReview.set(r.id, state.rows.find(x => x.id === r.id)?.blurb ?? '');
+    state.reviewTotal = state.rewriteReview.size;
+    await persist(changed);
+    setStatus(data.warnings?.length ? data.warnings.join(' ')
+      : `Rewrote ${changed.length} description${changed.length === 1 ? '' : 's'} — check them one by one.`, 'ok');
   } catch (err) {
     setStatus(err.message, 'error');
   }
   state.busy = false;
-  render();
-}
-
-async function acceptRewrite(id, blurb) {
-  const row = state.rows.find(r => r.id === id);
-  if (!row) return;
-  state.rewrites = state.rewrites.filter(r => r.id !== id);
-  await editField(row, 'blurb', blurb);
-}
-
-function rejectRewrite(id) {
-  state.rewrites = state.rewrites.filter(r => r.id !== id);
   render();
 }
 
@@ -151,6 +151,7 @@ async function publishNow() {
       '. The site updates in about a minute.' +
       (data.warning ? ` ${data.warning}` : '');
     state.publishPreview = null;
+    state.justPublished = data.published;
     state.busy = false;
     // reload() writes its own 'Loading…'/'' status; the confirmation message
     // has to be set after it finishes, or reload() overwrites it.
@@ -164,40 +165,67 @@ async function publishNow() {
   render();
 }
 
-function updateDraft(draft) {
-  state.draft = { ...state.draft, ...draft };
-  localStorage.setItem(DRAFT_KEY, JSON.stringify(state.draft));
+async function sendToNewsletter(selectedRows, issue) {
+  state.busy = true;
+  render();
+  setStatus(`Sending ${selectedRows.length} to the newsletter…`);
+  await persist(selectedRows.map(r => markNewsletterIssue(r, issue)));
+  state.justSent = { count: selectedRows.length, issue, ids: selectedRows.map(r => r.id) };
+  state.busy = false;
+  setStatus(`Sent ${selectedRows.length} to the newsletter builder.`, 'ok');
+  render();
 }
 
-function downloadFile(filename, text, mime) {
-  const url = URL.createObjectURL(new Blob([text], { type: mime }));
-  const a = Object.assign(document.createElement('a'), { href: url, download: filename });
-  a.click();
-  URL.revokeObjectURL(url);
+/** The un-send: clear the stamps and the rows rejoin the pool. */
+async function unsendFromNewsletter(ids) {
+  const targets = state.rows.filter(r => ids.includes(r.id));
+  if (!targets.length) return;
+  state.justSent = null;
+  await persist(targets.map(clearNewsletterIssue));
+  setStatus(`Pulled ${targets.length} back from the newsletter.`, 'ok');
 }
 
-async function exportNewsletter(html, pickedIds, issueDate) {
-  downloadFile('erc-newsletter.html', html, 'text/html');
-  const stamped = state.rows
-    .filter(r => pickedIds.includes(r.id))
-    .map(r => markNewsletterIssue(r, issueDate));
-  state.picks = new Map();
-  await persist(stamped);
-  setStatus(`Newsletter downloaded — ${stamped.length} item(s) stamped for the ${issueDate} issue.`, 'ok');
+const SCREEN_ORDER = ['home', 'sort', 'finalize', 'publish', 'build'];
+let shownScreen = null;
+
+// The rail glides under the active tab; the incoming screen nudges in from
+// the direction of travel. Both purely cosmetic.
+function placeRail() {
+  const rail = document.querySelector('.tab-rail');
+  const tab = document.querySelector(`.screen-tab[data-screen="${state.screen}"]`);
+  if (!rail || !tab) return;
+  rail.style.width = `${tab.offsetWidth}px`;
+  rail.style.transform = `translateX(${tab.offsetLeft}px)`;
+  requestAnimationFrame(() => rail.classList.add('is-ready'));
 }
+window.addEventListener('resize', placeRail);
+document.fonts?.ready.then(() => placeRail());
 
 export function render() {
-  if (state.screen !== 'sort') detachSortKeys();
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
   for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {
     tab.classList.toggle('is-active', tab.dataset.screen === state.screen);
+  }
+  if (shownScreen !== state.screen) {
+    const from = SCREEN_ORDER.indexOf(shownScreen);
+    const to = SCREEN_ORDER.indexOf(state.screen);
+    const incoming = screens[state.screen];
+    if (from !== -1 && incoming) {
+      incoming.classList.remove('slide-in-left', 'slide-in-right');
+      void incoming.offsetWidth;
+      incoming.classList.add(to > from ? 'slide-in-right' : 'slide-in-left');
+      incoming.addEventListener('animationend',
+        () => incoming.classList.remove('slide-in-left', 'slide-in-right'), { once: true });
+    }
+    shownScreen = state.screen;
+    placeRail();
   }
   const today = new Date().toISOString().slice(0, 10);
   const common = { rows: state.rows, schedule: state.schedule, today };
   if (state.screen === 'home') {
     renderHome(screens.home, {
       ...common, loaded: state.loaded,
-      onGoTo: key => { state.screen = key; render(); },
+      onGoTo: goTo,
       onSubmitted: reload,
       onRefresh: reload,
     });
@@ -220,35 +248,49 @@ export function render() {
     });
   } else if (state.screen === 'finalize') {
     renderFinalize(screens.finalize, {
-      ...common, rewrites: state.rewrites, busy: state.busy,
-      onEdit: editField, onRewrite: runRewrite,
-      onAcceptRewrite: acceptRewrite, onRejectRewrite: rejectRewrite,
+      ...common, review: state.rewriteReview, verified: state.verifiedIds,
+      reviewTotal: state.reviewTotal, busy: state.busy,
+      onEditRow: (row, changes) => persist([{ ...row, ...changes }]),
+      onRewrite: runRewrite,
+      // Every check decision stamps rewrite_checked so the state survives reload
+      // (and the endpoint never rewrites a checked row again).
+      onVerifyRewrite: id => {
+        const row = state.rows.find(r => r.id === id);
+        state.rewriteReview.delete(id);
+        state.verifiedIds.add(id);
+        if (row) persist([{ ...row, rewrite_checked: new Date().toISOString() }]);
+        else render();
+      },
+      onRevertRewrite: row => {
+        const old = state.rewriteReview.get(row.id) ?? '';
+        state.rewriteReview.delete(row.id);
+        state.verifiedIds.add(row.id);
+        persist([{ ...row, blurb: old, rewrite_checked: new Date().toISOString() }]);
+      },
+      onCheckEdit: (row, changes) => {
+        state.rewriteReview.delete(row.id);
+        state.verifiedIds.add(row.id);
+        persist([{ ...row, ...changes, rewrite_checked: new Date().toISOString() }]);
+      },
+      onGoTo: goTo,
     });
   } else if (state.screen === 'publish') {
     renderPublish(screens.publish, {
       ...common, preview: state.publishPreview, busy: state.busy,
-      onPreview: loadPublishPreview, onPublish: publishNow,
+      justPublished: state.justPublished,
+      onPublish: publishNow, onGoTo: goTo,
     });
   } else {
-    renderBuild(screens.build, {
-      ...common, draft: state.draft, picks: state.picks,
-      onTogglePick: (id, sectionKey) => {
-        if (state.picks.has(id)) state.picks.delete(id);
-        else state.picks.set(id, sectionKey);
-        render();
-      },
-      onMovePick: (id, sectionKey) => { state.picks.set(id, sectionKey); render(); },
-      onDraftChange: updateDraft,
-      onExport: exportNewsletter,
+    renderNewsletter(screens.build, {
+      ...common, busy: state.busy, justSent: state.justSent,
+      onSend: sendToNewsletter,
+      onUnsend: unsendFromNewsletter,
     });
   }
 }
 
 for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {
-  tab.addEventListener('click', () => {
-    state.screen = tab.dataset.screen;
-    render();
-  });
+  tab.addEventListener('click', () => goTo(tab.dataset.screen));
 }
 
 reload();

@@ -1,19 +1,23 @@
 /**
- * The ONE batched blurb rewrite: Events + Opportunities only, one call per
- * issue. Research abstracts and headlines are never rewritten — this was
- * v1's credit burner and v2 scopes it hard. buildRewritePrompt leads with a
- * few real before/after examples from Kate's own newsletters (see
- * voice-examples.js) so the model has concrete voice/compression targets on
- * top of ERC_VOICE, which still carries the style rules.
+ * The ONE batched description rewrite: Events + Opportunities always, and
+ * research that arrived without an abstract (drafted from its original
+ * text). Research WITH an abstract and headlines are never rewritten — the
+ * v1 credit burner stays scoped. A checked row (rewrite_checked) is done
+ * for good. buildRewritePrompt leads with a few real before/after examples
+ * from Kate's own newsletters (see voice-examples.js) so the model has
+ * concrete voice/compression targets on top of ERC_VOICE.
  */
 import { VOICE_EXAMPLES } from './voice-examples.js';
 
 export const REWRITE_MODEL = 'claude-opus-5';
 
+const ORIGINAL_TEXT_CAP = 1500;
+
 export function rewriteCandidates(rows) {
   return rows.filter(r =>
-    r.status === 'kept' && (r.type === 'event' || r.type === 'opportunity') && r.blurb
-    && !r.published_at);
+    r.status === 'kept' && !r.published_at && !String(r.rewrite_checked ?? '').trim()
+    && (r.type === 'event' || r.type === 'opportunity'
+      || (r.type === 'research' && !r.blurb)));
 }
 
 export const REWRITE_SCHEMA = {
@@ -51,21 +55,24 @@ export function buildRewritePrompt(rows) {
     `id: ${r.id}`,
     `title: ${r.headline}`,
     `type: ${r.type} / ${r.subtype}`,
+    r.authors ? `authors: ${r.authors}` : '',
     r.date ? `date: ${r.date}` : '',
     r.time ? `time: ${r.time}` : '',
     r.location ? `location: ${r.location}` : '',
     r.deadline ? `deadline: ${r.deadline}` : '',
-    'blurb:',
-    r.blurb,
+    r.blurb ? `blurb:\n${r.blurb}` : '',
+    !r.blurb && r.original_text
+      ? `original text:\n${String(r.original_text).slice(0, ORIGINAL_TEXT_CAP)}` : '',
   ].filter(Boolean).join('\n')).join('\n\n---\n\n');
   return [
     'Rewrite each blurb below in the ERC newsletter voice.',
+    'An item with no blurb has none yet — draft one from its original text and fields instead.',
     'Return one rewrite per item, keyed by its exact id.',
     'Keep every fact — never add one. Do not restate the date/time/location line-for-line if the blurb flows better without it; the layout shows those separately.',
     'Examples of the voice:',
     exampleBlock(),
     '',
-    "(Note: some of those human rewrites add a fact the editor pulled from the source page — do not do that. Use only facts present in each item's own blurb below.)",
+    "(Note: some of those human rewrites add a fact the editor pulled from the source page — do not do that. Use only facts present in each item's own blurb, original text, or fields below.)",
     '',
     'Items:',
     items,

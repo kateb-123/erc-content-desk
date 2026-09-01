@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     const ids = Array.isArray(req.body?.ids) ? new Set(req.body.ids) : null;
     const candidates = rewriteCandidates(all).filter(r => !ids || ids.has(r.id));
     if (!candidates.length) {
-      return res.status(200).json({ ok: true, rewrites: [], warnings: ['Nothing to rewrite — only kept Events and Opportunities with blurbs get rewritten.'] });
+      return res.status(200).json({ ok: true, rewrites: [], warnings: ['Nothing to rewrite — kept events, opportunities, and research without a description are the only candidates.'] });
     }
     const stream = anthropic.beta.messages.stream({
       model: REWRITE_MODEL,

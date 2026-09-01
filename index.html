@@ -4,19 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ERC Content Desk</title>
-  <link rel="stylesheet" href="/css/styles.css?v=13" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="/css/styles.css?v=23" />
 </head>
 <body class="desk">
   <header class="desk-header">
+    <div class="desk-bar">
     <h1>ERC Content Desk</h1>
     <nav class="screen-nav" aria-label="Screens">
       <button class="screen-tab is-active" data-screen="home">Home</button>
       <button class="screen-tab" data-screen="sort">Sort</button>
       <button class="screen-tab" data-screen="finalize">Finalize</button>
       <button class="screen-tab" data-screen="publish">Publish</button>
-      <button class="screen-tab" data-screen="build">Build</button>
-      <a class="screen-tab screen-link" href="/submit">Submit ↗</a>
+      <button class="screen-tab" data-screen="build">Newsletter</button>
+      <!-- Public /submit page exists but isn't in play yet (Kate, Aug 31) — link hidden until the team's intake path is settled. -->
+      <span class="tab-rail" aria-hidden="true"></span>
     </nav>
+    </div>
     <p id="desk-status" class="status" role="status" aria-live="polite"></p>
   </header>
 
@@ -28,7 +34,18 @@
     <section id="screen-build" class="screen" hidden></section>
   </main>
 
+  <!-- The gooey loader's filter (css .blob-loading references #goo). -->
+  <svg class="goo-defs" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="goo">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"></feGaussianBlur>
+        <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo"></feColorMatrix>
+        <feBlend in="SourceGraphic" in2="goo"></feBlend>
+      </filter>
+    </defs>
+  </svg>
+
   <!-- Bump ?v when you change the JS so browsers load the new code. -->
-  <script type="module" src="/js/app.js?v=17"></script>
+  <script type="module" src="/js/app.js?v=28"></script>
 </body>
 </html>

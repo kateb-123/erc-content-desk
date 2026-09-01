@@ -1,15 +1,27 @@
 /**
- * Finalize: the keeps as an editable table, plus the one batched rewrite.
- * Cells save on blur. Nothing publishes from this screen.
+ * Finalize: every unpublished keep in the queue's own slim table — Title,
+ * Type, Date submitted, sortable — but rows expand in place like the
+ * Exchange: facts above the blurb (Abstract for research), and Edit fields
+ * with an explicit Save. ERC leads; rows still needing an ERC-voice blurb
+ * are tinted, one button rewrites them all and the results land back in
+ * the rows. Nothing publishes from this screen.
  */
 import { readyToPublish } from './workflow.js';
-import { TYPES } from './schema.js';
+import { isErc } from './sort-view.js';
+import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
+import { isoToSlash } from './queue-view.js';
+import { gooLoader } from './icons.js';
 
 const EDITABLE = ['headline', 'date', 'source', 'topic', 'blurb', 'deadline', 'authors', 'time', 'location'];
-const GROUP_LABELS = {
-  research: 'New Ed Policy Research', event: 'Events',
-  opportunity: 'Opportunities', headline: 'Headlines', '': 'Untyped',
-};
+
+// View state only — resets on reload, never persisted.
+let sortState = { column: '', dir: 'asc' }; // '' = standing order (ERC first)
+let expanded = new Set();
+let editingId = null;
+let showAll = false; // stage 1 (just the rewrites) until Rewrite runs or she skips ahead
+
+/** Arriving at Finalize always starts at stage 1 — "Show all" is a one-visit peek. */
+export function resetFinalizeEntry() { showAll = false; }
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -18,70 +30,377 @@ function el(tag, className, text) {
   return node;
 }
 
-export function renderFinalize(container, { rows, rewrites, busy, onEdit, onRewrite, onAcceptRewrite, onRejectRewrite }) {
+/** Events and opportunities always get the ERC voice; research only when it
+ *  arrived without an abstract. A checked rewrite (rewrite_checked stamp in
+ *  the Sheet) is done for good — the state survives reload. */
+export function needsRewrite(row) {
+  if (String(row.rewrite_checked ?? '').trim()) return false;
+  return row.type === 'event' || row.type === 'opportunity'
+    || (row.type === 'research' && !row.blurb);
+}
+
+const oldestFirst = (a, b) => String(a.submitted_at).localeCompare(String(b.submitted_at));
+
+/** ERC spotlight leads, then type order, stragglers last — same standing as Sort. */
+function standingOrder(keeps) {
+  const erc = keeps.filter(isErc).sort(oldestFirst);
+  const rest = keeps.filter(r => !isErc(r));
+  const known = new Set([...TYPE_ORDER, '']);
+  const grouped = [...TYPE_ORDER, ''].flatMap(type =>
+    rest.filter(r => (r.type || '') === type).sort(oldestFirst));
+  return [...erc, ...grouped, ...rest.filter(r => !known.has(r.type || '')).sort(oldestFirst)];
+}
+
+const SORT_KEYS = {
+  title: r => r.headline,
+  type: r => TYPE_LABELS[r.type] ?? r.type ?? '',
+  submitted: r => r.submitted_at,
+};
+
+function sorted(keeps) {
+  if (!sortState.column) return standingOrder(keeps);
+  const key = SORT_KEYS[sortState.column];
+  const flip = sortState.dir === 'desc' ? -1 : 1;
+  return keeps.slice().sort((a, b) => {
+    const left = String(key(a) ?? '').toLowerCase();
+    const right = String(key(b) ?? '').toLowerCase();
+    if (!left && !right) return 0;
+    if (!left) return 1;
+    if (!right) return -1;
+    return flip * left.localeCompare(right);
+  });
+}
+
+/** Word-level LCS diff so a rewrite check highlights only what changed. */
+function diffWords(oldText, newText) {
+  const a = String(oldText).split(/\s+/).filter(Boolean);
+  const b = String(newText).split(/\s+/).filter(Boolean);
+  const dp = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+  for (let i = a.length - 1; i >= 0; i--) {
+    for (let j = b.length - 1; j >= 0; j--) {
+      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+  const oldToks = [];
+  const newToks = [];
+  let i = 0;
+  let j = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) { oldToks.push({ t: a[i++], ch: false }); newToks.push({ t: b[j++], ch: false }); }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) oldToks.push({ t: a[i++], ch: true });
+    else newToks.push({ t: b[j++], ch: true });
+  }
+  while (i < a.length) oldToks.push({ t: a[i++], ch: true });
+  while (j < b.length) newToks.push({ t: b[j++], ch: true });
+  return { oldToks, newToks };
+}
+
+/** Paragraph from diff tokens: changed runs wrapped in a span, the rest plain text. */
+function diffPara(toks, baseClass, changeClass) {
+  const p = el('p', baseClass);
+  let run = [];
+  let changed = false;
+  const flush = () => {
+    if (!run.length) return;
+    if (changed) p.append(el('span', changeClass, run.join(' ')));
+    else p.append(document.createTextNode(run.join(' ')));
+    p.append(document.createTextNode(' '));
+    run = [];
+  };
+  for (const tok of toks) {
+    if (tok.ch !== changed) { flush(); changed = tok.ch; }
+    run.push(tok.t);
+  }
+  flush();
+  return p;
+}
+
+export function chevron() {
+  const span = el('span', 'chevron');
+  span.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>';
+  return span;
+}
+
+/** The facts that lead the expanded detail — events and opportunities only;
+ *  research reads title/authors/source in the row and Abstract below. */
+function factsFor(row) {
+  const per = {
+    event: [['Date', isoToSlash(row.date)], ['Time', row.time], ['Location', row.location]],
+    opportunity: [['Deadline', isoToSlash(row.deadline)], ['Topic', row.topic]],
+  };
+  return (per[row.type] ?? []).filter(([, v]) => v);
+}
+
+/** Exchange layout: facts panel in a left column, blurb beside it. `extra`
+ *  (the Edit fields action) rides under the blurb in the main column.
+ *  Shared with Publish, which uses it read-only. */
+export function detailBody(row, extra) {
+  const facts = factsFor(row);
+  const wrap = el('div', facts.length ? 'f-detail-cols' : '');
+  if (facts.length) {
+    const dl = el('dl', 'f-facts');
+    for (const [label, value] of facts) {
+      const fact = el('div', 'f-fact');
+      fact.append(el('dt', 'f-fact-label', label));
+      fact.append(el('dd', 'f-fact-value', value));
+      dl.append(fact);
+    }
+    wrap.append(dl);
+  }
+  const main = el('div', 'f-detail-main');
+  if (row.blurb) {
+    main.append(el('h4', 'f-detail-label', row.type === 'research' ? 'Abstract' : 'Description'));
+    main.append(el('p', 'f-blurb-text', row.blurb));
+  } else if (needsRewrite(row)) {
+    main.append(el('p', 'rewrite-note', 'No description yet — Rewrite drafts one from the original text.'));
+  }
+  if (extra) main.append(extra);
+  wrap.append(main);
+  return wrap;
+}
+
+function editBody(row, { onSave, onCancel }) {
+  const wrap = el('div');
+  const grid = el('div', 'f-edit-grid');
+  const inputs = {};
+  for (const field of EDITABLE) {
+    const label = el('label', field === 'blurb' ? 'f-edit-blurb' : '', field === 'blurb' ? 'description' : field);
+    const input = field === 'blurb' ? el('textarea') : el('input');
+    if (field === 'blurb') input.rows = 3;
+    input.value = row[field] ?? '';
+    inputs[field] = input;
+    label.append(input);
+    grid.append(label);
+  }
+  wrap.append(grid);
+  const actions = el('div', 'f-edit-actions');
+  const save = el('button', 'primary', 'Save');
+  save.type = 'button';
+  save.addEventListener('click', () => {
+    const changes = {};
+    for (const field of EDITABLE) {
+      const value = inputs[field].value.trim();
+      if (value !== (row[field] ?? '')) changes[field] = value;
+    }
+    onSave(row, changes);
+  });
+  const cancel = el('button', '', 'Cancel');
+  cancel.type = 'button';
+  cancel.addEventListener('click', onCancel);
+  actions.append(save, cancel);
+  wrap.append(actions);
+  return wrap;
+}
+
+function itemRows(row, { tint, busy, rerender, onEditRow }) {
+  const isOpen = expanded.has(row.id);
+  const rowClass = ['f-item', isErc(row) && 'f-erc', tint && 'needs-rewrite',
+    tint && busy && 'rewriting', isOpen && 'is-open'].filter(Boolean).join(' ');
+
+  const tr = el('tr', rowClass);
+  const titleTd = el('td');
+  titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
+  if (row.type === 'research' && row.authors) titleTd.append(el('span', 'item-source', row.authors));
+  if (row.source) titleTd.append(el('span', 'item-source', row.source));
+  tr.append(titleTd);
+  const typeTd = el('td');
+  typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
+  if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
+  tr.append(typeTd);
+  tr.append(el('td', '', isoToSlash(String(row.submitted_at ?? '').slice(0, 10)) || '—'));
+  const caretTd = el('td', 'f-caret');
+  const caret = el('button', 'chevron-btn');
+  caret.type = 'button';
+  caret.setAttribute('aria-expanded', String(isOpen));
+  caret.setAttribute('aria-label', isOpen ? 'Hide details' : 'Show details');
+  caret.append(chevron());
+  caretTd.append(caret);
+  tr.append(caretTd);
+  tr.addEventListener('click', () => {
+    if (expanded.has(row.id)) { expanded.delete(row.id); if (editingId === row.id) editingId = null; }
+    else expanded.add(row.id);
+    rerender();
+  });
+
+  if (!isOpen) return [tr];
+
+  const detailTr = el('tr', `f-detail-row ${rowClass}`);
+  const td = el('td');
+  td.colSpan = 4;
+  if (editingId === row.id) {
+    td.append(editBody(row, {
+      onSave: (r, changes) => {
+        editingId = null;
+        if (Object.keys(changes).length) onEditRow(r, changes);
+        else rerender();
+      },
+      onCancel: () => { editingId = null; rerender(); },
+    }));
+  } else {
+    const edit = el('button', 'linkish', 'Edit fields');
+    edit.type = 'button';
+    edit.addEventListener('click', () => { editingId = row.id; rerender(); });
+    td.append(detailBody(row, edit));
+  }
+  detailTr.append(td);
+  return [tr, detailTr];
+}
+
+/** One rewrite at a time: the item, the change, approve or keep the original.
+ *  Saving an edit here counts as the decision (onCheckEdit stamps the row). */
+function checkCard(row, { old, onVerify, onRevert, onCheckEdit, rerender }) {
+  const card = el('div', 'card f-check-card');
+  const typeLine = el('p', 'type-line');
+  typeLine.append(el('span', 'type-label', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
+  if (row.subtype) typeLine.append(` — ${row.subtype}`);
+  card.append(typeLine);
+  card.append(el('h3', 'f-check-title', row.headline || row.link || '(untitled)'));
+  if (row.source) card.append(el('p', 'f-check-source', row.source));
+
+  if (editingId === row.id) {
+    card.append(editBody(row, {
+      onSave: (r, changes) => {
+        editingId = null;
+        if (Object.keys(changes).length) onCheckEdit(r, changes);
+        else rerender();
+      },
+      onCancel: () => { editingId = null; rerender(); },
+    }));
+    return card;
+  }
+
+  if (old) {
+    const { oldToks, newToks } = diffWords(old, row.blurb);
+    card.append(el('p', 'f-diff-label', 'Before'));
+    card.append(diffPara(oldToks, 'f-old', 'diff-del'));
+    card.append(el('p', 'f-diff-label', 'After'));
+    card.append(diffPara(newToks, 'f-blurb-text', 'diff-add'));
+  } else {
+    card.append(el('p', 'f-diff-label', 'New description — written from the original text'));
+    card.append(el('p', 'f-blurb-text', row.blurb));
+  }
+
+  const actions = el('div', 'f-verify-actions');
+  const ok = el('button', 'primary', 'Looks good');
+  ok.type = 'button';
+  ok.addEventListener('click', () => { ok.disabled = true; onVerify(row.id); });
+  actions.append(ok);
+  if (old) {
+    const revert = el('button', '', 'Keep the original');
+    revert.type = 'button';
+    revert.addEventListener('click', () => { revert.disabled = true; onRevert(row); });
+    actions.append(revert);
+  }
+  card.append(actions);
+  const edit = el('button', 'linkish', 'Edit fields');
+  edit.type = 'button';
+  edit.addEventListener('click', () => { editingId = row.id; rerender(); });
+  card.append(edit);
+  return card;
+}
+
+export function renderFinalize(container, props) {
+  const { rows, review, verified, reviewTotal, busy, onEditRow, onCheckEdit, onRewrite, onVerifyRewrite, onRevertRewrite, onGoTo } = props;
+  const rerender = () => renderFinalize(container, props);
   container.replaceChildren();
   const keeps = readyToPublish(rows);
+  const handled = id => review?.has(id) || verified?.has(id);
+  const pending = keeps.filter(r => needsRewrite(r) && !handled(r.id));
+  const checks = review?.size ?? 0;
 
-  const head = el('div', 'screen-head');
-  head.append(el('h2', '', 'Finalize'));
-  head.append(el('p', 'lede', keeps.length
-    ? `${keeps.length} kept item(s) — click any cell to fix it.`
-    : 'No unpublished keeps right now.'));
-  const rewriteBtn = el('button', 'primary', busy ? 'Rewriting…' : 'Rewrite Events + Opportunities blurbs');
-  rewriteBtn.disabled = busy || !keeps.some(r => r.type === 'event' || r.type === 'opportunity');
-  rewriteBtn.addEventListener('click', () => { rewriteBtn.disabled = true; onRewrite(); });
-  head.append(rewriteBtn);
+  // Stage 1: just the rows waiting on a description. Rewrite (or Show all) moves on.
+  const stage1 = pending.length > 0 && !showAll;
+
+  const head = el('div', 'screen-head finalize-head');
+  const lead = el('div');
+  lead.append(el('h2', '', 'Finalize'));
+  const lede = el('p', 'lede');
+  if (!keeps.length) {
+    lede.textContent = 'No unpublished keeps right now.';
+  } else if (stage1) {
+    lede.append('These need rewriting into ERC voice. ');
+    const all = el('button', 'linkish', 'Show all');
+    all.type = 'button';
+    all.addEventListener('click', () => { showAll = true; rerender(); });
+    lede.append(all);
+  } else if (checks && !busy) {
+    const done = Math.max(0, (reviewTotal ?? checks) - checks);
+    lede.textContent = `Check the rewrites — ${done + 1} of ${reviewTotal ?? checks}`;
+  } else {
+    lede.textContent = `${keeps.length} kept · ERC first · click a row for details`;
+  }
+  lead.append(lede);
+  head.append(lead);
+  if (busy) {
+    const btn = el('button', 'primary', 'Rewriting…');
+    btn.disabled = true;
+    head.append(btn);
+  } else if (pending.length) {
+    const btn = el('button', 'primary', `Rewrite ${pending.length} description${pending.length === 1 ? '' : 's'}`);
+    btn.addEventListener('click', () => { btn.disabled = true; onRewrite(); });
+    head.append(btn);
+  } else if (keeps.length && !checks) {
+    const btn = el('button', 'primary', 'Go to Publish');
+    btn.addEventListener('click', () => onGoTo('publish'));
+    head.append(btn);
+  }
   container.append(head);
-
-  if (rewrites?.length) {
-    const wrap = el('section', 'rewrite-review');
-    wrap.append(el('h3', '', `Rewrites to review (${rewrites.length})`));
-    for (const { id, blurb } of rewrites) {
-      const row = rows.find(r => r.id === id);
-      if (!row) continue;
-      const pair = el('div', 'rewrite-pair');
-      pair.append(el('strong', '', row.headline));
-      pair.append(el('p', 'old', row.blurb));
-      pair.append(el('p', 'new', blurb));
-      const acceptBtn = el('button', 'primary', 'Use the rewrite');
-      acceptBtn.addEventListener('click', () => { acceptBtn.disabled = true; onAcceptRewrite(id, blurb); });
-      const rejectBtn = el('button', '', 'Keep the original');
-      rejectBtn.addEventListener('click', () => onRejectRewrite(id));
-      pair.append(acceptBtn, ' ', rejectBtn);
-      wrap.append(pair);
-    }
-    container.append(wrap);
+  if (busy) {
+    container.append(el('p', 'rewrite-status', `Writing ${pending.length} description${pending.length === 1 ? '' : 's'} in ERC voice…`));
+    container.append(gooLoader());
   }
 
-  for (const type of [...Object.keys(TYPES), '']) {
-    const group = keeps.filter(r => (r.type || '') === type);
-    if (!group.length) continue;
-    container.append(el('h3', '', `${GROUP_LABELS[type]} · ${group.length}`));
-    const table = el('table', 'grid finalize-table');
-    const thead = el('thead');
-    const headRow = el('tr');
-    for (const col of ['Spotlight', ...EDITABLE, 'subtype']) headRow.append(el('th', '', col));
-    thead.append(headRow);
-    table.append(thead);
-    const tbody = el('tbody');
-    for (const row of group) {
-      const tr = el('tr');
-      tr.append(el('td', '', row.spotlight_request ? 'yes' : ''));
-      for (const field of EDITABLE) {
-        const td = el('td', '', row[field]);
-        td.contentEditable = 'plaintext-only';
-        td.addEventListener('blur', () => {
-          const value = td.textContent.trim();
-          if (value !== row[field]) onEdit(row, field, value);
-        });
-        tr.append(td);
-      }
-      tr.append(el('td', '', row.subtype));
-      tbody.append(tr);
+  if (!keeps.length) return;
+
+  // Check the rewrites one at a time; the table waits until every one is decided.
+  if (checks && !busy) {
+    const next = sorted(keeps).find(r => review.has(r.id));
+    if (next) {
+      container.append(checkCard(next, {
+        old: review.get(next.id),
+        onVerify: onVerifyRewrite, onRevert: onRevertRewrite, onCheckEdit, rerender,
+      }));
+      return;
     }
-    table.append(tbody);
-    const scroll = el('div', 'table-scroll');
-    scroll.append(table);
-    container.append(scroll);
   }
+
+  const table = el('table', 'queue-table finalize-table');
+  const headRow = el('tr');
+  for (const col of [
+    { key: 'title', label: 'Title' },
+    { key: 'type', label: 'Type' },
+    { key: 'submitted', label: 'Date' },
+  ]) {
+    const th = el('th');
+    const active = sortState.column === col.key;
+    if (active) th.setAttribute('aria-sort', sortState.dir === 'desc' ? 'descending' : 'ascending');
+    const btn = el('button', 'sort-btn', `${col.label} ${active ? (sortState.dir === 'desc' ? '↓' : '↑') : '↕'}`);
+    btn.type = 'button';
+    btn.addEventListener('click', () => {
+      if (sortState.column === col.key) sortState.dir = sortState.dir === 'desc' ? 'asc' : 'desc';
+      else sortState = { column: col.key, dir: 'asc' };
+      rerender();
+    });
+    th.append(btn);
+    headRow.append(th);
+  }
+  headRow.append(el('th', 'f-caret'));
+  const thead = el('thead');
+  thead.append(headRow);
+  table.append(thead);
+
+  const tbody = el('tbody');
+  const listed = stage1 ? sorted(keeps).filter(r => pending.includes(r)) : sorted(keeps);
+  for (const row of listed) {
+    const tint = pending.includes(row);
+    const check = review?.has(row.id)
+      ? { old: review.get(row.id), onVerify: onVerifyRewrite, onRevert: onRevertRewrite }
+      : null;
+    tbody.append(...itemRows(row, { tint, check, busy, rerender, onEditRow }));
+  }
+  table.append(tbody);
+
+  const scroll = el('div', 'table-scroll');
+  scroll.append(table);
+  container.append(scroll);
 }
