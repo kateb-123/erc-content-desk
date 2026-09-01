@@ -6,7 +6,7 @@
  * are tinted, one button rewrites them all and the results land back in
  * the rows. Nothing publishes from this screen.
  */
-import { readyToPublish } from './workflow.js';
+import { readyToPublish, needsErcVoice } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
 import { isoToSlash } from './queue-view.js';
@@ -30,14 +30,9 @@ function el(tag, className, text) {
   return node;
 }
 
-/** Events and opportunities always get the ERC voice; research only when it
- *  arrived without an abstract. A checked rewrite (rewrite_checked stamp in
- *  the Sheet) is done for good — the state survives reload. */
-export function needsRewrite(row) {
-  if (String(row.rewrite_checked ?? '').trim()) return false;
-  return row.type === 'event' || row.type === 'opportunity'
-    || (row.type === 'research' && !row.blurb);
-}
+/** The shared predicate lives in workflow.js so the /api/rewrite endpoint
+ *  can never disagree with this screen about what needs rewriting. */
+export const needsRewrite = needsErcVoice;
 
 const oldestFirst = (a, b) => String(a.submitted_at).localeCompare(String(b.submitted_at));
 
@@ -335,7 +330,9 @@ export function renderFinalize(container, props) {
     const btn = el('button', 'primary', 'Rewriting…');
     btn.disabled = true;
     head.append(btn);
-  } else if (pending.length) {
+  } else if (pending.length && !checks) {
+    // While a check queue is open, the queue is the only action — a second
+    // Rewrite here would re-run rows mid-review.
     const btn = el('button', 'primary', `Rewrite ${pending.length} description${pending.length === 1 ? '' : 's'}`);
     btn.addEventListener('click', () => { btn.disabled = true; onRewrite(); });
     head.append(btn);
@@ -393,10 +390,7 @@ export function renderFinalize(container, props) {
   const listed = stage1 ? sorted(keeps).filter(r => pending.includes(r)) : sorted(keeps);
   for (const row of listed) {
     const tint = pending.includes(row);
-    const check = review?.has(row.id)
-      ? { old: review.get(row.id), onVerify: onVerifyRewrite, onRevert: onRevertRewrite }
-      : null;
-    tbody.append(...itemRows(row, { tint, check, busy, rerender, onEditRow }));
+    tbody.append(...itemRows(row, { tint, busy, rerender, onEditRow }));
   }
   table.append(tbody);
 

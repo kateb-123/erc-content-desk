@@ -15,11 +15,20 @@ test('kept events, opportunities, and description-less research are candidates',
     kept({ id: 'b', type: 'opportunity', blurb: 'x' }),
     kept({ id: 'c', type: 'research', blurb: 'x' }),      // has an abstract — never rewritten
     kept({ id: 'd', type: 'headline', blurb: 'x' }),      // never rewritten
-    kept({ id: 'e', type: 'event', blurb: '' }),          // drafted from its own facts
+    kept({ id: 'e', type: 'event', blurb: '' }),          // NO source text at all — never sent to the model
     kept({ id: 'g', type: 'research', blurb: '', original_text: 'the announcement' }),
+    kept({ id: 'h', type: 'event', blurb: '', original_text: 'the flyer text' }), // drafted from its original text
     blankRow({ id: 'f', status: 'new', type: 'event', blurb: 'x' }),
   ];
-  assert.deepEqual(rewriteCandidates(rows).map(r => r.id), ['a', 'b', 'e', 'g']);
+  assert.deepEqual(rewriteCandidates(rows).map(r => r.id), ['a', 'b', 'g', 'h']);
+});
+
+test('a row stamped for an issue is out of the rewrite pool — same gate as readyToPublish', () => {
+  const rows = [
+    kept({ id: 'a', type: 'event', blurb: 'x', newsletter_issue: '2026-09-01' }),
+    kept({ id: 'b', type: 'event', blurb: 'x' }),
+  ];
+  assert.deepEqual(rewriteCandidates(rows).map(r => r.id), ['b']);
 });
 
 test('a checked rewrite is never a candidate again', () => {

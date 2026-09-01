@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { blankRow } from '../js/schema.js';
-import { renderNewsletter } from '../js/template.js';
+import { renderNewsletter } from '../builder/js/template.js';
 import { defaultSection, groupFor, issueFromPicks, issueForPull, stagedCounts, isoToDisplay } from '../js/rows-to-issue.js';
 
 const pub = o => blankRow({

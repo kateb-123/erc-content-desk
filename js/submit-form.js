@@ -305,7 +305,7 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
         const data = await postSubmission({
           title: item.title || item.link,
           blurb: item.blurb || item.original_text,
-          link: item.link,
+          link: withScheme(item.link),
           type: item.type || '',        // untyped enters untyped — Sort's To review catches it
           subtype: item.subtype || '',
           spotlight: false,

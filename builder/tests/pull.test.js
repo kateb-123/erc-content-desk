@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createEmptyIssue, mergeIssues, issueLinks, partitionPulled, countIssueItems } from '../js/model.js';
+import { createEmptyIssue, mergeIssues, issueLinks, issueItemIds, partitionPulled, countIssueItems } from '../js/model.js';
 
 function issueWith(items) {
   const issue = createEmptyIssue();
@@ -51,4 +51,15 @@ test('the Miscellaneous section renders with only its section band, no group hea
   assert.ok(html.includes('Miscellaneous'));
   assert.ok(html.includes('A one-off thing'));
   assert.ok(!html.includes('letter-spacing: 1.1px;"></p>')); // no empty group label
+});
+
+test('partitionPulled also dedupes by stable id, so url-less items never duplicate', () => {
+  const pulled = createEmptyIssue();
+  pulled.sections.headlines.items.push({ id: 'desk_r9', group: 'texas', fields: { title: 'No link here' } });
+  pulled.sections.headlines.enabled = true;
+  const base = createEmptyIssue();
+  base.sections.headlines.items.push({ id: 'desk_r9', group: 'texas', fields: { title: 'No link here' } });
+  const { pulled: kept, already } = partitionPulled(pulled, issueLinks(base), issueItemIds(base));
+  assert.equal(already, 1);
+  assert.equal(countIssueItems(kept), 0);
 });

@@ -67,14 +67,14 @@ export function issueFromPicks(rows, picks, { date, intro } = {}) {
   const issue = createEmptyIssue();
   issue.date = date ?? '';
   issue.intro = intro ?? '';
-  let seq = 0;
   for (const pick of picks ?? []) {
     const row = byId.get(pick.id);
     const section = issue.sections[pick.sectionKey];
     if (!row || !section) continue;
-    seq += 1;
     section.items.push({
-      id: `desk_${seq}`,
+      // Derived from the sheet row's own id: stable across pulls, so a
+      // re-pull can never mint a colliding desk_N for a different item.
+      id: `desk_${row.id}`,
       group: groupFor(row, pick.sectionKey),
       fields: fieldsFor(row),
     });

@@ -45,6 +45,10 @@ export default async function handler(req, res) {
     }
   }
 
+  if (text.length > MAX_TEXT_LENGTH) {
+    return res.status(400).json({ ok: false, error: 'That document is too big — split it in half and try again.' });
+  }
+
   try {
     // Spreadsheets: one row = one item, straight mapping, no model call.
     if (/\.(xlsx|csv)$/i.test(name)) {
@@ -70,6 +74,7 @@ export default async function handler(req, res) {
     }
     if (!text) return res.status(400).json({ ok: false, error: 'Nothing readable in that file.' });
     if (text.length > MAX_TEXT_LENGTH) {
+      // A small .docx can still extract to a huge text body.
       return res.status(400).json({ ok: false, error: 'That document is too big — split it in half and try again.' });
     }
     const stream = anthropic.messages.stream({

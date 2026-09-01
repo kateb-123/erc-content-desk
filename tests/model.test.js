@@ -4,7 +4,7 @@ import { SECTION_REGISTRY, createEmptyIssue, sectionByAlias, groupByAlias, merge
 
 test('registry order includes spotlight between research and events; no standalone happyhour', () => {
   const keys = SECTION_REGISTRY.map(s => s.key);
-  assert.deepEqual(keys, ['research','spotlight','events','opportunities','policy','headlines']);
+  assert.deepEqual(keys, ['research','spotlight','events','opportunities','policy','headlines','misc']);
 });
 
 test('createEmptyIssue starts every section disabled and empty', () => {

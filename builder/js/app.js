@@ -6,7 +6,7 @@
  * each step.
  */
 
-import { SECTION_REGISTRY, mergeIssueItems, createEmptyIssue, mergeIssues, deleteItem, insertItem, issueLinks, partitionPulled, countIssueItems } from './model.js';
+import { SECTION_REGISTRY, mergeIssueItems, createEmptyIssue, mergeIssues, deleteItem, insertItem, issueLinks, issueItemIds, partitionPulled, countIssueItems } from './model.js';
 
 // The builder lives INSIDE the desk's project (/builder/), so the desk's API
 // is same-origin — relative fetches, no CORS. ?desk= still overrides for
@@ -262,7 +262,7 @@ function renderReview() {
         return;
       }
       if (!state.issue) state.issue = createEmptyIssue();
-      const { pulled, already } = partitionPulled(data.issue, issueLinks(state.issue));
+      const { pulled, already } = partitionPulled(data.issue, issueLinks(state.issue), issueItemIds(state.issue));
       const fresh = countIssueItems(pulled);
       if (fresh) {
         pulled.date = ''; // never clobber the issue's own date field
@@ -848,8 +848,15 @@ function buildAddItemPanel(iframe) {
     }
     miscItemSeq += 1;
     const section = state.issue.sections[sectionSelect.value];
-    section.items.push({ id: `misc_${Date.now().toString(36)}_${miscItemSeq}`, group: groupSelect.value, fields });
+    const item = { id: `misc_${Date.now().toString(36)}_${miscItemSeq}`, group: groupSelect.value, fields };
+    section.items.push(item);
     section.enabled = true;
+    // The as-added values are this item's "original" for Revert.
+    if (!state.baseline) state.baseline = structuredClone(state.issue);
+    else {
+      const base = state.baseline.sections[sectionSelect.value];
+      if (base) { base.items.push(structuredClone(item)); base.enabled = true; }
+    }
     scheduleSave();
     refreshEditIframe(iframe);
     for (const input of [titleInput, linkInput, summaryInput, dateInput, timeInput, locationInput, deadlineInput]) input.value = '';
@@ -1170,11 +1177,18 @@ function openItemEditor(refs, iframe) {
   revertBtn.className = 'edit-card-revert';
   revertBtn.textContent = 'Revert to original';
   revertBtn.addEventListener('click', () => {
+    let reverted = 0;
     for (const f of fieldInputs) {
-      const original = getField(state.baseline, f.ref) ?? '';
+      // No baseline entry (item added after the snapshot, or no snapshot
+      // yet) means there is no original — leave the field alone rather
+      // than blanking it.
+      const original = getField(state.baseline, f.ref);
+      if (original === undefined || original === null) continue;
       f.set(original);
       setField(state.issue, f.ref, original);
+      reverted += 1;
     }
+    if (!reverted) return;
     scheduleSave();
     refreshEditIframe(iframe);
   });

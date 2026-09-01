@@ -26,13 +26,14 @@ export default async function handler(req, res) {
     return res.status(400).json({ ok: false, error: 'Pass ?issue=YYYY-MM-DD.' });
   }
   try {
-    const rows = await readAllRows();
-    let schedule = [];
-    try {
-      schedule = normalizeSchedule(await readScheduleRows());
-    } catch (err) {
-      console.error('schedule read failed (tab missing?)', err);
-    }
+    // The two sheet reads are independent — fetch them together.
+    const [rows, schedule] = await Promise.all([
+      readAllRows(),
+      readScheduleRows().then(normalizeSchedule).catch(err => {
+        console.error('schedule read failed (tab missing?)', err);
+        return [];
+      }),
+    ]);
     return res.status(200).json({
       ok: true,
       ...(issue ? { issue: issueForPull(rows, issue) } : {}),

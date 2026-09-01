@@ -22,6 +22,13 @@ export function esc(s) {
  */
 const SAFE_HREF_SCHEME = /^(https?:|mailto:|#|\/)/i;
 
+/** An item url only becomes an href when its scheme is safe — same rule
+ *  renderProse applies to markdown links. Unsafe links render as plain text. */
+function safeItemHref(url) {
+  const trimmed = String(url ?? '').trim();
+  return SAFE_HREF_SCHEME.test(trimmed) ? trimmed : '';
+}
+
 /**
  * Applies **bold** and *italic* to ALREADY-ESCAPED text. Run after esc() so the
  * markers (`*`) survive escaping and can't corrupt generated tag/attribute HTML.
@@ -125,8 +132,9 @@ function buildBriefs(sec, editable = false) {
     const items = byGroup[gk];
     items.forEach((item, i) => {
       const { fields } = item;
-      const titleLink = fields.url
-        ? `<a href="${esc(fields.url)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs('research', item.id, 'title', editable)}>${esc(fields.title)}</a>`
+      const href = safeItemHref(fields.url);
+      const titleLink = href
+        ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs('research', item.id, 'title', editable)}>${esc(fields.title)}</a>`
         : `<span${editAttrs('research', item.id, 'title', editable)}>${esc(fields.title)}</span>`;
       const topPad = i === 0 ? '13px' : '16px';
       rows += `
@@ -202,8 +210,9 @@ function buildGroupedList(secReg, sec, editable = false) {
       const { fields, featured } = item;
       const topPad = i === 0 ? '7px' : '14px';
       const sectionKey = secReg.key;
-      const titleLink = fields.url
-        ? `<a href="${esc(fields.url)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs(sectionKey, item.id, 'title', editable)}>${esc(fields.title || '')}</a>`
+      const href = safeItemHref(fields.url);
+      const titleLink = href
+        ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs(sectionKey, item.id, 'title', editable)}>${esc(fields.title || '')}</a>`
         : `<span${editAttrs(sectionKey, item.id, 'title', editable)}>${esc(fields.title || '')}</span>`;
 
       // Build meta line: date | time | location
@@ -306,8 +315,9 @@ ${groupHeading}<table role="presentation" cellspacing="0" cellpadding="0" border
       const bottomPad = isLast ? '0' : '7px';
 
       const sectionKey = secReg.key;
-      const titleLink = fields.url
-        ? `<a href="${esc(fields.url)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs(sectionKey, item.id, 'title', editable)}>${esc(fields.title || '')}</a>`
+      const href = safeItemHref(fields.url);
+      const titleLink = href
+        ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs(sectionKey, item.id, 'title', editable)}>${esc(fields.title || '')}</a>`
         : `<span${editAttrs(sectionKey, item.id, 'title', editable)}>${esc(fields.title || '')}</span>`;
 
       // Headlines: append (Source) after the title link
@@ -373,8 +383,9 @@ function buildSpotlight(secReg, sec, editable = false) {
     items.forEach((item, i) => {
         const { fields } = item;
         const topPad = i === 0 ? '7px' : '14px';
-        const titleLink = fields.url
-          ? `<a href="${esc(fields.url)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs('spotlight', item.id, 'title', editable)}>${esc(fields.title || '')}</a>`
+        const href = safeItemHref(fields.url);
+      const titleLink = href
+          ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs('spotlight', item.id, 'title', editable)}>${esc(fields.title || '')}</a>`
           : `<span${editAttrs('spotlight', item.id, 'title', editable)}>${esc(fields.title || '')}</span>`;
 
         // Meta: use fields.meta if present (hook the meta field); otherwise

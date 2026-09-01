@@ -34,11 +34,11 @@ export default async function handler(req, res) {
   }
   try {
     const file = `builder/newsletters/${issueDate}.html`;
-    const existing = await readRepoFile(file);
+    const indexFile = 'builder/newsletters/index.json';
+    // The two reads are independent; only the writes must stay ordered.
+    const [existing, index] = await Promise.all([readRepoFile(file), readRepoFile(indexFile)]);
     await putRepoFile(file, html, existing.sha,
       `Archive newsletter: ${archiveLabel(issueDate)}`);
-    const indexFile = 'builder/newsletters/index.json';
-    const index = await readRepoFile(indexFile);
     let list = [];
     try { list = JSON.parse(index.text ?? '[]'); } catch { list = []; }
     const merged = mergeArchiveIndex(list, issueDate);

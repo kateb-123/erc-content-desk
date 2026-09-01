@@ -8,16 +8,20 @@
  * concrete voice/compression targets on top of ERC_VOICE.
  */
 import { VOICE_EXAMPLES } from './voice-examples.js';
+import { needsErcVoice } from '../../js/workflow.js';
 
 export const REWRITE_MODEL = 'claude-opus-5';
 
 const ORIGINAL_TEXT_CAP = 1500;
 
 export function rewriteCandidates(rows) {
+  // Mirrors Finalize exactly: same shared predicate, same stamped-row gate
+  // (a row sent to an issue is out of the desk's hands), plus one server-side
+  // guard — never send the model an item with no source text to work from.
   return rows.filter(r =>
-    r.status === 'kept' && !r.published_at && !String(r.rewrite_checked ?? '').trim()
-    && (r.type === 'event' || r.type === 'opportunity'
-      || (r.type === 'research' && !r.blurb)));
+    r.status === 'kept' && !r.published_at && !r.newsletter_issue
+    && needsErcVoice(r)
+    && Boolean(String(r.blurb ?? '').trim() || String(r.original_text ?? '').trim()));
 }
 
 export const REWRITE_SCHEMA = {

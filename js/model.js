@@ -42,6 +42,13 @@ export const SECTION_REGISTRY = [
       { key: 'federal', label: 'Federal', aliases: ['federal'] },
       { key: 'texas', label: 'Texas', aliases: ['texas', 'state'] },
     ] },
+  // Mirrors builder/js/model.js — the two registries must list the same
+  // sections or the pull door silently drops rows mapped to the missing one.
+  { key: 'misc', label: 'Miscellaneous', navLabel: 'Miscellaneous', kind: 'grouped-digest',
+    aliases: ['miscellaneous', 'misc'],
+    groups: [
+      { key: 'misc', label: '', aliases: ['miscellaneous', 'misc', 'other'] },
+    ] },
 ];
 
 export function createEmptyIssue() {

@@ -92,6 +92,18 @@ export function newsletterOnly(row) {
   return row.type === 'event' && Boolean(row.spotlight_request) && row.subtype !== 'Webinar-Online';
 }
 
+/**
+ * The one rewrite predicate, shared by Finalize (client) and /api/rewrite
+ * (server) so the two can never disagree: events and opportunities always
+ * get the ERC voice; research only when it arrived without an abstract.
+ * A checked row (rewrite_checked) is done for good.
+ */
+export function needsErcVoice(row) {
+  if (String(row.rewrite_checked ?? '').trim()) return false;
+  return row.type === 'event' || row.type === 'opportunity'
+    || (row.type === 'research' && !row.blurb);
+}
+
 export function readyToPublish(rows) {
   // A row stamped into an issue is done with Publish — newsletter-only holds
   // drain here instead of sitting in the held list forever.

@@ -5,7 +5,7 @@ import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
 import { renderPublish } from './publish-ui.js';
 import { renderNewsletter, resetNewsletterEntry } from './newsletter-ui.js';
-import { keep, trash, circleback, undecide, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled } from './workflow.js';
+import { keep, trash, circleback, undecide, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToPublish, needsErcVoice } from './workflow.js';
 
 
 const state = {
@@ -48,20 +48,24 @@ export async function reload() {
   render();
 }
 
-/** Persist changed rows, then merge the saved copies back in by _rowNumber. */
+/** Persist changed rows, then merge the saved copies back in by _rowNumber.
+ *  Returns true on success so callers can gate their confirmations — a
+ *  failed write must never be reported as done. */
 export async function persist(changed) {
-  if (!changed.length) return;
+  if (!changed.length) return true;
   try {
     await saveRows(changed);
     const byRowNumber = new Map(changed.map(r => [r._rowNumber, r]));
     state.rows = state.rows.map(r => byRowNumber.get(r._rowNumber) ?? r);
     render();
+    return true;
   } catch (err) {
     // Set the error, reload to resync with the sheet (which overwrites
     // status), then set the error again so the user still sees what failed.
     setStatus(err.message, 'error');
     await reload();
     setStatus(err.message, 'error');
+    return false;
   }
 }
 
@@ -100,20 +104,30 @@ async function undoLast() {
 }
 
 async function runRewrite() {
+  // Scope the request to exactly what Finalize is showing — the server
+  // applies the same shared predicate, so the two can never disagree.
+  const ids = readyToPublish(state.rows)
+    .filter(r => needsErcVoice(r) && !state.rewriteReview.has(r.id))
+    .map(r => r.id);
+  if (!ids.length) return;
   state.busy = true;
   render();
   setStatus('Rewriting descriptions…');
   try {
-    const res = await fetch('/api/rewrite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    const res = await fetch('/api/rewrite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
+    // Nothing persists yet: the originals stay safe in the Sheet, the new
+    // text lives in local rows, and each check decision saves its row —
+    // /api/rewrite stays read-only, as its own header promises.
     const byId = new Map(data.rewrites.map(r => [r.id, r.blurb]));
-    const changed = state.rows.filter(r => byId.has(r.id)).map(r => ({ ...r, blurb: byId.get(r.id) }));
-    for (const r of changed) state.rewriteReview.set(r.id, state.rows.find(x => x.id === r.id)?.blurb ?? '');
+    for (const [id] of byId) {
+      state.rewriteReview.set(id, state.rows.find(r => r.id === id)?.blurb ?? '');
+    }
     state.reviewTotal = state.rewriteReview.size;
-    await persist(changed);
+    state.rows = state.rows.map(r => byId.has(r.id) ? { ...r, blurb: byId.get(r.id) } : r);
     setStatus(data.warnings?.length ? data.warnings.join(' ')
-      : `Rewrote ${changed.length} description${changed.length === 1 ? '' : 's'} — check them one by one.`, 'ok');
+      : `Rewrote ${byId.size} description${byId.size === 1 ? '' : 's'} — check them one by one.`, 'ok');
   } catch (err) {
     setStatus(err.message, 'error');
   }
@@ -169,9 +183,10 @@ async function sendToNewsletter(selectedRows, issue) {
   state.busy = true;
   render();
   setStatus(`Sending ${selectedRows.length} to the newsletter…`);
-  await persist(selectedRows.map(r => markNewsletterIssue(r, issue)));
-  state.justSent = { count: selectedRows.length, issue, ids: selectedRows.map(r => r.id) };
+  const ok = await persist(selectedRows.map(r => markNewsletterIssue(r, issue)));
   state.busy = false;
+  if (!ok) { render(); return; } // persist already showed the error
+  state.justSent = { count: selectedRows.length, issue, ids: selectedRows.map(r => r.id) };
   setStatus(`Sent ${selectedRows.length} to the newsletter builder.`, 'ok');
   render();
 }
@@ -180,9 +195,11 @@ async function sendToNewsletter(selectedRows, issue) {
 async function unsendFromNewsletter(ids) {
   const targets = state.rows.filter(r => ids.includes(r.id));
   if (!targets.length) return;
+  const ok = await persist(targets.map(clearNewsletterIssue));
+  if (!ok) return; // persist already showed the error; the stamps stand
   state.justSent = null;
-  await persist(targets.map(clearNewsletterIssue));
   setStatus(`Pulled ${targets.length} back from the newsletter.`, 'ok');
+  render();
 }
 
 const SCREEN_ORDER = ['home', 'sort', 'finalize', 'publish', 'build'];

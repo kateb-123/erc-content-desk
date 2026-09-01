@@ -127,15 +127,31 @@ export function issueLinks(issue) {
   return links;
 }
 
-/** Split a pulled issue against links already present: keep the new, count the known. */
-export function partitionPulled(pulled, existingLinks) {
+/** Every item id already in the outline — the pull door's second dedupe key. */
+export function issueItemIds(issue) {
+  const ids = new Set();
+  for (const key of Object.keys(issue?.sections ?? {})) {
+    for (const item of issue.sections[key].items ?? []) {
+      if (item?.id) ids.add(item.id);
+    }
+  }
+  return ids;
+}
+
+/** Split a pulled issue against what's already present (by link, and by the
+ *  stable desk_* id so even url-less items never duplicate): keep the new,
+ *  count the known. */
+export function partitionPulled(pulled, existingLinks, existingIds = new Set()) {
   let already = 0;
   const kept = structuredClone(pulled);
   for (const key of Object.keys(kept?.sections ?? {})) {
     const sec = kept.sections[key];
     sec.items = (sec.items ?? []).filter(item => {
       const url = String(item?.fields?.url ?? '').trim();
-      if (url && existingLinks.has(url)) { already += 1; return false; }
+      if ((url && existingLinks.has(url)) || (item?.id && existingIds.has(item.id))) {
+        already += 1;
+        return false;
+      }
       return true;
     });
     sec.enabled = sec.items.length > 0;
