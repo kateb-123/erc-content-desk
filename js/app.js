@@ -188,19 +188,6 @@ async function unsendFromNewsletter(ids) {
 const SCREEN_ORDER = ['home', 'sort', 'finalize', 'publish', 'build'];
 let shownScreen = null;
 
-// The rail glides under the active tab; the incoming screen nudges in from
-// the direction of travel. Both purely cosmetic.
-function placeRail() {
-  const rail = document.querySelector('.tab-rail');
-  const tab = document.querySelector(`.screen-tab[data-screen="${state.screen}"]`);
-  if (!rail || !tab) return;
-  rail.style.width = `${tab.offsetWidth}px`;
-  rail.style.transform = `translateX(${tab.offsetLeft}px)`;
-  requestAnimationFrame(() => rail.classList.add('is-ready'));
-}
-window.addEventListener('resize', placeRail);
-document.fonts?.ready.then(() => placeRail());
-
 export function render() {
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
   for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {
@@ -218,7 +205,6 @@ export function render() {
         () => incoming.classList.remove('slide-in-left', 'slide-in-right'), { once: true });
     }
     shownScreen = state.screen;
-    placeRail();
   }
   const today = new Date().toISOString().slice(0, 10);
   const common = { rows: state.rows, schedule: state.schedule, today };

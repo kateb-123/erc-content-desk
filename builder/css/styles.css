@@ -1,5 +1,5 @@
 /* ============================================================
-   ERC Newsletter Builder — "Periwinkle" builder theme (2a)
+   ERC Newsletter Builder — desk-blue builder theme (Kate, Sep 1: desk colors, builder fonts)
    ------------------------------------------------------------
    Drop-in REPLACEMENT for the builder's existing <style> block.
    Same class names, zero markup changes required.
@@ -15,42 +15,42 @@
 
    Palette (builder chrome only — the newsletter template keeps
    its own design):
-     Periwinkle  #566CFF  primary actions / active step
-     Citron      #A29700  completed states / featured
-     Ocean       #005E9A  accents (palette bar)
-     Deep teal   #003D4D  accents (palette bar)
-     Dark red    #4C0101  destructive hover ONLY (reads too
+     Periwinkle  #1d6ea5  primary actions / active step
+     Citron      #1d6f4f  completed states / featured
+     Ocean       #1d6ea5  accents (palette bar)
+     Deep teal   #14507a  accents (palette bar)
+     Dark red    #a32d2d  destructive hover ONLY (reads too
                           close to ERC maroon for anything else)
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Karla:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 
 :root {
-  --bp-primary: #566CFF;
-  --bp-primary-hover: #4A5BE8;
-  --bp-primary-active: #3D4CC7;
-  --bp-primary-tint: #EEF0FF;
-  --bp-citron: #A29700;
-  --bp-citron-deep: #8F8500;
-  --bp-citron-tint: #F5F3DC;
-  --bp-citron-tint-hover: #EFEBC4;
-  --bp-ocean: #005E9A;
-  --bp-teal: #003D4D;
-  --bp-destructive: #4C0101;
-  --bp-ink: #171A2B;
-  --bp-body: #23263A;
-  --bp-muted: #5A5F7A;
-  --bp-faint: #7A7F9E;
-  --bp-ghost: #A9AECE;
-  --bp-page: #F3F4FA;
-  --bp-card-border: #E7E9F6;
-  --bp-line: #E4E6F3;
-  --bp-hairline: #F0F1F8;
-  --bp-input-border: #D9DCEF;
-  --bp-row-hover: #F6F7FE;
+  --bp-primary: #1d6ea5;
+  --bp-primary-hover: #19608f;
+  --bp-primary-active: #14507a;
+  --bp-primary-tint: #eaf2f8;
+  --bp-citron: #1d6f4f;
+  --bp-citron-deep: #185d42;
+  --bp-citron-tint: #e3efe8;
+  --bp-citron-tint-hover: #d8e8df;
+  --bp-ocean: #1d6ea5;
+  --bp-teal: #14507a;
+  --bp-destructive: #a32d2d;
+  --bp-ink: #131a21;
+  --bp-body: #1c2229;
+  --bp-muted: #55606c;
+  --bp-faint: #76828f;
+  --bp-ghost: #a7b1bc;
+  --bp-page: #f3f5f8;
+  --bp-card-border: #dfe4ea;
+  --bp-line: #dbdfe5;
+  --bp-hairline: #eef1f5;
+  --bp-input-border: #d3dae2;
+  --bp-row-hover: #f4f8fb;
   --bp-heading-font: 'Outfit', 'Segoe UI', sans-serif;
   --bp-body-font: 'Karla', 'Segoe UI', sans-serif;
-  --bp-focus-ring: 0 0 0 3px rgba(86, 108, 255, 0.25);
+  --bp-focus-ring: 0 0 0 3px rgba(29, 110, 165, 0.25);
 }
 
 body {
@@ -126,11 +126,11 @@ body {
 }
 
 .step-indicator:not(.active):hover {
-  background: #EBEDF8;
+  background: #e5edf4;
   color: var(--bp-primary-hover);
 }
 .step-indicator:not(.active):hover::before {
-  background: #D3D7EE;
+  background: #c9d9e6;
   color: var(--bp-primary-hover);
 }
 
@@ -147,7 +147,7 @@ body {
   font-size: 11px;
   font-weight: 700;
   font-family: var(--bp-heading-font);
-  background: #E1E4F2;
+  background: #dde5ec;
   color: var(--bp-faint);
   flex-shrink: 0;
   transition: background 0.18s, color 0.18s;
@@ -158,7 +158,7 @@ body {
   color: #fff;
   background: var(--bp-primary);
   border-bottom-color: transparent;
-  box-shadow: 0 2px 10px rgba(86, 108, 255, 0.35);
+  box-shadow: 0 2px 10px rgba(29, 110, 165, 0.35);
 }
 
 .step-indicator.active::before {
@@ -286,12 +286,12 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .btn-primary {
   background: var(--bp-primary);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(86, 108, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(29, 110, 165, 0.3);
 }
 
 .btn-primary:not(:disabled):hover {
   background: var(--bp-primary-hover);
-  box-shadow: 0 3px 12px rgba(86, 108, 255, 0.4);
+  box-shadow: 0 3px 12px rgba(29, 110, 165, 0.4);
 }
 
 .btn-primary:not(:disabled):active {
@@ -310,7 +310,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 }
 
 .btn-secondary:not(:disabled):active {
-  background: #EBEDF8;
+  background: #e5edf4;
 }
 
 /* --- Upload / drop zone ----------------------------------- */
@@ -352,7 +352,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   background: var(--bp-primary-tint);
   border-color: var(--bp-primary);
   border-width: 3px;
-  box-shadow: 0 0 0 4px rgba(86, 108, 255, 0.15);
+  box-shadow: 0 0 0 4px rgba(29, 110, 165, 0.15);
 }
 
 .drop-icon {
@@ -465,7 +465,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .triage-field-input:focus {
   outline: none;
   border-color: var(--bp-primary);
-  box-shadow: 0 0 0 3px rgba(86, 108, 255, 0.18);
+  box-shadow: 0 0 0 3px rgba(29, 110, 165, 0.18);
 }
 
 .triage-sections-heading {
@@ -505,7 +505,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   align-items: center;
   gap: 10px;
   background: var(--bp-row-hover);
-  border: 1px solid #E1E4F2;
+  border: 1px solid #dde5ec;
   border-radius: 10px;
   padding: 8px 12px;
   margin: 8px 0 18px 30px;
@@ -895,7 +895,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .edit-card-textarea:focus {
   outline: none;
   border-color: var(--bp-primary);
-  box-shadow: 0 0 0 3px rgba(86, 108, 255, 0.18);
+  box-shadow: 0 0 0 3px rgba(29, 110, 165, 0.18);
 }
 
 .edit-card-textarea {
@@ -944,7 +944,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   color: var(--bp-primary-hover);
 }
 .rich-editable:focus {
-  box-shadow: inset 0 0 0 2px rgba(86, 108, 255, 0.25);
+  box-shadow: inset 0 0 0 2px rgba(29, 110, 165, 0.25);
 }
 .edit-card-actions {
   display: flex;
@@ -1047,11 +1047,11 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .export-action-btn.btn-primary {
   font-size: 14px;
   padding: 12px 32px;
-  box-shadow: 0 2px 8px rgba(86, 108, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(29, 110, 165, 0.3);
 }
 
 .export-action-btn.btn-primary:not(:disabled):hover {
-  box-shadow: 0 3px 12px rgba(86, 108, 255, 0.4);
+  box-shadow: 0 3px 12px rgba(29, 110, 165, 0.4);
 }
 
 /* Toast notification */
@@ -1122,7 +1122,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   margin-top: 24px;
   padding: 12px 16px;
   background: var(--bp-row-hover);
-  border: 1px solid #E1E4F2;
+  border: 1px solid #dde5ec;
   border-radius: 10px;
   font-size: 14px;
   color: var(--bp-muted);
@@ -1145,7 +1145,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 }
 
 .template-help a:focus-visible {
-  outline: 2px solid rgba(86, 108, 255, 0.45);
+  outline: 2px solid rgba(29, 110, 165, 0.45);
   outline-offset: 2px;
 }
 
@@ -1441,5 +1441,5 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 /* Header link to the archive — the inner row owns the centered column. */
 .app-header-inner { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; max-width: 820px; margin: 0 auto; width: 100%; padding: 0 32px; box-sizing: border-box; }
 .app-header-inner h1 { margin: 0; padding: 0; max-width: none; width: auto; }
-.archive-link { color: #4954c9; text-decoration: none; font-weight: 600; font-size: 0.92rem; white-space: nowrap; }
+.archive-link { color: #1d6ea5; text-decoration: none; font-weight: 600; font-size: 0.92rem; white-space: nowrap; }
 .archive-link:hover { text-decoration: underline; }

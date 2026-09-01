@@ -14,13 +14,13 @@
 
 body {
   margin: 0;
-  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family: Karla, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   color: var(--ink);
   background: var(--bg);
   line-height: 1.5;
 }
 
-h1, h2, h3 { font-family: Lora, Georgia, serif; }
+h1, h2, h3 { font-family: Outfit, "Segoe UI", sans-serif; }
 
 .card {
   background: #fff;
@@ -103,15 +103,14 @@ label.radio { display: block; margin: .15rem 0; font-size: .95rem; color: var(--
 
 .desk { max-width: 68rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
 /* Title and tabs share one line so the page headers below stand out. */
-.desk-bar { display: flex; align-items: flex-end; gap: 2.5rem; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
-.desk-header h1 { font-size: 1.2rem; margin: 0 0 .4rem; }
+.desk-bar { display: flex; align-items: center; gap: 2.5rem; flex-wrap: wrap; }
+.desk-header h1 { font-size: 1.2rem; margin: 0; }
 
-.screen-nav { display: flex; gap: .25rem; position: relative; }
-.screen-tab { border: none; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: .5rem .9rem; color: var(--muted); }
-.screen-tab.is-active { color: var(--ink); }
-/* The rail: one gliding underline instead of per-tab borders. */
-.tab-rail { position: absolute; bottom: -1px; left: 0; height: 2px; width: 0; background: var(--accent); }
-.tab-rail.is-ready { transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), width 180ms cubic-bezier(0.22, 1, 0.36, 1), height 180ms cubic-bezier(0.22, 1, 0.36, 1); }
+/* Bubble pills (the builder's look): the active screen is a filled pill. */
+.screen-nav { display: flex; gap: .5rem; flex-wrap: wrap; }
+.screen-tab { border: none; border-radius: 999px; background: none; padding: .45rem 1rem; color: var(--muted); font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .85rem; }
+.screen-tab:hover:not(:disabled):not(.is-active) { border: none; background: #e5edf4; color: var(--accent); }
+.screen-tab.is-active { color: #fff; background: var(--accent); box-shadow: 0 2px 10px rgba(29, 110, 165, 0.35); }
 
 .screen-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin: 1.75rem 0 1rem; }
 .screen-head h2 { font-size: 1.35rem; margin: 0; }
@@ -206,16 +205,13 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .pick-saved { color: var(--ok); font-size: .875rem; margin: 0; }
 .sort-actions { display: flex; gap: 0.6rem; margin-top: 1rem; }
 .sort-actions button { flex: 1; padding: 0.7rem; font-size: 1rem; }
-/* Section menu: on the left, with a vertical rail that glides between items. */
+/* Section menu: on the left, same bubble pills as the screen tabs. */
 .sort-body { display: flex; align-items: flex-start; gap: 2.5rem; margin-top: .6rem; }
-.sort-nav { display: flex; flex-direction: column; align-items: flex-start; gap: .45rem; min-width: 9.5rem; position: relative; padding-left: .7rem; }
-.sort-nav .tab-rail { top: 0; bottom: auto; width: 2px; height: 0; }
+.sort-nav { display: flex; flex-direction: column; align-items: flex-start; gap: .35rem; min-width: 9.5rem; }
 .sort-main { flex: 1; min-width: 0; }
 @media (max-width: 700px) {
   .sort-body { display: block; }
-  .sort-nav { flex-direction: row; flex-wrap: wrap; margin-bottom: .8rem; padding-left: 0; }
-  .sort-nav .tab-rail { display: none; }
-  .sort-filter.is-active { border-bottom: 2px solid var(--accent); }
+  .sort-nav { flex-direction: row; flex-wrap: wrap; margin-bottom: .8rem; }
 }
 .decide-blocked { font-size: .85rem; color: #6b4e00; margin: .5rem 0 0; }
 .sort-actions button:disabled { opacity: .45; cursor: default; }
@@ -229,9 +225,10 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .carousel-dot { width: 20px; height: 20px; padding: 6px; border: none; border-radius: 50%; background: var(--line); background-clip: content-box; cursor: pointer; }
 .carousel-dot:hover:not(.is-current) { background-color: var(--muted); }
 .carousel-dot.is-current { background-color: var(--accent); }
-.sort-filter { border: none; background: none; padding: 0; color: var(--muted); cursor: pointer; }
-.sort-filter.is-active { color: var(--ink); font-weight: 600; }
-.sort-filter.is-here { color: var(--ink); }
+.sort-filter { border: none; border-radius: 999px; background: none; padding: .35rem .9rem; color: var(--muted); cursor: pointer; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .85rem; }
+.sort-filter:hover:not(.is-active) { border: none; background: #e5edf4; color: var(--accent); }
+.sort-filter.is-active { color: #fff; background: var(--accent); box-shadow: 0 2px 10px rgba(29, 110, 165, 0.35); }
+.sort-filter.is-here:not(.is-active) { color: var(--ink); background: var(--tint); }
 .type-line { font-size: .85rem; color: var(--muted); margin: .6rem 0 0; }
 .type-line .type-label { color: var(--ink); }
 .linkish { border: none; background: none; padding: 0; color: var(--accent); cursor: pointer; font-size: .85rem; }

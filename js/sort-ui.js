@@ -18,26 +18,6 @@ const FILTER_KEYS = FILTER_LABELS.map(([k]) => k);
 
 let fixOpenId = null;   // card id whose type pickers are open via "change"
 let lastFilter = null;  // detects a section jump so the card area slides like the screens do
-let railPos = null;     // the section rail's last spot, so it glides across re-renders
-
-// The section menu re-renders wholesale, so the rail glides FLIP-style: start
-// where it last sat, then transition to the active filter. Vertical, since
-// the menu lives on the left.
-function placeSortRail(nav) {
-  const active = nav.querySelector('.sort-filter.is-active');
-  const rail = nav.querySelector('.tab-rail');
-  if (!active || !rail) return;
-  const to = { y: active.offsetTop, h: active.offsetHeight };
-  if (railPos && (railPos.y !== to.y || railPos.h !== to.h)) {
-    rail.style.height = `${railPos.h}px`;
-    rail.style.transform = `translateY(${railPos.y}px)`;
-    void rail.offsetHeight;
-    rail.classList.add('is-ready');
-  }
-  rail.style.height = `${to.h}px`;
-  rail.style.transform = `translateY(${to.y}px)`;
-  railPos = to;
-}
 
 // "Settle": the decided card shrinks and fades in place as a floating copy
 // while the next card renders instantly underneath. Purely cosmetic.
@@ -93,14 +73,10 @@ export function renderSort(container, props) {
     btn.addEventListener('click', () => onFilter(key));
     nav.append(btn);
   }
-  const rail = el('span', 'tab-rail');
-  rail.setAttribute('aria-hidden', 'true');
-  nav.append(rail);
   const main = el('div', 'sort-main');
   const body = el('div', 'sort-body');
   body.append(nav, main);
   container.append(body);
-  placeSortRail(nav);
   if (lastFilter !== null && lastFilter !== filter) {
     main.classList.add(FILTER_KEYS.indexOf(filter) > FILTER_KEYS.indexOf(lastFilter)
       ? 'slide-in-right' : 'slide-in-left');
