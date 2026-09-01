@@ -1,10 +1,9 @@
 /**
- * The newsletter archive lives in the builder's own repo (newsletters/),
- * so its host serves every saved issue directly. The desk holds the GitHub
- * token, so saving goes through here: put the issue's HTML, refresh the
- * index the archive page lists.
+ * The newsletter archive lives in this repo (builder/newsletters/), so the
+ * desk's own host serves every saved issue directly. Saving puts the
+ * issue's HTML and refreshes the index the archive page lists.
  */
-function repo() { return process.env.ARCHIVE_REPO || 'kateb-123/erc-newsletter-builder'; }
+function repo() { return process.env.ARCHIVE_REPO || 'kateb-123/erc-content-desk'; }
 function branch() { return process.env.ARCHIVE_BRANCH || 'main'; }
 function token() {
   const t = process.env.GITHUB_TOKEN;

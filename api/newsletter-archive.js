@@ -33,11 +33,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ ok: false, error: 'That issue is too big to archive.' });
   }
   try {
-    const file = `newsletters/${issueDate}.html`;
+    const file = `builder/newsletters/${issueDate}.html`;
     const existing = await readRepoFile(file);
     await putRepoFile(file, html, existing.sha,
       `Archive newsletter: ${archiveLabel(issueDate)}`);
-    const indexFile = 'newsletters/index.json';
+    const indexFile = 'builder/newsletters/index.json';
     const index = await readRepoFile(indexFile);
     let list = [];
     try { list = JSON.parse(index.text ?? '[]'); } catch { list = []; }

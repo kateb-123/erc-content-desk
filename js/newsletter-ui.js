@@ -6,11 +6,12 @@
  * and the builder pulls them from here. No .md, no export.
  */
 import { buildPool, newsletterOnly, reshareFlags } from './workflow.js';
-
-const BUILDER_URL = 'https://kateb-123.github.io/erc-newsletter-builder/';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
 import { isoToSlash } from './queue-view.js';
+
+// The builder lives inside this project — same origin, one deploy.
+const BUILDER_URL = '/builder/';
 
 // The issue's shape: spotlight leads, then the newsletter's sections.
 const GROUP_LABELS = {

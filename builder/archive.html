@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Past Newsletters — ERC Newsletter Builder</title>
+  <style>
+    body { margin: 0; background: #f7f7fb; color: #1f2430; line-height: 1.5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .wrap { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+    h1 { font-size: 1.35rem; margin: 0 0 .25rem; }
+    .lede { color: #5a6270; margin: 0 0 1.5rem; }
+    a.back { color: #4954c9; text-decoration: none; font-weight: 600; }
+    ul { list-style: none; margin: 1.5rem 0 0; padding: 0; background: #fff; border: 1px solid #dfe2ea; border-radius: 10px; }
+    li { border-top: 1px solid #eef0f3; }
+    li:first-child { border-top: none; }
+    li a { display: block; padding: .7rem 1rem; color: #1f2430; text-decoration: none; font-weight: 600; }
+    li a:hover { background: #f4f5fb; }
+    .empty { color: #5a6270; padding: 2rem; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="./">← Back to the builder</a>
+    <h1 style="margin-top: 1rem;">Past newsletters</h1>
+    <p class="lede">Every issue saved to the archive, newest first. Click one to read it.</p>
+    <ul id="list"><li><span class="empty">Loading…</span></li></ul>
+  </div>
+  <script>
+    fetch('newsletters/index.json', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((issues) => {
+        const list = document.getElementById('list');
+        list.innerHTML = '';
+        if (!issues.length) {
+          list.innerHTML = '<li><span class="empty">Nothing archived yet.</span></li>';
+          return;
+        }
+        for (const issue of issues) {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = 'newsletters/' + issue.file;
+          a.textContent = issue.label;
+          li.appendChild(a);
+          list.appendChild(li);
+        }
+      })
+      .catch(() => {
+        document.getElementById('list').innerHTML = '<li><span class="empty">Couldn\'t load the archive.</span></li>';
+      });
+  </script>
+</body>
+</html>
