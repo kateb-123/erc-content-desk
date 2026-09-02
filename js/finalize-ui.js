@@ -188,7 +188,7 @@ function editBody(row, { onSave, onCancel }) {
   return wrap;
 }
 
-function itemRows(row, { tint, busy, rerender, onEditRow }) {
+function itemRows(row, { tint, busy, rerender, onEditRow, onTrash }) {
   const isOpen = expanded.has(row.id);
   const rowClass = ['f-item', isErc(row) && 'f-erc', tint && 'needs-rewrite',
     tint && busy && 'rewriting', isOpen && 'is-open'].filter(Boolean).join(' ');
@@ -236,7 +236,12 @@ function itemRows(row, { tint, busy, rerender, onEditRow }) {
     const edit = el('button', 'linkish', 'Edit fields');
     edit.type = 'button';
     edit.addEventListener('click', () => { editingId = row.id; rerender(); });
-    td.append(detailBody(row, edit));
+    const bin = el('button', 'linkish trash-link', 'Trash item');
+    bin.type = 'button';
+    bin.addEventListener('click', () => { bin.disabled = true; onTrash(row); });
+    const acts = el('span', 'f-detail-actions');
+    acts.append(edit, ' · ', bin);
+    td.append(detailBody(row, acts));
   }
   detailTr.append(td);
   return [tr, detailTr];
@@ -244,7 +249,7 @@ function itemRows(row, { tint, busy, rerender, onEditRow }) {
 
 /** One rewrite at a time: the item, the change, approve or keep the original.
  *  Saving an edit here counts as the decision (onCheckEdit stamps the row). */
-function checkCard(row, { old, onVerify, onRevert, onCheckEdit, rerender }) {
+function checkCard(row, { old, onVerify, onRevert, onCheckEdit, onTrash, rerender }) {
   const card = el('div', 'card f-check-card');
   const typeLine = el('p', 'type-line');
   typeLine.append(el('span', 'type-label', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
@@ -289,15 +294,21 @@ function checkCard(row, { old, onVerify, onRevert, onCheckEdit, rerender }) {
     actions.append(revert);
   }
   card.append(actions);
+  const foot = el('div', 'f-check-foot');
   const edit = el('button', 'linkish', 'Edit fields');
   edit.type = 'button';
   edit.addEventListener('click', () => { editingId = row.id; rerender(); });
-  card.append(edit);
+  foot.append(edit);
+  const bin = el('button', 'linkish trash-link', 'Trash item');
+  bin.type = 'button';
+  bin.addEventListener('click', () => { lock(); bin.disabled = true; onTrash(row); });
+  foot.append(bin);
+  card.append(foot);
   return card;
 }
 
 export function renderFinalize(container, props) {
-  const { rows, review, verified, reviewTotal, busy, onEditRow, onCheckEdit, onRewrite, onVerifyRewrite, onRevertRewrite, onGoTo } = props;
+  const { rows, review, verified, reviewTotal, busy, onEditRow, onCheckEdit, onRewrite, onVerifyRewrite, onRevertRewrite, onTrash, onGoTo } = props;
   const rerender = () => renderFinalize(container, props);
   container.replaceChildren();
   const keeps = readyToPublish(rows);
@@ -356,6 +367,7 @@ export function renderFinalize(container, props) {
     const next = sorted(keeps).find(r => review.has(r.id));
     if (next) {
       container.append(checkCard(next, {
+        onTrash,
         old: review.get(next.id),
         onVerify: onVerifyRewrite, onRevert: onRevertRewrite, onCheckEdit, rerender,
       }));
@@ -392,7 +404,7 @@ export function renderFinalize(container, props) {
   const listed = stage1 ? sorted(keeps).filter(r => pending.includes(r)) : sorted(keeps);
   for (const row of listed) {
     const tint = pending.includes(row);
-    tbody.append(...itemRows(row, { tint, busy, rerender, onEditRow }));
+    tbody.append(...itemRows(row, { tint, busy, rerender, onEditRow, onTrash }));
   }
   table.append(tbody);
 

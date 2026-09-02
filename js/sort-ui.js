@@ -13,8 +13,8 @@ import { titleWithInfo } from './screen-info.js';
 import { forwardIcon } from './icons.js';
 
 const FILTER_LABELS = [
-  ['', 'All'], ['erc', 'ERC'], ['research', 'Research'], ['event', 'Events'],
-  ['opportunity', 'Opportunities'], ['headline', 'Headlines'], ['untyped', 'To review'],
+  ['', 'All'], ['untyped', 'To review'], ['erc', 'ERC'], ['research', 'Research'],
+  ['event', 'Events'], ['opportunity', 'Opportunities'], ['headline', 'Headlines'],
 ];
 const FILTER_KEYS = FILTER_LABELS.map(([k]) => k);
 
@@ -275,13 +275,14 @@ export function renderSort(container, props) {
   actions.append(keepBtn, circleBtn, trashBtn);
   card.append(actions);
 
-  // A card with open work can't be decided: fix it first (or browse past it).
+  // A card with open work can't be KEPT until it's fixed — but junk is junk:
+  // Trash stays live no matter what (Kate, Sep 1).
   const blockers = [];
   if (mustFix) blockers.push('set a type');
   if (linkState === 'alert') blockers.push('check the link');
   if (blockers.length) {
-    for (const b of [keepBtn, circleBtn, trashBtn]) b.disabled = true;
-    card.append(el('p', 'decide-blocked', `Before deciding: ${blockers.join(' · ')}.`));
+    for (const b of [keepBtn, circleBtn]) b.disabled = true;
+    card.append(el('p', 'decide-blocked', `Before keeping: ${blockers.join(' · ')}.`));
   }
   if (lastDecision) {
     const undo = el('button', 'undo-link', 'Undo last');

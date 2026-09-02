@@ -5,8 +5,7 @@
 import { TYPE_ORDER } from './schema.js';
 import { pendingRows } from './workflow.js';
 
-// Untyped ("To review") sinks to the end — typed groups sort first.
-const GROUP_ORDER = [...TYPE_ORDER, ''];
+// To review (untyped or unknown-typed) LEADS the stream — fix types first.
 
 function oldestFirst(a, b) {
   const left = String(a.submitted_at ?? '');
@@ -26,7 +25,7 @@ export function isErc(row) {
   return Boolean(row.spotlight_request) || row.subtype === 'ERC Research';
 }
 
-/** ERC leads, then the newsletter's type order, then to-review (untyped), oldest first in a group. */
+/** To review leads (fix types first — Kate, Sep 1), then ERC, then the newsletter's type order; oldest first in a group. */
 /** Kept rows that still lack a real type — they come BACK to Sort's To
  *  review (Kate: fixing a type belongs here, not at the bottom of Publish).
  *  Setting the type releases them; rows already in an issue stay gone. */
@@ -41,11 +40,11 @@ export function sortStream(rows) {
   const pending = pendingRows(rows);
   const erc = pending.filter(isErc).sort(oldestFirst);
   const rest = pending.filter(r => !isErc(r));
-  const known = new Set(GROUP_ORDER);
-  const grouped = GROUP_ORDER.flatMap(type =>
+  const known = new Set(TYPE_ORDER);
+  const toReview = rest.filter(r => !known.has(r.type || '')).sort(oldestFirst);
+  const grouped = TYPE_ORDER.flatMap(type =>
     rest.filter(r => (r.type || '') === type).sort(oldestFirst));
-  const stragglers = rest.filter(r => !known.has(r.type || '')).sort(oldestFirst);
-  return [...erc, ...grouped, ...stragglers, ...keptUntyped(rows)];
+  return [...toReview, ...keptUntyped(rows), ...erc, ...grouped];
 }
 
 /** Per-bucket totals of the pending rows, for the filter labels. */
@@ -67,7 +66,7 @@ export function sectionOf(row) {
   return TYPE_ORDER.includes(row.type) ? row.type : 'untyped';
 }
 
-const SECTION_ORDER = ['erc', ...TYPE_ORDER, 'untyped'];
+const SECTION_ORDER = ['untyped', 'erc', ...TYPE_ORDER];
 
 /**
  * Sections are jump points, not walls: '' keeps the canonical stream; a key

@@ -171,6 +171,9 @@ label.radio { display: block; margin: .15rem 0; font-size: .95rem; color: var(--
 .flag { display: flex; align-items: center; gap: .3rem; margin: 0; font-size: .85rem; color: var(--ink); }
 .keep-btn { margin-left: auto; }
 .trash-btn { color: var(--err); }
+.trash-link { color: var(--err); }
+.f-check-foot { display: flex; gap: 1rem; margin-top: .5rem; }
+.f-detail-actions { display: inline-flex; gap: .35rem; align-items: baseline; }
 
 .process-bar { display: flex; gap: 1rem; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: .75rem 1rem; margin-bottom: 1rem; font-size: .9rem; }
 .process-btn { margin-left: auto; background: var(--accent); border-color: var(--accent); color: #fff; }

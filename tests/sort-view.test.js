@@ -17,9 +17,9 @@ const rows = [
   { id: 'erc2', status: 'new', type: 'research', subtype: 'ERC Research', submitted_at: '2026-08-23T09:00:00Z' },
 ];
 
-test('sortStream: ERC, then newsletter order, then to-review (untyped) last, oldest first inside a group', () => {
+test('sortStream: To review leads, then ERC, then newsletter order, oldest first inside a group', () => {
   assert.deepEqual(sortStream(rows).map(r => r.id),
-    ['erc2', 'erc1', 'r1', 'r2', 'r3', 'e1', 'o1', 'h1', 'u1', 'weird']);
+    ['weird', 'u1', 'erc2', 'erc1', 'r1', 'r2', 'r3', 'e1', 'o1', 'h1']);
 });
 
 test('sortStream drops non-pending rows and does not mutate its input', () => {
@@ -39,17 +39,17 @@ test('streamFrom: sections are jump points, not walls — the stream continues p
   const stream = sortStream(rows);
   assert.deepEqual(streamFrom(stream, '').map(r => r.id), stream.map(r => r.id));
   assert.deepEqual(streamFrom(stream, 'event').map(r => r.id),
-    ['e1', 'o1', 'h1', 'u1', 'weird', 'erc2', 'erc1', 'r1', 'r2', 'r3']);
-  assert.deepEqual(streamFrom(stream, 'untyped').map(r => r.id),
-    ['u1', 'weird', 'erc2', 'erc1', 'r1', 'r2', 'r3', 'e1', 'o1', 'h1']);
-  assert.deepEqual(streamFrom(stream, 'erc').map(r => r.id), stream.map(r => r.id));
+    ['e1', 'o1', 'h1', 'weird', 'u1', 'erc2', 'erc1', 'r1', 'r2', 'r3']);
+  assert.deepEqual(streamFrom(stream, 'untyped').map(r => r.id), stream.map(r => r.id));
+  assert.deepEqual(streamFrom(stream, 'erc').map(r => r.id),
+    ['erc2', 'erc1', 'r1', 'r2', 'r3', 'e1', 'o1', 'h1', 'weird', 'u1']);
 });
 
 test('streamFrom: an empty anchor group starts at the next group after it, keeping every card', () => {
   const noEvents = rows.filter(r => !(r.type === 'event' && !r.spotlight_request));
   const stream = sortStream(noEvents);
   assert.deepEqual(streamFrom(stream, 'event').map(r => r.id),
-    ['o1', 'h1', 'u1', 'weird', 'erc2', 'erc1', 'r1', 'r2', 'r3']);
+    ['o1', 'h1', 'weird', 'u1', 'erc2', 'erc1', 'r1', 'r2', 'r3']);
 });
 
 test('kept rows without a type come back to Sort, unless already in an issue or live', () => {
@@ -61,7 +61,6 @@ test('kept rows without a type come back to Sort, unless already in an issue or 
     { id: 5, status: 'new', type: '' },
   ];
   assert.deepEqual(keptUntyped(rows).map(r => r.id), [1]);
-  const stream = sortStream(rows);
-  assert.equal(stream[stream.length - 1].id, 1);   // fix-ups sink last
-  assert.ok(stream.some(r => r.id === 5));         // pending untyped still there
+  // To review leads: pending untyped first, then the kept fix-ups.
+  assert.deepEqual(sortStream(rows).map(r => r.id), [5, 1]);
 });

@@ -6,6 +6,7 @@
  * so typing is never wiped; the glance row and door rail rebuild.
  */
 import { renderSubmitForm } from './submit-form.js';
+import { dotsLoader } from './icons.js';
 import { renderQueueTable } from './queue-ui.js';
 import { queueBadgeCount } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
@@ -45,6 +46,11 @@ function doorCard(title, desc, href) {
 }
 
 export function renderHome(container, { rows, schedule, today, loaded, hubUpdated, onSubmitted, onRefresh }) {
+  // Nothing partial while the desk loads — the page arrives all at once.
+  if (!loaded) {
+    container.replaceChildren(dotsLoader());
+    return;
+  }
   let glance = container.querySelector('.glance-row');
   if (!glance) {
     glance = el('div', 'glance-row');

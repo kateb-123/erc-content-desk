@@ -42,7 +42,8 @@ export function setStatus(message, kind = 'busy') {
 }
 
 export async function reload() {
-  setStatus('Loading…');
+  // Home shows its own loader while empty — no second row in the bar.
+  setStatus(state.screen === 'home' ? '' : 'Loading…');
   try {
     const { rows, schedule } = await fetchDesk();
     state.rows = rows;
@@ -288,6 +289,13 @@ export function render() {
         state.verifiedIds.add(id);
         if (row) persist([{ ...row, rewrite_checked: new Date().toISOString() }]);
         else render();
+      },
+      onTrash: row => {
+        // Junk spotted mid-finalize goes straight out (Kate, Sep 1) — and any
+        // open check for it is dropped so the queue count stays honest.
+        state.rewriteReview.delete(row.id);
+        state.verifiedIds.delete(row.id);
+        persist([trash(row)]);
       },
       onRevertRewrite: row => {
         const old = state.rewriteReview.get(row.id) ?? '';
