@@ -1053,7 +1053,10 @@ async function pdfFirstPageToPng(file) {
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(viewport.width);
   canvas.height = Math.round(viewport.height);
-  await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+  // intent 'print' keeps the raster off requestAnimationFrame, which browsers
+  // pause in a background tab — otherwise switching tabs mid-upload leaves the
+  // conversion stuck on "Converting the PDF" until you come back.
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport, intent: 'print' }).promise;
   return new Promise((resolve, reject) =>
     canvas.toBlob(b => (b ? resolve(b) : reject(new Error("Couldn't convert that PDF."))), 'image/png'));
 }
