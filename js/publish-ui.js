@@ -79,7 +79,7 @@ function group(container, title, rows, { cls, fix, hint, rerender, onGoTo }) {
 }
 
 export function renderPublish(container, props) {
-  const { rows, preview, busy, justPublished, onPublish, onGoTo } = props;
+  const { rows, preview, busy, justPublished, onPublish, onGoTo, onRecheck } = props;
   const rerender = () => renderPublish(container, props);
   container.replaceChildren();
 
@@ -111,7 +111,11 @@ export function renderPublish(container, props) {
   } else if (!candidates.length) {
     lede.textContent = 'Nothing waiting to publish.';
   } else {
-    lede.textContent = 'Checked against the live Exchange';
+    lede.append('Checked against the live Exchange · ');
+    const again = el('button', 'linkish', 'Re-check');
+    again.type = 'button';
+    again.addEventListener('click', () => { again.disabled = true; onRecheck?.(); });
+    lede.append(again);
   }
   lead.append(lede);
   head.append(lead);

@@ -66,6 +66,7 @@ export async function persist(changed) {
     await saveRows(changed);
     const byRowNumber = new Map(changed.map(r => [r._rowNumber, r]));
     state.rows = state.rows.map(r => byRowNumber.get(r._rowNumber) ?? r);
+    state.publishPreview = null;   // data changed — the next Publish visit re-checks
     render();
     return true;
   } catch (err) {
@@ -92,12 +93,11 @@ function goTo(key) {
   if (key === 'finalize' && state.screen !== 'finalize') resetFinalizeEntry();
   if (key === 'build' && state.screen !== 'build') { resetNewsletterEntry(); state.justSent = null; }
   if (key === 'publish' && state.screen !== 'publish') {
-    // The check is read-only, so arriving runs it — the report is the page.
-    state.publishPreview = null;
+    // The check is read-only and CACHED: it runs on first arrival and again
+    // only after something changed (persist clears it) or via Re-check.
     state.justPublished = 0;
     state.screen = key;
-    loadPublishPreview();
-    return;
+    if (!state.publishPreview) { loadPublishPreview(); return; }
   }
   state.screen = key;
   render();
@@ -180,7 +180,9 @@ async function publishNow() {
     // reload() writes its own 'Loading…'/'' status; the confirmation message
     // has to be set after it finishes, or reload() overwrites it.
     await reload();
-    setStatus(message, 'ok');
+    // The pane's own confirmation says it — the bar stays quiet unless
+    // something was skipped, which the pane doesn't mention.
+    setStatus(data.skipped ? message : '', data.skipped ? 'ok' : 'ok');
     return;
   } catch (err) {
     setStatus(err.message, 'error');
@@ -316,6 +318,7 @@ export function render() {
       ...common, preview: state.publishPreview, busy: state.busy,
       justPublished: state.justPublished,
       onPublish: publishNow, onGoTo: goTo,
+      onRecheck: () => { state.publishPreview = null; loadPublishPreview(); },
     });
   } else {
     renderNewsletter(screens.build, {

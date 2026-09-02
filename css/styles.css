@@ -228,8 +228,15 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .save-type-btn.is-open { display: block; margin-top: .8rem; padding: .45rem 1.1rem; font-size: .875rem; background: #fff; color: var(--accent); border: 1px solid var(--accent); }
 .save-type-btn:hover:not(:disabled) { background: var(--accent); color: #fff; }
 .pick-saved { color: var(--ok); font-size: .875rem; margin: 0; }
+.sort-filter.is-alert:not(.is-active) { background: #fdf3d7; color: #6b4e00; }
+.sort-filter.is-alert:not(.is-active):hover { background: #f7e9bd; color: #6b4e00; }
 .sort-actions { display: flex; gap: 0.6rem; margin-top: 1rem; }
-.sort-actions button { flex: 1; padding: 0.7rem; font-size: 1rem; }
+.sort-actions button {
+  flex: 1; padding: .65rem; font-size: .95rem; border-radius: 10px;
+  border: 1px solid transparent; transition: box-shadow .15s ease-out, transform .1s ease-out, filter .15s ease-out;
+}
+.sort-actions button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(.97); }
+.sort-actions button .fa-solid { margin-right: .4rem; font-size: .9em; }
 /* Section menu: on the left, same bubble pills as the screen tabs. */
 .sort-body { display: flex; align-items: flex-start; gap: 2.5rem; margin-top: .6rem; }
 .sort-nav { display: flex; flex-direction: column; align-items: flex-start; gap: .35rem; min-width: 9.5rem; }
@@ -253,9 +260,10 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .type-line { font-size: .85rem; color: var(--muted); margin: .6rem 0 0; }
 .type-line .type-label { color: var(--ink); }
 .linkish { border: none; background: none; padding: 0; color: var(--accent); cursor: pointer; font-size: .85rem; }
-.btn-keep { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn-circle { background: #fff8e1; }
-.btn-trash { background: #fde2e2; }
+.btn-keep { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(29, 110, 165, .28); }
+.btn-keep:hover:not(:disabled) { background: #19608f; border-color: #19608f; }
+.btn-circle { background: #fff8e1; border-color: #eadfae; color: #6b5b1e; }
+.btn-trash { background: #fde2e2; border-color: #f3c6c6; color: #a32d2d; }
 /* Finalize — rows as they will look on the Policy Exchange (mock v2) */
 .finalize-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
 .finalize-head .lede { margin-bottom: .5rem; }

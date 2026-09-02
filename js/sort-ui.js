@@ -76,6 +76,7 @@ export function renderSort(container, props) {
     let cls = 'sort-filter';
     if (filter === key) cls += ' is-active';
     if (key && key === currentGroup) cls += ' is-here';
+    if (key === 'untyped' && count > 0) cls += ' is-alert';   // work you have to go through
     const btn = el('button', cls, `${label} (${count})`);
     btn.type = 'button';
     btn.addEventListener('click', () => onFilter(key));
@@ -269,7 +270,8 @@ export function renderSort(container, props) {
     });
     return b;
   };
-  const keepBtn = mk('Keep', 'btn-keep', 'keep');
+  const keepBtn = mk(' Keep', 'btn-keep', 'keep');
+  keepBtn.prepend(faIcon('check'));
   const circleBtn = mk('Circle back', 'btn-circle', 'circleback');
   const trashBtn = mk(' Delete', 'btn-trash', 'trash');
   trashBtn.prepend(faIcon('trash-can'));
