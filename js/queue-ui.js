@@ -4,6 +4,7 @@
  * type, and submission date. Sort is view state only; nothing here is a link.
  */
 import { pendingRows, circlebackRows } from './workflow.js';
+import { dotsLoader } from './icons.js';
 import { TYPE_LABELS } from './schema.js';
 import { sortRows, isoToSlash } from './queue-view.js';
 
@@ -46,7 +47,11 @@ export function renderQueueTable(container, { rows, onRefresh }) {
   head.append(el('h2', '', 'In the queue'));
   const refresh = el('button', '', 'Refresh');
   refresh.type = 'button';
-  refresh.addEventListener('click', () => { refresh.disabled = true; onRefresh(); });
+  refresh.addEventListener('click', () => {
+    refresh.hidden = true;   // gone while refreshing — the dots take its place
+    head.append(dotsLoader(true));
+    onRefresh();
+  });
   head.append(refresh);
   container.append(head);
 

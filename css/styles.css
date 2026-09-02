@@ -101,6 +101,9 @@ label.radio { display: block; margin: .15rem 0; font-size: .95rem; color: var(--
 .nl-sent { margin: .25rem 0 1.25rem; }
 .nl-sent summary { cursor: pointer; color: var(--muted); font-size: .9rem; }
 .nl-sent .queue-table { margin-top: .5rem; }
+.nl-group { margin: 0; }
+.nl-group-summary { cursor: pointer; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; }
+.nl-group-scroll { max-height: 340px; overflow-y: auto; }
 .bulk-door .bulk-status { min-height: 1.4rem; margin: 1rem 0 0; font-size: .9rem; }
 
 .status { min-height: 1.4rem; margin: 1rem 0 0; font-size: .9rem; }
@@ -113,6 +116,14 @@ label.radio { display: block; margin: .15rem 0; font-size: .95rem; color: var(--
 /* Title and tabs share one line so the page headers below stand out. */
 .desk-bar { display: flex; align-items: center; gap: 2.5rem; flex-wrap: wrap; }
 .desk-header h1 { font-size: 1.2rem; margin: 0; }
+
+/* The builder door: in the header but deliberately not a tab — outlined, pushed right. */
+.builder-door {
+  margin-left: auto; border: 1.5px solid var(--accent); border-radius: 999px;
+  background: #fff; padding: .4rem 1rem; color: var(--accent); text-decoration: none;
+  font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .85rem;
+}
+.builder-door:hover { background: var(--tint); }
 
 /* Bubble pills (the builder's look): the active screen is a filled pill. */
 .screen-nav { display: flex; gap: .5rem; flex-wrap: wrap; }

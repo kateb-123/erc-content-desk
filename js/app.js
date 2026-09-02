@@ -210,6 +210,22 @@ async function unsendFromNewsletter(ids) {
   render();
 }
 
+// A reload (or an accidental same-tab jump and Back) shouldn't lose Kate's
+// place mid-sort — the spot rides sessionStorage, view state only.
+const SORT_SPOT_KEY = 'desk-sort-spot';
+function saveSortSpot() {
+  try {
+    sessionStorage.setItem(SORT_SPOT_KEY, JSON.stringify({ filter: state.sortFilter, browse: state.sortBrowse ?? 0 }));
+  } catch { /* private mode etc. — losing the spot is fine */ }
+}
+try {
+  const spot = JSON.parse(sessionStorage.getItem(SORT_SPOT_KEY) ?? 'null');
+  if (spot && typeof spot.filter === 'string') {
+    state.sortFilter = spot.filter;
+    state.sortBrowse = Math.max(0, Number(spot.browse) || 0);
+  }
+} catch { /* ignore bad stashes */ }
+
 const SCREEN_ORDER = ['home', 'sort', 'finalize', 'publish', 'build'];
 let shownScreen = null;
 
@@ -245,8 +261,8 @@ export function render() {
       ...common, filter: state.sortFilter, sortedCount: state.sortedThisVisit,
       onGoTo: goTo,
       lastDecision: state.lastDecision, browse: state.sortBrowse ?? 0,
-      onBrowse: pos => { state.sortBrowse = Math.max(0, pos); render(); },
-      onFilter: key => { state.sortFilter = key; state.sortBrowse = 0; render(); },
+      onBrowse: pos => { state.sortBrowse = Math.max(0, pos); saveSortSpot(); render(); },
+      onFilter: key => { state.sortFilter = key; state.sortBrowse = 0; saveSortSpot(); render(); },
       onDecide: decide, onUndo: undoLast,
       // One PATCH for type + subtype + provenance together — sequential
       // round-trips re-render mid-save and reopen the picker.

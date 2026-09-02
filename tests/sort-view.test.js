@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sortStream, sortCounts, streamFrom } from '../js/sort-view.js';
+import { keptUntyped, sortStream, sortCounts, streamFrom } from '../js/sort-view.js';
 
 // Shuffled on purpose: statuses mixed in, groups interleaved, dates unordered.
 const rows = [
@@ -50,4 +50,18 @@ test('streamFrom: an empty anchor group starts at the next group after it, keepi
   const stream = sortStream(noEvents);
   assert.deepEqual(streamFrom(stream, 'event').map(r => r.id),
     ['o1', 'h1', 'u1', 'weird', 'erc2', 'erc1', 'r1', 'r2', 'r3']);
+});
+
+test('kept rows without a type come back to Sort, unless already in an issue or live', () => {
+  const rows = [
+    { id: 1, status: 'kept', type: '' },
+    { id: 2, status: 'kept', type: 'event' },
+    { id: 3, status: 'kept', type: '', newsletter_issue: '2026-09-01' },
+    { id: 4, status: 'kept', type: '', published_at: '2026-08-25' },
+    { id: 5, status: 'new', type: '' },
+  ];
+  assert.deepEqual(keptUntyped(rows).map(r => r.id), [1]);
+  const stream = sortStream(rows);
+  assert.equal(stream[stream.length - 1].id, 1);   // fix-ups sink last
+  assert.ok(stream.some(r => r.id === 5));         // pending untyped still there
 });

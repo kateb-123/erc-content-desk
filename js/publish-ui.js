@@ -150,7 +150,14 @@ export function renderPublish(container, props) {
     cls: 'p-held', rerender, onGoTo,
     hint: 'Spotlight events stay off the Exchange — webinars excepted.',
   });
-  group(container, 'Needs a type', notReady, {
-    cls: 'p-notready', fix: true, rerender, onGoTo,
-  });
+  if (notReady.length) {
+    // Typing happens in Sort (the pill picker lives there) — just point the way.
+    const fixLine = el('p', 'hint');
+    fixLine.append(`${notReady.length} kept item${notReady.length === 1 ? '' : 's'} still need${notReady.length === 1 ? 's' : ''} a type — `);
+    const jump = el('button', 'linkish', "fix in Sort's To review");
+    jump.type = 'button';
+    jump.addEventListener('click', () => onGoTo('sort'));
+    fixLine.append(jump);
+    container.append(fixLine);
+  }
 }

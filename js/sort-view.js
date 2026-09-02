@@ -27,6 +27,16 @@ export function isErc(row) {
 }
 
 /** ERC leads, then the newsletter's type order, then to-review (untyped), oldest first in a group. */
+/** Kept rows that still lack a real type — they come BACK to Sort's To
+ *  review (Kate: fixing a type belongs here, not at the bottom of Publish).
+ *  Setting the type releases them; rows already in an issue stay gone. */
+export function keptUntyped(rows) {
+  return rows.filter(r => r.status === 'kept'
+    && !TYPE_ORDER.includes(r.type || '')
+    && !String(r.published_at ?? '').trim()
+    && !String(r.newsletter_issue ?? '').trim()).sort(oldestFirst);
+}
+
 export function sortStream(rows) {
   const pending = pendingRows(rows);
   const erc = pending.filter(isErc).sort(oldestFirst);
@@ -35,13 +45,14 @@ export function sortStream(rows) {
   const grouped = GROUP_ORDER.flatMap(type =>
     rest.filter(r => (r.type || '') === type).sort(oldestFirst));
   const stragglers = rest.filter(r => !known.has(r.type || '')).sort(oldestFirst);
-  return [...erc, ...grouped, ...stragglers];
+  return [...erc, ...grouped, ...stragglers, ...keptUntyped(rows)];
 }
 
 /** Per-bucket totals of the pending rows, for the filter labels. */
 export function sortCounts(rows) {
   const pending = pendingRows(rows);
-  const counts = { all: pending.length, erc: 0, untyped: 0, research: 0, event: 0, opportunity: 0, headline: 0 };
+  const fixups = keptUntyped(rows).length;
+  const counts = { all: pending.length + fixups, erc: 0, untyped: fixups, research: 0, event: 0, opportunity: 0, headline: 0 };
   for (const r of pending) {
     if (isErc(r)) counts.erc++;
     if (!r.type) counts.untyped++;

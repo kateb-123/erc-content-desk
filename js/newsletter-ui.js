@@ -24,6 +24,9 @@ const GROUP_LABELS = {
 let picked = new Set(); // nothing goes unless she picks it
 let issuePick = '';     // '' = the next issue on the schedule
 
+// Folded categories survive re-renders (every checkbox click re-renders).
+const collapsedGroups = new Set();
+
 export function resetNewsletterEntry() { picked = new Set(); issuePick = ''; }
 
 function el(tag, className, text) {
@@ -150,7 +153,15 @@ export function renderNewsletter(container, props) {
   for (const [label, group] of groups) {
     if (!group.length) continue;
     const pickedHere = group.filter(r => picked.has(r.id)).length;
-    container.append(el('h3', 'p-group', `${label} · ${pickedHere} of ${group.length} picked`));
+    // Each category folds (state survives re-renders) and scrolls in its own box.
+    const fold = el('details', 'nl-group');
+    fold.open = !collapsedGroups.has(label);
+    fold.addEventListener('toggle', () => {
+      if (fold.open) collapsedGroups.delete(label);
+      else collapsedGroups.add(label);
+    });
+    const summary = el('summary', 'p-group nl-group-summary', `${label} · ${pickedHere} of ${group.length} picked`);
+    fold.append(summary);
     const table = el('table', 'queue-table nl-table');
     const tbody = el('tbody');
     for (const row of group) {
@@ -189,8 +200,9 @@ export function renderNewsletter(container, props) {
       tbody.append(tr);
     }
     table.append(tbody);
-    const scroll = el('div', 'table-scroll');
+    const scroll = el('div', 'table-scroll nl-group-scroll');
     scroll.append(table);
-    container.append(scroll);
+    fold.append(scroll);
+    container.append(fold);
   }
 }
