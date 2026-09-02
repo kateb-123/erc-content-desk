@@ -170,19 +170,13 @@ async function publishNow() {
     const res = await fetch('/api/publish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
-    const message = `Published ${data.published} new item(s)` +
-      (data.skipped ? ` — ${data.skipped} already on the Exchange` : '') +
-      '. The site updates in about a minute.' +
-      (data.warning ? ` ${data.warning}` : '');
     state.publishPreview = null;
     state.justPublished = data.published;
     state.busy = false;
     // reload() writes its own 'Loading…'/'' status; the confirmation message
     // has to be set after it finishes, or reload() overwrites it.
     await reload();
-    // The pane's own confirmation says it — the bar stays quiet unless
-    // something was skipped, which the pane doesn't mention.
-    setStatus(data.skipped ? message : '', data.skipped ? 'ok' : 'ok');
+    setStatus(data.warning ? data.warning : '', data.warning ? 'note' : 'ok');   // the receipt card is the confirmation
     return;
   } catch (err) {
     setStatus(err.message, 'error');
@@ -268,6 +262,7 @@ export function render() {
       onBrowse: pos => { state.sortBrowse = Math.max(0, pos); saveSortSpot(); render(); },
       onFilter: key => { state.sortFilter = key; state.sortBrowse = 0; saveSortSpot(); render(); },
       onDecide: decide, onUndo: undoLast,
+      onEditRow: (row, changes) => persist([{ ...row, ...changes }]),
       // One PATCH for type + subtype + provenance together — sequential
       // round-trips re-render mid-save and reopen the picker.
       onEditType: (row, type, subtype) => persist([{

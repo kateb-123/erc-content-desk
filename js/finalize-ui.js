@@ -284,31 +284,33 @@ function checkCard(row, { old, onVerify, onRevert, onCheckEdit, onTrash, rerende
     card.append(el('p', 'f-blurb-text', row.blurb));
   }
 
+  // Same convention as Sort: Delete far left, the decision pair on the right.
+  // (The pen lives top-right, added by the caller next to the counter.)
   const actions = el('div', 'f-verify-actions');
-  const lock = () => { for (const b of actions.querySelectorAll('button')) b.disabled = true; };
-  const ok = el('button', 'primary', 'Looks good');
-  ok.type = 'button';
-  ok.addEventListener('click', () => { lock(); onVerify(row.id); });
-  actions.append(ok);
-  if (old) {
-    const revert = el('button', '', 'Keep the original');
-    revert.type = 'button';
-    revert.addEventListener('click', () => { lock(); onRevert(row); });
-    actions.append(revert);
-  }
-  card.append(actions);
-  const foot = el('div', 'f-check-foot');
-  const edit = el('button', 'linkish', ' Edit fields');
+  const lock = () => { for (const b of card.querySelectorAll('button')) b.disabled = true; };
+  const edit = el('button', 'linkish edit-link', ' Edit');
   edit.type = 'button';
   edit.prepend(faIcon('pen'));
   edit.addEventListener('click', () => { editingId = row.id; rerender(); });
-  foot.append(edit);
-  const bin = el('button', 'linkish trash-link', ' Delete');
+  actions.append(edit);
+  const bin = el('button', 'linkish trash-link sort-delete', ' Delete');
   bin.type = 'button';
   bin.prepend(faIcon('trash-can'));
-  bin.addEventListener('click', () => { lock(); bin.disabled = true; onTrash(row); });
-  foot.append(bin);
-  card.append(foot);
+  bin.addEventListener('click', () => { lock(); onTrash(row); });
+  actions.append(bin);
+  if (old) {
+    const revert = el('button', 'linkish skip-link', ' Use original');
+    revert.type = 'button';
+    revert.prepend(faIcon('rotate-left'));
+    revert.addEventListener('click', () => { lock(); onRevert(row); });
+    actions.append(revert);
+  }
+  const ok = el('button', 'primary', ' Keep');
+  ok.type = 'button';
+  ok.prepend(faIcon('check'));
+  ok.addEventListener('click', () => { lock(); onVerify(row.id); });
+  actions.append(ok);
+  card.append(actions);
   return card;
 }
 
@@ -327,7 +329,7 @@ export function renderFinalize(container, props) {
   const head = el('div', 'screen-head finalize-head');
   const lead = el('div');
   const info = titleWithInfo('Finalize', 'finalize',
-    'Rewrite pending descriptions into ERC voice, then check each one — Looks good saves it, Keep the original leaves the Sheet untouched. After the checks, look over the table (click a row for details) and go to Publish.');
+    'Rewrite pending descriptions into ERC voice, then check each one — Keep saves the rewrite, Use original leaves the Sheet untouched. After the checks, look over the table (click a row for details) and go to Publish.');
   lead.append(info.row, info.panel);
   const lede = el('p', 'lede');
   if (!keeps.length) {
@@ -335,7 +337,8 @@ export function renderFinalize(container, props) {
   } else if (stage1) {
     lede.textContent = 'Rewrite these descriptions into ERC voice.';
   } else if (checks && !busy) {
-    lede.textContent = 'Check the rewrites.';
+    // Same spot as stage 1's lede — one message, one place (Kate, Sep 1).
+    lede.textContent = rewroteNote ?? 'Check the rewrites — flip through and decide each one.';
   }
   // (No standing lede for the plain table — the info panel explains it.)
   lead.append(lede);
@@ -356,8 +359,7 @@ export function renderFinalize(container, props) {
   }
   container.append(head);
   if (busy) {
-    // The rows being rewritten step out of view while the writing runs.
-    container.append(el('p', 'rewrite-status', `Writing ${pending.length} description${pending.length === 1 ? '' : 's'} in ERC voice…`));
+    // The rows being rewritten step out of view — the dots say enough.
     container.append(dotsLoader());
     return;
   }
@@ -369,7 +371,6 @@ export function renderFinalize(container, props) {
   if (checks && !busy) {
     const queue = sorted(keeps).filter(r => review.has(r.id));
     if (queue.length) {
-      if (rewroteNote) container.append(el('p', 'f-rewrote-note', rewroteNote));
       checkIdx = Math.max(0, Math.min(checkIdx, queue.length - 1));
       const current = queue[checkIdx];
       const card = checkCard(current, {

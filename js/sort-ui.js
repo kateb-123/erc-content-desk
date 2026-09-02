@@ -1,16 +1,18 @@
 /**
  * Sort: one stream, one card at a time — untyped last, otherwise the
- * newsletter's type order, oldest first within a group. Keep / Circle back /
+ * newsletter's type order, oldest first within a group. Keep / Skip /
  * Trash by click only (no keyboard shortcuts — Kate's call, Aug 31). The
  * section row is a jump point; the type pickers hide behind "change".
  */
 import { duplicateFlags, linkCheckState, reshareFlags } from './workflow.js';
 import { TYPE_ORDER, TYPE_LABELS, subtypesFor } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
-import { safeHref } from './links.js';
+import { safeHref, withScheme } from './links.js';
 import { sortStream, sortCounts, streamFrom, sectionOf } from './sort-view.js';
 import { titleWithInfo } from './screen-info.js';
 import { faIcon, forwardIcon } from './icons.js';
+
+let editOpenId = null;   // sort card with its inline edit open (view state)
 
 const FILTER_LABELS = [
   ['', 'All'], ['untyped', 'To review'], ['erc', 'ERC'], ['research', 'Research'],
@@ -44,6 +46,7 @@ function el(tag, className, text) {
 }
 
 export function renderSort(container, props) {
+  const rerenderCard = () => renderSort(container, props);
   container.replaceChildren();
   const { rows, filter, sortedCount, lastDecision, onFilter, onDecide, onUndo, onGoTo, browse = 0, onBrowse } = props;
   const rerenderSelf = () => renderSort(container, props);
@@ -54,7 +57,7 @@ export function renderSort(container, props) {
 
   const head = el('div', 'screen-head');
   const info = titleWithInfo('Sort', 'sort',
-    'Go card by card: Keep what belongs, Circle back on maybes, Delete the rest. The left menu jumps to a section; the arrows browse without deciding. A card with open work — no type, an unchecked link — locks Keep until you fix it (Delete works any time).');
+    'Go card by card: Keep what belongs, Skip what you are not sure about (it stays in the queue), Delete the rest. The pen edits the item in place. A card with open work — no type, an unchecked link — locks Keep until you fix it (Delete works any time).');
   head.append(info.row);
   const door = el('button', 'primary head-action', 'Go to Finalize');
   door.append(forwardIcon());
@@ -125,6 +128,35 @@ export function renderSort(container, props) {
   }
   card.append(badges);
   card.append(el('h3', '', row.headline || '(untitled)'));
+  if (editOpenId === row.id) {
+    const form = el('div', 'sort-edit');
+    const mkField = (label, value, rows) => {
+      const wrap = el('label', 'sort-edit-field', label);
+      const input = rows ? el('textarea') : el('input');
+      if (rows) input.rows = rows; else input.type = 'text';
+      input.value = value ?? '';
+      wrap.append(input);
+      form.append(wrap);
+      return input;
+    };
+    const titleIn = mkField('Title', row.headline);
+    const blurbIn = mkField('Description', row.blurb, 4);
+    const linkIn = mkField('Link', row.link);
+    const rowBtns = el('div', 'sort-edit-actions');
+    const save = el('button', 'primary', 'Save');
+    save.type = 'button';
+    save.addEventListener('click', () => {
+      for (const x of card.querySelectorAll('button')) x.disabled = true;
+      editOpenId = null;
+      props.onEditRow?.(row, { headline: titleIn.value.trim(), blurb: blurbIn.value, link: withScheme(linkIn.value.trim()) });
+    });
+    const cancel = el('button', 'btn-outline', 'Cancel');
+    cancel.type = 'button';
+    cancel.addEventListener('click', () => { editOpenId = null; rerenderCard(); });
+    rowBtns.append(save, cancel);
+    form.append(rowBtns);
+    card.append(form);
+  }
   card.append(el('p', 'item-meta', [
     row.source, row.date && isoToDisplay(row.date), row.time, row.location,
     row.submitter && `from ${row.submitter}`,
@@ -170,31 +202,26 @@ export function renderSort(container, props) {
   if (typeLine.childNodes.length) fileRow.append(typeLine);
 
   if (linkState === 'alert') {
+    // One amber line. "check it" opens the source; only after she's been
+    // there does "it works" appear — opening IS the verification (Kate, Sep 1).
     const alert = el('div', 'link-alert');
     const line = el('p', 'alert-line');
-    line.append(el('span', 'alert-mark', '!'), ' Check link');
-    const actions = el('p', 'alert-actions');
-    if (href) {
-      const a = el('a', '', 'Open source ↗');
-      a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
-      a.addEventListener('click', () => actions.classList.add('is-open'));
-      line.append(' · ', a);
-    } else {
-      actions.classList.add('is-open');
-    }
-    const verify = el('button', 'alert-btn', 'Verify');
-    verify.type = 'button';
-    verify.addEventListener('click', () => {
+    const mark = el('i', 'fa-solid fa-triangle-exclamation alert-mark');
+    mark.setAttribute('aria-hidden', 'true');
+    line.append(mark);
+    const works = el('button', 'linkish alert-word', 'Confirm');
+    works.type = 'button';
+    works.addEventListener('click', () => {
       for (const x of card.querySelectorAll('button')) x.disabled = true;
       props.onVerifyLink?.(row);
     });
-    const change = el('button', 'alert-btn', 'Change link');
+    const change = el('button', 'linkish alert-word', 'Change');
     change.type = 'button';
     const changeRow = el('p', 'alert-change');
     const input = document.createElement('input');
     input.type = 'url';
     input.placeholder = 'paste the right link';
-    const saveLink = el('button', 'alert-btn', 'Save link');
+    const saveLink = el('button', 'linkish alert-word', 'Save');
     saveLink.type = 'button';
     change.addEventListener('click', () => { changeRow.classList.add('is-open'); input.focus(); });
     const saveFixed = () => {
@@ -206,55 +233,69 @@ export function renderSort(container, props) {
     saveLink.addEventListener('click', saveFixed);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') saveFixed(); });
     input.addEventListener('input', () => input.classList.remove('is-invalid'));
-    actions.append(verify, ' ', change);
+    // One ask: "Verify link" opens the source. The two outcomes — It works /
+    // Change — only appear once she's been there (Kate, Sep 1).
+    const after = el('span', '');
+    after.append(' · ', works, ' · ', change);
+    if (href) {
+      after.hidden = true;
+      const a = el('a', 'alert-word', 'Verify link ↗');
+      a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
+      a.addEventListener('click', () => { after.hidden = false; });
+      line.append(' ', a);
+    } else {
+      // Nothing to verify — only Change makes sense.
+      after.hidden = false;
+      after.replaceChildren(' · ', change);
+      line.append(' Missing link');
+    }
+    line.append(after);
     changeRow.append(input, ' ', saveLink);
-    alert.append(line, actions, changeRow);
+    alert.append(line, changeRow);
     fileRow.append(alert);
   }
 
   if (fixOpen) {
     const fix = el('div', 'type-pick');
-    fix.append(el('p', 'pick-label', mustFix ? 'Needs a type — tap one:' : 'Type — tap one:'));
-    const typeChips = el('div', 'type-chips');
+    fix.append(el('p', 'pick-label', 'Select a type'));
+    const typeChips = el('div', 'type-row');
     const subWrap = el('div', 'sub-pick');
-    const subChips = el('div', 'type-chips');
+    const subChips = el('div', 'type-row');
     const subLabel = el('p', 'pick-label');
     subWrap.append(subLabel, subChips);
-    const saveBtn = el('button', 'save-type-btn', 'Save type');
-    saveBtn.type = 'button';
     let pickedType = row.type || '';
     let pickedSub = row.subtype || '';
-    const syncSave = () => saveBtn.classList.toggle('is-open', Boolean(pickedType && pickedSub));
+    // Tapping the subtype IS the save — no extra button (Kate, Sep 1).
+    const commit = () => {
+      for (const x of card.querySelectorAll('button')) x.disabled = true;
+      fix.replaceChildren(el('p', 'pick-saved', '✓ Saved'));
+      fixOpenId = null;
+      props.onEditType?.(row, pickedType, pickedSub);
+    };
     const renderSubs = () => {
       // Name the picked type so switching (Event -> Opportunity) reads clearly.
       subLabel.textContent = pickedType ? `${TYPE_LABELS[pickedType] ?? pickedType} — now the subtype:` : '';
       subChips.replaceChildren(...subtypesFor(pickedType).map(s => {
-        const b = el('button', `type-chip${s === pickedSub ? ' is-picked' : ''}`, s);
+        const b = el('button', `type-word${s === pickedSub ? ' is-picked' : ''}`, s);
         b.type = 'button';
-        b.addEventListener('click', () => { pickedSub = s; renderSubs(); syncSave(); });
+        b.addEventListener('click', () => { pickedSub = s; commit(); });
         return b;
       }));
       subWrap.classList.toggle('is-open', Boolean(pickedType));
     };
     const renderTypes = () => {
       typeChips.replaceChildren(...TYPE_ORDER.map(t => {
-        const b = el('button', `type-chip${t === pickedType ? ' is-picked' : ''}`, TYPE_LABELS[t] ?? t);
+        const b = el('button', `type-word${t === pickedType ? ' is-picked' : ''}`, TYPE_LABELS[t] ?? t);
         b.type = 'button';
         b.addEventListener('click', () => {
           if (pickedType !== t) { pickedType = t; pickedSub = ''; }
-          renderTypes(); renderSubs(); syncSave();
+          renderTypes(); renderSubs();
         });
         return b;
       }));
     };
-    renderTypes(); renderSubs(); syncSave();
-    saveBtn.addEventListener('click', () => {
-      for (const x of card.querySelectorAll('button')) x.disabled = true;
-      fix.replaceChildren(el('p', 'pick-saved', '✓ Saved'));
-      fixOpenId = null;
-      props.onEditType?.(row, pickedType, pickedSub);
-    });
-    fix.append(typeChips, subWrap, saveBtn);
+    renderTypes(); renderSubs();
+    fix.append(typeChips, subWrap);
     fileRow.append(fix);
   }
 
@@ -270,12 +311,19 @@ export function renderSort(container, props) {
     });
     return b;
   };
+  const editBtn = el('button', 'linkish edit-link', ' Edit');
+  editBtn.type = 'button';
+  editBtn.prepend(faIcon('pen'));
+  editBtn.addEventListener('click', () => {
+    editOpenId = editOpenId === row.id ? null : row.id;
+    rerenderCard();
+  });
+  const trashBtn = mk(' Delete', 'linkish trash-link sort-delete', 'trash');
+  trashBtn.prepend(faIcon('trash-can'));
+  const circleBtn = mk('Skip', 'linkish skip-link', 'circleback');
   const keepBtn = mk(' Keep', 'btn-keep', 'keep');
   keepBtn.prepend(faIcon('check'));
-  const circleBtn = mk('Circle back', 'btn-circle', 'circleback');
-  const trashBtn = mk(' Delete', 'btn-trash', 'trash');
-  trashBtn.prepend(faIcon('trash-can'));
-  actions.append(keepBtn, circleBtn, trashBtn);
+  actions.append(editBtn, trashBtn, circleBtn, keepBtn);
   card.append(actions);
 
   // A card with open work can't be KEPT until it's fixed — but junk is junk:
@@ -284,8 +332,9 @@ export function renderSort(container, props) {
   if (mustFix) blockers.push('set a type');
   if (linkState === 'alert') blockers.push('check the link');
   if (blockers.length) {
+    // The card already says what's open (alert line, type prompt) — no
+    // second sentence. Keep/Skip just stay locked until it's fixed.
     for (const b of [keepBtn, circleBtn]) b.disabled = true;
-    card.append(el('p', 'decide-blocked', `Before keeping: ${blockers.join(' · ')}.`));
   }
   if (lastDecision) {
     const undo = el('button', 'undo-link', 'Undo last');

@@ -67,7 +67,7 @@ function itemRows(row, { cls, fix, rerender, onGoTo }) {
 
 function group(container, title, rows, { cls, fix, hint, rerender, onGoTo }) {
   if (!rows.length) return;
-  container.append(el('h3', 'p-group', title));
+  if (title) container.append(el('h3', 'p-group', title));
   if (hint) container.append(el('p', 'hint p-group-hint', hint));
   const table = el('table', 'queue-table finalize-table publish-table');
   const tbody = el('tbody');
@@ -99,13 +99,7 @@ export function renderPublish(container, props) {
   lead.append(info.row, info.panel);
   const lede = el('p', 'lede');
   if (justPublished) {
-    const icon = checkSvg();
-    if (celebrated !== justPublished) {
-      celebrated = justPublished;
-      head.classList.add('pub-done-anim');
-      icon.classList.add('draw-check');
-    }
-    lede.append(icon, `Published ${justPublished} — the site updates in about a minute.`);
+    // The receipt card below is the confirmation — the head stays bare.
   } else if (busy && !preview) {
     lede.textContent = 'Checking the live Exchange…';
   } else if (!candidates.length) {
@@ -120,7 +114,7 @@ export function renderPublish(container, props) {
   lead.append(lede);
   head.append(lead);
 
-  if (justPublished || (!candidates.length && !busy)) {
+  if (!justPublished && !candidates.length && !busy) {
     const btn = el('button', 'primary head-action', 'Send to newsletter');
     btn.append(forwardIcon());
     btn.addEventListener('click', () => onGoTo('build'));
@@ -139,8 +133,28 @@ export function renderPublish(container, props) {
   }
   container.append(head);
 
-  // Published: the job here is done — just the confirmation and the door to Build.
-  if (justPublished) return;
+  // Published: the receipt IS the page — check, headline, one door onward.
+  if (justPublished) {
+    const receipt = el('div', 'pub-receipt');
+    if (celebrated !== justPublished) {
+      celebrated = justPublished;
+      receipt.classList.add('pub-done-anim');
+    }
+    const ring = el('span', 'check-ring');
+    const icon = checkSvg();
+    icon.classList.add('receipt-check');
+    if (receipt.classList.contains('pub-done-anim')) icon.classList.add('draw-check');
+    ring.append(icon);
+    receipt.append(ring);
+    receipt.append(el('h3', '', `Published ${justPublished} to the Exchange`));
+    receipt.append(el('p', '', 'The site updates in about a minute.'));
+    const door = el('button', 'primary', 'Send to Newsletter ');
+    door.append(forwardIcon());
+    door.addEventListener('click', () => onGoTo('build'));
+    receipt.append(door);
+    container.append(receipt);
+    return;
+  }
 
   if (busy && !preview) {
     container.append(el('p', 'rewrite-status', 'Reading the live news.csv so nothing gets overwritten or duplicated…'));
@@ -152,6 +166,9 @@ export function renderPublish(container, props) {
   if (notReady.length) {
     // Typing happens in Sort (the pill picker lives there) — an alert points the way.
     const alert = el('div', 'p-fix-alert');
+    const warn = el('i', 'fa-solid fa-triangle-exclamation');
+    warn.setAttribute('aria-hidden', 'true');
+    alert.append(warn, ' ');
     alert.append(`${notReady.length} kept item${notReady.length === 1 ? '' : 's'} still need${notReady.length === 1 ? 's' : ''} a type — `);
     const jump = el('button', 'linkish', "fix in Sort's To review");
     jump.type = 'button';
@@ -160,10 +177,25 @@ export function renderPublish(container, props) {
     container.append(alert);
   }
 
-  group(container, 'Adding', adding, { rerender, onGoTo });
-  group(container, 'Newsletter only', held, {
-    cls: 'p-held', rerender, onGoTo,
-    hint: 'Spotlight events stay off the Exchange — webinars excepted.',
-  });
+  // The receipt-style report: chips summarize, one table lists what's going
+  // up, the held group folds. "Already live" is a quiet indicator — no
+  // counts, no "skipped" talk (Kate, Sep 1).
+  if (preview) {
+    const chips = el('div', 'p-chips');
+    if (adding.length) chips.append(el('span', 'p-chip', `Adding ${adding.length}`));
+    if (held.length) chips.append(el('span', 'p-chip p-chip-quiet', `Held for the newsletter ${held.length}`));
+    if (preview.skipped?.length) chips.append(el('span', 'p-chip p-chip-ghost', 'Already live'));
+    if (chips.childElementCount) container.append(chips);
+  }
 
+  group(container, '', adding, { rerender, onGoTo });
+
+  if (held.length) {
+    const fold = el('details', 'p-held-fold');
+    const sum = el('summary', '', `Held for the newsletter (${held.length})`);
+    fold.append(sum);
+    fold.append(el('p', 'hint p-group-hint', 'Spotlight events stay off the Exchange — webinars excepted.'));
+    group(fold, '', held, { cls: 'p-held', rerender, onGoTo });
+    container.append(fold);
+  }
 }
