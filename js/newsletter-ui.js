@@ -11,6 +11,8 @@ import { buildPool, newsletterOnly, reshareFlags } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
 import { isoToSlash } from './queue-view.js';
+import { isoToDisplay } from './rows-to-issue.js';
+import { eventTiming, deadlineState } from './schedule.js';
 
 // The builder lives inside this project — same origin, one deploy.
 const BUILDER_URL = '/builder/';
@@ -167,7 +169,13 @@ export function renderNewsletter(container, props) {
     fold.append(summary);
     const table = el('table', 'queue-table nl-table');
     const tbody = el('tbody');
-    for (const row of group) {
+    // Events for a later issue dim and sink to the bottom, nearest first.
+    const timingOf = r => r.type === 'event' ? eventTiming(schedule ?? [], issue, r.date) : { state: '' };
+    const ordered = [
+      ...group.filter(r => timingOf(r).state !== 'later'),
+      ...group.filter(r => timingOf(r).state === 'later').sort((a, b) => (a.date < b.date ? -1 : 1)),
+    ];
+    for (const row of ordered) {
       const tr = el('tr', 'nl-row');
       const checkTd = el('td', 'nl-check');
       const box = el('input');
@@ -187,6 +195,23 @@ export function renderNewsletter(container, props) {
       // Re-sharing is sometimes the point — a note, never a blocker.
       if (reshare.has(row.id)) {
         titleTd.append(el('span', 'item-source nl-reshare', `Was in the ${issueLabel(reshare.get(row.id))} issue`));
+      }
+      if (row.type === 'event' && row.date) {
+        titleTd.append(el('span', 'item-source', [isoToDisplay(row.date), row.location].filter(Boolean).join(' \u00b7 ')));
+      }
+      const timing = timingOf(row);
+      if (timing.state === 'later') {
+        tr.classList.add('nl-later');
+        titleTd.append(el('span', 'item-source nl-when', `For the ${issueLabel(timing.issue)} issue`));
+      } else if (timing.state === 'passed') {
+        titleTd.append(el('span', 'nl-flag', 'Date passed'));
+      }
+      if (row.type === 'opportunity' && row.deadline) {
+        if (deadlineState(issue, row.deadline) === 'passed') {
+          titleTd.append(el('span', 'nl-flag', 'Deadline passed'));
+        } else {
+          titleTd.append(el('span', 'item-source', `Deadline ${isoToDisplay(row.deadline)}`));
+        }
       }
       tr.append(titleTd);
       const typeTd = el('td');

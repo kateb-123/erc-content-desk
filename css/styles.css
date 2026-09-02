@@ -104,6 +104,10 @@ label.radio { display: block; margin: .15rem 0; font-size: .95rem; color: var(--
 .nl-sent .queue-table { margin-top: .5rem; }
 .nl-group { margin: 0; }
 .nl-group-summary { cursor: pointer; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; }
+/* Timing notes on the newsletter pool: later events dim; passed dates go amber. */
+.nl-row.nl-later { opacity: .55; }
+.nl-row.nl-later:hover { opacity: .85; }
+.nl-flag { display: inline-block; width: fit-content; color: #6b4e00; background: #fdf3d7; border-radius: 6px; padding: 0 .45rem; font-size: .8rem; margin-top: .15rem; }
 .nl-group-scroll { max-height: 340px; overflow-y: auto; }
 .bulk-door .bulk-status { min-height: 1.4rem; margin: 1rem 0 0; font-size: .9rem; }
 

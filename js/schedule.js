@@ -17,3 +17,20 @@ export function nextIssueDate(schedule, todayIso) {
   if (!schedule?.length) return '';
   return schedule.find(d => d >= todayIso) ?? schedule[schedule.length - 1];
 }
+
+/** An event belongs to the LAST issue that lands before it happens (the
+ *  two-week window between newsletters). Relative to the issue being
+ *  assembled: 'now' (this window), 'later' (a coming issue — which one is in
+ *  .issue), 'passed' (the event predates the issue), '' (no usable dates). */
+export function eventTiming(schedule, issueIso, eventIso) {
+  if (!isIsoDate(eventIso) || !isIsoDate(issueIso)) return { state: '' };
+  if (eventIso < issueIso) return { state: 'passed' };
+  const home = (schedule ?? []).filter(d => isIsoDate(d) && d <= eventIso).sort().pop() ?? '';
+  return !home || home <= issueIso ? { state: 'now' } : { state: 'later', issue: home };
+}
+
+/** Opportunities run in every issue until their deadline. */
+export function deadlineState(issueIso, deadlineIso) {
+  if (!isIsoDate(deadlineIso) || !isIsoDate(issueIso)) return '';
+  return deadlineIso < issueIso ? 'passed' : 'open';
+}
