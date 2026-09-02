@@ -62,7 +62,7 @@ function sentSection(container, { rows, issue, onUnsend }) {
     tr.append(titleTd);
     const backTd = el('td', 'bulk-remove');
     const back = el('button', 'linkish trash-link', ' Remove');
-    back.prepend(faIcon('xmark'));
+    back.prepend(faIcon('trash-can'));
     back.type = 'button';
     back.addEventListener('click', () => { back.disabled = true; onUnsend([row.id]); });
     backTd.append(back);
