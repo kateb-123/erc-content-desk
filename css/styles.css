@@ -104,10 +104,22 @@ label.radio { display: block; margin: .15rem 0; font-size: .95rem; color: var(--
 .nl-sent .queue-table { margin-top: .5rem; }
 .nl-group { margin: 0; }
 .nl-group-summary { cursor: pointer; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; }
-/* Timing notes on the newsletter pool: later events dim; passed dates go amber. */
+/* Timing on the newsletter pool: events for a later issue dim and sink; the
+   "Send early?" ask wears the card language's amber bubble (Sort's verify
+   loop), so a question about timing looks the same everywhere it appears. */
 .nl-row.nl-later { opacity: .55; }
 .nl-row.nl-later:hover { opacity: .85; }
-.nl-flag { display: inline-block; width: fit-content; color: #6b4e00; background: #fdf3d7; border-radius: 6px; padding: 0 .45rem; font-size: .8rem; margin-top: .15rem; }
+.nl-row .badge { margin-top: .15rem; }
+.nl-ask {
+  display: block; width: fit-content; margin: .35rem 0 .1rem;
+  font-size: .85rem; color: #6b4e00; background: #fdf3d7;
+  border: 1px solid #f2e3ae; border-radius: 8px; padding: .35rem .7rem;
+}
+.nl-ask .alert-mark, .nl-ask .fa-clock { margin-right: .25rem; }
+.nl-ask .alert-word { color: #6b4e00; }
+.nl-ask .nl-cancel { font-weight: 400; }
+.nl-past .badge { margin-left: .1rem; }
+.nl-past-act { text-align: right; width: 6.5rem; }
 .nl-group-scroll { max-height: 340px; overflow-y: auto; }
 .bulk-door .bulk-status { min-height: 1.4rem; margin: 1rem 0 0; font-size: .9rem; }
 
@@ -134,7 +146,7 @@ label.radio { display: block; margin: .15rem 0; font-size: .95rem; color: var(--
 .screen-nav { display: flex; gap: .5rem; flex-wrap: wrap; }
 .screen-tab { border: none; border-radius: 999px; background: none; padding: .45rem 1rem; color: var(--muted); font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .85rem; }
 .screen-tab:hover:not(:disabled):not(.is-active) { border: none; background: #e5edf4; color: var(--accent); }
-.screen-tab.is-active { color: #fff; background: var(--accent); box-shadow: 0 2px 10px rgba(29, 110, 165, 0.35); }
+.screen-tab.is-active { color: #fff; background: var(--accent); }
 
 .screen-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin: 1.75rem 0 1rem; }
 .screen-head h2 { font-size: 1.35rem; margin: 0; }
@@ -287,7 +299,7 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .carousel-arrow:disabled { color: var(--line); opacity: 1; cursor: default; }
 .sort-filter { border: none; border-radius: 999px; background: none; padding: .35rem .9rem; color: var(--muted); cursor: pointer; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .85rem; }
 .sort-filter:hover:not(.is-active) { border: none; background: #e5edf4; color: var(--accent); }
-.sort-filter.is-active { color: #fff; background: var(--accent); box-shadow: 0 2px 10px rgba(29, 110, 165, 0.35); }
+.sort-filter.is-active { color: #fff; background: var(--accent); }
 .sort-filter.is-here:not(.is-active) { color: var(--ink); background: var(--tint); }
 .type-line { font-size: .85rem; color: var(--muted); margin: .6rem 0 0; }
 .type-line .type-label { color: var(--ink); }
@@ -297,7 +309,7 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .linkish .fa-solid { margin-right: .3rem; font-size: .9em; }
 .linkish.skip-link, button.skip-link { color: var(--muted); }
 .linkish.skip-link:hover:not(:disabled), button.skip-link:hover:not(:disabled) { color: var(--ink); }
-.sort-actions .btn-keep { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(29, 110, 165, .28); }
+.sort-actions .btn-keep { background: var(--accent); border-color: var(--accent); color: #fff; }
 .sort-actions .btn-keep:hover:not(:disabled) { background: #19608f; border-color: #19608f; }
 .sort-actions .btn-circle:hover:not(:disabled) { background: #fff8e1; border-color: #d9c98a; }
 .sort-actions .btn-trash { color: var(--err); border-color: #ecc8c8; }
@@ -346,7 +358,7 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .f-verify-actions .primary, .f-verify-actions .btn-outline {
   display: inline-flex; align-items: center; gap: .45rem; border-radius: var(--radius); padding: .55rem 1.2rem; font-size: .95rem;
 }
-.f-verify-actions .primary { box-shadow: 0 2px 8px rgba(29, 110, 165, .28); }
+
 .btn-outline { background: #fff; border: 1px solid var(--line); color: var(--ink); }
 .btn-outline:hover:not(:disabled) { border-color: var(--ink); }
 .f-verify-actions .linkish .fa-solid, .trash-link .fa-solid { margin-right: .3rem; font-size: .9em; }

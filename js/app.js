@@ -324,6 +324,7 @@ export function render() {
       ...common, busy: state.busy, justSent: state.justSent,
       onSend: sendToNewsletter,
       onUnsend: unsendFromNewsletter,
+      onTrash: row => persist([trash(row)]),
     });
   }
 }

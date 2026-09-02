@@ -158,7 +158,6 @@ body {
   color: #fff;
   background: var(--bp-primary);
   border-bottom-color: transparent;
-  box-shadow: 0 2px 10px rgba(29, 110, 165, 0.35);
 }
 
 .step-indicator.active::before {
@@ -213,7 +212,6 @@ body {
   border: 1px solid var(--bp-card-border);
   border-radius: 12px;
   padding: 32px 36px;
-  box-shadow: 0 2px 12px rgba(28, 34, 41, 0.06);
 }
 
 .wizard-step h2 {
@@ -294,12 +292,10 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .btn-primary {
   background: var(--bp-primary);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(29, 110, 165, 0.3);
 }
 
 .btn-primary:not(:disabled):hover {
   background: var(--bp-primary-hover);
-  box-shadow: 0 3px 12px rgba(29, 110, 165, 0.4);
 }
 
 .btn-primary:not(:disabled):active {
@@ -360,7 +356,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   background: var(--bp-primary-tint);
   border-color: var(--bp-primary);
   border-width: 3px;
-  box-shadow: 0 0 0 4px rgba(29, 110, 165, 0.15);
 }
 
 .drop-icon {
@@ -564,7 +559,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   height: 18px;
   background: #fff;
   border-radius: 50%;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   transition: transform 0.15s ease;
 }
 
@@ -845,7 +839,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   display: block;
   border: 1px solid rgba(28, 34, 41, 0.08);
   background: #fff;
-  box-shadow: 0 6px 22px rgba(28, 34, 41, 0.16);
   transform-origin: top left;
 }
 
@@ -854,7 +847,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   border: 1px solid var(--bp-card-border);
   border-radius: 12px;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(28, 34, 41, 0.06);
   padding: 12px 10px;
 }
 .edit-card-header {
@@ -1025,7 +1017,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   color: #fff;
   padding: 10px 16px;
   border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   font-size: 0.88rem;
   opacity: 0;
   transition: opacity 0.16s, transform 0.16s;
@@ -1065,11 +1056,9 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .export-action-btn.btn-primary {
   font-size: 14px;
   padding: 12px 32px;
-  box-shadow: 0 2px 8px rgba(29, 110, 165, 0.3);
 }
 
 .export-action-btn.btn-primary:not(:disabled):hover {
-  box-shadow: 0 3px 12px rgba(29, 110, 165, 0.4);
 }
 
 /* Toast notification */
@@ -1175,7 +1164,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   border: 1px solid var(--bp-card-border);
   border-radius: 12px;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(28, 34, 41, 0.06);
 }
 
 .reorder-panel-summary {

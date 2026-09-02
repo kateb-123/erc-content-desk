@@ -26,11 +26,13 @@ const GROUP_LABELS = {
 // View state only — resets on every visit to the screen.
 let picked = new Set(); // nothing goes unless she picks it
 let issuePick = '';     // '' = the next issue on the schedule
+let confirmedEarly = new Set(); // later-event ids okayed via "Send early?" this visit
+let askOpenId = null;           // later-event row currently asking
 
 // Folded categories survive re-renders (every checkbox click re-renders).
 const collapsedGroups = new Set();
 
-export function resetNewsletterEntry() { picked = new Set(); issuePick = ''; }
+export function resetNewsletterEntry() { picked = new Set(); issuePick = ''; confirmedEarly = new Set(); askOpenId = null; }
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -78,16 +80,84 @@ function sentSection(container, { rows, issue, onUnsend }) {
   container.append(box);
 }
 
+/** What the issue has outrun: an event that happens before it lands, an
+ *  opportunity that closes first. Not pickable — the move left is Delete. */
+function pastSection(container, { past, onTrash }) {
+  if (!past.length) return;
+  const fold = el('details', 'nl-sent nl-past');
+  fold.append(el('summary', '', `Past items (${past.length})`));
+  const table = el('table', 'queue-table');
+  const tbody = el('tbody');
+  for (const { row, why, when } of past) {
+    const tr = el('tr');
+    const titleTd = el('td');
+    titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
+    if (row.source) titleTd.append(el('span', 'item-source', row.source));
+    if (when) titleTd.append(el('span', 'item-source', when));
+    titleTd.append(el('span', 'badge badge-dupe', why));
+    tr.append(titleTd);
+    const actTd = el('td', 'nl-past-act');
+    if (onTrash) {
+      const del = el('button', 'linkish trash-link', ' Delete');
+      del.type = 'button';
+      del.prepend(faIcon('trash-can'));
+      del.addEventListener('click', () => { del.disabled = true; onTrash(row); });
+      actTd.append(del);
+    }
+    tr.append(actTd);
+    tbody.append(tr);
+  }
+  table.append(tbody);
+  fold.append(table);
+  container.append(fold);
+}
+
 export function renderNewsletter(container, props) {
-  const { rows, schedule, today, busy, justSent, onSend, onUnsend } = props;
+  const { rows, schedule, today, busy, justSent, onSend, onUnsend, onTrash } = props;
   const rerender = () => renderNewsletter(container, props);
+  // Each group scrolls in its own box; every click rebuilds the screen, so the
+  // positions ride across or an opened ask lands out of view below the fold.
+  const scrollTops = new Map();
+  for (const fold of container.querySelectorAll('[data-group]')) {
+    const box = fold.querySelector('.nl-group-scroll');
+    if (box) scrollTops.set(fold.dataset.group, box.scrollTop);
+  }
   container.replaceChildren();
 
   const pool = buildPool(rows);
-  const selected = pool.filter(r => picked.has(r.id));
   // Past issues never show — only today and later can be picked.
   const upcoming = (schedule ?? []).filter(d => !today || d >= today);
   const issue = issuePick || upcoming[0] || '';
+
+  // Timing is relative to the issue being assembled, so it is settled once per
+  // render: the ordering, the row notes and both pick gestures read one answer.
+  const timings = new Map(pool.map(r => [r.id,
+    r.type === 'event' ? eventTiming(schedule ?? [], issue, r.date) : { state: '' }]));
+  const isLater = r => timings.get(r.id)?.state === 'later';
+  const needsAsk = r => isLater(r) && !confirmedEarly.has(r.id);
+  // Picking is gated at the gesture, but the issue can change under a standing
+  // pick (the dropdown, an undo, a reload) — re-checking here is what keeps an
+  // unconfirmed early event from riding along to Send.
+  for (const r of pool) if (picked.has(r.id) && needsAsk(r)) picked.delete(r.id);
+  // Items the issue has outrun leave the picking list entirely — an event that
+  // happens before it lands, an opportunity that closes first. They fold away
+  // at the bottom where the only move left is Delete.
+  const pastEntry = r => {
+    if (timings.get(r.id)?.state === 'passed') {
+      return { row: r, why: 'Before this issue', when: isoToDisplay(r.date) };
+    }
+    if (r.type === 'opportunity' && r.deadline && deadlineState(issue, r.deadline) === 'passed') {
+      return { row: r, why: 'Closes before this issue', when: `Deadline ${isoToDisplay(r.deadline)}` };
+    }
+    return null;
+  };
+  const past = pool.map(pastEntry).filter(Boolean);
+  const pastIds = new Set(past.map(p => p.row.id));
+  for (const id of pastIds) picked.delete(id);
+  const live = pool.filter(r => !pastIds.has(r.id));
+  const selected = live.filter(r => picked.has(r.id));
+  let askRow = null;   // the row asking "Send early?", brought into view after the rebuild
+  let askConfirm = null;
 
   const head = el('div', 'screen-head finalize-head');
   const lead = el('div');
@@ -103,14 +173,14 @@ export function renderNewsletter(container, props) {
       undo.addEventListener('click', () => { undo.disabled = true; onUnsend(justSent.ids); });
       lede.append(undo);
     }
-  } else if (!pool.length) {
+  } else if (!live.length) {
     lede.textContent = 'Nothing new for the newsletter yet.';
   } else {
     lede.textContent = 'Pick items to send to newsletter';
   }
   lead.append(lede);
   head.append(lead);
-  if (!justSent && pool.length && !busy) {
+  if (!justSent && live.length && !busy) {
     const btn = el('button', 'primary', selected.length
       ? `Send ${selected.length} to the ${issueLabel(issue)} issue`
       : `Send to the ${issueLabel(issue)} issue`);
@@ -129,7 +199,7 @@ export function renderNewsletter(container, props) {
     container.append(open);
     return;
   }
-  if (!pool.length) { sentSection(container, { rows, issue, onUnsend }); return; }
+  if (!live.length && !past.length) { sentSection(container, { rows, issue, onUnsend }); return; }
 
   if (upcoming.length > 1) {
     const pickRow = el('p', 'nl-issue');
@@ -141,7 +211,13 @@ export function renderNewsletter(container, props) {
       opt.selected = date === issue;
       select.append(opt);
     }
-    select.addEventListener('change', () => { issuePick = select.value; rerender(); });
+    select.addEventListener('change', () => {
+      issuePick = select.value;
+      // "Send it early" was answered about the old issue — it never carries over.
+      confirmedEarly.clear();
+      askOpenId = null;
+      rerender();
+    });
     pickRow.append(select);
     container.append(pickRow);
   }
@@ -150,10 +226,10 @@ export function renderNewsletter(container, props) {
 
   const reshare = reshareFlags(rows, today ?? '');
   const groups = [
-    ['ERC Spotlight', pool.filter(isErc)],
+    ['ERC Spotlight', live.filter(isErc)],
     ...TYPE_ORDER.map(type =>
-      [GROUP_LABELS[type], pool.filter(r => !isErc(r) && (r.type || '') === type)]),
-    ['Untyped', pool.filter(r => !isErc(r) && !TYPE_ORDER.includes(r.type || ''))],
+      [GROUP_LABELS[type], live.filter(r => !isErc(r) && (r.type || '') === type)]),
+    ['Untyped', live.filter(r => !isErc(r) && !TYPE_ORDER.includes(r.type || ''))],
   ];
   for (const [label, group] of groups) {
     if (!group.length) continue;
@@ -167,14 +243,24 @@ export function renderNewsletter(container, props) {
     });
     const summary = el('summary', 'p-group nl-group-summary', `${label} · ${pickedHere} of ${group.length} picked`);
     fold.append(summary);
+    fold.dataset.group = label;
     const table = el('table', 'queue-table nl-table');
     const tbody = el('tbody');
     // Events for a later issue dim and sink to the bottom, nearest first.
-    const timingOf = r => r.type === 'event' ? eventTiming(schedule ?? [], issue, r.date) : { state: '' };
     const ordered = [
-      ...group.filter(r => timingOf(r).state !== 'later'),
-      ...group.filter(r => timingOf(r).state === 'later').sort((a, b) => (a.date < b.date ? -1 : 1)),
+      ...group.filter(r => !isLater(r)),
+      ...group.filter(isLater).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)),
     ];
+    // Both gestures mean one thing, so they share one door: a later event opens
+    // the ask instead of picking; any other pick answers a standing ask by
+    // leaving it — so it closes rather than lingering over unrelated work.
+    const pickGesture = row => {
+      if (!picked.has(row.id) && needsAsk(row)) { askOpenId = row.id; rerender(); return; }
+      askOpenId = null;
+      if (picked.has(row.id)) picked.delete(row.id);
+      else picked.add(row.id);
+      rerender();
+    };
     for (const row of ordered) {
       const tr = el('tr', 'nl-row');
       const checkTd = el('td', 'nl-check');
@@ -182,11 +268,7 @@ export function renderNewsletter(container, props) {
       box.type = 'checkbox';
       box.checked = picked.has(row.id);
       box.addEventListener('click', event => event.stopPropagation());
-      box.addEventListener('change', () => {
-        if (box.checked) picked.add(row.id);
-        else picked.delete(row.id);
-        rerender();
-      });
+      box.addEventListener('change', () => pickGesture(row));
       checkTd.append(box);
       tr.append(checkTd);
       const titleTd = el('td');
@@ -199,19 +281,41 @@ export function renderNewsletter(container, props) {
       if (row.type === 'event' && row.date) {
         titleTd.append(el('span', 'item-source', [isoToDisplay(row.date), row.location].filter(Boolean).join(' \u00b7 ')));
       }
-      const timing = timingOf(row);
+      const timing = timings.get(row.id);
       if (timing.state === 'later') {
-        tr.classList.add('nl-later');
+        if (!picked.has(row.id) && askOpenId !== row.id) tr.classList.add('nl-later');
+        // The note stays put while the ask is open \u2014 it is the fact you need to
+        // answer "how early is early?".
         titleTd.append(el('span', 'item-source nl-when', `For the ${issueLabel(timing.issue)} issue`));
-      } else if (timing.state === 'passed') {
-        titleTd.append(el('span', 'nl-flag', 'Date passed'));
+        if (askOpenId === row.id) {
+          askRow = tr;
+          // The card language's amber bubble, same as Sort's verify loop: the
+          // icon sits on the bubble, the two outcomes stay bare words.
+          const ask = el('div', 'nl-ask');
+          ask.append(faIcon('clock'), ' Send early? ');
+          const ok = el('button', 'linkish alert-word', 'Confirm');
+          ok.type = 'button';
+          ok.addEventListener('click', e => {
+            e.stopPropagation();
+            confirmedEarly.add(row.id);
+            picked.add(row.id);
+            askOpenId = null;
+            rerender();
+          });
+          askConfirm = ok;
+          const no = el('button', 'linkish alert-word nl-cancel', 'Cancel');
+          no.type = 'button';
+          no.addEventListener('click', e => {
+            e.stopPropagation();
+            askOpenId = null;
+            rerender();
+          });
+          ask.append(ok, ' \u00b7 ', no);
+          titleTd.append(ask);
+        }
       }
       if (row.type === 'opportunity' && row.deadline) {
-        if (deadlineState(issue, row.deadline) === 'passed') {
-          titleTd.append(el('span', 'nl-flag', 'Deadline passed'));
-        } else {
-          titleTd.append(el('span', 'item-source', `Deadline ${isoToDisplay(row.deadline)}`));
-        }
+        titleTd.append(el('span', 'item-source', `Deadline ${isoToDisplay(row.deadline)}`));
       }
       tr.append(titleTd);
       const typeTd = el('td');
@@ -220,11 +324,7 @@ export function renderNewsletter(container, props) {
       if (newsletterOnly(row)) typeTd.append(el('span', 'item-source', 'newsletter only'));
       tr.append(typeTd);
       tr.append(el('td', '', isoToSlash(String(row.published_at ?? '').slice(0, 10)) || '—'));
-      tr.addEventListener('click', () => {
-        if (picked.has(row.id)) picked.delete(row.id);
-        else picked.add(row.id);
-        rerender();
-      });
+      tr.addEventListener('click', () => pickGesture(row));
       tbody.append(tr);
     }
     table.append(tbody);
@@ -233,4 +333,16 @@ export function renderNewsletter(container, props) {
     fold.append(scroll);
     container.append(fold);
   }
+
+  pastSection(container, { past, onTrash });
+
+  // Put the scroll boxes back where they were, then make sure an open ask is
+  // on screen and holding focus — otherwise the click reads as a no-op.
+  for (const fold of container.querySelectorAll('[data-group]')) {
+    const box = fold.querySelector('.nl-group-scroll');
+    const top = scrollTops.get(fold.dataset.group);
+    if (box && top) box.scrollTop = top;
+  }
+  if (askRow) askRow.scrollIntoView({ block: 'nearest' });
+  askConfirm?.focus({ preventScroll: true });
 }
