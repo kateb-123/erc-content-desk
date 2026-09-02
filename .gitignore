@@ -4,3 +4,7 @@ node_modules/
 .env.local
 .DS_Store
 .superpowers/
+# Playwright CLI output (may contain credentials)
+.playwright-cli/
+.screens/
+.playwright/
