@@ -157,7 +157,6 @@ export function renderPublish(container, props) {
   }
 
   if (busy && !preview) {
-    container.append(el('p', 'rewrite-status', 'Reading the live news.csv so nothing gets overwritten or duplicated…'));
     container.append(dotsLoader());
     return;
   }

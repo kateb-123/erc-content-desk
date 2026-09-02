@@ -156,12 +156,18 @@ export function detailBody(row, extra) {
   return wrap;
 }
 
+const FIELD_TITLES = {
+  headline: 'Headline', date: 'Date', source: 'Source', topic: 'Topic',
+  blurb: 'Description', deadline: 'Deadline', authors: 'Authors',
+  time: 'Time', location: 'Location',
+};
+
 function editBody(row, { onSave, onCancel }) {
-  const wrap = el('div');
+  const wrap = el('div', 'f-edit-card');
   const grid = el('div', 'f-edit-grid');
   const inputs = {};
   for (const field of EDITABLE) {
-    const label = el('label', field === 'blurb' ? 'f-edit-blurb' : '', field === 'blurb' ? 'description' : field);
+    const label = el('label', field === 'blurb' ? 'f-edit-blurb' : '', FIELD_TITLES[field] ?? field);
     const input = field === 'blurb' ? el('textarea') : el('input');
     if (field === 'blurb') input.rows = 3;
     input.value = row[field] ?? '';

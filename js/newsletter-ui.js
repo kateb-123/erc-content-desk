@@ -6,6 +6,7 @@
  * and the builder pulls them from here. No .md, no export.
  */
 import { titleWithInfo } from './screen-info.js';
+import { faIcon } from './icons.js';
 import { buildPool, newsletterOnly, reshareFlags } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
@@ -60,7 +61,8 @@ function sentSection(container, { rows, issue, onUnsend }) {
     if (row.source) titleTd.append(el('span', 'item-source', row.source));
     tr.append(titleTd);
     const backTd = el('td', 'bulk-remove');
-    const back = el('button', 'linkish', 'Pull back');
+    const back = el('button', 'linkish trash-link', ' Remove');
+    back.prepend(faIcon('xmark'));
     back.type = 'button';
     back.addEventListener('click', () => { back.disabled = true; onUnsend([row.id]); });
     backTd.append(back);
@@ -88,7 +90,7 @@ export function renderNewsletter(container, props) {
   const head = el('div', 'screen-head finalize-head');
   const lead = el('div');
   const info = titleWithInfo('Send to Newsletter', 'build',
-    'Pick items for the issue and send them — they leave the desk and wait in the newsletter builder. Change your mind later with Pull back. A "was in a past issue" note is just a heads-up, never a block.');
+    'Pick items for the issue and send them — they leave the desk and wait in the newsletter builder. Change your mind later with Remove under "Already sent". A "was in a past issue" note is just a heads-up, never a block.');
   lead.append(info.row, info.panel);
   const lede = el('p', 'lede');
   if (justSent) {

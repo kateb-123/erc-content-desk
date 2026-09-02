@@ -334,7 +334,8 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .rewrite-note { margin: 0 0 .6rem; font-size: .85rem; color: #6b4e00; }
 .f-edit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem .8rem; }
 .f-edit-grid label { margin: 0; font-size: .78rem; color: var(--muted); }
-.f-edit-grid input, .f-edit-grid textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: .85rem; padding: .3rem .4rem; border: 1px solid var(--line); border-radius: 4px; }
+.f-edit-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.2rem; margin: .2rem 0 .4rem; }
+.f-edit-grid input, .f-edit-grid textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: .85rem; padding: .35rem .45rem; border: 1px solid var(--line); border-radius: 8px; margin-top: .15rem; }
 .f-edit-blurb { grid-column: 1 / -1; }
 .f-edit-actions { display: flex; gap: .5rem; margin-top: .6rem; }
 
