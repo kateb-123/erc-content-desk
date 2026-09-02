@@ -14,5 +14,9 @@
     "@anthropic-ai/sdk": "^0.116.0",
     "mammoth": "^1.12.2",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "devDependencies": {
+    "pixelmatch": "^7.2.0",
+    "pngjs": "^7.0.0"
   }
 }
