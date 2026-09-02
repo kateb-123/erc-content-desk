@@ -257,6 +257,9 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .sort-edit { margin: .4rem 0 .8rem; display: grid; gap: .6rem; }
 .sort-edit-field { display: block; font-size: .85rem; color: var(--muted); }
 .sort-edit-field input, .sort-edit-field textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: .9rem; padding: .4rem .5rem; border: 1px solid var(--line); border-radius: 8px; margin-top: .2rem; }
+.img-upload { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; }
+.img-upload .btn-outline { font-size: .85rem; }
+.img-status { font-size: .85rem; color: var(--muted); display: inline-flex; align-items: center; gap: .5rem; }
 .sort-edit-actions { display: flex; gap: .6rem; }
 .sort-edit-actions button, .f-edit-actions button { font-size: .9rem; border-radius: var(--radius); }
 .sort-edit-actions .primary { padding: .45rem 1.2rem; }

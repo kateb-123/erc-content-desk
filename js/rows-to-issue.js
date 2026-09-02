@@ -40,6 +40,7 @@ function fieldsFor(row) {
   if (row.time) fields.time = row.time;
   if (row.location) fields.location = row.location;
   if (row.deadline) fields.meta = `Deadline: ${isoToDisplay(row.deadline)}`;
+  if (row.infographic) fields.image = row.infographic;
   return fields;
 }
 

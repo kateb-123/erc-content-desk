@@ -890,7 +890,7 @@ function buildAddItemPanel(iframe) {
 
   const eventFields = [field('Date', dateInput), field('Time', timeInput), field('Location', locationInput)];
   const oppFields = [field('Deadline', deadlineInput)];
-  const imageField = field('Picture', imageCtl.el);
+  const imageField = field('Media', imageCtl.el);
   const syncExtras = () => {
     const key = sectionSelect.value;
     const isEventy = key === 'events' || key === 'spotlight';
@@ -1069,8 +1069,8 @@ async function uploadItemImage(file, onStatus) {
     blob = await pdfFirstPageToPng(file);
     ext = 'png';
   }
-  if (!ext) throw new Error("That file isn't a picture — use a PNG, JPG, or PDF.");
-  if (blob.size > 2.5 * 1024 * 1024) throw new Error('That picture is too big — keep it under 2.5 MB.');
+  if (!ext) throw new Error("Use a PNG, JPG, or PDF.");
+  if (blob.size > 2.5 * 1024 * 1024) throw new Error('Too big — keep it under 2.5 MB.');
   onStatus('Uploading…');
   const b64 = await new Promise((resolve, reject) => {
     const r = new FileReader();
@@ -1103,12 +1103,12 @@ function buildImageControl(initial, onChange) {
   const removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'edit-card-revert';
-  removeBtn.textContent = 'Remove picture';
+  removeBtn.textContent = 'Remove media';
   const status = document.createElement('span');
   status.className = 'pull-status';
   let value = initial || '';
   const sync = () => {
-    pick.textContent = value ? 'Replace picture' : 'Upload picture';
+    pick.textContent = value ? 'Replace media' : 'Upload media';
     removeBtn.hidden = !value;
   };
   const setStatus = (msg, busy = false) => {
@@ -1191,7 +1191,7 @@ const FIELD_LABELS = {
   date: 'Date',
   name: 'Name',
   eyebrow: 'Label',
-  image: 'Picture',
+  image: 'Media',
 };
 
 /** Title-case a section key for the panel header (e.g. "spotlight" → "Spotlight"). */

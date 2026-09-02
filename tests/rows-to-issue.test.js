@@ -43,6 +43,19 @@ test('issueFromPicks places picked rows into their (possibly overridden) section
   assert.equal(issue.intro, 'Hi');
 });
 
+test('a row with an infographic carries it as the item picture', () => {
+  const rows = [pub({
+    id: 'erc-1', type: 'research', subtype: 'ERC Research', headline: 'ERC brief',
+    link: 'https://x.org', infographic: 'https://raw.example.org/img-1.png',
+  })];
+  const issue = issueFromPicks(rows, [{ id: 'erc-1', sectionKey: 'research' }], {});
+  assert.equal(issue.sections.research.items[0].fields.image, 'https://raw.example.org/img-1.png');
+  const bare = issueFromPicks(
+    [pub({ id: 'p', type: 'research', subtype: 'Report', headline: 'No picture' })],
+    [{ id: 'p', sectionKey: 'research' }], {});
+  assert.equal('image' in bare.sections.research.items[0].fields, false);
+});
+
 test('the ported template renders an issue built from picks', () => {
   const rows = [
     pub({

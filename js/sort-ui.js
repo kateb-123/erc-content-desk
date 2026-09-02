@@ -8,7 +8,8 @@ import { duplicateFlags, linkCheckState, reshareFlags } from './workflow.js';
 import { TYPE_ORDER, TYPE_LABELS, subtypesFor } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref, withScheme } from './links.js';
-import { sortStream, sortCounts, streamFrom, sectionOf } from './sort-view.js';
+import { sortStream, sortCounts, streamFrom, sectionOf, isErc } from './sort-view.js';
+import { buildImageControl } from './item-image.js';
 import { titleWithInfo } from './screen-info.js';
 import { faIcon, forwardIcon } from './icons.js';
 
@@ -146,13 +147,26 @@ export function renderSort(container, props) {
     const titleIn = mkField('Title', row.headline);
     const blurbIn = mkField('Description', row.blurb, 4);
     const linkIn = mkField('Link', row.link);
+    // ERC items can carry a picture (flyer, cover) — it rides the row's
+    // infographic column into the newsletter. A div, not a label: a label
+    // would forward stray clicks to the upload button.
+    let imgCtl = null;
+    if (isErc(row)) {
+      const wrap = el('div', 'sort-edit-field', 'Media');
+      imgCtl = buildImageControl(row.infographic, () => {});
+      wrap.append(imgCtl.el);
+      form.append(wrap);
+    }
     const rowBtns = el('div', 'sort-edit-actions');
     const save = el('button', 'primary', 'Save');
     save.type = 'button';
     save.addEventListener('click', () => {
       for (const x of card.querySelectorAll('button')) x.disabled = true;
       editOpenId = null;
-      props.onEditRow?.(row, { headline: titleIn.value.trim(), blurb: blurbIn.value, link: withScheme(linkIn.value.trim()) });
+      props.onEditRow?.(row, {
+        headline: titleIn.value.trim(), blurb: blurbIn.value, link: withScheme(linkIn.value.trim()),
+        ...(imgCtl ? { infographic: imgCtl.get() } : {}),
+      });
     });
     const cancel = el('button', 'btn-outline', 'Cancel');
     cancel.type = 'button';
