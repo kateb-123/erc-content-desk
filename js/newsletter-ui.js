@@ -120,7 +120,8 @@ export function renderNewsletter(container, props) {
 
   if (justSent) {
     const open = el('p', '');
-    const a = el('a', 'panel-link', 'Open the newsletter builder ↗');
+    // Same door clothes as every other onward door — slim primary.
+    const a = el('a', 'primary slim-door', 'Open the newsletter builder ↗');
     a.href = BUILDER_URL; a.target = '_blank'; a.rel = 'noreferrer';
     open.append(a);
     container.append(open);

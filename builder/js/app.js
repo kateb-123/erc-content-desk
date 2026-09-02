@@ -85,8 +85,14 @@ const scheduleSave = debounce(() => {
 
 const btnBack = document.getElementById('btn-back');
 const btnNext = document.getElementById('btn-next');
-const topBack = document.getElementById('top-back');
-const topNext = document.getElementById('top-next');
+
+/** Small Font Awesome glyph, same convention as the desk's faIcon(). */
+function faIcon(name) {
+  const i = document.createElement('i');
+  i.className = `fa-solid fa-${name}`;
+  i.setAttribute('aria-hidden', 'true');
+  return i;
+}
 
 /** @type {NodeListOf<HTMLElement>} */
 const stepSections = document.querySelectorAll('[data-step]');
@@ -136,13 +142,9 @@ function goTo(step) {
     );
   });
 
-  // Enable/disable nav controls (footer buttons + top links, kept in sync)
-  const atStart = idx === 0;
-  const atEnd = idx === STEPS.length - 1;
-  btnBack.disabled = atStart;
-  btnNext.disabled = atEnd;
-  topBack.disabled = atStart;
-  topNext.disabled = atEnd;
+  // Enable/disable the footer nav pair (the one Back/Next on the page)
+  btnBack.disabled = idx === 0;
+  btnNext.disabled = idx === STEPS.length - 1;
 
   // Step-specific render hooks
   if (step === 'review') renderReview();
@@ -165,8 +167,6 @@ function goNext() {
 }
 btnBack.addEventListener('click', goBack);
 btnNext.addEventListener('click', goNext);
-topBack.addEventListener('click', goBack);
-topNext.addEventListener('click', goNext);
 
 // Step indicators are clickable — jump straight to any step. Review is
 // always reachable; the later steps need a loaded issue.
@@ -288,7 +288,8 @@ function renderReview() {
   sideDoor.className = 'template-help';
   const pullBtn = document.createElement('button');
   pullBtn.type = 'button';
-  pullBtn.className = 'btn btn-secondary md-sidedoor-btn';
+  // The step's one real action — a filled primary, like the desk's Rewrite/Publish.
+  pullBtn.className = 'btn btn-primary md-sidedoor-btn';
   pullBtn.textContent = 'Pull from the desk';
   const pullStatus = document.createElement('span');
   pullStatus.className = 'pull-status';
@@ -509,7 +510,7 @@ function renderTriage() {
     if (isEmpty) {
       const note = document.createElement('span');
       note.className = 'triage-section-note';
-      note.textContent = '(empty in your file — nothing to show)';
+      note.textContent = '(nothing pulled for this section)';
       row.appendChild(note);
     }
 
@@ -573,7 +574,7 @@ function renderTriage() {
             const upBtn = document.createElement('button');
             upBtn.type = 'button';
             upBtn.className = 'triage-reorder-btn';
-            upBtn.textContent = '↑';
+            upBtn.append(faIcon('arrow-up'));
             upBtn.setAttribute('aria-label', `Move "${title}" up`);
             upBtn.disabled = grpIdx === 0;
             upBtn.addEventListener('click', () => {
@@ -589,7 +590,7 @@ function renderTriage() {
             const downBtn = document.createElement('button');
             downBtn.type = 'button';
             downBtn.className = 'triage-reorder-btn';
-            downBtn.textContent = '↓';
+            downBtn.append(faIcon('arrow-down'));
             downBtn.setAttribute('aria-label', `Move "${title}" down`);
             downBtn.disabled = grpIdx === bucketItems.length - 1;
             downBtn.addEventListener('click', () => {
@@ -636,14 +637,14 @@ function renderTriage() {
             reorderGroup.appendChild(downBtn);
             evRow.appendChild(reorderGroup);
 
-            // Delete this item from the issue (with Undo). Trims overflow without
-            // going back to the source .md.
+            // Remove this item from the issue (with Undo) — the desk's Remove:
+            // red quiet link with the trash icon, never a bare ✕.
             const delBtn = document.createElement('button');
             delBtn.type = 'button';
             delBtn.className = 'triage-delete-btn';
-            delBtn.textContent = '✕';
-            delBtn.setAttribute('aria-label', `Delete "${title}"`);
-            delBtn.title = 'Remove this item from the newsletter';
+            delBtn.append(faIcon('trash-can'), ' Remove');
+            delBtn.setAttribute('aria-label', `Remove "${title}" from the issue`);
+            delBtn.title = 'Removes this item from the issue';
             delBtn.addEventListener('click', () => deleteItemWithUndo(item.id, renderTriage));
             evRow.appendChild(delBtn);
 
@@ -1180,13 +1181,13 @@ function collectItemFields(doc, section, item) {
 /** Friendly sub-labels for known field keys (fallback: capitalized key). */
 const FIELD_LABELS = {
   title: 'Title',
-  url: 'Link URL',
+  url: 'Link',
   meta: 'Details',
-  summary: 'Summary',
+  summary: 'Description',
   description: 'Description',
   author: 'Author',
   authors: 'Authors',
-  intro: 'Intro',
+  intro: 'Introduction',
   date: 'Date',
   name: 'Name',
   eyebrow: 'Label',
@@ -1314,7 +1315,7 @@ function openItemEditor(refs, iframe) {
   const closeBtn = document.createElement('button');
   closeBtn.type = 'button';
   closeBtn.className = 'edit-card-close';
-  closeBtn.textContent = '✕';
+  closeBtn.append(faIcon('xmark'));
   closeBtn.setAttribute('aria-label', 'Close editor');
   closeBtn.addEventListener('click', () => closeCard(key));
   header.appendChild(closeBtn);
@@ -1374,7 +1375,7 @@ function openItemEditor(refs, iframe) {
   const revertBtn = document.createElement('button');
   revertBtn.type = 'button';
   revertBtn.className = 'edit-card-revert';
-  revertBtn.textContent = 'Revert to original';
+  revertBtn.append(faIcon('rotate-left'), ' Use original');
   revertBtn.addEventListener('click', () => {
     let reverted = 0;
     for (const f of fieldInputs) {
@@ -1402,7 +1403,7 @@ function openItemEditor(refs, iframe) {
     const delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.className = 'edit-card-delete';
-    delBtn.textContent = 'Delete item';
+    delBtn.append(faIcon('trash-can'), ' Delete');
     delBtn.addEventListener('click', () => {
       closeCard(key);
       deleteItemWithUndo(itemId, renderEdit);

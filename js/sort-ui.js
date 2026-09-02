@@ -118,13 +118,17 @@ export function renderSort(container, props) {
   const dupes = duplicateFlags(rows);
   const reshare = reshareFlags(rows, props.today ?? '');
   const badges = el('div');
-  if (row.spotlight_request) badges.append(el('span', 'badge badge-star', 'spotlight requested'));
-  // One badge, most informative first: a past newsletter share beats the dupe tiers.
+  if (row.spotlight_request) badges.append(el('span', 'badge badge-star', 'Spotlight requested'));
+  // One badge, most informative first: a past newsletter share beats the dupe
+  // tiers. Facts ("Already live", "In a past issue") wear the quiet ghost;
+  // "Possible duplicate" is the amber caution.
   if (reshare.has(row.id)) {
     badges.append(el('span', 'badge', 'In a past issue'));
   } else if (dupes.has(row.id)) {
     const prior = rows.find(r => r.id === dupes.get(row.id));
-    badges.append(el('span', 'badge badge-dupe', prior?.published_at ? 'Already live' : 'Possible duplicate'));
+    badges.append(prior?.published_at
+      ? el('span', 'badge', 'Already live')
+      : el('span', 'badge badge-dupe', 'Possible duplicate'));
   }
   card.append(badges);
   card.append(el('h3', '', row.headline || '(untitled)'));
@@ -186,7 +190,7 @@ export function renderSort(container, props) {
       typeLine.append(' ', flag);
     }
     if (!fixOpen) {
-      const change = el('button', 'linkish', 'change');
+      const change = el('button', 'linkish', 'Change');
       change.type = 'button';
       change.addEventListener('click', () => { fixOpenId = row.id; rerenderSelf(); });
       typeLine.append(' ', change);
@@ -197,7 +201,11 @@ export function renderSort(container, props) {
     const a = el('a', 'source-link', 'Open source ↗');
     a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
     typeLine.append(typeLine.childNodes.length ? ' · ' : '', a);
-    if (linkState === 'verified') typeLine.append(' ', el('span', 'link-verified', '✓ verified'));
+    if (linkState === 'verified') {
+      const ok = el('span', 'link-verified', ' Verified');
+      ok.prepend(faIcon('check'));
+      typeLine.append(' ', ok);
+    }
   }
   if (typeLine.childNodes.length) fileRow.append(typeLine);
 

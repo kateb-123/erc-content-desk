@@ -23,9 +23,10 @@ Canonical values. Mirrored in code at `css/styles.css` `:root` (desk) and
 | err | `#a32d2d` | destructive text/links (Delete, Remove) |
 | amber alert | bg `#fdf3d7`, text `#6b4e00` | needs-attention bubbles and alerts |
 
-Known drift (queued for cleanup): the builder's `--bp-ink` is `#131a21` (desk ink is
-`#1c2229`; the builder's `--bp-body` matches) and its `--bp-card-border` is `#dfe4ea`
-(desk line is `#dbdfe5`). New work uses the desk values.
+The builder's `--bp-*` tokens mirror these values (unified in the Sep 2, 2026
+uniformity pass — `--bp-ink`, `--bp-card-border`, and `--bp-input-border` all
+resolve to the desk values now). `#19608f` is the accent's HOVER shade only,
+never a resting color.
 
 Maroon `#500000` is FORBIDDEN in-app — it lives only in the newsletter email
 template and the public Exchange site.

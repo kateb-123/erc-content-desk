@@ -130,7 +130,11 @@ async function runRewrite() {
     // Nothing persists yet: the originals stay safe in the Sheet, the new
     // text lives in local rows, and each check decision saves its row —
     // /api/rewrite stays read-only, as its own header promises.
-    const byId = new Map(data.rewrites.map(r => [r.id, r.blurb]));
+    // Only the ids we asked for count: an extra id in the response would
+    // otherwise inflate the note and leave a zombie check that locks the
+    // Rewrite and Go to Publish buttons.
+    const wanted = new Set(ids);
+    const byId = new Map(data.rewrites.filter(r => wanted.has(r.id)).map(r => [r.id, r.blurb]));
     for (const [id] of byId) {
       state.rewriteReview.set(id, state.rows.find(r => r.id === id)?.blurb ?? '');
     }

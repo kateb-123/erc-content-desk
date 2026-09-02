@@ -5,19 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Past Newsletters — ERC Newsletter Builder</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karla:wght@400;600;700&family=Outfit:wght@600;700&display=swap" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
-    body { margin: 0; background: #f3f5f8; color: #1f2430; line-height: 1.5;
+    body { margin: 0; background: #fbfbfd; color: #1c2229; line-height: 1.5;
       font-family: Karla, "Segoe UI", Helvetica, Arial, sans-serif; }
     .wrap { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
     h1 { font-family: Outfit, "Segoe UI", sans-serif; font-size: 1.35rem; margin: 0 0 .25rem; }
-    .lede { color: #5a6270; margin: 0 0 1.5rem; }
+    .lede { color: #55606c; margin: 0 0 1.5rem; }
     a.back { color: #1d6ea5; text-decoration: none; font-weight: 600; }
-    ul { list-style: none; margin: 1.5rem 0 0; padding: 0; background: #fff; border: 1px solid #dfe2ea; border-radius: 12px; }
+    a.back .fa-solid { margin-right: .35rem; font-size: .85em; }
+    ul { list-style: none; margin: 1.5rem 0 0; padding: 0; background: #fff; border: 1px solid #dbdfe5; border-radius: 12px; }
     li { border-top: 1px solid #eef0f3; }
     li:first-child { border-top: none; }
-    li a { display: block; padding: .7rem 1rem; color: #1f2430; text-decoration: none; font-weight: 600; }
+    li a { display: block; padding: .7rem 1rem; color: #1c2229; text-decoration: none; font-weight: 600; }
     li a:hover { background: #f4f8fb; }
-    .empty { color: #5a6270; padding: 2rem; text-align: center; }
+    .empty { color: #55606c; padding: 2rem; text-align: center; }
     /* Sliding-dots loader — same as the builder/desk, desk blues. */
     .dots-loader { position: relative; height: 20px; width: 250px; margin: 2.5rem auto; }
     .dots-loader .dot { position: absolute; height: 20px; width: 20px; border-radius: 100%;
@@ -33,7 +35,7 @@
       45%, 65% { transform: translateX(230px); }
       95% { transform: translateX(0); }
     }
-    .dots-caption { text-align: center; color: #5a6270; padding-bottom: 2rem; }
+    .dots-caption { text-align: center; color: #55606c; padding-bottom: 2rem; }
     .dots-caption::after { content: ""; animation: dots-text 3s infinite; }
     @keyframes dots-text { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }
     @media (prefers-reduced-motion: reduce) {
@@ -43,7 +45,7 @@
 </head>
 <body>
   <div class="wrap">
-    <a class="back" href="./">← Back to the builder</a>
+    <a class="back" href="./"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to the builder</a>
     <h1 style="margin-top: 1rem;">Past newsletters</h1>
     <p class="lede">Every issue saved to the archive, newest first. Click one to read it.</p>
     <ul id="list"><li><div class="dots-loader" aria-hidden="true"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="dots-caption">Loading</div></li></ul>

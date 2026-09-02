@@ -157,7 +157,7 @@ export function detailBody(row, extra) {
 }
 
 const FIELD_TITLES = {
-  headline: 'Headline', date: 'Date', source: 'Source', topic: 'Topic',
+  headline: 'Title', date: 'Date', source: 'Source', topic: 'Topic',
   blurb: 'Description', deadline: 'Deadline', authors: 'Authors',
   time: 'Time', location: 'Location',
 };
@@ -187,7 +187,7 @@ function editBody(row, { onSave, onCancel }) {
     }
     onSave(row, changes);
   });
-  const cancel = el('button', '', 'Cancel');
+  const cancel = el('button', 'btn-outline', 'Cancel');
   cancel.type = 'button';
   cancel.addEventListener('click', onCancel);
   actions.append(save, cancel);
