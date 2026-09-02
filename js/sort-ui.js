@@ -289,8 +289,9 @@ export function renderSort(container, props) {
     undo.addEventListener('click', () => { undo.disabled = true; onUndo(); });
     card.append(undo);
   }
-  // Carousel: arrows flank the card, dots below track the position. Browsing
-  // never decides anything — the card only leaves via Keep / Circle / Trash.
+  // Carousel: arrows flank the card (the card's own 1/2 counter tracks the
+  // position). Browsing never decides anything — the card only leaves via
+  // Keep / Circle / Trash.
   const carousel = el('div', 'sort-carousel');
   const prev = el('button', 'carousel-arrow', '‹');
   prev.type = 'button';
@@ -304,17 +305,5 @@ export function renderSort(container, props) {
   next.addEventListener('click', () => onBrowse?.(idx + 1));
   carousel.append(prev, card, next);
   main.append(carousel);
-
-  if (groupCards.length > 1 && groupCards.length <= 15) {
-    const dots = el('div', 'carousel-dots');
-    for (const i of groupCards) {
-      const dot = el('button', `carousel-dot${i === idx ? ' is-current' : ''}`);
-      dot.type = 'button';
-      dot.setAttribute('aria-label', `${groupLabel} card ${groupCards.indexOf(i) + 1} of ${groupCards.length}`);
-      dot.addEventListener('click', () => onBrowse?.(i));
-      dots.append(dot);
-    }
-    main.append(dots);
-  }
 
 }
