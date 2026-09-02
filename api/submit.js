@@ -38,12 +38,19 @@ export default async function handler(req, res) {
   }
   try {
     const body = req.body ?? {};
-    for (const key of ['title', 'blurb', 'link', 'type', 'subtype', 'spotlight', 'submitter']) {
+    for (const key of ['title', 'blurb', 'link', 'type', 'subtype', 'spotlight', 'submitter', 'submitter_email', 'infographic']) {
       if (String(body[key] ?? '').length > MAX_FIELD_LENGTH) {
         return res.status(400).json({ ok: false, errors: ['That submission is too long.'] });
       }
     }
-    const errors = validateSubmission(body, { allowBlankSubtype: true });
+    // A body carrying submitter_email is the public page's — email required there.
+    const errors = validateSubmission(body, {
+      allowBlankSubtype: true, requireEmail: 'submitter_email' in body,
+    });
+    const media = String(body.infographic ?? '');
+    if (media && !media.startsWith('https://raw.githubusercontent.com/')) {
+      errors.push('That media upload did not come from this form.');
+    }
     if (errors.length) return res.status(400).json({ ok: false, errors });
 
     let row = buildSubmission({

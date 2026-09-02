@@ -107,3 +107,19 @@ test('buildSubmission fills a v2 row, trimmed and null-safe', () => {
   assert.equal(bare.headline, '');
   assert.equal(bare.spotlight_request, false);
 });
+
+test('external submissions: email required when asked, format checked, carried onto the row', () => {
+  const base = { link: 'https://x.org', submitter: 'Dana' };
+  assert.ok(validateSubmission({ ...base }, { allowBlankSubtype: true, requireEmail: true })
+    .includes('Add your email address.'));
+  assert.ok(validateSubmission({ ...base, submitter_email: 'not-an-email' }, { allowBlankSubtype: true })
+    .some(e => e.includes("email address doesn't look right")));
+  assert.equal(validateSubmission({ ...base, submitter_email: 'dana@bryanisd.org' },
+    { allowBlankSubtype: true, requireEmail: true }).length, 0);
+  const row = buildSubmission({
+    ...base, submitter_email: ' dana@bryanisd.org ', infographic: 'https://raw.githubusercontent.com/x/y/img.png',
+    id: 'x1', submittedAt: '2026-09-02T00:00:00Z',
+  });
+  assert.equal(row.submitter_email, 'dana@bryanisd.org');
+  assert.equal(row.infographic, 'https://raw.githubusercontent.com/x/y/img.png');
+});

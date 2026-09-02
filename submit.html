@@ -3,19 +3,189 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Share something — ERC Content Desk</title>
+  <title>Share something — ERC</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" />
-  <link rel="stylesheet" href="/css/styles.css?v=38" />
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* Public page — wears the ERC's outward maroon (the listserv sign-up's
+       look), deliberately NOT the internal desk theme. Self-contained. */
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: #f6f6f6;
+      color: #3E3E3E;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    .submit-card {
+      width: 100%;
+      max-width: 560px;
+      background: #fff;
+      border: 3px solid #500000;
+      box-shadow: 10px 10px 0 #500000;
+      padding: 28px 32px 36px;
+    }
+    h1 {
+      font-family: 'Work Sans', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #500000;
+      margin: 0 0 8px;
+    }
+    .lede { margin: 0 0 22px; }
+    .field-group { margin-bottom: 20px; }
+    .field-label {
+      font-family: 'Work Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      display: block;
+      margin-bottom: 7px;
+    }
+    .hint { font-weight: 400; font-size: 0.82rem; color: #767676; }
+    .field-input, textarea {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 0.95rem;
+      color: #3E3E3E;
+      width: 100%;
+      border: 1px solid #e2e2e2;
+      border-radius: 4px;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field-input:focus, textarea:focus {
+      border-color: #500000;
+      box-shadow: 0 0 0 3px rgba(80,0,0,0.08);
+    }
+    textarea { resize: vertical; }
+    fieldset { border: 0; padding: 0; margin: 0 0 20px; }
+    legend {
+      font-family: 'Work Sans', sans-serif;
+      font-weight: 600;
+      padding: 0;
+      margin-bottom: 7px;
+    }
+    .radio { display: block; margin: 4px 0; cursor: pointer; }
+    .radio input { accent-color: #500000; margin-right: 6px; }
+    /* Media control (shared js/item-image.js), dressed for this page */
+    .img-upload { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .img-upload .btn-outline {
+      font-family: 'Work Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #500000;
+      background: #fff;
+      border: 1px solid #500000;
+      border-radius: 4px;
+      padding: 8px 14px;
+      cursor: pointer;
+    }
+    .img-upload .btn-outline:hover { background: #fbf5f5; }
+    .linkish.skip-link {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 0.85rem;
+      color: #767676;
+      background: none;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .img-status { font-size: 0.85rem; color: #767676; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-submit {
+      display: block;
+      width: 100%;
+      max-width: 280px;
+      margin: 26px auto 0;
+      font-family: 'Work Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      background: #500000;
+      color: #fff;
+      border: 2px solid #500000;
+      border-radius: 6px;
+      padding: 14px 20px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-submit:hover:not(:disabled) { background: #3a0000; border-color: #3a0000; }
+    .status { margin: 12px 0 0; text-align: center; font-size: 0.9rem; min-height: 1.4em; }
+    .status-error { color: #c0392b; }
+    .status-ok { color: #500000; }
+    /* The sliding-dots loader, in maroons for this page */
+    .dots-loader { position: relative; height: var(--dl-s, 16px); width: var(--dl-w, 200px); margin: 0.8rem auto 0.3rem; }
+    .dots-loader .dot {
+      position: absolute; height: var(--dl-s, 16px); width: var(--dl-s, 16px);
+      border-radius: 100%; border: 2px solid #fff; box-sizing: border-box;
+      animation: dots-slide 3s ease-in-out infinite;
+    }
+    .dots-loader .dot:nth-child(1) { background: #e3c1c1; animation-delay: .5s; }
+    .dots-loader .dot:nth-child(2) { background: #c98f8f; animation-delay: .4s; }
+    .dots-loader .dot:nth-child(3) { background: #a95f5f; animation-delay: .3s; }
+    .dots-loader .dot:nth-child(4) { background: #8a3535; animation-delay: .2s; }
+    .dots-loader .dot:nth-child(5) { background: #6b1a1a; animation-delay: .1s; }
+    .dots-loader .dot:nth-child(6) { background: #500000; animation-delay: 0s; }
+    @keyframes dots-slide {
+      15% { transform: translateX(0); }
+      45%, 65% { transform: translateX(calc(var(--dl-w, 200px) - var(--dl-s, 16px))); }
+      95% { transform: translateX(0); }
+    }
+    .dots-mini { --dl-w: 90px; --dl-s: 10px; display: inline-block; vertical-align: middle; margin: 0 8px 0 0; }
+    .dots-text::after { content: ""; animation: dots-text 3s infinite; }
+    @keyframes dots-text { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }
+    /* Success state */
+    .done-title {
+      font-family: 'Work Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #500000;
+      margin: 0 0 10px;
+    }
+    .submit-done p { margin: 0 0 6px; }
+    .submit-done .draw-check { width: 20px; height: 20px; vertical-align: -4px; margin-right: 8px; color: #500000; }
+    .draw-check path { stroke-dasharray: 48; stroke-dashoffset: 48; animation: draw 0.35s ease-out forwards; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    .again-btn {
+      font-family: 'Work Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #500000;
+      background: #fff;
+      border: 1px solid #500000;
+      border-radius: 4px;
+      padding: 8px 14px;
+      margin-top: 14px;
+      cursor: pointer;
+    }
+    .again-btn:hover { background: #fbf5f5; }
+    .footer-logo { display: block; width: 220px; margin-top: 28px; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
 </head>
-<body class="submit-page">
-  <main class="card">
+<body>
+  <main class="submit-card">
     <h1>Share something with the ERC</h1>
-    <p class="lede">Events, research, opportunities, headlines — if it belongs in the newsletter or on the Policy Exchange, drop it here.</p>
+    <p class="lede">Events, research, opportunities — if it belongs in the ERC newsletter or on the Policy Exchange, share it here. The ERC team reviews everything before it is published.</p>
     <div id="submit-root"></div>
   </main>
-
-  <script type="module" src="/js/submit.js?v=10"></script>
+  <img src="/assets/erc-logo-maroon.png" alt="Texas A&amp;M University Education Research Center" class="footer-logo" />
+  <script type="module" src="/js/submit.js?v=11"></script>
 </body>
 </html>

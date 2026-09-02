@@ -10,10 +10,14 @@ import { isSafeLink } from './links.js';
 const s = v => String(v ?? '').trim();
 
 export function validateSubmission(
-  { title, blurb, link, type, subtype, submitter } = {},
-  { allowBlankSubtype = false } = {},
+  { title, blurb, link, type, subtype, submitter, submitter_email } = {},
+  { allowBlankSubtype = false, requireEmail = false } = {},
 ) {
   const errors = [];
+  if (requireEmail && !s(submitter_email)) errors.push('Add your email address.');
+  if (s(submitter_email) && !/^\S+@\S+\.\S+$/.test(s(submitter_email))) {
+    errors.push("That email address doesn't look right.");
+  }
   if (!s(link)) errors.push('Add a link.');
   else if (!isSafeLink(link)) errors.push('That link needs to be a normal web link (http or https).');
   if (s(type) && !isValidType(s(type))) errors.push('Pick a real type.');
@@ -26,7 +30,8 @@ export function validateSubmission(
 }
 
 export function buildSubmission({
-  title, blurb, link, type, subtype, spotlight, submitter, submittedAt, id,
+  title, blurb, link, type, subtype, spotlight, submitter, submitter_email,
+  infographic, submittedAt, id,
 } = {}) {
   return blankRow({
     id,
@@ -39,6 +44,8 @@ export function buildSubmission({
     subtype: s(subtype),
     spotlight_request: Boolean(spotlight),
     submitter: s(submitter),
+    submitter_email: s(submitter_email),
+    infographic: s(infographic),
     submitted_at: submittedAt,
   });
 }

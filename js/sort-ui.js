@@ -120,6 +120,7 @@ export function renderSort(container, props) {
   const reshare = reshareFlags(rows, props.today ?? '');
   const badges = el('div');
   if (row.spotlight_request) badges.append(el('span', 'badge badge-star', 'Spotlight requested'));
+  if (row.submitter_email) badges.append(el('span', 'badge', 'External submission'));
   // One badge, most informative first: a past newsletter share beats the dupe
   // tiers. Facts ("Already live", "In a past issue") wear the quiet ghost;
   // "Possible duplicate" is the amber caution.
@@ -177,7 +178,7 @@ export function renderSort(container, props) {
   }
   card.append(el('p', 'item-meta', [
     row.source, row.date && isoToDisplay(row.date), row.time, row.location,
-    row.submitter && `from ${row.submitter}`,
+    row.submitter && `from ${row.submitter}`, row.submitter_email,
   ].filter(Boolean).join(' · ')));
   if (row.blurb) card.append(el('p', 'item-blurb', row.blurb));
   if (row.note) card.append(el('p', 'item-note', `Note: ${row.note}`));

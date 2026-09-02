@@ -97,3 +97,7 @@ thing everywhere (see the vocabulary table).
 - No maroon in-app.
 - No hardcoded colors/radii where a token exists.
 - Nothing is "done" without a screenshot from the running sandbox.
+
+## The public /submit page
+
+Deliberately NOT the desk theme: it wears the ERC's outward maroon — the listserv sign-up's look (Work Sans/Open Sans, white card with the 3px #500000 border and hard offset shadow, uppercase maroon button) — because it faces the public alongside the newsletter and the hub. It never links into the desk. Uniformity audits should hold it against the sign-up page, not against the desk tokens.
