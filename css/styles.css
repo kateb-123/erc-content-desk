@@ -260,6 +260,13 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .finalize-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
 .finalize-head .lede { margin-bottom: .5rem; }
 .rewrite-status { font-size: .85rem; color: var(--muted); margin: 0 0 .75rem; }
+.f-rewrote-note { text-align: center; color: var(--muted); margin: .25rem 0 .5rem; }
+.f-check-carousel { justify-content: center; margin: 0 auto; }
+.f-rewrote-note { max-width: 700px; margin-left: auto; margin-right: auto; }
+.f-check-card { position: relative; }
+.f-see-all { margin: .6rem 0 0; }
+.p-fix-alert { background: #fdf3d7; color: #6b4e00; border-radius: 8px; padding: .6rem 1rem; margin: .75rem 0; font-size: .9rem; }
+.p-fix-alert .linkish { color: #6b4e00; font-weight: 600; text-decoration: underline; }
 .finalize-table tr.f-item { cursor: pointer; }
 .finalize-table tr.f-item:not(.is-open):hover td { background: rgba(29, 110, 165, 0.05); }
 .finalize-table tr.f-erc td { background: var(--tint); }

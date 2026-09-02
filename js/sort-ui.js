@@ -10,7 +10,7 @@ import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref } from './links.js';
 import { sortStream, sortCounts, streamFrom, sectionOf } from './sort-view.js';
 import { titleWithInfo } from './screen-info.js';
-import { forwardIcon } from './icons.js';
+import { faIcon, forwardIcon } from './icons.js';
 
 const FILTER_LABELS = [
   ['', 'All'], ['untyped', 'To review'], ['erc', 'ERC'], ['research', 'Research'],
@@ -54,7 +54,7 @@ export function renderSort(container, props) {
 
   const head = el('div', 'screen-head');
   const info = titleWithInfo('Sort', 'sort',
-    'Go card by card: Keep what belongs, Circle back on maybes, Trash the rest. The left menu jumps to a section; the arrows browse without deciding. A card with open work — no type, an unchecked link — locks its buttons until you fix it.');
+    'Go card by card: Keep what belongs, Circle back on maybes, Delete the rest. The left menu jumps to a section; the arrows browse without deciding. A card with open work — no type, an unchecked link — locks Keep until you fix it (Delete works any time).');
   head.append(info.row);
   const door = el('button', 'primary head-action', 'Go to Finalize');
   door.append(forwardIcon());
@@ -271,7 +271,8 @@ export function renderSort(container, props) {
   };
   const keepBtn = mk('Keep', 'btn-keep', 'keep');
   const circleBtn = mk('Circle back', 'btn-circle', 'circleback');
-  const trashBtn = mk('Trash', 'btn-trash', 'trash');
+  const trashBtn = mk(' Delete', 'btn-trash', 'trash');
+  trashBtn.prepend(faIcon('trash-can'));
   actions.append(keepBtn, circleBtn, trashBtn);
   card.append(actions);
 

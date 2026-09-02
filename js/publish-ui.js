@@ -145,19 +145,21 @@ export function renderPublish(container, props) {
   }
   // Silent dupe skip stays silent — the info panel says already-live items are skipped.
 
+  if (notReady.length) {
+    // Typing happens in Sort (the pill picker lives there) — an alert points the way.
+    const alert = el('div', 'p-fix-alert');
+    alert.append(`${notReady.length} kept item${notReady.length === 1 ? '' : 's'} still need${notReady.length === 1 ? 's' : ''} a type — `);
+    const jump = el('button', 'linkish', "fix in Sort's To review");
+    jump.type = 'button';
+    jump.addEventListener('click', () => onGoTo('sort'));
+    alert.append(jump);
+    container.append(alert);
+  }
+
   group(container, 'Adding', adding, { rerender, onGoTo });
   group(container, 'Newsletter only', held, {
     cls: 'p-held', rerender, onGoTo,
     hint: 'Spotlight events stay off the Exchange — webinars excepted.',
   });
-  if (notReady.length) {
-    // Typing happens in Sort (the pill picker lives there) — just point the way.
-    const fixLine = el('p', 'hint');
-    fixLine.append(`${notReady.length} kept item${notReady.length === 1 ? '' : 's'} still need${notReady.length === 1 ? 's' : ''} a type — `);
-    const jump = el('button', 'linkish', "fix in Sort's To review");
-    jump.type = 'button';
-    jump.addEventListener('click', () => onGoTo('sort'));
-    fixLine.append(jump);
-    container.append(fixLine);
-  }
+
 }

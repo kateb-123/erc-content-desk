@@ -10,7 +10,7 @@ import { readyToPublish, needsErcVoice } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
 import { isoToSlash } from './queue-view.js';
-import { dotsLoader, forwardIcon } from './icons.js';
+import { dotsLoader, faIcon, forwardIcon } from './icons.js';
 import { titleWithInfo } from './screen-info.js';
 
 const EDITABLE = ['headline', 'date', 'source', 'topic', 'blurb', 'deadline', 'authors', 'time', 'location'];
@@ -20,9 +20,10 @@ let sortState = { column: '', dir: 'asc' }; // '' = standing order (ERC first)
 let expanded = new Set();
 let editingId = null;
 let showAll = false; // stage 1 (just the rewrites) until Rewrite runs or she skips ahead
+let checkIdx = 0;    // which pending check card is in view (carousel)
 
 /** Arriving at Finalize always starts at stage 1 — "Show all" is a one-visit peek. */
-export function resetFinalizeEntry() { showAll = false; }
+export function resetFinalizeEntry() { showAll = false; checkIdx = 0; }
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -233,11 +234,13 @@ function itemRows(row, { tint, busy, rerender, onEditRow, onTrash }) {
       onCancel: () => { editingId = null; rerender(); },
     }));
   } else {
-    const edit = el('button', 'linkish', 'Edit fields');
+    const edit = el('button', 'linkish', ' Edit fields');
     edit.type = 'button';
+    edit.prepend(faIcon('pen'));
     edit.addEventListener('click', () => { editingId = row.id; rerender(); });
-    const bin = el('button', 'linkish trash-link', 'Trash item');
+    const bin = el('button', 'linkish trash-link', ' Delete');
     bin.type = 'button';
+    bin.prepend(faIcon('trash-can'));
     bin.addEventListener('click', () => { bin.disabled = true; onTrash(row); });
     const acts = el('span', 'f-detail-actions');
     acts.append(edit, ' · ', bin);
@@ -295,12 +298,14 @@ function checkCard(row, { old, onVerify, onRevert, onCheckEdit, onTrash, rerende
   }
   card.append(actions);
   const foot = el('div', 'f-check-foot');
-  const edit = el('button', 'linkish', 'Edit fields');
+  const edit = el('button', 'linkish', ' Edit fields');
   edit.type = 'button';
+  edit.prepend(faIcon('pen'));
   edit.addEventListener('click', () => { editingId = row.id; rerender(); });
   foot.append(edit);
-  const bin = el('button', 'linkish trash-link', 'Trash item');
+  const bin = el('button', 'linkish trash-link', ' Delete');
   bin.type = 'button';
+  bin.prepend(faIcon('trash-can'));
   bin.addEventListener('click', () => { lock(); bin.disabled = true; onTrash(row); });
   foot.append(bin);
   card.append(foot);
@@ -308,7 +313,7 @@ function checkCard(row, { old, onVerify, onRevert, onCheckEdit, onTrash, rerende
 }
 
 export function renderFinalize(container, props) {
-  const { rows, review, verified, reviewTotal, busy, onEditRow, onCheckEdit, onRewrite, onVerifyRewrite, onRevertRewrite, onTrash, onGoTo } = props;
+  const { rows, review, verified, reviewTotal, busy, rewroteNote, onEditRow, onCheckEdit, onRewrite, onVerifyRewrite, onRevertRewrite, onTrash, onGoTo } = props;
   const rerender = () => renderFinalize(container, props);
   container.replaceChildren();
   const keeps = readyToPublish(rows);
@@ -328,14 +333,9 @@ export function renderFinalize(container, props) {
   if (!keeps.length) {
     lede.textContent = 'No unpublished keeps right now.';
   } else if (stage1) {
-    lede.append('These need rewriting into ERC voice. ');
-    const all = el('button', 'linkish', 'Show all');
-    all.type = 'button';
-    all.addEventListener('click', () => { showAll = true; rerender(); });
-    lede.append(all);
+    lede.textContent = 'Rewrite these descriptions into ERC voice.';
   } else if (checks && !busy) {
-    const done = Math.max(0, (reviewTotal ?? checks) - checks);
-    lede.textContent = `Check the rewrites — ${done + 1} of ${reviewTotal ?? checks}`;
+    lede.textContent = 'Check the rewrites.';
   }
   // (No standing lede for the plain table — the info panel explains it.)
   lead.append(lede);
@@ -356,21 +356,41 @@ export function renderFinalize(container, props) {
   }
   container.append(head);
   if (busy) {
+    // The rows being rewritten step out of view while the writing runs.
     container.append(el('p', 'rewrite-status', `Writing ${pending.length} description${pending.length === 1 ? '' : 's'} in ERC voice…`));
     container.append(dotsLoader());
+    return;
   }
 
   if (!keeps.length) return;
 
-  // Check the rewrites one at a time; the table waits until every one is decided.
+  // The check queue is a carousel — flip through the cards freely; deciding
+  // one removes it and the view clamps to the next.
   if (checks && !busy) {
-    const next = sorted(keeps).find(r => review.has(r.id));
-    if (next) {
-      container.append(checkCard(next, {
+    const queue = sorted(keeps).filter(r => review.has(r.id));
+    if (queue.length) {
+      if (rewroteNote) container.append(el('p', 'f-rewrote-note', rewroteNote));
+      checkIdx = Math.max(0, Math.min(checkIdx, queue.length - 1));
+      const current = queue[checkIdx];
+      const card = checkCard(current, {
         onTrash,
-        old: review.get(next.id),
+        old: review.get(current.id),
         onVerify: onVerifyRewrite, onRevert: onRevertRewrite, onCheckEdit, rerender,
-      }));
+      });
+      card.append(el('span', 'card-pos', `${checkIdx + 1}/${queue.length}`));
+      const wrap = el('div', 'sort-carousel f-check-carousel');
+      const prev = el('button', 'carousel-arrow', '‹');
+      prev.type = 'button';
+      prev.disabled = checkIdx === 0;
+      prev.setAttribute('aria-label', 'Previous rewrite');
+      prev.addEventListener('click', () => { checkIdx -= 1; rerender(); });
+      const next = el('button', 'carousel-arrow', '›');
+      next.type = 'button';
+      next.disabled = checkIdx >= queue.length - 1;
+      next.setAttribute('aria-label', 'Next rewrite');
+      next.addEventListener('click', () => { checkIdx += 1; rerender(); });
+      wrap.append(prev, card, next);
+      container.append(wrap);
       return;
     }
   }
@@ -411,4 +431,11 @@ export function renderFinalize(container, props) {
   const scroll = el('div', 'table-scroll');
   scroll.append(table);
   container.append(scroll);
+
+  if (stage1) {
+    const all = el('button', 'linkish f-see-all', 'See all items');
+    all.type = 'button';
+    all.addEventListener('click', () => { showAll = true; rerender(); });
+    container.append(all);
+  }
 }

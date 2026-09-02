@@ -25,6 +25,7 @@ const state = {
   justSent: null,           // { count, issue, ids } from the last newsletter send (view state)
   publishPreview: null,
   hubUpdated: null,
+  rewroteNote: null,
 };
 
 const screens = Object.fromEntries(['home', 'sort', 'finalize', 'publish', 'build']
@@ -135,8 +136,8 @@ async function runRewrite() {
     }
     state.reviewTotal = state.rewriteReview.size;
     state.rows = state.rows.map(r => byId.has(r.id) ? { ...r, blurb: byId.get(r.id) } : r);
-    setStatus(data.warnings?.length ? data.warnings.join(' ')
-      : `Rewrote ${byId.size} description${byId.size === 1 ? '' : 's'} — check them one by one.`, 'ok');
+    state.rewroteNote = `Rewrote ${byId.size} description${byId.size === 1 ? '' : 's'} — check them one by one.`;
+    setStatus(data.warnings?.length ? data.warnings.join(' ') : '', data.warnings?.length ? 'note' : 'ok');
   } catch (err) {
     setStatus(err.message, 'error');
   }
@@ -278,7 +279,7 @@ export function render() {
   } else if (state.screen === 'finalize') {
     renderFinalize(screens.finalize, {
       ...common, review: state.rewriteReview, verified: state.verifiedIds,
-      reviewTotal: state.reviewTotal, busy: state.busy,
+      reviewTotal: state.reviewTotal, busy: state.busy, rewroteNote: state.rewroteNote,
       onEditRow: (row, changes) => persist([{ ...row, ...changes }]),
       onRewrite: runRewrite,
       // Every check decision stamps rewrite_checked so the state survives reload

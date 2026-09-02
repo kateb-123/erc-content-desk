@@ -19,12 +19,17 @@ export function checkSvg() {
   return svg;
 }
 
-/** Font Awesome forward arrow for the header door buttons (FA css loads via CDN). */
-export function forwardIcon() {
+/** A Font Awesome solid glyph (the FA css loads via CDN). */
+export function faIcon(name) {
   const i = document.createElement('i');
-  i.className = 'fa-solid fa-arrow-right';
+  i.className = `fa-solid fa-${name}`;
   i.setAttribute('aria-hidden', 'true');
   return i;
+}
+
+/** Forward arrow for the header door buttons. */
+export function forwardIcon() {
+  return faIcon('arrow-right');
 }
 
 export function dotsLoader(mini = false) {
