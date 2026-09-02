@@ -365,8 +365,10 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .home-form h2 { font-size: 1.1rem; margin: 0 0 .25rem; }
 .panel-link { border: none; background: none; padding: 0; color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: none; }
 
-/* The glance row: four one-line facts across the top. */
-.glance-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-top: 1.25rem; }
+/* The glance row: four one-line facts across the top. Flex-wrap so each card
+   keeps the width its text needs and drops to a new line when it can't. */
+.glance-row { display: flex; flex-wrap: wrap; gap: .75rem 1rem; margin-top: 1.25rem; }
+.glance-row > .glance-card { flex: 1 1 auto; }
 .glance-card {
   display: flex; align-items: center; justify-content: space-between; gap: .5rem;
   background: #fff; border: 1px solid var(--line); border-radius: 12px;
@@ -401,14 +403,8 @@ button.glance-card:hover:not(:disabled) { border-color: var(--accent); }
 .door-title { display: block; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; color: var(--accent); }
 .door-desc { display: block; font-size: .85rem; color: var(--muted); margin-top: .25rem; }
 
-@media (max-width: 640px) {
-  .glance-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
 @media (max-width: 720px) {
   .home-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 440px) {
-  .glance-row { grid-template-columns: 1fr; }
 }
 
 /* Queue table (bottom of Home) */
