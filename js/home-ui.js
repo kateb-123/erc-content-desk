@@ -56,8 +56,10 @@ export function renderHome(container, { rows, schedule, today, loaded, hubUpdate
     glance = el('div', 'glance-row');
     const grid = el('div', 'home-grid');
     const formSide = el('div', 'home-form card');
-    formSide.append(el('h2', '', 'Share something with the ERC'));
-    formSide.append(el('p', 'lede', 'Events, research, opportunities, headlines — if it belongs in the newsletter or on the Policy Exchange, drop it here.'));
+    // The team already knows what belongs here — the ask is for detail, not
+    // permission. (The public /submit page keeps the fuller framing.)
+    formSide.append(el('h2', '', 'Add to the queue'));
+    formSide.append(el('p', 'lede', 'Share whatever details you have.'));
     const mount = el('div');
     formSide.append(mount);
     renderSubmitForm(mount, { onSubmitted });
