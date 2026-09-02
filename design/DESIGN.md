@@ -66,6 +66,7 @@ look, everywhere it appears.
 | **Verify link ↗ → Confirm / Change** | `fa-triangle-exclamation` | amber bubble, one ask | open the source, then stamp it good or paste a new link |
 | **View info / Hide info** | — | accent toggle beside every screen/step title | opens the tinted instruction panel |
 | **Re-check** | — | linkish in Publish's lede | force a fresh hub check |
+| **Upload media** → Replace / Remove media | — | quiet outline button + muted Remove word | attach a picture or PDF flyer to an item (ERC cards in Sort; newsletter items in the builder) — the URL rides the row’s infographic column into the email |
 | Door buttons (Go to Finalize/Publish, Send to newsletter) | → `fa-arrow-right` | slim primary (.85rem, .35rem padding), right of the screen head | move along the pipeline |
 
 Placement grammar: tools (Edit) pair with Delete far LEFT of a card footer; the
