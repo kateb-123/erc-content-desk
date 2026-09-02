@@ -32,6 +32,16 @@ export async function readRepoFile(path) {
   return { text: Buffer.from(data.content, 'base64').toString('utf8'), sha: data.sha };
 }
 
+/** Commit already-base64 bytes (images) — new unique paths, so no sha dance. */
+export async function putRepoBinary(path, base64, message) {
+  const res = await fetch(contentsUrl(path), {
+    method: 'PUT',
+    headers: { ...ghHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, branch: branch(), content: base64 }),
+  });
+  if (!res.ok) throw new Error(`GitHub write failed: HTTP ${res.status}`);
+}
+
 export async function putRepoFile(path, text, sha, message) {
   const body = {
     message, branch: branch(),

@@ -44,6 +44,28 @@ const state = {
  * @param {number} wait - milliseconds
  * @returns {Function}
  */
+/** The desk's sliding-dots loader; mini = inline-sized for status rows. */
+function dotsLoader(mini = false) {
+  const wrap = document.createElement('div');
+  wrap.className = mini ? 'dots-loader dots-mini' : 'dots-loader';
+  wrap.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < 6; i += 1) {
+    wrap.append(Object.assign(document.createElement('span'), { className: 'dot' }));
+  }
+  return wrap;
+}
+
+/** "Pulling" + dots that type themselves — for busy status labels. */
+function loadingLabel(message) {
+  const frag = document.createDocumentFragment();
+  frag.append(message.replace(/…$/, ''));
+  const dots = document.createElement('span');
+  dots.className = 'dots-text';
+  dots.setAttribute('aria-hidden', 'true');
+  frag.append(dots);
+  return frag;
+}
+
 function debounce(fn, wait) {
   let timer;
   return (...args) => {
@@ -161,16 +183,43 @@ stepIndicators.forEach((ind) => {
 // __renderTriage exposed after function definition below
 
 
+/** The desk's header pattern, mirrored: bare title + "View info" toggle with
+ *  a tinted instruction panel. Open state survives re-renders per step. */
+const openStepInfo = new Set();
+function attachStepInfo(container, h2, key, text) {
+  const row = document.createElement('div');
+  row.className = 'title-row';
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'info-toggle';
+  const panel = document.createElement('div');
+  panel.className = 'info-panel';
+  panel.textContent = text;
+  const sync = () => {
+    panel.hidden = !openStepInfo.has(key);
+    toggle.textContent = openStepInfo.has(key) ? 'Hide info' : 'View info';
+  };
+  toggle.addEventListener('click', () => {
+    if (openStepInfo.has(key)) openStepInfo.delete(key);
+    else openStepInfo.add(key);
+    sync();
+  });
+  sync();
+  h2.replaceWith(row);
+  row.append(h2, toggle);
+  container.append(row, panel);
+}
+
 function renderReview() {
   const container = document.querySelector('[data-step="review"]');
   if (!container) return;
   const h2 = container.querySelector('h2');
   container.innerHTML = '';
-  if (h2) container.appendChild(h2);
-
-  const intro = document.createElement('p');
-  intro.textContent = 'Set the issue date, pull what the desk staged, and look it over. Pull again any time — only new items are added.';
-  container.appendChild(intro);
+  if (h2) {
+    container.appendChild(h2);
+    attachStepInfo(container, h2, 'review',
+      'Set the issue date, pull what the desk staged, and look it over. Pull again any time — only new items are added.');
+  }
 
   // ── Issue date: a dropdown of the desk's scheduled issues, with staged
   //    counts. The desk owns the schedule; the builder just picks from it. ──
@@ -244,12 +293,17 @@ function renderReview() {
   const pullStatus = document.createElement('span');
   pullStatus.className = 'pull-status';
   pullStatus.textContent = pullMessage;
-  const setPull = (msg) => { pullMessage = msg; pullStatus.textContent = msg; };
+  const setPull = (msg, busy = false) => {
+    pullMessage = msg;
+    if (busy && msg) pullStatus.replaceChildren(dotsLoader(true), loadingLabel(msg));
+    else pullStatus.textContent = msg;
+  };
   pullBtn.addEventListener('click', async () => {
     const iso = displayDateToISO(state.issue?.date || '');
     if (!iso) return setPull('Set the issue date first.');
     pullBtn.disabled = true;
-    setPull('Pulling…');
+    pullBtn.hidden = true;   // gone while pulling — no double-clicks
+    setPull('Pulling…', true);
     try {
       const res = await fetch(`${DESK_URL}/api/newsletter-pull?issue=${iso}`);
       const data = await res.json();
@@ -276,6 +330,7 @@ function renderReview() {
       setPull("Couldn't reach the desk — try again.");
     } finally {
       pullBtn.disabled = false;
+      pullBtn.hidden = false;
     }
   });
   sideDoor.appendChild(pullBtn);
@@ -415,7 +470,11 @@ function renderTriage() {
   // Clear existing content, keeping the h2
   const h2 = container.querySelector('h2');
   container.innerHTML = '';
-  if (h2) container.appendChild(h2);
+  if (h2) {
+    container.appendChild(h2);
+    attachStepInfo(container, h2, 'triage',
+      'Drag sections into order and switch them on or off — the issue builds in this order. Featured marks the lead item.');
+  }
 
   const issue = state.issue;
 
@@ -741,6 +800,17 @@ function buildIntroPanel(iframe) {
     refresh();
   });
   body.appendChild(editor.el);
+  const save = document.createElement('button');
+  save.type = 'button';
+  save.className = 'btn btn-primary intro-save-btn';
+  save.textContent = 'Save';
+  save.addEventListener('click', () => {
+    if (state.issue) saveState(state.issue);
+    refreshEditIframe(iframe);
+    save.textContent = 'Saved';
+    setTimeout(() => { save.textContent = 'Save'; }, 1500);
+  });
+  body.appendChild(save);
   details.appendChild(body);
   return details;
 }
@@ -815,14 +885,17 @@ function buildAddItemPanel(iframe) {
   const timeInput = textInput();
   const locationInput = textInput();
   const deadlineInput = textInput();
+  const imageCtl = buildImageControl('', () => {});
 
   const eventFields = [field('Date', dateInput), field('Time', timeInput), field('Location', locationInput)];
   const oppFields = [field('Deadline', deadlineInput)];
+  const imageField = field('Picture', imageCtl.el);
   const syncExtras = () => {
     const key = sectionSelect.value;
     const isEventy = key === 'events' || key === 'spotlight';
     for (const f of eventFields) f.hidden = !isEventy;
     for (const f of oppFields) f.hidden = key !== 'opportunities';
+    imageField.hidden = !IMAGE_SECTIONS.has(key);
   };
 
   const status = document.createElement('p');
@@ -846,6 +919,7 @@ function buildAddItemPanel(iframe) {
     if (!deadlineInput.parentElement.hidden && deadlineInput.value.trim()) {
       fields.meta = `Deadline: ${deadlineInput.value.trim()}`;
     }
+    if (!imageField.hidden && imageCtl.get()) fields.image = imageCtl.get();
     miscItemSeq += 1;
     const section = state.issue.sections[sectionSelect.value];
     const item = { id: `misc_${Date.now().toString(36)}_${miscItemSeq}`, group: groupSelect.value, fields };
@@ -860,6 +934,7 @@ function buildAddItemPanel(iframe) {
     scheduleSave();
     refreshEditIframe(iframe);
     for (const input of [titleInput, linkInput, summaryInput, dateInput, timeInput, locationInput, deadlineInput]) input.value = '';
+    imageCtl.set('');
     status.textContent = `Added to ${SECTION_REGISTRY.find((r) => r.key === sectionSelect.value)?.label}.`;
   });
 
@@ -870,6 +945,7 @@ function buildAddItemPanel(iframe) {
   body.appendChild(field('Summary', summaryInput));
   for (const f of eventFields) body.appendChild(f);
   for (const f of oppFields) body.appendChild(f);
+  body.appendChild(imageField);
   syncExtras();
   body.appendChild(addBtn);
   body.appendChild(status);
@@ -964,6 +1040,116 @@ function flashItem(doc, section, item) {
   setTimeout(() => els.forEach((el) => el.classList.remove('ec-edit-hover')), 600);
 }
 
+/** PDF flyers become a PNG in the browser (first page) so email clients can
+ *  show them — pdf.js loads lazily from the CDN only when a PDF arrives. */
+async function pdfFirstPageToPng(file) {
+  const pdfjs = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
+  pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+  const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+  const page = await doc.getPage(1);
+  const scale = 1200 / page.getViewport({ scale: 1 }).width;
+  const viewport = page.getViewport({ scale });
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(viewport.width);
+  canvas.height = Math.round(viewport.height);
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+  return new Promise((resolve, reject) =>
+    canvas.toBlob(b => (b ? resolve(b) : reject(new Error("Couldn't convert that PDF."))), 'image/png'));
+}
+
+const IMAGE_EXTS = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp' };
+
+/** Upload one picture (PNG/JPG/GIF/WebP, or a PDF's first page) → public URL. */
+async function uploadItemImage(file, onStatus) {
+  let blob = file;
+  let ext = IMAGE_EXTS[file.type];
+  if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
+    onStatus('Converting the PDF…');
+    blob = await pdfFirstPageToPng(file);
+    ext = 'png';
+  }
+  if (!ext) throw new Error("That file isn't a picture — use a PNG, JPG, or PDF.");
+  if (blob.size > 2.5 * 1024 * 1024) throw new Error('That picture is too big — keep it under 2.5 MB.');
+  onStatus('Uploading…');
+  const b64 = await new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1] ?? '');
+    r.onerror = () => reject(new Error("Couldn't read that file."));
+    r.readAsDataURL(blob);
+  });
+  const res = await fetch(`${DESK_URL}/api/newsletter-image`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: file.name, type: ext, file: b64 }),
+  });
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || 'upload failed');
+  return data.url;
+}
+
+/** The picture control: Upload (or Replace) + Remove; the value is a URL the
+ *  templates render. The button hides while a file is in flight. */
+function buildImageControl(initial, onChange) {
+  const wrap = document.createElement('div');
+  wrap.className = 'img-upload';
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.png,.jpg,.jpeg,.gif,.webp,.pdf';
+  fileInput.hidden = true;
+  const pick = document.createElement('button');
+  pick.type = 'button';
+  pick.className = 'btn btn-secondary';
+  const removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'edit-card-revert';
+  removeBtn.textContent = 'Remove picture';
+  const status = document.createElement('span');
+  status.className = 'pull-status';
+  let value = initial || '';
+  const sync = () => {
+    pick.textContent = value ? 'Replace picture' : 'Upload picture';
+    removeBtn.hidden = !value;
+  };
+  const setStatus = (msg, busy = false) => {
+    if (busy && msg) status.replaceChildren(dotsLoader(true), loadingLabel(msg));
+    else status.textContent = msg;
+  };
+  pick.addEventListener('click', () => fileInput.click());
+  removeBtn.addEventListener('click', () => {
+    value = '';
+    onChange('');
+    setStatus('');
+    sync();
+  });
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    pick.hidden = true;   // gone while uploading — no double-clicks
+    removeBtn.hidden = true;
+    try {
+      value = await uploadItemImage(file, msg => setStatus(msg, true));
+      onChange(value);
+      setStatus('Added.');
+    } catch (err) {
+      setStatus(err.message);
+    }
+    fileInput.value = '';
+    pick.hidden = false;
+    sync();
+  });
+  sync();
+  wrap.append(pick, removeBtn, status, fileInput);
+  return {
+    el: wrap,
+    get: () => value,
+    set: (v) => { value = v || ''; setStatus(''); sync(); },
+    focus: () => pick.focus(),
+  };
+}
+
+/** Sections whose templates render an item picture (bullet lists don't). */
+const IMAGE_SECTIONS = new Set(['research', 'spotlight', 'events', 'opportunities']);
+
 function collectItemFields(doc, section, item) {
   const nodes = collectItemNodes(doc, section, item);
 
@@ -983,6 +1169,11 @@ function collectItemFields(doc, section, item) {
     const ti = refs.findIndex((r) => r.field === 'title');
     refs.splice(ti + 1, 0, { section, item, field: 'url' });
   }
+  // Same move for an optional picture — sections that render one get the
+  // field even when it's empty, so a URL can be added from the card.
+  if (seen.has('title') && !seen.has('image') && IMAGE_SECTIONS.has(section)) {
+    refs.push({ section, item, field: 'image' });
+  }
   return refs;
 }
 
@@ -999,6 +1190,7 @@ const FIELD_LABELS = {
   date: 'Date',
   name: 'Name',
   eyebrow: 'Label',
+  image: 'Picture',
 };
 
 /** Title-case a section key for the panel header (e.g. "spotlight" → "Spotlight"). */
@@ -1069,10 +1261,12 @@ function buildRichEditor(initialMd, onChange) {
   };
   toolbar.appendChild(mkBtn('B', 'Bold', () => document.execCommand('bold')));
   toolbar.appendChild(mkBtn('I', 'Italic', () => document.execCommand('italic'), true));
-  toolbar.appendChild(mkBtn('🔗', 'Add link', () => {
+  const linkBtn = mkBtn('', 'Add link', () => {
     const url = window.prompt('Link URL:');
     if (url) document.execCommand('createLink', false, url);
-  }));
+  });
+  linkBtn.innerHTML = '<i class="fa-solid fa-link" aria-hidden="true"></i>';
+  toolbar.appendChild(linkBtn);
 
   editable.addEventListener('input', emit);
 
@@ -1145,7 +1339,12 @@ function openItemEditor(refs, iframe) {
       debouncedPreview();
     };
 
-    if (isLong) {
+    if (ref.field === 'image') {
+      const ctl = buildImageControl(getField(state.issue, ref) ?? '', onEdit);
+      group.appendChild(ctl.el);
+      card.appendChild(group);
+      fieldInputs.push({ ref, get: ctl.get, set: ctl.set, focus: ctl.focus });
+    } else if (isLong) {
       // Prose fields get a WYSIWYG editor (bold / italic / link) that stores
       // markdown. Live-renders as the newsletter does (via renderProse).
       const rich = buildRichEditor(getField(state.issue, ref) ?? '', onEdit);
@@ -1410,7 +1609,11 @@ function renderEdit() {
 
   const h2 = container.querySelector('h2');
   container.innerHTML = '';
-  if (h2) container.appendChild(h2);
+  if (h2) {
+    container.appendChild(h2);
+    attachStepInfo(container, h2, 'edit',
+      'Click any text in the preview to edit it in a card on the right. The rail also holds the introduction, a one-off Add an item door, and reordering.');
+  }
 
   if (!state.issue) {
     const msg = document.createElement('p');
@@ -1510,7 +1713,7 @@ function renderEdit() {
 
   const emptyHint = document.createElement('div');
   emptyHint.className = 'edit-column-empty';
-  emptyHint.textContent = 'Click any part of the newsletter to edit it.';
+  emptyHint.textContent = 'Click any text in the preview on the left — it opens here to edit.';
 
   column.appendChild(colHeader);
   column.appendChild(cardList);
@@ -1672,7 +1875,11 @@ function renderExport() {
 
   const h2 = container.querySelector('h2');
   container.innerHTML = '';
-  if (h2) container.appendChild(h2);
+  if (h2) {
+    container.appendChild(h2);
+    attachStepInfo(container, h2, 'export',
+      'Copy the finished HTML for Outlook, save the issue to the archive, or download the file. Copy HTML is the one Outlook needs.');
+  }
 
   if (!state.issue) {
     const msg = document.createElement('p');
@@ -1716,7 +1923,11 @@ function renderExport() {
     const iso = displayDateToISO(state.issue?.date || '');
     if (!iso) { showExportToast(container, 'Set the issue date on Review first.', 'error'); return; }
     archiveBtn.disabled = true;
-    archiveBtn.textContent = 'Saving…';
+    archiveBtn.hidden = true;   // gone while saving — no double-clicks
+    const saveStatus = document.createElement('span');
+    saveStatus.className = 'pull-status';
+    saveStatus.append(dotsLoader(true), loadingLabel('Saving…'));
+    archiveBtn.after(saveStatus);
     try {
       const res = await fetch(`${DESK_URL}/api/newsletter-archive`, {
         method: 'POST',
@@ -1730,8 +1941,9 @@ function renderExport() {
     } catch (err) {
       showExportToast(container, err.message || "Couldn't save to the archive.", 'error');
     } finally {
+      saveStatus.remove();
       archiveBtn.disabled = false;
-      archiveBtn.textContent = 'Save to the archive';
+      archiveBtn.hidden = false;
     }
   });
 

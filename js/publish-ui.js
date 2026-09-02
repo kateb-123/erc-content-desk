@@ -8,7 +8,8 @@ import { readyToPublish } from './workflow.js';
 import { TYPE_LABELS } from './schema.js';
 import { isoToSlash } from './queue-view.js';
 import { detailBody, chevron } from './finalize-ui.js';
-import { checkSvg, gooLoader } from './icons.js';
+import { checkSvg, dotsLoader, forwardIcon } from './icons.js';
+import { titleWithInfo } from './screen-info.js';
 
 // View state only — resets on reload, never persisted.
 let expanded = new Set();
@@ -90,11 +91,12 @@ export function renderPublish(container, props) {
   const adding = pick(preview?.adding);
   const held = pick(preview?.newsletterOnly);
   const notReady = pick(preview?.notReady);
-  const skipped = pick(preview?.skipped);
 
   const head = el('div', 'screen-head finalize-head');
   const lead = el('div');
-  lead.append(el('h2', '', 'Publish'));
+  const info = titleWithInfo('Publish to Exchange', 'publish',
+    'Everything here was checked against the live Exchange on arrival. Publish sends the Adding group to the site; newsletter-only items stay held for the issue, and anything already live is skipped.');
+  lead.append(info.row, info.panel);
   const lede = el('p', 'lede');
   if (justPublished) {
     const icon = checkSvg();
@@ -115,13 +117,20 @@ export function renderPublish(container, props) {
   head.append(lead);
 
   if (justPublished || (!candidates.length && !busy)) {
-    const btn = el('button', 'primary', 'Send to newsletter');
+    const btn = el('button', 'primary head-action', 'Send to newsletter');
+    btn.append(forwardIcon());
     btn.addEventListener('click', () => onGoTo('build'));
     head.append(btn);
-  } else if (preview) {
-    const btn = el('button', 'primary', busy ? 'Publishing…' : `Publish ${adding.length} to the Exchange`);
-    btn.disabled = busy || !adding.length;
+  } else if (preview && !busy && adding.length) {
+    // The button disappears while publishing — the status loader takes over.
+    const btn = el('button', 'primary', `Publish ${adding.length} to the Exchange`);
     btn.addEventListener('click', () => { btn.disabled = true; onPublish(); });
+    head.append(btn);
+  } else if (preview && !busy) {
+    // Nothing to add — the only move left is the newsletter door.
+    const btn = el('button', 'primary head-action', 'Send to newsletter');
+    btn.append(forwardIcon());
+    btn.addEventListener('click', () => onGoTo('build'));
     head.append(btn);
   }
   container.append(head);
@@ -131,12 +140,10 @@ export function renderPublish(container, props) {
 
   if (busy && !preview) {
     container.append(el('p', 'rewrite-status', 'Reading the live news.csv so nothing gets overwritten or duplicated…'));
-    container.append(gooLoader());
+    container.append(dotsLoader());
     return;
   }
-  if (preview && skipped.length) {
-    container.append(el('p', 'hint', `Skipping ${skipped.length} already on the Exchange.`));
-  }
+  // Silent dupe skip stays silent — the info panel says already-live items are skipped.
 
   group(container, 'Adding', adding, { rerender, onGoTo });
   group(container, 'Newsletter only', held, {

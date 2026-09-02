@@ -5,6 +5,7 @@
  * default. Send stamps them with the issue date; they drain from the desk
  * and the builder pulls them from here. No .md, no export.
  */
+import { titleWithInfo } from './screen-info.js';
 import { buildPool, newsletterOnly, reshareFlags } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
@@ -83,7 +84,9 @@ export function renderNewsletter(container, props) {
 
   const head = el('div', 'screen-head finalize-head');
   const lead = el('div');
-  lead.append(el('h2', '', 'Newsletter'));
+  const info = titleWithInfo('Send to Newsletter', 'build',
+    'Pick items for the issue and send them — they leave the desk and wait in the newsletter builder. Change your mind later with Pull back. A "was in a past issue" note is just a heads-up, never a block.');
+  lead.append(info.row, info.panel);
   const lede = el('p', 'lede');
   if (justSent) {
     lede.append(`Sent ${justSent.count} to the ${issueLabel(justSent.issue)} issue — the builder pulls them from here. `);
@@ -100,11 +103,11 @@ export function renderNewsletter(container, props) {
   }
   lead.append(lede);
   head.append(lead);
-  if (!justSent && pool.length) {
-    const btn = el('button', 'primary', busy ? 'Sending…'
-      : selected.length ? `Send ${selected.length} to the ${issueLabel(issue)} issue`
+  if (!justSent && pool.length && !busy) {
+    const btn = el('button', 'primary', selected.length
+      ? `Send ${selected.length} to the ${issueLabel(issue)} issue`
       : `Send to the ${issueLabel(issue)} issue`);
-    btn.disabled = busy || !selected.length || !issue;
+    btn.disabled = !selected.length || !issue;
     btn.addEventListener('click', () => { btn.disabled = true; onSend(selected, issue); });
     head.append(btn);
   }

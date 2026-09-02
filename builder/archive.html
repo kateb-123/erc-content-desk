@@ -18,6 +18,27 @@
     li a { display: block; padding: .7rem 1rem; color: #1f2430; text-decoration: none; font-weight: 600; }
     li a:hover { background: #f4f8fb; }
     .empty { color: #5a6270; padding: 2rem; text-align: center; }
+    /* Sliding-dots loader — same as the builder/desk, desk blues. */
+    .dots-loader { position: relative; height: 20px; width: 250px; margin: 2.5rem auto; }
+    .dots-loader .dot { position: absolute; height: 20px; width: 20px; border-radius: 100%;
+      border: 2px solid #fff; box-sizing: border-box; animation: dots-slide 3s ease-in-out infinite; }
+    .dots-loader .dot:nth-child(1) { background: #9ec9e8; animation-delay: .5s; }
+    .dots-loader .dot:nth-child(2) { background: #63a3cd; animation-delay: .4s; }
+    .dots-loader .dot:nth-child(3) { background: #4a8cbf; animation-delay: .3s; }
+    .dots-loader .dot:nth-child(4) { background: #1d6ea5; animation-delay: .2s; }
+    .dots-loader .dot:nth-child(5) { background: #19608f; animation-delay: .1s; }
+    .dots-loader .dot:nth-child(6) { background: #14507a; animation-delay: 0s; }
+    @keyframes dots-slide {
+      15% { transform: translateX(0); }
+      45%, 65% { transform: translateX(230px); }
+      95% { transform: translateX(0); }
+    }
+    .dots-caption { text-align: center; color: #5a6270; padding-bottom: 2rem; }
+    .dots-caption::after { content: ""; animation: dots-text 3s infinite; }
+    @keyframes dots-text { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }
+    @media (prefers-reduced-motion: reduce) {
+      .dots-loader .dot, .dots-caption::after { animation: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -25,7 +46,7 @@
     <a class="back" href="./">← Back to the builder</a>
     <h1 style="margin-top: 1rem;">Past newsletters</h1>
     <p class="lede">Every issue saved to the archive, newest first. Click one to read it.</p>
-    <ul id="list"><li><span class="empty">Loading…</span></li></ul>
+    <ul id="list"><li><div class="dots-loader" aria-hidden="true"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="dots-caption">Loading</div></li></ul>
   </div>
   <script>
     fetch('newsletters/index.json', { cache: 'no-store' })

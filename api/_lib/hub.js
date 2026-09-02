@@ -5,7 +5,8 @@
  * the two network calls at the bottom.
  */
 import { CSV_COLUMNS } from '../../js/schema.js';
-import { hubRowLine } from '../../js/hub-csv.js';
+import { hubRowLine, parseCsv } from '../../js/hub-csv.js';
+export { parseCsv };
 
 function repo() { return process.env.HUB_REPO || 'kateb-123/erc-policy-exchange'; }
 function csvPath() { return process.env.HUB_CSV_PATH || 'data/news.csv'; }
@@ -14,27 +15,6 @@ function token() {
   const t = process.env.GITHUB_TOKEN;
   if (!t) throw new Error('GITHUB_TOKEN must be set');
   return t;
-}
-
-export function parseCsv(text) {
-  const rows = [];
-  let row = [], cell = '', inQuotes = false;
-  const src = String(text ?? '');
-  for (let i = 0; i < src.length; i += 1) {
-    const ch = src[i];
-    if (inQuotes) {
-      if (ch === '"' && src[i + 1] === '"') { cell += '"'; i += 1; }
-      else if (ch === '"') inQuotes = false;
-      else cell += ch;
-    } else if (ch === '"') inQuotes = true;
-    else if (ch === ',') { row.push(cell); cell = ''; }
-    else if (ch === '\n' || ch === '\r') {
-      if (ch === '\r' && src[i + 1] === '\n') i += 1;
-      row.push(cell); rows.push(row); row = []; cell = '';
-    } else cell += ch;
-  }
-  if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
-  return rows.filter(r => r.some(c => c !== ''));
 }
 
 export function csvLinks(text) {

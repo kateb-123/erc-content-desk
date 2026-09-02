@@ -63,6 +63,14 @@ export function renderProse(text) {
  * Omits data-edit-item when itemId is null/undefined (intro case).
  * All attribute VALUES are esc()'d.
  */
+/** Optional item picture — renders only with a safe http(s) URL; clicking it
+ *  in the edit preview opens the item's card at the Image URL field. */
+function itemImage(fields, sectionKey, itemId, editable) {
+  const src = safeItemHref(fields.image);
+  if (!src) return '';
+  return `<img src="${esc(src)}" alt="" style="width:100%; max-width:100%; height:auto; display:block; border:0; border-radius:4px; margin:8px 0 0;"${editAttrs(sectionKey, itemId, 'image', editable)}>`;
+}
+
 function editAttrs(section, itemId, field, editable) {
   if (!editable) return '';
   const secAttr = ` data-edit-section="${esc(section)}"`;
@@ -142,6 +150,7 @@ function buildBriefs(sec, editable = false) {
 <p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${fields.authors ? `<p style="margin:0 0 8px; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs('research', item.id, 'authors', editable)}>${esc(fields.authors)}</p>` : ''}
 ${fields.summary ? `<p style="margin:0; line-height: 1.5; font-family: ${FONT_BODY}; font-size: 14px; color: #404040;"${editAttrs('research', item.id, 'summary', editable)}>${renderProse(fields.summary)}</p>` : ''}
+${itemImage(fields, 'research', item.id, editable)}
 </td></tr>`;
       if (i < items.length - 1) rows += DIVIDER;
     });
@@ -239,6 +248,7 @@ function buildGroupedList(secReg, sec, editable = false) {
 <p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${metaLine}
 ${descLine}
+${itemImage(fields, sectionKey, item.id, editable)}
 </td></tr>`;
         if (needsItemDivider) {
           rows += `<tr><td style="padding: 14px 24px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
@@ -247,6 +257,7 @@ ${descLine}
         rows += `<tr><td style="padding: ${topPad} 24px 0 40px;">
 <p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${oppMeta}
+${itemImage(fields, sectionKey, item.id, editable)}
 </td></tr>`;
       }
     });
@@ -417,6 +428,7 @@ function buildSpotlight(secReg, sec, editable = false) {
 <p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${metaLine}
 ${summaryLine}
+${itemImage(fields, 'spotlight', item.id, editable)}
 </td></tr>`;
 
         if (i < items.length - 1) {

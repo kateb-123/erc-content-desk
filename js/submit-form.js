@@ -12,7 +12,7 @@ export function pickType(selection, type) {
 }
 import { validateSubmission } from './intake.js';
 import { withScheme } from './links.js';
-import { checkSvg } from './icons.js';
+import { checkSvg, dotsLoader, loadingLabel } from './icons.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -22,8 +22,12 @@ function el(tag, className, text) {
 }
 
 function show(target, message, kind) {
-  target.textContent = message;
   target.className = `status status-${kind}`;
+  if (kind === 'busy' && message) {
+    target.replaceChildren(dotsLoader(), loadingLabel(message));
+  } else {
+    target.textContent = message;
+  }
 }
 
 async function postSubmission(body) {
@@ -65,6 +69,7 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
         <span class="hint">.docx, .md, .txt, .xlsx, .csv — items are shown for review before anything is saved</span>
         <input class="bulk-file" type="file" accept=".docx,.md,.txt,.xlsx,.csv" hidden>
       </label>
+      <p class="bulk-templates">Need a starting point? <a href="/templates/erc-upload-template.docx" download>Word template</a> · <a href="/templates/erc-upload-template.xlsx" download>Spreadsheet template</a></p>
       <div class="bulk-review" hidden>
         <div class="bulk-items"></div>
         <button type="button" class="primary bulk-confirm-btn">Add all to the queue</button>
@@ -152,6 +157,7 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
     if (errors.length) return show(statusEl, errors.join(' '), 'error');
     const btn = form.querySelector('.submit-btn');
     btn.disabled = true;
+    btn.hidden = true;   // gone while sending — no double-clicks
     show(statusEl, 'Sending…', 'busy');
     try {
       const data = await postSubmission(body);
@@ -169,6 +175,7 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
         ? "Couldn't reach the server. Check your connection." : err.message, 'error');
     } finally {
       btn.disabled = false;
+      btn.hidden = false;
     }
   });
 
@@ -271,7 +278,7 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
       bulkOpen.clear();
       renderBulkReview(true);
       bulkReview.hidden = false;
-      show(bulkStatus, (data.warnings ?? []).join(' '), 'busy');
+      show(bulkStatus, (data.warnings ?? []).join(' '), 'note');
     } catch (err) {
       show(bulkStatus, err instanceof TypeError
         ? "Couldn't reach the server. Check your connection." : err.message, 'error');
@@ -296,6 +303,7 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
 
   container.querySelector('.bulk-confirm-btn').addEventListener('click', async event => {
     event.target.disabled = true;
+    event.target.hidden = true;   // gone while adding — no double-clicks
     const submitter = form.querySelector('#sf-submitter').value.trim() || 'bulk upload';
     let saved = 0;
     const failures = [];
@@ -325,5 +333,6 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
       : `Added all ${saved} to the queue ✓`, failures.length ? 'error' : 'ok');
     if (saved) onSubmitted?.();
     event.target.disabled = false;
+    event.target.hidden = false;
   });
 }

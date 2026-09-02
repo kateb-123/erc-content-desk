@@ -45,6 +45,8 @@ export function buildBulkPrompt(text) {
     'a type and subtype from this vocabulary (or "" when unsure):',
     vocab,
     'and original_text = that item\'s chunk of the document, verbatim (do not paraphrase it).',
+    'A section heading like "Events" or "Opportunities" sets the type for every item under it,',
+    'even when the items themselves do not repeat it.',
     'Skip headers, dividers, and empty scaffolding. Never merge two items into one.',
     'Document:',
     '---',

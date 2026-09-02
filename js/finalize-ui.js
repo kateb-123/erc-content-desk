@@ -10,7 +10,8 @@ import { readyToPublish, needsErcVoice } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
 import { isoToSlash } from './queue-view.js';
-import { gooLoader } from './icons.js';
+import { dotsLoader, forwardIcon } from './icons.js';
+import { titleWithInfo } from './screen-info.js';
 
 const EDITABLE = ['headline', 'date', 'source', 'topic', 'blurb', 'deadline', 'authors', 'time', 'location'];
 
@@ -276,14 +277,15 @@ function checkCard(row, { old, onVerify, onRevert, onCheckEdit, rerender }) {
   }
 
   const actions = el('div', 'f-verify-actions');
+  const lock = () => { for (const b of actions.querySelectorAll('button')) b.disabled = true; };
   const ok = el('button', 'primary', 'Looks good');
   ok.type = 'button';
-  ok.addEventListener('click', () => { ok.disabled = true; onVerify(row.id); });
+  ok.addEventListener('click', () => { lock(); onVerify(row.id); });
   actions.append(ok);
   if (old) {
     const revert = el('button', '', 'Keep the original');
     revert.type = 'button';
-    revert.addEventListener('click', () => { revert.disabled = true; onRevert(row); });
+    revert.addEventListener('click', () => { lock(); onRevert(row); });
     actions.append(revert);
   }
   card.append(actions);
@@ -308,7 +310,9 @@ export function renderFinalize(container, props) {
 
   const head = el('div', 'screen-head finalize-head');
   const lead = el('div');
-  lead.append(el('h2', '', 'Finalize'));
+  const info = titleWithInfo('Finalize', 'finalize',
+    'Rewrite pending descriptions into ERC voice, then check each one — Looks good saves it, Keep the original leaves the Sheet untouched. After the checks, look over the table (click a row for details) and go to Publish.');
+  lead.append(info.row, info.panel);
   const lede = el('p', 'lede');
   if (!keeps.length) {
     lede.textContent = 'No unpublished keeps right now.';
@@ -321,30 +325,28 @@ export function renderFinalize(container, props) {
   } else if (checks && !busy) {
     const done = Math.max(0, (reviewTotal ?? checks) - checks);
     lede.textContent = `Check the rewrites — ${done + 1} of ${reviewTotal ?? checks}`;
-  } else {
-    lede.textContent = `${keeps.length} kept · ERC first · click a row for details`;
   }
+  // (No standing lede for the plain table — the info panel explains it.)
   lead.append(lede);
   head.append(lead);
-  if (busy) {
-    const btn = el('button', 'primary', 'Rewriting…');
-    btn.disabled = true;
-    head.append(btn);
-  } else if (pending.length && !checks) {
+  // While rewriting the button is gone entirely — the dots loader below is the signal,
+  // and nothing here can be clicked twice (Kate, Sep 1).
+  if (!busy && pending.length && !checks) {
     // While a check queue is open, the queue is the only action — a second
     // Rewrite here would re-run rows mid-review.
     const btn = el('button', 'primary', `Rewrite ${pending.length} description${pending.length === 1 ? '' : 's'}`);
     btn.addEventListener('click', () => { btn.disabled = true; onRewrite(); });
     head.append(btn);
-  } else if (keeps.length && !checks) {
-    const btn = el('button', 'primary', 'Go to Publish');
+  } else if (!busy && keeps.length && !checks) {
+    const btn = el('button', 'primary head-action', 'Go to Publish');
+    btn.append(forwardIcon());
     btn.addEventListener('click', () => onGoTo('publish'));
     head.append(btn);
   }
   container.append(head);
   if (busy) {
     container.append(el('p', 'rewrite-status', `Writing ${pending.length} description${pending.length === 1 ? '' : 's'} in ERC voice…`));
-    container.append(gooLoader());
+    container.append(dotsLoader());
   }
 
   if (!keeps.length) return;

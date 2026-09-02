@@ -42,7 +42,7 @@
   --bp-muted: #55606c;
   --bp-faint: #76828f;
   --bp-ghost: #a7b1bc;
-  --bp-page: #f3f5f8;
+  --bp-page: #fbfbfd;
   --bp-card-border: #dfe4ea;
   --bp-line: #dbdfe5;
   --bp-hairline: #eef1f5;
@@ -217,11 +217,18 @@ body {
 
 .wizard-step h2 {
   font-family: var(--bp-heading-font);
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 1.35rem;
+  font-weight: 700;
   color: var(--bp-ink);
-  margin: 0 0 10px;
+  margin: 0;
 }
+/* The desk's header info pattern, shared verbatim. */
+.title-row { display: flex; align-items: baseline; gap: .9rem; margin: 0 0 10px; }
+.info-toggle { border: none; background: none; padding: 0; font: inherit; font-weight: 600; font-size: .85rem; color: var(--bp-primary); cursor: pointer; }
+.info-toggle:hover { text-decoration: underline; }
+.info-panel { background: var(--bp-primary-tint, #eaf2f8); border-radius: 8px; padding: .7rem 1rem; margin: 0 0 .9rem; font-size: .9rem; color: #2b4a61; max-width: 46rem; }
+.btn .fa-arrow-right, .linknav .fa-arrow-right { margin-left: .35rem; font-size: .85em; }
+.btn .fa-arrow-left, .linknav .fa-arrow-left { margin-right: .35rem; font-size: .85em; }
 
 .wizard-step > p:first-of-type {
   color: var(--bp-muted);
@@ -932,7 +939,8 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   background: #E7EAFF;
 }
 .rich-editable {
-  min-height: 340px;
+  min-height: 160px;
+  max-height: 300px;
   padding: 9px 11px;
   font-size: 0.9rem;
   line-height: 1.55;
@@ -946,6 +954,9 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .rich-editable:focus {
   box-shadow: inset 0 0 0 2px rgba(29, 110, 165, 0.25);
 }
+.intro-save-btn { margin-top: 8px; }
+.img-upload { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.img-upload .pull-status { margin-left: 0; }
 .edit-card-actions {
   display: flex;
   align-items: center;
@@ -1381,6 +1392,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   to { opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .dots-loader .dot, .dots-text::after { animation: none !important; }
   .tut-ring { transition: none !important; }
   .tut-tip { animation: none !important; }
   .tut-tip__next--go { animation: none !important; }
@@ -1388,7 +1400,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 
 /* ── Review / Bucket / Glance (function-first; style pass deferred) ───────── */
 /* Pull from the desk — the Outline door's quiet status line. */
-.pull-status { margin-left: 8px; color: var(--bp-muted); font-size: 0.9rem; }
+.pull-status { margin-left: 8px; color: var(--bp-muted); font-size: 0.9rem; display: inline-block; }
 
 /* Review step — what's in the issue, as a plain table. */
 .review-table { width: 100%; border-collapse: collapse; margin-top: 16px; background: #fff; border: 1px solid var(--bp-line); font-size: 0.92rem; }
@@ -1407,3 +1419,27 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .app-header-inner h1 { margin: 0; padding: 0; max-width: none; width: auto; }
 .archive-link { color: #1d6ea5; text-decoration: none; font-weight: 600; font-size: 0.92rem; white-space: nowrap; }
 .archive-link:hover { text-decoration: underline; }
+
+/* Sliding-dots loader (Kate's pick, Sep 1) — six dots slide across a track
+   with staggered delays, desk blues. Mini = inline size for status rows. */
+.dots-loader { position: relative; height: var(--dl-s, 20px); width: var(--dl-w, 250px); margin: 1.5rem auto; }
+.dots-loader .dot {
+  position: absolute; height: var(--dl-s, 20px); width: var(--dl-s, 20px);
+  border-radius: 100%; border: 2px solid #fff; box-sizing: border-box;
+  animation: dots-slide 3s ease-in-out infinite;
+}
+.dots-loader .dot:nth-child(1) { background: #9ec9e8; animation-delay: .5s; }
+.dots-loader .dot:nth-child(2) { background: #63a3cd; animation-delay: .4s; }
+.dots-loader .dot:nth-child(3) { background: #4a8cbf; animation-delay: .3s; }
+.dots-loader .dot:nth-child(4) { background: #1d6ea5; animation-delay: .2s; }
+.dots-loader .dot:nth-child(5) { background: #19608f; animation-delay: .1s; }
+.dots-loader .dot:nth-child(6) { background: #14507a; animation-delay: 0s; }
+@keyframes dots-slide {
+  15% { transform: translateX(0); }
+  45%, 65% { transform: translateX(calc(var(--dl-w, 250px) - var(--dl-s, 20px))); }
+  95% { transform: translateX(0); }
+}
+.dots-mini { --dl-w: 90px; --dl-s: 10px; display: inline-block; vertical-align: middle; margin: 0 8px 0 0; }
+.dots-text::after { content: ""; animation: dots-text 3s infinite; }
+@keyframes dots-text { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }
+

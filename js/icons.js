@@ -1,7 +1,6 @@
 /**
  * Small shared visuals: the drawn confirmation check (submit + publish) and
- * the gooey loading blob (finalize rewrites, publish live-check). The blob
- * needs the #goo SVG filter that index.html carries.
+ * the sliding-dots loader shown wherever work is in flight.
  */
 export function checkSvg() {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -20,13 +19,31 @@ export function checkSvg() {
   return svg;
 }
 
-export function gooLoader() {
+/** Font Awesome forward arrow for the header door buttons (FA css loads via CDN). */
+export function forwardIcon() {
+  const i = document.createElement('i');
+  i.className = 'fa-solid fa-arrow-right';
+  i.setAttribute('aria-hidden', 'true');
+  return i;
+}
+
+export function dotsLoader(mini = false) {
   const wrap = document.createElement('div');
-  wrap.className = 'goo-wrap';
+  wrap.className = mini ? 'dots-loader dots-mini' : 'dots-loader';
   wrap.setAttribute('aria-hidden', 'true');
-  const loading = document.createElement('div');
-  loading.className = 'blob-loading';
-  loading.append(Object.assign(document.createElement('div'), { className: 'blob' }));
-  wrap.append(loading);
+  for (let i = 0; i < 6; i += 1) {
+    wrap.append(Object.assign(document.createElement('span'), { className: 'dot' }));
+  }
   return wrap;
+}
+
+/** "Rewriting" + dots that type themselves — for busy status labels. */
+export function loadingLabel(message) {
+  const frag = document.createDocumentFragment();
+  frag.append(message.replace(/…$/, ''));
+  const dots = document.createElement('span');
+  dots.className = 'dots-text';
+  dots.setAttribute('aria-hidden', 'true');
+  frag.append(dots);
+  return frag;
 }

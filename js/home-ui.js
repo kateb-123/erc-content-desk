@@ -1,15 +1,24 @@
 /**
- * Home: the shared submit form (70) plus the links panel (30). The form is
- * mounted once and left alone on re-renders so typing is never wiped; only
- * the panel side rebuilds.
+ * Home (redesigned Sep 1): a glance row on top — Exchange updated, next
+ * newsletter, queue count, the public submission page — then the shared
+ * submit form with the two outward doors as cards on the right, and the
+ * queue table below. The form is mounted once and left alone on re-renders
+ * so typing is never wiped; the glance row and door rail rebuild.
  */
 import { renderSubmitForm } from './submit-form.js';
 import { renderQueueTable } from './queue-ui.js';
-import { queueGlance } from './home-panel.js';
+import { queueBadgeCount } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
-import { isoToDisplay } from './rows-to-issue.js';
+/** "Aug 26" — the glance row stays slim; full dates live elsewhere. */
+function shortDate(iso) {
+  const d = new Date(`${iso}T12:00:00`);
+  return Number.isNaN(d.getTime()) ? '—'
+    : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
 
 const EXCHANGE_URL = 'https://kateb-123.github.io/erc-policy-exchange/';
+const BUILDER_URL = '/builder/';
+const SUBMIT_PATH = '/submit';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -18,15 +27,27 @@ function el(tag, className, text) {
   return node;
 }
 
-function goButton(label, key, onGoTo) {
-  const btn = el('button', 'panel-link', label);
-  btn.addEventListener('click', () => onGoTo(key));
-  return btn;
+function glanceFact(label, value) {
+  const card = el('div', 'glance-card');
+  card.append(el('span', 'glance-label', label));
+  card.append(el('span', 'glance-value', value));
+  return card;
 }
 
-export function renderHome(container, { rows, schedule, today, loaded, onGoTo, onSubmitted, onRefresh }) {
-  let panel = container.querySelector('.home-panel');
-  if (!panel) {
+function doorCard(title, desc, href) {
+  const a = el('a', 'door-card');
+  a.href = href;
+  a.target = '_blank';
+  a.rel = 'noreferrer';
+  a.append(el('span', 'door-title', `${title} ↗`));
+  a.append(el('span', 'door-desc', desc));
+  return a;
+}
+
+export function renderHome(container, { rows, schedule, today, loaded, hubUpdated, onSubmitted, onRefresh }) {
+  let glance = container.querySelector('.glance-row');
+  if (!glance) {
+    glance = el('div', 'glance-row');
     const grid = el('div', 'home-grid');
     const formSide = el('div', 'home-form card');
     formSide.append(el('h2', '', 'Share something with the ERC'));
@@ -34,46 +55,56 @@ export function renderHome(container, { rows, schedule, today, loaded, onGoTo, o
     const mount = el('div');
     formSide.append(mount);
     renderSubmitForm(mount, { onSubmitted });
-    panel = el('aside', 'home-panel');
-    grid.append(formSide, panel);
-    container.replaceChildren(grid, el('section', 'queue-section'));
+    grid.append(formSide, el('aside', 'door-rail'));
+    container.replaceChildren(glance, grid, el('section', 'queue-section'));
   }
 
-  panel.replaceChildren();
+  // ── The glance row: four one-line cards. ──
+  glance.replaceChildren();
+  glance.append(glanceFact('Exchange updated', hubUpdated ? shortDate(hubUpdated) : '—'));
   const next = nextIssueDate(schedule, today);
-  panel.append(el('p', 'panel-label', 'Next issue'));
-  panel.append(el('p', 'panel-next', next ? isoToDisplay(next) : '—'));
+  glance.append(glanceFact('Next newsletter', next ? shortDate(next) : '—'));
 
-  const queueItem = el('div', 'panel-item');
-  const queueLink = el('button', 'panel-link', 'Queue');
-  queueLink.type = 'button';
-  queueLink.addEventListener('click', () => {
+  const queueCard = el('button', 'glance-card glance-queue');
+  queueCard.type = 'button';
+  queueCard.append(el('span', 'glance-label', 'Queue'));
+  const queueSide = el('span', 'glance-side');
+  queueSide.append(el('span', 'queue-badge', String(loaded ? queueBadgeCount(rows) : 0)));
+  queueSide.append(el('span', 'glance-note', 'waiting'));
+  queueCard.append(queueSide);
+  queueCard.addEventListener('click', () => {
     container.querySelector('.queue-section')?.scrollIntoView({ behavior: 'smooth' });
   });
-  queueItem.append(queueLink);
-  if (loaded) queueItem.append(el('div', 'panel-glance', queueGlance(rows)));
-  panel.append(queueItem);
+  glance.append(queueCard);
 
-  for (const [label, key] of [['Sort', 'sort'], ['Finalize', 'finalize'], ['Publish', 'publish']]) {
-    const item = el('div', 'panel-item');
-    item.append(goButton(label, key, onGoTo));
-    panel.append(item);
-  }
+  const publicCard = el('div', 'glance-card');
+  publicCard.append(el('span', 'glance-label', 'Public page'));
+  const actions = el('span', 'glance-side');
+  const open = el('a', 'glance-btn', 'Open ↗');
+  open.href = SUBMIT_PATH;
+  open.target = '_blank';
+  open.rel = 'noreferrer';
+  const copy = el('button', 'glance-btn', 'Copy');
+  copy.type = 'button';
+  copy.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(new URL(SUBMIT_PATH, window.location.origin).href);
+      copy.textContent = 'Copied';
+    } catch {
+      copy.textContent = "Can't copy";
+    }
+    setTimeout(() => { copy.textContent = 'Copy'; }, 1500);
+  });
+  actions.append(open, copy);
+  publicCard.append(actions);
+  glance.append(publicCard);
 
-  panel.append(el('hr'));
-
-  const exchange = el('a', 'panel-link', 'Policy Exchange ↗');
-  exchange.href = EXCHANGE_URL;
-  exchange.target = '_blank';
-  exchange.rel = 'noreferrer';
-  const exchangeItem = el('div', 'panel-item');
-  exchangeItem.append(exchange);
-  panel.append(exchangeItem);
-
-  const buildItem = el('div', 'panel-item');
-  buildItem.append(goButton('Build newsletter ↗', 'build', onGoTo));
-  buildItem.append(el('div', 'panel-glance', 'pulls from the same items'));
-  panel.append(buildItem);
+  // ── The doors, as cards on the right. ──
+  const rail = container.querySelector('.door-rail');
+  rail.replaceChildren(
+    doorCard('Policy Exchange', 'The public hub everything publishes to.', EXCHANGE_URL),
+    doorCard('Build newsletter', 'Assemble the next issue from what the desk staged.', BUILDER_URL),
+  );
 
   renderQueueTable(container.querySelector('.queue-section'), { rows, schedule, today, onRefresh });
 }

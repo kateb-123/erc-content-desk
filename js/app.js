@@ -1,5 +1,6 @@
 /** Entry point. Owns all state; screens are pure renderers. */
 import { fetchDesk, saveRows } from './sheet-client.js';
+import { dotsLoader, loadingLabel } from './icons.js';
 import { renderHome } from './home-ui.js';
 import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
@@ -23,6 +24,7 @@ const state = {
   justPublished: 0,         // count from the last publish, until she leaves the screen (view state)
   justSent: null,           // { count, issue, ids } from the last newsletter send (view state)
   publishPreview: null,
+  hubUpdated: null,
 };
 
 const screens = Object.fromEntries(['home', 'sort', 'finalize', 'publish', 'build']
@@ -30,8 +32,13 @@ const screens = Object.fromEntries(['home', 'sort', 'finalize', 'publish', 'buil
 const statusEl = document.querySelector('#desk-status');
 
 export function setStatus(message, kind = 'busy') {
-  statusEl.textContent = message;
   statusEl.className = `status status-${kind}`;
+  // Anything in flight shows the dots loader, text underneath (Kate, Sep 1).
+  if (kind === 'busy' && message) {
+    statusEl.replaceChildren(dotsLoader(), loadingLabel(message));
+  } else {
+    statusEl.textContent = message;
+  }
 }
 
 export async function reload() {
@@ -79,6 +86,7 @@ async function decide(row, action, note = '') {
 }
 
 function goTo(key) {
+  if (key !== state.screen) setStatus('');   // last screen's message doesn't follow
   if (key === 'finalize' && state.screen !== 'finalize') resetFinalizeEntry();
   if (key === 'build' && state.screen !== 'build') { resetNewsletterEntry(); state.justSent = null; }
   if (key === 'publish' && state.screen !== 'publish') {
@@ -112,7 +120,7 @@ async function runRewrite() {
   if (!ids.length) return;
   state.busy = true;
   render();
-  setStatus('Rewriting descriptions…');
+  setStatus('');   // Finalize's own loader carries this — no second row in the bar
   try {
     const res = await fetch('/api/rewrite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) });
     const data = await res.json();
@@ -138,7 +146,7 @@ async function runRewrite() {
 async function loadPublishPreview() {
   state.busy = true;
   render();
-  setStatus('Checking against the live Exchange…');
+  setStatus('');   // Publish's own loader carries this — no second row in the bar
   try {
     const res = await fetch('/api/publish');
     const data = await res.json();
@@ -228,13 +236,14 @@ export function render() {
   if (state.screen === 'home') {
     renderHome(screens.home, {
       ...common, loaded: state.loaded,
-      onGoTo: goTo,
+      hubUpdated: state.hubUpdated,
       onSubmitted: reload,
       onRefresh: reload,
     });
   } else if (state.screen === 'sort') {
     renderSort(screens.sort, {
       ...common, filter: state.sortFilter, sortedCount: state.sortedThisVisit,
+      onGoTo: goTo,
       lastDecision: state.lastDecision, browse: state.sortBrowse ?? 0,
       onBrowse: pos => { state.sortBrowse = Math.max(0, pos); render(); },
       onFilter: key => { state.sortFilter = key; state.sortBrowse = 0; render(); },
@@ -295,5 +304,20 @@ export function render() {
 for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {
   tab.addEventListener('click', () => goTo(tab.dataset.screen));
 }
+
+// Home's "Exchange updated" fact: when news.csv last changed — the file's
+// latest commit, not the date column (item dates can sit in the future).
+// Public repo, read-only, fetched once per visit; a miss leaves the dash.
+const HUB_COMMITS_URL = 'https://api.github.com/repos/kateb-123/erc-policy-exchange/commits?path=data/news.csv&per_page=1';
+(async () => {
+  try {
+    const res = await fetch(HUB_COMMITS_URL);
+    const stamp = (await res.json())?.[0]?.commit?.committer?.date;
+    const d = new Date(stamp ?? NaN);
+    state.hubUpdated = Number.isNaN(d.getTime()) ? ''
+      : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  } catch { state.hubUpdated = ''; }
+  render();
+})();
 
 reload();

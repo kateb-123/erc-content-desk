@@ -1,10 +1,9 @@
 /** Pure text helpers for the Home links panel. */
 import { pendingRows, circlebackRows } from './workflow.js';
 
-export function queueGlance(rows) {
-  const pending = pendingRows(rows).length;
-  const parked = circlebackRows(rows).length;
-  return `${pending} in queue${parked ? `, ${parked} parked` : ''}`;
+/** The number in Queue's alert circle: everything still waiting on a decision. */
+export function queueBadgeCount(rows) {
+  return pendingRows(rows).length + circlebackRows(rows).length;
 }
 
 /**

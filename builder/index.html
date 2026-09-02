@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ERC Newsletter Builder</title>
-  <link rel="stylesheet" href="css/styles.css?v=32" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="css/styles.css?v=33" />
 </head>
 <body>
   <header class="app-header">
@@ -25,36 +26,32 @@
 
   <main class="wizard-body">
     <div class="wizard-topnav">
-      <button id="top-back" class="linknav" disabled>← Back</button>
-      <button id="top-next" class="linknav">Next →</button>
+      <button id="top-back" class="linknav" disabled><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back</button>
+      <button id="top-next" class="linknav">Next <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
     </div>
     <section data-step="review" class="wizard-step">
-      <h2>Step 1: Review</h2>
-      <p>Pull what the desk staged for this issue and look it over.</p>
+      <h2>Review</h2>
     </section>
 
     <section data-step="triage" class="wizard-step" hidden>
-      <h2>Step 2: Outline</h2>
-      <p>Reorder, enable, or disable each section before generating the final newsletter.</p>
+      <h2>Outline</h2>
     </section>
 
     <section data-step="edit" class="wizard-step" hidden>
-      <h2>Step 3: Preview &amp; Edit</h2>
-      <p>Review the newsletter and click any field to edit it inline.</p>
+      <h2>Preview &amp; Edit</h2>
     </section>
 
     <section data-step="export" class="wizard-step" hidden>
-      <h2>Step 4: Save &amp; Export</h2>
-      <p>Copy the finished HTML to clipboard or download it as a file, ready to paste into Outlook Web App.</p>
+      <h2>Save &amp; Export</h2>
     </section>
   </main>
 
   <footer class="wizard-footer">
-    <button id="btn-back" class="btn btn-secondary" disabled>← Back</button>
-    <button id="btn-next" class="btn btn-primary">Next →</button>
+    <button id="btn-back" class="btn btn-secondary" disabled><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back</button>
+    <button id="btn-next" class="btn btn-primary">Next <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
   </footer>
 
   <!-- Bump ?v when you change the JS so browsers load the new code (cache-busting). -->
-  <script type="module" src="js/app.js?v=23"></script>
+  <script type="module" src="js/app.js?v=24"></script>
 </body>
 </html>

@@ -9,6 +9,8 @@ import { TYPE_ORDER, TYPE_LABELS, subtypesFor } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref } from './links.js';
 import { sortStream, sortCounts, streamFrom, sectionOf } from './sort-view.js';
+import { titleWithInfo } from './screen-info.js';
+import { forwardIcon } from './icons.js';
 
 const FILTER_LABELS = [
   ['', 'All'], ['erc', 'ERC'], ['research', 'Research'], ['event', 'Events'],
@@ -43,7 +45,7 @@ function el(tag, className, text) {
 
 export function renderSort(container, props) {
   container.replaceChildren();
-  const { rows, filter, sortedCount, lastDecision, onFilter, onDecide, onUndo, browse = 0, onBrowse } = props;
+  const { rows, filter, sortedCount, lastDecision, onFilter, onDecide, onUndo, onGoTo, browse = 0, onBrowse } = props;
   const rerenderSelf = () => renderSort(container, props);
 
   const stream = sortStream(rows);
@@ -51,8 +53,14 @@ export function renderSort(container, props) {
   const visible = streamFrom(stream, filter);
 
   const head = el('div', 'screen-head');
-  head.append(el('h2', '', 'Sort'));
-  container.append(head);
+  const info = titleWithInfo('Sort', 'sort',
+    'Go card by card: Keep what belongs, Circle back on maybes, Trash the rest. The left menu jumps to a section; the arrows browse without deciding. A card with open work — no type, an unchecked link — locks its buttons until you fix it.');
+  head.append(info.row);
+  const door = el('button', 'primary head-action', 'Go to Finalize');
+  door.append(forwardIcon());
+  door.addEventListener('click', () => onGoTo?.('finalize'));
+  head.append(door);
+  container.append(head, info.panel);
 
   // Browsing: ← → walks a viewing position through the stream without
   // deciding anything. Deciding acts on the card in view; the position holds.
