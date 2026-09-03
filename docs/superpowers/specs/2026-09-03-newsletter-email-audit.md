@@ -27,8 +27,9 @@ Tests: `builder/tests/template.test.js`, block "Audit fixes (2026-09-03)".
 
 ## Kate's call — not applied
 
-- **Phones:** the fixed 705px sheet shrinks to ~53% on a 375px phone (14px body ≈ 7.4px). Fix = hybrid fluid width (`width="705"` attribute + `style="width:100%; max-width:705px"` and a stacking rule for two-column rows). Test-send to a phone first.
-- **Title link cue:** linked and unlinked titles are pixel-identical (`#202020`, no underline). Options: render titleless-URL items in regular weight so bold always means link; or a faint offset underline (`text-decoration-color:#c8b6b6`).
+- ~~**Phones**~~ — dropped (Kate: desktop only — Outlook Web, Gmail, Apple Mail).
+- (was) **Phones:** the fixed 705px sheet shrinks to ~53% on a 375px phone (14px body ≈ 7.4px). Fix = hybrid fluid width (`width="705"` attribute + `style="width:100%; max-width:705px"` and a stacking rule for two-column rows). Test-send to a phone first.
+- ~~**Title link cue**~~ — closed by design (Kate, 2026-09-03): titles stay black, bold, no underline, no mark, no color. Underlines (three tints), colored titles, weight change, hover underline and trailing marks were all mocked in the full issue and rejected. The rule instead: every title carries a link.
 - ~~**Group spacing**~~ — applied: item dividers 12px each side (25px with the rule), later group labels 32px below the last item.
 - ~~**Line length**~~ — applied: item cells and the intro end 80px from the right edge (≈94 characters per line, 76 beside a stamp). Going lower would need a larger body size.
 - **Digest bullets** as table cells, not lists (deliberate for Outlook). **Brand images** on i.ibb.co (move to the desk's own hosting).
