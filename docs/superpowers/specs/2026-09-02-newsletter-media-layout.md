@@ -6,7 +6,7 @@
 
 Items in research / spotlight / events / opportunities can carry a picture (`fields.image`). Today `itemImage()` (`builder/js/template.js:68`) renders it full-width, below the item text — plain, and long flyers dominate the section. Kate wants a nicer treatment.
 
-Four candidate layouts, each mocked in the real template's markup (fonts, widths, colors): https://claude.ai/code/artifact/b41c3af2-d32f-459c-b008-5299679495d8
+Four candidate layouts, each mocked in the real template's markup (fonts, widths, colors). Open the mock in a browser: `docs/superpowers/specs/assets/newsletter-media-options.html` (self-contained, in this repo).
 1. **Full width below** — today's.
 2. **Thumbnail right** — image beside the text; text stays the star.
 3. **Banner above** — image opens the item like a small hero.
