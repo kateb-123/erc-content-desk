@@ -35,3 +35,22 @@ Four candidate layouts, each mocked in the real template's markup (fonts, widths
 ## Out of scope
 
 - The Content Desk / builder UI style. The desk's media UPLOAD control is already done; this spec is only how the image RENDERS in the sent email.
+
+---
+
+## Decision (2026-09-03, Kate) — the "stamp" treatment
+
+After mocking eight layouts in a full fake issue, Kate chose one treatment for every media section:
+
+- **The picture is a small rectangle "stamp" beside the item text, never cropped.** Same portrait image the desk saved; the template only sizes it.
+- **Size follows the text.** Item with a blurb (a rendered summary): **96px wide**. Item without a blurb (title + date/meta only): **36px wide**. Height is natural (a letter-size flyer comes out ~124px / ~47px).
+- **Zigzag.** Stamps alternate **left, right, left…** in document order across the whole issue (1st media item left, 2nd right, …). The counter resets on every render.
+- **Right-side text is justified with hyphenation** — `text-align: justify; hyphens: auto` (plus `-webkit-`/`-ms-` prefixes and `lang="en"` on the cell) so the text block sits flush against the picture. Left-side text keeps the normal ragged edge.
+- **No "View flyer" text.** The stamp itself links to the full-size image (`target="_blank" rel="noopener"`).
+- **Markup:** a two-cell `role="presentation"` table inside the item's existing `<td>` — image cell (`width` = stamp + 14px gutter, `valign="top"`) and text cell — image first for left, text first for right. Image gets `border:1px solid #e6e2dd; border-radius:3px`, `width` attribute + inline width, `display:block`. Nested tables, inline styles, Outlook-safe.
+- **Edit hooks:** `data-edit-*` for the `image` field stay on the `<img>` (editable renders only); exports stay hook-free.
+- **No image → identical to today's markup** (no wrapper table).
+
+Rejected along the way (so we don't re-litigate): full width below (today), thumbnail-right at 218px, banner above, framed inset + caption, float wrap (per item and across the group), "View flyer" link text, square crops / headshots, capped poster below, bulletin-board section, landscape strip.
+
+Not in scope: the `newsletters/next-issue/ERC_Newsletter_next.html` template in the erc_newsletter repo has no item images, so nothing to sync there. The "ERC Research" vs "Featured Research" name mismatch stays untouched.
