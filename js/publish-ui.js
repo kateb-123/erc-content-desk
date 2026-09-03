@@ -159,7 +159,7 @@ export function renderPublish(container, props) {
   // Trial: the "forthcoming" shadow alert during the mocked posting beat.
   if (PUBLISH_PAUSED && trialPosting) {
     const shade = el('div', 'p-shade');
-    shade.append(el('p', 'p-shade-line', 'Posting to the Exchange — forthcoming'));
+    shade.append(el('p', 'p-shade-line', 'Publishing paused. Continue in trial mode.'));
     shade.append(dotsLoader());
     container.append(shade);
     return;
