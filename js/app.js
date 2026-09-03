@@ -60,25 +60,18 @@ export async function reload() {
 /** Persist changed rows, then merge the saved copies back in by _rowNumber.
  *  Returns true on success so callers can gate their confirmations — a
  *  failed write must never be reported as done. */
-export async function persist(changed, { optimistic = false } = {}) {
+export async function persist(changed) {
   if (!changed.length) return true;
-  const applyToMemory = () => {
+  try {
+    await saveRows(changed);
     const byRowNumber = new Map(changed.map(r => [r._rowNumber, r]));
     state.rows = state.rows.map(r => byRowNumber.get(r._rowNumber) ?? r);
     state.publishPreview = null;   // data changed — the next Publish visit re-checks
-  };
-  // Optimistic (Sort decisions, inline edits): update memory and re-render
-  // NOW so the next card appears instantly; the ~4s Sheet write runs behind it.
-  // Confirmation-critical writes (send, un-send) stay synchronous — they must
-  // only report done on a real success.
-  if (optimistic) { applyToMemory(); render(); }
-  try {
-    await saveRows(changed);
-    if (!optimistic) { applyToMemory(); render(); }
+    render();
     return true;
   } catch (err) {
-    // Set the error, reload to resync with the sheet (which overwrites the
-    // optimistic status), then set the error again so the failure still shows.
+    // Set the error, reload to resync with the sheet (which overwrites
+    // status), then set the error again so the user still sees what failed.
     setStatus(err.message, 'error');
     await reload();
     setStatus(err.message, 'error');
@@ -92,7 +85,7 @@ async function decide(row, action, note = '') {
   const next = action === 'keep' ? keep(row)
     : action === 'trash' ? trash(row)
     : circleback(row, note);
-  await persist([next], { optimistic: true });   // next card shows now; save in the background
+  await persist([next]);
 }
 
 function goTo(key) {
@@ -117,7 +110,7 @@ async function undoLast() {
   if (!row) return;
   state.lastDecision = null;
   state.sortedThisVisit = Math.max(0, state.sortedThisVisit - 1);
-  await persist([{ ...row, status: last.prevStatus }], { optimistic: true });
+  await persist([{ ...row, status: last.prevStatus }]);
 }
 
 async function runRewrite() {
@@ -273,7 +266,7 @@ export function render() {
       onBrowse: pos => { state.sortBrowse = Math.max(0, pos); saveSortSpot(); render(); },
       onFilter: key => { state.sortFilter = key; state.sortBrowse = 0; saveSortSpot(); render(); },
       onDecide: decide, onUndo: undoLast,
-      onEditRow: (row, changes) => persist([{ ...row, ...changes }], { optimistic: true }),
+      onEditRow: (row, changes) => persist([{ ...row, ...changes }]),
       // One PATCH for type + subtype + provenance together — sequential
       // round-trips re-render mid-save and reopen the picker.
       onEditType: (row, type, subtype) => persist([{
@@ -288,7 +281,7 @@ export function render() {
     renderFinalize(screens.finalize, {
       ...common, review: state.rewriteReview, verified: state.verifiedIds,
       reviewTotal: state.reviewTotal, busy: state.busy, rewroteNote: state.rewroteNote,
-      onEditRow: (row, changes) => persist([{ ...row, ...changes }], { optimistic: true }),
+      onEditRow: (row, changes) => persist([{ ...row, ...changes }]),
       onRewrite: runRewrite,
       // Every check decision stamps rewrite_checked so the state survives reload
       // (and the endpoint never rewrites a checked row again).
