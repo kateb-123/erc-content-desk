@@ -5,7 +5,7 @@
  * One deliberate click: Publish. Append-only. After publishing, Go to Build.
  */
 import { readyToPublish } from './workflow.js';
-import { PUBLISH_PAUSED, PUBLISH_PAUSED_MESSAGE } from './flags.js';
+import { PUBLISH_PAUSED } from './flags.js';
 import { TYPE_LABELS } from './schema.js';
 import { isoToSlash } from './queue-view.js';
 import { detailBody, chevron } from './finalize-ui.js';
@@ -15,6 +15,11 @@ import { titleWithInfo } from './screen-info.js';
 // View state only — resets on reload, never persisted.
 let expanded = new Set();
 let celebrated = ''; // which publish already played its confirmation — revisits stay still
+// Team trial (PUBLISH_PAUSED): the Publish button runs a MOCK — a "forthcoming"
+// shadow alert, then a mimicked success receipt — and never calls the real
+// endpoint, so nothing reaches the live Exchange. Per-page-load state.
+let trialPosting = false; // showing the "posting…" shadow alert
+let trialDone = 0;        // count on the mocked receipt (0 = not yet)
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -82,6 +87,10 @@ function group(container, title, rows, { cls, fix, hint, rerender, onGoTo }) {
 export function renderPublish(container, props) {
   const { rows, preview, busy, justPublished, onPublish, onGoTo, onRecheck } = props;
   const rerender = () => renderPublish(container, props);
+  // The mocked receipt stands in for a real one during the trial.
+  const showReceipt = justPublished || (PUBLISH_PAUSED && trialDone);
+  const isTrial = !justPublished && PUBLISH_PAUSED && Boolean(trialDone);
+  const receiptCount = justPublished || trialDone;
   container.replaceChildren();
 
   // The check's own grouping is the truth — rows looked up by the ids the
@@ -99,7 +108,7 @@ export function renderPublish(container, props) {
     'Everything here was checked against the live Exchange on arrival. Publish sends the Adding group to the site; newsletter-only items stay held for the issue, and anything already live is skipped.');
   lead.append(info.row, info.panel);
   const lede = el('p', 'lede');
-  if (justPublished) {
+  if (showReceipt) {
     // The receipt card below is the confirmation — the head stays bare.
   } else if (busy && !preview) {
     lede.textContent = 'Checking the live Exchange…';
@@ -115,21 +124,30 @@ export function renderPublish(container, props) {
   lead.append(lede);
   head.append(lead);
 
-  if (!justPublished && !candidates.length && !busy) {
+  if (showReceipt) {
+    // receipt below carries the onward door — head stays bare
+  } else if (!candidates.length && !busy) {
     const btn = el('button', 'primary head-action', 'Send to Newsletter');
     btn.append(forwardIcon());
     btn.addEventListener('click', () => onGoTo('build'));
     head.append(btn);
-  } else if (preview && !busy && adding.length && PUBLISH_PAUSED) {
-    // Team trial: the Exchange door is closed. The screen still shows what
-    // WOULD publish; the button is a note so nothing reaches the live hub.
-    head.append(el('p', 'p-paused', PUBLISH_PAUSED_MESSAGE));
-  } else if (preview && !busy && adding.length) {
+  } else if (preview && !busy && !trialPosting && adding.length) {
     // The button disappears while publishing — the status loader takes over.
     const btn = el('button', 'primary', `Publish ${adding.length} to the Exchange`);
-    btn.addEventListener('click', () => { btn.disabled = true; onPublish(); });
+    btn.addEventListener('click', () => {
+      btn.disabled = true;
+      if (PUBLISH_PAUSED) {
+        // Trial: no real publish — show the "forthcoming" alert, then mock success.
+        const n = adding.length;
+        trialPosting = true;
+        rerender();
+        setTimeout(() => { trialPosting = false; trialDone = n; rerender(); }, 1100);
+      } else {
+        onPublish();
+      }
+    });
     head.append(btn);
-  } else if (preview && !busy) {
+  } else if (preview && !busy && !trialPosting) {
     // Nothing to add — the only move left is the newsletter door.
     const btn = el('button', 'primary head-action', 'Send to Newsletter');
     btn.append(forwardIcon());
@@ -138,11 +156,20 @@ export function renderPublish(container, props) {
   }
   container.append(head);
 
+  // Trial: the "forthcoming" shadow alert during the mocked posting beat.
+  if (PUBLISH_PAUSED && trialPosting) {
+    const shade = el('div', 'p-shade');
+    shade.append(el('p', 'p-shade-line', 'Posting to the Exchange — forthcoming'));
+    shade.append(dotsLoader());
+    container.append(shade);
+    return;
+  }
+
   // Published: the receipt IS the page — check, headline, one door onward.
-  if (justPublished) {
+  if (showReceipt) {
     const receipt = el('div', 'pub-receipt');
-    if (celebrated !== justPublished) {
-      celebrated = justPublished;
+    if (celebrated !== `${isTrial ? 'trial:' : ''}${receiptCount}`) {
+      celebrated = `${isTrial ? 'trial:' : ''}${receiptCount}`;
       receipt.classList.add('pub-done-anim');
     }
     const ring = el('span', 'check-ring');
@@ -151,11 +178,13 @@ export function renderPublish(container, props) {
     if (receipt.classList.contains('pub-done-anim')) icon.classList.add('draw-check');
     ring.append(icon);
     receipt.append(ring);
-    receipt.append(el('h3', '', `Published ${justPublished} to the Exchange`));
-    receipt.append(el('p', '', 'The site updates in about a minute.'));
+    receipt.append(el('h3', '', `Published ${receiptCount} to the Exchange`));
+    receipt.append(el('p', '', isTrial
+      ? 'Trial run — nothing went to the live Exchange.'
+      : 'The site updates in about a minute.'));
     const door = el('button', 'primary slim-door', 'Send to Newsletter ');
     door.append(forwardIcon());
-    door.addEventListener('click', () => onGoTo('build'));
+    door.addEventListener('click', () => { trialDone = 0; onGoTo('build'); });
     receipt.append(door);
     container.append(receipt);
     return;
