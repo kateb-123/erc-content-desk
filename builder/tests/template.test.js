@@ -402,3 +402,22 @@ test('a URL typed without a scheme is linked as https', () => {
   assert.ok(!/href="[^"]*Rolling/.test(html) && !/javascript:/.test(html));
   assert.match(html, /<span[^>]*>Word<\/span>/);
 });
+
+// ─── Spacing and measure (Kate, 2026-09-03: items 1 and 2 of the open list) ──
+test('items in a group sit closer together than the next group label', () => {
+  const html = renderNewsletter(issueOf('sample-real.md')); // several items per group
+  assert.ok(!/padding: 24px 24px 0 24px;/.test(html), 'old 24px eyebrow gap gone');
+  assert.ok((html.match(/padding: 32px 24px 0 24px;/g) || []).length >= 2, 'later group labels sit 32px below the last item');
+  assert.match(html, /padding: 18px 24px 0 24px;/, 'first label under a tab keeps 18px');
+  const dividers = html.match(/<td style="padding: \d+px 80px 0 40px;"><div style="border-top/g) || [];
+  assert.ok(dividers.length >= 3);
+  for (const d of dividers) assert.match(d, /padding: 12px 80px/, d);
+  assert.ok(!/padding: 1[46]px 80px 0 40px;">\n<p/.test(html), 'items after a divider start 12px below it');
+});
+
+test('item text and the intro end 80px from the right edge, so lines run shorter', () => {
+  const html = renderNewsletter(fullIssue());
+  assert.ok(!/padding: \d+px 24px 0 40px;/.test(html), 'no item cell still runs to 24px from the edge');
+  assert.ok((html.match(/padding: \d+px 80px 0 40px;/g) || []).length >= 8, 'item cells use the 80px right padding');
+  assert.match(html, /padding: 24px 80px 30px 24px;/, 'intro cell too');
+});

@@ -129,14 +129,14 @@ function sectionHeader(id, label) {
 
 /** Eyebrow group label — first group top padding 18px, subsequent 24px */
 function eyebrow(label, first = false) {
-  const topPad = first ? '18px' : '24px';
+  const topPad = first ? '18px' : '32px';
   return `<tr><td style="padding: ${topPad} 24px 0 24px;">
 <h3 style="margin:0; font-family: ${FONT_HEAD}; font-size: 13px; font-weight: 700; color: #913B3B; text-transform: uppercase; letter-spacing: 1.1px;">${esc(label)}</h3>
 </td></tr>`;
 }
 
 /** Thin divider line */
-const DIVIDER = `<tr><td style="padding: 16px 24px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
+const DIVIDER = `<tr><td style="padding: 12px 80px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
 
 /** "See more on the ERC website →" right-justified tail link. Omitted when the section has no URL. */
 function seeMore(href) {
@@ -182,12 +182,12 @@ function buildBriefs(sec, editable = false) {
       const titleLink = href
         ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs('research', item.id, 'title', editable)}>${esc(fields.title)}</a>`
         : `<span${editAttrs('research', item.id, 'title', editable)}>${esc(fields.title)}</span>`;
-      const topPad = i === 0 ? '13px' : '16px';
+      const topPad = i === 0 ? '13px' : '12px';
       const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${fields.authors ? `<p style="margin:0 0 8px; line-height: 1.4; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs('research', item.id, 'authors', editable)}>${esc(fields.authors)}</p>` : ''}
 ${fields.summary ? proseParas(fields.summary, editAttrs('research', item.id, 'summary', editable)) : ''}`;
       rows += `
-<tr><td style="padding: ${topPad} 24px 0 40px;">
+<tr><td style="padding: ${topPad} 80px 0 40px;">
 ${withStamp(text, fields, 'research', item.id, editable, !!fields.summary)}
 </td></tr>`;
       if (i < items.length - 1) rows += DIVIDER;
@@ -256,7 +256,7 @@ function buildGroupedList(secReg, sec, editable = false) {
 
     items.forEach((item, i) => {
       const { fields, featured } = item;
-      const topPad = i === 0 ? '7px' : '14px';
+      const topPad = i === 0 ? '7px' : '12px';
       const sectionKey = secReg.key;
       const href = safeItemHref(fields.url);
       const titleLink = href
@@ -286,16 +286,16 @@ function buildGroupedList(secReg, sec, editable = false) {
         const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${metaLine}
 ${descLine}`;
-        rows += `<tr><td style="padding: ${topPad} 24px 0 40px;">
+        rows += `<tr><td style="padding: ${topPad} 80px 0 40px;">
 ${withStamp(text, fields, sectionKey, item.id, editable, descLine !== '')}
 </td></tr>`;
         if (needsItemDivider) {
-          rows += `<tr><td style="padding: 14px 24px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
+          rows += `<tr><td style="padding: 12px 80px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
         }
       } else {
         const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${oppMeta}`;
-        rows += `<tr><td style="padding: ${topPad} 24px 0 40px;">
+        rows += `<tr><td style="padding: ${topPad} 80px 0 40px;">
 ${withStamp(text, fields, sectionKey, item.id, editable, false)}
 </td></tr>`;
       }
@@ -303,7 +303,7 @@ ${withStamp(text, fields, sectionKey, item.id, editable, false)}
 
     // After featured group in events: add a section-level divider
     if (isFeaturedGroup && isEvents) {
-      rows += `<tr><td style="padding: 16px 24px 0 24px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
+      rows += `<tr><td style="padding: 16px 80px 0 24px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
     }
   }
 
@@ -434,7 +434,7 @@ function buildSpotlight(secReg, sec, editable = false) {
     // date | time | location) + optional summary.
     items.forEach((item, i) => {
         const { fields } = item;
-        const topPad = i === 0 ? '7px' : '14px';
+        const topPad = i === 0 ? '7px' : '12px';
         const href = safeItemHref(fields.url);
       const titleLink = href
           ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs('spotlight', item.id, 'title', editable)}>${esc(fields.title || '')}</a>`
@@ -468,12 +468,12 @@ function buildSpotlight(secReg, sec, editable = false) {
         const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${metaLine}
 ${summaryLine}`;
-        rows += `<tr><td style="padding: ${topPad} 24px 0 40px;">
+        rows += `<tr><td style="padding: ${topPad} 80px 0 40px;">
 ${withStamp(text, fields, 'spotlight', item.id, editable, summaryLine !== '')}
 </td></tr>`;
 
         if (i < items.length - 1) {
-          rows += `<tr><td style="padding: 14px 24px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
+          rows += `<tr><td style="padding: 12px 80px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
         }
       });
   }
@@ -550,7 +550,7 @@ function buildHeader(issue, editable = false) {
 </td>
 </tr>
 <tr>
-<td colspan="2" style="padding: 24px 24px 30px 24px;">
+<td colspan="2" style="padding: 24px 80px 30px 24px;">
 ${buildIntro(issue.intro, editable)}
 </td>
 </tr>
