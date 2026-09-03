@@ -87,9 +87,10 @@ function editAttrs(section, itemId, field, editable) {
 // ─── Item media: the stamp ───────────────────────────────────────────────────
 // Spec: docs/superpowers/specs/2026-09-02-newsletter-media-layout.md (Decision, as revised).
 
-/** The stamp: at most 96px wide, never wider than the text beside it is tall
- *  (a letter-size flyer is ~1.3× taller than wide), dropped below 40px. */
-const STAMP = { max: 96, min: 40, gutter: 14, ratio: 1.3 };
+/** The stamp: at most 96px wide, never taller than the text beside it. Pictures
+ *  are photos, so a portrait headshot (4:5, 1.25× taller than wide) is the
+ *  tallest shape assumed; wider photos come out shorter. Dropped below 40px. */
+const STAMP = { max: 96, min: 40, gutter: 14, ratio: 1.25 };
 /** The item text column: 640px sheet, 40px indent, 48px right padding. */
 const ITEM_COLUMN = 640 - 40 - 48;
 
@@ -114,14 +115,14 @@ function textHeight(rest) {
  * linking to the full-size picture. The stamp is sized from the text beside
  * it so it never stands taller than that text (96px at most, none below
  * 40px). Items without a blurb, without a picture, or with an unsafe URL
- * render title and text exactly as before.
+ * render title and text exactly as before. Pictures are photos, never flyers.
  */
 function withStamp(title, rest, fields, sectionKey, itemId, editable, hasBlurb) {
   const src = safeItemHref(fields.image);
   const w = src && hasBlurb ? Math.min(STAMP.max, Math.floor(textHeight(rest) / STAMP.ratio)) : 0;
   if (w < STAMP.min) return `${title}\n${rest}`;
   const cellW = w + 2 + STAMP.gutter; // picture + its 1px border each side + one gutter, so Word and browser box models agree
-  const img = `<a href="${esc(src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="Flyer: ${esc(fields.title || '')}" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:1px solid #e6e2dd; border-radius:3px;"${editAttrs(sectionKey, itemId, 'image', editable)}></a>`;
+  const img = `<a href="${esc(src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="Picture: ${esc(fields.title || '')}" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:1px solid #e6e2dd; border-radius:3px;"${editAttrs(sectionKey, itemId, 'image', editable)}></a>`;
   return `${title}\n<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width:100%;"><tbody><tr><td valign="top" width="${cellW}" style="width:${cellW}px; vertical-align:top; padding:2px 0 0 0;">${img}</td><td valign="top" style="vertical-align:top;">\n${rest}\n</td></tr></tbody></table>`;
 }
 

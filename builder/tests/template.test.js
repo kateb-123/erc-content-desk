@@ -304,9 +304,9 @@ test('the sheet is 640px wide: masthead and every layout table carry the width a
   for (const t of tables) assert.match(t, /width="640"/, t.slice(0, 120));
 });
 
-test('the picture stamp names the flyer so its link has an accessible name', () => {
+test('the picture stamp names the item so its link has an accessible name', () => {
   const html = renderNewsletter(mediaIssue());
-  assert.match(html, /<img src="[^"]+flyer\.png" alt="Flyer: First blurb" width="\d+"/);
+  assert.match(html, /<img src="[^"]+flyer\.png" alt="Picture: First blurb" width="\d+"/);
 });
 
 test('the two light grays that failed contrast are replaced', () => {
