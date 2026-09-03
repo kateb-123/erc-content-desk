@@ -165,3 +165,75 @@ test('research renders Brief and Report as separate labeled subgroups', () => {
   assert.ok(iBriefLabel < iBOne && iBOne < iReportLabel, 'Brief group precedes Report group');
   assert.ok(iReportLabel < iROne, 'Report label precedes its item');
 });
+
+// ─── Item media: the zigzag stamp (spec 2026-09-02-newsletter-media-layout) ──
+import { SECTION_REGISTRY } from '../js/model.js';
+
+const FLYER = 'https://raw.githubusercontent.com/erc/media/main/flyer.png';
+function mediaIssue() {
+  const issue = createEmptyIssue();
+  const oppGroup = SECTION_REGISTRY.find(s => s.key === 'opportunities').groups[0].key;
+  issue.sections.research.enabled = true;
+  issue.sections.research.items = [
+    { id: 'r1', group: 'brief', fields: { title: 'With blurb', summary: 'A summary.', image: FLYER } },
+  ];
+  issue.sections.opportunities.enabled = true;
+  issue.sections.opportunities.items = [
+    { id: 'o1', group: oppGroup, fields: { title: 'Short one', meta: 'Deadline: soon', image: FLYER } },
+    { id: 'o2', group: oppGroup, fields: { title: 'Third one', meta: 'Deadline: later', image: FLYER } },
+  ];
+  return issue;
+}
+const stampPositions = html => [...html.matchAll(/<img src="https:\/\/raw\.githubusercontent\.com[^"]*flyer\.png"/g)].map(m => m.index);
+
+test('item with a blurb renders a 96px stamp that links to the full picture, with no link text', () => {
+  const html = renderNewsletter(mediaIssue());
+  assert.match(html, new RegExp(`<a href="${FLYER}" target="_blank" rel="noopener"[^>]*><img src="${FLYER}" alt="" width="96"`));
+  assert.ok(!/View flyer/.test(html), 'no "View flyer" text');
+});
+
+test('item without a blurb renders a 36px stamp', () => {
+  const html = renderNewsletter(mediaIssue());
+  assert.match(html, new RegExp(`<img src="${FLYER}" alt="" width="36"`));
+});
+
+test('stamps zigzag: first left of the text, second right, third left', () => {
+  const html = renderNewsletter(mediaIssue());
+  const [s1, s2, s3] = stampPositions(html);
+  assert.equal(stampPositions(html).length, 3);
+  assert.ok(s1 < html.indexOf('With blurb'), '1st stamp comes before its title (left)');
+  assert.ok(html.indexOf('Short one') < s2, '2nd stamp comes after its title (right)');
+  assert.ok(s3 < html.indexOf('Third one'), '3rd stamp comes before its title (left)');
+});
+
+test('text beside a right-side stamp is justified and hyphenated; left-side text is not', () => {
+  const html = renderNewsletter(mediaIssue());
+  const justified = html.match(/text-align:\s*justify;[^"]*hyphens:\s*auto/g) || [];
+  assert.equal(justified.length, 1, 'exactly one right-side text cell in a 3-stamp issue');
+  assert.match(html, /<td[^>]*lang="en"[^>]*text-align:\s*justify/);
+});
+
+test('the zigzag restarts on every render', () => {
+  const issue = mediaIssue();
+  const a = renderNewsletter(issue);
+  const b = renderNewsletter(issue);
+  assert.equal(stampPositions(a).length, 3);
+  assert.equal(a, b, 'second render starts the zigzag on the left again');
+});
+
+test('item without a picture, or with an unsafe picture URL, renders no stamp', () => {
+  const issue = mediaIssue();
+  issue.sections.research.items[0].fields.image = 'javascript:alert(1)';
+  delete issue.sections.opportunities.items[0].fields.image;
+  delete issue.sections.opportunities.items[1].fields.image;
+  const html = renderNewsletter(issue);
+  assert.equal(stampPositions(html).length, 0);
+  assert.ok(!/javascript:/.test(html));
+  assert.ok(!/border-radius:3px/.test(html), 'no stamp markup at all');
+});
+
+test('editable render tags the stamp for click-to-edit; export carries no hooks', () => {
+  const issue = mediaIssue();
+  assert.match(renderNewsletter(issue, { editable: true }), /<img [^>]*data-edit-field="image"/);
+  assert.ok(!/data-edit-/.test(renderNewsletter(issue)));
+});

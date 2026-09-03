@@ -63,20 +63,44 @@ export function renderProse(text) {
  * Omits data-edit-item when itemId is null/undefined (intro case).
  * All attribute VALUES are esc()'d.
  */
-/** Optional item picture — renders only with a safe http(s) URL; clicking it
- *  in the edit preview opens the item's card at the Image URL field. */
-function itemImage(fields, sectionKey, itemId, editable) {
-  const src = safeItemHref(fields.image);
-  if (!src) return '';
-  return `<img src="${esc(src)}" alt="" style="width:100%; max-width:100%; height:auto; display:block; border:0; border-radius:4px; margin:8px 0 0;"${editAttrs(sectionKey, itemId, 'image', editable)}>`;
-}
-
 function editAttrs(section, itemId, field, editable) {
   if (!editable) return '';
   const secAttr = ` data-edit-section="${esc(section)}"`;
   const itemAttr = itemId != null ? ` data-edit-item="${esc(String(itemId))}"` : '';
   const fieldAttr = ` data-edit-field="${esc(field)}"`;
   return secAttr + itemAttr + fieldAttr;
+}
+
+// ─── Item media: the zigzag stamp ────────────────────────────────────────────
+// Spec: docs/superpowers/specs/2026-09-02-newsletter-media-layout.md (Decision).
+
+/** Stamp width beside a blurb vs. beside a short item, and the gutter to the text (px). */
+const STAMP = { blurb: 96, short: 36, gutter: 14 };
+
+/** Zigzag counter: stamps alternate left/right in document order. Reset per render. */
+let mediaSeq = 0;
+
+/**
+ * Sets an item's picture as a small "stamp" beside its text: a two-cell table,
+ * the picture never cropped, 96px wide when the item has a blurb and 36px when
+ * it is just a title and a date line. Stamps alternate left, right, left down
+ * the issue; text beside a right-side stamp is justified and hyphenated so it
+ * sits flush against the picture. The stamp links to the full-size picture.
+ * No picture (or an unsafe URL) → the text comes back exactly as given.
+ */
+function withStamp(text, fields, sectionKey, itemId, editable, hasBlurb) {
+  const src = safeItemHref(fields.image);
+  if (!src) return text;
+  const side = mediaSeq++ % 2 === 0 ? 'left' : 'right';
+  const w = hasBlurb ? STAMP.blurb : STAMP.short;
+  const img = `<a href="${esc(src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:1px solid #e6e2dd; border-radius:3px;"${editAttrs(sectionKey, itemId, 'image', editable)}></a>`;
+  const cellW = w + STAMP.gutter;
+  const pad = side === 'left' ? `2px ${STAMP.gutter}px 0 0` : `2px 0 0 ${STAMP.gutter}px`;
+  const imgCell = `<td valign="top" width="${cellW}" style="width:${cellW}px; vertical-align:top; padding:${pad};">${img}</td>`;
+  const textCell = side === 'right'
+    ? `<td valign="top" lang="en" style="vertical-align:top; text-align:justify; hyphens:auto; -webkit-hyphens:auto; -ms-hyphens:auto;">\n${text}\n</td>`
+    : `<td valign="top" style="vertical-align:top;">\n${text}\n</td>`;
+  return `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width:100%;"><tbody><tr>${side === 'left' ? imgCell + textCell : textCell + imgCell}</tr></tbody></table>`;
 }
 
 // ─── Common snippets ──────────────────────────────────────────────────────────
@@ -145,12 +169,12 @@ function buildBriefs(sec, editable = false) {
         ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs('research', item.id, 'title', editable)}>${esc(fields.title)}</a>`
         : `<span${editAttrs('research', item.id, 'title', editable)}>${esc(fields.title)}</span>`;
       const topPad = i === 0 ? '13px' : '16px';
+      const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
+${fields.authors ? `<p style="margin:0 0 8px; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs('research', item.id, 'authors', editable)}>${esc(fields.authors)}</p>` : ''}
+${fields.summary ? `<p style="margin:0; line-height: 1.5; font-family: ${FONT_BODY}; font-size: 14px; color: #404040;"${editAttrs('research', item.id, 'summary', editable)}>${renderProse(fields.summary)}</p>` : ''}`;
       rows += `
 <tr><td style="padding: ${topPad} 24px 0 40px;">
-<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
-${fields.authors ? `<p style="margin:0 0 8px; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs('research', item.id, 'authors', editable)}>${esc(fields.authors)}</p>` : ''}
-${fields.summary ? `<p style="margin:0; line-height: 1.5; font-family: ${FONT_BODY}; font-size: 14px; color: #404040;"${editAttrs('research', item.id, 'summary', editable)}>${renderProse(fields.summary)}</p>` : ''}
-${itemImage(fields, 'research', item.id, editable)}
+${withStamp(text, fields, 'research', item.id, editable, !!fields.summary)}
 </td></tr>`;
       if (i < items.length - 1) rows += DIVIDER;
     });
@@ -244,20 +268,20 @@ function buildGroupedList(secReg, sec, editable = false) {
       const needsItemDivider = isEvents && i < items.length - 1;
 
       if (isEvents) {
-        rows += `<tr><td style="padding: ${topPad} 24px 0 40px;">
-<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
+          const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${metaLine}
-${descLine}
-${itemImage(fields, sectionKey, item.id, editable)}
+${descLine}`;
+        rows += `<tr><td style="padding: ${topPad} 24px 0 40px;">
+${withStamp(text, fields, sectionKey, item.id, editable, descLine !== '')}
 </td></tr>`;
         if (needsItemDivider) {
           rows += `<tr><td style="padding: 14px 24px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
         }
       } else {
+          const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
+${oppMeta}`;
         rows += `<tr><td style="padding: ${topPad} 24px 0 40px;">
-<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
-${oppMeta}
-${itemImage(fields, sectionKey, item.id, editable)}
+${withStamp(text, fields, sectionKey, item.id, editable, false)}
 </td></tr>`;
       }
     });
@@ -424,11 +448,11 @@ function buildSpotlight(secReg, sec, editable = false) {
           ? `<p style="margin:0; line-height: 1.5; font-family: ${FONT_BODY}; font-size: 14px; color: #404040;"${editAttrs('spotlight', item.id, 'summary', editable)}>${renderProse(fields.summary)}</p>`
           : '';
 
-        rows += `<tr><td style="padding: ${topPad} 24px 0 40px;">
-<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
+          const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${metaLine}
-${summaryLine}
-${itemImage(fields, 'spotlight', item.id, editable)}
+${summaryLine}`;
+        rows += `<tr><td style="padding: ${topPad} 24px 0 40px;">
+${withStamp(text, fields, 'spotlight', item.id, editable, summaryLine !== '')}
 </td></tr>`;
 
         if (i < items.length - 1) {
@@ -555,6 +579,7 @@ function buildFooter() {
 // ─── Main entry point ─────────────────────────────────────────────────────────
 
 export function renderNewsletter(issue, opts = {}) {
+  mediaSeq = 0;
   const editable = opts.editable === true;
   const parts = [];
 
