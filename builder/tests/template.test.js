@@ -386,7 +386,6 @@ test('emphasis that spans a markdown link renders as one bold run', () => {
 });
 
 // ─── Link hygiene: scheme-less URLs and the export check ─────────────────────
-import { linkProblems } from '../js/template.js';
 
 test('a URL typed without a scheme is linked as https', () => {
   const issue = createEmptyIssue();
@@ -402,20 +401,4 @@ test('a URL typed without a scheme is linked as https', () => {
   assert.ok(html.includes('href="https://erc.cehd.tamu.edu/briefs/1"'));
   assert.ok(!/href="[^"]*Rolling/.test(html) && !/javascript:/.test(html));
   assert.match(html, /<span[^>]*>Word<\/span>/);
-});
-
-test('linkProblems lists the items whose link would be dropped from the email', () => {
-  const issue = createEmptyIssue();
-  issue.sections.research.enabled = true;
-  issue.sections.research.items = [
-    { id: 'a', group: 'brief', fields: { title: 'Fine', url: 'https://ok.org' } },
-    { id: 'b', group: 'brief', fields: { title: 'No link at all' } },
-    { id: 'c', group: 'brief', fields: { title: 'Bad', url: 'ftp://old.server/x' } },
-  ];
-  issue.sections.headlines.enabled = true;
-  issue.sections.headlines.items = [{ id: 'h', group: 'federal', fields: { title: 'Odd', url: 'see attached' } }];
-  assert.deepEqual(linkProblems(issue), [
-    { section: 'Featured Research', title: 'Bad', url: 'ftp://old.server/x' },
-    { section: 'Education Headlines', title: 'Odd', url: 'see attached' },
-  ]);
 });

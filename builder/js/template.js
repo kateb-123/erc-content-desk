@@ -37,21 +37,6 @@ function normalizeHref(url) {
   return SCHEME_LESS.test(trimmed) && !/^[a-z][a-z0-9+.-]*:/i.test(trimmed) ? `https://${trimmed}` : trimmed;
 }
 
-/** Items whose link would be dropped from the email (a url that is not http(s)/mailto).
- *  The builder shows these on the export step. */
-export function linkProblems(issue) {
-  const out = [];
-  for (const secReg of SECTION_REGISTRY) {
-    const sec = issue?.sections?.[secReg.key];
-    if (!sec || !sec.enabled) continue;
-    for (const item of sec.items || []) {
-      const url = String(item?.fields?.url ?? '').trim();
-      if (url && !safeItemHref(url)) out.push({ section: secReg.label, title: String(item.fields.title ?? ''), url });
-    }
-  }
-  return out;
-}
-
 /**
  * Applies **bold** and *italic* to ALREADY-ESCAPED text. Run after esc() so the
  * markers (`*`) survive escaping and can't corrupt generated tag/attribute HTML.

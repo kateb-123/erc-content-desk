@@ -1035,21 +1035,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .undo-toast__btn:hover { text-decoration: underline; }
 
 /* --- Export step ------------------------------------------ */
-/* Export pre-flight: the amber alert from DESIGN.md (needs-attention). */
-.export-check {
-  background: #fdf3d7;
-  color: #6b4e00;
-  border-radius: 8px;
-  padding: 0.7rem 0.95rem;
-  margin: 0 0 1rem;
-  font-size: 0.92rem;
-  max-width: 640px;
-}
-.export-check p { margin: 0; }
-.export-check p + p { margin-top: 0.45rem; }
-.export-check ul { margin: 0.3rem 0 0; padding-left: 1.2rem; }
-.export-check li { margin: 0.15rem 0; overflow-wrap: anywhere; }
-
 .export-desc {
   color: var(--bp-muted);
   line-height: 1.6;
