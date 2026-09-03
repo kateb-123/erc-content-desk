@@ -41,19 +41,24 @@ function applyEmphasis(escaped) {
 
 export function renderProse(text) {
   if (!text) return '';
+  // Swap links out for tokens, style the whole run, then put the anchors back —
+  // so **bold [across](url) a link** stays one bold run.
   const re = /\[([^\]]+)\]\(((?:[^()]|\([^()]*\))*)\)/g;
-  let out = '', last = 0, m;
-  while ((m = re.exec(text))) {
-    out += applyEmphasis(esc(text.slice(last, m.index)));
-    if (SAFE_HREF_SCHEME.test(m[2])) {
-      out += `<a href="${esc(m[2])}" target="_blank" rel="noopener" style="color: #500000; text-decoration: underline;">${applyEmphasis(esc(m[1]))}</a>`;
-    } else {
-      out += applyEmphasis(esc(m[1]));
-    }
-    last = re.lastIndex;
-  }
-  out += applyEmphasis(esc(text.slice(last)));
-  return out;
+  const links = [];
+  const tokenized = String(text).replace(re, (m, label, href) => { links.push({ label, href }); return `\u0000${links.length - 1}\u0000`; });
+  return applyEmphasis(esc(tokenized)).replace(/\u0000(\d+)\u0000/g, (m, i) => {
+    const { label, href } = links[Number(i)];
+    const inner = applyEmphasis(esc(label));
+    return SAFE_HREF_SCHEME.test(href)
+      ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color: #500000; text-decoration: underline;">${inner}</a>`
+      : inner;
+  });
+}
+
+/** A blurb as one or more paragraphs (blank line = paragraph break), in the body style. */
+function proseParas(text, attrs = '') {
+  const paras = String(text ?? '').split(/\n\s*\n+/).map(t => t.trim()).filter(Boolean);
+  return paras.map((t, i) => `<p style="margin:${i < paras.length - 1 ? '0 0 8px' : '0'}; line-height: 1.5; font-family: ${FONT_BODY}; font-size: 14px; color: #404040;"${attrs}>${renderProse(t)}</p>`).join('\n');
 }
 
 // ─── Edit-hook helper ─────────────────────────────────────────────────────────
@@ -90,9 +95,12 @@ function withStamp(text, fields, sectionKey, itemId, editable, hasBlurb) {
   if (!src || !hasBlurb) return text;
   const w = STAMP.width;
   const cellW = w + 2 + STAMP.gutter; // picture + its 1px border each side + one gutter, so Word and browser box models agree
-  const img = `<a href="${esc(src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:1px solid #e6e2dd; border-radius:3px;"${editAttrs(sectionKey, itemId, 'image', editable)}></a>`;
+  const img = `<a href="${esc(src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="Flyer: ${esc(fields.title || '')}" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:1px solid #e6e2dd; border-radius:3px;"${editAttrs(sectionKey, itemId, 'image', editable)}></a>`;
   return `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width:100%;"><tbody><tr><td valign="top" width="${cellW}" style="width:${cellW}px; vertical-align:top; padding:2px 0 0 0;">${img}</td><td valign="top" style="vertical-align:top;">\n${text}\n</td></tr></tbody></table>`;
 }
+
+/** Items that can render: a title is the one field every item needs. */
+const titled = items => (items || []).filter(i => String(i?.fields?.title ?? '').trim());
 
 // ─── Common snippets ──────────────────────────────────────────────────────────
 
@@ -100,13 +108,13 @@ const FONT_BODY = "'Trebuchet MS', 'Segoe UI', Tahoma, sans-serif";
 const FONT_HEAD = 'Verdana, Geneva, Tahoma, sans-serif';
 
 /** 14px spacer row between section tables */
-const SPACER_14 = `<!-- spacer --><table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(255, 255, 255);"><tbody><tr><td style="height: 14px; font-size: 1px; line-height: 14px;">&nbsp;</td></tr></tbody></table>`;
+const SPACER_14 = `<!-- spacer --><table align="center" width="705" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(255, 255, 255);"><tbody><tr><td style="height: 14px; font-size: 1px; line-height: 14px;">&nbsp;</td></tr></tbody></table>`;
 
 /** File-tab section header */
 function sectionHeader(id, label) {
-  return `<tr><td style="padding: 16px 24px 0 8px; border-bottom: 3px solid rgb(80, 0, 0);">
+  return `<tr><td style="padding: 16px 24px 0 8px; border-bottom: 3px solid #500000;">
 <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tbody><tr><td style="background-color: rgb(80, 0, 0); padding: 7px 16px 8px 16px; border-radius: 8px 8px 0 0;">
-<h3 id="${esc(id)}" style="margin:0; font-family: ${FONT_HEAD}; font-size: 16px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px;"><a name="${esc(id)}" style="text-decoration:none;color:inherit;"></a>${esc(label)}</h3>
+<h2 id="${esc(id)}" style="margin:0; font-family: ${FONT_HEAD}; font-size: 16px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px;"><a name="${esc(id)}" style="text-decoration:none;color:inherit;"></a>${esc(label)}</h2>
 </td></tr></tbody></table>
 </td></tr>`;
 }
@@ -115,17 +123,23 @@ function sectionHeader(id, label) {
 function eyebrow(label, first = false) {
   const topPad = first ? '18px' : '24px';
   return `<tr><td style="padding: ${topPad} 24px 0 24px;">
-<p style="margin:0; font-family: ${FONT_HEAD}; font-size: 13px; font-weight: 700; color: #913B3B; text-transform: uppercase; letter-spacing: 1.1px;">${esc(label)}</p>
+<h3 style="margin:0; font-family: ${FONT_HEAD}; font-size: 13px; font-weight: 700; color: #913B3B; text-transform: uppercase; letter-spacing: 1.1px;">${esc(label)}</h3>
 </td></tr>`;
 }
 
 /** Thin divider line */
 const DIVIDER = `<tr><td style="padding: 16px 24px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
 
-/** "See more on the ERC website →" right-justified tail link */
-const SEE_MORE = `<tr><td style="padding: 10px 24px 22px 24px; text-align: right;">
-<a href="#" target="_blank" rel="noopener" style="color: #8F8F8F; text-decoration: none; font-family: ${FONT_BODY}; font-size: 14px; font-weight: 700;">See more on the ERC website &#8594;</a>
+/** "See more on the ERC website →" right-justified tail link. Omitted when the section has no URL. */
+function seeMore(href) {
+  const h = safeItemHref(href);
+  if (!h) return '';
+  return `<tr><td style="padding: 10px 24px 22px 24px; text-align: right;">
+<a href="${esc(h)}" target="_blank" rel="noopener" style="color: #767676; text-decoration: none; font-family: ${FONT_BODY}; font-size: 14px; font-weight: 700;">See more on the ERC website &#8594;</a>
 </td></tr>`;
+}
+/** A section's tail-link URL: the issue may override the registry default; '' turns the row off. */
+const seeMoreUrl = (sec, secReg) => (sec.seeMoreUrl !== undefined ? sec.seeMoreUrl : secReg.seeMoreUrl);
 
 // ─── Per-kind builders ────────────────────────────────────────────────────────
 
@@ -135,13 +149,14 @@ const SEE_MORE = `<tr><td style="padding: 10px 24px 22px 24px; text-align: right
  * followed by compact Submit callout.
  */
 function buildBriefs(sec, editable = false) {
-  if (!sec.enabled || !sec.items.length) return '';
+  const items = titled(sec.items);
+  if (!sec.enabled || !items.length) return '';
   let rows = sectionHeader('research', 'ERC Research');
 
   const researchReg = SECTION_REGISTRY.find(s => s.key === 'research');
   const groupOrder = researchReg.groups.map(g => g.key);
   const byGroup = {};
-  for (const item of sec.items) {
+  for (const item of items) {
     const gk = groupOrder.includes(item.group) ? item.group : 'brief';
     (byGroup[gk] = byGroup[gk] || []).push(item);
   }
@@ -161,8 +176,8 @@ function buildBriefs(sec, editable = false) {
         : `<span${editAttrs('research', item.id, 'title', editable)}>${esc(fields.title)}</span>`;
       const topPad = i === 0 ? '13px' : '16px';
       const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
-${fields.authors ? `<p style="margin:0 0 8px; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs('research', item.id, 'authors', editable)}>${esc(fields.authors)}</p>` : ''}
-${fields.summary ? `<p style="margin:0; line-height: 1.5; font-family: ${FONT_BODY}; font-size: 14px; color: #404040;"${editAttrs('research', item.id, 'summary', editable)}>${renderProse(fields.summary)}</p>` : ''}`;
+${fields.authors ? `<p style="margin:0 0 8px; line-height: 1.4; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs('research', item.id, 'authors', editable)}>${esc(fields.authors)}</p>` : ''}
+${fields.summary ? proseParas(fields.summary, editAttrs('research', item.id, 'summary', editable)) : ''}`;
       rows += `
 <tr><td style="padding: ${topPad} 24px 0 40px;">
 ${withStamp(text, fields, 'research', item.id, editable, !!fields.summary)}
@@ -176,7 +191,7 @@ ${withStamp(text, fields, 'research', item.id, editable, !!fields.summary)}
     rows += `
 <tr><td style="padding: 20px 24px 22px 24px;">
 <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width:80%; background-color:#f6f6f6; margin:0 auto;"><tbody><tr><td style="padding: 14px 22px;">
-<p style="margin:0 0 5px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 14px; font-weight: 700;"><a href="https://forms.office.com/Pages/ResponsePage.aspx?id=44HzaNpGuUe6V28yK48NoV5eaARTlZdIspuMdxu3p_lUQkwwS0pRMzgzTlE2MktPRjZCRDcwUDgxRS4u" target="_blank" rel="noopener" style="color: rgb(80, 0, 0); text-decoration: none;">Submit Your Research for an ERC Research Brief &#8594;</a></p>
+<p style="margin:0 0 5px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 14px; font-weight: 700;"><a href="https://forms.office.com/Pages/ResponsePage.aspx?id=44HzaNpGuUe6V28yK48NoV5eaARTlZdIspuMdxu3p_lUQkwwS0pRMzgzTlE2MktPRjZCRDcwUDgxRS4u" target="_blank" rel="noopener" style="color: #500000; text-decoration: none;">Submit Your Research for an ERC Research Brief &#8594;</a></p>
 <p style="margin:0; line-height: 1.5; font-family: ${FONT_BODY}; font-size: 13px; color: #404040;">Working on research that could reach a broader audience? The ERC is accepting submissions for a research brief or other public-facing product &#8212; share a recent publication or working paper.</p>
 </td></tr></tbody></table>
 </td></tr>`;
@@ -191,7 +206,8 @@ ${withStamp(text, fields, 'research', item.id, editable, !!fields.summary)}
  * Opportunities: title+meta only for all groups.
  */
 function buildGroupedList(secReg, sec, editable = false) {
-  if (!sec.enabled || !sec.items.length) return '';
+  const items = titled(sec.items);
+  if (!sec.enabled || !items.length) return '';
 
   const isEvents = secReg.key === 'events';
   const anchorId = secReg.key === 'events' ? 'events' : 'opportunities';
@@ -202,7 +218,7 @@ function buildGroupedList(secReg, sec, editable = false) {
   // Collect groups present in items, in SECTION_REGISTRY group order
   const groupOrder = secReg.groups.map(g => g.key);
   const groupMap = {};
-  for (const item of sec.items) {
+  for (const item of items) {
     const gk = item.group || '';
     if (!groupMap[gk]) groupMap[gk] = [];
     groupMap[gk].push(item);
@@ -242,17 +258,17 @@ function buildGroupedList(secReg, sec, editable = false) {
       // Build meta line: date | time | location
       const metaParts = [fields.date, fields.time, fields.location].filter(Boolean);
       const metaLine = metaParts.length
-        ? `<p style="margin:0 0 5px; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs(sectionKey, item.id, 'meta', editable)}>${metaParts.map(esc).join(' | ')}</p>`
+        ? `<p style="margin:0 0 5px; line-height: 1.4; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs(sectionKey, item.id, 'meta', editable)}>${metaParts.map(esc).join(' | ')}</p>`
         : '';
 
       // Description only for featured events
       const descLine = (isFeaturedGroup || featured) && fields.summary
-        ? `<p style="margin:0; line-height: 1.5; font-family: ${FONT_BODY}; font-size: 14px; color: #404040;"${editAttrs(sectionKey, item.id, 'summary', editable)}>${renderProse(fields.summary)}</p>`
+        ? proseParas(fields.summary, editAttrs(sectionKey, item.id, 'summary', editable))
         : '';
 
       // For opportunities: use fields.meta as the meta line
       const oppMeta = !isEvents && fields.meta
-        ? `<p style="margin:0; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs(sectionKey, item.id, 'meta', editable)}>${esc(fields.meta)}</p>`
+        ? `<p style="margin:0; line-height: 1.4; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs(sectionKey, item.id, 'meta', editable)}>${esc(fields.meta)}</p>`
         : '';
 
       // Divider between items within same group (not after featured group — uses section divider)
@@ -285,7 +301,7 @@ ${withStamp(text, fields, sectionKey, item.id, editable, false)}
 
   // See more link for opportunities
   if (!isEvents) {
-    rows += SEE_MORE;
+    rows += seeMore(seeMoreUrl(sec, secReg));
   } else {
     // closing bottom padding for events last item
     rows += `<tr><td style="height: 22px; font-size: 1px; line-height: 22px;">&nbsp;</td></tr>`;
@@ -299,7 +315,8 @@ ${withStamp(text, fields, sectionKey, item.id, editable, false)}
  * Policy: title link only. Headlines: title + (Source) inline.
  */
 function buildGroupedDigest(secReg, sec, editable = false) {
-  if (!sec.enabled || !sec.items.length) return '';
+  const items = titled(sec.items);
+  if (!sec.enabled || !items.length) return '';
 
   const isHeadlines = secReg.key === 'headlines';
   const anchorId = anchorIdForSection(secReg.key);
@@ -310,7 +327,7 @@ function buildGroupedDigest(secReg, sec, editable = false) {
   // Group items by group key in registry order
   const groupOrder = secReg.groups.map(g => g.key);
   const groupMap = {};
-  for (const item of sec.items) {
+  for (const item of items) {
     const gk = item.group || '';
     if (!groupMap[gk]) groupMap[gk] = [];
     groupMap[gk].push(item);
@@ -330,7 +347,7 @@ function buildGroupedDigest(secReg, sec, editable = false) {
     const groupLabel = groupDef ? groupDef.label : gk;
 
     const groupHeading = groupLabel
-      ? `<p style="margin:0 0 9px; font-family: ${FONT_HEAD}; font-size: 13px; font-weight: 700; color: #913B3B; text-transform: uppercase; letter-spacing: 1.1px;">${esc(groupLabel)}</p>\n`
+      ? `<h3 style="margin:0 0 9px; font-family: ${FONT_HEAD}; font-size: 13px; font-weight: 700; color: #913B3B; text-transform: uppercase; letter-spacing: 1.1px;">${esc(groupLabel)}</h3>\n`
       : '';
     rows += `<tr><td style="padding: 18px 24px 0 24px;">
 ${groupHeading}<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width:100%;"><tbody>`;
@@ -348,7 +365,7 @@ ${groupHeading}<table role="presentation" cellspacing="0" cellpadding="0" border
 
       // Headlines: append (Source) after the title link
       const sourcePart = isHeadlines && fields.source
-        ? ` <span style="color:#9a8a8a; font-size:14px;">(${esc(fields.source)})</span>`
+        ? ` <span style="color:#7A6A6A; font-size:14px;">(${esc(fields.source)})</span>`
         : '';
 
       rows += `<tr>
@@ -361,7 +378,7 @@ ${groupHeading}<table role="presentation" cellspacing="0" cellpadding="0" border
 </td></tr>`;
   }
 
-  rows += SEE_MORE;
+  rows += seeMore(seeMoreUrl(sec, secReg));
 
   return wrapSection(rows);
 }
@@ -372,14 +389,15 @@ ${groupHeading}<table role="presentation" cellspacing="0" cellpadding="0" border
  * All groups: bold title link + meta (or date | time | location) + optional summary.
  */
 function buildSpotlight(secReg, sec, editable = false) {
-  if (!sec.enabled || !sec.items.length) return '';
+  const items = titled(sec.items);
+  if (!sec.enabled || !items.length) return '';
 
   let rows = sectionHeader('spotlight', 'ERC Spotlight');
 
   // Build group map from items
   const groupOrder = secReg.groups.map(g => g.key);
   const groupMap = {};
-  for (const item of sec.items) {
+  for (const item of items) {
     const gk = item.group || '';
     if (!groupMap[gk]) groupMap[gk] = [];
     groupMap[gk].push(item);
@@ -417,7 +435,7 @@ function buildSpotlight(secReg, sec, editable = false) {
         // Meta: use fields.meta if present (hook the meta field); otherwise
         // build from date | time | location and hook EACH sub-field so clicking
         // edits the value actually shown (not a phantom empty `meta`).
-        const metaStyle = `margin:0 0 5px; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;`;
+        const metaStyle = `margin:0 0 5px; line-height: 1.4; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;`;
         let metaLine = '';
         if (fields.meta) {
           metaLine = `<p style="${metaStyle}"${editAttrs('spotlight', item.id, 'meta', editable)}>${esc(fields.meta)}</p>`;
@@ -436,7 +454,7 @@ function buildSpotlight(secReg, sec, editable = false) {
         }
 
         const summaryLine = fields.summary
-          ? `<p style="margin:0; line-height: 1.5; font-family: ${FONT_BODY}; font-size: 14px; color: #404040;"${editAttrs('spotlight', item.id, 'summary', editable)}>${renderProse(fields.summary)}</p>`
+          ? proseParas(fields.summary, editAttrs('spotlight', item.id, 'summary', editable))
           : '';
 
         const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
@@ -460,7 +478,7 @@ ${withStamp(text, fields, 'spotlight', item.id, editable, summaryLine !== '')}
 
 /** Wraps section rows in the standard 705px centered white table */
 function wrapSection(rows) {
-  return `<table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(255, 255, 255);">
+  return `<table align="center" width="705" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(255, 255, 255);">
 <tbody>
 ${rows}
 </tbody>
@@ -496,26 +514,26 @@ function buildHeader(issue, editable = false) {
   const navLinks = SECTION_REGISTRY
     .filter(secReg => {
       const sec = issue.sections[secReg.key];
-      return sec && sec.enabled && sec.items.length > 0;
+      return sec && sec.enabled && titled(sec.items).length > 0;
     })
     .map(secReg => {
       const anchor = anchorIdForSection(secReg.key);
       const navText = secReg.navLabel ?? secReg.label;
       return `<a href="#${anchor}" style="color: rgb(83, 83, 83); text-decoration: none; font-weight: 700;">${esc(navText)}</a>`;
     });
-  const navHtml = navLinks.join(' &nbsp;|&nbsp; ');
+  const navHtml = navLinks.length ? `<span style="color:#767676; font-weight:400;">In this issue:</span>&nbsp; ${navLinks.join(' &nbsp;|&nbsp; ')}` : '';
 
-  return `<table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(255, 255, 255);">
+  return `<table align="center" width="705" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(255, 255, 255);">
 <tbody>
 <tr>
-<td align="left" width="50%" style="padding: 15px 15px; font-family: ${FONT_BODY}; font-size: 15px; font-weight: 700; color: rgb(80, 0, 0);">${esc(date)}</td>
+<td align="left" width="50%" style="padding: 15px 15px; font-family: ${FONT_BODY}; font-size: 15px; font-weight: 700; color: #500000;">${esc(date)}</td>
 <td align="right" width="50%" style="padding: 15px 15px; font-family: ${FONT_BODY}; font-size: 15px; color: rgb(97, 30, 30);">
-<a href="https://erc.cehd.tamu.edu/" target="_blank" style="color: rgb(97, 30, 30); text-decoration: none; padding: 0 5px;">Website</a><span style="color: #202020;"> | </span><a href="https://erc-kate.github.io/erc-tools/listserv-signup/" target="_blank" style="color: rgb(97, 30, 30); text-decoration: none; padding: 0 5px;">Join Listserv</a>
+<a href="https://erc.cehd.tamu.edu/" target="_blank" rel="noopener" style="color: rgb(97, 30, 30); text-decoration: none; padding: 0 5px;">Website</a><span style="color: #202020;"> | </span><a href="https://erc-kate.github.io/erc-tools/listserv-signup/" target="_blank" rel="noopener" style="color: rgb(97, 30, 30); text-decoration: none; padding: 0 5px;">Join the mailing list</a>
 </td>
 </tr>
 <tr>
 <td colspan="2" align="center" style="padding: 0;">
-<img style="width: 100%; height: auto; display: block;" src="${esc(imgSrc)}" alt="Education Research Center Newsletter">
+<img width="705" src="${esc(imgSrc)}" alt="Education Research Center Newsletter" style="width: 100%; max-width: 705px; height: auto; display: block; border: 0;">
 </td>
 </tr>
 <tr>
@@ -544,27 +562,45 @@ function buildIntro(introText, editable = false) {
 }
 
 function buildFooter() {
-  return `<table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(80, 0, 0);">
+  return `<table align="center" width="705" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(80, 0, 0);">
 <tbody>
 <tr>
-<td align="center" style="padding: 26px 24px 24px; text-align: center;">
-<img width="190" height="50" src="https://i.ibb.co/JjQWyZq3/ERC-Horizontal-White-Text-narrow.png" alt="Texas A&amp;M University Education Research Center" style="height: 50px; width: auto; max-width: 100%; display: inline-block; border: 0;">
+<td align="center" style="color:#ffffff; padding: 26px 24px 24px; text-align: center;">
+<img width="190" height="50" src="https://i.ibb.co/JjQWyZq3/ERC-Horizontal-White-Text-narrow.png" alt="Texas A&amp;M University Education Research Center" style="color:#ffffff; height: 50px; width: auto; max-width: 100%; display: inline-block; border: 0;">
 <p style="line-height: 1.45; margin: 16px 0 0; text-align: center; font-family: ${FONT_BODY}; font-size: 13px;">
 <span style="white-space: nowrap;">
-<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><a href="https://erc.cehd.tamu.edu/" target="_blank" style="color: #ffffff; text-decoration: none; font-weight: 700; font-family: ${FONT_BODY}; font-size: 13px; vertical-align: middle;">Website</a>
+<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><a href="https://erc.cehd.tamu.edu/" target="_blank" rel="noopener" style="color: #ffffff; text-decoration: none; font-weight: 700; font-family: ${FONT_BODY}; font-size: 13px; vertical-align: middle;">Website</a>
 </span>
 <span style="color: rgba(255,255,255,0.4); padding: 0 12px;">&#183;</span>
 <span style="white-space: nowrap;">
-<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:erc@tamu.edu" style="color: #ffffff; text-decoration: none; font-weight: 700; font-family: ${FONT_BODY}; font-size: 13px; vertical-align: middle;">Email</a>
+<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:erc@tamu.edu" style="color: #ffffff; text-decoration: none; font-weight: 700; font-family: ${FONT_BODY}; font-size: 13px; vertical-align: middle;">Email</a>
 </span>
 <span style="color: rgba(255,255,255,0.4); padding: 0 12px;">&#183;</span>
 <span style="white-space: nowrap;">
-<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg><a href="https://erc-kate.github.io/erc-tools/listserv-signup/" target="_blank" style="color: #ffffff; text-decoration: none; font-weight: 700; font-family: ${FONT_BODY}; font-size: 13px; vertical-align: middle;">Join Mailing List</a>
+<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg><a href="https://erc-kate.github.io/erc-tools/listserv-signup/" target="_blank" rel="noopener" style="color: #ffffff; text-decoration: none; font-weight: 700; font-family: ${FONT_BODY}; font-size: 13px; vertical-align: middle;">Join the mailing list</a>
 </span>
 </p></td>
 </tr>
 </tbody>
 </table>`;
+}
+
+/** Inbox preview text: issue.preheader, else the intro's first sentence as plain text. */
+function preheader(issue) {
+  let text = String(issue.preheader ?? '').trim();
+  if (!text) {
+    const plain = String(issue.intro ?? '')
+      .replace(/\[([^\]]+)\]\((?:[^()]|\([^()]*\))*\)/g, '$1')
+      .replace(/\*\*?([^*]+)\*\*?/g, '$1')
+      .replace(/\s+/g, ' ').trim();
+    // Take whole sentences until there is enough to preview on (a lone "Howdy!" is not a preview).
+    const sentences = plain.match(/[^.!?]+[.!?]+(?=\s|$)/g) || [plain];
+    text = '';
+    for (const sentence of sentences) { text = (text + ' ' + sentence.trim()).trim(); if (text.length >= 60) break; }
+    text = text.slice(0, 140);
+  }
+  if (!text) return '';
+  return `<div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; mso-hide:all;">${esc(text)}${'&#847;&zwnj;&nbsp;'.repeat(40)}</div>`;
 }
 
 // ─── Main entry point ─────────────────────────────────────────────────────────
@@ -574,7 +610,8 @@ export function renderNewsletter(issue, opts = {}) {
   const parts = [];
 
   // Outer wrapper + head
-  parts.push(`<html>
+  parts.push(`<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>ERC Newsletter | ${esc(issue.date)}</title>
 <meta charset="utf-8">
@@ -594,33 +631,32 @@ export function renderNewsletter(issue, opts = {}) {
   [data-ogsc] p[style*="#202020"], [data-ogsb] p[style*="#202020"],
   [data-ogsc] a[style*="#202020"], [data-ogsb] a[style*="#202020"] { color:#202020 !important; }
   [data-ogsc] p[style*="#404040"], [data-ogsb] p[style*="#404040"] { color:#404040 !important; }
-  [data-ogsc] p[style*="#9a8a8a"], [data-ogsb] p[style*="#9a8a8a"] { color:#9a8a8a !important; }
-  [data-ogsc] h3[style*="rgb(80, 0, 0)"], [data-ogsb] h3[style*="rgb(80, 0, 0)"] { color:#500000 !important; }
+  [data-ogsc] span[style*="#7A6A6A"], [data-ogsb] span[style*="#7A6A6A"] { color:#7A6A6A !important; }
+  [data-ogsc] h2[style*="#500000"], [data-ogsb] h2[style*="#500000"], [data-ogsc] h3[style*="#500000"], [data-ogsb] h3[style*="#500000"] { color:#500000 !important; }
   @media (prefers-color-scheme: dark) {
     td[style*="rgb(255, 255, 255)"], table[style*="rgb(255, 255, 255)"] { background-color:#ffffff !important; }
     td[style*="#f6f6f6"], table[style*="#f6f6f6"] { background-color:#f6f6f6 !important; }
     td[style*="rgb(80, 0, 0)"], table[style*="rgb(80, 0, 0)"] { background-color:#500000 !important; }
     p[style*="#202020"], h3[style*="#202020"], a[style*="#202020"] { color:#202020 !important; }
     p[style*="#404040"] { color:#404040 !important; }
-    p[style*="#9a8a8a"] { color:#9a8a8a !important; }
-    h3[style*="rgb(80, 0, 0)"] { color:#500000 !important; }
+    span[style*="#7A6A6A"] { color:#7A6A6A !important; }
+    h2[style*="#500000"], h3[style*="#500000"] { color:#500000 !important; }
   }
 </style>
 </head>
 <body dir="ltr">
-<div style="background-color: rgb(234, 234, 234); margin: 0px;">
+${preheader(issue)}
+<div lang="en" style="background-color: rgb(234, 234, 234); margin: 0px;">
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: rgb(234, 234, 234); width: 100%;">
 <tbody><tr><td>`);
 
   // Header / masthead / intro
   parts.push(buildHeader(issue, editable));
 
-  // Sections in SECTION_REGISTRY order
+  // Sections in SECTION_REGISTRY order; a section that renders nothing leaves no spacer behind.
   for (const secReg of SECTION_REGISTRY) {
     const sec = issue.sections[secReg.key];
     if (!sec || !sec.enabled) continue;
-
-    parts.push(SPACER_14);
 
     let sectionHtml = '';
     switch (secReg.kind) {
@@ -637,18 +673,18 @@ export function renderNewsletter(issue, opts = {}) {
         sectionHtml = buildSpotlight(secReg, sec, editable);
         break;
     }
-    if (sectionHtml) parts.push(sectionHtml);
+    if (sectionHtml) parts.push(SPACER_14, sectionHtml);
   }
 
   // Footer spacer (26px before footer per template)
-  parts.push(`<!-- spacer --><table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(255, 255, 255);"><tbody><tr><td style="height: 26px; font-size: 1px; line-height: 26px;">&nbsp;</td></tr></tbody></table>`);
+  parts.push(`<!-- spacer --><table align="center" width="705" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(255, 255, 255);"><tbody><tr><td style="height: 26px; font-size: 1px; line-height: 26px;">&nbsp;</td></tr></tbody></table>`);
 
   // Footer
   parts.push(buildFooter());
 
   // Bottom spacer + close
   parts.push(`<!-- bottom spacer -->
-<table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto;"><tbody><tr><td style="height: 20px; font-size: 1px; line-height: 20px;">&nbsp;</td></tr></tbody></table>
+<table align="center" width="705" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto;"><tbody><tr><td style="height: 20px; font-size: 1px; line-height: 20px;">&nbsp;</td></tr></tbody></table>
 
 </td></tr></tbody></table>
 </div>

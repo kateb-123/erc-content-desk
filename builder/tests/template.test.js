@@ -196,7 +196,7 @@ const stampPositions = html => [...html.matchAll(/<img src="https:\/\/raw\.githu
 
 test('item with a blurb renders a 96px stamp whose link wraps exactly the picture, with no link text', () => {
   const html = renderNewsletter(mediaIssue());
-  assert.match(html, new RegExp(`<a href="${FLYER}" target="_blank" rel="noopener"[^>]*><img src="${FLYER}" alt="" width="96"[^>]*><\\/a>`), 'the anchor holds the image and nothing else');
+  assert.match(html, new RegExp(`<a href="${FLYER}" target="_blank" rel="noopener"[^>]*><img src="${FLYER}" alt="[^"]*" width="96"[^>]*><\\/a>`), 'the anchor holds the image and nothing else');
   assert.ok(!/View flyer/.test(html), 'no "View flyer" text');
 });
 
@@ -246,4 +246,141 @@ test('editable render tags the stamp for click-to-edit; export carries no hooks'
   const issue = mediaIssue();
   assert.match(renderNewsletter(issue, { editable: true }), /<img [^>]*data-edit-field="image"/);
   assert.ok(!/data-edit-/.test(renderNewsletter(issue)));
+});
+
+// ─── Audit fixes (2026-09-03): the 18 no-decision items ──────────────────────
+const POLICY_EXCHANGE = 'https://kateb-123.github.io/erc-policy-exchange/';
+const fullIssue = () => issueOf('full-issue.md');
+const count = (html, needle) => html.split(needle).length - 1;
+
+test('"See more" tail links point at the Policy Exchange by default and never at "#"', () => {
+  const html = renderNewsletter(fullIssue());
+  assert.ok(!/href="#"/.test(html), 'no placeholder hrefs');
+  assert.equal(count(html, `href="${POLICY_EXCHANGE}" target="_blank" rel="noopener"`), 3, 'opportunities, policy, headlines');
+});
+
+test('a section can override its "See more" URL, and an empty override drops the row', () => {
+  const issue = fullIssue();
+  issue.sections.policy.seeMoreUrl = 'https://example.org/policy';
+  issue.sections.headlines.seeMoreUrl = '';
+  const html = renderNewsletter(issue);
+  assert.ok(html.includes('href="https://example.org/policy"'));
+  assert.equal(count(html, 'See more on the ERC website'), 2, 'headlines row omitted');
+});
+
+test('masthead and every 705px table carry a width attribute for classic Outlook', () => {
+  const html = renderNewsletter(fullIssue());
+  assert.match(html, /<img width="705"[^>]*alt="Education Research Center Newsletter"/);
+  const tables705 = html.match(/<table[^>]*width: 705px[^>]*>/g) || [];
+  assert.ok(tables705.length > 5, 'sample has several 705px tables');
+  for (const t of tables705) assert.match(t, /width="705"/, t.slice(0, 120));
+});
+
+test('the picture stamp names the flyer so its link has an accessible name', () => {
+  const html = renderNewsletter(mediaIssue());
+  assert.match(html, /<img src="[^"]+flyer\.png" alt="Flyer: First blurb" width="96"/);
+});
+
+test('the two light grays that failed contrast are replaced', () => {
+  const html = renderNewsletter(fullIssue());
+  assert.ok(!/#8F8F8F/i.test(html) && !/#9a8a8a/i.test(html), 'old grays gone');
+  assert.match(html, /color: #767676;[^"]*font-size: 14px; font-weight: 700;">See more/);
+  assert.match(html, /<span style="color:#7A6A6A; font-size:14px;">\(/);
+  assert.ok(!/#9a8a8a/.test(html.slice(0, html.indexOf('</style>'))), 'dark-mode selectors updated too');
+});
+
+test('a hidden preheader follows <body>, from issue.preheader or the intro\'s first sentence', () => {
+  const issue = fullIssue();
+  issue.intro = 'Welcome back, **everyone** — see [the site](https://x.org). Second sentence here.';
+  let html = renderNewsletter(issue);
+  const pre = html.match(/<body[^>]*>\s*<div style="display:none;[^"]*mso-hide:all;">([\s\S]*?)<\/div>/);
+  assert.ok(pre, 'preheader div sits right after <body>');
+  assert.ok(pre[1].startsWith('Welcome back, everyone — see the site.'), pre[1].slice(0, 80));
+  issue.preheader = 'Three briefs & a symposium';
+  html = renderNewsletter(issue);
+  assert.match(html, /mso-hide:all;">Three briefs &amp; a symposium/);
+});
+
+test('rgb(80, 0, 0) is only ever a background, so the dark-mode rules cannot repaint the date or tab rows', () => {
+  const html = renderNewsletter(fullIssue());
+  const uses = html.slice(html.indexOf('</style>')).match(/[a-z-]+: rgb\(80, 0, 0\)/g) || [];
+  assert.ok(uses.length > 0);
+  for (const u of uses) assert.equal(u, 'background-color: rgb(80, 0, 0)');
+  assert.match(html, /border-bottom: 3px solid #500000;/);
+});
+
+test('footer cell sets white text so blocked-image alt text stays readable on maroon', () => {
+  const html = renderNewsletter(fullIssue());
+  assert.match(html, /<td align="center" style="[^"]*color:#ffffff;[^"]*padding: 26px 24px 24px;/);
+});
+
+test('jump nav is labeled as a table of contents', () => {
+  const html = renderNewsletter(fullIssue());
+  assert.match(html, /In this issue:<\/span>\s*(&nbsp;)?\s*<a href="#research"/);
+});
+
+test('the mailing-list link has one name in the header and the footer', () => {
+  const html = renderNewsletter(fullIssue());
+  assert.equal(count(html, '>Join the mailing list</a>'), 2);
+  assert.ok(!/Listserv|Join Mailing List/.test(html));
+});
+
+test('document declares its language and a doctype, and every new-tab link is noopener', () => {
+  const html = renderNewsletter(fullIssue());
+  assert.ok(html.startsWith('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"'));
+  assert.match(html, /<html lang="en"/);
+  assert.match(html, /<div lang="en" style="background-color: rgb\(234, 234, 234\)/);
+  assert.equal(count(html, 'target="_blank"'), count(html, 'target="_blank" rel="noopener"'));
+});
+
+test('footer icons are hidden from assistive tech', () => {
+  const html = renderNewsletter(fullIssue());
+  const svgs = html.match(/<svg[^>]*>/g) || [];
+  assert.equal(svgs.length, 3);
+  for (const s of svgs) assert.match(s, /aria-hidden="true" focusable="false"/);
+});
+
+test('sections are h2 and group eyebrows are h3, with no visual change', () => {
+  const html = renderNewsletter(fullIssue());
+  assert.ok(!/<h3 id=/.test(html) && !/<h1/.test(html));
+  assert.match(html, /<h2 id="research" style="margin:0; font-family: Verdana/);
+  assert.match(html, /<h3 style="margin:0; font-family: Verdana[^"]*text-transform: uppercase;[^"]*">Research Brief<\/h3>/);
+  assert.match(html, /<h3 style="margin:0 0 9px; font-family: Verdana[^"]*">Working Papers<\/h3>/);
+});
+
+test('meta and author lines carry a line-height like every other paragraph', () => {
+  const html = renderNewsletter(fullIssue());
+  const metas = html.match(/<p style="[^"]*color: #5C5C5C;"/g) || [];
+  assert.ok(metas.length >= 4);
+  for (const m of metas) assert.match(m, /line-height: 1\.4;/, m);
+});
+
+test('an item with no title is skipped, and a section left with nothing renders no tab and no spacer', () => {
+  const issue = createEmptyIssue();
+  issue.sections.research.enabled = true;
+  issue.sections.research.items = [
+    { id: 'r1', group: 'brief', fields: { title: '  ', url: 'https://example.org/x', summary: 'Headless.' } },
+    { id: 'r2', group: 'brief', fields: { title: 'Real one', summary: 'Fine.' } },
+  ];
+  issue.sections.opportunities.enabled = true;
+  issue.sections.opportunities.items = [{ id: 'o1', group: 'funding', fields: { title: '', meta: 'Deadline' } }];
+  const html = renderNewsletter(issue);
+  assert.ok(!/Headless\./.test(html) && !/<a href="https:\/\/example\.org\/x"[^>]*><\/a>/.test(html));
+  assert.ok(html.includes('Real one'));
+  assert.ok(!/>Opportunities<\/h2>/.test(html) && !/href="#opportunities"/.test(html), 'empty section and its nav entry gone');
+  assert.equal(count(html, '<!-- spacer -->'), 2, 'one spacer before the one real section, one before the footer');
+});
+
+test('a two-paragraph blurb renders as two paragraphs', () => {
+  const issue = fullIssue();
+  issue.sections.research.items[0].fields.summary = 'First paragraph.\n\nSecond paragraph.';
+  const html = renderNewsletter(issue);
+  assert.match(html, /<p style="margin:0 0 8px; line-height: 1\.5;[^"]*">First paragraph\.<\/p>\s*<p style="margin:0; line-height: 1\.5;[^"]*">Second paragraph\.<\/p>/);
+});
+
+test('emphasis that spans a markdown link renders as one bold run', () => {
+  const html = renderProse('**see [x](https://a.b) now** and *[y](https://c.d)*');
+  assert.match(html, /<strong>see <a href="https:\/\/a\.b"[^>]*>x<\/a> now<\/strong>/);
+  assert.match(html, /<em><a href="https:\/\/c\.d"[^>]*>y<\/a><\/em>/);
+  assert.ok(!/\*/.test(html), 'no stray asterisks');
 });
