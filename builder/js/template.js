@@ -87,24 +87,42 @@ function editAttrs(section, itemId, field, editable) {
 // ─── Item media: the stamp ───────────────────────────────────────────────────
 // Spec: docs/superpowers/specs/2026-09-02-newsletter-media-layout.md (Decision, as revised).
 
-/** Stamp width beside the text, and the gutter between them (px). */
-const STAMP = { width: 96, gutter: 14 };
+/** The stamp: at most 96px wide, never wider than the text beside it is tall
+ *  (a letter-size flyer is ~1.3× taller than wide), dropped below 40px. */
+const STAMP = { max: 96, min: 40, gutter: 14, ratio: 1.3 };
+/** The item text column: 640px sheet, 40px indent, 48px right padding. */
+const ITEM_COLUMN = 640 - 40 - 48;
+
+/** Estimated height (px) of the paragraphs beside a stamp: lines × line-height
+ *  plus bottom margins, at the narrowest text column a stamp can leave. */
+function textHeight(rest) {
+  const cpl = (ITEM_COLUMN - (STAMP.max + 2 + STAMP.gutter)) / 6.3; // ~14px Trebuchet MS
+  let h = 0;
+  for (const m of rest.matchAll(/<p([^>]*)>([\s\S]*?)<\/p>/g)) {
+    const text = m[2].replace(/<[^>]+>/g, '').replace(/&[^;\s]+;/g, 'x');
+    const lines = Math.max(1, Math.ceil(text.length / cpl));
+    const lineHeight = /line-height: 1\.5/.test(m[1]) ? 21 : 19.6;
+    const margin = Number((m[1].match(/margin:0 0 (\d+)px/) || [0, 0])[1]);
+    h += lines * lineHeight + margin;
+  }
+  return h;
+}
 
 /**
- * Sets an item's picture as a small "stamp" to the left of its text: a
- * two-cell table, the picture never cropped, 96px wide, linking to the
- * full-size picture. Only items with a blurb carry a stamp — a short item
- * (title and date line) shows no picture, since the stamp would stand taller
- * than its text. No picture, an unsafe URL, or no blurb → the text comes back
- * exactly as given.
+ * Sets an item's picture as a small "stamp" under the title, to the left of
+ * the authors/meta and blurb: a two-cell table, the picture never cropped,
+ * linking to the full-size picture. The stamp is sized from the text beside
+ * it so it never stands taller than that text (96px at most, none below
+ * 40px). Items without a blurb, without a picture, or with an unsafe URL
+ * render title and text exactly as before.
  */
-function withStamp(text, fields, sectionKey, itemId, editable, hasBlurb) {
+function withStamp(title, rest, fields, sectionKey, itemId, editable, hasBlurb) {
   const src = safeItemHref(fields.image);
-  if (!src || !hasBlurb) return text;
-  const w = STAMP.width;
+  const w = src && hasBlurb ? Math.min(STAMP.max, Math.floor(textHeight(rest) / STAMP.ratio)) : 0;
+  if (w < STAMP.min) return `${title}\n${rest}`;
   const cellW = w + 2 + STAMP.gutter; // picture + its 1px border each side + one gutter, so Word and browser box models agree
   const img = `<a href="${esc(src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="Flyer: ${esc(fields.title || '')}" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:1px solid #e6e2dd; border-radius:3px;"${editAttrs(sectionKey, itemId, 'image', editable)}></a>`;
-  return `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width:100%;"><tbody><tr><td valign="top" width="${cellW}" style="width:${cellW}px; vertical-align:top; padding:2px 0 0 0;">${img}</td><td valign="top" style="vertical-align:top;">\n${text}\n</td></tr></tbody></table>`;
+  return `${title}\n<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width:100%;"><tbody><tr><td valign="top" width="${cellW}" style="width:${cellW}px; vertical-align:top; padding:2px 0 0 0;">${img}</td><td valign="top" style="vertical-align:top;">\n${rest}\n</td></tr></tbody></table>`;
 }
 
 /** Items that can render: a title is the one field every item needs. */
@@ -183,12 +201,12 @@ function buildBriefs(sec, editable = false) {
         ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs('research', item.id, 'title', editable)}>${esc(fields.title)}</a>`
         : `<span${editAttrs('research', item.id, 'title', editable)}>${esc(fields.title)}</span>`;
       const topPad = i === 0 ? '13px' : '12px';
-      const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
-${fields.authors ? `<p style="margin:0 0 8px; line-height: 1.4; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs('research', item.id, 'authors', editable)}>${esc(fields.authors)}</p>` : ''}
+      const title = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>`;
+      const rest = `${fields.authors ? `<p style="margin:0 0 8px; line-height: 1.4; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs('research', item.id, 'authors', editable)}>${esc(fields.authors)}</p>` : ''}
 ${fields.summary ? proseParas(fields.summary, editAttrs('research', item.id, 'summary', editable)) : ''}`;
       rows += `
 <tr><td style="padding: ${topPad} 48px 0 40px;">
-${withStamp(text, fields, 'research', item.id, editable, !!fields.summary)}
+${withStamp(title, rest, fields, 'research', item.id, editable, !!fields.summary)}
 </td></tr>`;
       if (i < items.length - 1) rows += DIVIDER;
     });
@@ -283,20 +301,20 @@ function buildGroupedList(secReg, sec, editable = false) {
       const needsItemDivider = isEvents && i < items.length - 1;
 
       if (isEvents) {
-        const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
-${metaLine}
+        const title = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>`;
+        const rest = `${metaLine}
 ${descLine}`;
         rows += `<tr><td style="padding: ${topPad} 48px 0 40px;">
-${withStamp(text, fields, sectionKey, item.id, editable, descLine !== '')}
+${withStamp(title, rest, fields, sectionKey, item.id, editable, descLine !== '')}
 </td></tr>`;
         if (needsItemDivider) {
           rows += `<tr><td style="padding: 12px 48px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
         }
       } else {
-        const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
-${oppMeta}`;
+        const title = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>`;
+        const rest = `${oppMeta}`;
         rows += `<tr><td style="padding: ${topPad} 48px 0 40px;">
-${withStamp(text, fields, sectionKey, item.id, editable, false)}
+${withStamp(title, rest, fields, sectionKey, item.id, editable, false)}
 </td></tr>`;
       }
     });
@@ -465,11 +483,12 @@ function buildSpotlight(secReg, sec, editable = false) {
           ? proseParas(fields.summary, editAttrs('spotlight', item.id, 'summary', editable))
           : '';
 
-        const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
-${metaLine}
+        const title = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>`;
+
+        const rest = `${metaLine}
 ${summaryLine}`;
         rows += `<tr><td style="padding: ${topPad} 48px 0 40px;">
-${withStamp(text, fields, 'spotlight', item.id, editable, summaryLine !== '')}
+${withStamp(title, rest, fields, 'spotlight', item.id, editable, summaryLine !== '')}
 </td></tr>`;
 
         if (i < items.length - 1) {

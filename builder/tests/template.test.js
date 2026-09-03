@@ -174,8 +174,8 @@ function mediaIssue() {
   const oppGroup = SECTION_REGISTRY.find(s => s.key === 'opportunities').groups[0].key;
   issue.sections.research.enabled = true;
   issue.sections.research.items = [
-    { id: 'r1', group: 'brief', fields: { title: 'First blurb', summary: 'A summary.', image: FLYER } },
-    { id: 'r2', group: 'brief', fields: { title: 'Second blurb', summary: 'Another summary.', image: FLYER } },
+    { id: 'r1', group: 'brief', fields: { title: 'First blurb', summary: 'A summary. ' + 'Four lines of blurb beside the picture, enough to earn a stamp. '.repeat(4), image: FLYER } },
+    { id: 'r2', group: 'brief', fields: { title: 'Second blurb', summary: 'Another summary. ' + 'Four lines of blurb beside the picture, enough to earn a stamp. '.repeat(4), image: FLYER } },
     { id: 'r3', group: 'brief', fields: { title: 'Brief sans summary', authors: 'A. Author', image: FLYER } },
   ];
   issue.sections.spotlight.enabled = true;
@@ -194,16 +194,49 @@ function mediaIssue() {
 }
 const stampPositions = html => [...html.matchAll(/<img src="https:\/\/raw\.githubusercontent\.com[^"]*flyer\.png"/g)].map(m => m.index);
 
-test('item with a blurb renders a 96px stamp whose link wraps exactly the picture, with no link text', () => {
+const stampWidth = (html, title) => {
+  const seg = html.slice(html.indexOf(title));
+  const nextTitle = seg.indexOf('<p style="margin:0 0 4px', 1); // the next item's title paragraph
+  const scope = nextTitle > 0 ? seg.slice(0, nextTitle) : seg;
+  const m = scope.match(/<img src="[^"]+flyer\.png" alt="[^"]*" width="(\d+)"/);
+  return m ? Number(m[1]) : null;
+};
+
+test('a stamp links to the full picture, with no link text', () => {
   const html = renderNewsletter(mediaIssue());
-  assert.match(html, new RegExp(`<a href="${FLYER}" target="_blank" rel="noopener"[^>]*><img src="${FLYER}" alt="[^"]*" width="96"[^>]*><\\/a>`), 'the anchor holds the image and nothing else');
+  assert.match(html, new RegExp(`<a href="${FLYER}" target="_blank" rel="noopener"[^>]*><img src="${FLYER}" alt="[^"]*" width="\\d+"[^>]*><\\/a>`), 'the anchor holds the image and nothing else');
   assert.ok(!/View flyer/.test(html), 'no "View flyer" text');
 });
 
-test('the stamp cell is the bordered picture plus one 14px gutter, so every client shows the same gap', () => {
+test('the stamp sits under the title, beside the authors and blurb', () => {
   const html = renderNewsletter(mediaIssue());
-  // 96px picture + 1px border each side + 14px gutter = 112px, with the gutter not repeated as padding
-  assert.match(html, /<td valign="top" width="112" style="width:112px; vertical-align:top; padding:2px 0 0 0;">/);
+  const title = html.indexOf('First blurb');
+  const stamp = html.indexOf(`<img src="${FLYER}`);
+  const blurb = html.indexOf('A summary.');
+  assert.ok(title < stamp && stamp < blurb, 'title, then picture, then the text beside it');
+  const between = html.slice(title, stamp);
+  assert.match(between, /<\/p>\s*<table role="presentation"/, 'the title paragraph closes before the two-cell row opens');
+  assert.ok(!/<p[^>]*>[^<]*First blurb/.test(html.slice(stamp)), 'the title is not inside the row');
+});
+
+test('the stamp is sized from the text beside it: short text, no stamp; medium text, a smaller stamp; long text, 96px', () => {
+  const issue = mediaIssue();
+  const items = issue.sections.research.items;
+  items[0].fields.summary = 'One line.';
+  items[1].fields.summary = 'About two hundred and fifty characters of blurb, so that the paragraph wraps to four lines in the column beside the picture, which leaves room for a medium-sized stamp but not the full ninety-six pixels. '.padEnd(250, 'More words. ');
+  items[2].fields = { title: 'Long blurb', authors: 'A. Author', summary: 'x'.repeat(0) + 'A long blurb. '.repeat(40), image: FLYER };
+  const html = renderNewsletter(issue);
+  assert.equal(stampWidth(html, 'First blurb'), null, 'one line of text: no picture, it would stand taller');
+  const mid = stampWidth(html, 'Second blurb');
+  assert.ok(mid >= 40 && mid < 96, `medium text gets a medium stamp, got ${mid}`);
+  assert.equal(stampWidth(html, 'Long blurb'), 96, 'ceiling');
+});
+
+test('the stamp cell is the bordered picture plus one 14px gutter, whatever the stamp width', () => {
+  const html = renderNewsletter(mediaIssue());
+  const cells = [...html.matchAll(/<td valign="top" width="(\d+)" style="width:\d+px; vertical-align:top; padding:2px 0 0 0;"><a [^>]*><img [^>]*width="(\d+)"/g)];
+  assert.ok(cells.length >= 2);
+  for (const [, cell, img] of cells) assert.equal(Number(cell), Number(img) + 2 + 14);
   assert.ok(!/padding:2px 14px 0 0/.test(html), 'gutter is not double-counted as padding');
 });
 
@@ -218,12 +251,6 @@ test('items without a blurb render no picture, in every media section', () => {
   }
 });
 
-test('every stamp sits to the left of its text', () => {
-  const html = renderNewsletter(mediaIssue());
-  const [s1, s2] = stampPositions(html);
-  assert.ok(s1 < html.indexOf('First blurb'), '1st stamp comes before its title');
-  assert.ok(html.indexOf('First blurb') < s2 && s2 < html.indexOf('Second blurb'), '2nd stamp comes before its title too');
-});
 
 test('no text cell is justified or hyphenated', () => {
   const html = renderNewsletter(mediaIssue());
@@ -279,7 +306,7 @@ test('the sheet is 640px wide: masthead and every layout table carry the width a
 
 test('the picture stamp names the flyer so its link has an accessible name', () => {
   const html = renderNewsletter(mediaIssue());
-  assert.match(html, /<img src="[^"]+flyer\.png" alt="Flyer: First blurb" width="96"/);
+  assert.match(html, /<img src="[^"]+flyer\.png" alt="Flyer: First blurb" width="\d+"/);
 });
 
 test('the two light grays that failed contrast are replaced', () => {
