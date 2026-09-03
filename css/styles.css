@@ -211,7 +211,9 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 /* Badge temperatures: bare .badge = ghost fact ("Already live", "In a past
    issue" — same look as Publish's ghost chip); .badge-dupe = amber caution;
    .badge-star = the spotlight request. One amber ink everywhere: #6b4e00. */
-.badge { display: inline-block; font-size: 0.72rem; padding: 0.1rem 0.45rem; border-radius: 999px; margin-right: 0.4rem; background: none; border: 1px dashed var(--line); color: var(--muted); }
+.badge { display: inline-block; font-size: 0.72rem; padding: 0.1rem 0.45rem; border-radius: 999px; margin-right: 0.4rem; background: none; border: 1px dashed var(--line); color: var(--muted); white-space: nowrap; }
+/* In the newsletter pool's type cell the badge sits on its own line under the subtype. */
+.nl-table .badge { margin-top: .25rem; }
 .badge-star { background: #fdf3d7; border-color: #f2e3ae; border-style: solid; color: var(--ink); }
 .badge-dupe { background: #fdf3d7; border-color: #f2e3ae; border-style: solid; color: #6b4e00; }
 .badge-stale { background: #f3e8ff; color: #5b21b6; }

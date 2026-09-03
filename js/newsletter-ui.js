@@ -321,7 +321,7 @@ export function renderNewsletter(container, props) {
       const typeTd = el('td');
       typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
       if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
-      if (newsletterOnly(row)) typeTd.append(el('span', 'item-source', 'newsletter only'));
+      if (newsletterOnly(row)) typeTd.append(el('span', 'badge', 'Newsletter only'));
       tr.append(typeTd);
       tr.append(el('td', '', isoToSlash(String(row.published_at ?? '').slice(0, 10)) || '—'));
       tr.addEventListener('click', () => pickGesture(row));
