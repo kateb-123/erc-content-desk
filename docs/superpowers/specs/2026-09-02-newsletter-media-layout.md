@@ -60,3 +60,11 @@ Not in scope: the `newsletters/next-issue/ERC_Newsletter_next.html` template in 
 - **No zigzag.** Every stamp sits on the **left** of its text. (The justified/hyphenated right-side text rule goes away with it.)
 - **No small stamp.** Only items **with a blurb** carry the 96px stamp. An item that is just a title and a date line shows **no picture** in the email, even if one was uploaded — the stamp would stand taller than its text.
 - Everything else stands: never cropped, two-cell row, hairline border, links to the full-size picture, no link text, edit hooks on the image, no-image → today's markup.
+
+### Final (Kate, later on 2026-09-03)
+
+- **Picture under the title.** The title spans the column; the picture sits below it, to the left of the authors/meta line and the blurb, in a two-cell row.
+- **Sized from the text beside it.** `textHeight()` estimates that text's height (lines × line-height + margins at the narrowest column a stamp can leave); width = height ÷ 1.25 (a 4:5 portrait photo is the tallest shape assumed), capped at 96px; under 40px the picture is dropped. So it never stands taller than the words next to it.
+- **Pictures are photos, not flyers.** Alt text reads `Picture: {title}`.
+- **Sheet is 640px wide** (was 705), item text ends 48px from the right; item dividers 12px each side, later group labels 32px below the last item.
+- Everything else from the Decision stands: never cropped, hairline border, links to the full-size picture, no link text, edit hooks on the image, no picture without a blurb.

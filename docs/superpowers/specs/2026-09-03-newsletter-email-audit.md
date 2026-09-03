@@ -7,8 +7,8 @@
 | Sev | Fix |
 |---|---|
 | 4 | "See more on the ERC website →" tail links no longer ship as `href="#"`. `seeMore(url)` reads `sec.seeMoreUrl` (issue override, `''` = no row) else the registry default `POLICY_EXCHANGE_URL` on opportunities / policy / headlines. |
-| 3 | Masthead `<img width="705">` and `width="705"` on every 705px layout table, so classic Outlook (Word engine) cannot lay the 1410px retina banner out at full size. |
-| 2 | Stamp `alt="Flyer: {title}"` so the picture link has an accessible name. |
+| 3 | Masthead `<img width>` and a `width` attribute on every layout table, so classic Outlook (Word engine) cannot lay the 1410px retina banner out at full size. (Applied at 705; the sheet later went to 640 the same day.) |
+| 2 | Stamp alt names the item so the picture link has an accessible name (now `Picture: {title}`; pictures are photos, not flyers). |
 | 2 | `#8F8F8F` → `#767676` (See more, 4.54:1) and `#9a8a8a` → `#7A6A6A` (headline sources, 5.13:1); dark-mode selectors updated. |
 | 2 | Hidden preheader after `<body>`: `issue.preheader`, else whole sentences of the intro until ≥60 chars (cap 140). |
 | 2 | `rgb(80, 0, 0)` now appears only as a background; the date color, tab underline and callout link use `#500000`, so the dark-mode `td[style*="rgb(80, 0, 0)"]` rule can no longer paint the date maroon-on-maroon. |
