@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { renderNewsletter, renderProse } from '../js/template.js';
 import { parseMarkdown, _resetIds } from '../js/parser.js';
-import { createEmptyIssue } from '../js/model.js';
+import { createEmptyIssue, SECTION_REGISTRY } from '../js/model.js';
 
 const issueOf = file => { _resetIds();
   return parseMarkdown(readFileSync(new URL(`../fixtures/${file}`, import.meta.url), 'utf8')).issue; };
@@ -167,7 +167,6 @@ test('research renders Brief and Report as separate labeled subgroups', () => {
 });
 
 // ─── Item media: the stamp (spec 2026-09-02-newsletter-media-layout, Decision) ──
-import { SECTION_REGISTRY } from '../js/model.js';
 
 const FLYER = 'https://raw.githubusercontent.com/erc/media/main/flyer.png';
 function mediaIssue() {
@@ -177,6 +176,15 @@ function mediaIssue() {
   issue.sections.research.items = [
     { id: 'r1', group: 'brief', fields: { title: 'First blurb', summary: 'A summary.', image: FLYER } },
     { id: 'r2', group: 'brief', fields: { title: 'Second blurb', summary: 'Another summary.', image: FLYER } },
+    { id: 'r3', group: 'brief', fields: { title: 'Brief sans summary', authors: 'A. Author', image: FLYER } },
+  ];
+  issue.sections.spotlight.enabled = true;
+  issue.sections.spotlight.items = [
+    { id: 's1', group: 'events', fields: { title: 'Spotlight short', date: 'May 1', location: 'Room 1', image: FLYER } },
+  ];
+  issue.sections.events.enabled = true;
+  issue.sections.events.items = [
+    { id: 'e1', group: 'tamu', fields: { title: 'Regular event', date: 'May 2', summary: 'Only featured events show this.', image: FLYER } },
   ];
   issue.sections.opportunities.enabled = true;
   issue.sections.opportunities.items = [
@@ -186,18 +194,28 @@ function mediaIssue() {
 }
 const stampPositions = html => [...html.matchAll(/<img src="https:\/\/raw\.githubusercontent\.com[^"]*flyer\.png"/g)].map(m => m.index);
 
-test('item with a blurb renders a 96px stamp that links to the full picture, with no link text', () => {
+test('item with a blurb renders a 96px stamp whose link wraps exactly the picture, with no link text', () => {
   const html = renderNewsletter(mediaIssue());
-  assert.match(html, new RegExp(`<a href="${FLYER}" target="_blank" rel="noopener"[^>]*><img src="${FLYER}" alt="" width="96"`));
+  assert.match(html, new RegExp(`<a href="${FLYER}" target="_blank" rel="noopener"[^>]*><img src="${FLYER}" alt="" width="96"[^>]*><\\/a>`), 'the anchor holds the image and nothing else');
   assert.ok(!/View flyer/.test(html), 'no "View flyer" text');
 });
 
-test('item without a blurb renders no picture at all', () => {
+test('the stamp cell is the bordered picture plus one 14px gutter, so every client shows the same gap', () => {
+  const html = renderNewsletter(mediaIssue());
+  // 96px picture + 1px border each side + 14px gutter = 112px, with the gutter not repeated as padding
+  assert.match(html, /<td valign="top" width="112" style="width:112px; vertical-align:top; padding:2px 0 0 0;">/);
+  assert.ok(!/padding:2px 14px 0 0/.test(html), 'gutter is not double-counted as padding');
+});
+
+test('items without a blurb render no picture, in every media section', () => {
   const html = renderNewsletter(mediaIssue());
   assert.equal(stampPositions(html).length, 2, 'only the two blurb items carry a stamp');
   assert.ok(!/width="36"/.test(html), 'no small stamp');
-  const shortItem = html.slice(html.indexOf('Short one') - 600, html.indexOf('Short one') + 300);
-  assert.ok(!/flyer\.png/.test(shortItem), 'the short item has no picture near it');
+  for (const title of ['Brief sans summary', 'Spotlight short', 'Regular event', 'Short one']) {
+    const i = html.indexOf(title);
+    assert.ok(i > 0, `${title} rendered`);
+    assert.ok(!/flyer\.png/.test(html.slice(i - 700, i + 400)), `${title} has no picture near it`);
+  }
 });
 
 test('every stamp sits to the left of its text', () => {

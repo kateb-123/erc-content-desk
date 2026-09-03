@@ -72,7 +72,7 @@ function editAttrs(section, itemId, field, editable) {
 }
 
 // ─── Item media: the stamp ───────────────────────────────────────────────────
-// Spec: docs/superpowers/specs/2026-09-02-newsletter-media-layout.md (Decision).
+// Spec: docs/superpowers/specs/2026-09-02-newsletter-media-layout.md (Decision, as revised).
 
 /** Stamp width beside the text, and the gutter between them (px). */
 const STAMP = { width: 96, gutter: 14 };
@@ -89,9 +89,9 @@ function withStamp(text, fields, sectionKey, itemId, editable, hasBlurb) {
   const src = safeItemHref(fields.image);
   if (!src || !hasBlurb) return text;
   const w = STAMP.width;
-  const cellW = w + STAMP.gutter;
+  const cellW = w + 2 + STAMP.gutter; // picture + its 1px border each side + one gutter, so Word and browser box models agree
   const img = `<a href="${esc(src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:1px solid #e6e2dd; border-radius:3px;"${editAttrs(sectionKey, itemId, 'image', editable)}></a>`;
-  return `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width:100%;"><tbody><tr><td valign="top" width="${cellW}" style="width:${cellW}px; vertical-align:top; padding:2px ${STAMP.gutter}px 0 0;">${img}</td><td valign="top" style="vertical-align:top;">\n${text}\n</td></tr></tbody></table>`;
+  return `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width:100%;"><tbody><tr><td valign="top" width="${cellW}" style="width:${cellW}px; vertical-align:top; padding:2px 0 0 0;">${img}</td><td valign="top" style="vertical-align:top;">\n${text}\n</td></tr></tbody></table>`;
 }
 
 // ─── Common snippets ──────────────────────────────────────────────────────────
@@ -259,7 +259,7 @@ function buildGroupedList(secReg, sec, editable = false) {
       const needsItemDivider = isEvents && i < items.length - 1;
 
       if (isEvents) {
-          const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
+        const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${metaLine}
 ${descLine}`;
         rows += `<tr><td style="padding: ${topPad} 24px 0 40px;">
@@ -269,7 +269,7 @@ ${withStamp(text, fields, sectionKey, item.id, editable, descLine !== '')}
           rows += `<tr><td style="padding: 14px 24px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
         }
       } else {
-          const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
+        const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${oppMeta}`;
         rows += `<tr><td style="padding: ${topPad} 24px 0 40px;">
 ${withStamp(text, fields, sectionKey, item.id, editable, false)}
@@ -439,7 +439,7 @@ function buildSpotlight(secReg, sec, editable = false) {
           ? `<p style="margin:0; line-height: 1.5; font-family: ${FONT_BODY}; font-size: 14px; color: #404040;"${editAttrs('spotlight', item.id, 'summary', editable)}>${renderProse(fields.summary)}</p>`
           : '';
 
-          const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
+        const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${metaLine}
 ${summaryLine}`;
         rows += `<tr><td style="padding: ${topPad} 24px 0 40px;">
