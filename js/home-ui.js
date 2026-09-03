@@ -19,7 +19,9 @@ function shortDate(iso) {
 
 const EXCHANGE_URL = 'https://kateb-123.github.io/erc-policy-exchange/';
 const BUILDER_URL = '/builder/';
-const SUBMIT_PATH = '/submit';
+// The public share page lives on erc-tools (GitHub Pages) — a separate origin
+// from the desk on purpose: nothing on it can lead back here.
+const SUBMIT_PATH = 'https://erc-kate.github.io/erc-tools/share/';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
