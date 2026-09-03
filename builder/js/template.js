@@ -25,8 +25,31 @@ const SAFE_HREF_SCHEME = /^(https?:|mailto:|#|\/)/i;
 /** An item url only becomes an href when its scheme is safe — same rule
  *  renderProse applies to markdown links. Unsafe links render as plain text. */
 function safeItemHref(url) {
-  const trimmed = String(url ?? '').trim();
+  const trimmed = normalizeHref(url);
   return SAFE_HREF_SCHEME.test(trimmed) ? trimmed : '';
+}
+
+/** "www.site.org/x" or "site.org/x" typed without a scheme becomes https://… ;
+ *  anything else is returned trimmed, for the scheme check to judge. */
+const SCHEME_LESS = /^(?:www\.|(?:[a-z0-9-]+\.)+[a-z]{2,6}(?:[\/?#]|$))/i;
+function normalizeHref(url) {
+  const trimmed = String(url ?? '').trim();
+  return SCHEME_LESS.test(trimmed) && !/^[a-z][a-z0-9+.-]*:/i.test(trimmed) ? `https://${trimmed}` : trimmed;
+}
+
+/** Items whose link would be dropped from the email (a url that is not http(s)/mailto).
+ *  The builder shows these on the export step. */
+export function linkProblems(issue) {
+  const out = [];
+  for (const secReg of SECTION_REGISTRY) {
+    const sec = issue?.sections?.[secReg.key];
+    if (!sec || !sec.enabled) continue;
+    for (const item of sec.items || []) {
+      const url = String(item?.fields?.url ?? '').trim();
+      if (url && !safeItemHref(url)) out.push({ section: secReg.label, title: String(item.fields.title ?? ''), url });
+    }
+  }
+  return out;
 }
 
 /**
@@ -45,7 +68,7 @@ export function renderProse(text) {
   // so **bold [across](url) a link** stays one bold run.
   const re = /\[([^\]]+)\]\(((?:[^()]|\([^()]*\))*)\)/g;
   const links = [];
-  const tokenized = String(text).replace(re, (m, label, href) => { links.push({ label, href }); return `\u0000${links.length - 1}\u0000`; });
+  const tokenized = String(text).replace(re, (m, label, href) => { links.push({ label, href: normalizeHref(href) }); return `\u0000${links.length - 1}\u0000`; });
   return applyEmphasis(esc(tokenized)).replace(/\u0000(\d+)\u0000/g, (m, i) => {
     const { label, href } = links[Number(i)];
     const inner = applyEmphasis(esc(label));

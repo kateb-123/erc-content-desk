@@ -33,10 +33,13 @@ Tests: `builder/tests/template.test.js`, block "Audit fixes (2026-09-03)".
 - **Line length:** ~100 characters per line at 14px in the 641px column (comfort ≤ 80). Right padding 24 → ~80px, or 15px body.
 - **Digest bullets** as table cells, not lists (deliberate for Outlook). **Brand images** on i.ibb.co (move to the desk's own hosting).
 
-## Builder / desk scope — not applied
+## Builder / desk scope
 
-- Normalize `www.` / bare-domain URLs (today a scheme-less URL silently drops the link while the title still looks linked) and flag dropped links in the Outline.
-- Block export without a date; flag titleless items.
+Applied (same day):
+- `www.` and bare-domain URLs are linked as `https://…` (template `normalizeHref`, also for prose links); `linkProblems(issue)` lists items whose link would still be dropped.
+- Export step pre-flight (amber alert per DESIGN.md): no issue date blocks Copy HTML / Download; dropped links are listed with "Fix it on Preview & Edit". Titleless items are skipped by the template.
+
+Not applied:
 - "View in browser" link once the archive step (`/builder/newsletters/<date>.html`) runs before the send.
 - A date/time format rule for contributors (weekday, time zone).
 

@@ -13,7 +13,7 @@ import { SECTION_REGISTRY, mergeIssueItems, createEmptyIssue, mergeIssues, delet
 // unusual dev setups.
 const DESK_URL = new URLSearchParams(window.location.search).get('desk') || '';
 let pullMessage = ''; // survives the Outline re-render after a pull
-import { renderNewsletter, renderProse } from './template.js';
+import { renderNewsletter, renderProse, linkProblems } from './template.js';
 import { saveState, loadState, clearState } from './state.js';
 import { getField, setField } from './editpath.js';
 import { computePreviewScale } from './preview.js';
@@ -1899,6 +1899,37 @@ function renderExport() {
   desc.textContent = 'Your newsletter is ready. Copy the HTML to paste directly into Outlook Web App, or download the file.';
   container.appendChild(desc);
 
+  // Pre-flight: things that would ship wrong. No date blocks the export; a
+  // link the email would drop is listed so it can be fixed on Preview & Edit.
+  const hasDate = !!displayDateToISO(state.issue.date || '');
+  const problems = linkProblems(state.issue);
+  if (!hasDate || problems.length) {
+    const check = document.createElement('div');
+    check.className = 'export-check';
+    check.setAttribute('role', 'status');
+    if (!hasDate) {
+      const p = document.createElement('p');
+      p.textContent = 'Set the issue date on Review before exporting.';
+      check.appendChild(p);
+    }
+    if (problems.length) {
+      const p = document.createElement('p');
+      p.textContent = problems.length === 1
+        ? 'This link will not work in the email. Fix it on Preview & Edit:'
+        : `These ${problems.length} links will not work in the email. Fix them on Preview & Edit:`;
+      check.appendChild(p);
+      const ul = document.createElement('ul');
+      for (const { section, title, url } of problems) {
+        const li = document.createElement('li');
+        li.textContent = `${title || '(untitled)'} — ${url}`;
+        li.title = section;
+        ul.appendChild(li);
+      }
+      check.appendChild(ul);
+    }
+    container.appendChild(check);
+  }
+
   // Button row
   const btnRow = document.createElement('div');
   btnRow.className = 'export-btn-row';
@@ -1950,6 +1981,8 @@ function renderExport() {
       archiveBtn.hidden = false;
     }
   });
+
+  if (!hasDate) { copyBtn.disabled = true; dlHtmlBtn.disabled = true; }
 
   btnRow.appendChild(copyBtn);
   btnRow.appendChild(archiveBtn);
