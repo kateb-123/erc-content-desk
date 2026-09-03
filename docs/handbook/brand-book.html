@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Content Desk Brand Book</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    /* ---------- Brand-book page chrome: LIGHT palette (complete) ---------- */
+    :root {
+      --pg-bg: #e9ebef;
+      --pg-panel: #ffffff;
+      --pg-fg: #1c2229;
+      --pg-muted: #55606c;
+      --pg-line: #d3d7dd;
+      --pg-accent: #1d6ea5;
+      --pg-accent-soft: #eaf2f8;
+    }
+    /* Reader's system-dark, unless the toggle forced light. */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --pg-bg: #12161b;
+        --pg-panel: #1b2027;
+        --pg-fg: #e7eaee;
+        --pg-muted: #9aa4b0;
+        --pg-line: #2b323b;
+        --pg-accent: #6fb2dd;
+        --pg-accent-soft: #1d2a35;
+      }
+    }
+    /* Toggle-forced dark wins in both directions. */
+    :root[data-theme="dark"] {
+      --pg-bg: #12161b;
+      --pg-panel: #1b2027;
+      --pg-fg: #e7eaee;
+      --pg-muted: #9aa4b0;
+      --pg-line: #2b323b;
+      --pg-accent: #6fb2dd;
+      --pg-accent-soft: #1d2a35;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Karla, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      color: var(--pg-fg);
+      background: var(--pg-bg);
+      line-height: 1.5;
+    }
+    .wrap { max-width: 60rem; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+
+    .book-head { display: flex; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+    .book-head .titles { flex: 1; min-width: 16rem; }
+    .book-head h1 { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 800; font-size: 1.9rem; margin: 0 0 .35rem; letter-spacing: -0.01em; }
+    .book-head p { margin: 0; color: var(--pg-muted); font-size: .95rem; max-width: 40rem; }
+
+    /* Theme control — page chrome, deliberately not the desk pill. */
+    .theme-ctl { display: inline-flex; border: 1px solid var(--pg-line); border-radius: 999px; overflow: hidden; background: var(--pg-panel); }
+    .theme-ctl button {
+      font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .8rem;
+      border: none; background: none; color: var(--pg-muted); padding: .4rem .8rem; cursor: pointer;
+      display: inline-flex; align-items: center; gap: .35rem;
+    }
+    .theme-ctl button[aria-pressed="true"] { background: var(--pg-accent); color: #fff; }
+
+    section.book { margin: 0 0 2.75rem; }
+    section.book > h2 { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: 1.2rem; margin: 0 0 .2rem; }
+    section.book > .sec-note { margin: 0 0 1rem; color: var(--pg-muted); font-size: .88rem; max-width: 42rem; }
+
+    /* The desk surface: specimens ALWAYS sit here — #fbfbfd ground, #fff cards —
+       whatever the reader's theme, because that is what they actually are.
+       Desk tokens are pinned to their real values inside this frame. */
+    .deskframe {
+      --ink: #1c2229;
+      --muted: #55606c;
+      --line: #dbdfe5;
+      --bg: #fbfbfd;
+      --accent: #1d6ea5;
+      --accent-hover: #19608f;
+      --accent-active: #14507a;
+      --tint: #eaf2f8;
+      --ok: #1d6f4f;
+      --err: #a32d2d;
+      --radius: 8px;
+      background: #fbfbfd;
+      color: #1c2229;
+      border: 1px solid var(--pg-line);
+      border-radius: 14px;
+      padding: 1.5rem;
+      font-family: Karla, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+    }
+    .deskframe + .deskframe { margin-top: 1rem; }
+    .spec-label { font-size: .78rem; color: var(--muted); margin: 0 0 .5rem; }
+    .spec-label .vocab { color: var(--ink); font-weight: 600; }
+    .spec-row { display: flex; flex-wrap: wrap; gap: 1.5rem 2rem; align-items: flex-start; }
+    .spec { min-width: 0; }
+    .spec .meaning { font-size: .8rem; color: var(--muted); margin: .45rem 0 0; max-width: 22rem; }
+
+    /* ---------- Color swatches ---------- */
+    .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: .9rem; }
+    .swatch { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .swatch .chip { height: 62px; border-bottom: 1px solid var(--line); }
+    .swatch .meta { padding: .55rem .7rem .65rem; }
+    .swatch .nm { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: .85rem; color: var(--ink); }
+    .swatch .hex { font-size: .8rem; color: var(--accent); letter-spacing: .01em; margin-top: .05rem; }
+    .swatch .role { font-size: .76rem; color: var(--muted); margin-top: .3rem; line-height: 1.4; }
+
+    /* ---------- Type scale ---------- */
+    .type-list { display: grid; gap: 1.1rem; }
+    .type-row2 { display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: baseline; border-bottom: 1px solid #eef0f3; padding-bottom: 1.1rem; }
+    .type-row2:last-child { border-bottom: none; padding-bottom: 0; }
+    .type-caption { font-size: .74rem; color: var(--muted); font-family: Karla, sans-serif; white-space: nowrap; text-align: right; }
+    .t-outfit { font-family: Outfit, "Segoe UI", sans-serif; }
+    .t-karla { font-family: Karla, sans-serif; }
+    .t-h1 { font-weight: 700; font-size: 1.4rem; color: var(--ink); }
+    .t-h2 { font-weight: 700; font-size: 1.35rem; color: var(--ink); }
+    .t-h3 { font-weight: 600; font-size: 1.1rem; color: var(--ink); }
+    .t-btn { font-weight: 600; font-size: 1rem; color: var(--ink); }
+    .t-pill { font-weight: 600; font-size: .85rem; color: var(--ink); }
+    .t-body { font-weight: 400; font-size: 1rem; color: var(--ink); }
+    .t-lede { font-weight: 400; font-size: 1rem; color: var(--muted); }
+    .t-small { font-weight: 400; font-size: .85rem; color: var(--muted); }
+    .t-link { color: var(--accent); font-weight: 600; }
+
+    /* ---------- Buttons + quiet action words (exact from styles.css) ---------- */
+    .btn-keep {
+      font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600;
+      display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+      padding: .55rem 1.6rem; font-size: .95rem; border-radius: var(--radius);
+      background: var(--accent); border: 1px solid var(--accent); color: #fff; cursor: pointer;
+      transition: background-color .15s ease-out, border-color .15s ease-out, transform .1s ease-out;
+    }
+    .btn-keep:hover { background: var(--accent-hover); border-color: var(--accent-hover); transform: translateY(-1px); }
+    .btn-keep .fa-solid { font-size: .9em; }
+
+    .quiet-row { display: flex; flex-wrap: wrap; gap: 1.4rem 2.2rem; align-items: flex-start; }
+    .quiet { display: inline-flex; flex-direction: column; gap: .35rem; }
+    .linkish {
+      border: none; background: none; padding: 0; cursor: pointer;
+      font-family: Karla, sans-serif; font-size: .85rem; font-weight: 600;
+      color: var(--accent); white-space: nowrap;
+    }
+    .linkish .fa-solid { margin-right: .3rem; font-size: .9em; }
+    .linkish.skip-link { color: var(--muted); }
+    .linkish.use-original { color: var(--muted); }
+    .linkish.trash-link { color: var(--err); }
+    .quiet .meaning { font-size: .76rem; color: var(--muted); margin: 0; max-width: 15rem; white-space: normal; }
+
+    /* ---------- Nav pills (exact) ---------- */
+    .screen-nav { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .screen-tab {
+      border: none; border-radius: 999px; background: none; padding: .45rem 1rem;
+      color: var(--muted); font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .85rem;
+      cursor: pointer;
+    }
+    .screen-tab.is-active { color: #fff; background: var(--accent); }
+
+    /* ---------- Badges (exact) ---------- */
+    .badge { display: inline-block; font-size: 0.72rem; padding: 0.1rem 0.45rem; border-radius: 999px; margin-right: 0.4rem; background: none; border: 1px dashed var(--line); color: var(--muted); }
+    .badge-star { background: #fdf3d7; border: 1px solid #f2e3ae; color: var(--ink); }
+    .badge-dupe { background: #fdf3d7; border: 1px solid #f2e3ae; color: #6b4e00; }
+
+    /* ---------- Info panel + amber bubbles (exact) ---------- */
+    .info-panel { background: var(--tint); border-radius: 8px; padding: .7rem 1rem; font-size: .9rem; color: #2b4a61; max-width: 46rem; }
+    .info-toggle { border: none; background: none; padding: 0; font: inherit; font-family: Karla, sans-serif; font-weight: 600; font-size: .85rem; color: var(--accent); cursor: pointer; margin-bottom: .5rem; }
+
+    .link-alert { margin: 0; font-size: .85rem; color: #6b4e00; background: #fdf3d7; border: 1px solid #f2e3ae; border-radius: 8px; padding: .55rem .9rem; max-width: 30rem; }
+    .link-alert .alert-line { margin: 0; }
+    .link-alert .alert-mark { color: #6b4e00; margin-right: .25rem; font-size: .9em; }
+    .link-alert .alert-word { color: var(--accent); font-weight: 600; font-size: .85rem; text-decoration: none; }
+    .alert-actions { margin: .55rem 0 0; display: flex; gap: .5rem; }
+    .alert-btn { font-family: Karla, sans-serif; font-size: .8rem; padding: .25rem .7rem; background: #fff; color: #6b4e00; border: 1px solid #ecd9a0; border-radius: 999px; cursor: pointer; }
+
+    .nl-ask {
+      display: block; width: fit-content; margin: 0;
+      font-size: .85rem; color: #6b4e00; background: #fdf3d7;
+      border: 1px solid #f2e3ae; border-radius: 8px; padding: .35rem .7rem;
+    }
+    .nl-ask .fa-clock { margin-right: .25rem; }
+    .nl-ask .alert-word { color: var(--accent); font-weight: 600; text-decoration: none; margin-left: .35rem; }
+    .nl-ask .nl-cancel { color: var(--muted); font-weight: 400; margin-left: .6rem; background: none; border: none; font: inherit; font-family: Karla, sans-serif; cursor: pointer; }
+
+    /* ---------- Radii ---------- */
+    .radii-row { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+    .radius-demo { text-align: center; }
+    .radius-demo .box { width: 96px; height: 72px; background: var(--tint); border: 1px solid var(--accent); }
+    .radius-demo .r8 { border-radius: 8px; }
+    .radius-demo .r12 { border-radius: 12px; }
+    .radius-demo .r999 { border-radius: 999px; }
+    .radius-demo .cap { font-size: .78rem; color: var(--muted); margin-top: .5rem; }
+    .radius-demo .cap b { font-family: Outfit, sans-serif; color: var(--ink); font-weight: 700; display: block; font-size: .85rem; }
+
+    /* ---------- Focus ring (exact) ---------- */
+    .focus-field { width: 18rem; max-width: 100%; font: inherit; font-family: Karla, sans-serif; padding: .5rem .6rem; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; color: var(--ink); }
+    .focus-field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--tint); }
+    /* Pinned specimen so the ring is always visible, even unfocused. */
+    .focus-field.is-focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--tint); }
+
+    /* ---------- Sliding-dots loader (keyframes copied verbatim from styles.css) ---------- */
+    .dots-loader { position: relative; height: var(--dl-s, 20px); width: var(--dl-w, 250px); margin: .5rem 0 1.5rem; }
+    .dots-loader .dot {
+      position: absolute; height: var(--dl-s, 20px); width: var(--dl-s, 20px);
+      border-radius: 100%; border: 2px solid #fff; box-sizing: border-box;
+      animation: dots-slide 3s ease-in-out infinite;
+    }
+    .dots-loader .dot:nth-child(1) { background: #9ec9e8; animation-delay: .5s; }
+    .dots-loader .dot:nth-child(2) { background: #63a3cd; animation-delay: .4s; }
+    .dots-loader .dot:nth-child(3) { background: #4a8cbf; animation-delay: .3s; }
+    .dots-loader .dot:nth-child(4) { background: #1d6ea5; animation-delay: .2s; }
+    .dots-loader .dot:nth-child(5) { background: #19608f; animation-delay: .1s; }
+    .dots-loader .dot:nth-child(6) { background: #14507a; animation-delay: 0s; }
+    @keyframes dots-slide {
+      15% { transform: translateX(0); }
+      45%, 65% { transform: translateX(calc(var(--dl-w, 250px) - var(--dl-s, 20px))); }
+      95% { transform: translateX(0); }
+    }
+    .dots-text { color: var(--muted); font-size: .9rem; }
+    .dots-text::after { content: ""; animation: dots-text 3s infinite; }
+    @keyframes dots-text { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }
+    .ramp { display: flex; gap: .35rem; margin-top: .3rem; }
+    .ramp span { display: inline-flex; align-items: flex-end; justify-content: center; width: 3.6rem; height: 2.2rem; border-radius: 6px; color: #fff; font-size: .62rem; padding-bottom: 2px; }
+
+    /* ---------- Drawn confirmation check (exact) ---------- */
+    .check-icon { width: 22px; height: 22px; vertical-align: -4px; margin-right: 6px; color: var(--ok); }
+    .draw-check path { stroke-dasharray: 24; stroke-dashoffset: 24; animation: check-draw 350ms cubic-bezier(0.33, 1, 0.68, 1) 300ms forwards; }
+    @keyframes check-draw { to { stroke-dashoffset: 0; } }
+    .done-line { color: var(--ok); font-weight: 500; font-size: 1rem; display: inline-flex; align-items: center; }
+
+    /* Reduced motion — copied verbatim from styles.css */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      /* With motion off, the check simply shows finished. */
+      .draw-check path { stroke-dashoffset: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="book-head">
+      <div class="titles">
+        <h1>Content Desk Brand Book</h1>
+        <p>The steel-blue desk system, exact values from <span class="t-outfit">css/styles.css</span> and <span class="t-outfit">design/DESIGN.md</span>. Specimens sit on the desk's real surfaces &mdash; #fbfbfd ground, #fff cards &mdash; in either theme.</p>
+      </div>
+      <div class="theme-ctl" role="group" aria-label="Preview theme">
+        <button type="button" data-theme-set="system" aria-pressed="true"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i> System</button>
+        <button type="button" data-theme-set="light" aria-pressed="false"><i class="fa-solid fa-sun" aria-hidden="true"></i> Light</button>
+        <button type="button" data-theme-set="dark" aria-pressed="false"><i class="fa-solid fa-moon" aria-hidden="true"></i> Dark</button>
+      </div>
+    </header>
+
+    <!-- ================= COLOR ================= -->
+    <section class="book">
+      <h2>Color</h2>
+      <p class="sec-note">One brand color does the work. Amber is the only other ink, reserved for anything that needs attention.</p>
+      <div class="deskframe">
+        <div class="swatch-grid">
+          <div class="swatch"><div class="chip" style="background:#1d6ea5"></div><div class="meta"><div class="nm">accent</div><div class="hex">#1d6ea5</div><div class="role">The one brand color &mdash; filled buttons, links, active pills.</div></div></div>
+          <div class="swatch"><div class="chip" style="background:#19608f"></div><div class="meta"><div class="nm">accent hover</div><div class="hex">#19608f</div><div class="role">Button hover shade &mdash; never a resting color.</div></div></div>
+          <div class="swatch"><div class="chip" style="background:#14507a"></div><div class="meta"><div class="nm">accent active</div><div class="hex">#14507a</div><div class="role">Button active; the "picked" type color.</div></div></div>
+          <div class="swatch"><div class="chip" style="background:#eaf2f8"></div><div class="meta"><div class="nm">tint</div><div class="hex">#eaf2f8</div><div class="role">ERC / held-row highlight, focus halo, soft fills.</div></div></div>
+          <div class="swatch"><div class="chip" style="background:#1c2229"></div><div class="meta"><div class="nm">ink</div><div class="hex">#1c2229</div><div class="role">Body text.</div></div></div>
+          <div class="swatch"><div class="chip" style="background:#55606c"></div><div class="meta"><div class="nm">muted</div><div class="hex">#55606c</div><div class="role">Secondary text, quiet labels.</div></div></div>
+          <div class="swatch"><div class="chip" style="background:#dbdfe5"></div><div class="meta"><div class="nm">line</div><div class="hex">#dbdfe5</div><div class="role">Borders, hairlines.</div></div></div>
+          <div class="swatch"><div class="chip" style="background:#fbfbfd"></div><div class="meta"><div class="nm">page</div><div class="hex">#fbfbfd</div><div class="role">Page ground, both apps.</div></div></div>
+          <div class="swatch"><div class="chip" style="background:#ffffff"></div><div class="meta"><div class="nm">card</div><div class="hex">#ffffff</div><div class="role">Card and table surface.</div></div></div>
+          <div class="swatch"><div class="chip" style="background:#1d6f4f"></div><div class="meta"><div class="nm">ok</div><div class="hex">#1d6f4f</div><div class="role">Success.</div></div></div>
+          <div class="swatch"><div class="chip" style="background:#a32d2d"></div><div class="meta"><div class="nm">err</div><div class="hex">#a32d2d</div><div class="role">Destructive text and links (Delete, Remove).</div></div></div>
+          <div class="swatch"><div class="chip" style="background:#fdf3d7"></div><div class="meta"><div class="nm">amber fill</div><div class="hex">#fdf3d7</div><div class="role">Needs-attention bubble and alert fill.</div></div></div>
+          <div class="swatch"><div class="chip" style="background:#6b4e00"></div><div class="meta"><div class="nm">amber ink</div><div class="hex">#6b4e00</div><div class="role">Text inside every amber bubble.</div></div></div>
+          <div class="swatch"><div class="chip" style="background:#f2e3ae"></div><div class="meta"><div class="nm">amber line</div><div class="hex">#f2e3ae</div><div class="role">Amber bubble border.</div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TYPE ================= -->
+    <section class="book">
+      <h2>Type</h2>
+      <p class="sec-note">Outfit for headings, buttons, and pills. Karla for body and links. Both via Google Fonts; no other faces.</p>
+      <div class="deskframe">
+        <div class="type-list">
+          <div class="type-row2"><div class="t-outfit t-h1">Send to Newsletter</div><div class="type-caption">Outfit &middot; 700 &middot; 1.4rem &middot; page title (h1)</div></div>
+          <div class="type-row2"><div class="t-outfit t-h2">Sort the queue</div><div class="type-caption">Outfit &middot; 700 &middot; 1.35rem &middot; screen title (h2)</div></div>
+          <div class="type-row2"><div class="t-outfit t-h3">Texas teacher retention rose in 2025</div><div class="type-caption">Outfit &middot; 600 &middot; 1.1rem &middot; card heading (h3)</div></div>
+          <div class="type-row2"><div class="t-outfit t-btn">Keep</div><div class="type-caption">Outfit &middot; 600 &middot; 1rem &middot; button label</div></div>
+          <div class="type-row2"><div class="t-outfit t-pill">Publish to Exchange</div><div class="type-caption">Outfit &middot; 600 &middot; .85rem &middot; nav pill</div></div>
+          <div class="type-row2"><div class="t-karla t-body">Body copy is Karla at a 1.5 line height &mdash; the reading voice across every screen.</div><div class="type-caption">Karla &middot; 400 &middot; 1rem &middot; body</div></div>
+          <div class="type-row2"><div class="t-karla t-lede">The lede sits under a title in muted ink.</div><div class="type-caption">Karla &middot; 400 &middot; 1rem &middot; lede (muted)</div></div>
+          <div class="type-row2"><div class="t-karla t-small">Meta and quiet labels ride smaller and muted.</div><div class="type-caption">Karla &middot; 400 &middot; .85rem &middot; small / meta</div></div>
+          <div class="type-row2"><div class="t-karla t-body">A source <a href="#" class="t-link" onclick="return false">reads in accent</a> inside the sentence.</div><div class="type-caption">Karla &middot; 600 &middot; accent link</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ACTIONS ================= -->
+    <section class="book">
+      <h2>Actions</h2>
+      <p class="sec-note">The uniformity contract: one word, one icon, one look for each action, everywhere it appears. One filled button per card; everything else is a quiet word.</p>
+
+      <div class="deskframe">
+        <p class="spec-label"><span class="vocab">Keep</span> &middot; filled accent button &mdash; the one per card</p>
+        <div class="spec-row">
+          <div class="spec">
+            <button type="button" class="btn-keep"><i class="fa-solid fa-check" aria-hidden="true"></i> Keep</button>
+            <p class="meaning">Accept the item into the pipeline, or accept the rewrite.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="deskframe">
+        <p class="spec-label">The quiet action words &mdash; accent for tools, muted for parking, red for removal</p>
+        <div class="quiet-row">
+          <div class="quiet">
+            <button type="button" class="linkish"><i class="fa-solid fa-pen" aria-hidden="true"></i>Edit</button>
+            <p class="meaning">Inline edit; persists on Save. Accent #1d6ea5.</p>
+          </div>
+          <div class="quiet">
+            <button type="button" class="linkish skip-link">Skip</button>
+            <p class="meaning">Park it &mdash; status stays circle-back underneath. Muted #55606c.</p>
+          </div>
+          <div class="quiet">
+            <button type="button" class="linkish use-original"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Use original</button>
+            <p class="meaning">Reject the rewrite, keep the Sheet text. Muted #55606c.</p>
+          </div>
+          <div class="quiet">
+            <button type="button" class="linkish trash-link"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Delete</button>
+            <p class="meaning">Trash the item for good, any screen. Error red #a32d2d.</p>
+          </div>
+          <div class="quiet">
+            <button type="button" class="linkish trash-link"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Remove</button>
+            <p class="meaning">Take out of the issue, back to the pool. Shares Delete's icon and red.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= NAV PILLS ================= -->
+    <section class="book">
+      <h2>Navigation pills</h2>
+      <p class="sec-note">Bubble pills everywhere. The active screen is a filled accent pill in white; the rest are quiet muted words.</p>
+      <div class="deskframe">
+        <p class="spec-label">Screen nav &mdash; active (filled) and rest</p>
+        <nav class="screen-nav" aria-label="Example screens">
+          <button type="button" class="screen-tab is-active">Home</button>
+          <button type="button" class="screen-tab">Sort</button>
+          <button type="button" class="screen-tab">Finalize</button>
+          <button type="button" class="screen-tab">Publish to Exchange</button>
+          <button type="button" class="screen-tab">Send to Newsletter</button>
+        </nav>
+      </div>
+    </section>
+
+    <!-- ================= BADGES ================= -->
+    <section class="book">
+      <h2>Badges</h2>
+      <p class="sec-note">Temperature tells the story: a ghost dashed chip is a plain fact; amber is caution.</p>
+      <div class="deskframe">
+        <div class="spec-row">
+          <div class="spec">
+            <span class="badge">Already live</span>
+            <p class="meaning"><b>Ghost fact</b> &mdash; a neutral state chip (already on the Exchange, in a past issue). Dashed line border, muted.</p>
+          </div>
+          <div class="spec">
+            <span class="badge-dupe">Possible duplicate</span>
+            <p class="meaning"><b>Amber caution</b> &mdash; it may already exist. Amber fill #fdf3d7, ink #6b4e00.</p>
+          </div>
+          <div class="spec">
+            <span class="badge-star">Spotlight</span>
+            <p class="meaning"><b>Spotlight request</b> &mdash; the featured pick. Amber fill, dark ink.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PANELS + BUBBLES ================= -->
+    <section class="book">
+      <h2>Panels and asks</h2>
+      <p class="sec-note">The instruction panel wears the calm tint. Anything that asks a question wears the amber bubble &mdash; one ask, same look wherever timing or a link needs a decision.</p>
+
+      <div class="deskframe">
+        <p class="spec-label"><span class="vocab">View info / Hide info</span> &middot; accent toggle beside a title &rarr; the tinted instruction panel</p>
+        <button type="button" class="info-toggle">Hide info</button>
+        <div class="info-panel">Sort separates what belongs in the pipeline from what does not. Keep accepts an item; Skip parks it; Delete trashes it for good.</div>
+      </div>
+
+      <div class="deskframe">
+        <p class="spec-label"><span class="vocab">Verify link &rarr; Confirm / Change</span> &middot; amber bubble, one ask</p>
+        <div class="link-alert">
+          <p class="alert-line"><i class="fa-solid fa-triangle-exclamation alert-mark" aria-hidden="true"></i>Check this link points where it should. <a href="#" class="alert-word" onclick="return false"><i class="fa-solid fa-link" aria-hidden="true"></i> Open source</a></p>
+          <div class="alert-actions">
+            <button type="button" class="alert-btn">Confirm</button>
+            <button type="button" class="alert-btn">Change</button>
+          </div>
+        </div>
+        <p class="meaning" style="color:var(--muted);font-size:.8rem;margin:.6rem 0 0;">Open the source, then stamp it good or paste a new link.</p>
+      </div>
+
+      <div class="deskframe">
+        <p class="spec-label"><span class="vocab">Send early? &rarr; Confirm / Cancel</span> &middot; amber bubble &mdash; the words stay bare, the bubble carries the clock</p>
+        <span class="nl-ask"><i class="fa-solid fa-clock" aria-hidden="true"></i>This event belongs to a later issue. Send early?<button type="button" class="alert-word" style="background:none;border:none;cursor:pointer;font:inherit;">Confirm</button><button type="button" class="nl-cancel">Cancel</button></span>
+        <p class="meaning" style="color:var(--muted);font-size:.8rem;margin:.6rem 0 0;">Picking an event that belongs to a later issue.</p>
+      </div>
+    </section>
+
+    <!-- ================= SHAPE: RADII + FOCUS ================= -->
+    <section class="book">
+      <h2>Shape</h2>
+      <p class="sec-note">Three radii, one focus ring. Quiet is the rule &mdash; louder highlights were rejected.</p>
+      <div class="deskframe">
+        <p class="spec-label">Radii &mdash; controls, cards, pills</p>
+        <div class="radii-row">
+          <div class="radius-demo"><div class="box r8"></div><div class="cap"><b>8px</b> controls / inputs</div></div>
+          <div class="radius-demo"><div class="box r12"></div><div class="cap"><b>12px</b> cards / tables</div></div>
+          <div class="radius-demo"><div class="box r999"></div><div class="cap"><b>999px</b> pills / chips / badges</div></div>
+        </div>
+      </div>
+      <div class="deskframe">
+        <p class="spec-label">Focus ring &mdash; accent border + 3px tint halo</p>
+        <div class="spec-row" style="align-items:center;gap:1.5rem;">
+          <input class="focus-field is-focus" type="text" value="Focused field" aria-label="Focused specimen" readonly />
+          <input class="focus-field" type="text" placeholder="Click to focus this one" aria-label="Live focus field" />
+        </div>
+        <p class="meaning" style="color:var(--muted);font-size:.8rem;margin:.6rem 0 0;">The left field is pinned to the focus state; click the right one to see it live.</p>
+      </div>
+    </section>
+
+    <!-- ================= MOTION ================= -->
+    <section class="book">
+      <h2>Motion</h2>
+      <p class="sec-note">All CSS, fast and purposeful; prefers-reduced-motion turns it off. State never waits on the animation.</p>
+      <div class="deskframe">
+        <p class="spec-label">Loading &mdash; the sliding-dots track, six dots on a blue ramp</p>
+        <div class="dots-loader" aria-hidden="true">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </div>
+        <span class="dots-text">Rewriting</span>
+        <div class="ramp" aria-hidden="true">
+          <span style="background:#9ec9e8;color:#14507a">#9ec9e8</span>
+          <span style="background:#63a3cd">#63a3cd</span>
+          <span style="background:#4a8cbf">#4a8cbf</span>
+          <span style="background:#1d6ea5">#1d6ea5</span>
+          <span style="background:#19608f">#19608f</span>
+          <span style="background:#14507a">#14507a</span>
+        </div>
+      </div>
+      <div class="deskframe">
+        <p class="spec-label">Confirmation &mdash; the check draws itself in success green</p>
+        <span class="done-line">
+          <svg class="check-icon draw-check" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4 10.5 8.5 15 16 5.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" pathLength="24"></path>
+          </svg>
+          Saved to the queue
+        </span>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var btns = Array.prototype.slice.call(document.querySelectorAll('[data-theme-set]'));
+      function apply(mode) {
+        if (mode === 'light') root.setAttribute('data-theme', 'light');
+        else if (mode === 'dark') root.setAttribute('data-theme', 'dark');
+        else root.removeAttribute('data-theme');
+        btns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-theme-set') === mode)); });
+        try { localStorage.setItem('brandbook-theme', mode); } catch (e) {}
+      }
+      btns.forEach(function (b) { b.addEventListener('click', function () { apply(b.getAttribute('data-theme-set')); }); });
+      var saved = 'system';
+      try { saved = localStorage.getItem('brandbook-theme') || 'system'; } catch (e) {}
+      apply(saved);
+    })();
+  </script>
+</body>
+</html>
