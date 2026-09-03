@@ -14,6 +14,7 @@ import {
   parseExtraction, normalizeExtraction,
 } from './_lib/extract.js';
 import { appendRow } from './_lib/sheets.js';
+import { setCors } from './_lib/cors.js';
 
 export const config = { maxDuration: 60 };
 
@@ -33,6 +34,14 @@ async function extractInto(row, pageText) {
 }
 
 export default async function handler(req, res) {
+  // The public share page is served from another origin (GitHub Pages), so
+  // the browser preflights this POST — answer it before anything else.
+  setCors(req, res);
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(204).end();
+  }
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, errors: ['Use POST.'] });
   }
