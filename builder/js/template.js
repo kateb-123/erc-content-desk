@@ -115,8 +115,8 @@ const titled = items => (items || []).filter(i => String(i?.fields?.title ?? '')
 const FONT_BODY = "'Trebuchet MS', 'Segoe UI', Tahoma, sans-serif";
 const FONT_HEAD = 'Verdana, Geneva, Tahoma, sans-serif';
 
-/** 14px spacer row between section tables */
-const SPACER_14 = `<!-- spacer --><table align="center" width="705" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(255, 255, 255);"><tbody><tr><td style="height: 14px; font-size: 1px; line-height: 14px;">&nbsp;</td></tr></tbody></table>`;
+/** 14px spacer row between section tables (the sheet is 640px wide) */
+const SPACER_14 = `<!-- spacer --><table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 640px; margin: 0 auto; background-color: rgb(255, 255, 255);"><tbody><tr><td style="height: 14px; font-size: 1px; line-height: 14px;">&nbsp;</td></tr></tbody></table>`;
 
 /** File-tab section header */
 function sectionHeader(id, label) {
@@ -136,7 +136,7 @@ function eyebrow(label, first = false) {
 }
 
 /** Thin divider line */
-const DIVIDER = `<tr><td style="padding: 12px 80px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
+const DIVIDER = `<tr><td style="padding: 12px 48px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
 
 /** "See more on the ERC website →" right-justified tail link. Omitted when the section has no URL. */
 function seeMore(href) {
@@ -187,7 +187,7 @@ function buildBriefs(sec, editable = false) {
 ${fields.authors ? `<p style="margin:0 0 8px; line-height: 1.4; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs('research', item.id, 'authors', editable)}>${esc(fields.authors)}</p>` : ''}
 ${fields.summary ? proseParas(fields.summary, editAttrs('research', item.id, 'summary', editable)) : ''}`;
       rows += `
-<tr><td style="padding: ${topPad} 80px 0 40px;">
+<tr><td style="padding: ${topPad} 48px 0 40px;">
 ${withStamp(text, fields, 'research', item.id, editable, !!fields.summary)}
 </td></tr>`;
       if (i < items.length - 1) rows += DIVIDER;
@@ -286,16 +286,16 @@ function buildGroupedList(secReg, sec, editable = false) {
         const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${metaLine}
 ${descLine}`;
-        rows += `<tr><td style="padding: ${topPad} 80px 0 40px;">
+        rows += `<tr><td style="padding: ${topPad} 48px 0 40px;">
 ${withStamp(text, fields, sectionKey, item.id, editable, descLine !== '')}
 </td></tr>`;
         if (needsItemDivider) {
-          rows += `<tr><td style="padding: 12px 80px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
+          rows += `<tr><td style="padding: 12px 48px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
         }
       } else {
         const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${oppMeta}`;
-        rows += `<tr><td style="padding: ${topPad} 80px 0 40px;">
+        rows += `<tr><td style="padding: ${topPad} 48px 0 40px;">
 ${withStamp(text, fields, sectionKey, item.id, editable, false)}
 </td></tr>`;
       }
@@ -303,7 +303,7 @@ ${withStamp(text, fields, sectionKey, item.id, editable, false)}
 
     // After featured group in events: add a section-level divider
     if (isFeaturedGroup && isEvents) {
-      rows += `<tr><td style="padding: 16px 80px 0 24px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
+      rows += `<tr><td style="padding: 16px 48px 0 24px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
     }
   }
 
@@ -468,12 +468,12 @@ function buildSpotlight(secReg, sec, editable = false) {
         const text = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>
 ${metaLine}
 ${summaryLine}`;
-        rows += `<tr><td style="padding: ${topPad} 80px 0 40px;">
+        rows += `<tr><td style="padding: ${topPad} 48px 0 40px;">
 ${withStamp(text, fields, 'spotlight', item.id, editable, summaryLine !== '')}
 </td></tr>`;
 
         if (i < items.length - 1) {
-          rows += `<tr><td style="padding: 12px 80px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
+          rows += `<tr><td style="padding: 12px 48px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
         }
       });
   }
@@ -484,9 +484,9 @@ ${withStamp(text, fields, 'spotlight', item.id, editable, summaryLine !== '')}
   return wrapSection(rows);
 }
 
-/** Wraps section rows in the standard 705px centered white table */
+/** Wraps section rows in the standard 640px centered white table */
 function wrapSection(rows) {
-  return `<table align="center" width="705" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(255, 255, 255);">
+  return `<table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 640px; margin: 0 auto; background-color: rgb(255, 255, 255);">
 <tbody>
 ${rows}
 </tbody>
@@ -531,7 +531,7 @@ function buildHeader(issue, editable = false) {
     });
   const navHtml = navLinks.length ? `<span style="color:#767676; font-weight:400;">In this issue:</span>&nbsp; ${navLinks.join(' &nbsp;|&nbsp; ')}` : '';
 
-  return `<table align="center" width="705" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(255, 255, 255);">
+  return `<table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 640px; margin: 0 auto; background-color: rgb(255, 255, 255);">
 <tbody>
 <tr>
 <td align="left" width="50%" style="padding: 15px 15px; font-family: ${FONT_BODY}; font-size: 15px; font-weight: 700; color: #500000;">${esc(date)}</td>
@@ -541,7 +541,7 @@ function buildHeader(issue, editable = false) {
 </tr>
 <tr>
 <td colspan="2" align="center" style="padding: 0;">
-<img width="705" src="${esc(imgSrc)}" alt="Education Research Center Newsletter" style="width: 100%; max-width: 705px; height: auto; display: block; border: 0;">
+<img width="640" src="${esc(imgSrc)}" alt="Education Research Center Newsletter" style="width: 100%; max-width: 640px; height: auto; display: block; border: 0;">
 </td>
 </tr>
 <tr>
@@ -550,7 +550,7 @@ function buildHeader(issue, editable = false) {
 </td>
 </tr>
 <tr>
-<td colspan="2" style="padding: 24px 80px 30px 24px;">
+<td colspan="2" style="padding: 24px 48px 30px 24px;">
 ${buildIntro(issue.intro, editable)}
 </td>
 </tr>
@@ -570,7 +570,7 @@ function buildIntro(introText, editable = false) {
 }
 
 function buildFooter() {
-  return `<table align="center" width="705" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(80, 0, 0);">
+  return `<table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 640px; margin: 0 auto; background-color: rgb(80, 0, 0);">
 <tbody>
 <tr>
 <td align="center" style="color:#ffffff; padding: 26px 24px 24px; text-align: center;">
@@ -685,14 +685,14 @@ ${preheader(issue)}
   }
 
   // Footer spacer (26px before footer per template)
-  parts.push(`<!-- spacer --><table align="center" width="705" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto; background-color: rgb(255, 255, 255);"><tbody><tr><td style="height: 26px; font-size: 1px; line-height: 26px;">&nbsp;</td></tr></tbody></table>`);
+  parts.push(`<!-- spacer --><table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 640px; margin: 0 auto; background-color: rgb(255, 255, 255);"><tbody><tr><td style="height: 26px; font-size: 1px; line-height: 26px;">&nbsp;</td></tr></tbody></table>`);
 
   // Footer
   parts.push(buildFooter());
 
   // Bottom spacer + close
   parts.push(`<!-- bottom spacer -->
-<table align="center" width="705" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 705px; margin: 0 auto;"><tbody><tr><td style="height: 20px; font-size: 1px; line-height: 20px;">&nbsp;</td></tr></tbody></table>
+<table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 640px; margin: 0 auto;"><tbody><tr><td style="height: 20px; font-size: 1px; line-height: 20px;">&nbsp;</td></tr></tbody></table>
 
 </td></tr></tbody></table>
 </div>

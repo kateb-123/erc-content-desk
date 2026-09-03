@@ -268,12 +268,13 @@ test('a section can override its "See more" URL, and an empty override drops the
   assert.equal(count(html, 'See more on the ERC website'), 2, 'headlines row omitted');
 });
 
-test('masthead and every 705px table carry a width attribute for classic Outlook', () => {
+test('the sheet is 640px wide: masthead and every layout table carry the width attribute for classic Outlook', () => {
   const html = renderNewsletter(fullIssue());
-  assert.match(html, /<img width="705"[^>]*alt="Education Research Center Newsletter"/);
-  const tables705 = html.match(/<table[^>]*width: 705px[^>]*>/g) || [];
-  assert.ok(tables705.length > 5, 'sample has several 705px tables');
-  for (const t of tables705) assert.match(t, /width="705"/, t.slice(0, 120));
+  assert.ok(!/\b705\b/.test(html), 'no 705 left anywhere');
+  assert.match(html, /<img width="640"[^>]*alt="Education Research Center Newsletter"[^>]*max-width: 640px/);
+  const tables = html.match(/<table[^>]*width: 640px[^>]*>/g) || [];
+  assert.ok(tables.length > 5, 'sample has several 640px tables');
+  for (const t of tables) assert.match(t, /width="640"/, t.slice(0, 120));
 });
 
 test('the picture stamp names the flyer so its link has an accessible name', () => {
@@ -409,15 +410,18 @@ test('items in a group sit closer together than the next group label', () => {
   assert.ok(!/padding: 24px 24px 0 24px;/.test(html), 'old 24px eyebrow gap gone');
   assert.ok((html.match(/padding: 32px 24px 0 24px;/g) || []).length >= 2, 'later group labels sit 32px below the last item');
   assert.match(html, /padding: 18px 24px 0 24px;/, 'first label under a tab keeps 18px');
-  const dividers = html.match(/<td style="padding: \d+px 80px 0 40px;"><div style="border-top/g) || [];
+  const dividers = html.match(/<td style="padding: \d+px 48px 0 40px;"><div style="border-top/g) || [];
   assert.ok(dividers.length >= 3);
-  for (const d of dividers) assert.match(d, /padding: 12px 80px/, d);
-  assert.ok(!/padding: 1[46]px 80px 0 40px;">\n<p/.test(html), 'items after a divider start 12px below it');
+  for (const d of dividers) assert.match(d, /padding: 12px 48px/, d);
+  assert.ok(!/padding: 1[46]px 48px 0 40px;">\n<p/.test(html), 'items after a divider start 12px below it');
 });
 
-test('item text and the intro end 80px from the right edge, so lines run shorter', () => {
-  const html = renderNewsletter(fullIssue());
-  assert.ok(!/padding: \d+px 24px 0 40px;/.test(html), 'no item cell still runs to 24px from the edge');
-  assert.ok((html.match(/padding: \d+px 80px 0 40px;/g) || []).length >= 8, 'item cells use the 80px right padding');
-  assert.match(html, /padding: 24px 80px 30px 24px;/, 'intro cell too');
+test('item text and the intro end 48px from the right edge of the 640px sheet', () => {
+  const issue = fullIssue();
+  issue.sections.events.items[0].group = 'featured'; // so the featured-events rule renders
+  const html = renderNewsletter(issue);
+  assert.ok(!/padding: \d+px (24|80)px 0 40px;/.test(html), 'no item cell still uses the old right padding');
+  assert.ok((html.match(/padding: \d+px 48px 0 40px;/g) || []).length >= 8, 'item cells use the 48px right padding');
+  assert.match(html, /padding: 24px 48px 30px 24px;/, 'intro cell too');
+  assert.match(html, /padding: 16px 48px 0 24px;/, 'the featured-events rule ends at the same edge');
 });
