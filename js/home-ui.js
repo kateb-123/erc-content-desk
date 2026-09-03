@@ -48,11 +48,8 @@ function doorCard(title, desc, href) {
 }
 
 export function renderHome(container, { rows, schedule, today, loaded, hubUpdated, onSubmitted, onRefresh }) {
-  // Nothing partial while the desk loads — the page arrives all at once.
-  if (!loaded) {
-    container.replaceChildren(dotsLoader());
-    return;
-  }
+  // The shell (form, doors, headings) paints immediately — only the
+  // data-backed parts wait on the ~4s Sheet read, so the page is usable at once.
   let glance = container.querySelector('.glance-row');
   if (!glance) {
     glance = el('div', 'glance-row');
@@ -71,15 +68,15 @@ export function renderHome(container, { rows, schedule, today, loaded, hubUpdate
 
   // ── The glance row: four one-line cards. ──
   glance.replaceChildren();
-  glance.append(glanceFact('Exchange updated', hubUpdated ? shortDate(hubUpdated) : '—'));
+  glance.append(glanceFact('Exchange updated', !loaded ? '…' : (hubUpdated ? shortDate(hubUpdated) : '—')));
   const next = nextIssueDate(schedule, today);
-  glance.append(glanceFact('Next newsletter', next ? shortDate(next) : '—'));
+  glance.append(glanceFact('Next newsletter', !loaded ? '…' : (next ? shortDate(next) : '—')));
 
   const queueCard = el('button', 'glance-card glance-queue');
   queueCard.type = 'button';
   queueCard.append(el('span', 'glance-label', 'Queue'));
   const queueSide = el('span', 'glance-side');
-  queueSide.append(el('span', 'queue-badge', String(loaded ? queueBadgeCount(rows) : 0)));
+  queueSide.append(el('span', 'queue-badge', loaded ? String(queueBadgeCount(rows)) : '·'));
   queueSide.append(el('span', 'glance-note', 'waiting'));
   queueCard.append(queueSide);
   queueCard.addEventListener('click', () => {
@@ -116,5 +113,7 @@ export function renderHome(container, { rows, schedule, today, loaded, hubUpdate
     doorCard('Build newsletter', 'Assemble the next issue from what the desk staged.', BUILDER_URL),
   );
 
-  renderQueueTable(container.querySelector('.queue-section'), { rows, schedule, today, onRefresh });
+  const queueSection = container.querySelector('.queue-section');
+  if (!loaded) queueSection.replaceChildren(dotsLoader());
+  else renderQueueTable(queueSection, { rows, schedule, today, onRefresh });
 }

@@ -98,11 +98,11 @@ export function renderSort(container, props) {
 
   if (!visible.length) {
     main.append(el('p', 'empty', sortedCount ? 'All sorted.' : 'Nothing to sort.'));
-    if (lastDecision) {
-      const undo = el('button', 'undo-link', 'Undo last');
-      undo.addEventListener('click', () => { undo.disabled = true; onUndo(); });
-      main.append(undo);
-    }
+    const undo = el('button', 'undo-link', 'Undo');
+    undo.type = 'button';
+    undo.disabled = !lastDecision;          // always here, live only when there's something to undo
+    undo.addEventListener('click', () => onUndo());
+    main.append(undo);
     return;
   }
 
@@ -359,11 +359,14 @@ export function renderSort(container, props) {
     // second sentence. Keep/Skip just stay locked until it's fixed.
     for (const b of [keepBtn, circleBtn]) b.disabled = true;
   }
-  if (lastDecision) {
-    const undo = el('button', 'undo-link', 'Undo last');
-    undo.addEventListener('click', () => { undo.disabled = true; onUndo(); });
-    card.append(undo);
-  }
+  // Undo is always on the card — live once anything on Sort has been changed
+  // (a decision, an edit, a type pick, a link check), and it walks back through
+  // them one at a time.
+  const undo = el('button', 'undo-link', 'Undo');
+  undo.type = 'button';
+  undo.disabled = !lastDecision;
+  undo.addEventListener('click', () => onUndo());
+  card.append(undo);
   // Carousel: arrows flank the card (the card's own 1/2 counter tracks the
   // position). Browsing never decides anything — the card only leaves via
   // Keep / Circle / Trash.

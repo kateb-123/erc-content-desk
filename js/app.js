@@ -17,7 +17,8 @@ const state = {
   busy: false,
   sortFilter: '',           // '' = all; 'untyped' or a type key (view state)
   sortedThisVisit: 0,       // decisions made since page load (view state)
-  lastDecision: null,       // { id, prevStatus }
+  undoStack: [],            // [{ id, prevStatus }] — every decision, newest last
+  lastDecision: null,       // the top of undoStack (what Undo would restore)
   rewriteReview: new Map(), // id -> the pre-rewrite description, until she checks it (view state)
   verifiedIds: new Set(),   // rewrites she has checked this visit (view state)
   reviewTotal: 0,           // size of the current check batch, for "2 of 4" (view state)
@@ -134,13 +135,26 @@ function whenSaved() {
   });
 }
 
+/** Every Sort mutation goes through here: snapshot the rows as they are (for
+ *  Undo), then apply + queue the save. Covers decisions, inline edits, the
+ *  type picker and the link check — so Undo can walk back any of them. */
+function change(rows, { decision = false } = {}) {
+  const before = rows
+    .map(r => state.rows.find(x => x._rowNumber === r._rowNumber))
+    .filter(Boolean);
+  if (before.length) {
+    state.undoStack.push({ rows: before, decision });
+    state.lastDecision = state.undoStack[state.undoStack.length - 1];
+  }
+  noteChange(rows);
+}
+
 function decide(row, action, note = '') {
-  state.lastDecision = { id: row.id, prevStatus: row.status };
   state.sortedThisVisit += 1;
   const next = action === 'keep' ? keep(row)
     : action === 'trash' ? trash(row)
     : circleback(row, note);
-  noteChange([next]);   // next card shows now; the write drains in the background
+  change([next], { decision: true });   // next card shows now; the write drains behind it
 }
 
 function goTo(key) {
@@ -159,13 +173,11 @@ function goTo(key) {
 }
 
 async function undoLast() {
-  const last = state.lastDecision;
+  const last = state.undoStack.pop();
   if (!last) return;
-  const row = state.rows.find(r => r.id === last.id);
-  if (!row) return;
-  state.lastDecision = null;
-  state.sortedThisVisit = Math.max(0, state.sortedThisVisit - 1);
-  noteChange([{ ...row, status: last.prevStatus }]);
+  state.lastDecision = state.undoStack[state.undoStack.length - 1] ?? null;
+  if (last.decision) state.sortedThisVisit = Math.max(0, state.sortedThisVisit - 1);
+  noteChange(last.rows);   // restore the rows exactly as they were
 }
 
 async function runRewrite() {
@@ -324,14 +336,13 @@ export function render() {
       onBrowse: pos => { state.sortBrowse = Math.max(0, pos); saveSortSpot(); render(); },
       onFilter: key => { state.sortFilter = key; state.sortBrowse = 0; saveSortSpot(); render(); },
       onDecide: decide, onUndo: undoLast,
-      onEditRow: (row, changes) => noteChange([{ ...row, ...changes }]),
-      // One PATCH for type + subtype + provenance together — sequential
-      // round-trips re-render mid-save and reopen the picker.
-      onEditType: (row, type, subtype) => persist([{
+      onEditRow: (row, changes) => change([{ ...row, ...changes }]),
+      // Type + subtype + provenance move together in one queued write.
+      onEditType: (row, type, subtype) => change([{
         ...row, type, subtype: subtype || row.subtype,
         auto_filled: withoutAutoFilled(row.auto_filled, subtype ? ['type', 'subtype'] : ['type']),
       }]),
-      onVerifyLink: (row, newLink) => persist([{
+      onVerifyLink: (row, newLink) => change([{
         ...row, ...(newLink ? { link: newLink } : {}), link_checked: 'human',
       }]),
     });
