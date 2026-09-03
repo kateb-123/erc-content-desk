@@ -324,6 +324,8 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .f-check-card { position: relative; }
 .f-see-all { margin: .6rem 0 0; }
 .p-fix-alert { background: #fdf3d7; color: #6b4e00; border-radius: 8px; padding: .6rem 1rem; margin: .75rem 0; font-size: .9rem; }
+/* Team trial: the Exchange door is closed — a quiet amber note where the Publish button would be. */
+.p-paused { margin-left: auto; align-self: center; background: #fdf3d7; color: #6b4e00; border: 1px solid #f2e3ae; border-radius: 999px; padding: .35rem .9rem; font-size: .85rem; font-weight: 600; font-family: Outfit, "Segoe UI", sans-serif; }
 .p-fix-alert .linkish { color: #6b4e00; font-weight: 600; text-decoration: underline; }
 .finalize-table tr.f-item { cursor: pointer; }
 .finalize-table tr.f-item:not(.is-open):hover td { background: rgba(29, 110, 165, 0.05); }

@@ -9,6 +9,7 @@ import { readyToPublish, markPublished, newsletterOnly } from '../js/workflow.js
 import { isValidType, isValidSubtype } from '../js/schema.js';
 import { isSafeLink } from '../js/links.js';
 import { fetchHubCsv, putHubCsv, diffAgainstHub, appendRowsToCsv, parseCsv } from './_lib/hub.js';
+import { PUBLISH_PAUSED } from '../js/flags.js';
 
 export const config = { maxDuration: 300 };
 
@@ -16,6 +17,14 @@ const label = r => ({ id: r.id, headline: r.headline || r.link || r.id });
 
 export default async function handler(req, res) {
   try {
+    // Team trial: the Exchange door is closed. The GET preview stays open so
+    // the desk can still show what would publish; only the write is refused.
+    if (req.method === 'POST' && PUBLISH_PAUSED) {
+      return res.status(200).json({
+        ok: false,
+        error: 'Publishing is paused for the team trial. Nothing was sent to the Exchange.',
+      });
+    }
     const all = await readAllRows();
     const candidates = readyToPublish(all);
 

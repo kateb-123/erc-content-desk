@@ -5,6 +5,7 @@
  * One deliberate click: Publish. Append-only. After publishing, Go to Build.
  */
 import { readyToPublish } from './workflow.js';
+import { PUBLISH_PAUSED, PUBLISH_PAUSED_MESSAGE } from './flags.js';
 import { TYPE_LABELS } from './schema.js';
 import { isoToSlash } from './queue-view.js';
 import { detailBody, chevron } from './finalize-ui.js';
@@ -119,6 +120,10 @@ export function renderPublish(container, props) {
     btn.append(forwardIcon());
     btn.addEventListener('click', () => onGoTo('build'));
     head.append(btn);
+  } else if (preview && !busy && adding.length && PUBLISH_PAUSED) {
+    // Team trial: the Exchange door is closed. The screen still shows what
+    // WOULD publish; the button is a note so nothing reaches the live hub.
+    head.append(el('p', 'p-paused', PUBLISH_PAUSED_MESSAGE));
   } else if (preview && !busy && adding.length) {
     // The button disappears while publishing — the status loader takes over.
     const btn = el('button', 'primary', `Publish ${adding.length} to the Exchange`);
