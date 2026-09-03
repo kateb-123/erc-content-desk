@@ -79,13 +79,68 @@ export async function persist(changed) {
   }
 }
 
-async function decide(row, action, note = '') {
+/* ---- Background save queue -----------------------------------------------
+ * Sort decisions and inline edits update memory + re-render INSTANTLY (no wait
+ * on the ~4s Sheet write), then their write drains here: ONE PATCH in flight at
+ * a time (never a concurrent burst — that was the old throttle bug), the latest
+ * change per row wins, and a failed write RETRIES rather than resyncing (a
+ * resync reshuffles the cards mid-sort — the other half of the old bug). The
+ * desk is left exactly as she left it until the write catches up.
+ * Confirmation-critical writes (send / un-send) still go through persist().
+ */
+const pendingWrites = new Map();   // _rowNumber -> latest row awaiting write
+let flushing = false;
+let writeErrored = false;
+
+/** Apply changes to memory + re-render now; queue the Sheet write behind it. */
+function noteChange(rows) {
+  const byRowNumber = new Map(rows.map(r => [r._rowNumber, r]));
+  state.rows = state.rows.map(r => byRowNumber.get(r._rowNumber) ?? r);
+  state.publishPreview = null;   // data changed — the next Publish visit re-checks
+  for (const r of rows) pendingWrites.set(r._rowNumber, r);
+  render();
+  drainWrites();
+}
+
+async function drainWrites() {
+  if (flushing) return;
+  flushing = true;
+  while (pendingWrites.size) {
+    const batch = new Map(pendingWrites);                    // snapshot
+    for (const rn of batch.keys()) pendingWrites.delete(rn); // claim them
+    try {
+      await saveRows([...batch.values()]);                   // one PATCH; server serializes
+    } catch {
+      // Never resync (that reshuffles). Return the un-superseded rows to the
+      // queue and retry after a pause; the UI stays exactly as-is.
+      for (const [rn, row] of batch) if (!pendingWrites.has(rn)) pendingWrites.set(rn, row);
+      flushing = false;
+      writeErrored = true;
+      setStatus('Saving your changes — reconnecting…', 'note');
+      setTimeout(drainWrites, 4000);
+      return;
+    }
+  }
+  flushing = false;
+  if (writeErrored) { writeErrored = false; setStatus('', 'ok'); }  // caught up
+}
+
+/** Resolves once the queue has fully drained — awaited before consequential,
+ *  server-read actions (publish / send) so the Sheet reflects every decision. */
+function whenSaved() {
+  return new Promise(resolve => {
+    const check = () => (!flushing && !pendingWrites.size) ? resolve() : setTimeout(check, 150);
+    check();
+  });
+}
+
+function decide(row, action, note = '') {
   state.lastDecision = { id: row.id, prevStatus: row.status };
   state.sortedThisVisit += 1;
   const next = action === 'keep' ? keep(row)
     : action === 'trash' ? trash(row)
     : circleback(row, note);
-  await persist([next]);
+  noteChange([next]);   // next card shows now; the write drains in the background
 }
 
 function goTo(key) {
@@ -110,7 +165,7 @@ async function undoLast() {
   if (!row) return;
   state.lastDecision = null;
   state.sortedThisVisit = Math.max(0, state.sortedThisVisit - 1);
-  await persist([{ ...row, status: last.prevStatus }]);
+  noteChange([{ ...row, status: last.prevStatus }]);
 }
 
 async function runRewrite() {
@@ -152,6 +207,7 @@ async function runRewrite() {
 async function loadPublishPreview() {
   state.busy = true;
   render();
+  await whenSaved();   // the server reads the Sheet — let queued decisions land first
   setStatus('');   // Publish's own loader carries this — no second row in the bar
   try {
     const res = await fetch('/api/publish');
@@ -170,6 +226,7 @@ async function publishNow() {
   state.busy = true;
   render();
   setStatus('Publishing to the Exchange…');
+  await whenSaved();   // every decision must be in the Sheet before the server reads it
   try {
     const res = await fetch('/api/publish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
     const data = await res.json();
@@ -193,6 +250,7 @@ async function sendToNewsletter(selectedRows, issue) {
   state.busy = true;
   render();
   setStatus(`Sending ${selectedRows.length} to the newsletter…`);
+  await whenSaved();   // no queued write may race the issue stamp
   const ok = await persist(selectedRows.map(r => markNewsletterIssue(r, issue)));
   state.busy = false;
   if (!ok) { render(); return; } // persist already showed the error
@@ -266,7 +324,7 @@ export function render() {
       onBrowse: pos => { state.sortBrowse = Math.max(0, pos); saveSortSpot(); render(); },
       onFilter: key => { state.sortFilter = key; state.sortBrowse = 0; saveSortSpot(); render(); },
       onDecide: decide, onUndo: undoLast,
-      onEditRow: (row, changes) => persist([{ ...row, ...changes }]),
+      onEditRow: (row, changes) => noteChange([{ ...row, ...changes }]),
       // One PATCH for type + subtype + provenance together — sequential
       // round-trips re-render mid-save and reopen the picker.
       onEditType: (row, type, subtype) => persist([{
@@ -281,7 +339,7 @@ export function render() {
     renderFinalize(screens.finalize, {
       ...common, review: state.rewriteReview, verified: state.verifiedIds,
       reviewTotal: state.reviewTotal, busy: state.busy, rewroteNote: state.rewroteNote,
-      onEditRow: (row, changes) => persist([{ ...row, ...changes }]),
+      onEditRow: (row, changes) => noteChange([{ ...row, ...changes }]),
       onRewrite: runRewrite,
       // Every check decision stamps rewrite_checked so the state survives reload
       // (and the endpoint never rewrites a checked row again).
