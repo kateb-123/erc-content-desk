@@ -71,36 +71,27 @@ function editAttrs(section, itemId, field, editable) {
   return secAttr + itemAttr + fieldAttr;
 }
 
-// ─── Item media: the zigzag stamp ────────────────────────────────────────────
+// ─── Item media: the stamp ───────────────────────────────────────────────────
 // Spec: docs/superpowers/specs/2026-09-02-newsletter-media-layout.md (Decision).
 
-/** Stamp width beside a blurb vs. beside a short item, and the gutter to the text (px). */
-const STAMP = { blurb: 96, short: 36, gutter: 14 };
-
-/** Zigzag counter: stamps alternate left/right in document order. Reset per render. */
-let mediaSeq = 0;
+/** Stamp width beside the text, and the gutter between them (px). */
+const STAMP = { width: 96, gutter: 14 };
 
 /**
- * Sets an item's picture as a small "stamp" beside its text: a two-cell table,
- * the picture never cropped, 96px wide when the item has a blurb and 36px when
- * it is just a title and a date line. Stamps alternate left, right, left down
- * the issue; text beside a right-side stamp is justified and hyphenated so it
- * sits flush against the picture. The stamp links to the full-size picture.
- * No picture (or an unsafe URL) → the text comes back exactly as given.
+ * Sets an item's picture as a small "stamp" to the left of its text: a
+ * two-cell table, the picture never cropped, 96px wide, linking to the
+ * full-size picture. Only items with a blurb carry a stamp — a short item
+ * (title and date line) shows no picture, since the stamp would stand taller
+ * than its text. No picture, an unsafe URL, or no blurb → the text comes back
+ * exactly as given.
  */
 function withStamp(text, fields, sectionKey, itemId, editable, hasBlurb) {
   const src = safeItemHref(fields.image);
-  if (!src) return text;
-  const side = mediaSeq++ % 2 === 0 ? 'left' : 'right';
-  const w = hasBlurb ? STAMP.blurb : STAMP.short;
-  const img = `<a href="${esc(src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:1px solid #e6e2dd; border-radius:3px;"${editAttrs(sectionKey, itemId, 'image', editable)}></a>`;
+  if (!src || !hasBlurb) return text;
+  const w = STAMP.width;
   const cellW = w + STAMP.gutter;
-  const pad = side === 'left' ? `2px ${STAMP.gutter}px 0 0` : `2px 0 0 ${STAMP.gutter}px`;
-  const imgCell = `<td valign="top" width="${cellW}" style="width:${cellW}px; vertical-align:top; padding:${pad};">${img}</td>`;
-  const textCell = side === 'right'
-    ? `<td valign="top" lang="en" style="vertical-align:top; text-align:justify; hyphens:auto; -webkit-hyphens:auto; -ms-hyphens:auto;">\n${text}\n</td>`
-    : `<td valign="top" style="vertical-align:top;">\n${text}\n</td>`;
-  return `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width:100%;"><tbody><tr>${side === 'left' ? imgCell + textCell : textCell + imgCell}</tr></tbody></table>`;
+  const img = `<a href="${esc(src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:1px solid #e6e2dd; border-radius:3px;"${editAttrs(sectionKey, itemId, 'image', editable)}></a>`;
+  return `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width:100%;"><tbody><tr><td valign="top" width="${cellW}" style="width:${cellW}px; vertical-align:top; padding:2px ${STAMP.gutter}px 0 0;">${img}</td><td valign="top" style="vertical-align:top;">\n${text}\n</td></tr></tbody></table>`;
 }
 
 // ─── Common snippets ──────────────────────────────────────────────────────────
@@ -579,7 +570,6 @@ function buildFooter() {
 // ─── Main entry point ─────────────────────────────────────────────────────────
 
 export function renderNewsletter(issue, opts = {}) {
-  mediaSeq = 0;
   const editable = opts.editable === true;
   const parts = [];
 

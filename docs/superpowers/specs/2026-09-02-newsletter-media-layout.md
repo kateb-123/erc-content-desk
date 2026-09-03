@@ -54,3 +54,9 @@ After mocking eight layouts in a full fake issue, Kate chose one treatment for e
 Rejected along the way (so we don't re-litigate): full width below (today), thumbnail-right at 218px, banner above, framed inset + caption, float wrap (per item and across the group), "View flyer" link text, square crops / headshots, capped poster below, bulletin-board section, landscape strip.
 
 Not in scope: the `newsletters/next-issue/ERC_Newsletter_next.html` template in the erc_newsletter repo has no item images, so nothing to sync there. The "ERC Research" vs "Featured Research" name mismatch stays untouched.
+
+### Revised the same day (Kate, later 2026-09-03)
+
+- **No zigzag.** Every stamp sits on the **left** of its text. (The justified/hyphenated right-side text rule goes away with it.)
+- **No small stamp.** Only items **with a blurb** carry the 96px stamp. An item that is just a title and a date line shows **no picture** in the email, even if one was uploaded — the stamp would stand taller than its text.
+- Everything else stands: never cropped, two-cell row, hairline border, links to the full-size picture, no link text, edit hooks on the image, no-image → today's markup.

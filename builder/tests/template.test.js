@@ -166,7 +166,7 @@ test('research renders Brief and Report as separate labeled subgroups', () => {
   assert.ok(iReportLabel < iROne, 'Report label precedes its item');
 });
 
-// ─── Item media: the zigzag stamp (spec 2026-09-02-newsletter-media-layout) ──
+// ─── Item media: the stamp (spec 2026-09-02-newsletter-media-layout, Decision) ──
 import { SECTION_REGISTRY } from '../js/model.js';
 
 const FLYER = 'https://raw.githubusercontent.com/erc/media/main/flyer.png';
@@ -175,12 +175,12 @@ function mediaIssue() {
   const oppGroup = SECTION_REGISTRY.find(s => s.key === 'opportunities').groups[0].key;
   issue.sections.research.enabled = true;
   issue.sections.research.items = [
-    { id: 'r1', group: 'brief', fields: { title: 'With blurb', summary: 'A summary.', image: FLYER } },
+    { id: 'r1', group: 'brief', fields: { title: 'First blurb', summary: 'A summary.', image: FLYER } },
+    { id: 'r2', group: 'brief', fields: { title: 'Second blurb', summary: 'Another summary.', image: FLYER } },
   ];
   issue.sections.opportunities.enabled = true;
   issue.sections.opportunities.items = [
     { id: 'o1', group: oppGroup, fields: { title: 'Short one', meta: 'Deadline: soon', image: FLYER } },
-    { id: 'o2', group: oppGroup, fields: { title: 'Third one', meta: 'Deadline: later', image: FLYER } },
   ];
   return issue;
 }
@@ -192,40 +192,32 @@ test('item with a blurb renders a 96px stamp that links to the full picture, wit
   assert.ok(!/View flyer/.test(html), 'no "View flyer" text');
 });
 
-test('item without a blurb renders a 36px stamp', () => {
+test('item without a blurb renders no picture at all', () => {
   const html = renderNewsletter(mediaIssue());
-  assert.match(html, new RegExp(`<img src="${FLYER}" alt="" width="36"`));
+  assert.equal(stampPositions(html).length, 2, 'only the two blurb items carry a stamp');
+  assert.ok(!/width="36"/.test(html), 'no small stamp');
+  const shortItem = html.slice(html.indexOf('Short one') - 600, html.indexOf('Short one') + 300);
+  assert.ok(!/flyer\.png/.test(shortItem), 'the short item has no picture near it');
 });
 
-test('stamps zigzag: first left of the text, second right, third left', () => {
+test('every stamp sits to the left of its text', () => {
   const html = renderNewsletter(mediaIssue());
-  const [s1, s2, s3] = stampPositions(html);
-  assert.equal(stampPositions(html).length, 3);
-  assert.ok(s1 < html.indexOf('With blurb'), '1st stamp comes before its title (left)');
-  assert.ok(html.indexOf('Short one') < s2, '2nd stamp comes after its title (right)');
-  assert.ok(s3 < html.indexOf('Third one'), '3rd stamp comes before its title (left)');
+  const [s1, s2] = stampPositions(html);
+  assert.ok(s1 < html.indexOf('First blurb'), '1st stamp comes before its title');
+  assert.ok(html.indexOf('First blurb') < s2 && s2 < html.indexOf('Second blurb'), '2nd stamp comes before its title too');
 });
 
-test('text beside a right-side stamp is justified and hyphenated; left-side text is not', () => {
+test('no text cell is justified or hyphenated', () => {
   const html = renderNewsletter(mediaIssue());
-  const justified = html.match(/text-align:\s*justify;[^"]*hyphens:\s*auto/g) || [];
-  assert.equal(justified.length, 1, 'exactly one right-side text cell in a 3-stamp issue');
-  assert.match(html, /<td[^>]*lang="en"[^>]*text-align:\s*justify/);
-});
-
-test('the zigzag restarts on every render', () => {
-  const issue = mediaIssue();
-  const a = renderNewsletter(issue);
-  const b = renderNewsletter(issue);
-  assert.equal(stampPositions(a).length, 3);
-  assert.equal(a, b, 'second render starts the zigzag on the left again');
+  assert.ok(!/text-align:\s*justify/.test(html));
+  assert.ok(!/hyphens:\s*auto/.test(html));
 });
 
 test('item without a picture, or with an unsafe picture URL, renders no stamp', () => {
   const issue = mediaIssue();
   issue.sections.research.items[0].fields.image = 'javascript:alert(1)';
+  delete issue.sections.research.items[1].fields.image;
   delete issue.sections.opportunities.items[0].fields.image;
-  delete issue.sections.opportunities.items[1].fields.image;
   const html = renderNewsletter(issue);
   assert.equal(stampPositions(html).length, 0);
   assert.ok(!/javascript:/.test(html));
