@@ -89,20 +89,25 @@ function editAttrs(section, itemId, field, editable) {
 
 /** The stamp: at most 96px wide, never taller than the text beside it. Pictures
  *  are photos, so a portrait headshot (4:5, 1.25× taller than wide) is the
- *  tallest shape assumed; wider photos come out shorter. Dropped below 40px. */
-const STAMP = { max: 96, min: 40, gutter: 14, ratio: 1.25 };
+ *  tallest shape assumed; wider photos come out shorter. Dropped below 40px.
+ *  EdTalk headshots (Kate, 2026-09-08) sit beside the title too and may reach
+ *  160px. No border on any stamp. */
+const STAMP = { max: 96, edtalkMax: 160, min: 40, gutter: 14, ratio: 1.25 };
+/** EdTalk items are recognised by their title ("ERC EdTalk with …"). */
+const isEdTalk = title => /\bEdTalks?\b/i.test(title || '');
 /** The item text column: 640px sheet, 40px indent, 48px right padding. */
 const ITEM_COLUMN = 640 - 40 - 48;
 
 /** Estimated height (px) of the paragraphs beside a stamp: lines × line-height
  *  plus bottom margins, at the narrowest text column a stamp can leave. */
-function textHeight(rest) {
-  const cpl = (ITEM_COLUMN - (STAMP.max + 2 + STAMP.gutter)) / 6.3; // ~14px Trebuchet MS
+function textHeight(rest, maxW = STAMP.max) {
+  const cpl = (ITEM_COLUMN - (maxW + STAMP.gutter)) / 6.3; // ~14px Trebuchet MS
   let h = 0;
   for (const m of rest.matchAll(/<p([^>]*)>([\s\S]*?)<\/p>/g)) {
     const text = m[2].replace(/<[^>]+>/g, '').replace(/&[^;\s]+;/g, 'x');
-    const lines = Math.max(1, Math.ceil(text.length / cpl));
-    const lineHeight = /line-height: 1\.5/.test(m[1]) ? 21 : 19.6;
+    const isTitle = /font-size: 16px/.test(m[1]); // bold 16px title: fewer characters per line
+    const lines = Math.max(1, Math.ceil(text.length / (isTitle ? cpl * 0.8 : cpl)));
+    const lineHeight = isTitle ? 20.8 : /line-height: 1\.5/.test(m[1]) ? 21 : 19.6;
     const margin = Number((m[1].match(/margin:0 0 (\d+)px/) || [0, 0])[1]);
     h += lines * lineHeight + margin;
   }
@@ -116,14 +121,19 @@ function textHeight(rest) {
  * it so it never stands taller than that text (96px at most, none below
  * 40px). Items without a blurb, without a picture, or with an unsafe URL
  * render title and text exactly as before. Pictures are photos, never flyers.
+ * With `titleInline` (EdTalks) the title moves into the text cell, so the
+ * headshot stands beside title, date line and blurb, up to 160px.
  */
-function withStamp(title, rest, fields, sectionKey, itemId, editable, hasBlurb) {
+function withStamp(title, rest, fields, sectionKey, itemId, editable, hasBlurb, { titleInline = false } = {}) {
   const src = safeItemHref(fields.image);
-  const w = src && hasBlurb ? Math.min(STAMP.max, Math.floor(textHeight(rest) / STAMP.ratio)) : 0;
+  const maxW = titleInline ? STAMP.edtalkMax : STAMP.max;
+  const beside = titleInline ? `${title}\n${rest}` : rest;
+  const w = src && hasBlurb ? Math.min(maxW, Math.floor(textHeight(beside, maxW) / STAMP.ratio)) : 0;
   if (w < STAMP.min) return `${title}\n${rest}`;
-  const cellW = w + 2 + STAMP.gutter; // picture + its 1px border each side + one gutter, so Word and browser box models agree
-  const img = `<a href="${esc(src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="Picture: ${esc(fields.title || '')}" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:1px solid #e6e2dd; border-radius:3px;"${editAttrs(sectionKey, itemId, 'image', editable)}></a>`;
-  return `${title}\n<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width:100%;"><tbody><tr><td valign="top" width="${cellW}" style="width:${cellW}px; vertical-align:top; padding:2px 0 0 0;">${img}</td><td valign="top" style="vertical-align:top;">\n${rest}\n</td></tr></tbody></table>`;
+  const cellW = w + STAMP.gutter; // picture + one gutter, in the cell width only, so Word and browser box models agree
+  const img = `<a href="${esc(src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="Picture: ${esc(fields.title || '')}" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:0;"${editAttrs(sectionKey, itemId, 'image', editable)}></a>`;
+  const row = `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width:100%;"><tbody><tr><td valign="top" width="${cellW}" style="width:${cellW}px; vertical-align:top; padding:2px 0 0 0;">${img}</td><td valign="top" style="vertical-align:top;">\n${beside}\n</td></tr></tbody></table>`;
+  return titleInline ? row : `${title}\n${row}`;
 }
 
 /** Items that can render: a title is the one field every item needs. */
@@ -306,7 +316,7 @@ function buildGroupedList(secReg, sec, editable = false) {
         const rest = `${metaLine}
 ${descLine}`;
         rows += `<tr><td style="padding: ${topPad} 48px 0 40px;">
-${withStamp(title, rest, fields, sectionKey, item.id, editable, descLine !== '')}
+${withStamp(title, rest, fields, sectionKey, item.id, editable, descLine !== '', { titleInline: isEdTalk(fields.title) })}
 </td></tr>`;
         if (needsItemDivider) {
           rows += `<tr><td style="padding: 12px 48px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
@@ -489,7 +499,7 @@ function buildSpotlight(secReg, sec, editable = false) {
         const rest = `${metaLine}
 ${summaryLine}`;
         rows += `<tr><td style="padding: ${topPad} 48px 0 40px;">
-${withStamp(title, rest, fields, 'spotlight', item.id, editable, summaryLine !== '')}
+${withStamp(title, rest, fields, 'spotlight', item.id, editable, summaryLine !== '', { titleInline: isEdTalk(fields.title) })}
 </td></tr>`;
 
         if (i < items.length - 1) {

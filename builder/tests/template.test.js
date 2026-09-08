@@ -232,11 +232,12 @@ test('the stamp is sized from the text beside it: short text, no stamp; medium t
   assert.equal(stampWidth(html, 'Long blurb'), 96, 'ceiling');
 });
 
-test('the stamp cell is the bordered picture plus one 14px gutter, whatever the stamp width', () => {
+test('the stamp cell is the picture plus one 14px gutter, no border, whatever the stamp width (Kate, 2026-09-08)', () => {
   const html = renderNewsletter(mediaIssue());
   const cells = [...html.matchAll(/<td valign="top" width="(\d+)" style="width:\d+px; vertical-align:top; padding:2px 0 0 0;"><a [^>]*><img [^>]*width="(\d+)"/g)];
   assert.ok(cells.length >= 2);
-  for (const [, cell, img] of cells) assert.equal(Number(cell), Number(img) + 2 + 14);
+  for (const [, cell, img] of cells) assert.equal(Number(cell), Number(img) + 14);
+  assert.ok(!/border:1px solid #e6e2dd/.test(html) && !/border-radius:3px/.test(html), 'no hairline, no rounded corners');
   assert.ok(!/padding:2px 14px 0 0/.test(html), 'gutter is not double-counted as padding');
 });
 
@@ -266,7 +267,7 @@ test('item without a picture, or with an unsafe picture URL, renders no stamp', 
   const html = renderNewsletter(issue);
   assert.equal(stampPositions(html).length, 0);
   assert.ok(!/javascript:/.test(html));
-  assert.ok(!/border-radius:3px/.test(html), 'no stamp markup at all');
+  assert.ok(!/alt="Picture:/.test(html), 'no stamp markup at all');
 });
 
 test('editable render tags the stamp for click-to-edit; export carries no hooks', () => {
@@ -460,4 +461,49 @@ test('the masthead is served from the desk repo; an issue can still override it 
   assert.ok(!html.includes('i.ibb.co/tPqcyQw2'));
   const custom = renderNewsletter({ ...fullIssue(), headerImageUrl: 'https://example.org/banner.png' });
   assert.ok(custom.includes('src="https://example.org/banner.png"'));
+});
+
+// ─── Sep 8 amendments (Kate): no stamp border; EdTalk headshots beside the title ──
+const EDTALK_BLURB = 'Join us for an ERC EdTalk with Dr. Melanie Kinskey, "Supporting Teachers to Integrate Socioscientific Issues in Elementary Science."\n\nPlease RSVP soon so we can plan seating and catering. The form also lets you join our listserv and, for hybrid events, indicate that you will attend via Zoom; we will send the link to those who select it.';
+function edtalkIssue(summary = EDTALK_BLURB, title = 'ERC EdTalk with Dr. Melanie Kinskey') {
+  const issue = createEmptyIssue();
+  issue.sections.spotlight.enabled = true;
+  issue.sections.spotlight.items = [
+    { id: 's1', group: 'events', fields: { title, date: 'Sep 11, 2026', time: '11:30am', location: 'Rudder 401', summary, image: FLYER } },
+  ];
+  return issue;
+}
+const widthOf = html => { const m = html.match(/flyer\.png" alt="[^"]*" width="(\d+)"/); return m ? Number(m[1]) : null; };
+const rowOf = html => { const i = html.indexOf('<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"'); return i < 0 ? '' : html.slice(i, html.indexOf('</table>', i)); };
+
+test('an EdTalk headshot sits beside the title as well as the text, up to 160px wide', () => {
+  const html = renderNewsletter(edtalkIssue());
+  const stamp = html.indexOf(`<img src="${FLYER}`);
+  const title = html.indexOf('ERC EdTalk with Dr. Melanie Kinskey');
+  assert.ok(stamp > 0 && stamp < title, 'picture first, then the title inside the text cell');
+  assert.match(rowOf(html), /ERC EdTalk with Dr\. Melanie Kinskey/, 'the title lives in the two-cell row');
+  assert.equal(widthOf(html), 160, 'the Kinskey text is tall enough for the full 160');
+  assert.match(html, /<td valign="top" width="174" style="width:174px;/, 'cell = 160 + 14, no border to count');
+});
+
+test('an EdTalk with less text gets a smaller headshot; with no blurb, none at all', () => {
+  const w = widthOf(renderNewsletter(edtalkIssue('One sentence about the talk.')));
+  assert.ok(w >= 40 && w < 160, `title + date line + one line of blurb: a small headshot, got ${w}`);
+  const none = renderNewsletter(edtalkIssue(''));
+  assert.equal(stampPositions(none).length, 0, 'no blurb, no picture (the Sep 3 rule stands)');
+  assert.match(none, /ERC EdTalk with Dr\. Melanie Kinskey/);
+});
+
+test('other spotlight events keep the title above the picture and the 96px ceiling', () => {
+  const html = renderNewsletter(edtalkIssue(EDTALK_BLURB, 'Brown Bag with Dr. Melanie Kinskey'));
+  const stamp = html.indexOf(`<img src="${FLYER}`);
+  const title = html.indexOf('Brown Bag with Dr. Melanie Kinskey');
+  assert.ok(title > 0 && title < stamp, 'title first, then the picture');
+  assert.equal(widthOf(html), 96);
+});
+
+test('an editable EdTalk render keeps the title and picture hooks inside the row', () => {
+  const html = renderNewsletter(edtalkIssue(), { editable: true });
+  assert.match(rowOf(html), /<img [^>]*data-edit-field="image"/);
+  assert.match(rowOf(html), /data-edit-field="title"/);
 });

@@ -68,3 +68,9 @@ Not in scope: the `newsletters/next-issue/ERC_Newsletter_next.html` template in 
 - **Pictures are photos, not flyers.** Alt text reads `Picture: {title}`.
 - **Sheet is 640px wide** (was 705), item text ends 48px from the right; item dividers 12px each side, later group labels 32px below the last item.
 - Everything else from the Decision stands: never cropped, hairline border, links to the full-size picture, no link text, edit hooks on the image, no picture without a blurb.
+
+### Amended 2026-09-08 (Kate)
+
+- **No border on any stamp.** The 1px `#e6e2dd` hairline and the 3px radius are gone everywhere; the picture cell is the picture plus the 14px gutter.
+- **EdTalk headshots sit beside the title.** For items whose title says "EdTalk" (spotlight and events sections), the title moves into the text cell, so the picture stands beside title, date line and blurb. Cap **160px** (a 4:5 headshot renders 160 x 200); still sized from the text beside it, still no picture without a blurb. Chosen from mockups of 96 (today), 128 and 160 with her real EdTalk item: 160 matches the text height.
+- **Headshot file:** 4:5 portrait, 640 x 800 recommended (320 x 400 minimum), JPG or PNG under 2.5 MB, face large in the frame, transparent background allowed.
