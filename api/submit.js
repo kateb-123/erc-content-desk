@@ -15,7 +15,6 @@ import {
 } from './_lib/extract.js';
 import { appendRow } from './_lib/sheets.js';
 import { setCors } from './_lib/cors.js';
-import { checkRequest } from './_lib/turnstile.js';
 
 export const config = { maxDuration: 60 };
 
@@ -46,9 +45,6 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, errors: ['Use POST.'] });
   }
-  // Cross-origin callers (the public share page) must carry a Turnstile token.
-  const refused = await checkRequest(req);
-  if (refused) return res.status(403).json({ ok: false, errors: [refused] });
   try {
     const body = req.body ?? {};
     for (const key of ['title', 'blurb', 'link', 'type', 'subtype', 'spotlight', 'submitter', 'submitter_email', 'infographic']) {
