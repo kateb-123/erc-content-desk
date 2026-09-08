@@ -549,7 +549,7 @@ function buildHeader(issue, editable = false) {
       const navText = secReg.navLabel ?? secReg.label;
       return `<a href="#${anchor}" style="color: rgb(83, 83, 83); text-decoration: none; font-weight: 700;">${esc(navText)}</a>`;
     });
-  const navHtml = navLinks.length ? `<span style="color:#767676; font-weight:400;">In this issue:</span>&nbsp; ${navLinks.join(' &nbsp;|&nbsp; ')}` : '';
+  const navHtml = navLinks.join(' &nbsp;|&nbsp; ');
 
   return `<table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 640px; margin: 0 auto; background-color: rgb(255, 255, 255);">
 <tbody>

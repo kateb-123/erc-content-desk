@@ -366,7 +366,6 @@
 "Federal"
 "Spotlight"
 "Policy Research"
-"In this issue:"
 "Website"
 "Join the mailing list"
 "Email"

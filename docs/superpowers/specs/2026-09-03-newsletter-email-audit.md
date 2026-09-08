@@ -13,7 +13,7 @@
 | 2 | Hidden preheader after `<body>`: `issue.preheader`, else whole sentences of the intro until ≥60 chars (cap 140). |
 | 2 | `rgb(80, 0, 0)` now appears only as a background; the date color, tab underline and callout link use `#500000`, so the dark-mode `td[style*="rgb(80, 0, 0)"]` rule can no longer paint the date maroon-on-maroon. |
 | 2 | Footer cell and lockup set `color:#ffffff` so blocked-image alt text stays readable on maroon. |
-| 2 | Jump nav prefixed "In this issue:" (a table of contents, since anchors are dead in the Gmail/Outlook phone apps). |
+| 2 | ~~Jump nav prefixed "In this issue:"~~ Removed by Kate, 2026-09-08: no label, the section links stand alone. The phone-app rationale went with the desktop-only call. |
 | 2 | One label, "Join the mailing list", in header and footer (was "Join Listserv" / "Join Mailing List"). |
 | 2 | Items with no title are skipped; a section left with nothing renders no tab, no nav entry and no spacer. |
 | 2 | Blurbs split on blank lines into paragraphs (`proseParas`); `renderProse` styles emphasis across markdown links (`**see [x](url) now**` is one bold run). |

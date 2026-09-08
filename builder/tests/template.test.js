@@ -342,9 +342,10 @@ test('footer cell sets white text so blocked-image alt text stays readable on ma
   assert.match(html, /<td align="center" style="[^"]*color:#ffffff;[^"]*padding: 26px 24px 24px;/);
 });
 
-test('jump nav is labeled as a table of contents', () => {
+test('jump nav carries no label; the section links stand alone (Kate, 2026-09-08)', () => {
   const html = renderNewsletter(fullIssue());
-  assert.match(html, /In this issue:<\/span>\s*(&nbsp;)?\s*<a href="#research"/);
+  assert.ok(!html.includes('In this issue'));
+  assert.match(html, /<a href="#research"[^>]*>ERC Research<\/a> &nbsp;\|&nbsp; <a href="#spotlight"/);
 });
 
 test('the mailing-list link has one name in the header and the footer', () => {
