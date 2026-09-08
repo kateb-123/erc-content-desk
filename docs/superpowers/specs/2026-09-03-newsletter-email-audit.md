@@ -32,7 +32,7 @@ Tests: `builder/tests/template.test.js`, block "Audit fixes (2026-09-03)".
 - ~~**Title link cue**~~ — closed by design (Kate, 2026-09-03): titles stay black, bold, no underline, no mark, no color. Underlines (three tints), colored titles, weight change, hover underline and trailing marks were all mocked in the full issue and rejected. The rule instead: every title carries a link.
 - ~~**Group spacing**~~ — applied: item dividers 12px each side (25px with the rule), later group labels 32px below the last item.
 - ~~**Line length**~~ — applied: item cells and the intro end 80px from the right edge (≈94 characters per line, 76 beside a stamp). Going lower would need a larger body size.
-- **Digest bullets** as table cells, not lists (deliberate for Outlook). **Brand images** on i.ibb.co (move to the desk's own hosting).
+- **Digest bullets** as table cells, not lists (deliberate for Outlook). **Brand images** on i.ibb.co (move to the desk's own hosting). *Masthead moved 2026-09-08: new banner, 2080 x 280, at builder/images/newsletter-masthead.png. The footer lockup is still on i.ibb.co.*
 
 ## Builder / desk scope — not applied (out of scope for the template work)
 

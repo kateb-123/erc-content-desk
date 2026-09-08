@@ -534,7 +534,7 @@ function anchorIdForSection(sectionKey) {
 // ─── Header / masthead / intro / footer ──────────────────────────────────────
 
 function buildHeader(issue, editable = false) {
-  const imgSrc = issue.headerImageUrl || 'https://i.ibb.co/tPqcyQw2/NEWSLETTER1.png';
+  const imgSrc = issue.headerImageUrl || 'https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/newsletter-masthead.png';
   const date = issue.date || '';
 
   // Build jump-nav dynamically from enabled sections in SECTION_REGISTRY order.

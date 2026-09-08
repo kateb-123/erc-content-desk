@@ -453,3 +453,11 @@ test('item text and the intro end 48px from the right edge of the 640px sheet', 
   assert.match(html, /padding: 24px 48px 30px 24px;/, 'intro cell too');
   assert.match(html, /padding: 16px 48px 0 24px;/, 'the featured-events rule ends at the same edge');
 });
+
+test('the masthead is served from the desk repo; an issue can still override it (Kate, 2026-09-08)', () => {
+  const html = renderNewsletter(fullIssue());
+  assert.ok(html.includes('src="https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/newsletter-masthead.png"'));
+  assert.ok(!html.includes('i.ibb.co/tPqcyQw2'));
+  const custom = renderNewsletter({ ...fullIssue(), headerImageUrl: 'https://example.org/banner.png' });
+  assert.ok(custom.includes('src="https://example.org/banner.png"'));
+});
