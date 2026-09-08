@@ -8,6 +8,6 @@
  * Send to Newsletter) works normally. Flip to false and bump the cache-busters
  * to reopen publishing.
  */
-export const PUBLISH_PAUSED = true;
+export const PUBLISH_PAUSED = false;
 export const PUBLISH_PAUSED_MESSAGE =
   'Publishing is paused for the team trial — nothing goes to the Exchange yet.';
