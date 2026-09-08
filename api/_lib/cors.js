@@ -1,12 +1,11 @@
 /**
- * CORS for the endpoints public pages call: the newsletter builder's, and
- * /api/submit + /api/newsletter-image for the public share page on Pages.
- * Vercel address joins the list when the builder moves. localhost is for
- * dev against the sandbox.
+ * CORS for the endpoints public pages call: /api/submit + /api/newsletter-image
+ * for the public share page, which lives in the Policy Exchange hub repo
+ * (kateb-123.github.io/erc-policy-exchange/share/). Cross-origin callers also
+ * need a Turnstile token (turnstile.js). localhost is for dev against the sandbox.
  */
 const ALLOWED_ORIGINS = new Set([
-  'https://kateb-123.github.io',   // the builder, when it lived on Pages
-  'https://erc-kate.github.io',    // erc-tools: the public share page
+  'https://kateb-123.github.io',   // the hub: the public share page
 ]);
 
 export function setCors(req, res) {

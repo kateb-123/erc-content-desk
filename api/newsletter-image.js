@@ -7,6 +7,7 @@
  */
 import { createHash } from 'node:crypto';
 import { setCors } from './_lib/cors.js';
+import { checkRequest } from './_lib/turnstile.js';
 import { putRepoBinary } from './_lib/archive.js';
 
 export const config = { maxDuration: 60 };
@@ -33,6 +34,9 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, error: 'Use POST.' });
   }
+  // Cross-origin callers (the public share page) must carry a Turnstile token.
+  const refused = await checkRequest(req);
+  if (refused) return res.status(403).json({ ok: false, error: refused });
   const type = String(req.body?.type ?? '').toLowerCase();
   if (!MAGIC[type]) {
     return res.status(400).json({ ok: false, error: 'Use a PNG, JPG, GIF, or WebP.' });
