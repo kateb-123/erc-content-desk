@@ -126,11 +126,25 @@ async function drainWrites() {
   if (writeErrored) { writeErrored = false; setStatus('', 'ok'); }  // caught up
 }
 
+/** True while any decision is still on its way to the Sheet. */
+function saveOutstanding() {
+  return flushing || pendingWrites.size > 0;
+}
+
+// The one thing the queue cannot survive is the tab closing mid-drain: those
+// decisions live only in memory until they land. The browser's own leave-site
+// prompt is the only guard it will honour (the wording is the browser's).
+window.addEventListener('beforeunload', event => {
+  if (!saveOutstanding()) return;
+  event.preventDefault();
+  event.returnValue = '';   // Safari and older Chrome still need this to prompt
+});
+
 /** Resolves once the queue has fully drained — awaited before consequential,
  *  server-read actions (publish / send) so the Sheet reflects every decision. */
 function whenSaved() {
   return new Promise(resolve => {
-    const check = () => (!flushing && !pendingWrites.size) ? resolve() : setTimeout(check, 150);
+    const check = () => (!saveOutstanding()) ? resolve() : setTimeout(check, 150);
     check();
   });
 }
