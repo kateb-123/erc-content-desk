@@ -576,3 +576,9 @@ input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus 
    the download already happened — this is only for getting it again. */
 .receipt-download { display: block; margin: .7rem auto 0; font-size: .85rem; color: var(--muted); }
 .receipt-download:hover { border: none; color: var(--accent); text-decoration: underline; }
+
+/* Sort's quiet "couldn't find it" notes. Deliberately NOT the amber alert
+   bubble: that bubble is a demand (verify the link), these are information —
+   they never block Keep (Kate, Sep 9). */
+.card-note { font-size: .85rem; color: var(--muted); margin: .4rem 0 0; }
+.card-note .fa-circle-question { margin-right: .35rem; color: var(--muted); }

@@ -9,7 +9,7 @@ import {
   markPublished, markNewsletterIssue,
   staleCirclebacks, duplicateFlags, counts,
   newsletterOnly, linkCheckedFromFetch, linkCheckState, reshareFlags, clearNewsletterIssue,
-  needsErcVoice,
+  needsErcVoice, missingFields,
 } from '../js/workflow.js';
 
 const row = o => blankRow({ id: 'r1', status: 'new', ...o });
@@ -225,4 +225,28 @@ test('ERC Events get the ERC voice, like every other event', () => {
 test('a past-dated ERC Event is flagged stale like any other parked event', () => {
   const rows = [{ id: 1, status: 'circleback', type: 'erc_event', date: '2026-01-01' }];
   assert.deepEqual(staleCirclebacks(rows, '2026-09-09').map(r => r.id), [1]);
+});
+
+test('a Report always gets rewritten, abstract or not (Kate, Sep 9)', () => {
+  // Reports carry a page-long summary rather than a real abstract.
+  assert.equal(needsErcVoice({ type: 'research', subtype: 'Report', blurb: 'a long summary' }), true);
+  assert.equal(needsErcVoice({ type: 'research', subtype: 'Report', blurb: '' }), true);
+  // Other research with a real abstract is still left alone.
+  assert.equal(needsErcVoice({ type: 'research', subtype: 'Peer-Reviewed', blurb: 'an abstract' }), false);
+  // And a checked row is done for good, Report or not.
+  assert.equal(needsErcVoice({ type: 'research', subtype: 'Report', rewrite_checked: '2026-09-09' }), false);
+});
+
+test('missingFields names the blanks that matter for the row\'s type', () => {
+  assert.deepEqual(missingFields({ type: 'erc_event' }), ['date', 'time', 'location']);
+  assert.deepEqual(missingFields({ type: 'erc_event', date: '2026-09-20', time: '3 PM CT', location: 'Harrington' }), []);
+  assert.deepEqual(missingFields({ type: 'event', date: '2026-09-20', time: '', location: 'Zoom' }), ['time']);
+  assert.deepEqual(missingFields({ type: 'opportunity' }), ['deadline']);
+  assert.deepEqual(missingFields({ type: 'opportunity', deadline: '2026-10-15' }), []);
+  // A date is load-bearing for events only — research is not flagged for one.
+  assert.deepEqual(missingFields({ type: 'research', authors: 'Chen' }), []);
+});
+
+test('missingFields says nothing about a row with no type yet', () => {
+  assert.deepEqual(missingFields({ type: '' }), []);
 });

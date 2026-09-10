@@ -92,8 +92,11 @@ export function normalizeExtraction(extracted, row) {
   if (fields.subtype && !isValidSubtype(effectiveType, fields.subtype)) {
     delete fields.subtype;
   }
-  if (extracted?.needs_review === true) {
+  // The flag is RETURNED, not just warned about: it used to die here, so Sort
+  // never learned the reader was unsure (Kate, Sep 9).
+  const needsReview = extracted?.needs_review === true;
+  if (needsReview) {
     warnings.push('Claude was unsure about this one — double-check its fields.');
   }
-  return { fields, warnings };
+  return { fields, warnings, needsReview };
 }

@@ -4,7 +4,7 @@
  * new -> kept | circleback | trashed; kept rows then gain published_at
  * (Publish screen) and newsletter_issue (Build screen).
  */
-import { CSV_COLUMNS, SHEET_COLUMNS } from './schema.js';
+import { CSV_COLUMNS, SHEET_COLUMNS, TYPES } from './schema.js';
 
 export function pendingRows(rows) {
   return rows.filter(r => r.status === 'new');
@@ -103,8 +103,10 @@ export function newsletterOnly(row) {
  */
 export function needsErcVoice(row) {
   if (String(row.rewrite_checked ?? '').trim()) return false;
-  return row.type === 'event' || row.type === 'erc_event' || row.type === 'opportunity'
-    || (row.type === 'research' && !row.blurb);
+  if (row.type === 'event' || row.type === 'erc_event' || row.type === 'opportunity') return true;
+  // A Report's "abstract" is usually a page-long findings summary, so it always
+  // needs the ERC voice (Kate, Sep 9) — not only when it arrived blank.
+  return row.type === 'research' && (row.subtype === 'Report' || !row.blurb);
 }
 
 export function readyToPublish(rows) {
@@ -195,4 +197,20 @@ export function counts(rows) {
     published: publishedRows(rows).length,
     pool: buildPool(rows).length,
   };
+}
+
+/**
+ * The load-bearing fields this row's type needs and does not have. Driven by the
+ * schema's extraFields, plus a date for anything event-shaped — an event with no
+ * date is not usable. Sort shows these so Kate can go find them or bin the item
+ * (Kate, Sep 9); it never blocks Keep. An untyped row says nothing: fixing the
+ * type comes first.
+ */
+export function missingFields(row) {
+  const def = TYPES[row?.type];
+  if (!def) return [];
+  const wanted = row.type === 'event' || row.type === 'erc_event'
+    ? ['date', ...def.extraFields]
+    : def.extraFields;
+  return wanted.filter(f => !String(row[f] ?? '').trim());
 }

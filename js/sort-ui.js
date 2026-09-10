@@ -4,7 +4,7 @@
  * Trash by click only (no keyboard shortcuts — Kate's call, Aug 31). The
  * section row is a jump point; the type pickers hide behind "change".
  */
-import { duplicateFlags, linkCheckState, reshareFlags } from './workflow.js';
+import { duplicateFlags, linkCheckState, reshareFlags, missingFields } from './workflow.js';
 import { TYPE_ORDER, TYPE_LABELS, subtypesFor, isValidSubtype } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref, withScheme } from './links.js';
@@ -299,6 +299,23 @@ export function renderSort(container, props) {
     changeRow.append(input, ' ', saveLink);
     alert.append(line, changeRow);
     fileRow.append(alert);
+  }
+
+  // Two quiet notes, only when the reader came up short. Neither blocks Keep —
+  // Kate decides whether to go find the detail or bin the item (Sep 9).
+  const FIELD_WORDS = { date: 'date', time: 'time', location: 'location', deadline: 'deadline', authors: 'authors', medium: 'outlet' };
+  const missing = missingFields(row);
+  if (missing.length) {
+    const note = el('p', 'card-note');
+    note.append(faIcon('circle-question'));
+    note.append(` Couldn't find the ${missing.map(f => FIELD_WORDS[f] ?? f).join(', ')}`);
+    fileRow.append(note);
+  }
+  if (String(row.needs_review ?? '').trim()) {
+    const note = el('p', 'card-note');
+    note.append(faIcon('circle-question'));
+    note.append(' The reader wasn\'t sure about this one — check what it filled in');
+    fileRow.append(note);
   }
 
   if (fixOpen) {

@@ -30,8 +30,11 @@ async function extractInto(row, pageText) {
     messages: [{ role: 'user', content: buildExtractionPrompt(row, pageText) }],
   });
   const text = response.content.find(b => b.type === 'text')?.text ?? '';
-  const { fields, warnings } = normalizeExtraction(parseExtraction(text), row);
-  return { row: applyExtractedWithProvenance(row, fields).row, warnings };
+  const { fields, warnings, needsReview } = normalizeExtraction(parseExtraction(text), row);
+  const merged = applyExtractedWithProvenance(row, fields).row;
+  // Carried onto the row so Sort can say the reader was unsure — it used to be
+  // told to the submitter once and then lost.
+  return { row: { ...merged, needs_review: needsReview ? 'yes' : '' }, warnings };
 }
 
 export default async function handler(req, res) {
