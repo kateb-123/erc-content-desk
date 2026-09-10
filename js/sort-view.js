@@ -36,15 +36,27 @@ export function keptUntyped(rows) {
     && !String(r.newsletter_issue ?? '').trim()).sort(oldestFirst);
 }
 
-export function sortStream(rows) {
-  const pending = pendingRows(rows);
-  const erc = pending.filter(isErc).sort(oldestFirst);
-  const rest = pending.filter(r => !isErc(r));
+/**
+ * The stream. `sessionDecided` is the set of ids decided since the page opened:
+ * those rows HOLD their slot instead of vanishing, so ‹ scrolls back to what you
+ * just did and lets you change it (Kate, Sep 9). A decision touches neither type
+ * nor date, so they sort exactly where they sat while pending.
+ */
+export function sortStream(rows, sessionDecided = new Set()) {
+  const inPlay = rows.filter(r => r.status === 'new' || sessionDecided.has(r.id));
+  const erc = inPlay.filter(isErc).sort(oldestFirst);
+  const rest = inPlay.filter(r => !isErc(r));
   const known = new Set(TYPE_ORDER);
   const toReview = rest.filter(r => !known.has(r.type || '')).sort(oldestFirst);
   const grouped = TYPE_ORDER.flatMap(type =>
     rest.filter(r => (r.type || '') === type).sort(oldestFirst));
-  return [...toReview, ...keptUntyped(rows), ...erc, ...grouped];
+  // A kept-untyped fix-up decided this session would otherwise arrive twice.
+  const seen = new Set();
+  return [...toReview, ...keptUntyped(rows), ...erc, ...grouped].filter(row => {
+    if (seen.has(row.id)) return false;
+    seen.add(row.id);
+    return true;
+  });
 }
 
 /** Per-bucket totals of the pending rows, for the filter labels. */

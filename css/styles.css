@@ -501,10 +501,39 @@ input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus 
 @keyframes slide-in-r { from { opacity: 0; transform: translateX(16px); } }
 @keyframes slide-in-l { from { opacity: 0; transform: translateX(-16px); } }
 
-/* Sort decision: the leaving card settles — shrinks and fades in place as a
-   floating copy while the next card renders instantly underneath. */
-.sort-exit-clone { position: fixed; margin: 0; pointer-events: none; z-index: 10; animation: settle-out 200ms cubic-bezier(0.33, 1, 0.68, 1) forwards; }
-@keyframes settle-out { to { opacity: 0; transform: scale(0.955); } }
+/* Sort decision: the decided card slides LEFT and dulls rather than vanishing
+   (Kate, Sep 9 — "i don't want the cards to disappear"). It doesn't leave: it
+   parks as the sliver on the left, and ‹ scrolls back onto it. */
+.sort-exit-clone { position: fixed; margin: 0; pointer-events: none; z-index: 10; animation: settle-out 260ms cubic-bezier(0.33, 1, 0.68, 1) forwards; }
+@keyframes settle-out { to { opacity: .3; transform: translateX(-82%); } }
+
+/* The parked card: the decision behind you, clipped to a sliver. Click to go
+   back to it — same as the ‹ arrow, which is why it carries a real button. */
+.sort-parked {
+  flex: 0 0 34px; align-self: stretch; min-height: 120px; padding: 0;
+  border: 1px solid var(--line); border-right: none;
+  border-radius: 12px 0 0 12px; background: #fff;
+  opacity: .38; cursor: pointer; overflow: hidden;
+}
+.sort-parked:hover { opacity: .6; border-color: var(--line); }
+.sort-parked span { display: block; padding: .9rem .5rem 0; font-size: .7rem; color: var(--muted); }
+
+/* A card you already decided, scrolled back to. */
+.sort-card.is-decided { border-color: var(--line); }
+.decided-stamp {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-size: .7rem; font-weight: 700; padding: .2rem .6rem;
+  border-radius: 999px; margin-bottom: .45rem;
+}
+.decided-stamp.is-kept { background: #e4f1eb; color: var(--ok); }
+.decided-stamp.is-skipped { background: #eef0f3; color: var(--muted); }
+.decided-stamp.is-deleted { background: #f7e3e3; color: var(--err); }
+.decided-lead { font-size: .85rem; color: var(--muted); margin-left: auto; }
+.sort-card.is-decided .sort-actions .decided-lead + * { margin-left: .1rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sort-exit-clone { animation: none; opacity: 0; }
+}
 
 /* Sliding-dots loader (Kate's pick, Sep 1) — six dots slide across a track
    with staggered delays, recolored to the desk blues. Mini = inline size. */

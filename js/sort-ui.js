@@ -21,6 +21,14 @@ const FILTER_LABELS = [
 ];
 const FILTER_KEYS = FILTER_LABELS.map(([k]) => k);
 
+// How a card you decided this session presents itself when you scroll back to
+// it: its own stamp, and the two decisions you did NOT make (Kate, Sep 9).
+const DECIDED = {
+  kept: { label: 'Kept', icon: 'check', cls: 'is-kept', others: ['circleback', 'trash'] },
+  circleback: { label: 'Skipped', icon: null, cls: 'is-skipped', others: ['keep', 'trash'] },
+  trashed: { label: 'Deleted', icon: 'trash-can', cls: 'is-deleted', others: ['keep', 'circleback'] },
+};
+
 let fixOpenId = null;   // card id whose type pickers are open via "change"
 let lastFilter = null;  // detects a section jump so the card area slides like the screens do
 
@@ -49,10 +57,10 @@ function el(tag, className, text) {
 export function renderSort(container, props) {
   const rerenderCard = () => renderSort(container, props);
   container.replaceChildren();
-  const { rows, filter, sortedCount, lastDecision, onFilter, onDecide, onUndo, onGoTo, browse = 0, onBrowse } = props;
+  const { rows, filter, sortedCount, lastDecision, onFilter, onDecide, onUndo, onGoTo, browse = 0, onBrowse, sessionDecided = new Set() } = props;
   const rerenderSelf = () => renderSort(container, props);
 
-  const stream = sortStream(rows);
+  const stream = sortStream(rows, sessionDecided);
   const counts = sortCounts(rows);
   const visible = streamFrom(stream, filter);
 
@@ -123,8 +131,16 @@ export function renderSort(container, props) {
   undo.disabled = !lastDecision;
   undo.addEventListener('click', () => onUndo());
   main.append(undo);
-  const card = el('div', 'sort-card');
+  // Decided this session: the card is still here to scroll back to, wearing its
+  // decision. Anything decided before today's visit never reaches the stream.
+  const decided = sessionDecided.has(row.id) && row.status !== 'new' ? row.status : null;
+  const card = el('div', `sort-card${decided ? ` is-decided ${DECIDED[decided].cls}` : ''}`);
   card.append(el('span', 'card-pos', `${posInGroup}/${groupCards.length}`));
+  if (decided) {
+    const stamp = el('span', `decided-stamp ${DECIDED[decided].cls}`, DECIDED[decided].label);
+    if (DECIDED[decided].icon) stamp.prepend(faIcon(DECIDED[decided].icon));
+    card.append(stamp);
+  }
   const dupes = duplicateFlags(rows);
   const reshare = reshareFlags(rows, props.today ?? '');
   const badges = el('div');
@@ -364,7 +380,17 @@ export function renderSort(container, props) {
   const circleBtn = mk('Skip', 'linkish skip-link', 'circleback');
   const keepBtn = mk(' Keep', 'btn-keep', 'keep');
   keepBtn.prepend(faIcon('check'));
-  actions.append(editBtn, trashBtn, circleBtn, keepBtn);
+
+  if (decided) {
+    // A card you already decided this session: it says what it is, and offers the
+    // two other decisions rather than repeating the one you made. Edit stays.
+    actions.append(editBtn, el('span', 'decided-lead', 'Change to'));
+    const others = DECIDED[decided].others.map(k => (
+      k === 'keep' ? keepBtn : k === 'circleback' ? circleBtn : trashBtn));
+    actions.append(...others);
+  } else {
+    actions.append(editBtn, trashBtn, circleBtn, keepBtn);
+  }
   card.append(actions);
 
   // A card with open work can't be KEPT until it's fixed — but junk is junk:
@@ -378,9 +404,13 @@ export function renderSort(container, props) {
     for (const b of [keepBtn, circleBtn]) b.disabled = true;
   }
   // Carousel: arrows flank the card (the card's own 1/2 counter tracks the
-  // position). Browsing never decides anything — the card only leaves via
-  // Keep / Circle / Trash.
+  // position). Browsing never decides anything — the card only changes state via
+  // Keep / Skip / Delete. When the card behind you is one you just decided, the
+  // ‹ arrow is joined by that card parked as a dulled sliver: the decision is
+  // still on screen, which is the whole point of not letting cards disappear.
   const carousel = el('div', 'sort-carousel');
+  const behind = idx > 0 ? visible[idx - 1] : null;
+  const parkedRow = behind && sessionDecided.has(behind.id) ? behind : null;
   const prev = el('button', 'carousel-arrow', '‹');
   prev.type = 'button';
   prev.disabled = idx === 0;
@@ -391,7 +421,16 @@ export function renderSort(container, props) {
   next.disabled = idx >= visible.length - 1;
   next.setAttribute('aria-label', 'Next card');
   next.addEventListener('click', () => onBrowse?.(idx + 1));
-  carousel.append(prev, card, next);
+  if (parkedRow) {
+    const parked = el('button', 'sort-parked');
+    parked.type = 'button';
+    parked.setAttribute('aria-label', `Back to ${parkedRow.headline || 'the last card'}`);
+    parked.append(el('span', '', DECIDED[parkedRow.status]?.label ?? ''));
+    parked.addEventListener('click', () => onBrowse?.(idx - 1));
+    carousel.append(prev, parked, card, next);
+  } else {
+    carousel.append(prev, card, next);
+  }
   main.append(carousel);
 
 }

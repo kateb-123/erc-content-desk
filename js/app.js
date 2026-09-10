@@ -18,6 +18,7 @@ const state = {
   sortFilter: '',           // '' = all; 'untyped' or a type key (view state)
   sortedThisVisit: 0,       // decisions made since page load (view state)
   undoStack: [],            // [{ id, prevStatus }] — every decision, newest last
+  sortedIds: new Set(),     // decided since this page opened — they stay browsable (view state)
   lastDecision: null,       // the top of undoStack (what Undo would restore)
   rewriteReview: new Map(), // id -> the pre-rewrite description, until she checks it (view state)
   verifiedIds: new Set(),   // rewrites she has checked this visit (view state)
@@ -164,7 +165,16 @@ function change(rows, { decision = false } = {}) {
 }
 
 function decide(row, action, note = '') {
-  state.sortedThisVisit += 1;
+  // A decided card keeps its slot in the stream so ‹ scrolls back to it. First
+  // decision on a card therefore has to step PAST it; changing your mind about a
+  // card you already decided just restamps it where you are.
+  const firstTime = !state.sortedIds.has(row.id);
+  if (firstTime) {
+    state.sortedThisVisit += 1;
+    state.sortedIds.add(row.id);
+    state.sortBrowse = (state.sortBrowse ?? 0) + 1;
+    saveSortSpot();
+  }
   const next = action === 'keep' ? keep(row)
     : action === 'trash' ? trash(row)
     : circleback(row, note);
@@ -190,7 +200,14 @@ async function undoLast() {
   const last = state.undoStack.pop();
   if (!last) return;
   state.lastDecision = state.undoStack[state.undoStack.length - 1] ?? null;
-  if (last.decision) state.sortedThisVisit = Math.max(0, state.sortedThisVisit - 1);
+  if (last.decision) {
+    state.sortedThisVisit = Math.max(0, state.sortedThisVisit - 1);
+    // Deciding stepped past the card; undoing steps back onto it, so you land on
+    // what you just walked back rather than staring at the card after it.
+    for (const r of last.rows) state.sortedIds.delete(r.id);
+    state.sortBrowse = Math.max(0, (state.sortBrowse ?? 0) - 1);
+    saveSortSpot();
+  }
   noteChange(last.rows);   // restore the rows exactly as they were
 }
 
@@ -347,6 +364,7 @@ export function render() {
       ...common, filter: state.sortFilter, sortedCount: state.sortedThisVisit,
       onGoTo: goTo,
       lastDecision: state.lastDecision, browse: state.sortBrowse ?? 0,
+      sessionDecided: state.sortedIds,
       onBrowse: pos => { state.sortBrowse = Math.max(0, pos); saveSortSpot(); render(); },
       onFilter: key => { state.sortFilter = key; state.sortBrowse = 0; saveSortSpot(); render(); },
       onDecide: decide, onUndo: undoLast,

@@ -64,3 +64,34 @@ test('kept rows without a type come back to Sort, unless already in an issue or 
   // To review leads: pending untyped first, then the kept fix-ups.
   assert.deepEqual(sortStream(rows).map(r => r.id), [5, 1]);
 });
+
+test("sortStream holds this session's decided cards in their slot, so ‹ scrolls back to them", () => {
+  const decided = rows.map(r => (r.id === 'r1' ? { ...r, status: 'kept' } : r));
+  // Without the session set the decided row leaves the stream, as before.
+  assert.equal(sortStream(decided).some(r => r.id === 'r1'), false);
+  // With it, r1 keeps the exact slot it held while pending.
+  assert.deepEqual(sortStream(decided, new Set(['r1'])).map(r => r.id),
+    ['weird', 'u1', 'erc2', 'erc1', 'r1', 'r2', 'r3', 'e1', 'o1', 'h1']);
+});
+
+test('sortStream keeps trashed and skipped session cards too — any decision is reversible', () => {
+  const decided = rows.map(r => {
+    if (r.id === 'e1') return { ...r, status: 'trashed' };
+    if (r.id === 'o1') return { ...r, status: 'circleback' };
+    return r;
+  });
+  const ids = sortStream(decided, new Set(['e1', 'o1'])).map(r => r.id);
+  assert.equal(ids.includes('e1'), true);
+  assert.equal(ids.includes('o1'), true);
+});
+
+test('a session-decided row that is also a kept fix-up appears once, not twice', () => {
+  const rows = [{ id: 1, status: 'kept', type: '' }, { id: 2, status: 'new', type: 'event' }];
+  const ids = sortStream(rows, new Set([1])).map(r => r.id);
+  assert.deepEqual(ids.filter(id => id === 1).length, 1);
+});
+
+test('the filter counts still mean work remaining — a decided card stops counting', () => {
+  const decided = rows.map(r => (r.id === 'r1' ? { ...r, status: 'kept' } : r));
+  assert.equal(sortCounts(decided).research, sortCounts(rows).research - 1);
+});
