@@ -93,3 +93,21 @@ test('diffRows: identical data is silent, a changed field or a missing row is na
     [{ id: 'id-1', field: 'headline', sheet: 'A', db: 'Z' }]);
   assert.deepEqual(diffRows([sample], []), [{ id: 'id-1', field: '*', sheet: 'present', db: 'missing' }]);
 });
+
+test('meta: get reads one key, set upserts it', async () => {
+  const q = fakeQuery([[{ value: '2026-09-10T18:00:00.000Z' }], []]);
+  const store = createDb(q);
+  assert.equal(await store.getMeta('schedule_synced_at'), '2026-09-10T18:00:00.000Z');
+  assert.deepEqual(q.calls[0].params, ['schedule_synced_at']);
+  await store.setMeta('schedule_synced_at', 'later');
+  assert.match(q.calls[1].text, /INSERT INTO meta/);
+  assert.match(q.calls[1].text, /ON CONFLICT \(key\) DO UPDATE/);
+  assert.deepEqual(q.calls[1].params, ['schedule_synced_at', 'later']);
+  assert.equal(await createDb(fakeQuery([[]])).getMeta('nothing'), null);
+});
+
+test('ensureSchema also makes the meta table', async () => {
+  const q = fakeQuery();
+  await createDb(q).ensureSchema();
+  assert.match(q.calls.map(c => c.text).join('\n'), /CREATE TABLE IF NOT EXISTS meta/);
+});

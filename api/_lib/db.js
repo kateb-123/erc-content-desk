@@ -35,6 +35,19 @@ export function createDb(query) {
       CONSTRAINT items_id_present CHECK (${q('id')} <> '')
     )`);
     await query(`CREATE TABLE IF NOT EXISTS schedule (issue_date text PRIMARY KEY)`);
+    // Odds and ends with no table of their own, e.g. when the schedule copy was
+    // last refreshed from the Sheet.
+    await query(`CREATE TABLE IF NOT EXISTS meta (key text PRIMARY KEY, value text NOT NULL)`);
+  }
+
+  async function getMeta(key) {
+    const rows = await query(`SELECT value FROM meta WHERE key = $1`, [key]);
+    return rows[0]?.value ?? null;
+  }
+
+  async function setMeta(key, value) {
+    await query(`INSERT INTO meta (key, value) VALUES ($1, $2)
+      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`, [key, value]);
   }
 
   async function readAllRows() {
@@ -86,7 +99,7 @@ export function createDb(query) {
     await query(`INSERT INTO schedule (issue_date) VALUES ${dates.map((_, i) => `($${i + 1})`).join(', ')}`, dates);
   }
 
-  return { ensureSchema, readAllRows, upsertRows, appendRow, updateRow, readScheduleRows, replaceSchedule };
+  return { ensureSchema, readAllRows, upsertRows, appendRow, updateRow, readScheduleRows, replaceSchedule, getMeta, setMeta };
 }
 
 /** The production store. Lazy so importing this file never needs the env. */

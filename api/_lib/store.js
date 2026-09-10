@@ -8,8 +8,10 @@
  * request: Postgres is the truth, the Sheet is the copy.
  *
  * The one exception is the newsletter schedule: Kate still edits that tab by
- * hand, so it is read from the Sheet and copied INTO Postgres on each read,
- * with the database copy as the fallback when the Sheet does not answer.
+ * hand. The desk serves the database copy, and refreshes that copy from the
+ * Sheet at most every SCHEDULE_REFRESH_MS, with a deadline, so a hand edit
+ * shows up within ten minutes and a slow Sheet costs one load in ten, not
+ * every load (Sep 10: it was adding 2.5s to every page load).
  *
  * Call sites import the named verbs below and cannot tell which store they
  * are talking to. `_rowNumber` on a row is advisory either way (a Sheet row
@@ -25,6 +27,10 @@ const MODES = ['db', 'sheet'];
  *  is used instead. Apps Script was measured at 8s on a bad call (Sep 10) and
  *  the schedule changes a few times a semester, so a stale copy is cheap. */
 export const SCHEDULE_SHEET_TIMEOUT_MS = 2500;
+/** How long the database copy of the schedule is trusted before the Sheet is
+ *  asked again. */
+export const SCHEDULE_REFRESH_MS = 10 * 60 * 1000;
+const SYNCED_KEY = 'schedule_synced_at';
 
 /** Look up each row's live Sheet row number by id, from a single Sheet read. */
 async function sheetRowNumbers(sheetStore) {
@@ -36,7 +42,7 @@ async function sheetRowNumbers(sheetStore) {
  * Build a store over explicit backends. Production uses store() below; the
  * tests hand in fakes.
  */
-export function createStore({ mode, db: dbStore, sheet: sheetStore, log = console }) {
+export function createStore({ mode, db: dbStore, sheet: sheetStore, log = console, now = () => Date.now() }) {
   if (!MODES.includes(mode)) throw new Error(`DESK_STORE must be one of ${MODES.join(', ')}, not "${mode}"`);
 
   async function mirror(what, fn) {
@@ -68,15 +74,19 @@ export function createStore({ mode, db: dbStore, sheet: sheetStore, log = consol
     readAllRows: () => dbStore.readAllRows(),
 
     async readScheduleRows() {
+      const [copy, syncedAt] = await Promise.all([dbStore.readScheduleRows(), dbStore.getMeta(SYNCED_KEY)]);
+      const age = syncedAt ? now() - Date.parse(syncedAt) : Infinity;
+      if (age < SCHEDULE_REFRESH_MS) return copy;
       try {
         const fromSheet = await sheetStore.readScheduleRows({ timeoutMs: SCHEDULE_SHEET_TIMEOUT_MS });
         const dates = normalizeSchedule(fromSheet);
-        const have = normalizeSchedule(await dbStore.readScheduleRows());
-        if (JSON.stringify(dates) !== JSON.stringify(have)) await dbStore.replaceSchedule(dates);
+        if (JSON.stringify(dates) !== JSON.stringify(normalizeSchedule(copy))) await dbStore.replaceSchedule(dates);
+        await dbStore.setMeta(SYNCED_KEY, new Date(now()).toISOString());
         return fromSheet;
       } catch (err) {
-        log.error('schedule: sheet unreachable, using the database copy', err);
-        return dbStore.readScheduleRows();
+        // Stamp left alone: the next load tries the Sheet again.
+        log.error('schedule: sheet unreachable, serving the database copy', err);
+        return copy;
       }
     },
 

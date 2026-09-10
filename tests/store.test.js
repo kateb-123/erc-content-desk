@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createStore, pickMode, SCHEDULE_SHEET_TIMEOUT_MS } from '../api/_lib/store.js';
+import { createStore, pickMode, SCHEDULE_SHEET_TIMEOUT_MS, SCHEDULE_REFRESH_MS } from '../api/_lib/store.js';
 
 const row = (id, extra = {}) => ({ id, headline: `H ${id}`, status: 'kept', ...extra });
 
@@ -18,6 +18,9 @@ function fake(rows = [], { fail = {} } = {}) {
     },
     readScheduleRows: async (opts) => { calls.push(['readScheduleRows', opts?.timeoutMs]); maybe('readScheduleRows'); return [['2026-09-22']]; },
     replaceSchedule: async d => { calls.push(['replaceSchedule', d.join(',')]); },
+    meta: {},
+    getMeta: async k => { calls.push(['getMeta', k]); return fail.meta ?? null; },
+    setMeta: async (k, v) => { calls.push(['setMeta', k, v]); },
   };
 }
 
@@ -62,25 +65,39 @@ test('db mode: updateRows writes each row by id, counts the unmatched, and mirro
   assert.deepEqual(sheet.calls.filter(c => c[0] === 'updateRow'), [['updateRow', 'a', 9], ['updateRow', 'b', 7]]);
 });
 
-test('db mode: schedule comes from the sheet (Kate edits it there) and is copied into the database', async () => {
-  const db = fake(), sheet = fake();
-  db.readScheduleRows = async opts => { db.calls.push(['readScheduleRows', opts?.timeoutMs]); return []; };   // database copy is stale
-  const store = createStore({ mode: 'db', db, sheet, log: quiet });
-  assert.deepEqual(await store.readScheduleRows(), [['2026-09-22']]);
-  assert.deepEqual(db.calls, [['readScheduleRows', undefined], ['replaceSchedule', '2026-09-22']]);
-  // the sheet is asked with a deadline; the database copy is not
-  assert.deepEqual(sheet.calls, [['readScheduleRows', SCHEDULE_SHEET_TIMEOUT_MS]]);
-  // already in step: read only, no rewrite
-  const fresh = fake();
-  await createStore({ mode: 'db', db: fresh, sheet, log: quiet }).readScheduleRows();
-  assert.deepEqual(fresh.calls, [['readScheduleRows', undefined]]);
+test('db mode: a fresh copy of the schedule is served from the database, no sheet call', async () => {
+  const db = fake([], { fail: { meta: '2026-09-10T18:00:00.000Z' } });
+  const sheet = fake();
+  const now = () => Date.parse('2026-09-10T18:05:00.000Z');   // 5 min later, inside the window
+  const rows = await createStore({ mode: 'db', db, sheet, log: quiet, now }).readScheduleRows();
+  assert.deepEqual(rows, [['2026-09-22']]);
+  assert.equal(sheet.calls.length, 0);
+  assert.deepEqual(db.calls.map(c => c[0]), ['readScheduleRows', 'getMeta']);
 });
 
-test('db mode: when the sheet is down the schedule falls back to the database copy', async () => {
+test('db mode: a stale copy is refreshed from the sheet (Kate edits it there), with a deadline, and stamped', async () => {
+  const db = fake([], { fail: { meta: '2026-09-10T17:00:00.000Z' } });
+  db.readScheduleRows = async () => { db.calls.push(['readScheduleRows']); return [['2026-09-08']]; };   // old
+  const sheet = fake();
+  const now = () => Date.parse('2026-09-10T18:00:00.000Z');
+  const rows = await createStore({ mode: 'db', db, sheet, log: quiet, now }).readScheduleRows();
+  assert.deepEqual(rows, [['2026-09-22']]);
+  assert.deepEqual(sheet.calls, [['readScheduleRows', SCHEDULE_SHEET_TIMEOUT_MS]]);
+  assert.deepEqual(db.calls.slice(2), [['replaceSchedule', '2026-09-22'], ['setMeta', 'schedule_synced_at', '2026-09-10T18:00:00.000Z']]);
+});
+
+test('db mode: never synced counts as stale; an unchanged sheet only restamps', async () => {
+  const db = fake(), sheet = fake();
+  await createStore({ mode: 'db', db, sheet, log: quiet }).readScheduleRows();
+  assert.equal(sheet.calls.length, 1);
+  assert.deepEqual(db.calls.map(c => c[0]), ['readScheduleRows', 'getMeta', 'setMeta']);
+});
+
+test('db mode: when the sheet is down the stale copy is served and the stamp is left alone', async () => {
   const db = fake(), sheet = fake([], { fail: { readScheduleRows: true } });
   const rows = await createStore({ mode: 'db', db, sheet, log: quiet }).readScheduleRows();
   assert.deepEqual(rows, [['2026-09-22']]);
-  assert.deepEqual(db.calls, [['readScheduleRows', undefined]]);
+  assert.deepEqual(db.calls.map(c => c[0]), ['readScheduleRows', 'getMeta']);
 });
 
 test('sheet mode: the old behaviour exactly, database untouched', async () => {
@@ -105,4 +122,8 @@ test('pickMode: database when DATABASE_URL is there, sheet when it is not, DESK_
     assert.equal(pickMode({}), 'sheet');
     assert.equal(pickMode({ DATABASE_URL: 'postgres://x', DESK_STORE: 'sheet' }), 'sheet');
   } finally { console.error = err; }
+});
+
+test('the schedule copy is trusted for ten minutes', () => {
+  assert.equal(SCHEDULE_REFRESH_MS, 10 * 60 * 1000);
 });

@@ -7,7 +7,15 @@
  * they are missing, upserts by id (so re-running is safe and picks up edits),
  * then reads the database back and diffs it against the Sheet field by
  * field. Exits 1 if anything differs. Never writes to the Sheet.
+ *
+ * STEP 1 ONLY. Since step 2 (Sep 10) the database is the truth and the Sheet
+ * is a mirror that can lag, so rerunning this would overwrite live rows with
+ * stale ones. It refuses unless SHEET_TO_DB_CONFIRM=yes.
  */
+if (process.env.SHEET_TO_DB_CONFIRM !== 'yes') {
+  console.error('Refusing: the database is the truth now. Set SHEET_TO_DB_CONFIRM=yes only to rebuild it FROM the Sheet on purpose.');
+  process.exit(2);
+}
 import { readAllRows, readScheduleRows } from '../api/_lib/sheets.js';
 import { db, diffRows } from '../api/_lib/db.js';
 import { normalizeSchedule } from '../js/schedule.js';
