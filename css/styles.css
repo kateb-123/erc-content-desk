@@ -294,6 +294,15 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .decide-blocked { font-size: .85rem; color: #6b4e00; margin: .5rem 0 0; }
 .sort-actions button:disabled { opacity: .45; cursor: default; }
 .sort-group { font-weight: 600; margin: .2rem 0 0; }
+/* Undo sits under the section label. The row keeps its height when disabled so
+   a fresh stack doesn't start the card higher and drop it on the first decision. */
+.undo-link {
+  display: block; border: none; background: none; padding: 0;
+  margin: .15rem 0 .5rem; font-size: .85rem; line-height: 1.4;
+  color: var(--accent); cursor: pointer;
+}
+.undo-link:hover:not(:disabled) { border: none; text-decoration: underline; }
+.undo-link:disabled { color: var(--muted); opacity: .55; cursor: default; }
 .sort-carousel { display: flex; align-items: center; gap: .35rem; max-width: 700px; }
 .sort-carousel .sort-card { flex: 1; min-width: 0; }
 .carousel-arrow { border: none; background: none; padding: .5rem .45rem; font-size: 1.7rem; line-height: 1; color: var(--accent); cursor: pointer; }

@@ -114,6 +114,15 @@ export function renderSort(container, props) {
   const posInGroup = groupCards.indexOf(idx) + 1;
 
   main.append(el('p', 'sort-group', groupLabel));
+  // Undo sits under the section label, outside the card — live once anything on
+  // Sort has been changed (a decision, an edit, a type pick, a link check), and
+  // it walks back through them one at a time. It is ALWAYS in the layout, greyed
+  // when there is nothing to undo, so the card never shifts up on a fresh stack.
+  const undo = el('button', 'undo-link', 'Undo last');
+  undo.type = 'button';
+  undo.disabled = !lastDecision;
+  undo.addEventListener('click', () => onUndo());
+  main.append(undo);
   const card = el('div', 'sort-card');
   card.append(el('span', 'card-pos', `${posInGroup}/${groupCards.length}`));
   const dupes = duplicateFlags(rows);
@@ -359,14 +368,6 @@ export function renderSort(container, props) {
     // second sentence. Keep/Skip just stay locked until it's fixed.
     for (const b of [keepBtn, circleBtn]) b.disabled = true;
   }
-  // Undo is always on the card — live once anything on Sort has been changed
-  // (a decision, an edit, a type pick, a link check), and it walks back through
-  // them one at a time.
-  const undo = el('button', 'undo-link', 'Undo');
-  undo.type = 'button';
-  undo.disabled = !lastDecision;
-  undo.addEventListener('click', () => onUndo());
-  card.append(undo);
   // Carousel: arrows flank the card (the card's own 1/2 counter tracks the
   // position). Browsing never decides anything — the card only leaves via
   // Keep / Circle / Trash.
