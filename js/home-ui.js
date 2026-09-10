@@ -17,11 +17,11 @@ function shortDate(iso) {
     : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-const EXCHANGE_URL = 'https://kateb-123.github.io/erc-policy-exchange/';
+const EXCHANGE_URL = 'https://erc-policy-exchange.vercel.app/';
 const BUILDER_URL = '/builder/';
-// The public share page lives in the Policy Exchange hub (GitHub Pages) — a
-// separate origin from the desk on purpose: nothing on it can lead back here.
-const SUBMIT_PATH = 'https://kateb-123.github.io/erc-policy-exchange/share/';
+// The public share page lives in the Policy Exchange hub — a separate
+// origin from the desk on purpose: nothing on it can lead back here.
+const SUBMIT_PATH = 'https://erc-policy-exchange.vercel.app/share/';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);

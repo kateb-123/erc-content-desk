@@ -2,7 +2,7 @@
  * The one place that knows the shape of a Content Desk row.
  *
  * CSV_COLUMNS are the ERC Policy Exchange hub's news.csv columns, in the hub's
- * own order — verified against kateb-123/erc-policy-exchange/data/news.csv.
+ * own order — verified against kateb-123/erc-policy-exchange-app/data/news.csv.
  * WORKFLOW_COLUMNS are ours; they never reach the hub.
  */
 

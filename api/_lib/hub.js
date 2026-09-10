@@ -8,7 +8,7 @@ import { CSV_COLUMNS } from '../../js/schema.js';
 import { hubRowLine, parseCsv } from '../../js/hub-csv.js';
 export { parseCsv };
 
-function repo() { return process.env.HUB_REPO || 'kateb-123/erc-policy-exchange'; }
+function repo() { return process.env.HUB_REPO || 'kateb-123/erc-policy-exchange-app'; }
 function csvPath() { return process.env.HUB_CSV_PATH || 'data/news.csv'; }
 function branch() { return process.env.HUB_BRANCH || 'main'; }
 function token() {

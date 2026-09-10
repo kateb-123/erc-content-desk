@@ -416,14 +416,14 @@ for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {
   tab.addEventListener('click', () => goTo(tab.dataset.screen));
 }
 
-// Home's "Exchange updated" fact: when news.csv last changed — the file's
-// latest commit, not the date column (item dates can sit in the future).
-// Public repo, read-only, fetched once per visit; a miss leaves the dash.
-const HUB_COMMITS_URL = 'https://api.github.com/repos/kateb-123/erc-policy-exchange/commits?path=data/news.csv&per_page=1';
+// Home's "Exchange updated" fact: when news.csv last changed, not the date
+// column (item dates can sit in the future). The Exchange repo is private,
+// so the desk asks its own endpoint, which reads the live file's header.
+// Fetched once per visit; a miss leaves the dash.
 (async () => {
   try {
-    const res = await fetch(HUB_COMMITS_URL);
-    const stamp = (await res.json())?.[0]?.commit?.committer?.date;
+    const res = await fetch('/api/hub-updated');
+    const stamp = (await res.json())?.lastModified;
     const d = new Date(stamp ?? NaN);
     state.hubUpdated = Number.isNaN(d.getTime()) ? ''
       : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
