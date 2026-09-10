@@ -79,7 +79,9 @@ button DISAPPEARS — nothing is re-pushable.
 
 All CSS/vanilla; `prefers-reduced-motion` kills everything.
 
-- Decision settle: clone shrinks to 0.955 and fades, 200ms.
+- Decision: NO motion (Kate, Sep 9 — the slide and the shrink were both
+  rejected). The decided card is replaced at once; the dulled sliver parked
+  to its left is what records the decision, and ‹ scrolls back onto it.
 - Tab/section switch: ±16px directional slide, 180ms `cubic-bezier(0.33,1,0.68,1)`.
 - Confirmations: SVG check draws itself, 350ms.
 - Loading: the sliding-dots track (blue ramp `#9ec9e8` → `#14507a`), label under the

@@ -32,20 +32,10 @@ const DECIDED = {
 let fixOpenId = null;   // card id whose type pickers are open via "change"
 let lastFilter = null;  // detects a section jump so the card area slides like the screens do
 
-// "Settle": the decided card shrinks and fades in place as a floating copy
-// while the next card renders instantly underneath. Purely cosmetic.
-function settleOut(card) {
-  const rect = card.getBoundingClientRect();
-  const clone = card.cloneNode(true);
-  clone.classList.add('sort-exit-clone');
-  clone.style.left = `${rect.left}px`;
-  clone.style.top = `${rect.top}px`;
-  clone.style.width = `${rect.width}px`;
-  clone.setAttribute('aria-hidden', 'true');
-  clone.addEventListener('animationend', () => clone.remove(), { once: true });
-  setTimeout(() => clone.remove(), 600);
-  document.body.append(clone);
-}
+// A decision moves no pixels (Kate, Sep 9): the card swaps for the next one at
+// once and the parked sliver on the left ticks over. On a 95-item session even a
+// 260ms exit is half a minute of watching, and the sliver already records what
+// you did — the card does not need to perform it.
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -359,7 +349,6 @@ export function renderSort(container, props) {
     const b = el('button', cls, label);
     b.addEventListener('click', () => {
       for (const x of card.querySelectorAll('button')) x.disabled = true;
-      settleOut(card);
       // An open edit panel IS the row's current state — carry it into the same
       // write rather than deciding on the stale copy. Undo walks both back as one.
       const decided = readOpenEdit ? { ...row, ...readOpenEdit() } : row;
@@ -421,16 +410,19 @@ export function renderSort(container, props) {
   next.disabled = idx >= visible.length - 1;
   next.setAttribute('aria-label', 'Next card');
   next.addEventListener('click', () => onBrowse?.(idx + 1));
+  // The slot is ALWAYS in the layout, invisible when nothing is parked, so the
+  // first decision of a session doesn't shove the card sideways.
+  const parked = el('button', `sort-parked${parkedRow ? '' : ' is-empty'}`);
+  parked.type = 'button';
   if (parkedRow) {
-    const parked = el('button', 'sort-parked');
-    parked.type = 'button';
     parked.setAttribute('aria-label', `Back to ${parkedRow.headline || 'the last card'}`);
     parked.append(el('span', '', DECIDED[parkedRow.status]?.label ?? ''));
     parked.addEventListener('click', () => onBrowse?.(idx - 1));
-    carousel.append(prev, parked, card, next);
   } else {
-    carousel.append(prev, card, next);
+    parked.disabled = true;
+    parked.setAttribute('aria-hidden', 'true');
   }
+  carousel.append(prev, parked, card, next);
   main.append(carousel);
 
 }
