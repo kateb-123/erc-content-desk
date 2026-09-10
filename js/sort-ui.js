@@ -143,6 +143,10 @@ export function renderSort(container, props) {
   }
   card.append(badges);
   card.append(el('h3', '', row.headline || '(untitled)'));
+  // Set while the edit panel is open, so the decision buttons below can read what
+  // is typed in it. Kate, Sep 9: Keep used to decide on the ORIGINAL row and drop
+  // her edit on the floor — now whichever button ends the card carries it.
+  let readOpenEdit = null;
   if (editOpenId === row.id) {
     const form = el('div', 'sort-edit');
     const mkField = (label, value, rows) => {
@@ -167,16 +171,17 @@ export function renderSort(container, props) {
       wrap.append(imgCtl.el);
       form.append(wrap);
     }
+    readOpenEdit = () => ({
+      headline: titleIn.value.trim(), blurb: blurbIn.value, link: withScheme(linkIn.value.trim()),
+      ...(imgCtl ? { infographic: imgCtl.get() } : {}),
+    });
     const rowBtns = el('div', 'sort-edit-actions');
     const save = el('button', 'primary', 'Save');
     save.type = 'button';
     save.addEventListener('click', () => {
       for (const x of card.querySelectorAll('button')) x.disabled = true;
       editOpenId = null;
-      props.onEditRow?.(row, {
-        headline: titleIn.value.trim(), blurb: blurbIn.value, link: withScheme(linkIn.value.trim()),
-        ...(imgCtl ? { infographic: imgCtl.get() } : {}),
-      });
+      props.onEditRow?.(row, readOpenEdit());
     });
     const cancel = el('button', 'btn-outline', 'Cancel');
     cancel.type = 'button';
@@ -339,7 +344,11 @@ export function renderSort(container, props) {
     b.addEventListener('click', () => {
       for (const x of card.querySelectorAll('button')) x.disabled = true;
       settleOut(card);
-      onDecide(row, action);
+      // An open edit panel IS the row's current state — carry it into the same
+      // write rather than deciding on the stale copy. Undo walks both back as one.
+      const decided = readOpenEdit ? { ...row, ...readOpenEdit() } : row;
+      editOpenId = null;
+      onDecide(decided, action);
     });
     return b;
   };
