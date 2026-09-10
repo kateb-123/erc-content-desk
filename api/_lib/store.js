@@ -113,14 +113,21 @@ export function createStore({ mode, db: dbStore, sheet: sheetStore, log = consol
   };
 }
 
+/** db when there is a database to talk to, sheet when there is not; DESK_STORE
+ *  overrides either way. Without this, a deploy whose DATABASE_URL never
+ *  arrived would fail every request instead of quietly running the old way. */
+export function pickMode(env) {
+  if (env.DESK_STORE) return env.DESK_STORE;
+  if (env.DATABASE_URL) return 'db';
+  console.error('store: no DATABASE_URL, running on the Sheet alone');
+  return 'sheet';
+}
+
 let live;
 export function store() {
   if (!live) {
-    live = createStore({
-      mode: process.env.DESK_STORE || 'db',
-      db: db(),
-      sheet,
-    });
+    const mode = pickMode(process.env);
+    live = createStore({ mode, db: mode === 'db' ? db() : null, sheet });
   }
   return live;
 }

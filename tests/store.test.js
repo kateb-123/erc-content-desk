@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createStore, SCHEDULE_SHEET_TIMEOUT_MS } from '../api/_lib/store.js';
+import { createStore, pickMode, SCHEDULE_SHEET_TIMEOUT_MS } from '../api/_lib/store.js';
 
 const row = (id, extra = {}) => ({ id, headline: `H ${id}`, status: 'kept', ...extra });
 
@@ -96,4 +96,13 @@ test('sheet mode: the old behaviour exactly, database untouched', async () => {
 
 test('an unknown mode is refused', () => {
   assert.throws(() => createStore({ mode: 'excel', db: fake(), sheet: fake(), log: quiet }), /DESK_STORE/);
+});
+
+test('pickMode: database when DATABASE_URL is there, sheet when it is not, DESK_STORE wins', () => {
+  const err = console.error; console.error = () => {};
+  try {
+    assert.equal(pickMode({ DATABASE_URL: 'postgres://x' }), 'db');
+    assert.equal(pickMode({}), 'sheet');
+    assert.equal(pickMode({ DATABASE_URL: 'postgres://x', DESK_STORE: 'sheet' }), 'sheet');
+  } finally { console.error = err; }
 });
