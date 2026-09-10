@@ -1,7 +1,7 @@
 const norm = s => (s || '').toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
 
 /** Where the digests' "See more on the ERC website" tail links go by default. */
-export const POLICY_EXCHANGE_URL = 'https://kateb-123.github.io/erc-policy-exchange/';
+export const POLICY_EXCHANGE_URL = 'https://erc-policy-exchange.vercel.app/';
 
 export const SECTION_REGISTRY = [
   { key: 'research', label: 'Featured Research', navLabel: 'ERC Research', kind: 'briefs',

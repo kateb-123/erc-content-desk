@@ -566,7 +566,7 @@ function buildHeader(issue, editable = false) {
 <tr>
 <td align="left" width="50%" style="padding: 15px 15px; font-family: ${FONT_BODY}; font-size: 15px; font-weight: 700; color: #500000;">${esc(date)}</td>
 <td align="right" width="50%" style="padding: 15px 15px; font-family: ${FONT_BODY}; font-size: 15px; color: rgb(97, 30, 30);">
-<a href="https://erc.cehd.tamu.edu/" target="_blank" rel="noopener" style="color: rgb(97, 30, 30); text-decoration: none; padding: 0 5px;">Website</a><span style="color: #202020;"> | </span><a href="https://erc-kate.github.io/erc-tools/listserv-signup/" target="_blank" rel="noopener" style="color: rgb(97, 30, 30); text-decoration: none; padding: 0 5px;">Join the mailing list</a>
+<a href="https://erc.cehd.tamu.edu/" target="_blank" rel="noopener" style="color: rgb(97, 30, 30); text-decoration: none; padding: 0 5px;">Website</a><span style="color: #202020;"> | </span><a href="https://erc-policy-exchange.vercel.app/newsletter/" target="_blank" rel="noopener" style="color: rgb(97, 30, 30); text-decoration: none; padding: 0 5px;">Join the mailing list</a>
 </td>
 </tr>
 <tr>
@@ -615,7 +615,7 @@ function buildFooter() {
 </span>
 <span style="color: rgba(255,255,255,0.4); padding: 0 12px;">&#183;</span>
 <span style="white-space: nowrap;">
-<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg><a href="https://erc-kate.github.io/erc-tools/listserv-signup/" target="_blank" rel="noopener" style="color: #ffffff; text-decoration: none; font-weight: 700; font-family: ${FONT_BODY}; font-size: 13px; vertical-align: middle;">Join the mailing list</a>
+<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg><a href="https://erc-policy-exchange.vercel.app/newsletter/" target="_blank" rel="noopener" style="color: #ffffff; text-decoration: none; font-weight: 700; font-family: ${FONT_BODY}; font-size: 13px; vertical-align: middle;">Join the mailing list</a>
 </span>
 </p></td>
 </tr>

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { renderNewsletter, renderProse } from '../js/template.js';
 import { parseMarkdown, _resetIds } from '../js/parser.js';
-import { createEmptyIssue, SECTION_REGISTRY } from '../js/model.js';
+import { createEmptyIssue, SECTION_REGISTRY, POLICY_EXCHANGE_URL } from '../js/model.js';
 
 const issueOf = file => { _resetIds();
   return parseMarkdown(readFileSync(new URL(`../fixtures/${file}`, import.meta.url), 'utf8')).issue; };
@@ -277,7 +277,9 @@ test('editable render tags the stamp for click-to-edit; export carries no hooks'
 });
 
 // ─── Audit fixes (2026-09-03): the 18 no-decision items ──────────────────────
-const POLICY_EXCHANGE = 'https://kateb-123.github.io/erc-policy-exchange/';
+// Read from the source, not retyped: the address moved once already (GitHub
+// Pages -> Vercel) and a hardcoded copy here just goes stale silently.
+const POLICY_EXCHANGE = POLICY_EXCHANGE_URL;
 const fullIssue = () => issueOf('full-issue.md');
 const count = (html, needle) => html.split(needle).length - 1;
 
