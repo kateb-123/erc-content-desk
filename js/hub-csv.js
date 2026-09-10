@@ -35,3 +35,15 @@ export function parseCsv(text) {
   if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
   return rows.filter(r => r.some(c => c !== ''));
 }
+
+/**
+ * Filename for the copy Kate keeps when she publishes (Sep 9): dated, so a
+ * folder of them sorts chronologically. An unparseable date drops the stamp
+ * rather than writing "Invalid Date" into a filename.
+ */
+export function hubCsvFilename(when = new Date()) {
+  const t = when instanceof Date ? when : new Date(when);
+  if (Number.isNaN(t.getTime())) return 'erc-exchange.csv';
+  const pad = n => String(n).padStart(2, '0');
+  return `erc-exchange-${t.getUTCFullYear()}-${pad(t.getUTCMonth() + 1)}-${pad(t.getUTCDate())}.csv`;
+}

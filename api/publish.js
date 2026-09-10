@@ -55,18 +55,20 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, published: 0, skipped: 0 });
     }
 
-    let published = [], skipped = [];
+    // The CSV as it stands after this publish goes back in the response, so the
+    // desk can hand Kate a copy to keep (Sep 9) without a second round trip.
+    let published = [], skipped = [], finalCsv = '';
     for (let attempt = 0; attempt < 2; attempt += 1) {
       const { text, sha } = await fetchHubCsv();
       const diff = diffAgainstHub(text, publishable);
       published = diff.newRows;
       skipped = diff.skipped;
-      if (!published.length) break;
+      if (!published.length) { finalCsv = text; break; }
+      const nextCsv = appendRowsToCsv(text, published);
       try {
-        await putHubCsv(
-          appendRowsToCsv(text, published), sha,
-          `Publish from Content Desk: ${published.length} item(s)`,
-        );
+        await putHubCsv(nextCsv, sha,
+          `Publish from Content Desk: ${published.length} item(s)`);
+        finalCsv = nextCsv;
         break;
       } catch (err) {
         if (!err.conflict || attempt === 1) throw err;
@@ -87,11 +89,13 @@ export default async function handler(req, res) {
     } catch (err) {
       console.error('publish stamping failed', err);
       return res.status(200).json({
-        ok: true, published: published.length, skipped: skipped.length,
+        ok: true, published: published.length, skipped: skipped.length, csv: finalCsv,
         warning: 'Published, but the bookkeeping stamps failed for some rows — publish again to finish stamping (already-published rows are skipped safely).',
       });
     }
-    return res.status(200).json({ ok: true, published: published.length, skipped: skipped.length });
+    return res.status(200).json({
+      ok: true, published: published.length, skipped: skipped.length, csv: finalCsv,
+    });
   } catch (err) {
     console.error('publish failed', err);
     if (err.conflict) {

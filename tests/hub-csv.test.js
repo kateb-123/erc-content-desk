@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { blankRow, CSV_COLUMNS } from '../js/schema.js';
-import { escapeCell, hubRowLine } from '../js/hub-csv.js';
+import { escapeCell, hubRowLine, hubCsvFilename } from '../js/hub-csv.js';
 
 test('plain values are written bare', () => {
   assert.equal(escapeCell('Teacher pay'), 'Teacher pay');
@@ -24,4 +24,13 @@ test('hubRowLine emits all 14 hub columns positionally', () => {
   assert.equal(cells.length, 14);
   assert.equal(cells[0], 'v0-date');
   assert.equal(cells[13], 'v13-infographic');
+});
+
+test('the saved copy is named for the day it was published, so backups sort', () => {
+  assert.equal(hubCsvFilename(new Date('2026-09-09T21:40:00Z')), 'erc-exchange-2026-09-09.csv');
+  assert.equal(hubCsvFilename(new Date('2026-01-05T00:00:00Z')), 'erc-exchange-2026-01-05.csv');
+});
+
+test('hubCsvFilename falls back to a plain name rather than "Invalid Date"', () => {
+  assert.equal(hubCsvFilename(new Date('nonsense')), 'erc-exchange.csv');
 });

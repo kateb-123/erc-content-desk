@@ -4,7 +4,7 @@ import { dotsLoader, loadingLabel } from './icons.js';
 import { renderHome } from './home-ui.js';
 import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
-import { renderPublish } from './publish-ui.js';
+import { renderPublish, downloadCsv } from './publish-ui.js';
 import { renderNewsletter, resetNewsletterEntry } from './newsletter-ui.js';
 import { keep, trash, circleback, undecide, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToPublish, needsErcVoice } from './workflow.js';
 
@@ -26,6 +26,7 @@ const state = {
   justPublished: 0,         // count from the last publish, until she leaves the screen (view state)
   justSent: null,           // { count, issue, ids } from the last newsletter send (view state)
   publishPreview: null,
+  publishedCsv: '',       // the CSV from the last publish, for the receipt's re-download
   hubUpdated: null,
   rewroteNote: null,
 };
@@ -189,6 +190,7 @@ function goTo(key) {
     // The check is read-only and CACHED: it runs on first arrival and again
     // only after something changed (persist clears it) or via Re-check.
     state.justPublished = 0;
+    state.publishedCsv = '';
     state.screen = key;
     if (!state.publishPreview) { loadPublishPreview(); return; }
   }
@@ -276,7 +278,11 @@ async function publishNow() {
     if (!data.ok) throw new Error(data.error);
     state.publishPreview = null;
     state.justPublished = data.published;
+    state.publishedCsv = data.csv ?? '';
     state.busy = false;
+    // The spare copy saves itself — Kate, Sep 9: "when we publish, we need to
+    // download that csv". Her browser drops it straight into Drive.
+    if (state.publishedCsv) downloadCsv(state.publishedCsv);
     // reload() writes its own 'Loading…'/'' status; the confirmation message
     // has to be set after it finishes, or reload() overwrites it.
     await reload();
@@ -422,7 +428,7 @@ export function render() {
   } else if (state.screen === 'publish') {
     renderPublish(screens.publish, {
       ...common, preview: state.publishPreview, busy: state.busy,
-      justPublished: state.justPublished,
+      justPublished: state.justPublished, publishedCsv: state.publishedCsv,
       onPublish: publishNow, onGoTo: goTo,
       onRecheck: () => { state.publishPreview = null; loadPublishPreview(); },
     });

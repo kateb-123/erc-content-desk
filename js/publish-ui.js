@@ -6,11 +6,27 @@
  */
 import { readyToPublish } from './workflow.js';
 import { PUBLISH_PAUSED } from './flags.js';
+import { hubCsvFilename } from './hub-csv.js';
 import { TYPE_LABELS } from './schema.js';
 import { isoToSlash } from './queue-view.js';
 import { detailBody, chevron } from './finalize-ui.js';
 import { checkSvg, dotsLoader, forwardIcon } from './icons.js';
 import { titleWithInfo } from './screen-info.js';
+
+/** Hand the browser a file. Kate's Chrome puts downloads straight in her Drive,
+ *  which is the whole point: publishing leaves a spare copy without a Drive API,
+ *  an Apps Script action, or anything to redeploy. */
+export function downloadCsv(text, when = new Date()) {
+  const url = URL.createObjectURL(new Blob([text], { type: 'text/csv' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = hubCsvFilename(when);
+  a.style.cssText = 'position:fixed;top:-9999px;left:-9999px;';
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
 
 // View state only — resets on reload, never persisted.
 let expanded = new Set();
@@ -85,7 +101,7 @@ function group(container, title, rows, { cls, fix, hint, rerender, onGoTo }) {
 }
 
 export function renderPublish(container, props) {
-  const { rows, preview, busy, justPublished, onPublish, onGoTo, onRecheck } = props;
+  const { rows, preview, busy, justPublished, onPublish, onGoTo, onRecheck, publishedCsv } = props;
   const rerender = () => renderPublish(container, props);
   // The mocked receipt stands in for a real one during the trial.
   const showReceipt = justPublished || (PUBLISH_PAUSED && trialDone);
@@ -186,6 +202,14 @@ export function renderPublish(container, props) {
     door.append(forwardIcon());
     door.addEventListener('click', () => { trialDone = 0; onGoTo('build'); });
     receipt.append(door);
+    // The saved copy downloads itself on publish; this is here to get it again
+    // without republishing (a second click of a download is harmless).
+    if (publishedCsv) {
+      const again = el('button', 'linkish receipt-download', 'Download the CSV again');
+      again.type = 'button';
+      again.addEventListener('click', () => downloadCsv(publishedCsv));
+      receipt.append(again);
+    }
     container.append(receipt);
     return;
   }

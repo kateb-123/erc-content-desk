@@ -571,3 +571,8 @@ input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus 
 .queue-row.is-deleted td { opacity: .5; }
 .queue-row.is-deleted .queue-actions { opacity: 1; }
 .queue-gone { font-size: .8rem; color: var(--muted); margin-right: .5rem; }
+
+/* The publish receipt's spare-copy link: quiet, under the door button, because
+   the download already happened — this is only for getting it again. */
+.receipt-download { display: block; margin: .7rem auto 0; font-size: .85rem; color: var(--muted); }
+.receipt-download:hover { border: none; color: var(--accent); text-decoration: underline; }
