@@ -127,8 +127,10 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
         renderTypePicker();
       }));
       if (selection.type !== type) continue;
+      const subtypes = subtypesFor(type);
+      if (!subtypes.length) continue;   // ERC Event is flat — no empty picker box
       const sub = el('div', 'subtype-list');
-      for (const subtype of subtypesFor(type)) {
+      for (const subtype of subtypes) {
         sub.append(radio('sf-subtype', subtype, subtype, selection.subtype === subtype, () => {
           selection = { ...selection, subtype };
         }));

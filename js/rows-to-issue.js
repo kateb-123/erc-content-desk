@@ -54,7 +54,9 @@ export function defaultSection(row) {
 export function groupFor(row, sectionKey) {
   const entry = NEWSLETTER_MAP[`${row.type}|${row.subtype}`];
   if (entry && entry[0] === sectionKey) return entry[1];
-  if (sectionKey === 'spotlight') return row.type === 'event' ? 'events' : 'thisandthat';
+  if (sectionKey === 'spotlight') {
+    return (row.type === 'event' || row.type === 'erc_event') ? 'events' : 'thisandthat';
+  }
   return '';
 }
 

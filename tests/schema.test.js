@@ -60,8 +60,8 @@ test('statuses are the v2 set — processed is gone', () => {
   assert.deepEqual(STATUSES, ['new', 'kept', 'circleback', 'trashed']);
 });
 
-test('the four submission types carry the v2 subtype vocabulary', () => {
-  assert.deepEqual(Object.keys(TYPES), ['opportunity', 'research', 'headline', 'event']);
+test('the submission types carry the v2 subtype vocabulary', () => {
+  assert.deepEqual(Object.keys(TYPES), ['opportunity', 'research', 'headline', 'event', 'erc_event']);
   assert.deepEqual(TYPES.event.subtypes, ['A&M', 'Off-Campus', 'Webinar-Online']);
   assert.deepEqual(TYPES.research.subtypes, ['Working Paper', 'Peer-Reviewed', 'Report', 'ERC Research']);
 });
@@ -105,8 +105,26 @@ test('isValidSubtype guards against Object.prototype keys and returns false', ()
   assert.equal(isValidSubtype('hasOwnProperty', 'anything'), false);
 });
 
-test('TYPE_ORDER covers every schema type exactly once, research first', () => {
+test('TYPE_ORDER covers every schema type exactly once, and each one is labelled', () => {
   assert.deepEqual([...TYPE_ORDER].sort(), Object.keys(TYPES).sort());
-  assert.equal(TYPE_ORDER[0], 'research');
   for (const type of TYPE_ORDER) assert.ok(TYPE_LABELS[type]);
+  // Which type LEADS is asserted in the ERC Event test below.
+});
+
+test('ERC Event leads the display order and carries no subtypes', () => {
+  assert.equal(TYPE_ORDER[0], 'erc_event');
+  assert.equal(TYPE_LABELS.erc_event, 'ERC Event');
+  assert.deepEqual(subtypesFor('erc_event'), []);
+  assert.ok(isValidType('erc_event'));
+});
+
+test('a type with no subtypes accepts a blank subtype and nothing else', () => {
+  assert.ok(isValidSubtype('erc_event', ''));
+  assert.ok(!isValidSubtype('erc_event', 'A&M'));
+  // Types that DO have subtypes still require one.
+  assert.ok(!isValidSubtype('event', ''));
+});
+
+test('ERC Event maps into the newsletter\'s existing ERC Spotlight > Events group', () => {
+  assert.deepEqual(NEWSLETTER_MAP['erc_event|'], ['spotlight', 'events']);
 });

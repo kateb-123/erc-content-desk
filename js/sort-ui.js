@@ -5,7 +5,7 @@
  * section row is a jump point; the type pickers hide behind "change".
  */
 import { duplicateFlags, linkCheckState, reshareFlags } from './workflow.js';
-import { TYPE_ORDER, TYPE_LABELS, subtypesFor } from './schema.js';
+import { TYPE_ORDER, TYPE_LABELS, subtypesFor, isValidSubtype } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref, withScheme } from './links.js';
 import { sortStream, sortCounts, streamFrom, sectionOf, isErc } from './sort-view.js';
@@ -16,7 +16,8 @@ import { faIcon, forwardIcon } from './icons.js';
 let editOpenId = null;   // sort card with its inline edit open (view state)
 
 const FILTER_LABELS = [
-  ['', 'All'], ['untyped', 'To review'], ['erc', 'ERC'], ['research', 'Research'],
+  ['', 'All'], ['untyped', 'To review'], ['erc', 'ERC'], ['erc_event', 'ERC events'],
+  ['research', 'Research'],
   ['event', 'Events'], ['opportunity', 'Opportunities'], ['headline', 'Headlines'],
 ];
 const FILTER_KEYS = FILTER_LABELS.map(([k]) => k);
@@ -208,7 +209,9 @@ export function renderSort(container, props) {
   const fileRow = el('div', 'file-row');
   const linkState = linkCheckState(row);
   const href = safeHref(row.link);
-  const mustFix = !row.type || !row.subtype;
+  // Not "has a subtype" — a flat type like ERC Event never will. Ask the schema
+  // whether this type/subtype pair is complete.
+  const mustFix = !row.type || !isValidSubtype(row.type, row.subtype);
   const fixOpen = mustFix || fixOpenId === row.id;
 
   const typeLine = el('p', 'type-line');

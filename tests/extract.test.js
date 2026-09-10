@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { blankRow } from '../js/schema.js';
+import { blankRow, TYPE_ORDER } from '../js/schema.js';
 import {
   EXTRACT_MODEL, EXTRACTION_SCHEMA, buildExtractionPrompt,
   parseExtraction, normalizeExtraction,
@@ -14,8 +14,8 @@ test('extraction runs on Haiku and can also guess title, blurb, and typing', () 
     'needs_review', 'source', 'subtype', 'time', 'topic', 'type',
   ]);
   assert.equal(EXTRACTION_SCHEMA.required.length, 13);
-  assert.deepEqual(EXTRACTION_SCHEMA.properties.type.enum,
-    ['', 'research', 'event', 'opportunity', 'headline']);
+  // The type enum's contents are asserted against the schema further down,
+  // rather than retyped here where a new type would go unnoticed.
 });
 
 test('the prompt carries the typed fields and the raw text, and forbids invention', () => {
@@ -106,4 +106,26 @@ test('the prompt uses hard imperatives when headline, blurb, or type are missing
   assert.equal(filledPrompt.includes('you MUST write `headline`'), false, 'prompt should not demand headline when provided');
   assert.equal(filledPrompt.includes('you MUST write `blurb`'), false, 'prompt should not demand blurb when provided');
   assert.equal(filledPrompt.includes('you MUST pick `type`'), false, 'prompt should not demand type when provided');
+});
+
+test('the type enum is built from the schema, so a new type is offered automatically', () => {
+  assert.deepEqual(EXTRACTION_SCHEMA.properties.type.enum, ['', ...TYPE_ORDER]);
+  assert.ok(EXTRACTION_SCHEMA.properties.type.enum.includes('erc_event'));
+});
+
+test('the prompt tells the reader what separates an ERC Event from an A&M event', () => {
+  const prompt = buildExtractionPrompt({ headline: '', blurb: '', link: '', type: '', subtype: '' }, '');
+  assert.match(prompt, /erc_event is for events the Education Research Center/);
+  assert.match(prompt, /When in doubt use event, not erc_event/);
+  // A flat type must not read as "erc_event: " with nothing after it.
+  assert.match(prompt, /erc_event: \(no subtype/);
+});
+
+test('an extracted ERC Event keeps its blank subtype instead of being stripped', () => {
+  const { fields } = normalizeExtraction(
+    { type: 'erc_event', subtype: '', time: '3:30 PM CT', location: 'Harrington Tower' },
+    { type: '', subtype: '' },
+  );
+  assert.equal(fields.type, 'erc_event');
+  assert.equal(fields.location, 'Harrington Tower');
 });

@@ -89,6 +89,9 @@ export function linkCheckState(row) {
  * Research and non-event spotlights) — don't conflate the two.
  */
 export function newsletterOnly(row) {
+  // ERC Events are newsletter-only for now — Kate, Sep 9, pending her meeting.
+  // To let them reach the Exchange, delete this one line.
+  if (row.type === 'erc_event') return true;
   return row.type === 'event' && Boolean(row.spotlight_request) && row.subtype !== 'Webinar-Online';
 }
 
@@ -100,7 +103,7 @@ export function newsletterOnly(row) {
  */
 export function needsErcVoice(row) {
   if (String(row.rewrite_checked ?? '').trim()) return false;
-  return row.type === 'event' || row.type === 'opportunity'
+  return row.type === 'event' || row.type === 'erc_event' || row.type === 'opportunity'
     || (row.type === 'research' && !row.blurb);
 }
 
@@ -159,7 +162,7 @@ export function reshareFlags(rows, todayIso) {
 /** Parked events whose date has already passed — quietly flagged in the UI. */
 export function staleCirclebacks(rows, todayIso) {
   return circlebackRows(rows).filter(
-    r => r.type === 'event' && r.date && r.date < todayIso,
+    r => (r.type === 'event' || r.type === 'erc_event') && r.date && r.date < todayIso,
   );
 }
 

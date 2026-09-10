@@ -123,3 +123,20 @@ test('external submissions: email required when asked, format checked, carried o
   assert.equal(row.submitter_email, 'dana@bryanisd.org');
   assert.equal(row.infographic, 'https://raw.githubusercontent.com/x/y/img.png');
 });
+
+test('an ERC Event validates with no subtype, since the type has none', () => {
+  const errors = validateSubmission({
+    title: 'ERC brown bag: teacher pipeline data',
+    link: 'https://erc.cehd.tamu.edu/events/brown-bag',
+    type: 'erc_event', subtype: '', submitter: 'KB',
+  });
+  assert.deepEqual(errors, []);
+});
+
+test('an ERC Event with a subtype typed in anyway is rejected', () => {
+  const errors = validateSubmission({
+    link: 'https://erc.cehd.tamu.edu/events/x', type: 'erc_event',
+    subtype: 'A&M', submitter: 'KB',
+  });
+  assert.ok(errors.includes('Pick a subtype.'));
+});

@@ -63,7 +63,7 @@ export function sortStream(rows, sessionDecided = new Set()) {
 export function sortCounts(rows) {
   const pending = pendingRows(rows);
   const fixups = keptUntyped(rows).length;
-  const counts = { all: pending.length + fixups, erc: 0, untyped: fixups, research: 0, event: 0, opportunity: 0, headline: 0 };
+  const counts = { all: pending.length + fixups, erc: 0, untyped: fixups, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 };
   for (const r of pending) {
     if (isErc(r)) counts.erc++;
     if (!r.type) counts.untyped++;

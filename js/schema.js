@@ -44,12 +44,20 @@ export const TYPES = {
     subtypes: ['A&M', 'Off-Campus', 'Webinar-Online'],
     extraFields: ['time', 'location'],
   },
+  // Events the ERC itself runs. Deliberately FLAT (Kate, Sep 9): every other
+  // type has subtypes because it spans different things; these are all just ours.
+  erc_event: {
+    subtypes: [],
+    extraFields: ['time', 'location'],
+  },
 };
 
-/** Display order Kate approved in the mockup — not Object.keys(TYPES) order. */
-export const TYPE_ORDER = ['research', 'event', 'opportunity', 'headline'];
+/** Display order Kate approved in the mockup — not Object.keys(TYPES) order.
+ *  ERC Event leads it, at her ask (Sep 9). */
+export const TYPE_ORDER = ['erc_event', 'research', 'event', 'opportunity', 'headline'];
 
 export const TYPE_LABELS = {
+  erc_event: 'ERC Event',
   research: 'New Ed Policy Research', event: 'Event',
   opportunity: 'Opportunity', headline: 'Headline',
 };
@@ -69,6 +77,9 @@ export const NEWSLETTER_MAP = {
   'event|A&M': ['events', 'tamu'],
   'event|Off-Campus': ['events', 'offcampus'],
   'event|Webinar-Online': ['events', 'offcampus'],
+  // No subtype, so the key's right-hand side is empty. Lands in the newsletter's
+  // existing ERC Spotlight > Events group — nothing new to build there.
+  'erc_event|': ['spotlight', 'events'],
 };
 
 export function blankRow(overrides = {}) {
@@ -103,8 +114,12 @@ export function isValidType(type) {
   return Object.prototype.hasOwnProperty.call(TYPES, type);
 }
 
+/** A type with no subtypes (ERC Event) is valid with a blank subtype and only
+ *  a blank one; every other type still requires a real pick. */
 export function isValidSubtype(type, subtype) {
-  return subtypesFor(type).includes(subtype);
+  const list = subtypesFor(type);
+  if (isValidType(type) && list.length === 0) return !String(subtype ?? '').trim();
+  return list.includes(subtype);
 }
 
 export function isHubEligible(type) {

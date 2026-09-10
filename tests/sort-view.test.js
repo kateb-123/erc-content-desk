@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { keptUntyped, sortStream, sortCounts, streamFrom } from '../js/sort-view.js';
+import { keptUntyped, sortStream, sortCounts, streamFrom, sectionOf } from '../js/sort-view.js';
 
 // Shuffled on purpose: statuses mixed in, groups interleaved, dates unordered.
 const rows = [
@@ -31,7 +31,7 @@ test('sortStream drops non-pending rows and does not mutate its input', () => {
 
 test('sortCounts totals pending rows per bucket', () => {
   assert.deepEqual(sortCounts(rows), {
-    all: 10, erc: 2, untyped: 1, research: 4, event: 2, opportunity: 1, headline: 1,
+    all: 10, erc: 2, untyped: 1, erc_event: 0, research: 4, event: 2, opportunity: 1, headline: 1,
   });
 });
 
@@ -94,4 +94,22 @@ test('a session-decided row that is also a kept fix-up appears once, not twice',
 test('the filter counts still mean work remaining — a decided card stops counting', () => {
   const decided = rows.map(r => (r.id === 'r1' ? { ...r, status: 'kept' } : r));
   assert.equal(sortCounts(decided).research, sortCounts(rows).research - 1);
+});
+
+test('ERC Events get their own counted section, separate from the ERC bucket', () => {
+  const rows = [
+    { id: 'x', status: 'new', type: 'erc_event', subtype: '', submitted_at: '2026-09-01T00:00:00Z' },
+    { id: 'y', status: 'new', type: 'event', subtype: 'A&M', submitted_at: '2026-09-02T00:00:00Z' },
+  ];
+  assert.equal(sortCounts(rows).erc_event, 1);
+  assert.equal(sortCounts(rows).event, 1);
+  assert.equal(sectionOf(rows[0]), 'erc_event');
+});
+
+test('ERC Events lead the stream, ahead of research', () => {
+  const rows = [
+    { id: 'r', status: 'new', type: 'research', subtype: 'Report', submitted_at: '2026-09-01T00:00:00Z' },
+    { id: 'e', status: 'new', type: 'erc_event', subtype: '', submitted_at: '2026-09-02T00:00:00Z' },
+  ];
+  assert.deepEqual(sortStream(rows).map(r => r.id), ['e', 'r']);
 });

@@ -4,7 +4,7 @@
  * the typed text. Offline-testable: no network calls here; api/submit.js owns
  * the Claude call. Runs on Haiku — a fraction of a cent per submission.
  */
-import { TYPES, isValidType, isValidSubtype } from '../../js/schema.js';
+import { TYPES, TYPE_ORDER, isValidType, isValidSubtype } from '../../js/schema.js';
 
 const FIELD_KEYS = ['date', 'source', 'topic', 'deadline', 'medium', 'authors', 'time', 'location'];
 const GUESS_KEYS = ['headline', 'blurb', 'type', 'subtype'];
@@ -26,7 +26,9 @@ export const EXTRACTION_SCHEMA = {
     location: { type: 'string', description: 'Events only: venue/city or "Virtual"; else "".' },
     headline: { type: 'string', description: 'Required when no title was provided: a clear, specific title from the text. "" only when a title already exists.' },
     blurb: { type: 'string', description: 'Required when no blurb was provided: 2-3 factual sentences from the text. "" only when a blurb already exists.' },
-    type: { type: 'string', enum: ['', 'research', 'event', 'opportunity', 'headline'], description: 'Best-fit type when none was provided; "" if unsure.' },
+    // Built from the schema, never retyped: a hardcoded list silently stops
+    // offering a type the moment one is added (ERC Event, Sep 9).
+    type: { type: 'string', enum: ['', ...TYPE_ORDER], description: 'Best-fit type when none was provided; "" if unsure.' },
     subtype: { type: 'string', description: 'Legal subtype for the type, from the lists in the prompt; "" if unsure.' },
     needs_review: { type: 'boolean', description: 'true if the text was too thin or confusing to file confidently.' },
   },
@@ -34,7 +36,8 @@ export const EXTRACTION_SCHEMA = {
 
 export function buildExtractionPrompt(row, pageText = '') {
   const subtypeLists = Object.entries(TYPES)
-    .map(([t, def]) => `${t}: ${def.subtypes.join(', ')}`).join('\n');
+    .map(([t, def]) => `${t}: ${def.subtypes.length ? def.subtypes.join(', ') : '(no subtype — leave it "")'}`)
+    .join('\n');
   const parts = [
     'File this newsletter submission into its metadata columns.',
     `Title: ${row.headline || '(none)'}`,
@@ -50,6 +53,10 @@ export function buildExtractionPrompt(row, pageText = '') {
   }
   parts.push(
     'Rules: work only from the text above.',
+    'erc_event is for events the Education Research Center at Texas A&M is itself '
+      + 'running or hosting — its seminars, workshops, speaker series, brown bags. '
+      + 'An event merely held at Texas A&M, or one the ERC is only attending, is a '
+      + 'plain event with the A&M subtype. When in doubt use event, not erc_event.',
     'Never invent a date, deadline, author, time, location, or source; use "" when the text does not state it.',
     'Dates are YYYY-MM-DD. Event times are Central Time, written like "1:00 PM CT" — convert from ET/PT when the zone is given.',
   );

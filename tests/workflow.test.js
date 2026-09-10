@@ -9,6 +9,7 @@ import {
   markPublished, markNewsletterIssue,
   staleCirclebacks, duplicateFlags, counts,
   newsletterOnly, linkCheckedFromFetch, linkCheckState, reshareFlags, clearNewsletterIssue,
+  needsErcVoice,
 } from '../js/workflow.js';
 
 const row = o => blankRow({ id: 'r1', status: 'new', ...o });
@@ -209,4 +210,19 @@ test('mergeArchiveIndex replaces a re-saved issue and keeps newest first', async
   const again = mergeArchiveIndex(merged, '2026-08-25');
   assert.equal(again.filter(e => e.date === '2026-08-25').length, 1);
   assert.equal(archiveLabel('2025-11-17'), 'November 17, 2025');
+});
+
+test('an ERC Event stays off the public Exchange for now (Kate, Sep 9 — pending her meeting)', () => {
+  assert.equal(newsletterOnly({ type: 'erc_event', subtype: '' }), true);
+  // It does not need the spotlight flag: the TYPE is the spotlight now.
+  assert.equal(newsletterOnly({ type: 'erc_event', subtype: '', spotlight_request: false }), true);
+});
+
+test('ERC Events get the ERC voice, like every other event', () => {
+  assert.equal(needsErcVoice({ type: 'erc_event', blurb: 'anything' }), true);
+});
+
+test('a past-dated ERC Event is flagged stale like any other parked event', () => {
+  const rows = [{ id: 1, status: 'circleback', type: 'erc_event', date: '2026-01-01' }];
+  assert.deepEqual(staleCirclebacks(rows, '2026-09-09').map(r => r.id), [1]);
 });
