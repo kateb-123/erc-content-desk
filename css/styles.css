@@ -589,8 +589,8 @@ input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus 
 .busy-dim { position: fixed; inset: 0; z-index: 50; background: rgba(28, 34, 41, .45); display: grid; place-items: center; }
 .busy-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 1.6rem 1.8rem; width: 380px; max-width: calc(100vw - 2rem); text-align: center; }
 .busy-card h2 { font-size: 1.15rem; font-weight: 700; margin: 0; }
-.busy-count { font-family: Outfit, "Segoe UI", sans-serif; font-size: 2.4rem; font-weight: 700; line-height: 1.1; margin: .2rem 0 .1rem; }
-.busy-count span { color: var(--muted); font-size: 1.1rem; font-weight: 600; }
+.busy-count { font-family: Outfit, "Segoe UI", sans-serif; font-size: 1.05rem; font-weight: 700; margin: .45rem 0 0; }
+.busy-count span { color: var(--muted); font-weight: 600; }
 .busy-track { height: 8px; border-radius: 999px; background: var(--tint); overflow: hidden; margin: 1rem 0 .7rem; }
 .busy-fill { height: 100%; border-radius: 999px; background: var(--accent); transition: width .2s ease; }
 .busy-note { color: var(--muted); font-size: .85rem; margin: 0; }
