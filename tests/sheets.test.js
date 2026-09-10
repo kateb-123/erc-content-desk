@@ -157,3 +157,14 @@ test('readScheduleRows reads the schedule tab by name', async () => {
   assert.equal(body.action, 'read');
   assert.equal(body.sheetName, 'schedule');
 });
+
+test('readScheduleRows({ timeoutMs }) hands fetch an abort signal; without it, none', async () => {
+  const seen = [];
+  global.fetch = async (url, options) => {
+    seen.push(options.signal instanceof AbortSignal);
+    return { ok: true, status: 200, text: async () => JSON.stringify({ ok: true, rows: [] }) };
+  };
+  await readScheduleRows({ timeoutMs: 2500 });
+  await readScheduleRows();
+  assert.deepEqual(seen, [true, false]);
+});

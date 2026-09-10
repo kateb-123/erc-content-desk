@@ -4,7 +4,7 @@
  * POST /api/publish — append the new rows, commit, stamp published_at.
  * Never modifies or deletes an existing hub row.
  */
-import { readAllRows, updateRow } from './_lib/sheets.js';
+import { readAllRows, updateRows } from './_lib/store.js';
 import { readyToPublish, markPublished, newsletterOnly } from '../js/workflow.js';
 import { isValidType, isValidSubtype } from '../js/schema.js';
 import { isSafeLink } from '../js/links.js';
@@ -81,11 +81,10 @@ export default async function handler(req, res) {
     const now = new Date().toISOString();
     const rowNumberById = new Map(all.map(r => [r.id, r._rowNumber]));
     try {
-      for (const row of [...published, ...skipped]) {
-        const liveRowNumber = rowNumberById.get(row.id);
-        if (!liveRowNumber) continue;
-        await updateRow(markPublished({ ...row, _rowNumber: liveRowNumber }, now));
-      }
+      const stamps = [...published, ...skipped]
+        .filter(row => rowNumberById.has(row.id))
+        .map(row => markPublished({ ...row, _rowNumber: rowNumberById.get(row.id) }, now));
+      await updateRows(stamps);
     } catch (err) {
       console.error('publish stamping failed', err);
       return res.status(200).json({

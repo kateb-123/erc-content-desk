@@ -37,7 +37,7 @@ export function headerValues() {
  * a network error, a non-200 response, an HTML response (a misconfigured
  * deployment's most common symptom), or the endpoint's own JSON error.
  */
-async function callSheetApi(action, payload) {
+async function callSheetApi(action, payload, { timeoutMs } = {}) {
   const url = sheetApiUrl();
   const token = sheetApiToken();
 
@@ -47,6 +47,7 @@ async function callSheetApi(action, payload) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token, action, ...payload }),
+      ...(timeoutMs ? { signal: AbortSignal.timeout(timeoutMs) } : {}),
     });
   } catch (err) {
     throw new Error(`Couldn't reach the sheet API: ${err.message}`);
@@ -98,8 +99,10 @@ export async function writeHeader() {
   await callSheetApi('header', { values: headerValues() });
 }
 
-/** Raw display values from the named "schedule" tab (row 2 down). */
-export async function readScheduleRows() {
-  const body = await callSheetApi('read', { sheetName: 'schedule' });
+/** Raw display values from the named "schedule" tab (row 2 down). Pass
+ *  timeoutMs to give up on a slow Apps Script (the store falls back to its
+ *  own copy). */
+export async function readScheduleRows({ timeoutMs } = {}) {
+  const body = await callSheetApi('read', { sheetName: 'schedule' }, { timeoutMs });
   return (body.rows ?? []).map(r => r.values ?? []);
 }

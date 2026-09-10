@@ -13,7 +13,7 @@ import {
   EXTRACT_MODEL, EXTRACTION_SCHEMA, buildExtractionPrompt,
   parseExtraction, normalizeExtraction,
 } from './_lib/extract.js';
-import { appendRow } from './_lib/sheets.js';
+import { appendRow } from './_lib/store.js';
 import { setCors } from './_lib/cors.js';
 import { checkRequest } from './_lib/turnstile.js';
 

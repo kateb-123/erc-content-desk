@@ -9,7 +9,7 @@ import {
   REWRITE_MODEL, REWRITE_SCHEMA, rewriteCandidates,
   buildRewritePrompt, parseRewrites, normalizeRewrites,
 } from './_lib/rewrite.js';
-import { readAllRows } from './_lib/sheets.js';
+import { readAllRows } from './_lib/store.js';
 
 export const config = { maxDuration: 300 };
 

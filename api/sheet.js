@@ -3,10 +3,11 @@
  * PATCH /api/sheet  -> save changed rows in place (matched by _rowNumber)
  *
  * The browser sends whole rows back. Writes are per-row and already-written rows
- * are not rolled back, so a failure partway through leaves the sheet partially updated.
+ * are not rolled back, so a failure partway through leaves the store partially updated.
+ * Since Sep 10 the store is Postgres with the Sheet mirrored behind it (api/_lib/store.js).
  */
 
-import { readAllRows, readScheduleRows, updateRow } from './_lib/sheets.js';
+import { readAllRows, readScheduleRows, updateRows } from './_lib/store.js';
 import { normalizeSchedule } from '../js/schedule.js';
 
 const MAX_ROWS_PER_PATCH = 200;
@@ -14,13 +15,14 @@ const MAX_ROWS_PER_PATCH = 200;
 export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
-      const rows = await readAllRows();
-      let schedule = [];
-      try {
-        schedule = normalizeSchedule(await readScheduleRows());
-      } catch (err) {
-        console.error('schedule read failed (tab missing?)', err);
-      }
+      // Side by side: the schedule read can be the slow one.
+      const [rows, schedule] = await Promise.all([
+        readAllRows(),
+        readScheduleRows().then(normalizeSchedule).catch(err => {
+          console.error('schedule read failed (tab missing?)', err);
+          return [];
+        }),
+      ]);
       return res.status(200).json({ ok: true, rows, schedule });
     }
 
@@ -41,41 +43,15 @@ export default async function handler(req, res) {
         }
       }
 
-      // _rowNumber is advisory, not authoritative: a sort or delete made
-      // directly in the Sheet shifts every row below it, so re-resolve each
-      // incoming row against its id — read fresh, right now — before writing
-      // anywhere. Rows whose id no longer exists are never written.
-      let current;
+      // _rowNumber is advisory, not authoritative: the store matches every
+      // row by id, and rows whose id no longer exists are never written.
+      let saved = 0, unmatchedCount = 0;
       try {
-        current = await readAllRows();
+        ({ saved, unmatched: unmatchedCount } = await updateRows(rows));
       } catch (err) {
-        console.error('sheet PATCH: could not re-read the sheet', err);
-        res.status(502).json({ ok: false, error: "Couldn't reach the sheet." });
+        console.error('sheet PATCH: write failed', err);
+        res.status(502).json({ ok: false, error: "Couldn't save that. Try again in a moment.", saved });
         return;
-      }
-      const rowNumberById = new Map(current.map(r => [r.id, r._rowNumber]));
-
-      const toWrite = [];
-      let unmatchedCount = 0;
-      for (const row of rows) {
-        const liveRowNumber = rowNumberById.get(row.id);
-        if (liveRowNumber === undefined) {
-          unmatchedCount += 1;
-          continue;
-        }
-        toWrite.push({ ...row, _rowNumber: liveRowNumber });
-      }
-
-      let saved = 0;
-      for (let i = 0; i < toWrite.length; i++) {
-        try {
-          await updateRow(toWrite[i]);
-          saved++;
-        } catch (err) {
-          console.error(`Failed to write row ${i}`, err);
-          res.status(502).json({ ok: false, error: 'Couldn\'t reach the sheet.', saved });
-          return;
-        }
       }
 
       if (unmatchedCount) {

@@ -6,7 +6,7 @@
  * CORS admits the builder's origins only.
  */
 import { setCors } from './_lib/cors.js';
-import { readAllRows, readScheduleRows } from './_lib/sheets.js';
+import { readAllRows, readScheduleRows } from './_lib/store.js';
 import { normalizeSchedule } from '../js/schedule.js';
 import { issueForPull, stagedCounts } from '../js/rows-to-issue.js';
 
