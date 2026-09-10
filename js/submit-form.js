@@ -13,6 +13,13 @@ export function pickType(selection, type) {
 import { validateSubmission } from './intake.js';
 import { withScheme } from './links.js';
 import { checkSvg, dotsLoader, loadingLabel } from './icons.js';
+import { runPool } from './pool.js';
+import { openBusyOverlay } from './busy-overlay.js';
+
+/** How many bulk items are in flight at once. Each one is a page fetch plus a
+ *  Claude read plus a sheet write, so serial was minutes; six is fast without
+ *  stacking up writes on the Apps Script lock. */
+const BULK_CONCURRENCY = 6;
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -307,11 +314,17 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
     event.target.disabled = true;
     event.target.hidden = true;   // gone while adding — no double-clicks
     const submitter = form.querySelector('#sf-submitter').value.trim() || 'bulk upload';
-    let saved = 0;
-    const failures = [];
-    for (const [i, item] of bulkItems.entries()) {
-      show(bulkStatus, `Adding ${i + 1} of ${bulkItems.length}…`, 'busy');
-      try {
+    const items = bulkItems;
+    // The popup is what actually stops a double-submit: the button being gone
+    // only guards this one control, and people were clicking elsewhere.
+    const overlay = openBusyOverlay({
+      title: 'Adding to the queue',
+      total: items.length,
+      note: 'Keep this tab open until it finishes.',
+    });
+    let results = [];
+    try {
+      results = await runPool(items, BULK_CONCURRENCY, async item => {
         const data = await postSubmission({
           title: item.title || item.link,
           blurb: item.blurb || item.original_text,
@@ -321,12 +334,14 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
           spotlight: false,
           submitter,
         });
-        if (data.ok) saved += 1;
-        else failures.push(item.title || item.link);
-      } catch {
-        failures.push(item.title || item.link);
-      }
+        if (!data.ok) throw new Error((data.errors ?? []).join(' '));
+        return data;
+      }, done => overlay.update(done));
+    } finally {
+      overlay.close();   // never leave the page locked behind the dim
     }
+    const failures = items.filter((_, i) => !results[i]?.ok).map(item => item.title || item.link);
+    const saved = items.length - failures.length;
     bulkReview.hidden = true;
     bulkItems = [];
     bulkFile.value = '';

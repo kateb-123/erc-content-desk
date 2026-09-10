@@ -86,6 +86,10 @@ All CSS/vanilla; `prefers-reduced-motion` kills everything.
 - Confirmations: SVG check draws itself, 350ms.
 - Loading: the sliding-dots track (blue ramp `#9ec9e8` → `#14507a`), label under the
   track with typed trailing dots; mini variant inline in control rows.
+- Blocking progress popup (bulk upload's Add all, Sep 10): page dimmed
+  `rgba(28,34,41,.45)`, white 12px card, Outfit count `6 of 12`, 8px accent bar on
+  a tint track, one muted line under it. No close button, no Escape: it exists to
+  stop clicking around mid-upload.
 - Buttons: 150ms hover, press scale 0.98.
 
 ## Copy
