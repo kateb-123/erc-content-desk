@@ -3,13 +3,17 @@
  * row plus the circle-backs, newest-first — title with its source underneath,
  * type, and submission date. Sort is view state only; nothing here is a link.
  */
-import { pendingRows, circlebackRows } from './workflow.js';
-import { dotsLoader } from './icons.js';
+import { dotsLoader, faIcon } from './icons.js';
 import { TYPE_LABELS } from './schema.js';
-import { sortRows, isoToSlash } from './queue-view.js';
+import { sortRows, isoToSlash, queueRows } from './queue-view.js';
 
 // View state only — resets on reload, never persisted.
 let sortState = { column: 'submitted', dir: 'desc' };
+// Deleted from this table since the page opened, id -> the status it had before.
+// They stay listed, greyed, with an Undo — the trash can is one click and the
+// rows are dense (Kate, Sep 9). The prior status matters: deleting a circle-back
+// and undoing it must give back a circle-back, not a new row.
+const justDeleted = new Map();
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -31,16 +35,43 @@ function submittedDate(row) {
   return isoToSlash(iso) || '—';
 }
 
-function bodyRow(row) {
-  const tr = el('tr', 'queue-row');
+function bodyRow(row, { onDelete, rerender }) {
+  const gone = justDeleted.has(row.id);
+  const tr = el('tr', `queue-row${gone ? ' is-deleted' : ''}`);
   tr.append(titleCell(row));
   tr.append(el('td', row.type ? '' : 'missing', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
   tr.append(el('td', '', submittedDate(row)));
+
+  const actions = el('td', 'queue-actions');
+  if (gone) {
+    actions.append(el('span', 'queue-gone', 'Deleted'));
+    const undo = el('button', 'linkish', 'Undo');
+    undo.type = 'button';
+    undo.addEventListener('click', () => {
+      const wasStatus = justDeleted.get(row.id) ?? 'new';
+      justDeleted.delete(row.id);
+      onDelete?.(row, wasStatus);
+      rerender();
+    });
+    actions.append(undo);
+  } else {
+    const del = el('button', 'linkish trash-link', '');
+    del.type = 'button';
+    del.setAttribute('aria-label', `Delete ${row.headline || row.link || 'this item'}`);
+    del.append(faIcon('trash-can'));
+    del.addEventListener('click', () => {
+      justDeleted.set(row.id, row.status);
+      onDelete?.(row, 'trash');
+      rerender();
+    });
+    actions.append(del);
+  }
+  tr.append(actions);
   return tr;
 }
 
-export function renderQueueTable(container, { rows, onRefresh }) {
-  const rerender = () => renderQueueTable(container, { rows, onRefresh });
+export function renderQueueTable(container, { rows, onRefresh, onDelete }) {
+  const rerender = () => renderQueueTable(container, { rows, onRefresh, onDelete });
   container.replaceChildren();
 
   const head = el('div', 'queue-head');
@@ -55,7 +86,7 @@ export function renderQueueTable(container, { rows, onRefresh }) {
   head.append(refresh);
   container.append(head);
 
-  const listed = [...pendingRows(rows), ...circlebackRows(rows)];
+  const listed = queueRows(rows, justDeleted);
   if (!listed.length) {
     container.append(el('p', 'empty', 'Nothing waiting. Enjoy it.'));
     return;
@@ -83,11 +114,14 @@ export function renderQueueTable(container, { rows, onRefresh }) {
     th.append(btn);
     headRow.append(th);
   }
+  headRow.append(el('th', '', ''));   // the trash-can column has no label
   const thead = el('thead');
   thead.append(headRow);
   table.append(thead);
   const body = el('tbody');
-  for (const row of sortRows(listed, sortState.column, sortState.dir)) body.append(bodyRow(row));
+  for (const row of sortRows(listed, sortState.column, sortState.dir)) {
+    body.append(bodyRow(row, { onDelete, rerender }));
+  }
   table.append(body);
 
   const scroll = el('div', 'table-scroll');

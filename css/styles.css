@@ -563,3 +563,11 @@ input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus 
     scroll-behavior: auto !important;
   }
 }
+
+/* Home queue: the trash can column. One click deletes and the row stays put,
+   greyed with an Undo, because the rows are dense and a mis-click is cheap. */
+.queue-actions { text-align: right; white-space: nowrap; }
+.queue-actions .trash-link { padding: .1rem .3rem; }
+.queue-row.is-deleted td { opacity: .5; }
+.queue-row.is-deleted .queue-actions { opacity: 1; }
+.queue-gone { font-size: .8rem; color: var(--muted); margin-right: .5rem; }

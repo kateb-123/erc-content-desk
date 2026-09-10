@@ -47,7 +47,7 @@ function doorCard(title, desc, href) {
   return a;
 }
 
-export function renderHome(container, { rows, schedule, today, loaded, hubUpdated, onSubmitted, onRefresh }) {
+export function renderHome(container, { rows, schedule, today, loaded, hubUpdated, onSubmitted, onRefresh, onDeleteFromQueue }) {
   // The shell (form, doors, headings) paints immediately — only the
   // data-backed parts wait on the ~4s Sheet read, so the page is usable at once.
   let glance = container.querySelector('.glance-row');
@@ -115,5 +115,5 @@ export function renderHome(container, { rows, schedule, today, loaded, hubUpdate
 
   const queueSection = container.querySelector('.queue-section');
   if (!loaded) queueSection.replaceChildren(dotsLoader());
-  else renderQueueTable(queueSection, { rows, schedule, today, onRefresh });
+  else renderQueueTable(queueSection, { rows, schedule, today, onRefresh, onDelete: onDeleteFromQueue });
 }

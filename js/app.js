@@ -358,6 +358,12 @@ export function render() {
       hubUpdated: state.hubUpdated,
       onSubmitted: reload,
       onRefresh: reload,
+      // The queue's trash can, through the same queued write as Sort. Undo hands
+      // back the status the row actually had — a deleted circle-back must come
+      // back a circle-back, not a fresh submission.
+      onDeleteFromQueue: (row, action) => change([
+        action === 'trash' ? trash(row) : { ...row, status: action },
+      ]),
     });
   } else if (state.screen === 'sort') {
     renderSort(screens.sort, {

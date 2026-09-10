@@ -3,6 +3,19 @@
  * View state only — callers keep the state; nothing here touches the Sheet.
  */
 import { TYPE_LABELS } from './schema.js';
+import { pendingRows, circlebackRows } from './workflow.js';
+
+/**
+ * What the Home queue table lists: everything still waiting, circle-backs last.
+ * `justDeleted` is the set of ids deleted from the table since the page opened —
+ * those rows STAY listed, wearing their Deleted state, so a mis-click on the
+ * trash can is undoable on the spot. Rows trashed on an earlier visit stay gone.
+ */
+export function queueRows(rows, justDeleted = new Set()) {
+  const listed = [...pendingRows(rows), ...circlebackRows(rows)];
+  const seen = new Set(listed.map(r => r.id));
+  return [...listed, ...rows.filter(r => justDeleted.has(r.id) && !seen.has(r.id))];
+}
 
 const KEYS = {
   title: r => r.headline || r.link || '',

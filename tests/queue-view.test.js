@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sortRows, isoToSlash } from '../js/queue-view.js';
+import { sortRows, isoToSlash, queueRows } from '../js/queue-view.js';
 
 // Deliberately NOT pre-sorted in any tested order, so an in-place sort or a
 // wrong direction provably fails.
@@ -52,4 +52,29 @@ test('isoToSlash renders M/D with no leading zeros and no year', () => {
   assert.equal(isoToSlash(''), '');
   assert.equal(isoToSlash('2026-13-01'), '');
   assert.equal(isoToSlash('garbage'), '');
+});
+
+test('queueRows lists what is waiting, newest circle-backs after pending', () => {
+  const rows = [
+    { id: 'a', status: 'new' },
+    { id: 'b', status: 'circleback' },
+    { id: 'c', status: 'kept' },
+    { id: 'd', status: 'trashed' },
+  ];
+  assert.deepEqual(queueRows(rows).map(r => r.id), ['a', 'b']);
+});
+
+test('a row deleted from the queue this session stays listed, so it can be undone', () => {
+  const rows = [
+    { id: 'a', status: 'new' },
+    { id: 'b', status: 'trashed' },
+    { id: 'c', status: 'trashed' },
+  ];
+  // 'b' was just deleted here; 'c' was trashed long ago and stays gone.
+  assert.deepEqual(queueRows(rows, new Set(['b'])).map(r => r.id), ['a', 'b']);
+});
+
+test('queueRows never lists the same row twice', () => {
+  const rows = [{ id: 'a', status: 'circleback' }];
+  assert.equal(queueRows(rows, new Set(['a'])).length, 1);
 });
