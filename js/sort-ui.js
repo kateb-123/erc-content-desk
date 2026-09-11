@@ -345,24 +345,28 @@ function listDetail(row, { props, rerender }) {
   if (row.note) box.append(el('p', 'item-note', `Note: ${row.note}`));
   for (const note of buildCardNotes(row)) box.append(note);
   const pickOpen = listPanel === 'type' || needsType(row);
+  // One line: type · Change · Open source · from whom, separated only where
+  // both sides exist (an untyped row has no leading dot).
   const line = el('p', 'type-line');
-  if (row.type) line.append(el('span', 'type-label', [TYPE_LABELS[row.type] ?? row.type, row.subtype].filter(Boolean).join(' · ')));
+  const parts = [];
+  if (row.type) parts.push(el('span', 'type-label', [TYPE_LABELS[row.type] ?? row.type, row.subtype].filter(Boolean).join(' · ')));
   if (!pickOpen) {
     const change = el('button', 'linkish', 'Change');
     change.type = 'button';
     change.addEventListener('click', () => { listPanel = 'type'; rerender(); });
-    line.append(' ', change);
+    if (parts.length) { parts[parts.length - 1].append(' ', change); } else parts.push(change);
   }
   const href = safeHref(row.link);
   if (href && linkCheckState(row) !== 'alert') {
     const a = el('a', 'source-link', 'Open source ↗');
     a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
-    line.append(' · ', a);
+    parts.push(a);
   }
   const from = [row.submitter && `from ${row.submitter}`, row.submitted_at && isoToDisplay(String(row.submitted_at).slice(0, 10))]
     .filter(Boolean).join(', ');
-  if (from) line.append(' · ', el('span', 'item-source', from));
-  box.append(line);
+  if (from) parts.push(el('span', 'item-source', from));
+  parts.forEach((part, i) => { if (i) line.append(' · '); line.append(part); });
+  if (parts.length) box.append(line);
   if (pickOpen) {
     box.append(buildTypePicker(row, (type, subtype) => { lock(); listPanel = null; props.onEditType?.(row, type, subtype); }));
   }
