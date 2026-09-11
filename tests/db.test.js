@@ -111,3 +111,12 @@ test('ensureSchema also makes the meta table', async () => {
   await createDb(q).ensureSchema();
   assert.match(q.calls.map(c => c.text).join('\n'), /CREATE TABLE IF NOT EXISTS meta/);
 });
+
+test('ensureSchema adds columns the live items table predates, starting with pending_read', async () => {
+  const { createDb } = await import('../api/_lib/db.js');
+  const sql = [];
+  const store = createDb(async text => { sql.push(text); return []; });
+  await store.ensureSchema();
+  assert.ok(sql.some(t => /ALTER TABLE items[\s\S]*ADD COLUMN IF NOT EXISTS "pending_read" text NOT NULL DEFAULT ''/.test(t)),
+    'expected an ALTER TABLE that adds pending_read when missing');
+});

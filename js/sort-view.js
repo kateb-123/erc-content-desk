@@ -36,6 +36,12 @@ export function keptUntyped(rows) {
     && !String(r.newsletter_issue ?? '').trim()).sort(oldestFirst);
 }
 
+/** Submitted but not yet filed by the reader (pending_read, Sep 10). Kate wants
+ *  every card read before she sees it, so these wait off the stream. */
+export function awaitingReader(row) {
+  return row.pending_read === 'yes';
+}
+
 /**
  * The stream. `sessionDecided` is the set of ids decided since the page opened:
  * those rows HOLD their slot instead of vanishing, so ‹ scrolls back to what you
@@ -43,7 +49,7 @@ export function keptUntyped(rows) {
  * nor date, so they sort exactly where they sat while pending.
  */
 export function sortStream(rows, sessionDecided = new Set()) {
-  const inPlay = rows.filter(r => r.status === 'new' || sessionDecided.has(r.id));
+  const inPlay = rows.filter(r => (r.status === 'new' && !awaitingReader(r)) || sessionDecided.has(r.id));
   const erc = inPlay.filter(isErc).sort(oldestFirst);
   const rest = inPlay.filter(r => !isErc(r));
   const known = new Set(TYPE_ORDER);
@@ -61,7 +67,7 @@ export function sortStream(rows, sessionDecided = new Set()) {
 
 /** Per-bucket totals of the pending rows, for the filter labels. */
 export function sortCounts(rows) {
-  const pending = pendingRows(rows);
+  const pending = pendingRows(rows).filter(r => !awaitingReader(r));
   const fixups = keptUntyped(rows).length;
   const counts = { all: pending.length + fixups, erc: 0, untyped: fixups, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 };
   for (const r of pending) {

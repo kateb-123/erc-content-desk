@@ -113,3 +113,16 @@ test('ERC Events lead the stream, ahead of research', () => {
   ];
   assert.deepEqual(sortStream(rows).map(r => r.id), ['e', 'r']);
 });
+
+test('a row still waiting for the reader never reaches a card or a count', () => {
+  const waiting = [
+    { id: 'p1', status: 'new', type: 'event', pending_read: 'yes', submitted_at: '2026-09-10T10:00:00Z' },
+    { id: 'p2', status: 'new', type: '', pending_read: 'yes', submitted_at: '2026-09-10T10:01:00Z' },
+    { id: 'e9', status: 'new', type: 'event', pending_read: '', submitted_at: '2026-09-10T09:00:00Z' },
+  ];
+  assert.deepEqual(sortStream(waiting).map(r => r.id), ['e9']);
+  const counts = sortCounts(waiting);
+  assert.equal(counts.all, 1);
+  assert.equal(counts.untyped, 0);
+  assert.equal(counts.event, 1);
+});

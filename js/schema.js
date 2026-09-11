@@ -15,6 +15,9 @@ export const WORKFLOW_COLUMNS = [
   'id', 'status', 'submitter', 'submitted_at', 'spotlight_request',
   'note', 'original_text', 'published_at', 'newsletter_issue', 'auto_filled',
   'link_checked', 'rewrite_checked', 'submitter_email', 'needs_review',
+  // Last, so the Sheet mirror gains a column instead of shifting one. 'yes'
+  // from submit until the reader has filed the row; Sort holds it until then.
+  'pending_read',
 ];
 
 export const SHEET_COLUMNS = [...CSV_COLUMNS, ...WORKFLOW_COLUMNS];

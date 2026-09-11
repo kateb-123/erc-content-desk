@@ -34,6 +34,9 @@ export function createDb(query) {
       CONSTRAINT items_id_key UNIQUE (${q('id')}),
       CONSTRAINT items_id_present CHECK (${q('id')} <> '')
     )`);
+    // CREATE TABLE IF NOT EXISTS leaves an existing table as it was, so a column
+    // added to SHEET_COLUMNS later (pending_read, Sep 10) is added here.
+    await query(`ALTER TABLE items ${SHEET_COLUMNS.map(c => `ADD COLUMN IF NOT EXISTS ${q(c)} text NOT NULL DEFAULT ''`).join(', ')}`);
     await query(`CREATE TABLE IF NOT EXISTS schedule (issue_date text PRIMARY KEY)`);
     // Odds and ends with no table of their own, e.g. when the schedule copy was
     // last refreshed from the Sheet.
