@@ -1,92 +1,93 @@
 /**
  * POST /api/submit — public, unauthenticated by design.
- * Fetches the linked page and runs the Haiku enrichment (fills any blank field),
- * and appends one row. Extraction failure never loses a submission: the row
- * saves with just the typed fields and the caller gets a warning.
+ * Saves the row at once, marked pending_read, and answers. The reader then
+ * opens the link, fills the blank fields, and cleans a pasted announcement in
+ * the background (waitUntil), before the row can reach a Sort card (Kate,
+ * Sep 10: "I don't want someone to wait as it does it when they submit").
+ * A reading that fails leaves the row pending; Sort's catch-up reads it again.
  */
 import { randomUUID } from 'node:crypto';
 import Anthropic from '@anthropic-ai/sdk';
+import { waitUntil } from '@vercel/functions';
 import { buildSubmission, validateSubmission } from '../js/intake.js';
-import { applyExtractedWithProvenance, linkCheckedFromFetch } from '../js/workflow.js';
 import { fetchPageText } from './_lib/fetch-page.js';
-import {
-  EXTRACT_MODEL, EXTRACTION_SCHEMA, buildExtractionPrompt,
-  parseExtraction, normalizeExtraction,
-} from './_lib/extract.js';
-import { appendRow } from './_lib/store.js';
+import { readRow, extractWithClaude } from './_lib/reader.js';
+import { appendRow, updateRow, readAllRows } from './_lib/store.js';
 import { setCors } from './_lib/cors.js';
 import { checkRequest } from './_lib/turnstile.js';
 
 export const config = { maxDuration: 60 };
 
 const MAX_FIELD_LENGTH = 20000;
-const anthropic = new Anthropic({ timeout: 20_000, maxRetries: 1 });
 
-async function extractInto(row, pageText) {
-  const response = await anthropic.messages.create({
-    model: EXTRACT_MODEL,
-    max_tokens: 2048,
-    output_config: { format: { type: 'json_schema', schema: EXTRACTION_SCHEMA } },
-    messages: [{ role: 'user', content: buildExtractionPrompt(row, pageText) }],
-  });
-  const text = response.content.find(b => b.type === 'text')?.text ?? '';
-  const { fields, warnings, needsReview } = normalizeExtraction(parseExtraction(text), row);
-  const merged = applyExtractedWithProvenance(row, fields).row;
-  // Carried onto the row so Sort can say the reader was unsure — it used to be
-  // told to the submitter once and then lost.
-  return { row: { ...merged, needs_review: needsReview ? 'yes' : '' }, warnings };
-}
-
-export default async function handler(req, res) {
-  // The public share page is served from another origin (GitHub Pages), so
-  // the browser preflights this POST — answer it before anything else.
-  setCors(req, res);
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'POST');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(204).end();
-  }
-  if (req.method !== 'POST') {
-    return res.status(405).json({ ok: false, errors: ['Use POST.'] });
-  }
-  // Cross-origin callers (the public share page) must carry a Turnstile token.
-  const refused = await checkRequest(req);
-  if (refused) return res.status(403).json({ ok: false, errors: [refused] });
-  try {
-    const body = req.body ?? {};
-    for (const key of ['title', 'blurb', 'link', 'type', 'subtype', 'spotlight', 'submitter', 'submitter_email', 'infographic']) {
-      if (String(body[key] ?? '').length > MAX_FIELD_LENGTH) {
-        return res.status(400).json({ ok: false, errors: ['That submission is too long.'] });
-      }
-    }
-    // A body carrying submitter_email is the public page's — email required there.
-    const errors = validateSubmission(body, {
-      allowBlankSubtype: true, requireEmail: 'submitter_email' in body,
-    });
-    const media = String(body.infographic ?? '');
-    if (media && !media.startsWith('https://raw.githubusercontent.com/')) {
-      errors.push('That media upload did not come from this form.');
-    }
-    if (errors.length) return res.status(400).json({ ok: false, errors });
-
-    let row = buildSubmission({
-      ...body, id: randomUUID(), submittedAt: new Date().toISOString(),
-    });
-    const warnings = [];
+/** Built over its dependencies so the tests can hand in fakes. */
+export function createSubmitHandler(deps) {
+  async function readAndSave(row) {
     try {
-      const pageText = row.link ? await fetchPageText(row.link) : '';
-      if (row.link) row = { ...row, link_checked: linkCheckedFromFetch(pageText) };
-      const extracted = await extractInto(row, pageText);
-      row = extracted.row;
-      warnings.push(...extracted.warnings);
+      const read = await deps.readRow(row);
+      // Home's queue can delete a row while it is being read; never bring it back.
+      const now = deps.currentRow ? await deps.currentRow(row.id) : row;
+      if (!now || now.status !== row.status || now.pending_read !== 'yes') return;
+      await deps.updateRow(read);
     } catch (err) {
-      console.error('extraction failed', err);
-      warnings.push('Saved, but the automatic filing failed — fill in the details during Finalize.');
+      console.error('reader failed; the row stays pending for Sort', row.id, err);
     }
-    await appendRow(row);
-    return res.status(200).json({ ok: true, id: row.id, warnings });
-  } catch (err) {
-    console.error('submit failed', err);
-    return res.status(502).json({ ok: false, errors: ["Couldn't save that. Try again in a moment."] });
   }
+
+  return async function handler(req, res) {
+    // The public share page is served from another origin, so the browser
+    // preflights this POST — answer it before anything else.
+    setCors(req, res);
+    if (req.method === 'OPTIONS') {
+      res.setHeader('Access-Control-Allow-Methods', 'POST');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      return res.status(204).end();
+    }
+    if (req.method !== 'POST') {
+      return res.status(405).json({ ok: false, errors: ['Use POST.'] });
+    }
+    // Cross-origin callers (the public share page) must carry a Turnstile token.
+    const refused = await deps.checkRequest(req);
+    if (refused) return res.status(403).json({ ok: false, errors: [refused] });
+    try {
+      const body = req.body ?? {};
+      for (const key of ['title', 'blurb', 'link', 'type', 'subtype', 'spotlight', 'submitter', 'submitter_email', 'infographic']) {
+        if (String(body[key] ?? '').length > MAX_FIELD_LENGTH) {
+          return res.status(400).json({ ok: false, errors: ['That submission is too long.'] });
+        }
+      }
+      // A body carrying submitter_email is the public page's — email required there.
+      const errors = validateSubmission(body, {
+        allowBlankSubtype: true, requireEmail: 'submitter_email' in body,
+      });
+      const media = String(body.infographic ?? '');
+      if (media && !media.startsWith('https://raw.githubusercontent.com/')) {
+        errors.push('That media upload did not come from this form.');
+      }
+      if (errors.length) return res.status(400).json({ ok: false, errors });
+
+      const row = {
+        ...buildSubmission({ ...body, id: randomUUID(), submittedAt: new Date().toISOString() }),
+        pending_read: 'yes',
+      };
+      await deps.appendRow(row);
+      deps.defer(readAndSave(row));
+      return res.status(200).json({ ok: true, id: row.id, warnings: [] });
+    } catch (err) {
+      console.error('submit failed', err);
+      return res.status(502).json({ ok: false, errors: ["Couldn't save that. Try again in a moment."] });
+    }
+  };
 }
+
+const anthropic = new Anthropic({ timeout: 20_000, maxRetries: 1 });
+const extract = extractWithClaude(anthropic);
+
+export default createSubmitHandler({
+  appendRow,
+  updateRow,
+  readRow: row => readRow(row, { fetchPage: fetchPageText, extract }),
+  currentRow: async id => (await readAllRows()).find(r => r.id === id),
+  defer: waitUntil,
+  checkRequest,
+});
