@@ -89,9 +89,8 @@ export function linkCheckState(row) {
  * Research and non-event spotlights) — don't conflate the two.
  */
 export function newsletterOnly(row) {
-  // ERC Events are newsletter-only for now — Kate, Sep 9, pending her meeting.
-  // To let them reach the Exchange, delete this one line.
-  if (row.type === 'erc_event') return true;
+  // ERC Events publish like any event (Kate, Sep 10, after her meeting); the
+  // Sep 9 hold is gone.
   return row.type === 'event' && Boolean(row.spotlight_request) && row.subtype !== 'Webinar-Online';
 }
 

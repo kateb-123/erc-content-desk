@@ -212,10 +212,9 @@ test('mergeArchiveIndex replaces a re-saved issue and keeps newest first', async
   assert.equal(archiveLabel('2025-11-17'), 'November 17, 2025');
 });
 
-test('an ERC Event stays off the public Exchange for now (Kate, Sep 9 — pending her meeting)', () => {
-  assert.equal(newsletterOnly({ type: 'erc_event', subtype: '' }), true);
-  // It does not need the spotlight flag: the TYPE is the spotlight now.
-  assert.equal(newsletterOnly({ type: 'erc_event', subtype: '', spotlight_request: false }), true);
+test('an ERC Event publishes to the Exchange like any event (Kate, Sep 10, after her meeting)', () => {
+  assert.equal(newsletterOnly({ type: 'erc_event', subtype: '' }), false);
+  assert.equal(newsletterOnly({ type: 'erc_event', subtype: '', spotlight_request: true }), false);
 });
 
 test('ERC Events get the ERC voice, like every other event', () => {
