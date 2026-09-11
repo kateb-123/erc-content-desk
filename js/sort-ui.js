@@ -47,6 +47,163 @@ function el(tag, className, text) {
   return node;
 }
 
+/** The inline editor (Title, Description, Link, and Media on ERC items). Shared by
+ *  the card and the headline list, so a field never exists in only one place.
+ *  `read` returns what is typed, for a decision to carry (Kate, Sep 9). */
+function buildEditForm(row, { onSave, onCancel }) {
+    const form = el('div', 'sort-edit');
+  const mkField = (label, value, rows) => {
+    const wrap = el('label', 'sort-edit-field', label);
+    const input = rows ? el('textarea') : el('input');
+    if (rows) input.rows = rows; else input.type = 'text';
+    input.value = value ?? '';
+    wrap.append(input);
+    form.append(wrap);
+    return input;
+  };
+  const titleIn = mkField('Title', row.headline);
+  const blurbIn = mkField('Description', row.blurb, 4);
+  const linkIn = mkField('Link', row.link);
+  // ERC items can carry a picture (flyer, cover) — it rides the row's
+  // infographic column into the newsletter. A div, not a label: a label
+  // would forward stray clicks to the upload button.
+  let imgCtl = null;
+  if (isErc(row)) {
+    const wrap = el('div', 'sort-edit-field', 'Media');
+    imgCtl = buildImageControl(row.infographic, () => {});
+    wrap.append(imgCtl.el);
+    form.append(wrap);
+  }
+  const read = () => ({
+    headline: titleIn.value.trim(), blurb: blurbIn.value, link: withScheme(linkIn.value.trim()),
+    ...(imgCtl ? { infographic: imgCtl.get() } : {}),
+  });
+  const rowBtns = el('div', 'sort-edit-actions');
+  const save = el('button', 'primary', 'Save');
+  save.type = 'button';
+  save.addEventListener('click', () => {
+    onSave(read());
+  });
+  const cancel = el('button', 'btn-outline', 'Cancel');
+  cancel.type = 'button';
+  cancel.addEventListener('click', () => onCancel());
+  rowBtns.append(save, cancel);
+  form.append(rowBtns);
+  return { el: form, read };
+}
+
+/** The type and subtype chips. Tapping the subtype is the save; a flat type
+ *  (ERC Event) saves on the type tap. Shared by the card and the headline list. */
+function buildTypePicker(row, onCommit) {
+    const fix = el('div', 'type-pick');
+  fix.append(el('p', 'pick-label', 'Select a type'));
+  const typeChips = el('div', 'type-row');
+  const subWrap = el('div', 'sub-pick');
+  const subChips = el('div', 'type-row');
+  const subLabel = el('p', 'pick-label');
+  subWrap.append(subLabel, subChips);
+  let pickedType = row.type || '';
+  let pickedSub = row.subtype || '';
+  // Tapping the subtype IS the save — no extra button (Kate, Sep 1).
+  const commit = () => {
+    fix.replaceChildren(el('p', 'pick-saved', '✓ Saved'));
+    onCommit(pickedType, pickedSub);
+  };
+  const renderSubs = () => {
+    // Name the picked type so switching (Event -> Opportunity) reads clearly.
+    subLabel.textContent = pickedType ? `${TYPE_LABELS[pickedType] ?? pickedType} — now the subtype:` : '';
+    subChips.replaceChildren(...subtypesFor(pickedType).map(s => {
+      const b = el('button', `type-word${s === pickedSub ? ' is-picked' : ''}`, s);
+      b.type = 'button';
+      b.addEventListener('click', () => { pickedSub = s; commit(); });
+      return b;
+    }));
+    subWrap.classList.toggle('is-open', Boolean(pickedType));
+  };
+  const renderTypes = () => {
+    typeChips.replaceChildren(...TYPE_ORDER.map(t => {
+      const b = el('button', `type-word${t === pickedType ? ' is-picked' : ''}`, TYPE_LABELS[t] ?? t);
+      b.type = 'button';
+      b.addEventListener('click', () => {
+        if (pickedType !== t) { pickedType = t; pickedSub = ''; }
+        // ERC Event has no subtype, so the type tap is the save; the card
+        // used to wait for a subtype that does not exist (Kate, Sep 10).
+        if (typeIsFlat(t)) { commit(); return; }
+        renderTypes(); renderSubs();
+      });
+      return b;
+    }));
+  };
+  renderTypes(); renderSubs();
+  fix.append(typeChips, subWrap);
+  return fix;
+}
+
+/** The amber Verify-link ask: open the source, then Confirm or Change. Shared by
+ *  the card and the headline list. onVerify(newLink?) records the outcome. */
+function buildLinkAlert(row, href, onVerify) {
+    // One amber line. "check it" opens the source; only after she's been
+  // there does "it works" appear — opening IS the verification (Kate, Sep 1).
+  const alert = el('div', 'link-alert');
+  const line = el('p', 'alert-line');
+  const mark = el('i', 'fa-solid fa-triangle-exclamation alert-mark');
+  mark.setAttribute('aria-hidden', 'true');
+  line.append(mark);
+  // Say why: the warning used to mean only "the desk couldn't read this",
+  // and the one truly wrong link in the data carried none (F12, F20).
+  line.append(' ', row.link_checked === 'mismatch' ? 'This link may open a different item.' : "The desk couldn't open this page.");
+  const works = el('button', 'linkish alert-word', 'Confirm');
+  works.type = 'button';
+  works.addEventListener('click', () => onVerify());
+  const change = el('button', 'linkish alert-word', 'Change');
+  change.type = 'button';
+  const changeRow = el('p', 'alert-change');
+  const input = document.createElement('input');
+  input.type = 'url';
+  input.placeholder = 'paste the right link';
+  const saveLink = el('button', 'linkish alert-word', 'Save');
+  saveLink.type = 'button';
+  change.addEventListener('click', () => { changeRow.classList.add('is-open'); input.focus(); });
+  const saveFixed = () => {
+    const fixed = input.value.trim();
+    if (!safeHref(fixed)) { input.classList.add('is-invalid'); return; }
+    onVerify(fixed);
+  };
+  saveLink.addEventListener('click', saveFixed);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') saveFixed(); });
+  input.addEventListener('input', () => input.classList.remove('is-invalid'));
+  // One ask: "Verify link" opens the source. The two outcomes — It works /
+  // Change — only appear once she's been there (Kate, Sep 1).
+  const after = el('span', '');
+  after.append(' · ', works, ' · ', change);
+  if (href) {
+    after.hidden = true;
+    const a = el('a', 'alert-word', 'Verify link ↗');
+    a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
+    a.addEventListener('click', () => { after.hidden = false; });
+    line.append(' ', a);
+  } else {
+    // Nothing to verify — only Change makes sense.
+    after.hidden = false;
+    after.replaceChildren(' · ', change);
+    line.append(' Missing link');
+  }
+  line.append(after);
+  changeRow.append(input, ' ', saveLink);
+  alert.append(line, changeRow);
+  if (href) {
+    // The whole amber box is the ask, not only the two words in it — the
+    // boss clicked the box twice and nothing happened (usability run F5).
+    alert.classList.add('is-clickable');
+    alert.addEventListener('click', e => {
+      if (e.target.closest('a, button, input')) return;
+      window.open(href, '_blank', 'noreferrer');
+      after.hidden = false;
+    });
+  }
+  return alert;
+}
+
 export function renderSort(container, props) {
   const rerenderCard = () => renderSort(container, props);
   container.replaceChildren();
@@ -159,47 +316,16 @@ export function renderSort(container, props) {
   // her edit on the floor — now whichever button ends the card carries it.
   let readOpenEdit = null;
   if (editOpenId === row.id) {
-    const form = el('div', 'sort-edit');
-    const mkField = (label, value, rows) => {
-      const wrap = el('label', 'sort-edit-field', label);
-      const input = rows ? el('textarea') : el('input');
-      if (rows) input.rows = rows; else input.type = 'text';
-      input.value = value ?? '';
-      wrap.append(input);
-      form.append(wrap);
-      return input;
-    };
-    const titleIn = mkField('Title', row.headline);
-    const blurbIn = mkField('Description', row.blurb, 4);
-    const linkIn = mkField('Link', row.link);
-    // ERC items can carry a picture (flyer, cover) — it rides the row's
-    // infographic column into the newsletter. A div, not a label: a label
-    // would forward stray clicks to the upload button.
-    let imgCtl = null;
-    if (isErc(row)) {
-      const wrap = el('div', 'sort-edit-field', 'Media');
-      imgCtl = buildImageControl(row.infographic, () => {});
-      wrap.append(imgCtl.el);
-      form.append(wrap);
-    }
-    readOpenEdit = () => ({
-      headline: titleIn.value.trim(), blurb: blurbIn.value, link: withScheme(linkIn.value.trim()),
-      ...(imgCtl ? { infographic: imgCtl.get() } : {}),
+    const form = buildEditForm(row, {
+      onSave: changes => {
+        for (const x of card.querySelectorAll('button')) x.disabled = true;
+        editOpenId = null;
+        props.onEditRow?.(row, changes);
+      },
+      onCancel: () => { editOpenId = null; rerenderCard(); },
     });
-    const rowBtns = el('div', 'sort-edit-actions');
-    const save = el('button', 'primary', 'Save');
-    save.type = 'button';
-    save.addEventListener('click', () => {
-      for (const x of card.querySelectorAll('button')) x.disabled = true;
-      editOpenId = null;
-      props.onEditRow?.(row, readOpenEdit());
-    });
-    const cancel = el('button', 'btn-outline', 'Cancel');
-    cancel.type = 'button';
-    cancel.addEventListener('click', () => { editOpenId = null; rerenderCard(); });
-    rowBtns.append(save, cancel);
-    form.append(rowBtns);
-    card.append(form);
+    readOpenEdit = form.read;
+    card.append(form.el);
   }
   card.append(el('p', 'item-meta', [
     row.source, row.date && isoToDisplay(row.date), row.time, row.location,
@@ -252,70 +378,10 @@ export function renderSort(container, props) {
   if (typeLine.childNodes.length) fileRow.append(typeLine);
 
   if (linkState === 'alert') {
-    // One amber line. "check it" opens the source; only after she's been
-    // there does "it works" appear — opening IS the verification (Kate, Sep 1).
-    const alert = el('div', 'link-alert');
-    const line = el('p', 'alert-line');
-    const mark = el('i', 'fa-solid fa-triangle-exclamation alert-mark');
-    mark.setAttribute('aria-hidden', 'true');
-    line.append(mark);
-    // Say why: the warning used to mean only "the desk couldn't read this",
-    // and the one truly wrong link in the data carried none (F12, F20).
-    line.append(' ', row.link_checked === 'mismatch' ? 'This link may open a different item.' : "The desk couldn't open this page.");
-    const works = el('button', 'linkish alert-word', 'Confirm');
-    works.type = 'button';
-    works.addEventListener('click', () => {
+    fileRow.append(buildLinkAlert(row, href, newLink => {
       for (const x of card.querySelectorAll('button')) x.disabled = true;
-      props.onVerifyLink?.(row);
-    });
-    const change = el('button', 'linkish alert-word', 'Change');
-    change.type = 'button';
-    const changeRow = el('p', 'alert-change');
-    const input = document.createElement('input');
-    input.type = 'url';
-    input.placeholder = 'paste the right link';
-    const saveLink = el('button', 'linkish alert-word', 'Save');
-    saveLink.type = 'button';
-    change.addEventListener('click', () => { changeRow.classList.add('is-open'); input.focus(); });
-    const saveFixed = () => {
-      const fixed = input.value.trim();
-      if (!safeHref(fixed)) { input.classList.add('is-invalid'); return; }
-      for (const x of card.querySelectorAll('button')) x.disabled = true;
-      props.onVerifyLink?.(row, fixed);
-    };
-    saveLink.addEventListener('click', saveFixed);
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') saveFixed(); });
-    input.addEventListener('input', () => input.classList.remove('is-invalid'));
-    // One ask: "Verify link" opens the source. The two outcomes — It works /
-    // Change — only appear once she's been there (Kate, Sep 1).
-    const after = el('span', '');
-    after.append(' · ', works, ' · ', change);
-    if (href) {
-      after.hidden = true;
-      const a = el('a', 'alert-word', 'Verify link ↗');
-      a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
-      a.addEventListener('click', () => { after.hidden = false; });
-      line.append(' ', a);
-    } else {
-      // Nothing to verify — only Change makes sense.
-      after.hidden = false;
-      after.replaceChildren(' · ', change);
-      line.append(' Missing link');
-    }
-    line.append(after);
-    changeRow.append(input, ' ', saveLink);
-    alert.append(line, changeRow);
-    if (href) {
-      // The whole amber box is the ask, not only the two words in it — the
-      // boss clicked the box twice and nothing happened (usability run F5).
-      alert.classList.add('is-clickable');
-      alert.addEventListener('click', e => {
-        if (e.target.closest('a, button, input')) return;
-        window.open(href, '_blank', 'noreferrer');
-        after.hidden = false;
-      });
-    }
-    fileRow.append(alert);
+      props.onVerifyLink?.(row, newLink);
+    }));
   }
 
   // Two quiet notes, only when the reader came up short. Neither blocks Keep —
@@ -343,50 +409,11 @@ export function renderSort(container, props) {
   }
 
   if (fixOpen) {
-    const fix = el('div', 'type-pick');
-    fix.append(el('p', 'pick-label', 'Select a type'));
-    const typeChips = el('div', 'type-row');
-    const subWrap = el('div', 'sub-pick');
-    const subChips = el('div', 'type-row');
-    const subLabel = el('p', 'pick-label');
-    subWrap.append(subLabel, subChips);
-    let pickedType = row.type || '';
-    let pickedSub = row.subtype || '';
-    // Tapping the subtype IS the save — no extra button (Kate, Sep 1).
-    const commit = () => {
+    fileRow.append(buildTypePicker(row, (type, subtype) => {
       for (const x of card.querySelectorAll('button')) x.disabled = true;
-      fix.replaceChildren(el('p', 'pick-saved', '✓ Saved'));
       fixOpenId = null;
-      props.onEditType?.(row, pickedType, pickedSub);
-    };
-    const renderSubs = () => {
-      // Name the picked type so switching (Event -> Opportunity) reads clearly.
-      subLabel.textContent = pickedType ? `${TYPE_LABELS[pickedType] ?? pickedType} — now the subtype:` : '';
-      subChips.replaceChildren(...subtypesFor(pickedType).map(s => {
-        const b = el('button', `type-word${s === pickedSub ? ' is-picked' : ''}`, s);
-        b.type = 'button';
-        b.addEventListener('click', () => { pickedSub = s; commit(); });
-        return b;
-      }));
-      subWrap.classList.toggle('is-open', Boolean(pickedType));
-    };
-    const renderTypes = () => {
-      typeChips.replaceChildren(...TYPE_ORDER.map(t => {
-        const b = el('button', `type-word${t === pickedType ? ' is-picked' : ''}`, TYPE_LABELS[t] ?? t);
-        b.type = 'button';
-        b.addEventListener('click', () => {
-          if (pickedType !== t) { pickedType = t; pickedSub = ''; }
-          // ERC Event has no subtype, so the type tap is the save; the card
-          // used to wait for a subtype that does not exist (Kate, Sep 10).
-          if (typeIsFlat(t)) { commit(); return; }
-          renderTypes(); renderSubs();
-        });
-        return b;
-      }));
-    };
-    renderTypes(); renderSubs();
-    fix.append(typeChips, subWrap);
-    fileRow.append(fix);
+      props.onEditType?.(row, type, subtype);
+    }));
   }
 
   if (fileRow.childNodes.length) card.append(fileRow);
