@@ -125,12 +125,11 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
     again.addEventListener('click', () => {
       doneBox.hidden = true;
       form.hidden = false;
-      bulkDoor.hidden = false;
       form.querySelector('#sf-title').focus();
     });
     doneBox.append(again);
+    // The spreadsheet door stays: a second item often follows the first (F16).
     form.hidden = true;
-    bulkDoor.hidden = true;
     doneBox.hidden = false;
   }
 
@@ -145,14 +144,18 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
   function renderTypePicker() {
     typeBox.replaceChildren(legend);
     for (const type of TYPE_ORDER) {
-      typeBox.append(radio('sf-type', type, TYPE_LABELS[type], selection.type === type, () => {
+      const choice = radio('sf-type', type, TYPE_LABELS[type], selection.type === type, () => {
         selection = pickType(selection, type);
         renderTypePicker();
-      }));
+      });
+      // "ERC Event" next to "Event" needs a word of difference (usability run F13).
+      if (type === 'erc_event') choice.append(el('span', 'hint type-hint', 'an event the ERC runs'));
+      typeBox.append(choice);
       if (selection.type !== type) continue;
       const subtypes = subtypesFor(type);
       if (!subtypes.length) continue;   // ERC Event is flat — no empty picker box
       const sub = el('div', 'subtype-list');
+      sub.append(el('span', 'subtype-label', 'Subtype'));   // the reveal gets a name (F14)
       for (const subtype of subtypes) {
         sub.append(radio('sf-subtype', subtype, subtype, selection.subtype === subtype, () => {
           selection = { ...selection, subtype };

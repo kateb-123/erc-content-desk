@@ -484,4 +484,5 @@ for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {
   render();
 })();
 
+render();   // the shell paints before the first fetch, not after it (usability run F19)
 reload();
