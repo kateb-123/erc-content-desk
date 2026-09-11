@@ -42,6 +42,11 @@ export function awaitingReader(row) {
   return row.pending_read === 'yes';
 }
 
+/** Ids of the waiting rows still headed for Sort, for the catch-up read. */
+export function readerQueue(rows) {
+  return rows.filter(r => r.status === 'new' && awaitingReader(r)).map(r => r.id);
+}
+
 /**
  * The stream. `sessionDecided` is the set of ids decided since the page opened:
  * those rows HOLD their slot instead of vanishing, so ‹ scrolls back to what you

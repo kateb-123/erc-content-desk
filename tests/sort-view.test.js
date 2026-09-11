@@ -126,3 +126,15 @@ test('a row still waiting for the reader never reaches a card or a count', () =>
   assert.equal(counts.untyped, 0);
   assert.equal(counts.event, 1);
 });
+
+test('readerQueue lists the waiting rows Sort must have read, and only those', async () => {
+  const { readerQueue } = await import('../js/sort-view.js');
+  assert.equal(typeof readerQueue, 'function');
+  const mix = [
+    { id: 'w1', status: 'new', pending_read: 'yes' },
+    { id: 'ok', status: 'new', pending_read: '' },
+    { id: 'gone', status: 'trashed', pending_read: 'yes' },
+    { id: 'w2', status: 'new', pending_read: 'yes' },
+  ];
+  assert.deepEqual(readerQueue(mix), ['w1', 'w2']);
+});
