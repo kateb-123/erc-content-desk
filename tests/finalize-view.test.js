@@ -5,11 +5,13 @@ import { needsRewrite } from '../js/finalize-ui.js';
 
 const kept = o => blankRow({ status: 'kept', ...o });
 
-test('events, opportunities, and description-less research need the ERC voice', () => {
+test('events, opportunities, and description-less research need the ERC voice, when there is text to draft from', () => {
   assert.equal(needsRewrite(kept({ type: 'event', blurb: 'x' })), true);
-  assert.equal(needsRewrite(kept({ type: 'event', blurb: '' })), true);
+  assert.equal(needsRewrite(kept({ type: 'event', blurb: '', original_text: 'Please join us.' })), true);
+  // No text at all: nothing to rewrite from; Finalize asks for a description instead (F2).
+  assert.equal(needsRewrite(kept({ type: 'event', blurb: '', original_text: '' })), false);
   assert.equal(needsRewrite(kept({ type: 'opportunity', blurb: 'x' })), true);
-  assert.equal(needsRewrite(kept({ type: 'research', blurb: '' })), true);
+  assert.equal(needsRewrite(kept({ type: 'research', blurb: '', original_text: 'From the page.' })), true);
   assert.equal(needsRewrite(kept({ type: 'research', blurb: 'an abstract' })), false);
   assert.equal(needsRewrite(kept({ type: 'headline', blurb: 'x' })), false);
   assert.equal(needsRewrite(kept({ type: '', blurb: '' })), false);

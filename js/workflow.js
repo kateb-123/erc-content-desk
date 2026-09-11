@@ -108,6 +108,21 @@ export function needsErcVoice(row) {
   return row.type === 'research' && (row.subtype === 'Report' || !row.blurb);
 }
 
+const hasText = row => Boolean(String(row.blurb ?? '').trim() || String(row.original_text ?? '').trim());
+
+/** What Rewrite can act on: needs the voice and has words to draft from.
+ *  Finalize's count and /api/rewrite's candidates both use this, so the
+ *  screen never offers a rewrite the server declines (usability run F2). */
+export function canRewrite(row) {
+  return needsErcVoice(row) && hasText(row);
+}
+
+/** Needs the voice but arrived with no text at all (a bare link the reader
+ *  couldn't open): a person has to write the description in Edit fields. */
+export function needsDescription(row) {
+  return needsErcVoice(row) && !hasText(row);
+}
+
 export function readyToPublish(rows) {
   // A row stamped into an issue is done with Publish — newsletter-only holds
   // drain here instead of sitting in the held list forever.

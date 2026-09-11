@@ -6,7 +6,7 @@
  * are tinted, one button rewrites them all and the results land back in
  * the rows. Nothing publishes from this screen.
  */
-import { readyToPublish, needsErcVoice } from './workflow.js';
+import { readyToPublish, canRewrite, needsDescription } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
 import { isoToSlash } from './queue-view.js';
@@ -34,7 +34,7 @@ function el(tag, className, text) {
 
 /** The shared predicate lives in workflow.js so the /api/rewrite endpoint
  *  can never disagree with this screen about what needs rewriting. */
-export const needsRewrite = needsErcVoice;
+export const needsRewrite = canRewrite;
 
 const oldestFirst = (a, b) => String(a.submitted_at).localeCompare(String(b.submitted_at));
 
@@ -150,6 +150,8 @@ export function detailBody(row, extra) {
     main.append(el('p', 'f-blurb-text', row.blurb));
   } else if (needsRewrite(row)) {
     main.append(el('p', 'rewrite-note', 'No description yet — Rewrite drafts one from the original text.'));
+  } else if (needsDescription(row)) {
+    main.append(el('p', 'rewrite-note', 'Needs a description — add one in Edit fields.'));
   }
   if (extra) main.append(extra);
   wrap.append(main);
@@ -345,6 +347,10 @@ export function renderFinalize(container, props) {
   } else if (checks && !busy) {
     // Same spot as stage 1's lede — one message, one place (Kate, Sep 1).
     lede.textContent = rewroteNote ?? 'Check the rewrites — flip through and decide each one.';
+  } else if (rewroteNote && !busy) {
+    // The server's answer when it had nothing to rewrite lands here, next to
+    // the button, not in the page header (usability run F11).
+    lede.textContent = rewroteNote;
   }
   // (No standing lede for the plain table — the info panel explains it.)
   lead.append(lede);

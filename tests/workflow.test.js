@@ -253,3 +253,15 @@ test('missingFields says nothing about a row with no type yet', () => {
 test('a link the reader says opens a different item is an alert, like a failed read (F20)', () => {
   assert.equal(linkCheckState(blankRow({ link: 'https://a.org', link_checked: 'mismatch' })), 'alert');
 });
+
+test('canRewrite: needs the ERC voice AND has text to draft from; a link-only event needs a description instead (F2)', async () => {
+  const { canRewrite, needsDescription } = await import('../js/workflow.js');
+  const withText = { type: 'event', blurb: '', original_text: 'Please join us.' };
+  const linkOnly = { type: 'event', blurb: '', original_text: '' };
+  const research = { type: 'research', subtype: 'Working Paper', blurb: 'An abstract.' };
+  assert.equal(canRewrite(withText), true);
+  assert.equal(canRewrite(linkOnly), false);
+  assert.equal(needsDescription(linkOnly), true);
+  assert.equal(needsDescription(withText), false);
+  assert.equal(needsDescription(research), false);
+});

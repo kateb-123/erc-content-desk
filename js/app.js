@@ -8,7 +8,7 @@ import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
 import { renderPublish, downloadCsv } from './publish-ui.js';
 import { renderNewsletter, resetNewsletterEntry } from './newsletter-ui.js';
-import { keep, trash, circleback, undecide, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToPublish, needsErcVoice } from './workflow.js';
+import { keep, trash, circleback, undecide, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToPublish, canRewrite } from './workflow.js';
 
 
 const state = {
@@ -236,7 +236,7 @@ async function runRewrite() {
   // Scope the request to exactly what Finalize is showing — the server
   // applies the same shared predicate, so the two can never disagree.
   const ids = readyToPublish(state.rows)
-    .filter(r => needsErcVoice(r) && !state.rewriteReview.has(r.id))
+    .filter(r => canRewrite(r) && !state.rewriteReview.has(r.id))
     .map(r => r.id);
   if (!ids.length) return;
   state.busy = true;
@@ -259,8 +259,12 @@ async function runRewrite() {
     }
     state.reviewTotal = state.rewriteReview.size;
     state.rows = state.rows.map(r => byId.has(r.id) ? { ...r, blurb: byId.get(r.id) } : r);
-    state.rewroteNote = `Rewrote ${byId.size} description${byId.size === 1 ? '' : 's'} — check them one by one.`;
-    setStatus(data.warnings?.length ? data.warnings.join(' ') : '', data.warnings?.length ? 'note' : 'ok');
+    // One message, one place: a warning ("Nothing to rewrite") shows in
+    // Finalize's lede beside the button, not the page header (F11).
+    state.rewroteNote = byId.size
+      ? `Rewrote ${byId.size} description${byId.size === 1 ? '' : 's'} — check them one by one.`
+      : (data.warnings?.join(' ') || 'Nothing to rewrite.');
+    setStatus('');
   } catch (err) {
     setStatus(err.message, 'error');
   }
