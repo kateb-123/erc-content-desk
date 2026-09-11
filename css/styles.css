@@ -218,6 +218,7 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .nl-table .badge { margin-top: .25rem; }
 .badge-star { background: #fdf3d7; border-color: #f2e3ae; border-style: solid; color: var(--ink); }
 .badge-dupe { background: #fdf3d7; border-color: #f2e3ae; border-style: solid; color: #6b4e00; }
+.badge-new { background: var(--tint); border-color: var(--tint); border-style: solid; color: #14507a; }
 .badge-stale { background: #f3e8ff; color: #5b21b6; }
 .auto-flag { display: inline-block; width: 1rem; height: 1rem; line-height: 1rem; text-align: center; border-radius: 50%; background: #fdf3d7; color: #6b4e00; font-weight: 700; font-size: .75rem; cursor: help; }
 .item-meta { color: #666; font-size: 0.85rem; }
@@ -486,7 +487,9 @@ input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus 
 .pub-done-anim .primary { animation: rise-in 200ms cubic-bezier(0.33, 1, 0.68, 1) 250ms both; }
 /* Publish report chips + the post-publish receipt (Kate's Direction A). */
 .p-chips { display: flex; gap: .6rem; margin: .25rem 0 1rem; flex-wrap: wrap; }
-.p-chip { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: .85rem; border-radius: 999px; padding: .3rem .9rem; background: var(--tint); color: #14507a; }
+.p-chip { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: .85rem; border-radius: 999px; padding: .3rem .9rem; background: var(--tint); color: #14507a; border: 0; cursor: pointer; }
+.p-live-list { margin: .2rem 0 .8rem 1.2rem; padding: 0 0 0 .2rem; color: var(--muted); font-size: .95rem; }
+.p-live-list li { margin: .15rem 0; }
 .p-chip-quiet { background: #fff; border: 1px solid var(--line); color: var(--muted); font-weight: 600; }
 .p-chip-ghost { background: none; border: 1px dashed var(--line); color: var(--muted); font-weight: 600; }
 .p-held-fold { margin-top: 1.25rem; }

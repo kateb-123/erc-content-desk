@@ -8,7 +8,7 @@ import { duplicateFlags, linkCheckState, reshareFlags, missingFields } from './w
 import { TYPE_ORDER, TYPE_LABELS, subtypesFor, isValidSubtype } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref, withScheme } from './links.js';
-import { sortStream, sortCounts, streamFrom, sectionOf, isErc, readerQueue, dupeBadgeText } from './sort-view.js';
+import { sortStream, sortCounts, streamFrom, sectionOf, isErc, readerQueue, dupeBadgeText, isNewToday } from './sort-view.js';
 import { buildImageControl } from './item-image.js';
 import { titleWithInfo } from './screen-info.js';
 import { faIcon, forwardIcon } from './icons.js';
@@ -16,7 +16,9 @@ import { faIcon, forwardIcon } from './icons.js';
 let editOpenId = null;   // sort card with its inline edit open (view state)
 
 const FILTER_LABELS = [
-  ['', 'All'], ['untyped', 'To review'], ['erc', 'ERC'], ['erc_event', 'ERC events'],
+  // 'Needs a type', not 'To review': it counts only untyped items, and a
+  // first-timer read the old name as "everything waiting" (usability run F24).
+  ['', 'All'], ['untyped', 'Needs a type'], ['erc', 'ERC'], ['erc_event', 'ERC events'],
   ['research', 'Research'],
   ['event', 'Events'], ['opportunity', 'Opportunities'], ['headline', 'Headlines'],
 ];
@@ -108,7 +110,7 @@ export function renderSort(container, props) {
 
   const row = visible[idx];
   const groupKey = sectionOf(row);
-  const groupLabel = FILTER_LABELS.find(([k]) => k === groupKey)?.[1] ?? 'To review';
+  const groupLabel = FILTER_LABELS.find(([k]) => k === groupKey)?.[1] ?? 'Needs a type';
   // Dots track the current section only — and the heading names your spot in it.
   const groupCards = visible.map((r, i) => i).filter(i => sectionOf(visible[i]) === groupKey);
   const posInGroup = groupCards.indexOf(idx) + 1;
@@ -137,6 +139,7 @@ export function renderSort(container, props) {
   const reshare = reshareFlags(rows, props.today ?? '');
   const badges = el('div');
   if (row.spotlight_request) badges.append(el('span', 'badge badge-star', 'Spotlight requested'));
+  if (isNewToday(row, props.today)) badges.append(el('span', 'badge badge-new', 'New'));
   if (row.submitter_email) badges.append(el('span', 'badge', 'External submission'));
   // One badge, most informative first: a past newsletter share beats the dupe
   // tiers. Facts ("Already live", "In a past issue") wear the quiet ghost;

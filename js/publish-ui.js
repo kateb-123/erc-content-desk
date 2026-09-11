@@ -227,7 +227,7 @@ export function renderPublish(container, props) {
     warn.setAttribute('aria-hidden', 'true');
     alert.append(warn, ' ');
     alert.append(`${notReady.length} kept item${notReady.length === 1 ? '' : 's'} still need${notReady.length === 1 ? 's' : ''} a type — `);
-    const jump = el('button', 'linkish', "fix in Sort's To review");
+    const jump = el('button', 'linkish', "fix in Sort's Needs a type");
     jump.type = 'button';
     jump.addEventListener('click', () => onGoTo('sort'));
     alert.append(jump);
@@ -236,23 +236,43 @@ export function renderPublish(container, props) {
 
   // The receipt-style report: chips summarize, one table lists what's going
   // up, the held group folds. "Already live" is a quiet indicator — no
-  // counts, no "skipped" talk (Kate, Sep 1).
+  // counts, no "skipped" talk (Kate, Sep 1). The chips look like the nav
+  // pills, so they act like them: each opens its list (usability run F22).
+  let heldFold = null, liveFold = null;
+  const openFold = fold => { if (!fold) return; fold.open = true; fold.scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+  const chip = (cls, text, onClick) => {
+    const b = el('button', `p-chip${cls ? ` ${cls}` : ''}`, text);
+    b.type = 'button';
+    b.addEventListener('click', onClick);
+    return b;
+  };
   if (preview) {
     const chips = el('div', 'p-chips');
-    if (adding.length) chips.append(el('span', 'p-chip', `Adding ${adding.length}`));
-    if (held.length) chips.append(el('span', 'p-chip p-chip-quiet', `Held for the newsletter ${held.length}`));
-    if (preview.skipped?.length) chips.append(el('span', 'p-chip p-chip-ghost', 'Already live'));
+    if (adding.length) chips.append(chip('', `Adding ${adding.length}`, () => container.querySelector('table')?.scrollIntoView({ block: 'start', behavior: 'smooth' })));
+    if (held.length) chips.append(chip('p-chip-quiet', `Held for the newsletter ${held.length}`, () => openFold(heldFold)));
+    if (preview.skipped?.length) chips.append(chip('p-chip-ghost', 'Already live', () => openFold(liveFold)));
     if (chips.childElementCount) container.append(chips);
   }
 
   group(container, '', adding, { rerender, onGoTo });
 
   if (held.length) {
-    const fold = el('details', 'p-held-fold');
+    heldFold = el('details', 'p-held-fold');
     const sum = el('summary', '', `Held for the newsletter (${held.length})`);
-    fold.append(sum);
-    fold.append(el('p', 'hint p-group-hint', 'Spotlight events stay off the Exchange — webinars excepted.'));
-    group(fold, '', held, { cls: 'p-held', rerender, onGoTo });
-    container.append(fold);
+    heldFold.append(sum);
+    heldFold.append(el('p', 'hint p-group-hint', 'Spotlight events stay off the Exchange — webinars excepted.'));
+    group(heldFold, '', held, { cls: 'p-held', rerender, onGoTo });
+    container.append(heldFold);
+  }
+  // Already-live items used to vanish without a word; they are named here,
+  // folded, so the silent skip is at least readable (usability run F10).
+  if (preview?.skipped?.length) {
+    liveFold = el('details', 'p-held-fold p-live-fold');
+    liveFold.append(el('summary', '', 'Already live'));
+    liveFold.append(el('p', 'hint p-group-hint', 'Already on the Exchange, so Publish leaves them out.'));
+    const list = el('ul', 'p-live-list');
+    for (const item of preview.skipped) list.append(el('li', '', item.headline || item.id));
+    liveFold.append(list);
+    container.append(liveFold);
   }
 }

@@ -149,3 +149,11 @@ test('a duplicate badge names the earlier item and what happened to it (F8)', as
   assert.equal(dupeBadgeText({ headline: 'Parked one', status: 'circleback', submitted_at: '' }), 'Same link as "Parked one", parked');
   assert.equal(dupeBadgeText({ headline: 'Waiting', status: 'new', submitted_at: '2026-09-10T00:00:00Z' }), 'Same link as "Waiting", in the queue 9/10');
 });
+
+test('isNewToday marks what was submitted today, by the same UTC date the desk uses (F24)', async () => {
+  const { isNewToday } = await import('../js/sort-view.js');
+  assert.equal(isNewToday({ submitted_at: '2026-09-10T23:59:00Z' }, '2026-09-10'), true);
+  assert.equal(isNewToday({ submitted_at: '2026-09-09T23:59:00Z' }, '2026-09-10'), false);
+  assert.equal(isNewToday({ submitted_at: '' }, '2026-09-10'), false);
+  assert.equal(isNewToday({ submitted_at: '2026-09-10T01:00:00Z' }, ''), false);
+});

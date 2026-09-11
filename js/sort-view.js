@@ -119,3 +119,8 @@ export function dupeBadgeText(prior) {
   const when = isoToSlash(prior?.submitted_at);
   return `Same link as "${short}", ${what}${when ? ` ${when}` : ''}`;
 }
+
+/** Submitted today (the desk's UTC date), so a first look can find it (F24). */
+export function isNewToday(row, today) {
+  return Boolean(today) && String(row?.submitted_at ?? '').slice(0, 10) === today;
+}
