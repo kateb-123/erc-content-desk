@@ -93,3 +93,20 @@ test('a reader failure throws, so the row stays pending for the catch-up', async
     /model timeout/,
   );
 });
+
+test('a page that is about a different item is marked mismatch and fills nothing (F20)', async () => {
+  const row = submitted({ headline: 'Teacher Sorting and Preferences', type: 'research', subtype: 'Working Paper', blurb: 'One-author abstract.', original_text: 'One-author abstract.', link: 'https://edworkingpapers.com/ai26-1511' });
+  const calls = [];
+  const read = await readRow(row, {
+    fetchPage: async () => 'PAGE: Why Are Bureaucrats More Left-Wing? by Coyoli, Davies, Finger, Phillips',
+    extract: async (_row, page) => {
+      calls.push(page);
+      return page ? { link_matches: false, authors: 'Coyoli, Davies, Finger, Phillips', date: '2026-08-01' } : { link_matches: true, source: 'EdWorkingPapers' };
+    },
+  });
+  assert.deepEqual(calls, ['PAGE: Why Are Bureaucrats More Left-Wing? by Coyoli, Davies, Finger, Phillips', '']);
+  assert.equal(read.link_checked, 'mismatch');
+  assert.equal(read.authors, '', 'nothing copied from the wrong page');
+  assert.equal(read.source, 'EdWorkingPapers');
+  assert.equal(read.pending_read, '');
+});

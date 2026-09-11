@@ -10,10 +10,10 @@ test('extraction runs on Haiku and can also guess title, blurb, and typing', () 
   assert.equal(EXTRACT_MODEL, 'claude-haiku-4-5');
   assert.equal(EXTRACTION_SCHEMA.additionalProperties, false);
   assert.deepEqual(Object.keys(EXTRACTION_SCHEMA.properties).sort(), [
-    'authors', 'blurb', 'clean_blurb', 'date', 'deadline', 'headline', 'location', 'medium',
+    'authors', 'blurb', 'clean_blurb', 'date', 'deadline', 'headline', 'link_matches', 'location', 'medium',
     'needs_review', 'source', 'subtype', 'time', 'topic', 'type',
   ]);
-  assert.equal(EXTRACTION_SCHEMA.required.length, 14);
+  assert.equal(EXTRACTION_SCHEMA.required.length, 15);
   // The type enum's contents are asserted against the schema further down,
   // rather than retyped here where a new type would go unnoticed.
 });
@@ -165,4 +165,15 @@ test('with no description, the reader must write one from the text and the page,
   const headline = blankRow({ headline: 'A story', type: 'headline', blurb: '', original_text: 'date: 2026-07\nmedium: online', link: 'https://a.org' });
   assert.doesNotMatch(buildExtractionPrompt(headline), /you MUST write `blurb`/);
   assert.match(buildExtractionPrompt(headline), /Return "" for blurb/);
+});
+
+test('the reader says whether the page behind the link is about this item (F20)', () => {
+  assert.equal(EXTRACTION_SCHEMA.properties.link_matches.type, 'boolean');
+  assert.ok(EXTRACTION_SCHEMA.required.includes('link_matches'));
+  const prompt = buildExtractionPrompt(blankRow({ headline: 'Teacher Sorting', type: 'research', link: 'https://a.org' }), 'PAGE about bureaucrats');
+  assert.match(prompt, /link_matches/);
+  const row = blankRow({ headline: 'T', type: 'research' });
+  assert.equal(normalizeExtraction({ link_matches: false }, row).linkMismatch, true);
+  assert.equal(normalizeExtraction({ link_matches: true }, row).linkMismatch, false);
+  assert.equal(normalizeExtraction({}, row).linkMismatch, false);
 });

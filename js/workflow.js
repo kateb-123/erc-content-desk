@@ -72,14 +72,14 @@ export function linkCheckedFromFetch(pageText) {
 }
 
 /**
- * How Sort treats a row's link. 'alert' = the desk recorded a failed read, an
- * editor must Verify or Change the link; 'verified' = a human did; 'quiet'
+ * How Sort treats a row's link. 'alert' = the desk recorded a failed read or
+ * a page about a different item (mismatch), an editor must Verify or Change the link; 'verified' = a human did; 'quiet'
  * otherwise — including legacy rows with no link_checked value at all.
  */
 export function linkCheckState(row) {
   if (!String(row.link ?? '').trim()) return 'quiet';
   if (row.link_checked === 'human') return 'verified';
-  if (row.link_checked === 'failed') return 'alert';
+  if (row.link_checked === 'failed' || row.link_checked === 'mismatch') return 'alert';
   return 'quiet';
 }
 

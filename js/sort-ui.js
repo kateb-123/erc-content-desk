@@ -256,6 +256,9 @@ export function renderSort(container, props) {
     const mark = el('i', 'fa-solid fa-triangle-exclamation alert-mark');
     mark.setAttribute('aria-hidden', 'true');
     line.append(mark);
+    // Say why: the warning used to mean only "the desk couldn't read this",
+    // and the one truly wrong link in the data carried none (F12, F20).
+    line.append(' ', row.link_checked === 'mismatch' ? 'This link may open a different item.' : "The desk couldn't open this page.");
     const works = el('button', 'linkish alert-word', 'Confirm');
     works.type = 'button';
     works.addEventListener('click', () => {

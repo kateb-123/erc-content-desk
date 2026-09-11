@@ -19,7 +19,14 @@ export async function readRow(row, { fetchPage, extract }) {
     try { pageText = await fetchPage(row.link); } catch { pageText = ''; }
   }
   let next = row.link ? { ...row, link_checked: linkCheckedFromFetch(pageText) } : { ...row };
-  const { fields, needsReview, cleanBlurb } = normalizeExtraction(await extract(next, pageText), next);
+  let read = normalizeExtraction(await extract(next, pageText), next);
+  if (pageText && read.linkMismatch) {
+    // The page is a different item: mark the link for a human and read
+    // again from the submitted text alone, so nothing of that page is filed.
+    next = { ...next, link_checked: 'mismatch' };
+    read = normalizeExtraction(await extract(next, ''), next);
+  }
+  const { fields, needsReview, cleanBlurb } = read;
   next = applyExtractedWithProvenance(next, fields).row;
   const pasted = Boolean(String(row.original_text || row.blurb || '').trim());
   if (cleanBlurb && pasted && CLEAN_TYPES.includes(next.type)) next = { ...next, blurb: cleanBlurb };

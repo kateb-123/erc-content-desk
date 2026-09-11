@@ -249,3 +249,7 @@ test('missingFields names the blanks that matter for the row\'s type', () => {
 test('missingFields says nothing about a row with no type yet', () => {
   assert.deepEqual(missingFields({ type: '' }), []);
 });
+
+test('a link the reader says opens a different item is an alert, like a failed read (F20)', () => {
+  assert.equal(linkCheckState(blankRow({ link: 'https://a.org', link_checked: 'mismatch' })), 'alert');
+});

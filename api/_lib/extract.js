@@ -16,7 +16,7 @@ export const EXTRACT_MODEL = 'claude-haiku-4-5';
 export const EXTRACTION_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: [...FIELD_KEYS, ...GUESS_KEYS, 'clean_blurb', 'needs_review'],
+  required: [...FIELD_KEYS, ...GUESS_KEYS, 'clean_blurb', 'link_matches', 'needs_review'],
   properties: {
     date: { type: 'string', description: 'Event date or publication date as YYYY-MM-DD; "" if not stated.' },
     source: { type: 'string', description: 'Outlet, publisher, journal, or host organization; "" if not stated.' },
@@ -35,6 +35,9 @@ export const EXTRACTION_SCHEMA = {
     // Not a column: the reader swaps it in for a pasted event or opportunity
     // description and keeps the paste in original_text (Kate, Sep 10).
     clean_blurb: { type: 'string', description: 'Events, ERC events, and opportunities with pasted text only: 2-3 plain factual sentences saying what the item is. "" otherwise.' },
+    // A link that opens the wrong item read fine and carried no warning
+    // (usability run F20): the reader now says whether the page fits.
+    link_matches: { type: 'boolean', description: 'true when the page behind the link is about this item, or when there is no page text; false when the page is a different item.' },
     needs_review: { type: 'boolean', description: 'true if the text was too thin or confusing to file confidently.' },
   },
 };
@@ -63,6 +66,7 @@ export function buildExtractionPrompt(row, pageText = '') {
       + 'An event merely held at Texas A&M, or one the ERC is only attending, is a '
       + 'plain event with the A&M subtype. When in doubt use event, not erc_event.',
     'Never invent a date, deadline, author, time, location, or source; use "" when the text does not state it.',
+    'Set `link_matches` to false when the page behind the link is about a different item than the title and submitted text describe; true otherwise, and true when there is no page text.',
     'Dates are YYYY-MM-DD. Event times are Central Time, written like "1:00 PM CT" — convert from ET/PT when the zone is given.',
   );
   if (!row.headline) parts.push('No title was provided — you MUST write `headline`: a clear, specific title from the text.');
@@ -116,5 +120,6 @@ export function normalizeExtraction(extracted, row) {
     warnings.push('Claude was unsure about this one — double-check its fields.');
   }
   const cleanBlurb = String(extracted?.clean_blurb ?? '').trim();
-  return { fields, warnings, needsReview, cleanBlurb };
+  const linkMismatch = extracted?.link_matches === false;
+  return { fields, warnings, needsReview, cleanBlurb, linkMismatch };
 }
