@@ -37,7 +37,7 @@ export const REWRITE_SCHEMA = {
         required: ['id', 'blurb'],
         properties: {
           id: { type: 'string', description: 'The item id, copied exactly.' },
-          blurb: { type: 'string', description: 'The rewritten blurb, 2-3 sentences, 40-70 words.' },
+          blurb: { type: 'string', description: 'The rewritten blurb, 1-3 sentences, at most 70 words, no padding.' },
         },
       },
     },
@@ -73,6 +73,7 @@ export function buildRewritePrompt(rows) {
     'An item with no blurb has none yet — draft one from its original text and fields instead.',
     'Return one rewrite per item, keyed by its exact id.',
     'Keep every fact — never add one. Do not restate the date/time/location line-for-line if the blurb flows better without it; the layout shows those separately.',
+    'A short original stays short. Do not add a closing sentence about who would find the item useful; the examples that end that way carry a fact from the source, not a comment.',
     'Examples of the voice:',
     exampleBlock(),
     '',

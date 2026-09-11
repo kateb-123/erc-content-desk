@@ -88,3 +88,14 @@ test('normalizeRewrites drops unknown ids and empty blurbs', () => {
 test('parseRewrites rejects prose', () => {
   assert.throws(() => parseRewrites('nope'), /valid JSON/);
 });
+
+test('the voice caps a blurb at 70 words with no floor, and bans the who-would-find-this-useful tail (F21)', async () => {
+  const { ERC_VOICE } = await import('../api/_lib/voice.js');
+  assert.doesNotMatch(ERC_VOICE, /40 to 70 words/);
+  assert.match(ERC_VOICE, /at most 70 words/);
+  assert.match(ERC_VOICE, /short original stays short/i);
+  assert.match(ERC_VOICE, /Never add a sentence about who would find it useful/);
+  assert.doesNotMatch(REWRITE_SCHEMA.properties.rewrites.items.properties.blurb.description, /40-70/);
+  const prompt = buildRewritePrompt([{ id: 'a', headline: 'T', type: 'research', subtype: 'Report', blurb: 'Seventeen words of abstract.' }]);
+  assert.match(prompt, /A short original stays short/);
+});
