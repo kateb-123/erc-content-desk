@@ -410,8 +410,9 @@ export function renderSort(container, props) {
   if (linkState === 'alert') blockers.push('check the link');
   if (blockers.length) {
     // The card already says what's open (alert line, type prompt) — no
-    // second sentence. Keep/Skip just stay locked until it's fixed.
-    for (const b of [keepBtn, circleBtn]) b.disabled = true;
+    // second sentence. Keep stays locked until it's fixed; Skip only parks
+    // the card, so it always works (Kate, Sep 10, usability run F4).
+    keepBtn.disabled = true;
   }
   // Carousel: arrows flank the card (the card's own 1/2 counter tracks the
   // position). Browsing never decides anything — the card only changes state via
