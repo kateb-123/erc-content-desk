@@ -69,6 +69,13 @@ look, everywhere it appears.
 | **Upload media** → Replace / Remove media | — | quiet outline button + muted Remove word | attach a picture or PDF flyer to an item (ERC cards in Sort; newsletter items in the builder) — the URL rides the row’s infographic column into the email |
 | **Send early? → Confirm / Cancel** | fa-clock on the bubble | amber bubble, one ask (same as Verify link) | picking an event that belongs to a later issue — the words stay bare, the bubble carries the icon |
 | Door buttons (Go to Finalize/Publish, Send to newsletter) | → `fa-arrow-right` | slim primary (.85rem, .35rem padding), right of the screen head | move along the pipeline |
+| **Keep the rest (N)** | ✓ `fa-check` | the ONE filled button on Sort's headline list, right of the list head | keep every listed headline whose link is checked; Skip and Delete on each row are the only other actions there (Sep 11) |
+
+Sort's headline list (Sep 11): headlines are a title and a link, so under the
+Headlines pill they sort as a table, not cards. Each row: chevron, title with
+source · date, subtype, Skip · Delete. A chevron opens Finalize's white detail
+card in place (description, type + Change, Open source, Edit). Decided rows
+sink to the bottom, greyed (deleted ones struck through) with Undo.
 
 Placement grammar: tools (Edit) pair with Delete far LEFT of a card footer; the
 decision pair (secondary then primary) sits RIGHT; the position counter sits alone

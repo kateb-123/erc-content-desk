@@ -240,8 +240,9 @@ function renderHeadlineList(main, props) {
     main.append(el('p', 'empty', readerQueue(rows).length ? 'New items are being read.' : 'Nothing to sort.'));
     return;
   }
-  main.append(el('p', 'hint headline-hint', live.length
+  main.append(el('p', 'hint headline-hint', keepable.length
     ? 'Everything here is kept unless you drop it. Delete what does not belong, Skip what you are not sure about, then Keep the rest.'
+    : live.length ? 'What is left needs its link checked before it can be kept. Open the row to do that.'
     : 'All sorted.'));
 
   const dupes = duplicateFlags(rows);

@@ -373,3 +373,10 @@
 "Picture: [title]"
 "Submit Your Research for an ERC Research Brief →"
 "Working on research that could reach a broader audience? The ERC is accepting submissions for a research brief or other public-facing product — share a recent publication or working paper."
+
+"Keep the rest (N)"
+"Everything here is kept unless you drop it. Delete what does not belong, Skip what you are not sure about, then Keep the rest."
+"What is left needs its link checked before it can be kept. Open the row to do that."
+"No description. A headline can go without one."
+"Link needs a check"
+"Deleted" · "Skipped" · "Kept" (sunk rows of the headline list, each with "Undo")
