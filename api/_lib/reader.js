@@ -12,11 +12,18 @@ import {
   EXTRACT_MODEL, EXTRACTION_SCHEMA, CLEAN_TYPES,
   buildExtractionPrompt, parseExtraction, normalizeExtraction,
 } from './extract.js';
+import { doiFromUrl } from './crossref.js';
 
-export async function readRow(row, { fetchPage, extract }) {
+export async function readRow(row, { fetchPage, extract, lookupDoi }) {
   let pageText = '';
   if (row.link) {
     try { pageText = await fetchPage(row.link); } catch { pageText = ''; }
+    // A publisher that turns the reader away still has a DOI: Crossref knows
+    // the title, authors, date, and journal from that alone (F12).
+    const doi = !pageText && lookupDoi ? doiFromUrl(row.link) : '';
+    if (doi) {
+      try { pageText = await lookupDoi(doi); } catch { pageText = ''; }
+    }
   }
   let next = row.link ? { ...row, link_checked: linkCheckedFromFetch(pageText) } : { ...row };
   let read = normalizeExtraction(await extract(next, pageText), next);

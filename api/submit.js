@@ -12,6 +12,7 @@ import { waitUntil } from '@vercel/functions';
 import { buildSubmission, validateSubmission } from '../js/intake.js';
 import { fetchPageText } from './_lib/fetch-page.js';
 import { readRow, extractWithClaude } from './_lib/reader.js';
+import { crossrefText } from './_lib/crossref.js';
 import { appendRow, updateRow, readAllRows } from './_lib/store.js';
 import { setCors } from './_lib/cors.js';
 import { checkRequest } from './_lib/turnstile.js';
@@ -86,7 +87,7 @@ const extract = extractWithClaude(anthropic);
 export default createSubmitHandler({
   appendRow,
   updateRow,
-  readRow: row => readRow(row, { fetchPage: fetchPageText, extract }),
+  readRow: row => readRow(row, { fetchPage: fetchPageText, extract, lookupDoi: crossrefText }),
   currentRow: async id => (await readAllRows()).find(r => r.id === id),
   defer: waitUntil,
   checkRequest,

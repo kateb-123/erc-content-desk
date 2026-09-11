@@ -8,6 +8,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { fetchPageText } from './_lib/fetch-page.js';
 import { readRow, extractWithClaude } from './_lib/reader.js';
+import { crossrefText } from './_lib/crossref.js';
 import { readAllRows, updateRow } from './_lib/store.js';
 import { runPool } from '../js/pool.js';
 
@@ -58,5 +59,5 @@ const extract = extractWithClaude(anthropic);
 export default createReadHandler({
   readAllRows,
   updateRow,
-  readRow: row => readRow(row, { fetchPage: fetchPageText, extract }),
+  readRow: row => readRow(row, { fetchPage: fetchPageText, extract, lookupDoi: crossrefText }),
 });
