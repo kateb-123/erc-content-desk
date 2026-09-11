@@ -8,16 +8,16 @@ import { duplicateFlags, linkCheckState, reshareFlags, missingFields } from './w
 import { TYPE_ORDER, TYPE_LABELS, subtypesFor, isValidSubtype, typeIsFlat } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref, withScheme } from './links.js';
-import { sortStream, sortCounts, streamFrom, sectionOf, isErc, readerQueue, dupeBadgeText, isNewToday, headlineRows } from './sort-view.js';
+import { sortStream, sortCounts, streamFrom, sectionOf, isErc, readerQueue, dupeBadgeText, isNewToday, sectionRows } from './sort-view.js';
 import { buildImageControl } from './item-image.js';
 import { titleWithInfo } from './screen-info.js';
 import { faIcon, forwardIcon } from './icons.js';
 
 let editOpenId = null;   // sort card with its inline edit open (view state)
-// The headline list's view state: which row is expanded, and which of its
+// The section list's view state: which row is expanded, and which of its
 // detail panels (edit form, type picker) is open.
-let openHeadlineId = null;
-let headlinePanel = null;   // 'edit' | 'type' | null
+let openListId = null;
+let listPanel = null;   // 'edit' | 'type' | null
 
 const FILTER_LABELS = [
   // 'Needs a type', not 'To review': it counts only untyped items, and a
@@ -52,7 +52,7 @@ function el(tag, className, text) {
 }
 
 /** The inline editor (Title, Description, Link, and Media on ERC items). Shared by
- *  the card and the headline list, so a field never exists in only one place.
+ *  the card and the section list, so a field never exists in only one place.
  *  `read` returns what is typed, for a decision to carry (Kate, Sep 9). */
 function buildEditForm(row, { onSave, onCancel }) {
     const form = el('div', 'sort-edit');
@@ -97,7 +97,7 @@ function buildEditForm(row, { onSave, onCancel }) {
 }
 
 /** The type and subtype chips. Tapping the subtype is the save; a flat type
- *  (ERC Event) saves on the type tap. Shared by the card and the headline list. */
+ *  (ERC Event) saves on the type tap. Shared by the card and the section list. */
 function buildTypePicker(row, onCommit) {
     const fix = el('div', 'type-pick');
   fix.append(el('p', 'pick-label', 'Select a type'));
@@ -144,7 +144,7 @@ function buildTypePicker(row, onCommit) {
 }
 
 /** The amber Verify-link ask: open the source, then Confirm or Change. Shared by
- *  the card and the headline list. onVerify(newLink?) records the outcome. */
+ *  the card and the section list. onVerify(newLink?) records the outcome. */
 function buildLinkAlert(row, href, onVerify) {
     // One amber line. "check it" opens the source; only after she's been
   // there does "it works" appear — opening IS the verification (Kate, Sep 1).
@@ -210,22 +210,26 @@ function buildLinkAlert(row, href, onVerify) {
 
 /** One decision for the whole page: Keep the rest. Rows with an unchecked
  *  link stay out of it, as the card keeps its Keep locked for the same reason. */
-function renderHeadlineList(main, props) {
-  const { rows, sessionDecided = new Set(), lastDecision, onUndo, onDecide, onKeepAll, onUndoRow } = props;
-  const rerender = () => renderHeadlineList(main, props);
-  main.replaceChildren();
-  const { live, done } = headlineRows(rows, sessionDecided);
-  const keepable = live.filter(r => linkCheckState(r) !== 'alert');
+const needsType = row => !row.type || !isValidSubtype(row.type, row.subtype);
 
-  const head = el('div', 'headline-head');
-  head.append(el('p', 'sort-group', 'Headlines'));
+function renderSectionList(main, props, section) {
+  const { rows, sessionDecided = new Set(), lastDecision, onUndo, onKeepAll, onUndoRow } = props;
+  const rerender = () => renderSectionList(main, props, section);
+  main.replaceChildren();
+  const { live, done } = sectionRows(rows, section, sessionDecided);
+  // Out of Keep the rest for the reasons the card locks Keep: an unchecked
+  // link, or no real type yet. Their rows say so.
+  const keepable = live.filter(r => linkCheckState(r) !== 'alert' && !needsType(r));
+
+  const head = el('div', 'list-head');
+  head.append(el('p', 'sort-group', FILTER_LABELS.find(([k]) => k === section)?.[1] ?? section));
   const undo = el('button', 'undo-link', 'Undo last');
   undo.type = 'button';
   undo.disabled = !lastDecision;
   undo.addEventListener('click', () => onUndo());
   head.append(undo);
   if (keepable.length) {
-    const keepBtn = el('button', 'primary headline-keep', ` Keep the rest (${keepable.length})`);
+    const keepBtn = el('button', 'primary list-keep', ` Keep the rest (${keepable.length})`);
     keepBtn.type = 'button';
     keepBtn.prepend(faIcon('check'));
     keepBtn.addEventListener('click', () => {
@@ -240,26 +244,27 @@ function renderHeadlineList(main, props) {
     main.append(el('p', 'empty', readerQueue(rows).length ? 'New items are being read.' : 'Nothing to sort.'));
     return;
   }
-  main.append(el('p', 'hint headline-hint', keepable.length
+  main.append(el('p', 'hint list-hint', keepable.length
     ? 'Everything here is kept unless you drop it. Delete what does not belong, Skip what you are not sure about, then Keep the rest.'
-    : live.length ? 'What is left needs its link checked before it can be kept. Open the row to do that.'
+    : live.length ? 'What is left needs a type or a link check before it can be kept. Open the row to do that.'
     : 'All sorted.'));
 
   const dupes = duplicateFlags(rows);
   const reshare = reshareFlags(rows, props.today ?? '');
-  const table = el('table', 'queue-table headline-list');
+  const table = el('table', 'queue-table sort-list');
   const body = el('tbody');
-  for (const row of live) body.append(...headlineLiveRow(row, { props, rerender, dupes, reshare }));
-  for (const row of done) body.append(headlineDoneRow(row, onUndoRow));
+  for (const row of live) body.append(...listLiveRow(row, { props, rerender, dupes, reshare }));
+  for (const row of done) body.append(listDoneRow(row, onUndoRow));
   table.append(body);
   const scroll = el('div', 'table-scroll');
   scroll.append(table);
   main.append(scroll);
 }
 
-function headlineBadges(row, { rows, dupes, reshare, today }) {
+function listBadges(row, { rows, dupes, reshare, today }) {
   const out = [];
   if (isNewToday(row, today)) out.push(el('span', 'badge badge-new', 'New'));
+  if (row.spotlight_request) out.push(el('span', 'badge badge-star', 'Spotlight requested'));
   if (row.submitter_email) out.push(el('span', 'badge', 'External submission'));
   if (reshare.has(row.id)) out.push(el('span', 'badge', 'In a past issue'));
   else if (dupes.has(row.id)) {
@@ -269,35 +274,38 @@ function headlineBadges(row, { rows, dupes, reshare, today }) {
   return out;
 }
 
-function headlineLiveRow(row, { props, rerender, dupes, reshare }) {
-  const open = openHeadlineId === row.id;
-  const tr = el('tr', `headline-row${open ? ' is-open' : ''}`);
+function listLiveRow(row, { props, rerender, dupes, reshare }) {
+  const open = openListId === row.id;
+  const tr = el('tr', `list-row${open ? ' is-open' : ''}`);
   const disableRow = () => { for (const x of tr.querySelectorAll('button')) x.disabled = true; };
 
-  const chevTd = el('td', 'headline-chev');
+  const chevTd = el('td', 'list-chev');
   const chev = el('button', 'chevron-btn');
   chev.type = 'button';
   chev.setAttribute('aria-expanded', String(open));
   chev.setAttribute('aria-label', open ? 'Hide details' : 'Show details');
   chev.append(faIcon(open ? 'chevron-up' : 'chevron-down'));
-  chev.addEventListener('click', () => { openHeadlineId = open ? null : row.id; headlinePanel = null; rerender(); });
+  chev.addEventListener('click', () => { openListId = open ? null : row.id; listPanel = null; rerender(); });
   chevTd.append(chev);
 
   const titleTd = el('td');
-  const badges = headlineBadges(row, { rows: props.rows, dupes, reshare, today: props.today });
-  if (badges.length) { const wrap = el('div', 'headline-badges'); wrap.append(...badges); titleTd.append(wrap); }
+  const badges = listBadges(row, { rows: props.rows, dupes, reshare, today: props.today });
+  if (badges.length) { const wrap = el('div', 'list-badges'); wrap.append(...badges); titleTd.append(wrap); }
   titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
-  const meta = [row.source, row.date && isoToDisplay(row.date)].filter(Boolean).join(' · ');
+  const meta = listMeta(row);
   if (meta) titleTd.append(el('span', 'item-source', meta));
+  // Two lines of the description, so a paper or an event is read before it is
+  // kept (option A); the chevron opens the rest.
+  if (row.blurb) titleTd.append(el('p', 'list-desc', row.blurb));
 
-  const whereTd = el('td', 'headline-where');
+  const whereTd = el('td', 'list-where');
   whereTd.append(row.subtype || '');
-  if (linkCheckState(row) === 'alert') {
-    const mark = el('span', 'badge badge-dupe', 'Link needs a check');
-    whereTd.append(whereTd.childNodes.length ? ' ' : '', mark);
-  }
+  const marks = [];
+  if (needsType(row)) marks.push(el('span', 'badge badge-dupe', 'Needs a type'));
+  if (linkCheckState(row) === 'alert') marks.push(el('span', 'badge badge-dupe', 'Link needs a check'));
+  for (const m of marks) whereTd.append(whereTd.childNodes.length ? ' ' : '', m);
 
-  const actTd = el('td', 'queue-actions headline-actions');
+  const actTd = el('td', 'queue-actions list-actions');
   const skip = el('button', 'linkish', 'Skip');
   skip.type = 'button';
   skip.addEventListener('click', () => { disableRow(); onDecideRow('circleback'); });
@@ -310,36 +318,39 @@ function headlineLiveRow(row, { props, rerender, dupes, reshare }) {
 
   tr.append(chevTd, titleTd, whereTd, actTd);
   if (!open) return [tr];
-  const dtr = el('tr', 'headline-detail-row');
+  const dtr = el('tr', 'list-detail-row');
   const dtd = el('td');
   dtd.colSpan = 4;
-  dtd.append(headlineDetail(row, { props, rerender }));
+  dtd.append(listDetail(row, { props, rerender }));
   dtr.append(dtd);
   return [tr, dtr];
 }
 
 /** The expanded row: Finalize's white detail card, with the card's own
  *  edit form, type picker, and link alert inside it. */
-function headlineDetail(row, { props, rerender }) {
-  const box = el('div', 'f-detail headline-detail');
+function listDetail(row, { props, rerender }) {
+  const box = el('div', 'f-detail list-detail');
   const lock = () => { for (const x of box.querySelectorAll('button')) x.disabled = true; };
-  if (headlinePanel === 'edit') {
+  if (listPanel === 'edit') {
     const form = buildEditForm(row, {
-      onSave: changes => { lock(); headlinePanel = null; props.onEditRow?.(row, changes); },
-      onCancel: () => { headlinePanel = null; rerender(); },
+      onSave: changes => { lock(); listPanel = null; props.onEditRow?.(row, changes); },
+      onCancel: () => { listPanel = null; rerender(); },
     });
     box.append(form.el);
     return box;
   }
   box.append(row.blurb
     ? el('p', 'f-blurb-text', row.blurb)
-    : el('p', 'f-blurb-text is-quiet', 'No description. A headline can go without one.'));
+    : el('p', 'f-blurb-text is-quiet', row.type === 'headline' ? 'No description. A headline can go without one.' : 'No description yet.'));
+  if (row.note) box.append(el('p', 'item-note', `Note: ${row.note}`));
+  for (const note of buildCardNotes(row)) box.append(note);
+  const pickOpen = listPanel === 'type' || needsType(row);
   const line = el('p', 'type-line');
-  line.append(el('span', 'type-label', [TYPE_LABELS[row.type] ?? row.type, row.subtype].filter(Boolean).join(' · ')));
-  if (headlinePanel !== 'type') {
+  if (row.type) line.append(el('span', 'type-label', [TYPE_LABELS[row.type] ?? row.type, row.subtype].filter(Boolean).join(' · ')));
+  if (!pickOpen) {
     const change = el('button', 'linkish', 'Change');
     change.type = 'button';
-    change.addEventListener('click', () => { headlinePanel = 'type'; rerender(); });
+    change.addEventListener('click', () => { listPanel = 'type'; rerender(); });
     line.append(' ', change);
   }
   const href = safeHref(row.link);
@@ -352,8 +363,8 @@ function headlineDetail(row, { props, rerender }) {
     .filter(Boolean).join(', ');
   if (from) line.append(' · ', el('span', 'item-source', from));
   box.append(line);
-  if (headlinePanel === 'type') {
-    box.append(buildTypePicker(row, (type, subtype) => { lock(); headlinePanel = null; props.onEditType?.(row, type, subtype); }));
+  if (pickOpen) {
+    box.append(buildTypePicker(row, (type, subtype) => { lock(); listPanel = null; props.onEditType?.(row, type, subtype); }));
   }
   if (linkCheckState(row) === 'alert') {
     box.append(buildLinkAlert(row, href, newLink => { lock(); props.onVerifyLink?.(row, newLink); }));
@@ -362,7 +373,7 @@ function headlineDetail(row, { props, rerender }) {
   const edit = el('button', 'linkish edit-link', ' Edit');
   edit.type = 'button';
   edit.prepend(faIcon('pen'));
-  edit.addEventListener('click', () => { headlinePanel = 'edit'; rerender(); });
+  edit.addEventListener('click', () => { listPanel = 'edit'; rerender(); });
   acts.append(edit);
   box.append(acts);
   return box;
@@ -370,15 +381,25 @@ function headlineDetail(row, { props, rerender }) {
 
 const DONE_WORDS = { trashed: 'Deleted', circleback: 'Skipped', kept: 'Kept' };
 
-function headlineDoneRow(row, onUndoRow) {
-  const tr = el('tr', `headline-row is-done is-${row.status}`);
-  tr.append(el('td', 'headline-chev'));
+/** Who wrote it or where it ran, and when: the card's meta line, one row wide. */
+function listMeta(row) {
+  return [
+    row.authors || row.source,
+    row.date && isoToDisplay(row.date),
+    row.deadline && `due ${isoToDisplay(row.deadline)}`,
+    row.time, row.location,
+  ].filter(Boolean).join(' · ');
+}
+
+function listDoneRow(row, onUndoRow) {
+  const tr = el('tr', `list-row is-done is-${row.status}`);
+  tr.append(el('td', 'list-chev'));
   const titleTd = el('td');
   titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
-  const meta = [row.source, row.date && isoToDisplay(row.date)].filter(Boolean).join(' · ');
+  const meta = listMeta(row);
   if (meta) titleTd.append(el('span', 'item-source', meta));
-  tr.append(titleTd, el('td', 'headline-where', row.subtype || ''));
-  const actTd = el('td', 'queue-actions headline-actions');
+  tr.append(titleTd, el('td', 'list-where', row.subtype || ''));
+  const actTd = el('td', 'queue-actions list-actions');
   actTd.append(el('span', 'queue-gone', DONE_WORDS[row.status] ?? row.status));
   const undo = el('button', 'linkish', 'Undo');
   undo.type = 'button';
@@ -386,6 +407,37 @@ function headlineDoneRow(row, onUndoRow) {
   actTd.append(undo);
   tr.append(actTd);
   return tr;
+}
+
+/** Two quiet notes, only when the reader came up short: missing fields, and the
+ *  not-sure flag. Neither blocks Keep (Kate, Sep 9). Shared by the card and the list. */
+function buildCardNotes(row) {
+  const notes = [];
+  // Two quiet notes, only when the reader came up short. Neither blocks Keep —
+  // Kate decides whether to go find the detail or bin the item (Sep 9).
+  const FIELD_WORDS = { date: 'date', time: 'time', location: 'location', deadline: 'deadline', authors: 'authors', medium: 'outlet' };
+  const missing = missingFields(row);
+  if (missing.length) {
+    const note = el('p', 'card-note');
+    note.append(faIcon('circle-question'));
+    // Says what to do and, when the page could not be read, why (F7).
+    const words = missing.map(f => FIELD_WORDS[f] ?? f).join(', ');
+    const them = missing.length === 1 && missing[0] !== 'authors' ? 'it' : 'them';
+    const why = row.link_checked === 'failed' ? " — the desk couldn't read the page" : '';
+    note.append(` No ${words} yet${why}. Add ${them} in Finalize.`);
+    notes.push(note);
+  }
+  if (String(row.needs_review ?? '').trim()) {
+    const note = el('p', 'card-note');
+    note.append(faIcon('circle-question'));
+    const filled = String(row.auto_filled ?? '').split(',').map(f => f.trim()).filter(Boolean);
+    note.append(filled.length
+      ? ` The reader wasn't sure about this one — check what it filled in: ${filled.join(', ')}`
+      : " The reader wasn't sure about this one — check its fields");
+    notes.push(note);
+  }
+
+  return notes;
 }
 
 export function renderSort(container, props) {
@@ -438,10 +490,10 @@ export function renderSort(container, props) {
   }
   lastFilter = filter;
 
-  // Headlines are a title and a link, so they sort as a list: drop what does
-  // not belong, then keep the rest in one press (Kate, Sep 11, option 5b).
-  if (filter === 'headline') {
-    renderHeadlineList(main, props);
+  // Every section pill sorts as a list: drop what does not belong, then keep
+  // the rest in one press (Kate, Sep 11). All keeps the one-card stream.
+  if (filter) {
+    renderSectionList(main, props, filter);
     return;
   }
 
@@ -575,29 +627,7 @@ export function renderSort(container, props) {
     }));
   }
 
-  // Two quiet notes, only when the reader came up short. Neither blocks Keep —
-  // Kate decides whether to go find the detail or bin the item (Sep 9).
-  const FIELD_WORDS = { date: 'date', time: 'time', location: 'location', deadline: 'deadline', authors: 'authors', medium: 'outlet' };
-  const missing = missingFields(row);
-  if (missing.length) {
-    const note = el('p', 'card-note');
-    note.append(faIcon('circle-question'));
-    // Says what to do and, when the page could not be read, why (F7).
-    const words = missing.map(f => FIELD_WORDS[f] ?? f).join(', ');
-    const them = missing.length === 1 && missing[0] !== 'authors' ? 'it' : 'them';
-    const why = row.link_checked === 'failed' ? " — the desk couldn't read the page" : '';
-    note.append(` No ${words} yet${why}. Add ${them} in Finalize.`);
-    fileRow.append(note);
-  }
-  if (String(row.needs_review ?? '').trim()) {
-    const note = el('p', 'card-note');
-    note.append(faIcon('circle-question'));
-    const filled = String(row.auto_filled ?? '').split(',').map(f => f.trim()).filter(Boolean);
-    note.append(filled.length
-      ? ` The reader wasn't sure about this one — check what it filled in: ${filled.join(', ')}`
-      : " The reader wasn't sure about this one — check its fields");
-    fileRow.append(note);
-  }
+  for (const note of buildCardNotes(row)) fileRow.append(note);
 
   if (fixOpen) {
     fileRow.append(buildTypePicker(row, (type, subtype) => {

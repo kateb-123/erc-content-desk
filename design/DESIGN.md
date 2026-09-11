@@ -69,13 +69,17 @@ look, everywhere it appears.
 | **Upload media** → Replace / Remove media | — | quiet outline button + muted Remove word | attach a picture or PDF flyer to an item (ERC cards in Sort; newsletter items in the builder) — the URL rides the row’s infographic column into the email |
 | **Send early? → Confirm / Cancel** | fa-clock on the bubble | amber bubble, one ask (same as Verify link) | picking an event that belongs to a later issue — the words stay bare, the bubble carries the icon |
 | Door buttons (Go to Finalize/Publish, Send to newsletter) | → `fa-arrow-right` | slim primary (.85rem, .35rem padding), right of the screen head | move along the pipeline |
-| **Keep the rest (N)** | ✓ `fa-check` | the ONE filled button on Sort's headline list, right of the list head | keep every listed headline whose link is checked; Skip and Delete on each row are the only other actions there (Sep 11) |
+| **Keep the rest (N)** | ✓ `fa-check` | the ONE filled button on a Sort section list, right of the list head | keep every listed row that has a real type and a checked link; Skip and Delete on each row are the only other actions there (Sep 11) |
 
-Sort's headline list (Sep 11): headlines are a title and a link, so under the
-Headlines pill they sort as a table, not cards. Each row: chevron, title with
-source · date, subtype, Skip · Delete. A chevron opens Finalize's white detail
-card in place (description, type + Change, Open source, Edit). Decided rows
-sink to the bottom, greyed (deleted ones struck through) with Undo.
+Sort's section lists (Sep 11, Kate's option A): every section pill (Needs a
+type, ERC, ERC events, Research, Events, Opportunities, Headlines) sorts as a
+table, not cards; only All keeps the one-card stream. Each row: chevron, title
+with authors or source · date, the first two lines of the description, subtype
+(with an amber "Needs a type" or "Link needs a check" mark when it applies),
+Skip · Delete. A chevron opens Finalize's white detail card in place
+(description, notes, type + Change or the picker itself when a type is missing,
+Open source, the link alert, Edit). Decided rows sink to the bottom, greyed
+(deleted ones struck through) with Undo.
 
 Placement grammar: tools (Edit) pair with Delete far LEFT of a card footer; the
 decision pair (secondary then primary) sits RIGHT; the position counter sits alone

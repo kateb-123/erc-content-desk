@@ -376,7 +376,7 @@
 
 "Keep the rest (N)"
 "Everything here is kept unless you drop it. Delete what does not belong, Skip what you are not sure about, then Keep the rest."
-"What is left needs its link checked before it can be kept. Open the row to do that."
-"No description. A headline can go without one."
-"Link needs a check"
+"What is left needs a type or a link check before it can be kept. Open the row to do that."
+"No description. A headline can go without one." · "No description yet."
+"Link needs a check" · "Needs a type"
 "Deleted" · "Skipped" · "Kept" (sunk rows of the headline list, each with "Undo")

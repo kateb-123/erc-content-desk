@@ -126,14 +126,18 @@ export function isNewToday(row, today) {
 }
 
 /**
- * The headline list (Kate, Sep 11): pending headlines in stream order, then
- * the ones decided this session at the bottom, greyed, so a mistake stays in
- * reach. Headlines flagged for ERC belong to the ERC section, not here.
+ * A section as a list (Kate, Sep 11, option A): its pending rows in stream
+ * order, then the ones decided this session at the bottom, greyed, so a
+ * mistake stays in reach. Needs a type also lists kept rows that lost their
+ * type, since typing is their fix.
  */
-export function headlineRows(rows, sessionDecided = new Set()) {
-  const here = rows.filter(r => sectionOf(r) === 'headline' && !awaitingReader(r));
+export function sectionRows(rows, section, sessionDecided = new Set()) {
+  const here = rows.filter(r => sectionOf(r) === section && !awaitingReader(r));
+  const fixups = section === 'untyped' ? keptUntyped(rows) : [];
+  const live = [...here.filter(r => r.status === 'new'), ...fixups].sort(oldestFirst);
+  const seen = new Set();
   return {
-    live: here.filter(r => r.status === 'new').sort(oldestFirst),
+    live: live.filter(r => !seen.has(r.id) && seen.add(r.id)),
     done: here.filter(r => r.status !== 'new' && sessionDecided.has(r.id)).sort(oldestFirst),
   };
 }

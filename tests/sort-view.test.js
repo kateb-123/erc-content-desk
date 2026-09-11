@@ -158,8 +158,8 @@ test('isNewToday marks what was submitted today, by the same UTC date the desk u
   assert.equal(isNewToday({ submitted_at: '2026-09-10T01:00:00Z' }, ''), false);
 });
 
-test('headlineRows: pending headlines oldest first, this session\'s decided ones at the bottom, nothing else', async () => {
-  const { headlineRows } = await import('../js/sort-view.js');
+test('sectionRows: a section\'s pending rows oldest first, this session\'s decided ones at the bottom, nothing else', async () => {
+  const { sectionRows } = await import('../js/sort-view.js');
   const rs = [
     { id: 'h2', status: 'new', type: 'headline', submitted_at: '2026-09-10T10:00:00Z' },
     { id: 'gone', status: 'trashed', type: 'headline', submitted_at: '2026-09-09T10:00:00Z' },
@@ -171,7 +171,19 @@ test('headlineRows: pending headlines oldest first, this session\'s decided ones
     { id: 'erc', status: 'new', type: 'headline', spotlight_request: true, submitted_at: '2026-09-05T10:00:00Z' },
     { id: 'ev', status: 'new', type: 'event', submitted_at: '2026-09-05T10:00:00Z' },
   ];
-  const { live, done } = headlineRows(rs, new Set(['gone', 'kept', 'parked']));
+  const { live, done } = sectionRows(rs, 'headline', new Set(['gone', 'kept', 'parked']));
   assert.deepEqual(live.map(r => r.id), ['h1', 'h2']);
   assert.deepEqual(done.map(r => r.id), ['parked', 'kept', 'gone']);
+  assert.deepEqual(sectionRows(rs, 'erc').live.map(r => r.id), ['erc']);
+  assert.deepEqual(sectionRows(rs, 'event').live.map(r => r.id), ['ev']);
+});
+
+test('sectionRows for Needs a type also lists kept rows that lost their type, since typing is their fix', async () => {
+  const { sectionRows } = await import('../js/sort-view.js');
+  const rs = [
+    { id: 'u1', status: 'new', type: '', submitted_at: '2026-09-10T10:00:00Z' },
+    { id: 'k1', status: 'kept', type: 'legacy-type', submitted_at: '2026-09-09T10:00:00Z' },
+    { id: 'ok', status: 'new', type: 'event', submitted_at: '2026-09-08T10:00:00Z' },
+  ];
+  assert.deepEqual(sectionRows(rs, 'untyped').live.map(r => r.id), ['k1', 'u1']);
 });
