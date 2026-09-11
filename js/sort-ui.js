@@ -8,7 +8,7 @@ import { duplicateFlags, linkCheckState, reshareFlags, missingFields } from './w
 import { TYPE_ORDER, TYPE_LABELS, subtypesFor, isValidSubtype } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref, withScheme } from './links.js';
-import { sortStream, sortCounts, streamFrom, sectionOf, isErc } from './sort-view.js';
+import { sortStream, sortCounts, streamFrom, sectionOf, isErc, readerQueue } from './sort-view.js';
 import { buildImageControl } from './item-image.js';
 import { titleWithInfo } from './screen-info.js';
 import { faIcon, forwardIcon } from './icons.js';
@@ -96,7 +96,8 @@ export function renderSort(container, props) {
   lastFilter = filter;
 
   if (!visible.length) {
-    main.append(el('p', 'empty', sortedCount ? 'All sorted.' : 'Nothing to sort.'));
+    const waiting = readerQueue(rows).length;
+    main.append(el('p', 'empty', waiting ? 'New items are being read.' : sortedCount ? 'All sorted.' : 'Nothing to sort.'));
     const undo = el('button', 'undo-link', 'Undo');
     undo.type = 'button';
     undo.disabled = !lastDecision;          // always here, live only when there's something to undo

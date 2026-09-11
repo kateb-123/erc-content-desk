@@ -1,5 +1,7 @@
 /** Entry point. Owns all state; screens are pure renderers. */
-import { fetchDesk, saveRows } from './sheet-client.js';
+import { fetchDesk, saveRows, readNewRows } from './sheet-client.js';
+import { readAllWaiting } from './reader-client.js';
+import { readerQueue } from './sort-view.js';
 import { dotsLoader, loadingLabel } from './icons.js';
 import { renderHome } from './home-ui.js';
 import { renderSort } from './sort-ui.js';
@@ -182,8 +184,25 @@ function decide(row, action, note = '') {
   change([next], { decision: true });   // next card shows now; the write drains behind it
 }
 
+// Rows still waiting for the reader are read before Sort shows a card: the
+// background read after submit is best-effort, this makes it certain. The
+// screen switches at once; the status bar carries the wait.
+async function readBeforeSort() {
+  const ids = readerQueue(state.rows);
+  if (!ids.length) return;
+  setStatus(`Reading ${ids.length} new item${ids.length === 1 ? '' : 's'}…`);
+  try {
+    const { failed } = await readAllWaiting(ids, readNewRows);
+    await reload();
+    if (failed) setStatus(`${failed} new item${failed === 1 ? '' : 's'} couldn't be read yet. Reload to try again.`, 'error');
+  } catch (err) {
+    setStatus(err.message, 'error');
+  }
+}
+
 function goTo(key) {
   if (key !== state.screen) setStatus('');   // last screen's message doesn't follow
+  if (key === 'sort' && state.screen !== 'sort') readBeforeSort();
   if (key === 'finalize' && state.screen !== 'finalize') resetFinalizeEntry();
   if (key === 'build' && state.screen !== 'build') { resetNewsletterEntry(); state.justSent = null; }
   if (key === 'publish' && state.screen !== 'publish') {

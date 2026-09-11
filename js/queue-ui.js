@@ -39,7 +39,9 @@ function bodyRow(row, { onDelete, rerender }) {
   const gone = justDeleted.has(row.id);
   const tr = el('tr', `queue-row${gone ? ' is-deleted' : ''}`);
   tr.append(titleCell(row));
-  tr.append(el('td', row.type ? '' : 'missing', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
+  // A row the reader has not filed yet says so; its type is not settled.
+  if (row.pending_read === 'yes') tr.append(el('td', 'missing', 'Reading…'));
+  else tr.append(el('td', row.type ? '' : 'missing', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
   tr.append(el('td', '', submittedDate(row)));
 
   const actions = el('td', 'queue-actions');

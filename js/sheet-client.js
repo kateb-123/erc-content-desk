@@ -17,6 +17,20 @@ export async function fetchDesk() {
   }
 }
 
+/** POST /api/read: the reader's catch-up over the given waiting rows. */
+export async function readNewRows(ids) {
+  try {
+    return await json(await fetch('/api/read', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+    }));
+  } catch (err) {
+    if (err instanceof TypeError) throw new Error("Couldn't reach the server. Check your connection.");
+    throw err;
+  }
+}
+
 export async function saveRows(rows) {
   if (!rows.length) return 0;
   try {
