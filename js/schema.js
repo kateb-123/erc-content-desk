@@ -117,6 +117,11 @@ export function isValidType(type) {
   return Object.prototype.hasOwnProperty.call(TYPES, type);
 }
 
+/** A real type with no subtypes (ERC Event): picking it needs no second step. */
+export function typeIsFlat(type) {
+  return isValidType(type) && subtypesFor(type).length === 0;
+}
+
 /** A type with no subtypes (ERC Event) is valid with a blank subtype and only
  *  a blank one; every other type still requires a real pick. */
 export function isValidSubtype(type, subtype) {

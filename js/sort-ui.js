@@ -5,7 +5,7 @@
  * section row is a jump point; the type pickers hide behind "change".
  */
 import { duplicateFlags, linkCheckState, reshareFlags, missingFields } from './workflow.js';
-import { TYPE_ORDER, TYPE_LABELS, subtypesFor, isValidSubtype } from './schema.js';
+import { TYPE_ORDER, TYPE_LABELS, subtypesFor, isValidSubtype, typeIsFlat } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref, withScheme } from './links.js';
 import { sortStream, sortCounts, streamFrom, sectionOf, isErc, readerQueue, dupeBadgeText, isNewToday } from './sort-view.js';
@@ -376,6 +376,9 @@ export function renderSort(container, props) {
         b.type = 'button';
         b.addEventListener('click', () => {
           if (pickedType !== t) { pickedType = t; pickedSub = ''; }
+          // ERC Event has no subtype, so the type tap is the save; the card
+          // used to wait for a subtype that does not exist (Kate, Sep 10).
+          if (typeIsFlat(t)) { commit(); return; }
           renderTypes(); renderSubs();
         });
         return b;

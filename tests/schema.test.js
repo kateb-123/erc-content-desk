@@ -140,3 +140,11 @@ test('pending_read is the last column, so the Sheet mirror gains a column instea
   assert.equal(WORKFLOW_COLUMNS.at(-1), 'pending_read');
   assert.equal(blankRow().pending_read, '');
 });
+
+test('a flat type (ERC Event) has no subtype step: picking the type is the whole pick', async () => {
+  const { typeIsFlat } = await import('../js/schema.js');
+  assert.equal(typeIsFlat('erc_event'), true);
+  assert.equal(typeIsFlat('event'), false);
+  assert.equal(typeIsFlat(''), false);
+  assert.equal(typeIsFlat('banana'), false);
+});
