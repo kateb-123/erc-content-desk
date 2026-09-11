@@ -156,18 +156,18 @@ function whenSaved() {
 /** Every Sort mutation goes through here: snapshot the rows as they are (for
  *  Undo), then apply + queue the save. Covers decisions, inline edits, the
  *  type picker and the link check — so Undo can walk back any of them. */
-function change(rows, { decision = false } = {}) {
+function change(rows, { decision = false, step = true } = {}) {
   const before = rows
     .map(r => state.rows.find(x => x._rowNumber === r._rowNumber))
     .filter(Boolean);
   if (before.length) {
-    state.undoStack.push({ rows: before, decision });
+    state.undoStack.push({ rows: before, decision, step });
     state.lastDecision = state.undoStack[state.undoStack.length - 1];
   }
   noteChange(rows);
 }
 
-function decide(row, action, note = '') {
+function decide(row, action, note = '', { step = true } = {}) {
   // A decided card keeps its slot in the stream so ‹ scrolls back to it. First
   // decision on a card therefore has to step PAST it; changing your mind about a
   // card you already decided just restamps it where you are.
@@ -175,13 +175,32 @@ function decide(row, action, note = '') {
   if (firstTime) {
     state.sortedThisVisit += 1;
     state.sortedIds.add(row.id);
-    state.sortBrowse = (state.sortBrowse ?? 0) + 1;
-    saveSortSpot();
+    // The headline list decides in place (step: false); only the carousel steps past.
+    if (step) { state.sortBrowse = (state.sortBrowse ?? 0) + 1; saveSortSpot(); }
   }
   const next = action === 'keep' ? keep(row)
     : action === 'trash' ? trash(row)
     : circleback(row, note);
-  change([next], { decision: true });   // next card shows now; the write drains behind it
+  change([next], { decision: true, step });   // next card shows now; the write drains behind it
+}
+
+/** The headline list's one button: keep every row still standing, as one
+ *  decision Undo last walks back as one. */
+function keepAll(rows) {
+  if (!rows.length) return;
+  for (const r of rows) {
+    if (state.sortedIds.has(r.id)) continue;
+    state.sortedThisVisit += 1;
+    state.sortedIds.add(r.id);
+  }
+  change(rows.map(keep), { decision: true, step: false });
+}
+
+/** Undo on one greyed row of the headline list: back to the queue, in place. */
+function undoRow(row) {
+  state.sortedIds.delete(row.id);
+  state.sortedThisVisit = Math.max(0, state.sortedThisVisit - 1);
+  change([undecide(row)], { step: false });
 }
 
 // Rows still waiting for the reader are read before Sort shows a card: the
@@ -222,12 +241,15 @@ async function undoLast() {
   if (!last) return;
   state.lastDecision = state.undoStack[state.undoStack.length - 1] ?? null;
   if (last.decision) {
-    state.sortedThisVisit = Math.max(0, state.sortedThisVisit - 1);
+    state.sortedThisVisit = Math.max(0, state.sortedThisVisit - last.rows.length);
     // Deciding stepped past the card; undoing steps back onto it, so you land on
-    // what you just walked back rather than staring at the card after it.
+    // what you just walked back rather than staring at the card after it. A
+    // headline-list decision never stepped, so it never steps back.
     for (const r of last.rows) state.sortedIds.delete(r.id);
-    state.sortBrowse = Math.max(0, (state.sortBrowse ?? 0) - 1);
-    saveSortSpot();
+    if (last.step !== false) {
+      state.sortBrowse = Math.max(0, (state.sortBrowse ?? 0) - 1);
+      saveSortSpot();
+    }
   }
   noteChange(last.rows);   // restore the rows exactly as they were
 }
@@ -402,7 +424,7 @@ export function render() {
       sessionDecided: state.sortedIds,
       onBrowse: pos => { state.sortBrowse = Math.max(0, pos); saveSortSpot(); render(); },
       onFilter: key => { state.sortFilter = key; state.sortBrowse = 0; saveSortSpot(); render(); },
-      onDecide: decide, onUndo: undoLast,
+      onDecide: decide, onUndo: undoLast, onKeepAll: keepAll, onUndoRow: undoRow,
       onEditRow: (row, changes) => change([{ ...row, ...changes }]),
       // Type + subtype + provenance move together in one queued write.
       onEditType: (row, type, subtype) => change([{

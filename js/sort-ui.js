@@ -8,12 +8,16 @@ import { duplicateFlags, linkCheckState, reshareFlags, missingFields } from './w
 import { TYPE_ORDER, TYPE_LABELS, subtypesFor, isValidSubtype, typeIsFlat } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref, withScheme } from './links.js';
-import { sortStream, sortCounts, streamFrom, sectionOf, isErc, readerQueue, dupeBadgeText, isNewToday } from './sort-view.js';
+import { sortStream, sortCounts, streamFrom, sectionOf, isErc, readerQueue, dupeBadgeText, isNewToday, headlineRows } from './sort-view.js';
 import { buildImageControl } from './item-image.js';
 import { titleWithInfo } from './screen-info.js';
 import { faIcon, forwardIcon } from './icons.js';
 
 let editOpenId = null;   // sort card with its inline edit open (view state)
+// The headline list's view state: which row is expanded, and which of its
+// detail panels (edit form, type picker) is open.
+let openHeadlineId = null;
+let headlinePanel = null;   // 'edit' | 'type' | null
 
 const FILTER_LABELS = [
   // 'Needs a type', not 'To review': it counts only untyped items, and a
@@ -204,6 +208,185 @@ function buildLinkAlert(row, href, onVerify) {
   return alert;
 }
 
+/** One decision for the whole page: Keep the rest. Rows with an unchecked
+ *  link stay out of it, as the card keeps its Keep locked for the same reason. */
+function renderHeadlineList(main, props) {
+  const { rows, sessionDecided = new Set(), lastDecision, onUndo, onDecide, onKeepAll, onUndoRow } = props;
+  const rerender = () => renderHeadlineList(main, props);
+  main.replaceChildren();
+  const { live, done } = headlineRows(rows, sessionDecided);
+  const keepable = live.filter(r => linkCheckState(r) !== 'alert');
+
+  const head = el('div', 'headline-head');
+  head.append(el('p', 'sort-group', 'Headlines'));
+  const undo = el('button', 'undo-link', 'Undo last');
+  undo.type = 'button';
+  undo.disabled = !lastDecision;
+  undo.addEventListener('click', () => onUndo());
+  head.append(undo);
+  if (keepable.length) {
+    const keepBtn = el('button', 'primary headline-keep', ` Keep the rest (${keepable.length})`);
+    keepBtn.type = 'button';
+    keepBtn.prepend(faIcon('check'));
+    keepBtn.addEventListener('click', () => {
+      for (const x of main.querySelectorAll('button')) x.disabled = true;
+      onKeepAll?.(keepable);
+    });
+    head.append(keepBtn);
+  }
+  main.append(head);
+
+  if (!live.length && !done.length) {
+    main.append(el('p', 'empty', readerQueue(rows).length ? 'New items are being read.' : 'Nothing to sort.'));
+    return;
+  }
+  main.append(el('p', 'hint headline-hint', live.length
+    ? 'Everything here is kept unless you drop it. Delete what does not belong, Skip what you are not sure about, then Keep the rest.'
+    : 'All sorted.'));
+
+  const dupes = duplicateFlags(rows);
+  const reshare = reshareFlags(rows, props.today ?? '');
+  const table = el('table', 'queue-table headline-list');
+  const body = el('tbody');
+  for (const row of live) body.append(...headlineLiveRow(row, { props, rerender, dupes, reshare }));
+  for (const row of done) body.append(headlineDoneRow(row, onUndoRow));
+  table.append(body);
+  const scroll = el('div', 'table-scroll');
+  scroll.append(table);
+  main.append(scroll);
+}
+
+function headlineBadges(row, { rows, dupes, reshare, today }) {
+  const out = [];
+  if (isNewToday(row, today)) out.push(el('span', 'badge badge-new', 'New'));
+  if (row.submitter_email) out.push(el('span', 'badge', 'External submission'));
+  if (reshare.has(row.id)) out.push(el('span', 'badge', 'In a past issue'));
+  else if (dupes.has(row.id)) {
+    const prior = rows.find(r => r.id === dupes.get(row.id));
+    out.push(prior?.published_at ? el('span', 'badge', 'Already live') : el('span', 'badge badge-dupe', dupeBadgeText(prior)));
+  }
+  return out;
+}
+
+function headlineLiveRow(row, { props, rerender, dupes, reshare }) {
+  const open = openHeadlineId === row.id;
+  const tr = el('tr', `headline-row${open ? ' is-open' : ''}`);
+  const disableRow = () => { for (const x of tr.querySelectorAll('button')) x.disabled = true; };
+
+  const chevTd = el('td', 'headline-chev');
+  const chev = el('button', 'chevron-btn');
+  chev.type = 'button';
+  chev.setAttribute('aria-expanded', String(open));
+  chev.setAttribute('aria-label', open ? 'Hide details' : 'Show details');
+  chev.append(faIcon(open ? 'chevron-up' : 'chevron-down'));
+  chev.addEventListener('click', () => { openHeadlineId = open ? null : row.id; headlinePanel = null; rerender(); });
+  chevTd.append(chev);
+
+  const titleTd = el('td');
+  const badges = headlineBadges(row, { rows: props.rows, dupes, reshare, today: props.today });
+  if (badges.length) { const wrap = el('div', 'headline-badges'); wrap.append(...badges); titleTd.append(wrap); }
+  titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
+  const meta = [row.source, row.date && isoToDisplay(row.date)].filter(Boolean).join(' · ');
+  if (meta) titleTd.append(el('span', 'item-source', meta));
+
+  const whereTd = el('td', 'headline-where');
+  whereTd.append(row.subtype || '');
+  if (linkCheckState(row) === 'alert') {
+    const mark = el('span', 'badge badge-dupe', 'Link needs a check');
+    whereTd.append(whereTd.childNodes.length ? ' ' : '', mark);
+  }
+
+  const actTd = el('td', 'queue-actions headline-actions');
+  const skip = el('button', 'linkish', 'Skip');
+  skip.type = 'button';
+  skip.addEventListener('click', () => { disableRow(); onDecideRow('circleback'); });
+  const del = el('button', 'linkish trash-link', ' Delete');
+  del.type = 'button';
+  del.prepend(faIcon('trash-can'));
+  del.addEventListener('click', () => { disableRow(); onDecideRow('trash'); });
+  function onDecideRow(action) { props.onDecide?.(row, action, '', { step: false }); }
+  actTd.append(skip, del);
+
+  tr.append(chevTd, titleTd, whereTd, actTd);
+  if (!open) return [tr];
+  const dtr = el('tr', 'headline-detail-row');
+  const dtd = el('td');
+  dtd.colSpan = 4;
+  dtd.append(headlineDetail(row, { props, rerender }));
+  dtr.append(dtd);
+  return [tr, dtr];
+}
+
+/** The expanded row: Finalize's white detail card, with the card's own
+ *  edit form, type picker, and link alert inside it. */
+function headlineDetail(row, { props, rerender }) {
+  const box = el('div', 'f-detail headline-detail');
+  const lock = () => { for (const x of box.querySelectorAll('button')) x.disabled = true; };
+  if (headlinePanel === 'edit') {
+    const form = buildEditForm(row, {
+      onSave: changes => { lock(); headlinePanel = null; props.onEditRow?.(row, changes); },
+      onCancel: () => { headlinePanel = null; rerender(); },
+    });
+    box.append(form.el);
+    return box;
+  }
+  box.append(row.blurb
+    ? el('p', 'f-blurb-text', row.blurb)
+    : el('p', 'f-blurb-text is-quiet', 'No description. A headline can go without one.'));
+  const line = el('p', 'type-line');
+  line.append(el('span', 'type-label', [TYPE_LABELS[row.type] ?? row.type, row.subtype].filter(Boolean).join(' · ')));
+  if (headlinePanel !== 'type') {
+    const change = el('button', 'linkish', 'Change');
+    change.type = 'button';
+    change.addEventListener('click', () => { headlinePanel = 'type'; rerender(); });
+    line.append(' ', change);
+  }
+  const href = safeHref(row.link);
+  if (href && linkCheckState(row) !== 'alert') {
+    const a = el('a', 'source-link', 'Open source ↗');
+    a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
+    line.append(' · ', a);
+  }
+  const from = [row.submitter && `from ${row.submitter}`, row.submitted_at && isoToDisplay(String(row.submitted_at).slice(0, 10))]
+    .filter(Boolean).join(', ');
+  if (from) line.append(' · ', el('span', 'item-source', from));
+  box.append(line);
+  if (headlinePanel === 'type') {
+    box.append(buildTypePicker(row, (type, subtype) => { lock(); headlinePanel = null; props.onEditType?.(row, type, subtype); }));
+  }
+  if (linkCheckState(row) === 'alert') {
+    box.append(buildLinkAlert(row, href, newLink => { lock(); props.onVerifyLink?.(row, newLink); }));
+  }
+  const acts = el('p', 'f-detail-actions');
+  const edit = el('button', 'linkish edit-link', ' Edit');
+  edit.type = 'button';
+  edit.prepend(faIcon('pen'));
+  edit.addEventListener('click', () => { headlinePanel = 'edit'; rerender(); });
+  acts.append(edit);
+  box.append(acts);
+  return box;
+}
+
+const DONE_WORDS = { trashed: 'Deleted', circleback: 'Skipped', kept: 'Kept' };
+
+function headlineDoneRow(row, onUndoRow) {
+  const tr = el('tr', `headline-row is-done is-${row.status}`);
+  tr.append(el('td', 'headline-chev'));
+  const titleTd = el('td');
+  titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
+  const meta = [row.source, row.date && isoToDisplay(row.date)].filter(Boolean).join(' · ');
+  if (meta) titleTd.append(el('span', 'item-source', meta));
+  tr.append(titleTd, el('td', 'headline-where', row.subtype || ''));
+  const actTd = el('td', 'queue-actions headline-actions');
+  actTd.append(el('span', 'queue-gone', DONE_WORDS[row.status] ?? row.status));
+  const undo = el('button', 'linkish', 'Undo');
+  undo.type = 'button';
+  undo.addEventListener('click', () => { undo.disabled = true; onUndoRow?.(row); });
+  actTd.append(undo);
+  tr.append(actTd);
+  return tr;
+}
+
 export function renderSort(container, props) {
   const rerenderCard = () => renderSort(container, props);
   container.replaceChildren();
@@ -253,6 +436,13 @@ export function renderSort(container, props) {
       ? 'slide-in-right' : 'slide-in-left');
   }
   lastFilter = filter;
+
+  // Headlines are a title and a link, so they sort as a list: drop what does
+  // not belong, then keep the rest in one press (Kate, Sep 11, option 5b).
+  if (filter === 'headline') {
+    renderHeadlineList(main, props);
+    return;
+  }
 
   if (!visible.length) {
     const waiting = readerQueue(rows).length;

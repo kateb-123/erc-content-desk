@@ -124,3 +124,16 @@ export function dupeBadgeText(prior) {
 export function isNewToday(row, today) {
   return Boolean(today) && String(row?.submitted_at ?? '').slice(0, 10) === today;
 }
+
+/**
+ * The headline list (Kate, Sep 11): pending headlines in stream order, then
+ * the ones decided this session at the bottom, greyed, so a mistake stays in
+ * reach. Headlines flagged for ERC belong to the ERC section, not here.
+ */
+export function headlineRows(rows, sessionDecided = new Set()) {
+  const here = rows.filter(r => sectionOf(r) === 'headline' && !awaitingReader(r));
+  return {
+    live: here.filter(r => r.status === 'new').sort(oldestFirst),
+    done: here.filter(r => r.status !== 'new' && sessionDecided.has(r.id)).sort(oldestFirst),
+  };
+}

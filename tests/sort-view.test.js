@@ -157,3 +157,21 @@ test('isNewToday marks what was submitted today, by the same UTC date the desk u
   assert.equal(isNewToday({ submitted_at: '' }, '2026-09-10'), false);
   assert.equal(isNewToday({ submitted_at: '2026-09-10T01:00:00Z' }, ''), false);
 });
+
+test('headlineRows: pending headlines oldest first, this session\'s decided ones at the bottom, nothing else', async () => {
+  const { headlineRows } = await import('../js/sort-view.js');
+  const rs = [
+    { id: 'h2', status: 'new', type: 'headline', submitted_at: '2026-09-10T10:00:00Z' },
+    { id: 'gone', status: 'trashed', type: 'headline', submitted_at: '2026-09-09T10:00:00Z' },
+    { id: 'h1', status: 'new', type: 'headline', submitted_at: '2026-09-08T10:00:00Z' },
+    { id: 'old', status: 'trashed', type: 'headline', submitted_at: '2026-09-01T10:00:00Z' },
+    { id: 'kept', status: 'kept', type: 'headline', submitted_at: '2026-09-07T10:00:00Z' },
+    { id: 'parked', status: 'circleback', type: 'headline', submitted_at: '2026-09-06T10:00:00Z' },
+    { id: 'reading', status: 'new', type: 'headline', pending_read: 'yes', submitted_at: '2026-09-11T10:00:00Z' },
+    { id: 'erc', status: 'new', type: 'headline', spotlight_request: true, submitted_at: '2026-09-05T10:00:00Z' },
+    { id: 'ev', status: 'new', type: 'event', submitted_at: '2026-09-05T10:00:00Z' },
+  ];
+  const { live, done } = headlineRows(rs, new Set(['gone', 'kept', 'parked']));
+  assert.deepEqual(live.map(r => r.id), ['h1', 'h2']);
+  assert.deepEqual(done.map(r => r.id), ['parked', 'kept', 'gone']);
+});
