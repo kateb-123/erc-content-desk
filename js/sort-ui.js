@@ -302,6 +302,16 @@ export function renderSort(container, props) {
     line.append(after);
     changeRow.append(input, ' ', saveLink);
     alert.append(line, changeRow);
+    if (href) {
+      // The whole amber box is the ask, not only the two words in it — the
+      // boss clicked the box twice and nothing happened (usability run F5).
+      alert.classList.add('is-clickable');
+      alert.addEventListener('click', e => {
+        if (e.target.closest('a, button, input')) return;
+        window.open(href, '_blank', 'noreferrer');
+        after.hidden = false;
+      });
+    }
     fileRow.append(alert);
   }
 
