@@ -8,13 +8,15 @@ import { TYPES, TYPE_ORDER, isValidType, isValidSubtype } from '../../js/schema.
 
 const FIELD_KEYS = ['date', 'source', 'topic', 'deadline', 'medium', 'authors', 'time', 'location'];
 const GUESS_KEYS = ['headline', 'blurb', 'type', 'subtype'];
+/** Types whose pasted text is an announcement to clean, not an abstract to keep. */
+export const CLEAN_TYPES = ['event', 'erc_event', 'opportunity'];
 
 export const EXTRACT_MODEL = 'claude-haiku-4-5';
 
 export const EXTRACTION_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: [...FIELD_KEYS, ...GUESS_KEYS, 'needs_review'],
+  required: [...FIELD_KEYS, ...GUESS_KEYS, 'clean_blurb', 'needs_review'],
   properties: {
     date: { type: 'string', description: 'Event date or publication date as YYYY-MM-DD; "" if not stated.' },
     source: { type: 'string', description: 'Outlet, publisher, journal, or host organization; "" if not stated.' },
@@ -30,6 +32,9 @@ export const EXTRACTION_SCHEMA = {
     // offering a type the moment one is added (ERC Event, Sep 9).
     type: { type: 'string', enum: ['', ...TYPE_ORDER], description: 'Best-fit type when none was provided; "" if unsure.' },
     subtype: { type: 'string', description: 'Legal subtype for the type, from the lists in the prompt; "" if unsure.' },
+    // Not a column: the reader swaps it in for a pasted event or opportunity
+    // description and keeps the paste in original_text (Kate, Sep 10).
+    clean_blurb: { type: 'string', description: 'Events, ERC events, and opportunities with pasted text only: 2-3 plain factual sentences saying what the item is. "" otherwise.' },
     needs_review: { type: 'boolean', description: 'true if the text was too thin or confusing to file confidently.' },
   },
 };
@@ -63,6 +68,15 @@ export function buildExtractionPrompt(row, pageText = '') {
   if (!row.headline) parts.push('No title was provided — you MUST write `headline`: a clear, specific title from the text.');
   if (!row.blurb && !row.original_text) parts.push('No blurb was provided — you MUST write `blurb`: 2-3 factual sentences from the text.');
   if (!row.type) parts.push('No type was provided — you MUST pick `type` (and a legal `subtype`) unless the text truly fits none.');
+  // A pasted announcement gets a clean description of its own before it reaches
+  // a Sort card; the paste stays in original_text (Kate, Sep 10).
+  const hasPaste = Boolean(row.original_text || row.blurb);
+  const cleanRule = 'Write `clean_blurb`: 2-3 plain factual sentences saying what this is, from the submitted '
+    + 'text and the page. Leave out anything that only repeats the date, time, or place; those have their '
+    + 'own fields. Never add a sentence about who would find it useful, and never invent.';
+  if (hasPaste && CLEAN_TYPES.includes(row.type)) parts.push(cleanRule);
+  else if (hasPaste && !row.type) parts.push(`If you pick event, erc_event, or opportunity: ${cleanRule} Otherwise return "" for clean_blurb.`);
+  else parts.push('Return "" for clean_blurb.');
   parts.push(
     'Return "" for headline, blurb, type, and subtype when a value was already provided above.',
     'A subtype must come from the legal lists below (matched to the type); use "" if none fits:',
@@ -98,5 +112,6 @@ export function normalizeExtraction(extracted, row) {
   if (needsReview) {
     warnings.push('Claude was unsure about this one — double-check its fields.');
   }
-  return { fields, warnings, needsReview };
+  const cleanBlurb = String(extracted?.clean_blurb ?? '').trim();
+  return { fields, warnings, needsReview, cleanBlurb };
 }

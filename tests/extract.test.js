@@ -10,10 +10,10 @@ test('extraction runs on Haiku and can also guess title, blurb, and typing', () 
   assert.equal(EXTRACT_MODEL, 'claude-haiku-4-5');
   assert.equal(EXTRACTION_SCHEMA.additionalProperties, false);
   assert.deepEqual(Object.keys(EXTRACTION_SCHEMA.properties).sort(), [
-    'authors', 'blurb', 'date', 'deadline', 'headline', 'location', 'medium',
+    'authors', 'blurb', 'clean_blurb', 'date', 'deadline', 'headline', 'location', 'medium',
     'needs_review', 'source', 'subtype', 'time', 'topic', 'type',
   ]);
-  assert.equal(EXTRACTION_SCHEMA.required.length, 13);
+  assert.equal(EXTRACTION_SCHEMA.required.length, 14);
   // The type enum's contents are asserted against the schema further down,
   // rather than retyped here where a new type would go unnoticed.
 });
@@ -128,4 +128,33 @@ test('an extracted ERC Event keeps its blank subtype instead of being stripped',
   );
   assert.equal(fields.type, 'erc_event');
   assert.equal(fields.location, 'Harrington Tower');
+});
+
+test('the reader also returns a cleaned description, kept out of the row columns', () => {
+  assert.ok(EXTRACTION_SCHEMA.required.includes('clean_blurb'));
+  assert.equal(EXTRACTION_SCHEMA.properties.clean_blurb.type, 'string');
+  const { fields, cleanBlurb } = normalizeExtraction(
+    { clean_blurb: 'Dr. Kinskey discusses socioscientific issues in elementary science.', date: '2026-09-11' },
+    blankRow({ type: 'erc_event' }),
+  );
+  assert.equal(cleanBlurb, 'Dr. Kinskey discusses socioscientific issues in elementary science.');
+  assert.equal('clean_blurb' in fields, false);
+  assert.equal(fields.date, '2026-09-11');
+});
+
+test('for a pasted event or opportunity, the prompt asks for a short factual description without the logistics lines', () => {
+  const pasted = 'Date: Friday, September 11, 2026\nTime: 11:30 a.m. – 1:00 p.m.\nLocation: Rudder 401\n\nPlease join the ERC for an Ed Talk.';
+  for (const type of ['event', 'erc_event', 'opportunity']) {
+    const prompt = buildExtractionPrompt(blankRow({ headline: 'Talk', type, blurb: pasted, original_text: pasted }));
+    assert.match(prompt, /`clean_blurb`/, `${type}: should ask for clean_blurb`);
+    assert.match(prompt, /date, time, or place/, `${type}: should drop the logistics lines`);
+    assert.match(prompt, /who would find it useful/, `${type}: should ban reader-commentary`);
+  }
+});
+
+test('research and headlines keep their text: the prompt returns an empty clean_blurb for them', () => {
+  for (const type of ['research', 'headline']) {
+    const prompt = buildExtractionPrompt(blankRow({ headline: 'Paper', type, blurb: 'An abstract.', original_text: 'An abstract.' }));
+    assert.match(prompt, /Return "" for clean_blurb/, `${type}: clean_blurb should stay empty`);
+  }
 });
