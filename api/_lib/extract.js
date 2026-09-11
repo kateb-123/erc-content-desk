@@ -117,7 +117,7 @@ export function normalizeExtraction(extracted, row) {
   // never learned the reader was unsure (Kate, Sep 9).
   const needsReview = extracted?.needs_review === true;
   if (needsReview) {
-    warnings.push('Claude was unsure about this one — double-check its fields.');
+    warnings.push("The reader wasn't sure about this one — double-check its fields.");
   }
   const cleanBlurb = String(extracted?.clean_blurb ?? '').trim();
   const linkMismatch = extracted?.link_matches === false;

@@ -2,6 +2,7 @@
  * Pure ordering, counting, and filtering for the Sort stream. View logic
  * only — nothing here writes anywhere.
  */
+import { isoToSlash } from './queue-view.js';
 import { TYPE_ORDER } from './schema.js';
 import { pendingRows } from './workflow.js';
 
@@ -105,4 +106,16 @@ export function streamFrom(stream, key) {
   return stream.map((row, i) => ({ row, i }))
     .sort((a, b) => (rank.get(sectionOf(a.row)) - rank.get(sectionOf(b.row))) || (a.i - b.i))
     .map(x => x.row);
+}
+
+const PRIOR_WORDS = { trashed: 'deleted', kept: 'kept', circleback: 'parked', new: 'in the queue' };
+
+/** The duplicate badge names the earlier item and what happened to it, so the
+ *  flag can be acted on without a search (usability run F8). */
+export function dupeBadgeText(prior) {
+  const title = String(prior?.headline ?? '').trim() || '(untitled)';
+  const short = title.length > 60 ? `${title.slice(0, 59).replace(/[\s—–:-]+$/, '')}…` : title;
+  const what = PRIOR_WORDS[prior?.status] ?? prior?.status ?? '';
+  const when = isoToSlash(prior?.submitted_at);
+  return `Same link as "${short}", ${what}${when ? ` ${when}` : ''}`;
 }

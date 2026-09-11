@@ -177,3 +177,9 @@ test('the reader says whether the page behind the link is about this item (F20)'
   assert.equal(normalizeExtraction({ link_matches: true }, row).linkMismatch, false);
   assert.equal(normalizeExtraction({}, row).linkMismatch, false);
 });
+
+test('the not-sure warning never names Claude to the team (F6)', () => {
+  const { warnings } = normalizeExtraction({ needs_review: true }, blankRow());
+  assert.doesNotMatch(warnings.join(' '), /Claude/);
+  assert.match(warnings.join(' '), /The reader wasn't sure/);
+});

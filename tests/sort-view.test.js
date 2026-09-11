@@ -138,3 +138,14 @@ test('readerQueue lists the waiting rows Sort must have read, and only those', a
   ];
   assert.deepEqual(readerQueue(mix), ['w1', 'w2']);
 });
+
+test('a duplicate badge names the earlier item and what happened to it (F8)', async () => {
+  const { dupeBadgeText } = await import('../js/sort-view.js');
+  assert.equal(dupeBadgeText({ headline: 'Research Grants on Improving the Use of Research Evidence', status: 'trashed', submitted_at: '2026-09-03T14:00:00Z' }),
+    'Same link as "Research Grants on Improving the Use of Research Evidence", deleted 9/3');
+  assert.equal(dupeBadgeText({ headline: 'Research Grants on Improving the Use of Research Evidence — Letter of Inquiry', status: 'trashed', submitted_at: '2026-09-03T14:00:00Z' }),
+    'Same link as "Research Grants on Improving the Use of Research Evidence…", deleted 9/3');
+  assert.equal(dupeBadgeText({ headline: 'Short', status: 'kept', submitted_at: '2026-08-20T10:00:00Z' }), 'Same link as "Short", kept 8/20');
+  assert.equal(dupeBadgeText({ headline: 'Parked one', status: 'circleback', submitted_at: '' }), 'Same link as "Parked one", parked');
+  assert.equal(dupeBadgeText({ headline: 'Waiting', status: 'new', submitted_at: '2026-09-10T00:00:00Z' }), 'Same link as "Waiting", in the queue 9/10');
+});

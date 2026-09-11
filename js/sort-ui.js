@@ -8,7 +8,7 @@ import { duplicateFlags, linkCheckState, reshareFlags, missingFields } from './w
 import { TYPE_ORDER, TYPE_LABELS, subtypesFor, isValidSubtype } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref, withScheme } from './links.js';
-import { sortStream, sortCounts, streamFrom, sectionOf, isErc, readerQueue } from './sort-view.js';
+import { sortStream, sortCounts, streamFrom, sectionOf, isErc, readerQueue, dupeBadgeText } from './sort-view.js';
 import { buildImageControl } from './item-image.js';
 import { titleWithInfo } from './screen-info.js';
 import { faIcon, forwardIcon } from './icons.js';
@@ -147,7 +147,7 @@ export function renderSort(container, props) {
     const prior = rows.find(r => r.id === dupes.get(row.id));
     badges.append(prior?.published_at
       ? el('span', 'badge', 'Already live')
-      : el('span', 'badge badge-dupe', 'Possible duplicate'));
+      : el('span', 'badge badge-dupe', dupeBadgeText(prior)));
   }
   card.append(badges);
   card.append(el('h3', '', row.headline || '(untitled)'));
@@ -322,13 +322,20 @@ export function renderSort(container, props) {
   if (missing.length) {
     const note = el('p', 'card-note');
     note.append(faIcon('circle-question'));
-    note.append(` Couldn't find the ${missing.map(f => FIELD_WORDS[f] ?? f).join(', ')}`);
+    // Says what to do and, when the page could not be read, why (F7).
+    const words = missing.map(f => FIELD_WORDS[f] ?? f).join(', ');
+    const them = missing.length === 1 && missing[0] !== 'authors' ? 'it' : 'them';
+    const why = row.link_checked === 'failed' ? " — the desk couldn't read the page" : '';
+    note.append(` No ${words} yet${why}. Add ${them} in Finalize.`);
     fileRow.append(note);
   }
   if (String(row.needs_review ?? '').trim()) {
     const note = el('p', 'card-note');
     note.append(faIcon('circle-question'));
-    note.append(' The reader wasn\'t sure about this one — check what it filled in');
+    const filled = String(row.auto_filled ?? '').split(',').map(f => f.trim()).filter(Boolean);
+    note.append(filled.length
+      ? ` The reader wasn't sure about this one — check what it filled in: ${filled.join(', ')}`
+      : " The reader wasn't sure about this one — check its fields");
     fileRow.append(note);
   }
 
