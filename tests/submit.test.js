@@ -95,3 +95,13 @@ test('a row deleted from the queue while it was being read is not brought back',
   await calls.deferred[0];
   assert.equal(calls.updated.length, 0);
 });
+
+test('a spreadsheet item arrives with its extra columns in original_text and a blank description', async () => {
+  const { calls, deps } = harness();
+  await mod.createSubmitHandler(deps)({ method: 'POST', headers: {}, body: {
+    title: 'TEFA Voucher Program Surpasses 100,000 Awards', blurb: '', original_text: 'date: 2026-07\nsource: Texas Education Freedom Accounts\nmedium: online',
+    link: 'https://example.org/tefa', type: 'headline', subtype: 'Texas', submitter: 'bulk upload',
+  } }, fakeRes());
+  assert.equal(calls.appended[0].blurb, '');
+  assert.equal(calls.appended[0].original_text, 'date: 2026-07\nsource: Texas Education Freedom Accounts\nmedium: online');
+});

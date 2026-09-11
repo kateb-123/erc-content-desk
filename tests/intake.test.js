@@ -140,3 +140,9 @@ test('an ERC Event with a subtype typed in anyway is rejected', () => {
   });
   assert.ok(errors.includes('Pick a subtype.'));
 });
+
+test('buildSubmission keeps a separate original_text when one is given, so spreadsheet extras stay out of the description', () => {
+  const row = buildSubmission({ ...good, blurb: '', original_text: 'date: 7/6/26\nsource: TPR', id: 'x', submittedAt: 'y' });
+  assert.equal(row.blurb, '');
+  assert.equal(row.original_text, 'date: 7/6/26\nsource: TPR');
+});

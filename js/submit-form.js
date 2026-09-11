@@ -37,6 +37,22 @@ function show(target, message, kind) {
   }
 }
 
+/** One bulk item as a submit body. The description is only what the file's
+ *  Description column said; extra columns go to the reader as original_text,
+ *  never onto the card (usability run F1, Sep 10). */
+export function bulkSubmissionBody(item, submitter) {
+  return {
+    title: item.title || item.link,
+    blurb: item.blurb || '',
+    original_text: item.original_text || '',
+    link: withScheme(item.link),
+    type: item.type || '',        // untyped enters untyped — Sort's To review catches it
+    subtype: item.subtype || '',
+    spotlight: false,
+    submitter,
+  };
+}
+
 async function postSubmission(body) {
   const res = await fetch('/api/submit', {
     method: 'POST',
@@ -325,15 +341,7 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
     let results = [];
     try {
       results = await runPool(items, BULK_CONCURRENCY, async item => {
-        const data = await postSubmission({
-          title: item.title || item.link,
-          blurb: item.blurb || item.original_text,
-          link: withScheme(item.link),
-          type: item.type || '',        // untyped enters untyped — Sort's To review catches it
-          subtype: item.subtype || '',
-          spotlight: false,
-          submitter,
-        });
+        const data = await postSubmission(bulkSubmissionBody(item, submitter));
         if (!data.ok) throw new Error((data.errors ?? []).join(' '));
         return data;
       }, done => overlay.update(done));

@@ -66,7 +66,10 @@ export function buildExtractionPrompt(row, pageText = '') {
     'Dates are YYYY-MM-DD. Event times are Central Time, written like "1:00 PM CT" — convert from ET/PT when the zone is given.',
   );
   if (!row.headline) parts.push('No title was provided — you MUST write `headline`: a clear, specific title from the text.');
-  if (!row.blurb && !row.original_text) parts.push('No blurb was provided — you MUST write `blurb`: 2-3 factual sentences from the text.');
+  // Headlines are a title and a link; everything else gets a description,
+  // from the typed text, the file's extra columns, or the page (F1, Sep 10).
+  if (!row.blurb && row.type !== 'headline') parts.push('No blurb was provided — you MUST write `blurb`: 2-3 factual sentences from the text and the page, unless the item is a headline (then "").');
+  else if (!row.blurb) parts.push('Return "" for blurb: headlines carry no description.');
   if (!row.type) parts.push('No type was provided — you MUST pick `type` (and a legal `subtype`) unless the text truly fits none.');
   // A pasted announcement gets a clean description of its own before it reaches
   // a Sort card; the paste stays in original_text (Kate, Sep 10).

@@ -31,14 +31,15 @@ export function validateSubmission(
 
 export function buildSubmission({
   title, blurb, link, type, subtype, spotlight, submitter, submitter_email,
-  infographic, submittedAt, id,
+  infographic, original_text, submittedAt, id,
 } = {}) {
   return blankRow({
     id,
     status: 'new',
     headline: s(title),
     blurb: s(blurb),
-    original_text: s(blurb),
+    // A spreadsheet's extra columns ride here, not in the description (F1).
+    original_text: s(original_text) || s(blurb),
     link: s(link),
     type: s(type),
     subtype: s(subtype),

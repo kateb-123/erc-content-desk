@@ -158,3 +158,11 @@ test('research and headlines keep their text: the prompt returns an empty clean_
     assert.match(prompt, /Return "" for clean_blurb/, `${type}: clean_blurb should stay empty`);
   }
 });
+
+test('with no description, the reader must write one from the text and the page, except for a headline', () => {
+  const extrasOnly = blankRow({ headline: 'A paper', type: 'research', blurb: '', original_text: 'date: 2026-07\nsource: NBER', link: 'https://a.org' });
+  assert.match(buildExtractionPrompt(extrasOnly), /you MUST write `blurb`/);
+  const headline = blankRow({ headline: 'A story', type: 'headline', blurb: '', original_text: 'date: 2026-07\nmedium: online', link: 'https://a.org' });
+  assert.doesNotMatch(buildExtractionPrompt(headline), /you MUST write `blurb`/);
+  assert.match(buildExtractionPrompt(headline), /Return "" for blurb/);
+});
