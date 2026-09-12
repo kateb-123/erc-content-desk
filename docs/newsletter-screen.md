@@ -1,5 +1,11 @@
 # Newsletter screen — real build
 
+> HISTORICAL. This was the build spec for the Send to Newsletter screen, written Aug 31, 2026 and
+> shipped. Screens have changed since (Sort is lists now, Publish can be paused,
+> the data moved to Postgres). For what the app does today read
+> `design/DESIGN-BRIEF.md`; for how it should look, `design/DESIGN.md`.
+
+
 *Lean spec, Aug 31 2026. Design approved from the sandbox mock (Aug 31): Build leaves the desk, the .md dies, the standalone builder pulls stamped items (see `pull-from-the-desk.md`). Look = the mock tree; this doc is behavior + data. TDD.*
 
 ## The flow

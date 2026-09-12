@@ -1,5 +1,10 @@
 # Every word both apps say
 
+> SNAPSHOT, Sep 2, 2026. The living list of every string is
+> `docs/handbook/words.md`, which is kept current; this file is the fuller
+> reading copy as the apps read that day, and predates the section lists,
+> the background reader, and the Sep 11 copy fixes.
+
 A complete inventory of the user-visible text in the **ERC Content Desk** and the **ERC Newsletter Builder**, as written on September 2, 2026. Nothing here is a suggestion — it is what the screens actually say today, so you can read it in one place and mark up anything that lands wrong.
 
 Text assembled from parts is shown with the moving piece in `[brackets]` — `"Send [N] to the [Month D] issue"` is one string, not a dozen.

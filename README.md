@@ -1,154 +1,116 @@
 # ERC Content Desk
 
-A web app and submission queue for managing content in the ERC newsletter and the ERC Policy Exchange hub. The app uses one Google Sheet as the source of truth, and Claude to automatically extract and structure submissions.
+The private pipeline that feeds the ERC's two outward products: the public
+**Policy Exchange** site and the monthly **newsletter**. Submissions come in as a
+link or a pasted announcement, a small Claude call reads them into fields, and one
+person sorts, finalizes, publishes, and stages an issue without hand-formatting
+anything.
 
-## The flow (v2)
+One Vercel project serves both halves: the desk at `/` and the newsletter builder
+at `/builder/`. **Every push to `main` is a live deploy.**
 
-**Submit** — Anyone with the link visits `/submit` and fills a short structured form
-(title, blurb, link, type + subtype, an optional ⭐ spotlight request, their name).
-Every submission is instantly filed by a small Claude call — dates, sources, times,
-locations land in their own columns. A "Have a whole doc?" side door splits an entire
-pasted document into individual items you confirm before anything saves.
+New here? Read `design/DESIGN-BRIEF.md` (what it is, what every control does, how
+it runs) and `design/DESIGN.md` (the style contract).
 
-**Queue** — The desk's home screen: everything new, grouped by category with counts,
-possible duplicates flagged, circle-backs pinned on top. The header shows the next
-issue date from the Sheet's `schedule` tab.
+## The flow
 
-**Sort** — Pick a stack, then one card at a time: **Keep** (K), **Circle back** (C),
-or **Trash** (T), with U to undo. Keeps are destined for the Ed Policy Exchange;
-the newsletter picks come later, in Build.
+**Add to the queue** (Home): a title, a link, and whatever text the submitter can
+paste. A link alone is enough. The row saves at once; the reader then opens the
+link, fills the blank columns, and turns a pasted announcement into a short
+description, in the background. The spreadsheet door takes a whole `.xlsx`, `.csv`,
+`.docx`, `.md` or `.txt` and splits it into items you review before anything saves.
+The public submission form lives outside this repo (a small GitHub Pages site) and
+posts to `/api/submit` behind a Cloudflare Turnstile check.
 
-**Finalize** — The keeps as an editable table (click any cell to fix it), plus one
-batched Claude rewrite of Event + Opportunity blurbs in the ERC voice — shown
-side-by-side for accept/reject. Research abstracts and headlines are never rewritten.
+**Sort**: **All** is one card at a time; every section pill (Needs a type, ERC,
+ERC events, Research, Events, Opportunities, Headlines) is a list with **Skip** and
+**Delete** per row and one **Keep the rest**. Decisions are click only. Nothing
+reaches a card until the reader has filed it.
 
-**Publish** — Checks your keeps against the *live* `news.csv` on GitHub, shows exactly
-what will be added vs. skipped (duplicates) vs. not ready (missing a type), then one
-button appends the new rows and commits. Append-only: existing hub rows are never
-touched.
+**Finalize**: one batched Opus call rewrites kept events, ERC events, and
+opportunities into the ERC voice (research abstracts and headlines are left alone),
+then you check each rewrite one at a time: **Keep** saves it, **Use original**
+keeps the old text. Nothing is written until you decide.
 
-**Build** — Tick this issue's items from the published pool (⭐ requests float up),
-items auto-slot into newsletter sections with a "move to…" override, type the intro,
-download Outlook-ready HTML. Building stamps each used item with its issue date, which
-is what resets the queue for the next cycle.
+**Publish to Exchange**: checks the keeps against the live `data/news.csv` in the
+Exchange repo, shows what is being added, held for the newsletter, or already live,
+then one button appends the new rows and commits. Append-only: existing rows are
+never touched.
 
-**The Sheet** — one `queue` tab (14 hub columns + workflow columns) plus a hand-edited
-`schedule` tab of issue dates. Rows are never deleted; history is the duplicate index.
-One-time migration scripts from the v1 layout live in `scripts/` (already run in
-production, Aug 2026 — dry-run by default; see each script's header before touching).
+**Send to Newsletter**: stamps chosen items with an issue date, which drains them
+from the desk and makes them available to the builder. Mistakes are recoverable
+(Undo send, or Remove from the issue).
+
+**The builder** (`/builder/`): pulls the staged items for an issue, lets you
+reorder and edit them against a live preview, then copies Outlook-ready HTML,
+saves the issue into the archive, or downloads it.
+
+## Where the data lives
+
+Vercel Postgres (Neon) is the truth. A Google Sheet is mirrored behind it as a
+human-readable backup, written through an Apps Script web app that lives in the
+Sheet (`apps-script/Code.gs`); the Sheet is positional, so a new column can only
+be appended. `DESK_STORE=sheet` falls back to the Sheet alone.
+
+- **Statuses**: `new`, `kept`, `circleback`, `trashed`. Rows are never deleted, so
+  history is the duplicate index.
+- **Columns**: 14 public-site columns plus the workflow columns, all defined in
+  `js/schema.js`. The only boolean column is `spotlight_request`.
+- **Types and subtypes** are also in `js/schema.js`, and must match the public
+  site's own vocabulary.
 
 ## Setup
 
-The app talks to the Sheet through a small Google Apps Script web app that runs
-inside the Sheet itself, under your own Google account. This is deliberate: it
-needs no Google Cloud project and no service account, so it works even on a
-Google account where Google Cloud is disabled.
+Environment variables (Vercel project settings):
 
-### 1. Create the Google Sheet
+| name | what it is |
+| --- | --- |
+| `DATABASE_URL` | the Neon Postgres connection string |
+| `SHEET_API_URL`, `SHEET_API_TOKEN` | the Apps Script web app and its shared secret |
+| `ANTHROPIC_API_KEY` | read implicitly by the SDK |
+| `GITHUB_TOKEN` | publishing to the Exchange repo, and saving issues and images |
+| `HUB_REPO`, `HUB_BRANCH`, `HUB_CSV_PATH`, `HUB_CSV_URL` | where the public feed lives (defaults to `kateb-123/erc-policy-exchange-app`, `main`, `data/news.csv`) |
+| `ARCHIVE_REPO`, `ARCHIVE_BRANCH` | where saved issues go (defaults to this repo) |
+| `TURNSTILE_SECRET_KEY` | the bot check for cross-origin submissions |
+| `LISTSERV_URL` | the newsletter sign-up the public site posts through |
 
-1. Go to [Google Sheets](https://sheets.google.com/) and create a new spreadsheet.
-2. This will hold your data; you don't need to name the tab or add headers by hand — setup does that for you.
+The Google Sheet side, once:
 
-### 2. Paste in the Apps Script
+1. Create a Sheet. In **Extensions, Apps Script**, replace `Code.gs` with this
+   repo's `apps-script/Code.gs` and save.
+2. In **Project Settings, Script Properties**, add `SHEET_API_TOKEN` with a long
+   random value. The same value goes in Vercel.
+3. **Deploy, New deployment, Web app**, execute as **Me**, access **Anyone**. The
+   token is what protects it. Copy the `/exec` URL into `SHEET_API_URL`.
+4. `npm run setup` writes the header row (safe to rerun).
+5. Editing `Code.gs` later needs **Deploy, Manage deployments, New version**;
+   saving the file alone does not update the live web app.
 
-1. In the Sheet, go to **Extensions → Apps Script**. This opens a script editor bound to this Sheet.
-2. Delete the placeholder contents of `Code.gs` and paste in the contents of this repo's `apps-script/Code.gs`.
-3. Save the project (File → Save, or Ctrl/Cmd+S).
+The database side: `node --env-file=.env scripts/ensure-schema.js` adds any column
+the live table predates. Run it before deploying code that reads a new column.
 
-### 3. Set the shared secret
-
-The script checks a secret token on every request — this is what actually protects your
-data, since anyone with the deployed URL can technically reach it (see step 4).
-
-1. In the Apps Script editor, click the gear icon (**Project Settings**) in the left sidebar.
-2. Scroll to **Script Properties** → **Add script property**.
-3. Property name: `SHEET_API_TOKEN`. Value: a long random string you make up (a password
-   generator works well). Save it somewhere — you'll need to set the same value in Vercel.
-
-### 4. Deploy as a web app
-
-1. In the Apps Script editor, click **Deploy → New deployment**.
-2. Click the gear icon next to "Select type" and choose **Web app**.
-3. Set **Execute as: Me** (your account) and **Who has access: Anyone**.
-   - This looks alarming, but it's correct: Apps Script web apps don't check the caller's
-     identity when access is "Anyone" — that's exactly why the token from step 3 exists.
-     Without the right token, every request is rejected before it touches the Sheet.
-   - "Execute as: Me" is what lets the script edit the Sheet under your identity, without
-     the app needing any credentials of its own.
-4. Click **Deploy**, and authorize the script when Google prompts you (it needs permission
-   to edit this Sheet).
-5. Copy the **Web app URL** it gives you — it ends in `/exec`.
-
-### 5. Set environment variables in Vercel
-
-1. Go to your Vercel project settings.
-2. Add these environment variables:
-   - `SHEET_API_URL` — the web app URL from step 4 (ends in `/exec`)
-   - `SHEET_API_TOKEN` — the same value you set as the `SHEET_API_TOKEN` script property in step 3
-   - `ANTHROPIC_API_KEY` — from [Anthropic Console](https://console.anthropic.com/)
-
-### 6. Run the setup script
-
-After deploying to Vercel (or locally, if testing), run:
+## Working on it
 
 ```bash
-npm run setup
+npm test                                   # 381 tests, plain node --test
+node .superpowers/sandbox/sandbox-server.mjs   # the real front end on fake data, localhost:4173
 ```
 
-This writes the header row to your Google Sheet. It is safe to run multiple times.
-
-### 7. Deploy
-
-Push to your Vercel project and deploy.
-
-### If you change the Apps Script later
-
-Any time you edit `Code.gs` (in this repo or directly in the Apps Script editor), you must
-**Deploy → Manage deployments → edit → New version** for the change to take effect — saving
-the file alone updates the editor but not the live web app.
-
-## The two pages
-
-**`/`** — The team desk. Reachable by anyone with the URL, so share the URL only with the team. The Anthropic and GitHub keys are never exposed to the browser, but the rewrite and publish buttons do real work (small API spend; commits to the live Exchange), so treat the URL as semi-private. Shows the Queue, Sort, Finalize, Publish, and Build screens.
-
-**`/submit`** — The public submission form. Deliberately open to anyone with the link. Appends to the Google Sheet, no password needed.
-
-## Everyday use
-
-### Correcting data
-
-Edit the Google Sheet directly. The desk will pick up the changes when you reload the tab.
-
-### Deleting or re-sorting rows
-
-If you delete or move rows in the Sheet while a desk tab is open, the tab should be reloaded afterward to stay in sync. (The draft queue stays in memory while the tab is open, so edits made elsewhere don't auto-update — reload to refresh.)
+The sandbox touches no live data, no public site, and no models. Every visual
+change is reviewed there. There is no build step: the browser loads the source
+files, so bump the `?v=` cache busters in `index.html` whenever JS or CSS changes.
 
 ## Cost
 
-Two things call the Anthropic API, both deliberately small:
-
-- **Submitting** runs one tiny Haiku call per item (a fraction of a cent) to file the
-  metadata. A bulk doc split is one more Haiku call for the whole document — cents.
-- **Rewrite blurbs** (Finalize) is one batched Claude Opus call per issue, covering only
-  the kept Events + Opportunities that haven't been published yet — typically cents.
-
-There is no rewrite-everything step anymore; nothing spends money without a click
-except the per-submission filing.
-
-## Running the tests
-
-```bash
-npm test
-```
-
-Tests require no credentials and run in Node's test runner.
-
----
+Two things call Anthropic, both small: one Haiku call per submission to file it
+(and one per document split), and one batched Opus call per issue for the ERC-voice
+rewrite. Journal links that block the reader are looked up through Crossref, which
+is free.
 
 ## Quick reference
 
-- **Header row:** written once by `npm run setup`; column order is fixed (see `js/schema.js`)
-- **Statuses:** `new`, `kept`, `processed`, `trashed`
-- **Types and subtypes:** controlled by `TYPES` in `js/schema.js`; subtypes must match the hub's `news.csv`
-- **Boolean columns:** `newsletter` and `hub` are stored as "TRUE" or empty string in the Sheet
-- **Sheet access:** via the Apps Script web app in `apps-script/Code.gs`; every request is checked against the `SHEET_API_TOKEN` script property, which must match the `SHEET_API_TOKEN` environment variable in Vercel
+- **The style contract**: `design/DESIGN.md`. **The brief**: `design/DESIGN-BRIEF.md`.
+- **Every string the app says**: `docs/handbook/words.md`.
+- **Every outside service**: `docs/handbook/connections.md`.
+- **Publish can be paused**: `PUBLISH_PAUSED` in `js/flags.js` makes Publish a mock
+  and the server refuse a real publish, for team trials.

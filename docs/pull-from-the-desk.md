@@ -1,5 +1,11 @@
 # Pull from the desk
 
+> HISTORICAL. This was the build spec for the builder's Pull from the desk, written Aug 31, 2026 and
+> shipped. Screens have changed since (Sort is lists now, Publish can be paused,
+> the data moved to Postgres). For what the app does today read
+> `design/DESIGN-BRIEF.md`; for how it should look, `design/DESIGN.md`.
+
+
 *Spec, Aug 31 2026 — the builder's last door. Replaces the `.md` side door; designed with Kate in chat, lean on purpose.*
 
 ## What

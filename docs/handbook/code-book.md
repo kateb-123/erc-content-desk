@@ -1,6 +1,9 @@
 # Code Book
 
-Source of truth for the shipped CSS. Values copied verbatim from `css/styles.css` (desk) and `builder/css/styles.css` (builder). Fonts: Outfit (headings/buttons/pills), Karla (body). One accent blue across both apps: `#1d6ea5`, hover `#19608f`, pressed `#14507a`.
+Reading copy of the shipped CSS, as of Sep 2, 2026. The truth is
+`css/styles.css` and `builder/css/styles.css`; the style contract is
+`design/DESIGN.md`. Later additions (Sort's section lists, the bulk progress
+popup) are not transcribed here. Values copied verbatim from `css/styles.css` (desk) and `builder/css/styles.css` (builder). Fonts: Outfit (headings/buttons/pills), Karla (body). One accent blue across both apps: `#1d6ea5`, hover `#19608f`, pressed `#14507a`.
 
 ---
 

@@ -1,5 +1,11 @@
 # Publish — real build
 
+> HISTORICAL. This was the build spec for the Publish rebuild, written Aug 31, 2026 and
+> shipped. Screens have changed since (Sort is lists now, Publish can be paused,
+> the data moved to Postgres). For what the app does today read
+> `design/DESIGN-BRIEF.md`; for how it should look, `design/DESIGN.md`.
+
+
 *Lean spec, Aug 31 2026. Design approved from the sandbox mock (Aug 30/31), copy trimmed Aug 31. Look = the mock tree with the new theme; this doc is behavior + data. TDD; old publish tests get replaced.*
 
 ## The flow
