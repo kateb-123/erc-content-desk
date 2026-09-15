@@ -94,8 +94,9 @@ moves to its section.
 
 - **Every pill is a list** (Sep 11; the one-card stream was dropped Sep 15
   because going card by card took too long): a table of rows, each with a
-  chevron, the title with authors or source and date, the first two lines of the
-  description, the subtype, and **Skip** and **Delete**. One filled **Keep the rest
+  chevron, the title with authors or source and date, and **Skip** and
+  **Delete**; nothing else (the description and type live in the open row, and
+  clicking anywhere on the row opens it). One filled **Keep the rest
   (N)** button sits at the top right of the list. The chevron expands
   the row in place into the same white detail card Finalize uses: full description,
   notes, the type line with Change (or the type picker itself when a type is

@@ -320,8 +320,12 @@ function listLiveRow(row, { props, rerender, ctx, reshare }) {
   chev.setAttribute('aria-expanded', String(open));
   chev.setAttribute('aria-label', open ? 'Hide details' : 'Show details');
   chev.append(faIcon(open ? 'chevron-up' : 'chevron-down'));
-  chev.addEventListener('click', () => { openListId = open ? null : row.id; listPanel = null; rerender(); });
+  const toggle = () => { openListId = open ? null : row.id; listPanel = null; rerender(); };
+  chev.addEventListener('click', toggle);
   chevTd.append(chev);
+  // The whole row opens it, not just the chevron (Kate, Sep 15). Buttons and
+  // links inside the row keep their own jobs.
+  tr.addEventListener('click', e => { if (!e.target.closest('button, a, input, textarea, select, label')) toggle(); });
 
   const titleTd = el('td');
   const badges = listBadges(row, { rows: props.rows, dupes: ctx.dupes, reshare, today: props.today });
@@ -338,12 +342,8 @@ function listLiveRow(row, { props, rerender, ctx, reshare }) {
   titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
   const meta = listMeta(row);
   if (meta) titleTd.append(el('span', 'item-source', meta));
-  // Two lines of the description, so a paper or an event is read before it is
-  // kept (option A); the chevron opens the rest.
-  if (row.blurb) titleTd.append(el('p', 'list-desc', row.blurb));
-
-  // The subtype, and under Needs a fix the reasons, in the same quiet grey.
-  const whereTd = el('td', 'list-where', [row.subtype, ...reasons].filter(Boolean).join(' · '));
+  // Title, source, date, nothing else (Kate, Sep 15, option B): the
+  // description and the type column live in the open row.
 
   const actTd = el('td', 'queue-actions list-actions');
   const skip = el('button', 'linkish', 'Skip');
@@ -356,11 +356,11 @@ function listLiveRow(row, { props, rerender, ctx, reshare }) {
   function onDecideRow(action) { props.onDecide?.(row, action); }
   actTd.append(skip, del);
 
-  tr.append(chevTd, titleTd, whereTd, actTd);
+  tr.append(chevTd, titleTd, actTd);
   if (!open) return [tr];
   const dtr = el('tr', 'list-detail-row');
   const dtd = el('td');
-  dtd.colSpan = 4;
+  dtd.colSpan = 3;
   dtd.append(listDetail(row, { props, rerender }));
   dtr.append(dtd);
   return [tr, dtr];
@@ -442,7 +442,7 @@ function listDoneRow(row, onUndoRow) {
   titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
   const meta = listMeta(row);
   if (meta) titleTd.append(el('span', 'item-source', meta));
-  tr.append(titleTd, el('td', 'list-where', row.subtype || ''));
+  tr.append(titleTd);
   const actTd = el('td', 'queue-actions list-actions');
   actTd.append(el('span', 'queue-gone', DONE_WORDS[row.status] ?? row.status));
   const undo = el('button', 'linkish', 'Undo');

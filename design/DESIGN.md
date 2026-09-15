@@ -76,8 +76,9 @@ every section pill (Needs a fix, ERC, ERC events, Research, Events,
 Opportunities, Headlines) lists its own section, and All stacks every non-empty
 section in that order, each under its own heading with its own Keep the rest.
 One Undo last for the screen sits above the stack. Each row: chevron, title
-with authors or source · date, the first two lines of the description, subtype,
-Skip · Delete. Rows carry NO amber marks (Kate, Sep 15): everything that cannot
+with authors or source · date, Skip · Delete, and nothing else (Sep 15,
+option B: the description and the type column live in the open row). The
+whole row opens it, not just the chevron. Rows carry NO amber marks (Kate, Sep 15): everything that cannot
 be kept yet (no type, link not opened) and every possible duplicate sits under
 the one amber pill, Needs a fix, with the reasons in the subtype column in the
 same quiet grey and one amber triangle (`fa-triangle-exclamation`) leading the
