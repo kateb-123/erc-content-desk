@@ -137,7 +137,8 @@ export function renderPublish(container, props) {
   } else if (!candidates.length) {
     lede.textContent = 'Nothing waiting to publish.';
   } else {
-    lede.append('Checked against the live Exchange · ');
+    // A failed check says so (the status bar carries the reason); Re-check stays.
+    lede.append(preview ? 'Checked against the live Exchange · ' : 'The check did not go through · ');
     const again = el('button', 'linkish', 'Re-check');
     again.type = 'button';
     again.addEventListener('click', () => { again.disabled = true; onRecheck?.(); });

@@ -105,7 +105,7 @@ label.radio { display: block; margin: .15rem 0; font-size: .95rem; color: var(--
 
 /* Newsletter — the hand-off to the standalone builder (mock) */
 .nl-issue { font-size: .9rem; color: var(--muted); margin: 0 0 .6rem; }
-.nl-issue select { font: inherit; padding: .25rem .4rem; border: 1px solid var(--line); border-radius: 4px; }
+.nl-issue select { width: auto; min-width: 12rem; font: inherit; padding: .25rem .4rem; border: 1px solid var(--line); border-radius: 4px; }
 .nl-row { cursor: pointer; }
 .nl-row:hover td { background: var(--hover); }
 .nl-check { width: 2rem; }
@@ -319,7 +319,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .f-fact { display: grid; gap: 1px; }
 .f-fact-label { font-size: .78rem; color: var(--muted); }
 .f-fact-value { margin: 0; font-size: .9rem; font-weight: 500; color: var(--ink); }
-.f-detail-label { margin: 0 0 .25rem; font-size: .85rem; font-weight: 500; color: var(--muted); }
+.f-detail-label { margin: 0 0 .25rem; font-family: inherit; font-size: .85rem; font-weight: 500; color: var(--muted); }
 .f-blurb-text { margin: 0 0 .6rem; font-size: .9rem; color: var(--ink); max-width: 60rem; }
 .f-check-card { max-width: 680px; margin-top: .25rem; }
 .f-check-card .type-line { margin: 0 0 .4rem; }
@@ -434,6 +434,7 @@ button:active:not(:disabled) { transform: scale(0.98); }
 /* A field named by a validation message turns red; the status line still lists them all. */
 .submit-form input.is-invalid, .submit-form textarea.is-invalid { border-color: var(--err); }
 .submit-form .type-picker.is-invalid { border-left: 2px solid var(--err); padding-left: .6rem; }
+.submit-form input.is-invalid:focus { border-color: var(--err); }
 
 /* Quiet focus: on-theme ring instead of the browser default highlight. */
 input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus {
