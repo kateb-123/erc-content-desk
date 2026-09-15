@@ -64,10 +64,11 @@ instruction panel, and (where the pipeline continues) one outlined door pill (th
 on the right with a right arrow: Go to Finalize, Go to Publish, Send to newsletter.
 
 ### Home
-- **Glance row**, four one-line cards: *Exchange updated* (when the public site's
-  file last changed), *Next newsletter* (the next issue date), *Queue* with a count
-  badge (clicking scrolls to the table), *Public page* with Open and Copy buttons
-  for the public submission form.
+- **Stats strip** (Kate's Sep 15 sketch, layout A), one line of facts: *Last issue*
+  (the newest date in the builder's archive index), *Exchange updated* (when the
+  public site's file last changed; the fact is the link to the Exchange), *Next
+  newsletter* (the next issue date), *In the queue* with a count badge (clicking
+  scrolls to the table).
 - **Add to the queue** form on the left: Title, Description ("paste whatever you
   have"), Link, a spotlight checkbox, Type radios (picking a type reveals its
   subtypes under it, labelled Subtype), and "Your name or initials". Submit saves
@@ -78,7 +79,11 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   Claude. The items appear in a review table (each with Remove, click a row to
   peek) and nothing saves until **Add all to the queue**, which opens a blocking
   progress popup.
-- **One door** on the right: Policy Exchange, a new tab. The builder's door is the header pill alone (Sep 15: three ways to the builder read as three different things).
+- **Four quick links** in the right rail, the sketch's list in its order: *Content
+  sort* (goes to Sort), *Newsletter* (the builder, a new tab), *Share something* and
+  *Listserv sign-up* (each with Open and Copy; Copy puts one sentence with the
+  public page's link on the clipboard, ready to paste into an email). The Policy
+  Exchange door card is gone: the Exchange is reached from the strip.
 - **The queue table** at the bottom: every waiting and parked item, newest first,
   sortable, with a red trash can per row. Deleting greys the row in place with an
   Undo for the rest of the session. A row still being read says "Reading...".

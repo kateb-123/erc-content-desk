@@ -4,6 +4,7 @@ import { readAllWaiting } from './reader-client.js';
 import { readerQueue } from './sort-view.js';
 import { dotsLoader, loadingLabel } from './icons.js';
 import { renderHome } from './home-ui.js';
+import { latestIssue } from './home-panel.js';
 import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
 import { renderPublish, downloadCsv } from './publish-ui.js';
@@ -31,6 +32,7 @@ const state = {
   publishPreview: null,
   publishedCsv: '',       // the CSV from the last publish, for the receipt's re-download
   hubUpdated: null,
+  lastIssue: null,          // newest archived issue date, for Home's strip
   rewroteNote: null,
 };
 
@@ -412,6 +414,8 @@ export function render() {
     renderHome(screens.home, {
       ...common, loaded: state.loaded,
       hubUpdated: state.hubUpdated,
+      lastIssue: state.lastIssue,
+      onGoTo: goTo,
       onSubmitted: reload,
       onRefresh: reload,
       // The queue's trash can, through the same queued write as Sort. Undo hands
@@ -509,6 +513,16 @@ for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {
     state.hubUpdated = Number.isNaN(d.getTime()) ? ''
       : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   } catch { state.hubUpdated = ''; }
+  render();
+})();
+
+// Home's "Last issue" fact: the newest date in the builder's archive index.
+// Fetched once per visit; a miss leaves the dash.
+(async () => {
+  try {
+    const res = await fetch('/builder/newsletters/index.json');
+    state.lastIssue = latestIssue(await res.json());
+  } catch { state.lastIssue = ''; }
   render();
 })();
 

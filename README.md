@@ -14,7 +14,7 @@ it runs) and `design/DESIGN.md` (the style contract).
 
 ## The flow
 
-**Add to the queue** (Home): a title, a link, and whatever text the submitter can
+**Add to the queue** (Home, under a strip of facts and beside four quick links): a title, a link, and whatever text the submitter can
 paste. A link alone is enough. The row saves at once; the reader then opens the
 link, fills the blank columns, and turns a pasted announcement into a short
 description, in the background. The spreadsheet door takes a whole `.xlsx`, `.csv`,
