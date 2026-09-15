@@ -1,8 +1,9 @@
 /**
  * Home (redesigned Sep 1): a glance row on top — Exchange updated, next
  * newsletter, queue count, the public submission page — then the shared
- * submit form with the two outward doors as cards on the right, and the
- * queue table below. The form is mounted once and left alone on re-renders
+ * submit form with the Policy Exchange door as a card on the right (the
+ * builder's door is the header pill alone since Sep 15), and the queue
+ * table below. The form is mounted once and left alone on re-renders
  * so typing is never wiped; the glance row and door rail rebuild.
  */
 import { renderSubmitForm } from './submit-form.js';
@@ -13,7 +14,6 @@ import { nextIssueDate } from './schedule.js';
 import { isoToShort } from './queue-view.js';
 
 const EXCHANGE_URL = 'https://erc-policy-exchange.vercel.app/';
-const BUILDER_URL = '/builder/';
 // The public share page lives in the Policy Exchange hub — a separate
 // origin from the desk on purpose: nothing on it can lead back here.
 const SUBMIT_PATH = 'https://erc-policy-exchange.vercel.app/share/';
@@ -101,11 +101,11 @@ export function renderHome(container, { rows, schedule, today, loaded, hubUpdate
   publicCard.append(actions);
   glance.append(publicCard);
 
-  // ── The doors, as cards on the right. ──
+  // ── The door, as a card on the right. One way to the builder: the header
+  // pill (Kate, Sep 15, option A); three ways read as three different things.
   const rail = container.querySelector('.door-rail');
   rail.replaceChildren(
     doorCard('Policy Exchange', 'The public hub everything publishes to.', EXCHANGE_URL),
-    doorCard('Build newsletter', 'Assemble the next issue from what the desk staged.', BUILDER_URL),
   );
 
   const queueSection = container.querySelector('.queue-section');

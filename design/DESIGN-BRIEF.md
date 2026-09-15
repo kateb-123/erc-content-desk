@@ -78,7 +78,7 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   Claude. The items appear in a review table (each with Remove, click a row to
   peek) and nothing saves until **Add all to the queue**, which opens a blocking
   progress popup.
-- **Two doors** on the right: Policy Exchange and Build newsletter, both new tabs.
+- **One door** on the right: Policy Exchange, a new tab. The builder's door is the header pill alone (Sep 15: three ways to the builder read as three different things).
 - **The queue table** at the bottom: every waiting and parked item, newest first,
   sortable, with a red trash can per row. Deleting greys the row in place with an
   Undo for the rest of the session. A row still being read says "Reading...".
