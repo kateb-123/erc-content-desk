@@ -501,6 +501,7 @@ export function renderSort(container, props) {
     if (key === 'fix' && count > 0) cls += ' is-alert';   // the one notification on the screen
     const btn = el('button', cls, `${label} (${count})`);
     btn.type = 'button';
+    if (filter === key) btn.setAttribute('aria-current', 'true');
     btn.addEventListener('click', () => onFilter(key));
     nav.append(btn);
   }

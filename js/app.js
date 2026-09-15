@@ -372,13 +372,27 @@ try {
 } catch { /* ignore bad stashes */ }
 
 const SCREEN_ORDER = ['home', 'sort', 'finalize', 'publish', 'build'];
+const SCREEN_NAMES = { sort: 'Sort', finalize: 'Finalize', publish: 'Publish to Exchange', build: 'Send to Newsletter' };
 let shownScreen = null;
+
+/** A screen switch tells assistive tech where it landed: the incoming title
+ *  takes focus (design audit 14, Sep 15). Nothing on the first paint. */
+function focusHeading(section) {
+  const h2 = section?.querySelector('h2');
+  if (!h2) return;
+  h2.tabIndex = -1;
+  h2.focus({ preventScroll: true });
+}
 
 export function render() {
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
   for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {
-    tab.classList.toggle('is-active', tab.dataset.screen === state.screen);
+    const here = tab.dataset.screen === state.screen;
+    tab.classList.toggle('is-active', here);
+    if (here) tab.setAttribute('aria-current', 'page'); else tab.removeAttribute('aria-current');
   }
+  document.title = state.screen === 'home' ? 'ERC Content Desk' : `${SCREEN_NAMES[state.screen]} · ERC Content Desk`;
+  const switched = shownScreen !== null && shownScreen !== state.screen;
   if (shownScreen !== state.screen) {
     const from = SCREEN_ORDER.indexOf(shownScreen);
     const to = SCREEN_ORDER.indexOf(state.screen);
@@ -476,6 +490,7 @@ export function render() {
       onTrash: row => persist([trash(row)]),
     });
   }
+  if (switched) focusHeading(screens[state.screen]);
 }
 
 for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {

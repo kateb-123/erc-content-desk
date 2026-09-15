@@ -33,6 +33,7 @@ export function openBusyOverlay({ title, total, note = '' }) {
   card.setAttribute('role', 'dialog');
   card.setAttribute('aria-modal', 'true');
   card.setAttribute('aria-live', 'polite');
+  card.tabIndex = -1;
 
   const heading = el('h2', '', title);
   const count = el('div', 'busy-count');
@@ -55,6 +56,13 @@ export function openBusyOverlay({ title, total, note = '' }) {
   document.body.style.overflow = 'hidden';
   document.body.append(dim);
 
+  // Keys stay in the popup too (design audit 16, Sep 15): the card takes
+  // focus, Tab goes nowhere, and focus goes back where it was afterwards.
+  const wasFocused = document.activeElement;
+  card.focus({ preventScroll: true });
+  const trapKeys = event => { if (event.key === 'Tab') event.preventDefault(); };
+  document.addEventListener('keydown', trapKeys, true);
+
   fill.style.width = '0%';
 
   return {
@@ -64,8 +72,10 @@ export function openBusyOverlay({ title, total, note = '' }) {
     },
     close() {
       window.removeEventListener('beforeunload', warn);
+      document.removeEventListener('keydown', trapKeys, true);
       document.body.style.overflow = scrollWas;
       dim.remove();
+      setTimeout(() => wasFocused?.focus?.({ preventScroll: true }), 0);
     },
   };
 }
