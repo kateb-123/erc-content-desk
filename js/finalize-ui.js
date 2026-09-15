@@ -364,7 +364,7 @@ export function renderFinalize(container, props) {
     btn.addEventListener('click', () => { btn.disabled = true; onRewrite(); });
     head.append(btn);
   } else if (!busy && keeps.length && !checks) {
-    const btn = el('button', 'primary head-action', 'Go to Publish');
+    const btn = el('button', 'door head-action', 'Go to Publish');
     btn.append(forwardIcon());
     btn.addEventListener('click', () => onGoTo('publish'));
     head.append(btn);

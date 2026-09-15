@@ -143,7 +143,7 @@ export function renderPublish(container, props) {
   if (showReceipt) {
     // receipt below carries the onward door — head stays bare
   } else if (!candidates.length && !busy) {
-    const btn = el('button', 'primary head-action', 'Send to Newsletter');
+    const btn = el('button', 'door head-action', 'Send to Newsletter');
     btn.append(forwardIcon());
     btn.addEventListener('click', () => onGoTo('build'));
     head.append(btn);
@@ -165,7 +165,7 @@ export function renderPublish(container, props) {
     head.append(btn);
   } else if (preview && !busy && !trialPosting) {
     // Nothing to add — the only move left is the newsletter door.
-    const btn = el('button', 'primary head-action', 'Send to Newsletter');
+    const btn = el('button', 'door head-action', 'Send to Newsletter');
     btn.append(forwardIcon());
     btn.addEventListener('click', () => onGoTo('build'));
     head.append(btn);
@@ -198,7 +198,7 @@ export function renderPublish(container, props) {
     receipt.append(el('p', '', isTrial
       ? 'Trial run — nothing went to the live Exchange.'
       : 'The site updates in about a minute.'));
-    const door = el('button', 'primary slim-door', 'Send to Newsletter ');
+    const door = el('button', 'door slim-door', 'Send to Newsletter ');
     door.append(forwardIcon());
     door.addEventListener('click', () => { trialDone = 0; onGoTo('build'); });
     receipt.append(door);

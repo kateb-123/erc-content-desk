@@ -68,7 +68,7 @@ look, everywhere it appears.
 | **Re-check** | — | linkish in Publish's lede | force a fresh hub check |
 | **Upload media** → Replace / Remove media | — | quiet outline button + muted Remove word | attach a picture or PDF flyer to an item (ERC cards in Sort; newsletter items in the builder) — the URL rides the row’s infographic column into the email |
 | **Send early? → Confirm / Cancel** | fa-clock on the bubble | amber bubble, one ask (same as Verify link) | picking an event that belongs to a later issue — the words stay bare, the bubble carries the icon |
-| Door buttons (Go to Finalize/Publish, Send to newsletter) | → `fa-arrow-right` | slim primary (.85rem, .35rem padding), right of the screen head | move along the pipeline |
+| Door buttons (Go to Finalize/Publish, Send to Newsletter, the receipt's door) | → `fa-arrow-right` | outlined accent pill, the header's Build newsletter look (Sep 15, option A), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
 | **Keep the rest (N)** | ✓ `fa-check` | the ONE filled button on a Sort section list, right of the list head | keep every listed row that has a real type and a checked link; Skip and Delete on each row are the only other actions there (Sep 11) |
 
 Sort is one table at a time (Sep 11 option A; Sep 15 the card stream went,

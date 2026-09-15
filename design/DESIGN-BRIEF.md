@@ -60,7 +60,7 @@ at `/builder/` in a new tab. Under the header sits one status line that carries
 loading and error messages for the whole app.
 
 Every screen head is a bare title plus a **View info** toggle that opens a tinted
-instruction panel, and (where the pipeline continues) one slim primary door button
+instruction panel, and (where the pipeline continues) one outlined door pill (the header's Build newsletter look, Sep 15)
 on the right with a right arrow: Go to Finalize, Go to Publish, Send to newsletter.
 
 ### Home

@@ -136,13 +136,18 @@ label.radio { display: block; margin: .15rem 0; font-size: .95rem; color: var(--
 .desk-bar { display: flex; align-items: center; gap: 2.5rem; flex-wrap: wrap; }
 .desk-header h1 { font-size: 1.2rem; margin: 0; }
 
-/* The builder door: in the header but deliberately not a tab — outlined, pushed right. */
-.builder-door {
-  margin-left: auto; border: 1.5px solid var(--accent); border-radius: 999px;
+/* Doors (Kate, Sep 15, option A): every way onward wears one look, the outlined
+   accent pill: the header's Build newsletter, Go to Finalize, Go to Publish,
+   Send to Newsletter, the receipt's door. The one filled button on a screen is
+   then always its decision. */
+.door, .builder-door {
+  display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+  border: 1.5px solid var(--accent); border-radius: 999px;
   background: #fff; padding: .4rem 1rem; color: var(--accent); text-decoration: none;
-  font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .85rem;
+  font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .85rem; cursor: pointer;
 }
-.builder-door:hover { background: var(--tint); }
+.door:hover:not(:disabled), .builder-door:hover { background: var(--tint); border-color: var(--accent); }
+.builder-door { margin-left: auto; }
 
 /* Bubble pills (the builder's look): the active screen is a filled pill. */
 .screen-nav { display: flex; gap: .5rem; flex-wrap: wrap; }
@@ -156,9 +161,10 @@ label.radio { display: block; margin: .15rem 0; font-size: .95rem; color: var(--
 .info-toggle { border: none; background: none; padding: 0; font: inherit; font-weight: 600; font-size: .85rem; color: var(--accent); cursor: pointer; }
 .info-toggle:hover:not(:disabled) { border: none; text-decoration: underline; }
 .info-panel { background: var(--tint); border-radius: 8px; padding: .7rem 1rem; margin: .6rem 0 .4rem; font-size: .9rem; color: #2b4a61; max-width: 46rem; }
-/* Header buttons: every screen-head action is slim — doors carry the arrow. */
+/* Header buttons: the screen's decision is a slim primary; its door is an outlined pill; both sit right. */
 .screen-head button.primary { margin-left: auto; font-size: .85rem; padding: .35rem .9rem; align-self: center; }
-.head-action .fa-arrow-right { margin-left: .45rem; font-size: .85em; }
+.screen-head .door { margin-left: auto; align-self: center; }
+.head-action .fa-arrow-right { font-size: .85em; }
 .screen-head .lede { margin: 0; flex: 1; }
 
 .adder { background: #fff; border: 1px dashed var(--line); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; }
@@ -202,9 +208,7 @@ button.trash-link, .trash-link { color: var(--err); }
 .decided-text { flex: 1; }
 
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-/* Door grammar off the screen head: any onward door is the same slim primary. */
-a.primary { background: var(--accent); border: 1px solid var(--accent); color: #fff; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; border-radius: var(--radius); text-decoration: none; }
-.slim-door { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; font-size: .85rem; padding: .35rem .9rem; }
+/* Door grammar off the screen head: the receipt's door and the post-send door are .door too. */
 .slim-door .fa-arrow-right { font-size: .85em; }
 .csv-preview { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 1rem; overflow-x: auto; font-size: .75rem; margin-bottom: 1rem; }
 .warn { background: #fff; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 0 12px 12px 0; padding: .75rem 1rem; margin-bottom: 1rem; font-size: .85rem; }
@@ -460,7 +464,7 @@ input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus 
 .check-icon { width: 18px; height: 18px; vertical-align: -3px; margin-right: 6px; color: var(--ok); }
 .draw-check path { stroke-dasharray: 24; stroke-dashoffset: 24; animation: check-draw 350ms cubic-bezier(0.33, 1, 0.68, 1) 80ms forwards; }
 @keyframes check-draw { to { stroke-dashoffset: 0; } }
-.pub-done-anim .primary { animation: rise-in 200ms cubic-bezier(0.33, 1, 0.68, 1) 250ms both; }
+.pub-done-anim .door { animation: rise-in 200ms cubic-bezier(0.33, 1, 0.68, 1) 250ms both; }
 /* Publish report chips + the post-publish receipt (Kate's Direction A). */
 .p-chips { display: flex; gap: .6rem; margin: .25rem 0 1rem; flex-wrap: wrap; }
 .p-chip { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: .85rem; border-radius: 999px; padding: .3rem .9rem; background: var(--tint); color: #14507a; border: 0; cursor: pointer; }

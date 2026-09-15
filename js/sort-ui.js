@@ -487,7 +487,7 @@ export function renderSort(container, props) {
   const info = titleWithInfo('Sort', 'sort',
     'Each section is a list. Delete what does not belong, Skip what you are not sure about (it waits under Skipped), then Keep the rest of a section in one press. Click a row to read it, edit it, set its type, or check its link. A row with no type or an unchecked link stays out of Keep the rest until you fix it (Delete works any time).');
   head.append(info.row);
-  const door = el('button', 'primary head-action', 'Go to Finalize');
+  const door = el('button', 'door head-action', 'Go to Finalize');
   door.append(forwardIcon());
   door.addEventListener('click', () => onGoTo?.('finalize'));
   head.append(door);
