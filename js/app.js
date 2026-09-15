@@ -215,8 +215,9 @@ async function readBeforeSort() {
   }
 }
 
-function goTo(key) {
+function goTo(key, filter) {
   if (key !== state.screen) setStatus('');   // last screen's message doesn't follow
+  if (key === 'sort' && filter) { state.sortFilter = filter; saveSortSpot(); }   // Publish's "fix in Sort" lands on the pill it names
   if (key === 'sort' && state.screen !== 'sort') readBeforeSort();
   if (key === 'finalize' && state.screen !== 'finalize') resetFinalizeEntry();
   if (key === 'build' && state.screen !== 'build') { resetNewsletterEntry(); state.justSent = null; }

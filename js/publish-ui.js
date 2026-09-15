@@ -227,9 +227,9 @@ export function renderPublish(container, props) {
     warn.setAttribute('aria-hidden', 'true');
     alert.append(warn, ' ');
     alert.append(`${notReady.length} kept item${notReady.length === 1 ? '' : 's'} still need${notReady.length === 1 ? 's' : ''} a type — `);
-    const jump = el('button', 'linkish', "fix in Sort's Needs a type");
+    const jump = el('button', 'linkish', "fix in Sort's Needs a fix");
     jump.type = 'button';
-    jump.addEventListener('click', () => onGoTo('sort'));
+    jump.addEventListener('click', () => onGoTo('sort', 'fix'));
     alert.append(jump);
     container.append(alert);
   }
