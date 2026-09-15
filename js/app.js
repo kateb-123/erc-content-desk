@@ -220,7 +220,8 @@ function goTo(key, filter) {
   if (key === 'sort' && filter) { state.sortFilter = filter; saveSortSpot(); }   // Publish's "fix in Sort" lands on the pill it names
   if (key === 'sort' && state.screen !== 'sort') readBeforeSort();
   if (key === 'finalize' && state.screen !== 'finalize') resetFinalizeEntry();
-  if (key === 'build' && state.screen !== 'build') { resetNewsletterEntry(); state.justSent = null; }
+  // The ticks survive a hop to another screen (Kate, Sep 15); only the receipt resets.
+  if (key === 'build' && state.screen !== 'build') state.justSent = null;
   if (key === 'publish' && state.screen !== 'publish') {
     // The check is read-only and CACHED: it runs on first arrival and again
     // only after something changed (persist clears it) or via Re-check.
@@ -339,6 +340,7 @@ async function sendToNewsletter(selectedRows, issue) {
   state.busy = false;
   if (!ok) { render(); return; } // persist already showed the error
   state.justSent = { count: selectedRows.length, issue, ids: selectedRows.map(r => r.id) };
+  resetNewsletterEntry();   // sent: the next pick starts clean
   setStatus(`Sent ${selectedRows.length} to the newsletter builder.`, 'ok');
   render();
 }

@@ -22,7 +22,9 @@ const GROUP_LABELS = {
   opportunity: 'Opportunities', headline: 'Headlines',
 };
 
-// View state only — resets on every visit to the screen.
+// View state: lives while the page is open. The ticks clear after a Send and
+// when the issue changes, not on a hop to another screen (Kate, Sep 15: tick
+// five, check something in Finalize, come back, still ticked).
 let picked = new Set(); // nothing goes unless she picks it
 let issuePick = '';     // '' = the next issue on the schedule
 let confirmedEarly = new Set(); // later-event ids okayed via "Send early?" this visit
@@ -31,6 +33,7 @@ let askOpenId = null;           // later-event row currently asking
 // Folded categories survive re-renders (every checkbox click re-renders).
 const collapsedGroups = new Set();
 
+/** After a Send: nothing carries over to the next pick. */
 export function resetNewsletterEntry() { picked = new Set(); issuePick = ''; confirmedEarly = new Set(); askOpenId = null; }
 
 function el(tag, className, text) {
@@ -212,7 +215,8 @@ export function renderNewsletter(container, props) {
     }
     select.addEventListener('change', () => {
       issuePick = select.value;
-      // "Send it early" was answered about the old issue — it never carries over.
+      // The picks and the "Send it early" answers were about the old issue — they never carry over.
+      picked = new Set();
       confirmedEarly.clear();
       askOpenId = null;
       rerender();
