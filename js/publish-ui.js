@@ -92,6 +92,12 @@ function group(container, title, rows, { cls, fix, hint, rerender, onGoTo, today
   if (title) container.append(el('h3', 'p-group', title));
   if (hint) container.append(el('p', 'hint p-group-hint', hint));
   const table = el('table', 'queue-table finalize-table publish-table');
+  // Every table names its columns (Sep 15): the date here is when it was submitted.
+  const hr = el('tr');
+  hr.append(el('th', 'f-caret'), el('th', '', 'Title'), el('th', '', 'Type'), el('th', '', 'Submitted'));
+  const thead = el('thead');
+  thead.append(hr);
+  table.append(thead);
   const tbody = el('tbody');
   for (const row of rows) tbody.append(...itemRows(row, { cls, fix, rerender, onGoTo, today }));
   table.append(tbody);

@@ -205,6 +205,12 @@ function itemRows(row, { tint, busy, rerender, onEditRow, onTrash, today }) {
   const typeTd = el('td');
   typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
   if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
+  // Words for the tints (Kate, Sep 15, option A): the grey badges Sort uses for
+  // facts, so blue and amber never carry the meaning alone.
+  const marks = el('div', 'list-badges');
+  if (isErc(row)) marks.append(el('span', 'badge', 'ERC'));
+  if (tint) marks.append(el('span', 'badge', 'Needs rewrite'));
+  if (marks.childElementCount) typeTd.append(marks);
   tr.append(typeTd);
   tr.append(el('td', '', isoToShort(row.submitted_at, today) || '—'));
   const caretTd = el('td', 'f-caret');
@@ -407,7 +413,7 @@ export function renderFinalize(container, props) {
   for (const col of [
     { key: 'title', label: 'Title' },
     { key: 'type', label: 'Type' },
-    { key: 'submitted', label: 'Date' },
+    { key: 'submitted', label: 'Submitted' },
   ]) {
     const th = el('th');
     const active = sortState.column === col.key;

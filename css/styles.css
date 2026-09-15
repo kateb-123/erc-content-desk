@@ -440,9 +440,14 @@ button.glance-card:hover:not(:disabled) { border-color: var(--accent); }
 .finalize-table th:nth-child(2) { width: auto; }
 .finalize-table th:nth-child(3) { width: 22%; }
 .finalize-table th:nth-child(4) { width: 13%; }
+/* The newsletter pool's tables start with the checkbox column, so the same shift. */
+.nl-table th:nth-child(2) { width: auto; }
+.nl-table th:nth-child(3) { width: 22%; }
+.nl-table th:nth-child(4) { width: 13%; }
+.finalize-table .list-badges { margin-top: .3rem; }
 .queue-table .item-source { display: block; font-size: .8rem; color: var(--muted); margin-top: .15rem; }
 .queue-table td { padding: .5rem .6rem; border-top: 1px solid var(--line); vertical-align: top; }
-.queue-table td.missing { color: var(--err); }
+.queue-table td.missing { color: var(--muted); }
 
 /* Motion — fast and purposeful (Emil-weighted); state never waits on it.
    Reduced-motion users get instant state changes via the block at the end. */

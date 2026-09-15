@@ -248,6 +248,12 @@ export function renderNewsletter(container, props) {
     fold.append(summary);
     fold.dataset.group = label;
     const table = el('table', 'queue-table nl-table');
+    // Every table names its columns (Sep 15): the date here is when it went live.
+    const hr = el('tr');
+    hr.append(el('th', 'nl-check'), el('th', '', 'Title'), el('th', '', 'Type'), el('th', '', 'Published'));
+    const thead = el('thead');
+    thead.append(hr);
+    table.append(thead);
     const tbody = el('tbody');
     // Events for a later issue dim and sink to the bottom, nearest first.
     const ordered = [

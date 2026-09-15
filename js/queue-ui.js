@@ -42,7 +42,8 @@ function bodyRow(row, { onDelete, rerender, today }) {
   tr.append(titleCell(row));
   // A row the reader has not filed yet says so; its type is not settled.
   if (row.pending_read === 'yes') tr.append(el('td', 'missing', 'Reading…'));
-  else tr.append(el('td', row.type ? '' : 'missing', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
+  // "No type" in words, muted: a red dash read as an error and said nothing (Sep 15).
+  else tr.append(el('td', row.type ? '' : 'missing', row.type ? (TYPE_LABELS[row.type] ?? row.type) : 'No type'));
   tr.append(el('td', '', submittedDate(row, today)));
 
   const actions = el('td', 'queue-actions');
@@ -99,7 +100,7 @@ export function renderQueueTable(container, { rows, today, onRefresh, onDelete }
   const SORTABLE = [
     { key: 'title', label: 'Title' },
     { key: 'type', label: 'Type' },
-    { key: 'submitted', label: 'Date' },
+    { key: 'submitted', label: 'Submitted' },
   ];
   const headRow = el('tr');
   for (const col of SORTABLE) {
