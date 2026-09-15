@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { queueBadgeCount, queueOrder } from '../js/home-panel.js';
+import { queueBadgeCount, queueOrder, latestIssue, shareLine, signupLine } from '../js/home-panel.js';
 
 test('queueBadgeCount counts new plus parked rows', () => {
   const rows = [
@@ -41,4 +41,35 @@ test('queueOrder skips rows that are not pending and never mutates its input', (
   const before = rows.map(r => r.id);
   assert.deepEqual(queueOrder(rows).map(r => r.id), ['c', 'a']);
   assert.deepEqual(rows.map(r => r.id), before);
+});
+
+// ── The stats strip and the quick links (main page, Sep 15 sketch) ──
+
+test('latestIssue picks the newest archived date whatever order the index is in', () => {
+  const index = [
+    { date: '2026-06-16', file: '2026-06-16.html' },
+    { date: '2026-08-25', file: '2026-08-25.html' },
+    { date: '2026-05-12', file: '2026-05-12.html' },
+  ];
+  assert.equal(latestIssue(index), '2026-08-25');
+});
+
+test('latestIssue is blank for an empty, missing, or malformed index', () => {
+  assert.equal(latestIssue([]), '');
+  assert.equal(latestIssue(null), '');
+  assert.equal(latestIssue([{ file: 'x.html' }, { date: 'soon' }]), '');
+});
+
+test('shareLine is one sentence with the public share page at the end', () => {
+  const line = shareLine('https://erc-policy-exchange.vercel.app/share/');
+  assert.ok(line.endsWith('https://erc-policy-exchange.vercel.app/share/'));
+  assert.ok(!line.includes('\n'));
+  assert.match(line, /^[A-Z]/);
+});
+
+test('signupLine is one sentence with the listserv page at the end', () => {
+  const line = signupLine('https://erc-policy-exchange.vercel.app/newsletter/');
+  assert.ok(line.endsWith('https://erc-policy-exchange.vercel.app/newsletter/'));
+  assert.ok(!line.includes('\n'));
+  assert.notEqual(line, shareLine('https://erc-policy-exchange.vercel.app/newsletter/'));
 });
