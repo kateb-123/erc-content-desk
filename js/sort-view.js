@@ -46,17 +46,27 @@ export function readerQueue(rows) {
   return rows.filter(r => r.status === 'new' && awaitingReader(r)).map(r => r.id);
 }
 
+/** What the queue still has for Sort: filed pending rows, plus kept fix-ups. */
+export function pendingRowCount(rows) {
+  return pendingRows(rows).filter(r => !awaitingReader(r)).length + keptUntyped(rows).length;
+}
+
 /**
- * Per-bucket totals for the pill labels. One row, one bucket: a pill's number
- * is exactly what that pill lists (Sep 15 — an ERC event used to be counted
- * under both ERC and Events, and a row with a legacy type under neither).
+ * Per-pill totals, read off the same walk that builds the tables, so a pill's
+ * number is exactly what that pill lists (Sep 15 — an ERC event used to be
+ * counted under both ERC and Events, and a row with a legacy type under
+ * neither). No All since the tables show one at a time.
  */
-export function sortCounts(rows, ctx = fixContext(rows)) {
-  const pending = pendingRows(rows).filter(r => !awaitingReader(r));
-  const fixups = keptUntyped(rows).length;
-  const counts = { all: pending.length + fixups, erc: 0, fix: fixups, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 };
-  for (const r of pending) counts[sectionOf(r, ctx)]++;
+export function sortCounts(rows) {
+  const counts = Object.fromEntries(SECTION_ORDER.map(k => [k, 0]));
+  for (const g of allSections(rows)) counts[g.section] = g.live.length;
   return counts;
+}
+
+/** Where Sort lands with no pill picked: the first one holding anything,
+ *  Needs a fix first; Needs a fix again when the queue is empty. */
+export function landingSection(counts) {
+  return SECTION_ORDER.find(k => counts[k] > 0) ?? SECTION_ORDER[0];
 }
 
 /** No real type yet: nothing picked, or a subtype the schema does not know. */
@@ -135,9 +145,9 @@ export function sectionRows(rows, section, sessionDecided = new Set(), ctx = fix
 }
 
 /**
- * All, as tables (Kate, Sep 15): every section that holds something, in the
- * pill order, each with its own rows. Replaces the one-card stream — going
- * through them one at a time took too long.
+ * Every section that holds something, in pill order, each with its own rows:
+ * the one walk the counts are read from, and the invariant the tests hold
+ * (one row, one section). The screen itself shows one section at a time.
  */
 export function allSections(rows, sessionDecided = new Set()) {
   const ctx = fixContext(rows);

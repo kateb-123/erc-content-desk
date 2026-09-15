@@ -24,8 +24,8 @@ posts to `/api/submit` behind a Cloudflare Turnstile check.
 
 **Sort**: every section pill (Needs a fix, ERC, ERC events, Research, Events,
 Opportunities, Headlines) is a list with **Skip** and **Delete** per row and one
-**Keep the rest**; **All** stacks every section under its own heading. Decisions
-are click only. Nothing reaches the list until the reader has filed it.
+**Keep the rest**; one table shows at a time, picked from the menu on the left.
+Decisions are click only. Nothing reaches the list until the reader has filed it.
 
 **Finalize**: one batched Opus call rewrites kept events, ERC events, and
 opportunities into the ERC voice (research abstracts and headlines are left alone),

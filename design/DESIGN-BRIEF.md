@@ -84,8 +84,9 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   Undo for the rest of the session. A row still being read says "Reading...".
 
 ### Sort (the screen that matters most)
-A left column of section pills, each with a count: All, Needs a fix, ERC, ERC
-events, Research, Events, Opportunities, Headlines. Needs a fix glows amber while
+A left column of section pills, each with a count: Needs a fix, ERC, ERC
+events, Research, Events, Opportunities, Headlines. One table shows at a time;
+the screen lands on the first pill that holds anything. Needs a fix glows amber while
 it holds anything; it is the one notification on the screen (Sep 15). It gathers
 every row that cannot be kept yet (no type, a link the desk could not open) and
 every possible duplicate, with the reason in the subtype column and one amber
@@ -102,9 +103,8 @@ moves to its section.
   notes, the type line with Change (or the type picker itself when a type is
   missing), Open source, the link alert, and Edit. A decided row sinks to the
   bottom of the list, greyed (deleted ones struck through) with an Undo.
-- **All** stacks every non-empty section in pill order, each under its own
-  heading with its own Keep the rest, and one "Undo last" for the screen above
-  the stack. A pill's count is exactly the rows it lists; they sum to All.
+- A pill's count is exactly the rows it lists. There is no All view (Sep 15,
+  Kate: one table per section, the menu pulls up the next).
 - **Edit** opens Title, Description, Link (and a picture control on ERC items) in
   place, with Save and Cancel. Whatever is typed is carried by whichever button
   ends the card.

@@ -71,11 +71,12 @@ look, everywhere it appears.
 | Door buttons (Go to Finalize/Publish, Send to newsletter) | → `fa-arrow-right` | slim primary (.85rem, .35rem padding), right of the screen head | move along the pipeline |
 | **Keep the rest (N)** | ✓ `fa-check` | the ONE filled button on a Sort section list, right of the list head | keep every listed row that has a real type and a checked link; Skip and Delete on each row are the only other actions there (Sep 11) |
 
-Sort is tables, not cards (Sep 11 option A; Sep 15 the card stream went too):
-every section pill (Needs a fix, ERC, ERC events, Research, Events,
-Opportunities, Headlines) lists its own section, and All stacks every non-empty
-section in that order, each under its own heading with its own Keep the rest.
-One Undo last for the screen sits above the stack. Each row: chevron, title
+Sort is one table at a time (Sep 11 option A; Sep 15 the card stream went,
+then the stacked All view): the menu on the left (Needs a fix, ERC, ERC
+events, Research, Events, Opportunities, Headlines) picks a section, and the
+screen lands on the first one that holds anything, Needs a fix first. There
+is no All. Each table has its own Keep the rest and Undo last in its head.
+Each row: chevron, title
 with authors or source · date, Skip · Delete, and nothing else (Sep 15,
 option B: the description and the type column live in the open row). The
 whole row opens it, not just the chevron. Rows carry NO amber marks (Kate, Sep 15): everything that cannot

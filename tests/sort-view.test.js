@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { keptUntyped, sortCounts, sectionOf, allSections, fixReasons } from '../js/sort-view.js';
+import { keptUntyped, sortCounts, sectionOf, allSections, fixReasons, landingSection, pendingRowCount } from '../js/sort-view.js';
 
 // Shuffled on purpose: statuses mixed in, groups interleaved, dates unordered.
 // Every typed row carries a real subtype: without one it would sit under Needs a fix.
@@ -24,7 +24,7 @@ test('sortCounts totals pending rows per bucket, each row in one bucket only', (
   // type, where it is listed. Before Sep 15 the first two double-counted and
   // the third counted nowhere.
   assert.deepEqual(sortCounts(rows), {
-    all: 10, erc: 2, fix: 2, erc_event: 0, research: 3, event: 1, opportunity: 1, headline: 1,
+    erc: 2, fix: 2, erc_event: 0, research: 3, event: 1, opportunity: 1, headline: 1,
   });
 });
 
@@ -34,7 +34,7 @@ test('allSections over the whole queue loses nothing and repeats nothing', async
   assert.equal(new Set(listed).size, listed.length);
   assert.deepEqual([...listed].sort(),
     ['e1', 'erc1', 'erc2', 'h1', 'o1', 'r1', 'r2', 'r3', 'u1', 'weird'].sort());
-  assert.equal(listed.length, sortCounts(rows).all);
+  assert.equal(listed.length, pendingRowCount(rows));
 });
 
 test('allSections orders a section oldest first, the way the card stream did', async () => {
@@ -116,7 +116,7 @@ test('a row still waiting for the reader never reaches a list or a count', () =>
   ];
   assert.deepEqual(allSections(waiting).flatMap(g => g.live.map(r => r.id)), ['e9']);
   const counts = sortCounts(waiting);
-  assert.equal(counts.all, 1);
+  assert.equal(pendingRowCount(waiting), 1);
   assert.equal(counts.fix, 0);
   assert.equal(counts.event, 1);
 });
@@ -211,12 +211,12 @@ test('a pill count equals the rows that pill lists, and the counts sum to All', 
   for (const g of groups) assert.equal(counts[g.section], g.live.length, `${g.section} count`);
   const bySection = ['fix', 'erc', 'erc_event', 'research', 'event', 'opportunity', 'headline']
     .reduce((n, k) => n + counts[k], 0);
-  assert.equal(bySection, counts.all);
+  assert.equal(bySection, pendingRowCount(rows));
 });
 
 test('an ERC row counts once, under ERC, not again under its own type', () => {
   const rs = [{ id: 'e', status: 'new', type: 'event', subtype: 'Off-Campus', spotlight_request: true, submitted_at: '2026-09-01T00:00:00Z' }];
-  assert.deepEqual(sortCounts(rs), { all: 1, erc: 1, fix: 0, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 });
+  assert.deepEqual(sortCounts(rs), { erc: 1, fix: 0, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 });
 });
 
 test('a row with a legacy type counts under Needs a type, where it is listed', () => {
@@ -260,4 +260,18 @@ test('a row with an unchecked link lists under Needs a fix only, never also unde
   assert.deepEqual(groups.map(g => [g.section, g.live.map(r => r.id)]), [['fix', ['bad']], ['research', ['ok']]]);
   assert.equal(sortCounts(rs).fix, 1);
   assert.equal(sortCounts(rs).research, 1);
+});
+
+// One table at a time (Kate, Sep 15): no All pill. Sort lands on the first
+// section that holds something, Needs a fix first.
+test('landingSection is the first pill with anything in it, Needs a fix first, else Needs a fix', () => {
+  assert.equal(landingSection({ fix: 2, erc: 1, erc_event: 0, research: 3, event: 0, opportunity: 0, headline: 0 }), 'fix');
+  assert.equal(landingSection({ fix: 0, erc: 0, erc_event: 0, research: 3, event: 0, opportunity: 0, headline: 1 }), 'research');
+  assert.equal(landingSection({ fix: 0, erc: 0, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 }), 'fix');
+});
+
+test('pendingRowCount is what the queue still has for Sort: pending rows the reader has filed, plus kept fix-ups', () => {
+  assert.equal(pendingRowCount(rows), 10);
+  assert.equal(pendingRowCount([{ id: 1, status: 'kept', type: '' }]), 1);
+  assert.equal(pendingRowCount([{ id: 2, status: 'new', type: 'event', subtype: 'A&M', pending_read: 'yes' }]), 0);
 });

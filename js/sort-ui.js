@@ -1,13 +1,13 @@
 /**
- * Sort: every section is a table (Kate, Sep 15). A pill lists its own
- * section; All lists every section in turn, each with its own Keep the
- * rest. Rows carry Skip and Delete; the chevron opens the detail card.
+ * Sort: one table at a time (Kate, Sep 15). The menu on the left picks a
+ * section; the screen lands on the first one that holds anything, Needs a
+ * fix first. Rows carry Skip and Delete; the whole row opens its detail.
  */
 import { linkCheckState, reshareFlags, missingFields } from './workflow.js';
 import { TYPE_ORDER, TYPE_LABELS, subtypesFor, typeIsFlat } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref, withScheme } from './links.js';
-import { sortCounts, isErc, readerQueue, isNewToday, sectionRows, allSections, needsType, fixReasons, fixContext } from './sort-view.js';
+import { sortCounts, isErc, readerQueue, isNewToday, sectionRows, landingSection, needsType, fixReasons, fixContext } from './sort-view.js';
 import { buildImageControl } from './item-image.js';
 import { titleWithInfo } from './screen-info.js';
 import { faIcon, forwardIcon } from './icons.js';
@@ -21,7 +21,7 @@ const FILTER_LABELS = [
   // 'Needs a fix' (Kate, Sep 15): the one amber thing on the screen. It gathers
   // every row that cannot be kept yet (no type, link not opened) and possible
   // duplicates, so the rows themselves carry no amber marks.
-  ['', 'All'], ['fix', 'Needs a fix'], ['erc', 'ERC'], ['erc_event', 'ERC events'],
+  ['fix', 'Needs a fix'], ['erc', 'ERC'], ['erc_event', 'ERC events'],
   ['research', 'Research'],
   ['event', 'Events'], ['opportunity', 'Opportunities'], ['headline', 'Headlines'],
 ];
@@ -264,38 +264,6 @@ function renderSectionList(main, props, section) {
   main.append(sectionTable(props, group, rerender));
 }
 
-/**
- * All: every section that holds something, stacked, each its own table with
- * its own Keep the rest (Kate, Sep 15). One Undo for the screen, at the top.
- */
-function renderAllList(main, props) {
-  const rerender = () => renderAllList(main, props);
-  main.replaceChildren();
-  const groups = allSections(props.rows, props.sessionDecided ?? new Set());
-
-  const bar = el('div', 'list-head list-topbar');
-  const undo = el('button', 'undo-link', 'Undo last');
-  undo.type = 'button';
-  undo.disabled = !props.lastDecision;
-  undo.addEventListener('click', () => props.onUndo());
-  bar.append(undo);
-  main.append(bar);
-
-  if (!groups.length) {
-    main.append(emptyLine(props));
-    return;
-  }
-  main.append(el('p', 'hint list-hint', KEEP_HINT));
-  for (const group of groups) {
-    const block = el('section', 'list-section');
-    block.append(sectionHead(props, group.section, keepableIn(group.live), main, false));
-    block.append(sectionTable(props, group, rerender));
-    main.append(block);
-  }
-}
-
-/** Facts about the row, all quiet grey (Kate, Sep 15: amber is for Needs a
- *  fix only). A possible duplicate is a fix, so it is named there, not here. */
 function listBadges(row, { rows, dupes, reshare, today }) {
   const out = [];
   if (isNewToday(row, today)) out.push(el('span', 'badge badge-new', 'New'));
@@ -487,10 +455,10 @@ function buildCardNotes(row) {
 export function renderSort(container, props) {
   container.replaceChildren();
   const { rows, onFilter, onGoTo } = props;
-  // A section key stashed before a rename (sessionStorage) falls back to All.
-  const filter = FILTER_KEYS.includes(props.filter) ? props.filter : '';
-
   const counts = sortCounts(rows);
+  // No pill picked yet (or a key from before a rename): land where the work is.
+  const filter = FILTER_KEYS.includes(props.filter) ? props.filter : landingSection(counts);
+
 
   const head = el('div', 'screen-head');
   const info = titleWithInfo('Sort', 'sort',
@@ -504,7 +472,7 @@ export function renderSort(container, props) {
 
   const nav = el('nav', 'sort-nav');
   for (const [key, label] of FILTER_LABELS) {
-    const count = key === '' ? counts.all : counts[key];
+    const count = counts[key];
     let cls = 'sort-filter';
     if (filter === key) cls += ' is-active';
     if (key === 'fix' && count > 0) cls += ' is-alert';   // the one notification on the screen
@@ -523,9 +491,5 @@ export function renderSort(container, props) {
   }
   lastFilter = filter;
 
-  // Sorting is tables now, not one card at a time (Kate, Sep 15 — going
-  // through cards took too long). A pill lists its own section; All lists
-  // every section in turn.
-  if (filter) renderSectionList(main, props, filter);
-  else renderAllList(main, props);
+  renderSectionList(main, props, filter);
 }

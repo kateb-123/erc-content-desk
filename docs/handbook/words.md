@@ -95,7 +95,7 @@
 "A&M"
 "Off-Campus"
 "Webinar-Online"
-"All"
+"All" (gone Sep 15: one table at a time)
 "Needs a fix"
 "ERC"
 "Research"

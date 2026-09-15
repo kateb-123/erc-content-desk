@@ -529,9 +529,6 @@ input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus 
 .list-head .undo-link { margin: 0; }
 .list-head .list-keep { margin-left: auto; font-size: .85rem; padding: .4rem 1rem; }
 .list-hint { margin: 0 0 .7rem; }
-/* All stacks every section; the top bar carries the one Undo for the screen. */
-.list-topbar { margin-bottom: .35rem; }
-.list-section + .list-section { margin-top: 1.5rem; }
 .sort-list { font-size: .9rem; border-radius: 12px; overflow: hidden; }
 .sort-list td { padding: .6rem .7rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
 .sort-list tr:last-child td { border-bottom: 0; }
