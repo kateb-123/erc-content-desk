@@ -1,5 +1,5 @@
 /** Entry point. Owns all state; screens are pure renderers. */
-import { fetchDesk, saveRows, readNewRows } from './sheet-client.js';
+import { fetchDesk, saveRows, readNewRows, readReply, plainError } from './sheet-client.js';
 import { readAllWaiting } from './reader-client.js';
 import { readerQueue } from './sort-view.js';
 import { dotsLoader, loadingLabel } from './icons.js';
@@ -58,7 +58,7 @@ export async function reload() {
     state.loaded = true;
     setStatus('', 'ok');
   } catch (err) {
-    setStatus(err.message, 'error');
+    setStatus(plainError(err), 'error');
   }
   render();
 }
@@ -78,9 +78,9 @@ export async function persist(changed) {
   } catch (err) {
     // Set the error, reload to resync with the sheet (which overwrites
     // status), then set the error again so the user still sees what failed.
-    setStatus(err.message, 'error');
+    setStatus(plainError(err), 'error');
     await reload();
-    setStatus(err.message, 'error');
+    setStatus(plainError(err), 'error');
     return false;
   }
 }
@@ -217,7 +217,7 @@ async function readBeforeSort() {
     await reload();
     if (failed) setStatus(`${failed} new item${failed === 1 ? '' : 's'} couldn't be read yet. Reload to try again.`, 'error');
   } catch (err) {
-    setStatus(err.message, 'error');
+    setStatus(plainError(err), 'error');
   }
 }
 
@@ -262,9 +262,7 @@ async function runRewrite() {
   render();
   setStatus('');   // Finalize's own loader carries this — no second row in the bar
   try {
-    const res = await fetch('/api/rewrite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error);
+    const data = await readReply(await fetch('/api/rewrite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) }), 'rewrite the descriptions');
     // Nothing persists yet: the originals stay safe in the Sheet, the new
     // text lives in local rows, and each check decision saves its row —
     // /api/rewrite stays read-only, as its own header promises.
@@ -285,7 +283,7 @@ async function runRewrite() {
       : (data.warnings?.join(' ') || 'Nothing to rewrite.');
     setStatus('');
   } catch (err) {
-    setStatus(err.message, 'error');
+    setStatus(plainError(err), 'error');
   }
   state.busy = false;
   render();
@@ -297,13 +295,11 @@ async function loadPublishPreview() {
   await whenSaved();   // the server reads the Sheet — let queued decisions land first
   setStatus('');   // Publish's own loader carries this — no second row in the bar
   try {
-    const res = await fetch('/api/publish');
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error);
+    const data = await readReply(await fetch('/api/publish'), 'check the Exchange');
     state.publishPreview = data;
     setStatus('', 'ok');
   } catch (err) {
-    setStatus(err.message, 'error');
+    setStatus(plainError(err), 'error');
   }
   state.busy = false;
   render();
@@ -315,9 +311,7 @@ async function publishNow() {
   setStatus('Publishing to the Exchange…');
   await whenSaved();   // every decision must be in the Sheet before the server reads it
   try {
-    const res = await fetch('/api/publish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error);
+    const data = await readReply(await fetch('/api/publish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }), 'publish');
     state.publishPreview = null;
     state.justPublished = data.published;
     state.publishedCsv = data.csv ?? '';
@@ -331,7 +325,7 @@ async function publishNow() {
     setStatus(data.warning ? data.warning : '', data.warning ? 'note' : 'ok');   // the receipt card is the confirmation
     return;
   } catch (err) {
-    setStatus(err.message, 'error');
+    setStatus(plainError(err), 'error');
   }
   state.busy = false;
   render();
