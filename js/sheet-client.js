@@ -10,6 +10,7 @@ export async function readReply(res, what) {
   const data = await res.json().catch(() => null);
   if (data && data.ok) return data;
   if (data?.error) throw new Error(data.error);
+  if (Array.isArray(data?.errors) && data.errors.length) throw new Error(data.errors.join(' '));
   throw new Error(`The desk couldn't ${what} right now (server error ${res.status}). Try again in a minute.`);
 }
 

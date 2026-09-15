@@ -29,3 +29,8 @@ test('readReply names the failure in plain words when the server gave only a sta
   await assert.rejects(readReply(reply(500, { ok: false }), 'rewrite the descriptions'),
     { message: "The desk couldn't rewrite the descriptions right now (server error 500). Try again in a minute." });
 });
+
+test('readReply surfaces a validation list (errors: [...]) as one sentence', async () => {
+  const res = { status: 400, json: async () => ({ ok: false, errors: ['Add a link.', 'Add your name or initials.'] }) };
+  await assert.rejects(readReply(res, 'add that link'), { message: 'Add a link. Add your name or initials.' });
+});

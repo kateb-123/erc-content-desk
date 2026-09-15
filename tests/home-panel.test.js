@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { queueBadgeCount, queueOrder, latestIssue, shareLine, signupLine } from '../js/home-panel.js';
+import { queueBadgeCount, queueOrder, latestIssue, shareLine, signupLine, issueSummary, issueLine, quickAddBody, stampForIssue } from '../js/home-panel.js';
 
 test('queueBadgeCount counts new plus parked rows', () => {
   const rows = [
@@ -72,4 +72,39 @@ test('signupLine is one sentence with the listserv page at the end', () => {
   assert.ok(line.endsWith('https://erc-policy-exchange.vercel.app/newsletter/'));
   assert.ok(!line.includes('\n'));
   assert.notEqual(line, shareLine('https://erc-policy-exchange.vercel.app/newsletter/'));
+});
+
+// ── The next-issue card and its quick add (Kate's pick A, Sep 15) ──
+
+test('issueSummary counts what is stamped for the issue and what is kept and waiting', () => {
+  const rows = [
+    { status: 'kept', newsletter_issue: '2026-09-22', published_at: 'x' },
+    { status: 'kept', newsletter_issue: '2026-09-22' },
+    { status: 'kept', newsletter_issue: '2026-10-06', published_at: 'x' },
+    { status: 'kept', published_at: 'x' },
+    { status: 'kept', type: 'event', spotlight_request: true },
+    { status: 'kept' },                       // kept, unpublished, not newsletter-only: not in the pool
+    { status: 'new' },
+  ];
+  assert.deepEqual(issueSummary(rows, '2026-09-22'), { inIssue: 2, waiting: 2 });
+});
+
+test('issueLine reads as one quiet line, singular when it must', () => {
+  assert.equal(issueLine({ inIssue: 4, waiting: 7 }), '4 items in · 7 kept and waiting');
+  assert.equal(issueLine({ inIssue: 1, waiting: 0 }), '1 item in · nothing else waiting');
+  assert.equal(issueLine({ inIssue: 0, waiting: 1 }), 'Nothing in yet · 1 kept and waiting');
+});
+
+test('quickAddBody is a bare link submission the reader can fill in', () => {
+  const body = quickAddBody('example.org/news/thing');
+  assert.equal(body.link, 'https://example.org/news/thing');
+  assert.equal(body.title, 'https://example.org/news/thing');
+  assert.equal(body.type, '');
+  assert.equal(body.spotlight, false);
+  assert.ok(body.submitter);
+});
+
+test('stampForIssue keeps the row and stamps it for the issue, nothing else', () => {
+  const row = { id: 'r1', status: 'new', title: 'T', newsletter_issue: '' };
+  assert.deepEqual(stampForIssue(row, '2026-09-22'), { id: 'r1', status: 'kept', title: 'T', newsletter_issue: '2026-09-22' });
 });
