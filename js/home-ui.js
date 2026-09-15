@@ -3,10 +3,12 @@
  * on top — last issue, Exchange updated, next newsletter, the queue count —
  * then the shared submit form with the four quick links in the right rail
  * (Content sort, Newsletter, Share something, Listserv sign-up), and the
- * queue table folded under the strip's count. Home is the front door, so the
- * header's tabs are hidden on it (app.js sets body.is-front). The form is
- * mounted once and left alone on re-renders so typing is never wiped; the
- * strip and the rail rebuild.
+ * queue table folded at the bottom (a details, its own chevron; Kate, Sep 15:
+ * "just queue on the bottom and you can expand it out"). Home is the front
+ * door, so the header's tabs are hidden on it (app.js sets body.is-front).
+ * The form and the fold are mounted once and left alone on re-renders, so
+ * typing is never wiped and the fold stays the way it was left; the strip,
+ * the rail and the table inside the fold rebuild.
  */
 import { renderSubmitForm } from './submit-form.js';
 import { dotsLoader, faIcon } from './icons.js';
@@ -21,11 +23,6 @@ const EXCHANGE_URL = 'https://erc-policy-exchange.vercel.app/';
 const SHARE_PATH = 'https://erc-policy-exchange.vercel.app/share/';
 const SIGNUP_PATH = 'https://erc-policy-exchange.vercel.app/newsletter/';
 const BUILDER_PATH = '/builder/';
-
-// The queue table is folded until the strip's count is clicked (Kate, Sep 15:
-// "idk if i like it below"; her pick: keep it, folded). View state, so a data
-// re-render keeps it open once opened.
-let queueOpen = false;
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -127,9 +124,11 @@ export function renderHome(container, {
     formSide.append(mount);
     renderSubmitForm(mount, { onSubmitted });
     grid.append(formSide, el('aside', 'quick-rail'));
-    const queue = el('section', 'queue-section');
-    queue.id = 'home-queue';
-    container.replaceChildren(strip, grid, queue);
+    // The fold: a native details, closed on arrival, whose open state lives in
+    // the DOM (the element is never rebuilt, so a data re-render keeps it).
+    const fold = el('details', 'queue-fold');
+    fold.append(el('summary'), el('div', 'queue-body'));
+    container.replaceChildren(strip, grid, fold);
   }
 
   // ── The stats strip: one line of facts. ──
@@ -139,24 +138,13 @@ export function renderHome(container, {
   strip.append(fact('Exchange updated', dash(isoToShort(hubUpdated, today)), EXCHANGE_URL));
   strip.append(fact('Next newsletter', dash(isoToShort(nextIssueDate(schedule, today), today))));
 
-  const queueFact = el('button', 'strip-fact strip-queue');
-  queueFact.type = 'button';
-  queueFact.setAttribute('aria-expanded', String(queueOpen));
-  queueFact.setAttribute('aria-controls', 'home-queue');
+  const count = loaded ? String(queueBadgeCount(rows)) : '·';
+  const queueFact = el('div', 'strip-fact');
   queueFact.append(el('span', 'strip-label', 'In the queue'));
   const queueSide = el('span', 'strip-side');
-  queueSide.append(el('span', 'queue-badge', loaded ? String(queueBadgeCount(rows)) : '·'));
+  queueSide.append(el('span', 'queue-badge', count));
   queueSide.append(el('span', 'strip-label', 'waiting'));
-  queueSide.append(faIcon(queueOpen ? 'chevron-up' : 'chevron-down'));
   queueFact.append(queueSide);
-  queueFact.addEventListener('click', () => {
-    queueOpen = !queueOpen;
-    renderHome(container, {
-      rows, schedule, today, loaded, hubUpdated, lastIssue,
-      onGoTo, onSubmitted, onRefresh, onDeleteFromQueue,
-    });
-    if (queueOpen) container.querySelector('.queue-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
   strip.append(queueFact);
 
   // ── The quick links, four in the rail (the sketch's list, in its order). ──
@@ -168,9 +156,10 @@ export function renderHome(container, {
     quickShare('user-plus', 'Listserv sign-up', 'The sign-up page', SIGNUP_PATH, signupLine(SIGNUP_PATH)),
   );
 
-  const queueSection = container.querySelector('.queue-section');
-  queueSection.hidden = !queueOpen;
-  if (!queueOpen) return;
-  if (!loaded) queueSection.replaceChildren(dotsLoader());
-  else renderQueueTable(queueSection, { rows, schedule, today, onRefresh, onDelete: onDeleteFromQueue });
+  // ── The queue, folded at the bottom. The summary is the heading. ──
+  const summary = container.querySelector('.queue-fold summary');
+  summary.replaceChildren(faIcon('chevron-down'), el('span', '', 'In the queue'), el('span', 'queue-badge', count));
+  const body = container.querySelector('.queue-body');
+  if (!loaded) body.replaceChildren(dotsLoader());
+  else renderQueueTable(body, { rows, schedule, today, onRefresh, onDelete: onDeleteFromQueue, bare: true });
 }

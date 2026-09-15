@@ -86,9 +86,10 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   *Listserv sign-up* (each with Open and Copy; Copy puts one sentence with the
   public page's link on the clipboard, ready to paste into an email). The Policy
   Exchange door card is gone: the Exchange is reached from the strip.
-- **The queue table**, folded: hidden until the strip's *In the queue* count is
-  clicked (a chevron on the count says which way it is), then it opens under the
-  form and stays open for the visit. Every waiting and parked item, newest first,
+- **The queue**, folded at the bottom: a closed section headed *In the queue*
+  with the count badge and a chevron on the left; click the heading and the table
+  opens under it, and it stays the way you left it for the visit (Kate, Sep 15:
+  "just queue on the bottom and you can expand it out"). Every waiting and parked item, newest first,
   sortable, with a red trash can per row. Deleting greys the row in place with an
   Undo for the rest of the session. A row still being read says "Reading...".
 

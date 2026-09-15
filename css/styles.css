@@ -376,8 +376,6 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 a.strip-fact:hover .strip-value { color: var(--accent); text-decoration: underline; }
 button.strip-fact { cursor: pointer; }
 button.strip-fact:hover .strip-label { color: var(--accent); }
-.strip-queue .fa-solid { font-size: .7rem; color: var(--muted); margin-left: .15rem; }
-button.strip-fact:hover .fa-solid { color: var(--accent); }
 .queue-badge {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 1.4rem; height: 1.4rem; padding: 0 .3rem;
@@ -414,8 +412,19 @@ button.quick-link { cursor: pointer; }
 
 /* Queue table (bottom of Home) */
 .item-title { font-weight: 500; }
-.queue-section { margin-top: 2.5rem; }
-.queue-section[hidden] { display: none; }
+/* The queue, folded at the bottom of Home: a details whose summary is the
+   heading, chevron left like every other opener, turned when open. */
+.queue-fold { margin-top: 2.5rem; }
+.queue-fold summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; gap: .6rem;
+  font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: 1.1rem;
+}
+.queue-fold summary::-webkit-details-marker { display: none; }
+.queue-fold summary .fa-solid { font-size: .8rem; color: var(--muted); transition: transform 150ms; }
+.queue-fold[open] summary .fa-solid { transform: rotate(180deg); }
+.queue-fold summary:hover .fa-solid { color: var(--accent); }
+.queue-body { margin-top: .75rem; }
+.queue-head.is-bare { justify-content: flex-end; }
 
 /* The front door (Home) wears no menu: the quick links are the menu. */
 .desk.is-front .screen-nav, .desk.is-front .builder-door { display: none; }

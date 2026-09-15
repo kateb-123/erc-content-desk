@@ -74,12 +74,13 @@ function bodyRow(row, { onDelete, rerender, today }) {
   return tr;
 }
 
-export function renderQueueTable(container, { rows, today, onRefresh, onDelete }) {
-  const rerender = () => renderQueueTable(container, { rows, today, onRefresh, onDelete });
+export function renderQueueTable(container, { rows, today, onRefresh, onDelete, bare = false }) {
+  const rerender = () => renderQueueTable(container, { rows, today, onRefresh, onDelete, bare });
   container.replaceChildren();
 
-  const head = el('div', 'queue-head');
-  head.append(el('h2', '', 'In the queue'));
+  // bare: the caller owns the heading (Home's fold, Sep 15); only Refresh stays.
+  const head = el('div', bare ? 'queue-head is-bare' : 'queue-head');
+  if (!bare) head.append(el('h2', '', 'In the queue'));
   const refresh = el('button', '', 'Refresh');
   refresh.type = 'button';
   refresh.addEventListener('click', () => {
