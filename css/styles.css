@@ -327,12 +327,12 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .finalize-table tr.f-erc td { background: var(--tint); }
 .finalize-table tr.needs-rewrite td { background: #fdf5dd; }
 .finalize-table tr.rewriting td { background: var(--tint); }
-.finalize-table th.f-caret, .finalize-table td.f-caret { width: 2.2rem; text-align: right; }
+/* The chevron sits left on every table, one Font Awesome glyph (Kate, Sep 15, option A). */
+.finalize-table th.f-caret, .finalize-table td.f-caret { width: 2rem; padding-right: 0; }
+.finalize-table .chevron-btn { font-size: .8rem; }
 .finalize-table tr.f-detail-row td { border-top: none; padding: .2rem 2.4rem 1rem; }
 .chevron-btn { appearance: none; border: 0; background: transparent; cursor: pointer; padding: 2px; border-radius: 6px; display: inline-flex; color: var(--accent); }
 .chevron-btn:hover { background: rgba(29, 110, 165, 0.08); }
-.chevron svg { width: 18px; height: 18px; display: block; transition: transform .2s ease; }
-.chevron-btn[aria-expanded="true"] .chevron svg { transform: rotate(180deg); }
 .f-detail-cols {
   display: grid; grid-template-columns: minmax(160px, 220px) 1fr; gap: 1.6rem; align-items: start;
   background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.2rem; margin: .2rem 0 .4rem;
@@ -436,6 +436,10 @@ button.glance-card:hover:not(:disabled) { border-color: var(--accent); }
 .queue-table th .sort-btn { border: none; background: none; padding: 0; font: inherit; font-weight: 500; color: var(--muted); cursor: pointer; white-space: nowrap; }
 .queue-table th:nth-child(2) { width: 22%; }
 .queue-table th:nth-child(3) { width: 13%; }
+/* Finalize's chevron column comes first, so its Title/Type/Date widths sit one column over. */
+.finalize-table th:nth-child(2) { width: auto; }
+.finalize-table th:nth-child(3) { width: 22%; }
+.finalize-table th:nth-child(4) { width: 13%; }
 .queue-table .item-source { display: block; font-size: .8rem; color: var(--muted); margin-top: .15rem; }
 .queue-table td { padding: .5rem .6rem; border-top: 1px solid var(--line); vertical-align: top; }
 .queue-table td.missing { color: var(--err); }

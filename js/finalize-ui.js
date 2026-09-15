@@ -112,12 +112,6 @@ function diffPara(toks, baseClass, changeClass) {
   return p;
 }
 
-export function chevron() {
-  const span = el('span', 'chevron');
-  span.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>';
-  return span;
-}
-
 /** The facts that lead the expanded detail — events and opportunities only;
  *  research reads title/authors/source in the row and Abstract below. */
 function factsFor(row, today) {
@@ -218,9 +212,9 @@ function itemRows(row, { tint, busy, rerender, onEditRow, onTrash, today }) {
   caret.type = 'button';
   caret.setAttribute('aria-expanded', String(isOpen));
   caret.setAttribute('aria-label', isOpen ? 'Hide details' : 'Show details');
-  caret.append(chevron());
+  caret.append(faIcon(isOpen ? 'chevron-up' : 'chevron-down'));
   caretTd.append(caret);
-  tr.append(caretTd);
+  tr.prepend(caretTd);   // left, one glyph, like Sort (Kate, Sep 15, option A)
   tr.addEventListener('click', () => {
     if (expanded.has(row.id)) { expanded.delete(row.id); if (editingId === row.id) editingId = null; }
     else expanded.add(row.id);
@@ -428,7 +422,7 @@ export function renderFinalize(container, props) {
     th.append(btn);
     headRow.append(th);
   }
-  headRow.append(el('th', 'f-caret'));
+  headRow.prepend(el('th', 'f-caret'));
   const thead = el('thead');
   thead.append(headRow);
   table.append(thead);

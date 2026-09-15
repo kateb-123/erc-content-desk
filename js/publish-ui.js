@@ -9,8 +9,8 @@ import { PUBLISH_PAUSED } from './flags.js';
 import { hubCsvFilename } from './hub-csv.js';
 import { TYPE_LABELS } from './schema.js';
 import { isoToShort } from './queue-view.js';
-import { detailBody, chevron } from './finalize-ui.js';
-import { checkSvg, dotsLoader, forwardIcon } from './icons.js';
+import { detailBody } from './finalize-ui.js';
+import { checkSvg, dotsLoader, faIcon, forwardIcon } from './icons.js';
 import { titleWithInfo } from './screen-info.js';
 
 /** Hand the browser a file. Kate's Chrome puts downloads straight in her Drive,
@@ -69,9 +69,9 @@ function itemRows(row, { cls, fix, rerender, onGoTo, today }) {
   caret.type = 'button';
   caret.setAttribute('aria-expanded', String(isOpen));
   caret.setAttribute('aria-label', isOpen ? 'Hide details' : 'Show details');
-  caret.append(chevron());
+  caret.append(faIcon(isOpen ? 'chevron-up' : 'chevron-down'));
   caretTd.append(caret);
-  tr.append(caretTd);
+  tr.prepend(caretTd);   // left, one glyph, like Sort (Kate, Sep 15, option A)
   tr.addEventListener('click', () => {
     if (expanded.has(row.id)) expanded.delete(row.id);
     else expanded.add(row.id);
