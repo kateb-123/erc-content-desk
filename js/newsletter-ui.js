@@ -10,8 +10,7 @@ import { faIcon } from './icons.js';
 import { buildPool, newsletterOnly, reshareFlags } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
-import { isoToSlash } from './queue-view.js';
-import { isoToDisplay } from './rows-to-issue.js';
+import { isoToShort } from './queue-view.js';
 import { eventTiming, deadlineState } from './schedule.js';
 
 // The builder lives inside this project — same origin, one deploy.
@@ -144,10 +143,10 @@ export function renderNewsletter(container, props) {
   // at the bottom where the only move left is Delete.
   const pastEntry = r => {
     if (timings.get(r.id)?.state === 'passed') {
-      return { row: r, why: 'Before this issue', when: isoToDisplay(r.date) };
+      return { row: r, why: 'Before this issue', when: isoToShort(r.date, today) };
     }
     if (r.type === 'opportunity' && r.deadline && deadlineState(issue, r.deadline) === 'passed') {
-      return { row: r, why: 'Closes before this issue', when: `Deadline ${isoToDisplay(r.deadline)}` };
+      return { row: r, why: 'Closes before this issue', when: `Deadline ${isoToShort(r.deadline, today)}` };
     }
     return null;
   };
@@ -279,7 +278,7 @@ export function renderNewsletter(container, props) {
         titleTd.append(el('span', 'item-source nl-reshare', `Was in the ${issueLabel(reshare.get(row.id))} issue`));
       }
       if (row.type === 'event' && row.date) {
-        titleTd.append(el('span', 'item-source', [isoToDisplay(row.date), row.location].filter(Boolean).join(' \u00b7 ')));
+        titleTd.append(el('span', 'item-source', [isoToShort(row.date, today), row.location].filter(Boolean).join(' \u00b7 ')));
       }
       const timing = timings.get(row.id);
       if (timing.state === 'later') {
@@ -315,7 +314,7 @@ export function renderNewsletter(container, props) {
         }
       }
       if (row.type === 'opportunity' && row.deadline) {
-        titleTd.append(el('span', 'item-source', `Deadline ${isoToDisplay(row.deadline)}`));
+        titleTd.append(el('span', 'item-source', `Deadline ${isoToShort(row.deadline, today)}`));
       }
       tr.append(titleTd);
       const typeTd = el('td');
@@ -323,7 +322,7 @@ export function renderNewsletter(container, props) {
       if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
       if (newsletterOnly(row)) typeTd.append(el('span', 'badge', 'Newsletter only'));
       tr.append(typeTd);
-      tr.append(el('td', '', isoToSlash(String(row.published_at ?? '').slice(0, 10)) || '—'));
+      tr.append(el('td', '', isoToShort(row.published_at, today) || '—'));
       tr.addEventListener('click', () => pickGesture(row));
       tbody.append(tr);
     }

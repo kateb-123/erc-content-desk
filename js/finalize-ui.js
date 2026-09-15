@@ -9,7 +9,7 @@
 import { readyToPublish, canRewrite, needsDescription } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
-import { isoToSlash } from './queue-view.js';
+import { isoToShort } from './queue-view.js';
 import { dotsLoader, faIcon, forwardIcon } from './icons.js';
 import { titleWithInfo } from './screen-info.js';
 
@@ -120,10 +120,10 @@ export function chevron() {
 
 /** The facts that lead the expanded detail — events and opportunities only;
  *  research reads title/authors/source in the row and Abstract below. */
-function factsFor(row) {
+function factsFor(row, today) {
   const per = {
-    event: [['Date', isoToSlash(row.date)], ['Time', row.time], ['Location', row.location]],
-    opportunity: [['Deadline', isoToSlash(row.deadline)], ['Topic', row.topic]],
+    event: [['Date', isoToShort(row.date, today)], ['Time', row.time], ['Location', row.location]],
+    opportunity: [['Deadline', isoToShort(row.deadline, today)], ['Topic', row.topic]],
   };
   return (per[row.type] ?? []).filter(([, v]) => v);
 }
@@ -131,8 +131,8 @@ function factsFor(row) {
 /** Exchange layout: facts panel in a left column, blurb beside it. `extra`
  *  (the Edit fields action) rides under the blurb in the main column.
  *  Shared with Publish, which uses it read-only. */
-export function detailBody(row, extra) {
-  const facts = factsFor(row);
+export function detailBody(row, extra, today) {
+  const facts = factsFor(row, today);
   const wrap = el('div', facts.length ? 'f-detail-cols' : '');
   if (facts.length) {
     const dl = el('dl', 'f-facts');
@@ -197,7 +197,7 @@ function editBody(row, { onSave, onCancel }) {
   return wrap;
 }
 
-function itemRows(row, { tint, busy, rerender, onEditRow, onTrash }) {
+function itemRows(row, { tint, busy, rerender, onEditRow, onTrash, today }) {
   const isOpen = expanded.has(row.id);
   const rowClass = ['f-item', isErc(row) && 'f-erc', tint && 'needs-rewrite',
     tint && busy && 'rewriting', isOpen && 'is-open'].filter(Boolean).join(' ');
@@ -212,7 +212,7 @@ function itemRows(row, { tint, busy, rerender, onEditRow, onTrash }) {
   typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
   if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
   tr.append(typeTd);
-  tr.append(el('td', '', isoToSlash(String(row.submitted_at ?? '').slice(0, 10)) || '—'));
+  tr.append(el('td', '', isoToShort(row.submitted_at, today) || '—'));
   const caretTd = el('td', 'f-caret');
   const caret = el('button', 'chevron-btn');
   caret.type = 'button';
@@ -252,7 +252,7 @@ function itemRows(row, { tint, busy, rerender, onEditRow, onTrash }) {
     bin.addEventListener('click', () => { bin.disabled = true; onTrash(row); });
     const acts = el('span', 'f-detail-actions');
     acts.append(edit, ' · ', bin);
-    td.append(detailBody(row, acts));
+    td.append(detailBody(row, acts, today));
   }
   detailTr.append(td);
   return [tr, detailTr];
@@ -323,7 +323,7 @@ function checkCard(row, { old, onVerify, onRevert, onCheckEdit, onTrash, rerende
 }
 
 export function renderFinalize(container, props) {
-  const { rows, review, verified, reviewTotal, busy, rewroteNote, onEditRow, onCheckEdit, onRewrite, onVerifyRewrite, onRevertRewrite, onTrash, onGoTo } = props;
+  const { rows, today, review, verified, reviewTotal, busy, rewroteNote, onEditRow, onCheckEdit, onRewrite, onVerifyRewrite, onRevertRewrite, onTrash, onGoTo } = props;
   const rerender = () => renderFinalize(container, props);
   container.replaceChildren();
   const keeps = readyToPublish(rows);
@@ -437,7 +437,7 @@ export function renderFinalize(container, props) {
   const listed = stage1 ? sorted(keeps).filter(r => pending.includes(r)) : sorted(keeps);
   for (const row of listed) {
     const tint = pending.includes(row);
-    tbody.append(...itemRows(row, { tint, busy, rerender, onEditRow, onTrash }));
+    tbody.append(...itemRows(row, { tint, busy, rerender, onEditRow, onTrash, today }));
   }
   table.append(tbody);
 

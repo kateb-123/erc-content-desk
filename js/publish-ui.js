@@ -8,7 +8,7 @@ import { readyToPublish } from './workflow.js';
 import { PUBLISH_PAUSED } from './flags.js';
 import { hubCsvFilename } from './hub-csv.js';
 import { TYPE_LABELS } from './schema.js';
-import { isoToSlash } from './queue-view.js';
+import { isoToShort } from './queue-view.js';
 import { detailBody, chevron } from './finalize-ui.js';
 import { checkSvg, dotsLoader, forwardIcon } from './icons.js';
 import { titleWithInfo } from './screen-info.js';
@@ -44,7 +44,7 @@ function el(tag, className, text) {
   return node;
 }
 
-function itemRows(row, { cls, fix, rerender, onGoTo }) {
+function itemRows(row, { cls, fix, rerender, onGoTo, today }) {
   const isOpen = expanded.has(row.id);
   const rowClass = ['f-item', cls, isOpen && 'is-open'].filter(Boolean).join(' ');
 
@@ -63,7 +63,7 @@ function itemRows(row, { cls, fix, rerender, onGoTo }) {
   typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
   if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
   tr.append(typeTd);
-  tr.append(el('td', '', isoToSlash(String(row.submitted_at ?? '').slice(0, 10)) || '—'));
+  tr.append(el('td', '', isoToShort(row.submitted_at, today) || '—'));
   const caretTd = el('td', 'f-caret');
   const caret = el('button', 'chevron-btn');
   caret.type = 'button';
@@ -82,18 +82,18 @@ function itemRows(row, { cls, fix, rerender, onGoTo }) {
   const detailTr = el('tr', `f-detail-row ${rowClass}`);
   const td = el('td');
   td.colSpan = 4;
-  td.append(detailBody(row, null));
+  td.append(detailBody(row, null, today));
   detailTr.append(td);
   return [tr, detailTr];
 }
 
-function group(container, title, rows, { cls, fix, hint, rerender, onGoTo }) {
+function group(container, title, rows, { cls, fix, hint, rerender, onGoTo, today }) {
   if (!rows.length) return;
   if (title) container.append(el('h3', 'p-group', title));
   if (hint) container.append(el('p', 'hint p-group-hint', hint));
   const table = el('table', 'queue-table finalize-table publish-table');
   const tbody = el('tbody');
-  for (const row of rows) tbody.append(...itemRows(row, { cls, fix, rerender, onGoTo }));
+  for (const row of rows) tbody.append(...itemRows(row, { cls, fix, rerender, onGoTo, today }));
   table.append(tbody);
   const scroll = el('div', 'table-scroll');
   scroll.append(table);
@@ -101,7 +101,7 @@ function group(container, title, rows, { cls, fix, hint, rerender, onGoTo }) {
 }
 
 export function renderPublish(container, props) {
-  const { rows, preview, busy, justPublished, onPublish, onGoTo, onRecheck, publishedCsv } = props;
+  const { rows, today, preview, busy, justPublished, onPublish, onGoTo, onRecheck, publishedCsv } = props;
   const rerender = () => renderPublish(container, props);
   // The mocked receipt stands in for a real one during the trial.
   const showReceipt = justPublished || (PUBLISH_PAUSED && trialDone);
@@ -254,14 +254,14 @@ export function renderPublish(container, props) {
     if (chips.childElementCount) container.append(chips);
   }
 
-  group(container, '', adding, { rerender, onGoTo });
+  group(container, '', adding, { rerender, onGoTo, today });
 
   if (held.length) {
     heldFold = el('details', 'p-held-fold');
     const sum = el('summary', '', `Held for the newsletter (${held.length})`);
     heldFold.append(sum);
     heldFold.append(el('p', 'hint p-group-hint', 'Spotlight events stay off the Exchange — webinars excepted.'));
-    group(heldFold, '', held, { cls: 'p-held', rerender, onGoTo });
+    group(heldFold, '', held, { cls: 'p-held', rerender, onGoTo, today });
     container.append(heldFold);
   }
   // Already-live items used to vanish without a word; they are named here,

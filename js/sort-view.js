@@ -2,7 +2,7 @@
  * Pure ordering, counting, and grouping for Sort's tables. View logic only —
  * nothing here writes anywhere.
  */
-import { isoToSlash } from './queue-view.js';
+import { isoToShort } from './queue-view.js';
 import { TYPE_ORDER, isValidSubtype } from './schema.js';
 import { duplicateFlags, linkCheckState, pendingRows } from './workflow.js';
 
@@ -74,9 +74,10 @@ export function needsType(row) {
   return !row.type || !isValidSubtype(row.type, row.subtype);
 }
 
-/** What a row cannot tell about itself: the rest of the queue, for duplicates. */
-export function fixContext(rows) {
-  return { rows, dupes: duplicateFlags(rows) };
+/** What a row cannot tell about itself: the rest of the queue (for duplicates)
+ *  and today (so a duplicate note dates itself the way every table does). */
+export function fixContext(rows, today) {
+  return { rows, today, dupes: duplicateFlags(rows) };
 }
 
 /**
@@ -92,7 +93,7 @@ export function fixReasons(row, ctx) {
   if (linkCheckState(row) === 'alert') out.push('Link not opened');
   if (dupes.has(row.id)) {
     const prior = rows.find(r => r.id === dupes.get(row.id));
-    if (prior && !String(prior.published_at ?? '').trim()) out.push(dupeBadgeText(prior));
+    if (prior && !String(prior.published_at ?? '').trim()) out.push(dupeBadgeText(prior, ctx?.today));
   }
   return out;
 }
@@ -110,11 +111,11 @@ const PRIOR_WORDS = { trashed: 'deleted', kept: 'kept', circleback: 'parked', ne
 
 /** The duplicate badge names the earlier item and what happened to it, so the
  *  flag can be acted on without a search (usability run F8). */
-export function dupeBadgeText(prior) {
+export function dupeBadgeText(prior, today) {
   const title = String(prior?.headline ?? '').trim() || '(untitled)';
   const short = title.length > 60 ? `${title.slice(0, 59).replace(/[\s—–:-]+$/, '')}…` : title;
   const what = PRIOR_WORDS[prior?.status] ?? prior?.status ?? '';
-  const when = isoToSlash(prior?.submitted_at);
+  const when = isoToShort(prior?.submitted_at, today);
   return `Same link as "${short}", ${what}${when ? ` ${when}` : ''}`;
 }
 

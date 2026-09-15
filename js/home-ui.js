@@ -10,12 +10,7 @@ import { dotsLoader } from './icons.js';
 import { renderQueueTable } from './queue-ui.js';
 import { queueBadgeCount } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
-/** "Aug 26" — the glance row stays slim; full dates live elsewhere. */
-function shortDate(iso) {
-  const d = new Date(`${iso}T12:00:00`);
-  return Number.isNaN(d.getTime()) ? '—'
-    : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
+import { isoToShort } from './queue-view.js';
 
 const EXCHANGE_URL = 'https://erc-policy-exchange.vercel.app/';
 const BUILDER_URL = '/builder/';
@@ -68,9 +63,9 @@ export function renderHome(container, { rows, schedule, today, loaded, hubUpdate
 
   // ── The glance row: four one-line cards. ──
   glance.replaceChildren();
-  glance.append(glanceFact('Exchange updated', !loaded ? '…' : (hubUpdated ? shortDate(hubUpdated) : '—')));
+  glance.append(glanceFact('Exchange updated', !loaded ? '…' : (isoToShort(hubUpdated, today) || '—')));
   const next = nextIssueDate(schedule, today);
-  glance.append(glanceFact('Next newsletter', !loaded ? '…' : (next ? shortDate(next) : '—')));
+  glance.append(glanceFact('Next newsletter', !loaded ? '…' : (isoToShort(next, today) || '—')));
 
   const queueCard = el('button', 'glance-card glance-queue');
   queueCard.type = 'button';

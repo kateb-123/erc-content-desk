@@ -39,11 +39,19 @@ export function sortRows(rows, column, direction) {
 }
 
 
-/** '2026-08-26' -> '8/26' (no leading zeros, no year); unparseable -> ''. */
-export function isoToSlash(iso) {
+const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/**
+ * The one date format for the desk's tables and meta lines: '2026-08-26' ->
+ * 'Aug 26' when that is this year, 'Aug 26, 2025' otherwise, so age is never
+ * hidden. With no today the year is always said. A timestamp works; anything
+ * unparseable -> ''.
+ */
+export function isoToShort(iso, todayIso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso ?? ''));
   if (!m) return '';
-  const month = Number(m[2]);
-  if (month < 1 || month > 12) return '';
-  return `${month}/${Number(m[3])}`;
+  const name = SHORT_MONTHS[Number(m[2]) - 1];
+  if (!name) return '';
+  const day = `${name} ${Number(m[3])}`;
+  return m[1] === String(todayIso ?? '').slice(0, 4) ? day : `${day}, ${m[1]}`;
 }

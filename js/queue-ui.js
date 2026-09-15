@@ -5,7 +5,7 @@
  */
 import { dotsLoader, faIcon } from './icons.js';
 import { TYPE_LABELS } from './schema.js';
-import { sortRows, isoToSlash, queueRows } from './queue-view.js';
+import { sortRows, isoToShort, queueRows } from './queue-view.js';
 
 // View state only — resets on reload, never persisted.
 let sortState = { column: 'submitted', dir: 'desc' };
@@ -30,19 +30,18 @@ function titleCell(row) {
   return cell;
 }
 
-function submittedDate(row) {
-  const iso = String(row.submitted_at ?? '').slice(0, 10);
-  return isoToSlash(iso) || '—';
+function submittedDate(row, today) {
+  return isoToShort(row.submitted_at, today) || '—';
 }
 
-function bodyRow(row, { onDelete, rerender }) {
+function bodyRow(row, { onDelete, rerender, today }) {
   const gone = justDeleted.has(row.id);
   const tr = el('tr', `queue-row${gone ? ' is-deleted' : ''}`);
   tr.append(titleCell(row));
   // A row the reader has not filed yet says so; its type is not settled.
   if (row.pending_read === 'yes') tr.append(el('td', 'missing', 'Reading…'));
   else tr.append(el('td', row.type ? '' : 'missing', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
-  tr.append(el('td', '', submittedDate(row)));
+  tr.append(el('td', '', submittedDate(row, today)));
 
   const actions = el('td', 'queue-actions');
   if (gone) {
@@ -72,8 +71,8 @@ function bodyRow(row, { onDelete, rerender }) {
   return tr;
 }
 
-export function renderQueueTable(container, { rows, onRefresh, onDelete }) {
-  const rerender = () => renderQueueTable(container, { rows, onRefresh, onDelete });
+export function renderQueueTable(container, { rows, today, onRefresh, onDelete }) {
+  const rerender = () => renderQueueTable(container, { rows, today, onRefresh, onDelete });
   container.replaceChildren();
 
   const head = el('div', 'queue-head');
@@ -122,7 +121,7 @@ export function renderQueueTable(container, { rows, onRefresh, onDelete }) {
   table.append(thead);
   const body = el('tbody');
   for (const row of sortRows(listed, sortState.column, sortState.dir)) {
-    body.append(bodyRow(row, { onDelete, rerender }));
+    body.append(bodyRow(row, { onDelete, rerender, today }));
   }
   table.append(body);
 

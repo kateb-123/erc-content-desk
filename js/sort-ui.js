@@ -5,7 +5,7 @@
  */
 import { linkCheckState, reshareFlags, missingFields } from './workflow.js';
 import { TYPE_ORDER, TYPE_LABELS, subtypesFor, typeIsFlat } from './schema.js';
-import { isoToDisplay } from './rows-to-issue.js';
+import { isoToShort } from './queue-view.js';
 import { safeHref, withScheme } from './links.js';
 import { sortCounts, isErc, readerQueue, isNewToday, sectionRows, landingSection, needsType, fixReasons, fixContext } from './sort-view.js';
 import { buildImageControl } from './item-image.js';
@@ -227,12 +227,12 @@ function sectionHead(props, section, keepable, main, withUndo) {
 }
 
 function sectionTable(props, group, rerender) {
-  const ctx = fixContext(props.rows);
+  const ctx = fixContext(props.rows, props.today);
   const reshare = reshareFlags(props.rows, props.today ?? '');
   const table = el('table', 'queue-table sort-list');
   const body = el('tbody');
   for (const row of group.live) body.append(...listLiveRow(row, { props, rerender, ctx, reshare }));
-  for (const row of group.done) body.append(listDoneRow(row, props.onUndoRow));
+  for (const row of group.done) body.append(listDoneRow(row, props.onUndoRow, props.today));
   table.append(body);
   const scroll = el('div', 'table-scroll');
   scroll.append(table);
@@ -308,7 +308,7 @@ function listLiveRow(row, { props, rerender, ctx, reshare }) {
     titleTd.append(mark);
   }
   titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
-  const meta = listMeta(row);
+  const meta = listMeta(row, props.today);
   if (meta) titleTd.append(el('span', 'item-source', meta));
   // Title, source, date, nothing else (Kate, Sep 15, option B): the
   // description and the type column live in the open row.
@@ -370,7 +370,7 @@ function listDetail(row, { props, rerender }) {
     a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
     parts.push(a);
   }
-  const from = [row.submitter && `from ${row.submitter}`, row.submitted_at && isoToDisplay(String(row.submitted_at).slice(0, 10))]
+  const from = [row.submitter && `from ${row.submitter}`, row.submitted_at && isoToShort(row.submitted_at, props.today)]
     .filter(Boolean).join(', ');
   if (from) parts.push(el('span', 'item-source', from));
   parts.forEach((part, i) => { if (i) line.append(' · '); line.append(part); });
@@ -394,21 +394,21 @@ function listDetail(row, { props, rerender }) {
 const DONE_WORDS = { trashed: 'Deleted', circleback: 'Skipped', kept: 'Kept' };
 
 /** Who wrote it or where it ran, and when: the card's meta line, one row wide. */
-function listMeta(row) {
+function listMeta(row, today) {
   return [
     row.authors || row.source,
-    row.date && isoToDisplay(row.date),
-    row.deadline && `due ${isoToDisplay(row.deadline)}`,
+    row.date && isoToShort(row.date, today),
+    row.deadline && `due ${isoToShort(row.deadline, today)}`,
     row.time, row.location,
   ].filter(Boolean).join(' · ');
 }
 
-function listDoneRow(row, onUndoRow) {
+function listDoneRow(row, onUndoRow, today) {
   const tr = el('tr', `list-row is-done is-${row.status}`);
   tr.append(el('td', 'list-chev'));
   const titleTd = el('td');
   titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
-  const meta = listMeta(row);
+  const meta = listMeta(row, today);
   if (meta) titleTd.append(el('span', 'item-source', meta));
   tr.append(titleTd);
   const actTd = el('td', 'queue-actions list-actions');

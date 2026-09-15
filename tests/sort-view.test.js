@@ -135,13 +135,15 @@ test('readerQueue lists the waiting rows Sort must have read, and only those', a
 
 test('a duplicate badge names the earlier item and what happened to it (F8)', async () => {
   const { dupeBadgeText } = await import('../js/sort-view.js');
-  assert.equal(dupeBadgeText({ headline: 'Research Grants on Improving the Use of Research Evidence', status: 'trashed', submitted_at: '2026-09-03T14:00:00Z' }),
-    'Same link as "Research Grants on Improving the Use of Research Evidence", deleted 9/3');
-  assert.equal(dupeBadgeText({ headline: 'Research Grants on Improving the Use of Research Evidence — Letter of Inquiry', status: 'trashed', submitted_at: '2026-09-03T14:00:00Z' }),
-    'Same link as "Research Grants on Improving the Use of Research Evidence…", deleted 9/3');
-  assert.equal(dupeBadgeText({ headline: 'Short', status: 'kept', submitted_at: '2026-08-20T10:00:00Z' }), 'Same link as "Short", kept 8/20');
+  assert.equal(dupeBadgeText({ headline: 'Research Grants on Improving the Use of Research Evidence', status: 'trashed', submitted_at: '2026-09-03T14:00:00Z' }, '2026-09-15'),
+    'Same link as "Research Grants on Improving the Use of Research Evidence", deleted Sep 3');
+  assert.equal(dupeBadgeText({ headline: 'Research Grants on Improving the Use of Research Evidence — Letter of Inquiry', status: 'trashed', submitted_at: '2026-09-03T14:00:00Z' }, '2026-09-15'),
+    'Same link as "Research Grants on Improving the Use of Research Evidence…", deleted Sep 3');
+  assert.equal(dupeBadgeText({ headline: 'Short', status: 'kept', submitted_at: '2026-08-20T10:00:00Z' }, '2026-09-15'), 'Same link as "Short", kept Aug 20');
+  // A duplicate from another year says so.
+  assert.equal(dupeBadgeText({ headline: 'Old', status: 'kept', submitted_at: '2025-08-20T10:00:00Z' }, '2026-09-15'), 'Same link as "Old", kept Aug 20, 2025');
   assert.equal(dupeBadgeText({ headline: 'Parked one', status: 'circleback', submitted_at: '' }), 'Same link as "Parked one", parked');
-  assert.equal(dupeBadgeText({ headline: 'Waiting', status: 'new', submitted_at: '2026-09-10T00:00:00Z' }), 'Same link as "Waiting", in the queue 9/10');
+  assert.equal(dupeBadgeText({ headline: 'Waiting', status: 'new', submitted_at: '2026-09-10T00:00:00Z' }, '2026-09-15'), 'Same link as "Waiting", in the queue Sep 10');
 });
 
 test('isNewToday marks what was submitted today, by the same UTC date the desk uses (F24)', async () => {
@@ -241,7 +243,7 @@ test('fixReasons names what keeps a row out of Keep the rest, and a possible dup
 test('a later row with the same link as an unpublished earlier one is a fix; a live earlier one is only a fact', () => {
   const earlier = { ...ok, id: 'first', headline: 'Earlier', submitted_at: '2026-08-26T00:00:00Z' };
   const later = { ...ok, id: 'second', submitted_at: '2026-08-27T00:00:00Z' };
-  assert.deepEqual(fixReasons(later, { rows: [earlier, later] }), ['Same link as "Earlier", in the queue 8/26']);
+  assert.deepEqual(fixReasons(later, { rows: [earlier, later], today: '2026-09-15' }), ['Same link as "Earlier", in the queue Aug 26']);
   assert.deepEqual(fixReasons(earlier, { rows: [earlier, later] }), []);
   const live = { ...earlier, status: 'kept', published_at: '2026-08-28' };
   assert.deepEqual(fixReasons(later, { rows: [live, later] }), []);

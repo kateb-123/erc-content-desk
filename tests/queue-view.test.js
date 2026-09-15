@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sortRows, isoToSlash, queueRows } from '../js/queue-view.js';
+import { sortRows, isoToShort, queueRows } from '../js/queue-view.js';
 
 // Deliberately NOT pre-sorted in any tested order, so an in-place sort or a
 // wrong direction provably fails.
@@ -45,14 +45,6 @@ test('sortRows by submitter is stable and ascending', () => {
   assert.deepEqual(sortRows(rows, 'submitter', 'asc').map(r => r.id), ['c', 'b', 'd', 'a']);
 });
 
-test('isoToSlash renders M/D with no leading zeros and no year', () => {
-  assert.equal(isoToSlash('2026-08-26'), '8/26');
-  assert.equal(isoToSlash('2026-05-03'), '5/3');
-  assert.equal(isoToSlash('2026-12-09'), '12/9');
-  assert.equal(isoToSlash(''), '');
-  assert.equal(isoToSlash('2026-13-01'), '');
-  assert.equal(isoToSlash('garbage'), '');
-});
 
 test('queueRows lists what is waiting, newest circle-backs after pending', () => {
   const rows = [
@@ -77,4 +69,16 @@ test('a row deleted from the queue this session stays listed, so it can be undon
 test('queueRows never lists the same row twice', () => {
   const rows = [{ id: 'a', status: 'circleback' }];
   assert.equal(queueRows(rows, new Set(['a'])).length, 1);
+});
+
+test('isoToShort gives "Aug 26", adding the year only when it is not this year', () => {
+  assert.equal(isoToShort('2026-08-26', '2026-09-15'), 'Aug 26');
+  assert.equal(isoToShort('2026-05-03', '2026-09-15'), 'May 3');
+  assert.equal(isoToShort('2025-12-09', '2026-09-15'), 'Dec 9, 2025');
+  assert.equal(isoToShort('2027-01-02', '2026-09-15'), 'Jan 2, 2027');
+  assert.equal(isoToShort('2026-08-26'), 'Aug 26, 2026');                       // no today: always say the year
+  assert.equal(isoToShort('2026-08-26T14:00:00Z', '2026-09-15'), 'Aug 26');    // a timestamp works too
+  assert.equal(isoToShort(''), '');
+  assert.equal(isoToShort('2026-13-01', '2026-09-15'), '');
+  assert.equal(isoToShort('garbage', '2026-09-15'), '');
 });
