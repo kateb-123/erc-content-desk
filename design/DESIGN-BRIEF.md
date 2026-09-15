@@ -81,11 +81,16 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   Claude. The items appear in a review table (each with Remove, click a row to
   peek) and nothing saves until **Add all to the queue**, which opens a blocking
   progress popup.
-- **Four quick links** in the right rail, the sketch's list in its order: *Content
-  sort* (goes to Sort), *Newsletter* (the builder, a new tab), *Share something* and
-  *Listserv sign-up* (each with Open and Copy; Copy puts one sentence with the
-  public page's link on the clipboard, ready to paste into an email). The Policy
-  Exchange door card is gone: the Exchange is reached from the strip.
+- **Six quick links** in the right rail, Kate's list in her order (Sep 15): *Sort*
+  (goes to Sort, which also sends to the newsletter), *Newsletter builder* (a new
+  tab), **the next issue** (its date, one line of counts, and **quick add**: paste
+  a link, press Add, and it is kept and stamped for that issue without passing
+  through Sort; the reader fills its title and description; Add disappears while
+  it works and the note under the box says "Added to the Sep 22 issue" or what
+  went wrong), *Policy Exchange* (Open, and Copy for the site's address), *Share an
+  item* and *Listserv sign-up* (each with Open and Copy; Copy puts one sentence
+  with the public page's link on the clipboard, ready to paste into an email).
+  Home breathes more than the pipeline screens: a wider grid gap, roomier cards.
 - **The queue**, folded at the bottom: a closed section headed *In the queue*
   with the count badge and a chevron on the left; click the heading and the table
   opens under it, and it stays the way you left it for the visit (Kate, Sep 15:

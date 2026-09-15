@@ -1,9 +1,10 @@
 /**
  * Home, the team's main page (Kate's Sep 15 sketch, layout A): a stats strip
  * on top — last issue, Exchange updated, next newsletter, the queue count —
- * then the shared submit form with the four quick links in the right rail
- * (Content sort, Newsletter, Share something, Listserv sign-up), and the
- * queue table folded at the bottom (a details, its own chevron; Kate, Sep 15:
+ * then the shared submit form with the six quick links in the right rail
+ * (Sort, Newsletter builder, the next issue with its quick add, Policy
+ * Exchange, Share an item, Listserv sign-up; Kate's list and order, Sep 15),
+ * and the queue table folded at the bottom (a details, its own chevron; Kate, Sep 15:
  * "just queue on the bottom and you can expand it out"). Home is the front
  * door, so the header's tabs are hidden on it (app.js sets body.is-front).
  * The form and the fold are mounted once and left alone on re-renders, so
@@ -13,9 +14,10 @@
 import { renderSubmitForm } from './submit-form.js';
 import { dotsLoader, faIcon } from './icons.js';
 import { renderQueueTable } from './queue-ui.js';
-import { queueBadgeCount, shareLine, signupLine } from './home-panel.js';
+import { queueBadgeCount, shareLine, signupLine, issueSummary, issueLine } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
 import { isoToShort } from './queue-view.js';
+import { plainError } from './sheet-client.js';
 
 const EXCHANGE_URL = 'https://erc-policy-exchange.vercel.app/';
 // The public share and sign-up pages live in the Policy Exchange hub — a
@@ -23,6 +25,12 @@ const EXCHANGE_URL = 'https://erc-policy-exchange.vercel.app/';
 const SHARE_PATH = 'https://erc-policy-exchange.vercel.app/share/';
 const SIGNUP_PATH = 'https://erc-policy-exchange.vercel.app/newsletter/';
 const BUILDER_PATH = '/builder/';
+
+// The latest render, so the next-issue card can repaint itself after a quick
+// add without a fresh Sheet read; and the card's own state across those
+// repaints (null, or { kind: 'busy' | 'ok' | 'error', text, link }).
+let last = null;
+let quickAddState = null;
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -105,10 +113,85 @@ function quickShare(icon, title, desc, href, line) {
   return card;
 }
 
-export function renderHome(container, {
-  rows, schedule, today, loaded, hubUpdated, lastIssue,
-  onGoTo, onSubmitted, onRefresh, onDeleteFromQueue,
-}) {
+/**
+ * The next-issue card: the date, one line of counts, and quick add (Kate's
+ * pick A, Sep 15): paste a link, it lands in this issue, skipping Sort. The
+ * Add button disappears while it works; the note under the box carries the
+ * outcome.
+ */
+function issueCard({ rows, loaded, today, issue, onQuickAdd }) {
+  const card = el('div', 'quick-link issue-card');
+  const head = el('div', 'issue-head');
+  const title = issue ? `${isoToShort(issue, today)} issue` : 'Next issue';
+  const line = !loaded ? '…' : (issue ? issueLine(issueSummary(rows, issue)) : 'No issue date scheduled');
+  head.append(...quickText('paper-plane', title, line));
+  card.append(head);
+  if (!issue) return card;
+
+  const form = el('form', 'quick-add');
+  form.noValidate = true;
+  const input = el('input');
+  input.type = 'url';
+  input.autocomplete = 'off';
+  input.placeholder = 'Paste a link to add it';
+  input.setAttribute('aria-label', `Link to add to the ${title}`);
+  const add = el('button', 'mini-btn', 'Add');
+  add.type = 'submit';
+  form.append(input, add);
+  const note = el('p', 'quick-note', `Lands in the ${title}, skipping Sort`);
+  card.append(form, note);
+
+  const s = quickAddState;
+  if (s?.kind === 'busy') {
+    input.disabled = true;
+    input.value = s.link;
+    add.hidden = true;           // in flight: nothing re-pushable
+    form.append(dotsLoader(true));
+    note.textContent = 'Reading it…';
+  } else if (s?.kind === 'ok') {
+    note.textContent = s.text;
+    note.classList.add('is-ok');
+  } else if (s?.kind === 'error') {
+    input.value = s.link;
+    note.textContent = s.text;
+    note.classList.add('is-error');
+  }
+
+  input.addEventListener('input', () => {
+    if (!quickAddState || quickAddState.kind === 'busy') return;
+    quickAddState = null;
+    note.textContent = `Lands in the ${title}, skipping Sort`;
+    note.className = 'quick-note';
+  });
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const link = input.value.trim();
+    if (!link) {
+      quickAddState = { kind: 'error', text: 'Paste a web link first.', link: '' };
+      renderHome(last.container, last.props);
+      last.container.querySelector('.quick-add input')?.focus();
+      return;
+    }
+    quickAddState = { kind: 'busy', link };
+    renderHome(last.container, last.props);
+    try {
+      const landed = await onQuickAdd(link);
+      quickAddState = { kind: 'ok', text: `Added to the ${isoToShort(landed, today)} issue`, link: '' };
+    } catch (err) {
+      quickAddState = { kind: 'error', text: plainError(err), link };
+    }
+    renderHome(last.container, last.props);
+  });
+  return card;
+}
+
+export function renderHome(container, props) {
+  last = { container, props };
+  const {
+    rows, schedule, today, loaded, hubUpdated, lastIssue,
+    onGoTo, onQuickAdd, onSubmitted, onRefresh, onDeleteFromQueue,
+  } = props;
   // The shell (form, links, headings) paints immediately — only the
   // data-backed parts wait on the ~4s Sheet read, so the page is usable at once.
   let strip = container.querySelector('.stats-strip');
@@ -147,12 +230,14 @@ export function renderHome(container, {
   queueFact.append(queueSide);
   strip.append(queueFact);
 
-  // ── The quick links, four in the rail (the sketch's list, in its order). ──
+  // ── The quick links, six in the rail (Kate's list, in her order, Sep 15). ──
   const rail = container.querySelector('.quick-rail');
   rail.replaceChildren(
-    quickGo('layer-group', 'Content sort', 'Work the queue', () => onGoTo('sort')),
-    quickOut('envelope', 'Newsletter', "Kathy's builder", BUILDER_PATH),
-    quickShare('share-nodes', 'Share something', 'The public share page', SHARE_PATH, shareLine(SHARE_PATH)),
+    quickGo('layer-group', 'Sort', 'Work the queue, then send to the newsletter', () => onGoTo('sort')),
+    quickOut('envelope', 'Newsletter builder', "Kathy's tool", BUILDER_PATH),
+    issueCard({ rows, loaded, today, issue: nextIssueDate(schedule, today), onQuickAdd }),
+    quickShare('globe', 'Policy Exchange', 'The public hub', EXCHANGE_URL, EXCHANGE_URL),
+    quickShare('share-nodes', 'Share an item', 'The public share page', SHARE_PATH, shareLine(SHARE_PATH)),
     quickShare('user-plus', 'Listserv sign-up', 'The sign-up page', SIGNUP_PATH, signupLine(SIGNUP_PATH)),
   );
 

@@ -4,7 +4,8 @@ import { readAllWaiting } from './reader-client.js';
 import { readerQueue } from './sort-view.js';
 import { dotsLoader, loadingLabel } from './icons.js';
 import { renderHome } from './home-ui.js';
-import { latestIssue } from './home-panel.js';
+import { latestIssue, quickAddBody, stampForIssue } from './home-panel.js';
+import { nextIssueDate } from './schedule.js';
 import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
 import { renderPublish, downloadCsv } from './publish-ui.js';
@@ -223,6 +224,30 @@ async function readBeforeSort() {
   }
 }
 
+/** Home's quick add (Kate's pick A, Sep 15): a bare link goes in through the
+ *  public submit route, the reader fills it, and it is kept and stamped for
+ *  the next issue in one go, never passing through Sort. Resolves with the
+ *  issue it landed in. */
+async function quickAdd(link) {
+  const today = new Date().toISOString().slice(0, 10);
+  const issue = nextIssueDate(state.schedule, today);
+  if (!issue) throw new Error('No issue date is scheduled yet.');
+  const res = await fetch('/api/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(quickAddBody(link)),
+  });
+  const { id } = await readReply(res, 'add that link');
+  // The reader fills the title and description; a read that fails leaves the
+  // bare link in the issue, which the builder shows and Kathy can fix there.
+  try { await readAllWaiting([id], readNewRows); } catch { /* stamp anyway */ }
+  await reload();
+  const row = state.rows.find(r => r.id === id);
+  if (!row) throw new Error('It went in, but the desk cannot find it yet. Reload the page.');
+  change([stampForIssue(row, issue)]);
+  return issue;
+}
+
 function goTo(key, filter) {
   if (key !== state.screen) setStatus('');   // last screen's message doesn't follow
   if (key === 'sort' && filter) { state.sortFilter = filter; saveSortSpot(); }   // Publish's "fix in Sort" lands on the pill it names
@@ -420,6 +445,7 @@ export function render() {
       hubUpdated: state.hubUpdated,
       lastIssue: state.lastIssue,
       onGoTo: goTo,
+      onQuickAdd: quickAdd,
       onSubmitted: reload,
       onRefresh: reload,
       // The queue's trash can, through the same queued write as Sort. Undo hands

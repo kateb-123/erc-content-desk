@@ -356,14 +356,16 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .table-scroll { overflow-x: auto; }
 
 /* Home screen */
-.home-grid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 1.5rem; align-items: start; margin-top: 1.5rem; }
+/* Home breathes a little more than the pipeline screens (Kate, Sep 15: "a little spacing overall"). */
+.home-grid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 2rem; align-items: start; margin-top: 2rem; }
+.home-form.card { padding: 1.75rem; }
 .home-form h2 { font-size: 1.1rem; margin: 0 0 .25rem; }
 
 /* The stats strip: one line of facts across the top (Sep 15 sketch). */
 .stats-strip {
   display: flex; align-items: center; flex-wrap: wrap; gap: .5rem 1.75rem;
   background: #fff; border: 1px solid var(--line); border-radius: 12px;
-  padding: .65rem 1.1rem; margin-top: 1.25rem;
+  padding: .85rem 1.25rem; margin-top: 1.75rem;
 }
 .strip-fact {
   display: inline-flex; align-items: baseline; gap: .45rem;
@@ -385,17 +387,17 @@ button.strip-fact:hover .strip-label { color: var(--accent); }
 
 /* The quick links: four in the right rail. Open and Copy sit on their own
    line under the words, so a title never wraps around them. */
-.quick-rail { display: flex; flex-direction: column; gap: .6rem; }
+.quick-rail { display: flex; flex-direction: column; gap: .9rem; }
 .quick-link {
-  display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .7rem;
+  display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .75rem;
   background: #fff; border: 1px solid var(--line); border-radius: 12px;
-  padding: .75rem .9rem; font: inherit; text-align: left; color: inherit; text-decoration: none;
+  padding: .95rem 1.05rem; font: inherit; text-align: left; color: inherit; text-decoration: none;
   box-sizing: border-box; width: 100%;
 }
 a.quick-link:hover, button.quick-link:hover { border-color: var(--accent); }
 button.quick-link { cursor: pointer; }
 .quick-link .fa-solid { color: var(--accent); width: 1rem; text-align: center; }
-.quick-text { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+.quick-text { display: flex; flex-direction: column; flex: 1 1 0; min-width: 0; }
 .quick-title { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .95rem; }
 .quick-desc { font-size: .82rem; color: var(--muted); }
 .quick-acts { display: flex; gap: .4rem; width: 100%; padding-left: 1.7rem; box-sizing: border-box; }
@@ -406,6 +408,21 @@ button.quick-link { cursor: pointer; }
 }
 .mini-btn:hover { border-color: var(--accent); background: var(--tint); }
 
+/* The next-issue card: the head reads like the other links; under it, the
+   quick add box (Kate's pick A, Sep 15) and one quiet note that carries the
+   outcome. The Add button is gone while it works, like every in-flight button. */
+.issue-card { flex-direction: column; align-items: stretch; gap: .55rem; }
+.issue-head { display: flex; align-items: center; gap: .75rem; }
+.quick-add { display: flex; align-items: center; gap: .4rem; margin: 0; }
+.quick-add input {
+  flex: 1 1 auto; min-width: 0; font: inherit; font-size: .82rem;
+  padding: .4rem .6rem; border: 1px solid var(--line); border-radius: 8px;
+}
+.quick-add input:disabled { color: var(--muted); background: var(--page); }
+.quick-note { font-size: .75rem; color: var(--muted); margin: 0; }
+.quick-note.is-ok { color: var(--ok); }
+.quick-note.is-error { color: var(--err); }
+
 @media (max-width: 720px) {
   .home-grid { grid-template-columns: 1fr; }
 }
@@ -414,7 +431,7 @@ button.quick-link { cursor: pointer; }
 .item-title { font-weight: 500; }
 /* The queue, folded at the bottom of Home: a details whose summary is the
    heading, chevron left like every other opener, turned when open. */
-.queue-fold { margin-top: 2.5rem; }
+.queue-fold { margin-top: 3rem; }
 .queue-fold summary {
   list-style: none; cursor: pointer; display: flex; align-items: center; gap: .6rem;
   font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: 1.1rem;

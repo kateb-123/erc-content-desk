@@ -140,6 +140,8 @@
 
 "Submit"
 "Submit another"
+"Add" (Home's quick add; gone while it works)
+"Copy" / "Copied" / "Can't copy" (Home's rail)
 "Add all to the queue"
 "Add [N] to the queue"
 "Nothing left to add"
@@ -187,6 +189,12 @@
 
 "Build newsletter ↗"
 "Policy Exchange ↗"
+"Sort" (Home's rail, with "Work the queue, then send to the newsletter" under it)
+"Newsletter builder" (Home's rail, with "Kathy's tool" under it)
+"[Mon D] issue" (Home's rail, with "[N] items in · [N] kept and waiting" under it and the quick add box, placeholder "Paste a link to add it", note "Lands in the [Mon D] issue, skipping Sort")
+"Policy Exchange" (Home's rail, with "The public hub" under it)
+"Share an item" (Home's rail, with "The public share page" under it)
+"Listserv sign-up" (Home's rail, with "The sign-up page" under it)
 "Open ↗"
 "Open source ↗"
 "Verify link ↗"
@@ -199,6 +207,8 @@
 # Statuses
 
 "Loading…"
+"Reading it…" (Home's quick add, while the reader fills the link)
+"Added to the [Mon D] issue" (Home's quick add, done)
 "Sending…"
 "Sending"
 "Sending [N] to the newsletter…"
@@ -256,6 +266,9 @@
 
 # Errors
 
+"Paste a web link first." (Home's quick add, empty box)
+"No issue date is scheduled yet." (Home's quick add, no schedule)
+"It went in, but the desk cannot find it yet. Reload the page." (Home's quick add, the row did not come back)
 "Add your email address."
 "That email address doesn't look right."
 "Add a link."
