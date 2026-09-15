@@ -20,7 +20,7 @@ const state = {
   sortFilter: '',           // '' = all; 'untyped' or a type key (view state)
   sortedThisVisit: 0,       // decisions made since page load (view state)
   undoStack: [],            // [{ id, prevStatus }] — every decision, newest last
-  sortedIds: new Set(),     // decided since this page opened — they stay browsable (view state)
+  sortedIds: new Set(),     // decided since this page opened — they stay listed, greyed (view state)
   lastDecision: null,       // the top of undoStack (what Undo would restore)
   rewriteReview: new Map(), // id -> the pre-rewrite description, until she checks it (view state)
   verifiedIds: new Set(),   // rewrites she has checked this visit (view state)
@@ -167,21 +167,17 @@ function change(rows, { decision = false, step = true } = {}) {
   noteChange(rows);
 }
 
-function decide(row, action, note = '', { step = true } = {}) {
-  // A decided card keeps its slot in the stream so ‹ scrolls back to it. First
-  // decision on a card therefore has to step PAST it; changing your mind about a
-  // card you already decided just restamps it where you are.
-  const firstTime = !state.sortedIds.has(row.id);
-  if (firstTime) {
+function decide(row, action, note = '') {
+  // A decided row holds its place, greyed at the bottom of its section, so a
+  // mistake stays in reach. Deciding never moves you.
+  if (!state.sortedIds.has(row.id)) {
     state.sortedThisVisit += 1;
     state.sortedIds.add(row.id);
-    // The headline list decides in place (step: false); only the carousel steps past.
-    if (step) { state.sortBrowse = (state.sortBrowse ?? 0) + 1; saveSortSpot(); }
   }
   const next = action === 'keep' ? keep(row)
     : action === 'trash' ? trash(row)
     : circleback(row, note);
-  change([next], { decision: true, step });   // next card shows now; the write drains behind it
+  change([next], { decision: true });   // the list updates now; the write drains behind it
 }
 
 /** The headline list's one button: keep every row still standing, as one
@@ -242,14 +238,7 @@ async function undoLast() {
   state.lastDecision = state.undoStack[state.undoStack.length - 1] ?? null;
   if (last.decision) {
     state.sortedThisVisit = Math.max(0, state.sortedThisVisit - last.rows.length);
-    // Deciding stepped past the card; undoing steps back onto it, so you land on
-    // what you just walked back rather than staring at the card after it. A
-    // headline-list decision never stepped, so it never steps back.
     for (const r of last.rows) state.sortedIds.delete(r.id);
-    if (last.step !== false) {
-      state.sortBrowse = Math.max(0, (state.sortBrowse ?? 0) - 1);
-      saveSortSpot();
-    }
   }
   noteChange(last.rows);   // restore the rows exactly as they were
 }
@@ -369,14 +358,13 @@ async function unsendFromNewsletter(ids) {
 const SORT_SPOT_KEY = 'desk-sort-spot';
 function saveSortSpot() {
   try {
-    sessionStorage.setItem(SORT_SPOT_KEY, JSON.stringify({ filter: state.sortFilter, browse: state.sortBrowse ?? 0 }));
+    sessionStorage.setItem(SORT_SPOT_KEY, JSON.stringify({ filter: state.sortFilter }));
   } catch { /* private mode etc. — losing the spot is fine */ }
 }
 try {
   const spot = JSON.parse(sessionStorage.getItem(SORT_SPOT_KEY) ?? 'null');
   if (spot && typeof spot.filter === 'string') {
     state.sortFilter = spot.filter;
-    state.sortBrowse = Math.max(0, Number(spot.browse) || 0);
   }
 } catch { /* ignore bad stashes */ }
 
@@ -420,10 +408,9 @@ export function render() {
     renderSort(screens.sort, {
       ...common, filter: state.sortFilter, sortedCount: state.sortedThisVisit,
       onGoTo: goTo,
-      lastDecision: state.lastDecision, browse: state.sortBrowse ?? 0,
+      lastDecision: state.lastDecision,
       sessionDecided: state.sortedIds,
-      onBrowse: pos => { state.sortBrowse = Math.max(0, pos); saveSortSpot(); render(); },
-      onFilter: key => { state.sortFilter = key; state.sortBrowse = 0; saveSortSpot(); render(); },
+      onFilter: key => { state.sortFilter = key; saveSortSpot(); render(); },
       onDecide: decide, onUndo: undoLast, onKeepAll: keepAll, onUndoRow: undoRow,
       onEditRow: (row, changes) => change([{ ...row, ...changes }]),
       // Type + subtype + provenance move together in one queued write.

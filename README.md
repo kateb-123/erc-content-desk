@@ -22,10 +22,10 @@ description, in the background. The spreadsheet door takes a whole `.xlsx`, `.cs
 The public submission form lives outside this repo (a small GitHub Pages site) and
 posts to `/api/submit` behind a Cloudflare Turnstile check.
 
-**Sort**: **All** is one card at a time; every section pill (Needs a type, ERC,
-ERC events, Research, Events, Opportunities, Headlines) is a list with **Skip** and
-**Delete** per row and one **Keep the rest**. Decisions are click only. Nothing
-reaches a card until the reader has filed it.
+**Sort**: every section pill (Needs a type, ERC, ERC events, Research, Events,
+Opportunities, Headlines) is a list with **Skip** and **Delete** per row and one
+**Keep the rest**; **All** stacks every section under its own heading. Decisions
+are click only. Nothing reaches the list until the reader has filed it.
 
 **Finalize**: one batched Opus call rewrites kept events, ERC events, and
 opportunities into the ERC voice (research abstracts and headlines are left alone),

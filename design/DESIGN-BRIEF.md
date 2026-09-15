@@ -88,16 +88,8 @@ A left column of section pills, each with a count: All, Needs a type, ERC, ERC
 events, Research, Events, Opportunities, Headlines. Needs a type glows amber while
 it holds anything.
 
-- **All** is the one-card-at-a-time stream: one card, arrows either side to browse
-  without deciding, a position counter, and "Undo last" under the section label.
-  The card carries badges (New, Spotlight requested, External submission, a
-  duplicate warning naming the earlier item), the title, a meta line, the
-  description, the type line, an amber link alert when the link could not be read,
-  two quiet notes when the reader came up short, then the footer: **Edit** (pen)
-  and **Delete** (red trash) far left, **Skip** (bare word) and **Keep** (the one
-  filled button, with a check) on the right. A decided card is replaced at once and
-  parks to its left as a dulled sliver.
-- **Every other pill is a list** (new, Sep 11): a table of rows, each with a
+- **Every pill is a list** (Sep 11; the one-card stream was dropped Sep 15
+  because going card by card took too long): a table of rows, each with a
   chevron, the title with authors or source and date, the first two lines of the
   description, the subtype, and **Skip** and **Delete**. One filled **Keep the rest
   (N)** button sits at the top right of the list. Rows that still need a type or a
@@ -106,6 +98,9 @@ it holds anything.
   notes, the type line with Change (or the type picker itself when a type is
   missing), Open source, the link alert, and Edit. A decided row sinks to the
   bottom of the list, greyed (deleted ones struck through) with an Undo.
+- **All** stacks every non-empty section in pill order, each under its own
+  heading with its own Keep the rest, and one "Undo last" for the screen above
+  the stack. A pill's count is exactly the rows it lists; they sum to All.
 - **Edit** opens Title, Description, Link (and a picture control on ERC items) in
   place, with Save and Cancel. Whatever is typed is carried by whichever button
   ends the card.
@@ -237,8 +232,8 @@ button disappears rather than spinning, so nothing can be pushed twice.
 All CSS and vanilla JS; `prefers-reduced-motion` kills everything.
 
 - **A decision has no motion.** The slide and the shrink were both tried and
-  rejected. The decided card is replaced at once; the dulled sliver parked to its
-  left is what records the decision.
+  rejected. The decided row greys in place at the bottom of its section, with
+  Undo; that is what records the decision.
 - **Tab and section switches**: a 16px directional slide, 180ms,
   `cubic-bezier(0.33, 1, 0.68, 1)`.
 - **Confirmations**: the check mark draws itself over 350ms.

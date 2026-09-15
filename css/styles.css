@@ -223,16 +223,9 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .auto-flag { display: inline-block; width: 1rem; height: 1rem; line-height: 1rem; text-align: center; border-radius: 50%; background: #fdf3d7; color: #6b4e00; font-weight: 700; font-size: .75rem; cursor: help; }
 .item-meta { color: #666; font-size: 0.85rem; }
 .item-body { padding: 0.3rem 0 0.8rem 1.2rem; }
-.sort-card { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; max-width: 640px; margin: 1rem 0; }
 .card-pos { position: absolute; top: 1rem; right: 1.1rem; font-size: .78rem; color: var(--muted); }
 .edit-link { color: var(--accent); font-weight: 600; font-size: .95rem; }
 .edit-link .fa-solid { margin-right: .3rem; font-size: .9em; }
-.sort-card h3 { font-size: 1.1rem; font-weight: 600; line-height: 1.35; margin: 0; }
-.sort-card .item-meta { font-size: .8rem; margin: .35rem 0 0; }
-.sort-card .item-blurb { font-size: .95rem; line-height: 1.55; margin: .8rem 0 0; }
-.sort-card .item-note { font-size: .85rem; color: var(--muted); margin: .5rem 0 0; }
-.sort-card .file-row { border-top: 1px solid var(--line); margin-top: 1.1rem; padding-top: 1rem; }
-.sort-card .file-row .type-line { margin: 0; }
 .link-verified { color: var(--ok); font-size: .8rem; }
 .link-alert { margin: .6rem 0 .2rem; font-size: .85rem; color: #6b4e00; background: #fdf3d7; border: 1px solid #f2e3ae; border-radius: 8px; padding: .55rem .9rem; }
 .link-alert .alert-line { margin: 0; }
@@ -250,7 +243,6 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .alert-word:hover { text-decoration: underline; }
 .link-alert input.is-invalid { border-color: var(--err); }
 .type-pick { margin-top: .9rem; }
-.file-row > .type-pick:first-child { margin-top: 0; }
 .pick-label { font-size: .78rem; color: var(--muted); margin: 0 0 .5rem; }
 
 
@@ -266,15 +258,6 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .type-word:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .type-word.is-picked { background: var(--tint); border-color: var(--accent); color: #14507a; }
 .type-word.is-picked::before { content: "\2713 "; }
-.sort-actions { display: flex; align-items: center; gap: 1.2rem; margin-top: 1.1rem; border-top: 1px solid #eef0f3; padding-top: 1rem; }
-.sort-actions .btn-keep, .sort-actions .btn-circle {
-  display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
-  padding: .55rem 1.3rem; font-size: .95rem; border-radius: var(--radius);
-  border: 1px solid var(--line); background: #fff; color: var(--ink);
-  transition: background-color .15s ease-out, border-color .15s ease-out, box-shadow .15s ease-out, transform .1s ease-out;
-}
-.sort-actions .btn-keep:hover:not(:disabled), .sort-actions .btn-circle:hover:not(:disabled) { transform: translateY(-1px); }
-.sort-actions .fa-solid { font-size: .9em; }
 .sort-delete { margin-right: auto; }
 .sort-edit { margin: .4rem 0 .8rem; display: grid; gap: .6rem; }
 .sort-edit-field { display: block; font-size: .85rem; color: var(--muted); }
@@ -286,7 +269,6 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .sort-edit-actions button, .f-edit-actions button { font-size: .9rem; border-radius: var(--radius); }
 .sort-edit-actions .primary { padding: .45rem 1.2rem; }
 .sort-edit-actions .btn-outline { padding: .45rem 1.2rem; }
-.sort-actions .btn-keep { padding: .55rem 1.6rem; }
 /* Section menu: on the left, same bubble pills as the screen tabs. */
 .sort-body { display: flex; align-items: flex-start; gap: 2.5rem; margin-top: .6rem; }
 .sort-nav { display: flex; flex-direction: column; align-items: flex-start; gap: .35rem; min-width: 9.5rem; }
@@ -295,8 +277,6 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
   .sort-body { display: block; }
   .sort-nav { flex-direction: row; flex-wrap: wrap; margin-bottom: .8rem; }
 }
-.decide-blocked { font-size: .85rem; color: #6b4e00; margin: .5rem 0 0; }
-.sort-actions button:disabled { opacity: .45; cursor: default; }
 .sort-group { font-weight: 600; margin: .2rem 0 0; }
 /* Undo sits under the section label. The row keeps its height when disabled so
    a fresh stack doesn't start the card higher and drop it on the first decision. */
@@ -308,14 +288,12 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .undo-link:hover:not(:disabled) { border: none; text-decoration: underline; }
 .undo-link:disabled { color: var(--muted); opacity: .55; cursor: default; }
 .sort-carousel { display: flex; align-items: center; gap: .35rem; max-width: 700px; }
-.sort-carousel .sort-card { flex: 1; min-width: 0; }
 .carousel-arrow { border: none; background: none; padding: .5rem .45rem; font-size: 1.7rem; line-height: 1; color: var(--accent); cursor: pointer; }
 .carousel-arrow:hover:not(:disabled) { border: none; color: var(--ink); }
 .carousel-arrow:disabled { color: var(--line); opacity: 1; cursor: default; }
 .sort-filter { border: none; border-radius: 999px; background: none; padding: .35rem .9rem; color: var(--muted); cursor: pointer; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .85rem; }
 .sort-filter:hover:not(.is-active) { border: none; background: #e5edf4; color: var(--accent); }
 .sort-filter.is-active { color: #fff; background: var(--accent); }
-.sort-filter.is-here:not(.is-active) { color: var(--ink); background: var(--tint); }
 .type-line { font-size: .85rem; color: var(--muted); margin: .6rem 0 0; }
 .type-line .type-label { color: var(--ink); }
 /* Quiet action words: one weight, one size, icon spacing built in; never
@@ -324,11 +302,6 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .linkish .fa-solid { margin-right: .3rem; font-size: .9em; }
 .linkish.skip-link, button.skip-link { color: var(--muted); }
 .linkish.skip-link:hover:not(:disabled), button.skip-link:hover:not(:disabled) { color: var(--ink); }
-.sort-actions .btn-keep { background: var(--accent); border-color: var(--accent); color: #fff; }
-.sort-actions .btn-keep:hover:not(:disabled) { background: #19608f; border-color: #19608f; }
-.sort-actions .btn-circle:hover:not(:disabled) { background: #fff8e1; border-color: #d9c98a; }
-.sort-actions .btn-trash { color: var(--err); border-color: #ecc8c8; }
-.sort-actions .btn-trash:hover:not(:disabled) { background: #fdf1f1; border-color: var(--err); }
 /* Finalize — rows as they will look on the Policy Exchange (mock v2) */
 .finalize-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
 .finalize-head .lede { margin-bottom: .5rem; }
@@ -510,31 +483,6 @@ input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus 
 /* Sort decisions move no pixels (Kate, Sep 9). The decided card is replaced at
    once; the sliver on the left is what records it. No exit animation. */
 
-/* The parked card: the decision behind you, clipped to a sliver. Click to go
-   back to it — same as the ‹ arrow, which is why it carries a real button. */
-.sort-parked {
-  flex: 0 0 34px; align-self: stretch; min-height: 120px; padding: 0;
-  border: 1px solid var(--line); border-right: none;
-  border-radius: 12px 0 0 12px; background: #fff;
-  opacity: .38; cursor: pointer; overflow: hidden;
-}
-.sort-parked:hover:not(.is-empty) { opacity: .6; border-color: var(--line); }
-.sort-parked.is-empty { visibility: hidden; cursor: default; }
-.sort-parked span { display: block; padding: .9rem .5rem 0; font-size: .7rem; color: var(--muted); }
-
-/* A card you already decided, scrolled back to. */
-.sort-card.is-decided { border-color: var(--line); }
-.decided-stamp {
-  display: inline-flex; align-items: center; gap: .35rem;
-  font-size: .7rem; font-weight: 700; padding: .2rem .6rem;
-  border-radius: 999px; margin-bottom: .45rem;
-}
-.decided-stamp.is-kept { background: #e4f1eb; color: var(--ok); }
-.decided-stamp.is-skipped { background: #eef0f3; color: var(--muted); }
-.decided-stamp.is-deleted { background: #f7e3e3; color: var(--err); }
-.decided-lead { font-size: .85rem; color: var(--muted); margin-left: auto; }
-.sort-card.is-decided .sort-actions .decided-lead + * { margin-left: .1rem; }
-
 /* Sliding-dots loader (Kate's pick, Sep 1) — six dots slide across a track
    with staggered delays, recolored to the desk blues. Mini = inline size. */
 .dots-loader { position: relative; height: var(--dl-s, 20px); width: var(--dl-w, 250px); margin: 1.5rem auto; }
@@ -581,6 +529,9 @@ input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus 
 .list-head .undo-link { margin: 0; }
 .list-head .list-keep { margin-left: auto; font-size: .85rem; padding: .4rem 1rem; }
 .list-hint { margin: 0 0 .7rem; }
+/* All stacks every section; the top bar carries the one Undo for the screen. */
+.list-topbar { margin-bottom: .35rem; }
+.list-section + .list-section { margin-top: 1.5rem; }
 .sort-list { font-size: .9rem; border-radius: 12px; overflow: hidden; }
 .sort-list td { padding: .6rem .7rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
 .sort-list tr:last-child td { border-bottom: 0; }

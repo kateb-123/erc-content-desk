@@ -1,12 +1,10 @@
 /**
- * Pure ordering, counting, and filtering for the Sort stream. View logic
- * only — nothing here writes anywhere.
+ * Pure ordering, counting, and grouping for Sort's tables. View logic only —
+ * nothing here writes anywhere.
  */
 import { isoToSlash } from './queue-view.js';
 import { TYPE_ORDER } from './schema.js';
 import { pendingRows } from './workflow.js';
-
-// To review (untyped or unknown-typed) LEADS the stream — fix types first.
 
 function oldestFirst(a, b) {
   const left = String(a.submitted_at ?? '');
@@ -49,38 +47,15 @@ export function readerQueue(rows) {
 }
 
 /**
- * The stream. `sessionDecided` is the set of ids decided since the page opened:
- * those rows HOLD their slot instead of vanishing, so ‹ scrolls back to what you
- * just did and lets you change it (Kate, Sep 9). A decision touches neither type
- * nor date, so they sort exactly where they sat while pending.
+ * Per-bucket totals for the pill labels. One row, one bucket: a pill's number
+ * is exactly what that pill lists (Sep 15 — an ERC event used to be counted
+ * under both ERC and Events, and a row with a legacy type under neither).
  */
-export function sortStream(rows, sessionDecided = new Set()) {
-  const inPlay = rows.filter(r => (r.status === 'new' && !awaitingReader(r)) || sessionDecided.has(r.id));
-  const erc = inPlay.filter(isErc).sort(oldestFirst);
-  const rest = inPlay.filter(r => !isErc(r));
-  const known = new Set(TYPE_ORDER);
-  const toReview = rest.filter(r => !known.has(r.type || '')).sort(oldestFirst);
-  const grouped = TYPE_ORDER.flatMap(type =>
-    rest.filter(r => (r.type || '') === type).sort(oldestFirst));
-  // A kept-untyped fix-up decided this session would otherwise arrive twice.
-  const seen = new Set();
-  return [...toReview, ...keptUntyped(rows), ...erc, ...grouped].filter(row => {
-    if (seen.has(row.id)) return false;
-    seen.add(row.id);
-    return true;
-  });
-}
-
-/** Per-bucket totals of the pending rows, for the filter labels. */
 export function sortCounts(rows) {
   const pending = pendingRows(rows).filter(r => !awaitingReader(r));
   const fixups = keptUntyped(rows).length;
   const counts = { all: pending.length + fixups, erc: 0, untyped: fixups, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 };
-  for (const r of pending) {
-    if (isErc(r)) counts.erc++;
-    if (!r.type) counts.untyped++;
-    else if (counts[r.type] !== undefined) counts[r.type]++;
-  }
+  for (const r of pending) counts[sectionOf(r)]++;
   return counts;
 }
 
@@ -91,22 +66,6 @@ export function sectionOf(row) {
 }
 
 const SECTION_ORDER = ['untyped', 'erc', ...TYPE_ORDER];
-
-/**
- * Sections are jump points, not walls: '' keeps the canonical stream; a key
- * starts the stream at that section and continues through the rest, wrapping
- * around, so sorting never stops until everything is decided. Anchoring on an
- * empty section starts at the next section after it.
- */
-export function streamFrom(stream, key) {
-  const at = SECTION_ORDER.indexOf(key);
-  if (at < 0) return stream.slice();
-  const rank = new Map(SECTION_ORDER.map((s, i) =>
-    [s, (i - at + SECTION_ORDER.length) % SECTION_ORDER.length]));
-  return stream.map((row, i) => ({ row, i }))
-    .sort((a, b) => (rank.get(sectionOf(a.row)) - rank.get(sectionOf(b.row))) || (a.i - b.i))
-    .map(x => x.row);
-}
 
 const PRIOR_WORDS = { trashed: 'deleted', kept: 'kept', circleback: 'parked', new: 'in the queue' };
 
@@ -136,8 +95,23 @@ export function sectionRows(rows, section, sessionDecided = new Set()) {
   const fixups = section === 'untyped' ? keptUntyped(rows) : [];
   const live = [...here.filter(r => r.status === 'new'), ...fixups].sort(oldestFirst);
   const seen = new Set();
+  const listed = live.filter(r => !seen.has(r.id) && seen.add(r.id));
   return {
-    live: live.filter(r => !seen.has(r.id) && seen.add(r.id)),
-    done: here.filter(r => r.status !== 'new' && sessionDecided.has(r.id)).sort(oldestFirst),
+    live: listed,
+    // A kept fix-up decided this session is already live above as the fix-up —
+    // it must not also appear greyed at the bottom.
+    done: here.filter(r => r.status !== 'new' && sessionDecided.has(r.id) && !seen.has(r.id))
+      .sort(oldestFirst),
   };
+}
+
+/**
+ * All, as tables (Kate, Sep 15): every section that holds something, in the
+ * pill order, each with its own rows. Replaces the one-card stream — going
+ * through them one at a time took too long.
+ */
+export function allSections(rows, sessionDecided = new Set()) {
+  return SECTION_ORDER
+    .map(section => ({ section, ...sectionRows(rows, section, sessionDecided) }))
+    .filter(g => g.live.length || g.done.length);
 }

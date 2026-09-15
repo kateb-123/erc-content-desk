@@ -43,7 +43,7 @@
 "(optional — a flyer, PDF, or picture)"
 "Your name"
 "Your email address"
-"Go card by card: Keep what belongs, Skip what you are not sure about (it stays in the queue), Delete the rest. The pen edits the item in place. A card with open work — no type, an unchecked link — locks Keep until you fix it (Delete works any time)."
+"Each section is a list. Delete what does not belong, Skip what you are not sure about (it stays in the queue), then Keep the rest of a section in one press. The chevron opens a row to read it, edit it, set its type, or check its link. A row with no type or an unchecked link stays out of Keep the rest until you fix it (Delete works any time)."
 "(untitled)"
 "Note: [text]"
 "from [name]"

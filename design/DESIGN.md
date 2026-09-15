@@ -71,9 +71,11 @@ look, everywhere it appears.
 | Door buttons (Go to Finalize/Publish, Send to newsletter) | → `fa-arrow-right` | slim primary (.85rem, .35rem padding), right of the screen head | move along the pipeline |
 | **Keep the rest (N)** | ✓ `fa-check` | the ONE filled button on a Sort section list, right of the list head | keep every listed row that has a real type and a checked link; Skip and Delete on each row are the only other actions there (Sep 11) |
 
-Sort's section lists (Sep 11, Kate's option A): every section pill (Needs a
-type, ERC, ERC events, Research, Events, Opportunities, Headlines) sorts as a
-table, not cards; only All keeps the one-card stream. Each row: chevron, title
+Sort is tables, not cards (Sep 11 option A; Sep 15 the card stream went too):
+every section pill (Needs a type, ERC, ERC events, Research, Events,
+Opportunities, Headlines) lists its own section, and All stacks every non-empty
+section in that order, each under its own heading with its own Keep the rest.
+One Undo last for the screen sits above the stack. Each row: chevron, title
 with authors or source · date, the first two lines of the description, subtype
 (with an amber "Needs a type" or "Link needs a check" mark when it applies),
 Skip · Delete. A chevron opens Finalize's white detail card in place
@@ -91,8 +93,8 @@ button DISAPPEARS — nothing is re-pushable.
 All CSS/vanilla; `prefers-reduced-motion` kills everything.
 
 - Decision: NO motion (Kate, Sep 9 — the slide and the shrink were both
-  rejected). The decided card is replaced at once; the dulled sliver parked
-  to its left is what records the decision, and ‹ scrolls back onto it.
+  rejected). The decided row greys in place at the bottom of its section with
+  Undo; that is what records the decision.
 - Tab/section switch: ±16px directional slide, 180ms `cubic-bezier(0.33,1,0.68,1)`.
 - Confirmations: SVG check draws itself, 350ms.
 - Loading: the sliding-dots track (blue ramp `#9ec9e8` → `#14507a`), label under the

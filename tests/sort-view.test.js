@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { keptUntyped, sortStream, sortCounts, streamFrom, sectionOf } from '../js/sort-view.js';
+import { keptUntyped, sortCounts, sectionOf, allSections } from '../js/sort-view.js';
 
 // Shuffled on purpose: statuses mixed in, groups interleaved, dates unordered.
 const rows = [
@@ -17,39 +17,29 @@ const rows = [
   { id: 'erc2', status: 'new', type: 'research', subtype: 'ERC Research', submitted_at: '2026-08-23T09:00:00Z' },
 ];
 
-test('sortStream: To review leads, then ERC, then newsletter order, oldest first inside a group', () => {
-  assert.deepEqual(sortStream(rows).map(r => r.id),
-    ['weird', 'u1', 'erc2', 'erc1', 'r1', 'r2', 'r3', 'e1', 'o1', 'h1']);
-});
-
-test('sortStream drops non-pending rows and does not mutate its input', () => {
-  const before = rows.map(r => r.id).join(',');
-  const out = sortStream(rows);
-  assert.equal(out.some(r => r.id === 'kept'), false);
-  assert.equal(rows.map(r => r.id).join(','), before);
-});
-
-test('sortCounts totals pending rows per bucket', () => {
+test('sortCounts totals pending rows per bucket, each row in one bucket only', () => {
+  // erc1 (a spotlight event) and erc2 (ERC Research) count under ERC and not
+  // again under Events/Research; 'weird' (a legacy type) counts under Needs a
+  // type, where it is listed. Before Sep 15 the first two double-counted and
+  // the third counted nowhere.
   assert.deepEqual(sortCounts(rows), {
-    all: 10, erc: 2, untyped: 1, erc_event: 0, research: 4, event: 2, opportunity: 1, headline: 1,
+    all: 10, erc: 2, untyped: 2, erc_event: 0, research: 3, event: 1, opportunity: 1, headline: 1,
   });
 });
 
-test('streamFrom: sections are jump points, not walls — the stream continues past the group and wraps', () => {
-  const stream = sortStream(rows);
-  assert.deepEqual(streamFrom(stream, '').map(r => r.id), stream.map(r => r.id));
-  assert.deepEqual(streamFrom(stream, 'event').map(r => r.id),
-    ['e1', 'o1', 'h1', 'weird', 'u1', 'erc2', 'erc1', 'r1', 'r2', 'r3']);
-  assert.deepEqual(streamFrom(stream, 'untyped').map(r => r.id), stream.map(r => r.id));
-  assert.deepEqual(streamFrom(stream, 'erc').map(r => r.id),
-    ['erc2', 'erc1', 'r1', 'r2', 'r3', 'e1', 'o1', 'h1', 'weird', 'u1']);
+test('allSections over the whole queue loses nothing and repeats nothing', async () => {
+  const { allSections } = await import('../js/sort-view.js');
+  const listed = allSections(rows).flatMap(g => g.live.map(r => r.id));
+  assert.equal(new Set(listed).size, listed.length);
+  assert.deepEqual([...listed].sort(),
+    ['e1', 'erc1', 'erc2', 'h1', 'o1', 'r1', 'r2', 'r3', 'u1', 'weird'].sort());
+  assert.equal(listed.length, sortCounts(rows).all);
 });
 
-test('streamFrom: an empty anchor group starts at the next group after it, keeping every card', () => {
-  const noEvents = rows.filter(r => !(r.type === 'event' && !r.spotlight_request));
-  const stream = sortStream(noEvents);
-  assert.deepEqual(streamFrom(stream, 'event').map(r => r.id),
-    ['o1', 'h1', 'weird', 'u1', 'erc2', 'erc1', 'r1', 'r2', 'r3']);
+test('allSections orders a section oldest first, the way the card stream did', async () => {
+  const { allSections } = await import('../js/sort-view.js');
+  const research = allSections(rows).find(g => g.section === 'research');
+  assert.deepEqual(research.live.map(r => r.id), ['r1', 'r2', 'r3']);
 });
 
 test('kept rows without a type come back to Sort, unless already in an issue or live', () => {
@@ -61,33 +51,36 @@ test('kept rows without a type come back to Sort, unless already in an issue or 
     { id: 5, status: 'new', type: '' },
   ];
   assert.deepEqual(keptUntyped(rows).map(r => r.id), [1]);
-  // To review leads: pending untyped first, then the kept fix-ups.
-  assert.deepEqual(sortStream(rows).map(r => r.id), [5, 1]);
+  // Needs a type lists the pending untyped first, then the kept fix-ups.
+  assert.deepEqual(allSections(rows)[0].live.map(r => r.id), [5, 1]);
 });
 
-test("sortStream holds this session's decided cards in their slot, so ‹ scrolls back to them", () => {
+test("a card decided this session stays in its section, greyed at the bottom, so a mistake is in reach", () => {
   const decided = rows.map(r => (r.id === 'r1' ? { ...r, status: 'kept' } : r));
-  // Without the session set the decided row leaves the stream, as before.
-  assert.equal(sortStream(decided).some(r => r.id === 'r1'), false);
-  // With it, r1 keeps the exact slot it held while pending.
-  assert.deepEqual(sortStream(decided, new Set(['r1'])).map(r => r.id),
-    ['weird', 'u1', 'erc2', 'erc1', 'r1', 'r2', 'r3', 'e1', 'o1', 'h1']);
+  const research = d => allSections(decided, d).find(g => g.section === 'research');
+  // Without the session set the decided row is gone from the list, as before.
+  assert.deepEqual(research(new Set()).live.map(r => r.id), ['r2', 'r3']);
+  assert.deepEqual(research(new Set()).done.map(r => r.id), []);
+  // With it, r1 is still listed, out of the live rows and into done.
+  assert.deepEqual(research(new Set(['r1'])).live.map(r => r.id), ['r2', 'r3']);
+  assert.deepEqual(research(new Set(['r1'])).done.map(r => r.id), ['r1']);
 });
 
-test('sortStream keeps trashed and skipped session cards too — any decision is reversible', () => {
+test('trashed and skipped session rows stay listed too — any decision is reversible', () => {
   const decided = rows.map(r => {
     if (r.id === 'e1') return { ...r, status: 'trashed' };
     if (r.id === 'o1') return { ...r, status: 'circleback' };
     return r;
   });
-  const ids = sortStream(decided, new Set(['e1', 'o1'])).map(r => r.id);
-  assert.equal(ids.includes('e1'), true);
-  assert.equal(ids.includes('o1'), true);
+  const groups = allSections(decided, new Set(['e1', 'o1']));
+  assert.deepEqual(groups.find(g => g.section === 'event').done.map(r => r.id), ['e1']);
+  assert.deepEqual(groups.find(g => g.section === 'opportunity').done.map(r => r.id), ['o1']);
 });
 
 test('a session-decided row that is also a kept fix-up appears once, not twice', () => {
   const rows = [{ id: 1, status: 'kept', type: '' }, { id: 2, status: 'new', type: 'event' }];
-  const ids = sortStream(rows, new Set([1])).map(r => r.id);
+  const untyped = allSections(rows, new Set([1])).find(g => g.section === 'untyped');
+  const ids = [...untyped.live, ...untyped.done].map(r => r.id);
   assert.deepEqual(ids.filter(id => id === 1).length, 1);
 });
 
@@ -106,21 +99,21 @@ test('ERC Events get their own counted section, separate from the ERC bucket', (
   assert.equal(sectionOf(rows[0]), 'erc_event');
 });
 
-test('ERC Events lead the stream, ahead of research', () => {
+test('ERC Events lead, ahead of research', () => {
   const rows = [
     { id: 'r', status: 'new', type: 'research', subtype: 'Report', submitted_at: '2026-09-01T00:00:00Z' },
     { id: 'e', status: 'new', type: 'erc_event', subtype: '', submitted_at: '2026-09-02T00:00:00Z' },
   ];
-  assert.deepEqual(sortStream(rows).map(r => r.id), ['e', 'r']);
+  assert.deepEqual(allSections(rows).map(g => g.section), ['erc_event', 'research']);
 });
 
-test('a row still waiting for the reader never reaches a card or a count', () => {
+test('a row still waiting for the reader never reaches a list or a count', () => {
   const waiting = [
     { id: 'p1', status: 'new', type: 'event', pending_read: 'yes', submitted_at: '2026-09-10T10:00:00Z' },
     { id: 'p2', status: 'new', type: '', pending_read: 'yes', submitted_at: '2026-09-10T10:01:00Z' },
     { id: 'e9', status: 'new', type: 'event', pending_read: '', submitted_at: '2026-09-10T09:00:00Z' },
   ];
-  assert.deepEqual(sortStream(waiting).map(r => r.id), ['e9']);
+  assert.deepEqual(allSections(waiting).flatMap(g => g.live.map(r => r.id)), ['e9']);
   const counts = sortCounts(waiting);
   assert.equal(counts.all, 1);
   assert.equal(counts.untyped, 0);
@@ -186,4 +179,47 @@ test('sectionRows for Needs a type also lists kept rows that lost their type, si
     { id: 'ok', status: 'new', type: 'event', submitted_at: '2026-09-08T10:00:00Z' },
   ];
   assert.deepEqual(sectionRows(rs, 'untyped').live.map(r => r.id), ['k1', 'u1']);
+});
+
+test('allSections: every non-empty section in pill order, each row in exactly one of them', async () => {
+  const { allSections } = await import('../js/sort-view.js');
+  const rs = [
+    { id: 'h1', status: 'new', type: 'headline', submitted_at: '2026-08-20T10:00:00Z' },
+    { id: 'u1', status: 'new', type: '', submitted_at: '2026-08-25T12:00:00Z' },
+    { id: 'e1', status: 'new', type: 'event', submitted_at: '2026-08-24T08:00:00Z' },
+    { id: 'erc1', status: 'new', type: 'event', spotlight_request: true, submitted_at: '2026-08-24T09:00:00Z' },
+    { id: 'old', status: 'kept', type: 'research', submitted_at: '2026-08-01T08:00:00Z' },
+  ];
+  const groups = allSections(rs);
+  assert.deepEqual(groups.map(g => g.section), ['untyped', 'erc', 'event', 'headline']);
+  assert.deepEqual(groups.map(g => g.live.map(r => r.id)), [['u1'], ['erc1'], ['e1'], ['h1']]);
+  const ids = groups.flatMap(g => g.live.map(r => r.id));
+  assert.equal(new Set(ids).size, ids.length);
+});
+
+test('allSections keeps a section that only holds rows decided this session', async () => {
+  const { allSections } = await import('../js/sort-view.js');
+  const rs = [{ id: 'gone', status: 'trashed', type: 'headline', submitted_at: '2026-08-20T10:00:00Z' }];
+  assert.deepEqual(allSections(rs, new Set(['gone'])).map(g => g.section), ['headline']);
+  assert.deepEqual(allSections(rs).map(g => g.section), []);
+});
+
+test('a pill count equals the rows that pill lists, and the counts sum to All', () => {
+  const groups = allSections(rows);
+  const counts = sortCounts(rows);
+  for (const g of groups) assert.equal(counts[g.section], g.live.length, `${g.section} count`);
+  const bySection = ['untyped', 'erc', 'erc_event', 'research', 'event', 'opportunity', 'headline']
+    .reduce((n, k) => n + counts[k], 0);
+  assert.equal(bySection, counts.all);
+});
+
+test('an ERC row counts once, under ERC, not again under its own type', () => {
+  const rs = [{ id: 'e', status: 'new', type: 'event', spotlight_request: true, submitted_at: '2026-09-01T00:00:00Z' }];
+  assert.deepEqual(sortCounts(rs), { all: 1, erc: 1, untyped: 0, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 });
+});
+
+test('a row with a legacy type counts under Needs a type, where it is listed', () => {
+  const rs = [{ id: 'w', status: 'new', type: 'legacy-type', submitted_at: '2026-09-01T00:00:00Z' }];
+  assert.equal(sortCounts(rs).untyped, 1);
+  assert.equal(allSections(rs)[0].section, 'untyped');
 });
