@@ -16,6 +16,10 @@
 "Preview & Edit"
 "Save & Export"
 "Add to the queue"
+"[Mon D] issue" (the Next issue page's title, with the count badge)
+"Quick add · kept and waiting" (the Next issue page's panel)
+"What Kathy will pull into the builder. [N] kept items are still waiting for an issue." / "... Nothing else is waiting." (the Next issue page's lede)
+"Tick one and it moves up into the issue. Remove in the table sends it back." (under the panel)
 "Share whatever details you have."
 "Events, research, opportunities — if it belongs in the ERC newsletter or on the Policy Exchange, share it here. The ERC team reviews everything before it is published."
 "Exchange updated"
@@ -140,7 +144,8 @@
 
 "Submit"
 "Submit another"
-"Add" (Home's quick add; gone while it works)
+"Quick add" / "Close quick add" (the Next issue page)
+"Remove" (the Next issue page's table; sends the item back to the pool)
 "Copy" / "Copied" / "Can't copy" (Home's rail)
 "Add all to the queue"
 "Add [N] to the queue"
@@ -191,7 +196,8 @@
 "Policy Exchange ↗"
 "Sort" (Home's rail, with "Work the queue, then send to the newsletter" under it)
 "Newsletter builder" (Home's rail, with "Kathy's tool" under it)
-"[Mon D] issue" (Home's rail, with "[N] items in · [N] kept and waiting" under it and the quick add box, placeholder "Paste a link to add it", note "Lands in the [Mon D] issue, skipping Sort")
+"[Mon D] issue" (Home's rail, with "[N] items in · [N] kept and waiting" under it; opens the Next issue page)
+"Main page" (the Next issue page's way back, with a left arrow)
 "Policy Exchange" (Home's rail, with "The public hub" under it)
 "Share an item" (Home's rail, with "The public share page" under it)
 "Listserv sign-up" (Home's rail, with "The sign-up page" under it)
@@ -207,8 +213,7 @@
 # Statuses
 
 "Loading…"
-"Reading it…" (Home's quick add, while the reader fills the link)
-"Added to the [Mon D] issue" (Home's quick add, done)
+"Added to the next issue." (the Next issue page, after a tick)
 "Sending…"
 "Sending"
 "Sending [N] to the newsletter…"
@@ -266,9 +271,7 @@
 
 # Errors
 
-"Paste a web link first." (Home's quick add, empty box)
-"No issue date is scheduled yet." (Home's quick add, no schedule)
-"It went in, but the desk cannot find it yet. Reload the page." (Home's quick add, the row did not come back)
+"No issue date is scheduled yet." (the Next issue page, no schedule)
 "Add your email address."
 "That email address doesn't look right."
 "Add a link."
@@ -333,6 +336,7 @@
 
 # Empty states
 
+"Nothing in yet." / "Nothing kept and waiting." (the Next issue page)
 "Nothing to sort."
 "All sorted."
 "Nothing waiting. Enjoy it."
@@ -349,6 +353,7 @@
 
 # Badges
 
+"Later issue" (the Next issue page's pool: an event that happens after the next issue lands)
 "Spotlight requested"
 "External submission"
 "In a past issue"

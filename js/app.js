@@ -4,7 +4,8 @@ import { readAllWaiting } from './reader-client.js';
 import { readerQueue } from './sort-view.js';
 import { dotsLoader, loadingLabel } from './icons.js';
 import { renderHome } from './home-ui.js';
-import { latestIssue, quickAddBody, stampForIssue } from './home-panel.js';
+import { renderIssue } from './issue-ui.js';
+import { latestIssue } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
 import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
@@ -37,7 +38,7 @@ const state = {
   rewroteNote: null,
 };
 
-const screens = Object.fromEntries(['home', 'sort', 'finalize', 'publish', 'build']
+const screens = Object.fromEntries(['home', 'issue', 'sort', 'finalize', 'publish', 'build']
   .map(name => [name, document.querySelector(`#screen-${name}`)]));
 const statusEl = document.querySelector('#desk-status');
 
@@ -224,28 +225,15 @@ async function readBeforeSort() {
   }
 }
 
-/** Home's quick add (Kate's pick A, Sep 15): a bare link goes in through the
- *  public submit route, the reader fills it, and it is kept and stamped for
- *  the next issue in one go, never passing through Sort. Resolves with the
- *  issue it landed in. */
-async function quickAdd(link) {
+/** Quick add on the Next issue page: one tick, one stamp, saved at once; the
+ *  row moves up into the issue's table on the re-render. */
+async function stampIssue(row) {
   const today = new Date().toISOString().slice(0, 10);
   const issue = nextIssueDate(state.schedule, today);
-  if (!issue) throw new Error('No issue date is scheduled yet.');
-  const res = await fetch('/api/submit', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(quickAddBody(link)),
-  });
-  const { id } = await readReply(res, 'add that link');
-  // The reader fills the title and description; a read that fails leaves the
-  // bare link in the issue, which the builder shows and Kathy can fix there.
-  try { await readAllWaiting([id], readNewRows); } catch { /* stamp anyway */ }
-  await reload();
-  const row = state.rows.find(r => r.id === id);
-  if (!row) throw new Error('It went in, but the desk cannot find it yet. Reload the page.');
-  change([stampForIssue(row, issue)]);
-  return issue;
+  if (!issue) return;
+  await whenSaved();   // no queued write may race the stamp
+  const ok = await persist([markNewsletterIssue(row, issue)]);
+  if (ok) setStatus('Added to the next issue.', 'ok');
 }
 
 function goTo(key, filter) {
@@ -398,8 +386,8 @@ try {
   }
 } catch { /* ignore bad stashes */ }
 
-const SCREEN_ORDER = ['home', 'sort', 'finalize', 'publish', 'build'];
-const SCREEN_NAMES = { sort: 'Sort', finalize: 'Finalize', publish: 'Publish to Exchange', build: 'Send to Newsletter' };
+const SCREEN_ORDER = ['home', 'issue', 'sort', 'finalize', 'publish', 'build'];
+const SCREEN_NAMES = { issue: 'Next issue', sort: 'Sort', finalize: 'Finalize', publish: 'Publish to Exchange', build: 'Send to Newsletter' };
 let shownScreen = null;
 
 /** A screen switch tells assistive tech where it landed: the incoming title
@@ -421,8 +409,9 @@ export function render() {
   document.title = state.screen === 'home' ? 'ERC Content Desk' : `${SCREEN_NAMES[state.screen]} · ERC Content Desk`;
   // The front door has no menu: its quick links are the menu (Kate, Sep 15,
   // "this is the main landing page. so it doesn't need the menu on the top").
-  // The pipeline screens keep the tabs, Home among them as the way back.
-  document.body.classList.toggle('is-front', state.screen === 'home');
+  // The pipeline screens keep the tabs, Home among them as the way back. The
+  // Next issue page is a front-door page too, with its own way back.
+  document.body.classList.toggle('is-front', state.screen === 'home' || state.screen === 'issue');
   const switched = shownScreen !== null && shownScreen !== state.screen;
   if (shownScreen !== state.screen) {
     const from = SCREEN_ORDER.indexOf(shownScreen);
@@ -445,7 +434,6 @@ export function render() {
       hubUpdated: state.hubUpdated,
       lastIssue: state.lastIssue,
       onGoTo: goTo,
-      onQuickAdd: quickAdd,
       onSubmitted: reload,
       onRefresh: reload,
       // The queue's trash can, through the same queued write as Sort. Undo hands
@@ -454,6 +442,13 @@ export function render() {
       onDeleteFromQueue: (row, action) => change([
         action === 'trash' ? trash(row) : { ...row, status: action },
       ]),
+    });
+  } else if (state.screen === 'issue') {
+    renderIssue(screens.issue, {
+      ...common, loaded: state.loaded,
+      onBack: () => goTo('home'),
+      onAdd: stampIssue,
+      onRemove: row => unsendFromNewsletter([row.id]),
     });
   } else if (state.screen === 'sort') {
     renderSort(screens.sort, {

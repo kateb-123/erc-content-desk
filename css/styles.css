@@ -408,20 +408,25 @@ button.quick-link { cursor: pointer; }
 }
 .mini-btn:hover { border-color: var(--accent); background: var(--tint); }
 
-/* The next-issue card: the head reads like the other links; under it, the
-   quick add box (Kate's pick A, Sep 15) and one quiet note that carries the
-   outcome. The Add button is gone while it works, like every in-flight button. */
-.issue-card { flex-direction: column; align-items: stretch; gap: .55rem; }
-.issue-head { display: flex; align-items: center; gap: .75rem; }
-.quick-add { display: flex; align-items: center; gap: .4rem; margin: 0; }
-.quick-add input {
-  flex: 1 1 auto; min-width: 0; font: inherit; font-size: .82rem;
-  padding: .4rem .6rem; border: 1px solid var(--line); border-radius: 8px;
-}
-.quick-add input:disabled { color: var(--muted); background: var(--page); }
+/* Quiet notes under a control (the Next issue page's quick add). */
 .quick-note { font-size: .75rem; color: var(--muted); margin: 0; }
-.quick-note.is-ok { color: var(--ok); }
-.quick-note.is-error { color: var(--err); }
+
+/* Next issue: a front-door page (Sep 15). The way back sits above the title;
+   Quick add on the lede's right opens the dashed pool panel under the table. */
+.back-link { margin: .25rem 0 .6rem; }
+.screen-head h2 .queue-badge { vertical-align: middle; margin-left: .45rem; }
+.issue-lede { display: flex; align-items: center; gap: 1rem; margin: .4rem 0 .9rem; }
+.issue-lede .lede { flex: 1; margin: 0; }
+.pool-panel { margin-top: 1.25rem; border: 1px dashed var(--line); border-radius: 12px; background: #fff; padding: .9rem 1.1rem; }
+.pool-panel h3 { font-size: .9rem; margin: 0 0 .55rem; }
+.pool-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: .45rem 1.5rem; }
+.pool-item { display: flex; align-items: center; gap: .55rem; font-size: .9rem; cursor: pointer; min-width: 0; }
+.pool-item input { margin: 0; flex: none; }
+.pool-item .pool-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pool-item .badge { margin: 0; flex: none; }
+.pool-item .pool-type { margin-left: auto; color: var(--muted); font-size: .8rem; white-space: nowrap; flex: none; }
+.pool-panel .quick-note { margin-top: .65rem; }
+@media (max-width: 720px) { .pool-list { grid-template-columns: 1fr; } }
 
 @media (max-width: 720px) {
   .home-grid { grid-template-columns: 1fr; }

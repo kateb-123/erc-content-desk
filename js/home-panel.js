@@ -1,6 +1,5 @@
 /** Pure text helpers for the Home links panel. */
-import { pendingRows, circlebackRows, buildPool, keep, markNewsletterIssue } from './workflow.js';
-import { withScheme } from './links.js';
+import { pendingRows, circlebackRows, buildPool } from './workflow.js';
 
 /** The number in Queue's alert circle: everything still waiting on a decision. */
 export function queueBadgeCount(rows) {
@@ -63,17 +62,4 @@ export function issueLine({ inIssue, waiting }) {
   const first = inIssue === 0 ? 'Nothing in yet' : `${inIssue} item${inIssue === 1 ? '' : 's'} in`;
   const second = waiting === 0 ? 'nothing else waiting' : `${waiting} kept and waiting`;
   return `${first} · ${second}`;
-}
-
-/** Quick add posts a bare link, the way a bulk row with only a link does: the
- *  reader fills the title and description after it lands. */
-export function quickAddBody(link) {
-  const url = withScheme(link);
-  return { title: url, blurb: '', link: url, type: '', subtype: '', spotlight: false, submitter: 'Quick add' };
-}
-
-/** After the reader has filled it: kept, and stamped for the issue. That is
- *  the whole shortcut past Sort (Kate, Sep 15, pick A). */
-export function stampForIssue(row, issue) {
-  return markNewsletterIssue(keep(row), issue);
 }

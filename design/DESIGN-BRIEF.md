@@ -83,11 +83,9 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   progress popup.
 - **Six quick links** in the right rail, Kate's list in her order (Sep 15): *Sort*
   (goes to Sort, which also sends to the newsletter), *Newsletter builder* (a new
-  tab), **the next issue** (its date, one line of counts, and **quick add**: paste
-  a link, press Add, and it is kept and stamped for that issue without passing
-  through Sort; the reader fills its title and description; Add disappears while
-  it works and the note under the box says "Added to the Sep 22 issue" or what
-  went wrong), *Policy Exchange* (Open, and Copy for the site's address), *Share an
+  tab), **the next issue** (its date and one line of counts, "4 items in · 7 kept
+  and waiting"; it opens the Next issue page), *Policy Exchange* (Open, and Copy
+  for the site's address), *Share an
   item* and *Listserv sign-up* (each with Open and Copy; Copy puts one sentence
   with the public page's link on the clipboard, ready to paste into an email).
   Home breathes more than the pipeline screens: a wider grid gap, roomier cards.
@@ -97,6 +95,22 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   "just queue on the bottom and you can expand it out"). Every waiting and parked item, newest first,
   sortable, with a red trash can per row. Deleting greys the row in place with an
   Undo for the rest of the session. A row still being read says "Reading...".
+
+### Next issue (Kate, Sep 15: "a list like a table. you can quick add to that", then "a new page")
+A front-door page like Home: no tabs, a **Main page** link with a left arrow
+above the title. The title is the issue date with the count badge ("Sep 22
+issue 4"). The lede says what the page is ("What Kathy will pull into the
+builder. 6 kept items are still waiting for an issue.") with **Quick add** on its
+right. The table is the queue's shape: Title with the source under it, Type,
+Submitted, and a red **Remove** per row that sends the item back to the pool.
+Quick add opens a dashed panel under the table, "Quick add · kept and waiting":
+every kept item not yet in an issue (the same pool Send to Newsletter offers),
+two columns, a tick each with the type on the right; an event that belongs to a
+coming issue wears a grey **Later issue** badge and sinks to the bottom. One tick
+stamps the row for this issue at once and it moves up into the table; the
+status line says "Added to the next issue." Nothing here skips Sort. Send to
+Newsletter stays as the fuller version (Send early?, the receipt, the builder's
+door).
 
 ### Sort (the screen that matters most)
 A left column of section pills, each with a count: Needs a fix, ERC, ERC
