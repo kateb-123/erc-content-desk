@@ -96,21 +96,19 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   sortable, with a red trash can per row. Deleting greys the row in place with an
   Undo for the rest of the session. A row still being read says "Reading...".
 
-### Next issue (Kate, Sep 15: "a list like a table. you can quick add to that", then "a new page")
+### Next issue (Kate, Sep 15: "a list like a table. you can quick add to that", "a new page", "quick add is a whole thing for the newsletter ... it will get added to the queue for sort so everything is talking to each other")
 A front-door page like Home: no tabs, a **Main page** link with a left arrow
 above the title. The title is the issue date with the count badge ("Sep 22
 issue 4"). The lede says what the page is ("What Kathy will pull into the
-builder. 6 kept items are still waiting for an issue.") with **Quick add** on its
-right. The table is the queue's shape: Title with the source under it, Type,
-Submitted, and a red **Remove** per row that sends the item back to the pool.
-Quick add opens a dashed panel under the table, "Quick add · kept and waiting":
-every kept item not yet in an issue (the same pool Send to Newsletter offers),
-two columns, a tick each with the type on the right; an event that belongs to a
-coming issue wears a grey **Later issue** badge and sinks to the bottom. One tick
-stamps the row for this issue at once and it moves up into the table; the
-status line says "Added to the next issue." Nothing here skips Sort. Send to
-Newsletter stays as the fuller version (Send early?, the receipt, the builder's
-door).
+builder.") with **Quick add** on its right. The table is the queue's shape:
+Title with the source under it, Type, Submitted, and a red **Remove** per row
+that takes the item out of the issue (it stays in the queue). Quick add opens a
+dashed panel under the table holding the submit form (no whole-doc door): what
+it saves lands in this issue AND in the queue at once, and the table shows it
+with a grey **Not sorted yet** badge until Sort has had it (Skipped if Sort
+parked it). The status line says "In the next issue, and in the queue for
+Sort." A row Sort deletes leaves the issue with it. Send to Newsletter stays as
+the way to pick from what is already kept.
 
 ### Sort (the screen that matters most)
 A left column of section pills, each with a count: Needs a fix, ERC, ERC

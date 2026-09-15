@@ -64,9 +64,11 @@ async function postSubmission(body) {
 
 /**
  * Render the shared submit form (single item + bulk door) into container.
- * onSubmitted fires after anything actually lands in the queue.
+ * onSubmitted fires after anything actually lands in the queue; a single
+ * submission passes the reply ({ id }), so a caller can pick the row up.
+ * bulk: false leaves out the whole-doc door (the Next issue page, Sep 15).
  */
-export function renderSubmitForm(container, { onSubmitted } = {}) {
+export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
   let selection = { type: '', subtype: '' };
 
   container.innerHTML = `
@@ -107,6 +109,7 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
   const typeBox = form.querySelector('.type-picker');
   const legend = el('legend', '', 'Type');
   const bulkDoor = container.querySelector('.bulk-door');
+  if (!bulk) bulkDoor.hidden = true;
 
   // Errors land on their fields (design audit 13, Sep 15): the field a message
   // names turns red, says so to assistive tech, and the first one takes focus.
@@ -229,7 +232,7 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
       form.querySelector('#sf-submitter').value = submitter;
       show(statusEl, '', 'busy');
       showConfirm(data.warnings?.length ? data.warnings.join(' ') : '');
-      onSubmitted?.();
+      onSubmitted?.(data);
     } catch (err) {
       show(statusEl, err instanceof TypeError
         ? "Couldn't reach the server. Check your connection." : err.message, 'error');

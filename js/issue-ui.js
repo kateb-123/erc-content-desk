@@ -1,22 +1,25 @@
 /**
  * Next issue: the newsletter's current state as a table, with quick add
  * (Kate, Sep 15: "it should pretty much show a list like a table. you can
- * quick add to that", then "i think a new page?"). Reached from Home's rail.
- * A front-door page like Home: the header's tabs stay hidden and the way out
- * is back to the main page. Quick add opens the kept-and-waiting pool, a
- * tick each; a tick stamps the row for this issue at once and it moves up
- * into the table; Remove sends it back. Nothing here skips Sort: the pool is
- * what Sort already kept.
+ * quick add to that", then "a new page", then "quick add is a whole thing for
+ * the newsletter, not something from the queue. it will get added to the
+ * queue for sort so everything is talking to each other"). Reached from
+ * Home's rail. A front-door page like Home: the header's tabs stay hidden
+ * and the way out is back to the main page. Quick add opens the submit form;
+ * what it saves lands in this issue AND in the queue, so Sort sees it too,
+ * and the table marks it Not sorted yet until Sort has. Remove takes an
+ * item out of the issue; it stays in the queue.
  */
 import { faIcon, dotsLoader } from './icons.js';
 import { isoToShort } from './queue-view.js';
 import { nextIssueDate } from './schedule.js';
-import { issueRows, poolRows } from './issue-view.js';
+import { issueRows } from './issue-view.js';
 import { TYPE_LABELS } from './schema.js';
+import { renderSubmitForm } from './submit-form.js';
 
-let poolOpen = false;   // view state: Quick add's panel stays as it was across re-renders
+let quickOpen = false;   // view state: the form stays open across re-renders
 
-export function resetIssueEntry() { poolOpen = false; }
+export function resetIssueEntry() { quickOpen = false; }
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -28,6 +31,9 @@ function el(tag, className, text) {
 function titleCell(row) {
   const cell = el('td');
   cell.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
+  // Straight from quick add: in the issue, and still waiting in Sort's queue.
+  if (row.status === 'new') cell.append(' ', el('span', 'badge', 'Not sorted yet'));
+  else if (row.status === 'circleback') cell.append(' ', el('span', 'badge', 'Skipped'));
   if (row.source) cell.append(el('span', 'item-source', row.source));
   return cell;
 }
@@ -37,48 +43,42 @@ function typeText(row) {
 }
 
 export function renderIssue(container, props) {
-  const { rows, schedule, today, loaded, onBack, onAdd, onRemove } = props;
-  container.replaceChildren();
-
+  const { rows, schedule, today, loaded, onBack, onQuickAdd, onRemove } = props;
   const issue = nextIssueDate(schedule, today);
   const title = issue ? `${isoToShort(issue, today)} issue` : 'Next issue';
+  const parts = [];
 
   const back = el('button', 'linkish back-link', ' Main page');
   back.type = 'button';
   back.prepend(faIcon('arrow-left'));
   back.addEventListener('click', onBack);
-  container.append(back);
+  parts.push(back);
 
   const head = el('div', 'screen-head');
   const h2 = el('h2', '', title);
   head.append(h2);
-  container.append(head);
+  parts.push(head);
 
-  if (!loaded) { container.append(dotsLoader()); return; }
-  if (!issue) { container.append(el('p', 'empty', 'No issue date is scheduled yet.')); return; }
+  if (!loaded) { container.replaceChildren(...parts, dotsLoader()); return; }
+  if (!issue) { container.replaceChildren(...parts, el('p', 'empty', 'No issue date is scheduled yet.')); return; }
 
   const inIssue = issueRows(rows, issue);
-  const pool = poolRows(rows, schedule, issue);
   h2.append(' ', el('span', 'queue-badge', String(inIssue.length)));
 
   // ── The lede, with Quick add on its right. ──
   const lede = el('div', 'issue-lede');
-  const waiting = pool.length === 0 ? 'Nothing else is waiting.'
-    : `${pool.length} kept item${pool.length === 1 ? ' is' : 's are'} still waiting for an issue.`;
-  lede.append(el('p', 'lede', `What Kathy will pull into the builder. ${waiting}`));
-  if (pool.length || poolOpen) {
-    const quick = el('button', 'mini-btn', poolOpen ? 'Close quick add' : 'Quick add');
-    quick.type = 'button';
-    quick.setAttribute('aria-expanded', String(poolOpen));
-    quick.setAttribute('aria-controls', 'issue-pool');
-    quick.addEventListener('click', () => { poolOpen = !poolOpen; renderIssue(container, props); });
-    lede.append(quick);
-  }
-  container.append(lede);
+  lede.append(el('p', 'lede', 'What Kathy will pull into the builder.'));
+  const quick = el('button', 'mini-btn', quickOpen ? 'Close quick add' : 'Quick add');
+  quick.type = 'button';
+  quick.setAttribute('aria-expanded', String(quickOpen));
+  quick.setAttribute('aria-controls', 'issue-quick');
+  quick.addEventListener('click', () => { quickOpen = !quickOpen; renderIssue(container, props); });
+  lede.append(quick);
+  parts.push(lede);
 
   // ── The table: what is in. ──
   if (!inIssue.length) {
-    container.append(el('p', 'empty', 'Nothing in yet.'));
+    parts.push(el('p', 'empty', 'Nothing in yet.'));
   } else {
     const table = el('table', 'queue-table issue-table');
     const thead = el('thead');
@@ -104,40 +104,23 @@ export function renderIssue(container, props) {
     table.append(tbody);
     const scroll = el('div', 'table-scroll');
     scroll.append(table);
-    container.append(scroll);
+    parts.push(scroll);
   }
 
-  // ── Quick add: the pool, a tick each. ──
-  if (!poolOpen) return;
-  const panel = el('section', 'pool-panel');
-  panel.id = 'issue-pool';
-  panel.append(el('h3', '', 'Quick add · kept and waiting'));
-  if (!pool.length) {
-    panel.append(el('p', 'empty', 'Nothing kept and waiting.'));
-  } else {
-    const list = el('ul', 'pool-list');
-    for (const row of pool) {
-      const li = el('li');
-      const label = el('label', 'pool-item');
-      const tick = el('input');
-      tick.type = 'checkbox';
-      tick.addEventListener('change', () => {
-        if (!tick.checked) return;
-        tick.disabled = true;   // in flight: the re-render moves the row up
-        onAdd(row);
-      });
-      label.append(tick, el('span', 'pool-title', row.headline || row.link || '(untitled)'));
-      if (row.later) {
-        const badge = el('span', 'badge', 'Later issue');
-        badge.title = 'An event that happens after the next issue lands';
-        label.append(badge);
-      }
-      label.append(el('span', 'pool-type', typeText(row)));
-      li.append(label);
-      list.append(li);
+  // ── Quick add: the submit form, mounted once per opening and left alone
+  //    across re-renders so typing survives a data refresh. ──
+  if (quickOpen) {
+    let panel = container.querySelector('.quick-panel');
+    if (!panel) {
+      panel = el('section', 'quick-panel');
+      panel.id = 'issue-quick';
+      panel.append(el('h3', '', 'Quick add · a new item for this issue'));
+      panel.append(el('p', 'quick-note', `It goes into the ${title} and into the queue, so Sort sees it too.`));
+      const mount = el('div');
+      panel.append(mount);
+      renderSubmitForm(mount, { bulk: false, onSubmitted: data => onQuickAdd(data) });
     }
-    panel.append(list);
+    parts.push(panel);
   }
-  panel.append(el('p', 'quick-note', 'Tick one and it moves up into the issue. Remove in the table sends it back.'));
-  container.append(panel);
+  container.replaceChildren(...parts);
 }

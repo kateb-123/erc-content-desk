@@ -265,3 +265,8 @@ test('canRewrite: needs the ERC voice AND has text to draft from; a link-only ev
   assert.equal(needsDescription(withText), false);
   assert.equal(needsDescription(research), false);
 });
+
+test('trash clears the newsletter stamp, so a deleted item never rides into an issue (Sep 15)', () => {
+  const r = { id: 'x', status: 'new', newsletter_issue: '2026-09-22' };
+  assert.deepEqual(trash(r), { id: 'x', status: 'trashed', newsletter_issue: '' });
+});

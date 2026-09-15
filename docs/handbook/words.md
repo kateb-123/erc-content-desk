@@ -17,9 +17,9 @@
 "Save & Export"
 "Add to the queue"
 "[Mon D] issue" (the Next issue page's title, with the count badge)
-"Quick add · kept and waiting" (the Next issue page's panel)
-"What Kathy will pull into the builder. [N] kept items are still waiting for an issue." / "... Nothing else is waiting." (the Next issue page's lede)
-"Tick one and it moves up into the issue. Remove in the table sends it back." (under the panel)
+"Quick add · a new item for this issue" (the Next issue page's panel)
+"What Kathy will pull into the builder." (the Next issue page's lede)
+"It goes into the [Mon D] issue and into the queue, so Sort sees it too." (under the panel's heading)
 "Share whatever details you have."
 "Events, research, opportunities — if it belongs in the ERC newsletter or on the Policy Exchange, share it here. The ERC team reviews everything before it is published."
 "Exchange updated"
@@ -145,7 +145,7 @@
 "Submit"
 "Submit another"
 "Quick add" / "Close quick add" (the Next issue page)
-"Remove" (the Next issue page's table; sends the item back to the pool)
+"Remove" (the Next issue page's table; takes the item out of the issue, it stays in the queue)
 "Copy" / "Copied" / "Can't copy" (Home's rail)
 "Add all to the queue"
 "Add [N] to the queue"
@@ -213,7 +213,7 @@
 # Statuses
 
 "Loading…"
-"Added to the next issue." (the Next issue page, after a tick)
+"In the next issue, and in the queue for Sort." (the Next issue page, after quick add saves)
 "Sending…"
 "Sending"
 "Sending [N] to the newsletter…"
@@ -336,7 +336,7 @@
 
 # Empty states
 
-"Nothing in yet." / "Nothing kept and waiting." (the Next issue page)
+"Nothing in yet." (the Next issue page)
 "Nothing to sort."
 "All sorted."
 "Nothing waiting. Enjoy it."
@@ -353,7 +353,7 @@
 
 # Badges
 
-"Later issue" (the Next issue page's pool: an event that happens after the next issue lands)
+"Not sorted yet" (the Next issue page's table: a quick-added item Sort has not had yet)
 "Spotlight requested"
 "External submission"
 "In a past issue"

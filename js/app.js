@@ -225,15 +225,25 @@ async function readBeforeSort() {
   }
 }
 
-/** Quick add on the Next issue page: one tick, one stamp, saved at once; the
- *  row moves up into the issue's table on the re-render. */
-async function stampIssue(row) {
+/** Quick add on the Next issue page (Kate, Sep 15): the form has just put a
+ *  new item in the queue; read it, then stamp it for the next issue, so it
+ *  sits in the issue and in Sort at once ("everything is talking to each
+ *  other"). The table marks it Not sorted yet until Sort has had it. */
+async function stampSubmitted(data) {
   const today = new Date().toISOString().slice(0, 10);
   const issue = nextIssueDate(state.schedule, today);
-  if (!issue) return;
-  await whenSaved();   // no queued write may race the stamp
+  const id = data?.id;
+  if (!issue || !id) { await reload(); return; }
+  // The reader fills the title and description first, so the stamp's write
+  // never lands under the reader's; a read that fails leaves the bare link,
+  // which Sort will show and read again.
+  try { await readAllWaiting([id], readNewRows); } catch { /* Sort catches up */ }
+  await reload();
+  const row = state.rows.find(r => r.id === id);
+  if (!row) return;
+  await whenSaved();
   const ok = await persist([markNewsletterIssue(row, issue)]);
-  if (ok) setStatus('Added to the next issue.', 'ok');
+  if (ok) setStatus('In the next issue, and in the queue for Sort.', 'ok');
 }
 
 function goTo(key, filter) {
@@ -447,7 +457,7 @@ export function render() {
     renderIssue(screens.issue, {
       ...common, loaded: state.loaded,
       onBack: () => goTo('home'),
-      onAdd: stampIssue,
+      onQuickAdd: stampSubmitted,
       onRemove: row => unsendFromNewsletter([row.id]),
     });
   } else if (state.screen === 'sort') {

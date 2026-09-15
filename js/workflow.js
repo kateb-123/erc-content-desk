@@ -23,7 +23,10 @@ export function keep(row) {
 }
 
 export function trash(row) {
-  return { ...row, status: 'trashed' };
+  // A deleted item never rides into an issue: the stamp goes with it (Sep 15,
+  // once quick add could stamp a row Sort had not seen yet). Undo restores the
+  // row as it was, stamp included.
+  return { ...row, status: 'trashed', newsletter_issue: '' };
 }
 
 export function circleback(row, note = '') {
