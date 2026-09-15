@@ -362,7 +362,7 @@ function listDetail(row, { props, rerender }) {
     const change = el('button', 'linkish', 'Change');
     change.type = 'button';
     change.addEventListener('click', () => { listPanel = 'type'; rerender(); });
-    if (parts.length) { parts[parts.length - 1].append(' ', change); } else parts.push(change);
+    parts.push(change);
   }
   const href = safeHref(row.link);
   if (href && linkCheckState(row) !== 'alert') {
@@ -372,7 +372,9 @@ function listDetail(row, { props, rerender }) {
   }
   const from = [row.submitter && `from ${row.submitter}`, row.submitted_at && isoToShort(row.submitted_at, props.today)]
     .filter(Boolean).join(', ');
-  if (from) parts.push(el('span', 'item-source', from));
+  // A plain span: .sort-list makes .item-source a block, which broke the line
+  // and left the separator dangling (the stray dot after Open source).
+  if (from) parts.push(el('span', '', from));
   parts.forEach((part, i) => { if (i) line.append(' · '); line.append(part); });
   if (parts.length) box.append(line);
   if (pickOpen) {
@@ -462,7 +464,7 @@ export function renderSort(container, props) {
 
   const head = el('div', 'screen-head');
   const info = titleWithInfo('Sort', 'sort',
-    'Each section is a list. Delete what does not belong, Skip what you are not sure about (it stays in the queue), then Keep the rest of a section in one press. The chevron opens a row to read it, edit it, set its type, or check its link. A row with no type or an unchecked link stays out of Keep the rest until you fix it (Delete works any time).');
+    'Each section is a list. Delete what does not belong, Skip what you are not sure about (it stays in the queue), then Keep the rest of a section in one press. Click a row to read it, edit it, set its type, or check its link. A row with no type or an unchecked link stays out of Keep the rest until you fix it (Delete works any time).');
   head.append(info.row);
   const door = el('button', 'primary head-action', 'Go to Finalize');
   door.append(forwardIcon());

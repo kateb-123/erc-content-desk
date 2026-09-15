@@ -248,8 +248,8 @@ export function renderPublish(container, props) {
   };
   if (preview) {
     const chips = el('div', 'p-chips');
-    if (adding.length) chips.append(chip('', `Adding ${adding.length}`, () => container.querySelector('table')?.scrollIntoView({ block: 'start', behavior: 'smooth' })));
-    if (held.length) chips.append(chip('p-chip-quiet', `Held for the newsletter ${held.length}`, () => openFold(heldFold)));
+    if (adding.length) chips.append(chip('', `Adding (${adding.length})`, () => container.querySelector('table')?.scrollIntoView({ block: 'start', behavior: 'smooth' })));
+    if (held.length) chips.append(chip('p-chip-quiet', `Held for the newsletter (${held.length})`, () => openFold(heldFold)));
     if (preview.skipped?.length) chips.append(chip('p-chip-ghost', 'Already live', () => openFold(liveFold)));
     if (chips.childElementCount) container.append(chips);
   }
