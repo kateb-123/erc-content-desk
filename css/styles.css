@@ -299,6 +299,7 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 /* Quiet action words: one weight, one size, icon spacing built in; never
    wrap between icon and word. Skip/Use original are the muted pair. */
 .linkish { border: none; background: none; padding: 0; color: var(--accent); cursor: pointer; font-size: .85rem; font-weight: 600; white-space: nowrap; }
+.linkish:hover:not(:disabled) { text-decoration: underline; }
 .linkish .fa-solid { margin-right: .3rem; font-size: .9em; }
 .linkish.skip-link, button.skip-link { color: var(--muted); }
 .linkish.skip-link:hover:not(:disabled), button.skip-link:hover:not(:disabled) { color: var(--ink); }
@@ -317,7 +318,8 @@ a.primary { background: var(--accent); border: 1px solid var(--accent); color: #
 .p-shade .dots-loader { margin-top: 1rem; }
 .p-fix-alert .linkish { color: #6b4e00; font-weight: 600; text-decoration: underline; }
 .finalize-table tr.f-item { cursor: pointer; }
-.finalize-table tr.f-item:not(.is-open):hover td { background: rgba(29, 110, 165, 0.05); }
+/* Hover layers on top of a status tint (ERC blue, rewrite amber) instead of replacing it. */
+.finalize-table tr.f-item:not(.is-open):hover td { background-image: linear-gradient(rgba(29, 110, 165, 0.05), rgba(29, 110, 165, 0.05)); }
 .finalize-table tr.f-erc td { background: var(--tint); }
 .finalize-table tr.needs-rewrite td { background: #fdf5dd; }
 .finalize-table tr.rewriting td { background: var(--tint); }
@@ -539,7 +541,7 @@ input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus 
 .sort-list .list-detail .item-note, .sort-list .list-detail .card-note { font-size: .85rem; color: var(--muted); margin: .3rem 0; }
 /* The whole row is the handle for its detail (Kate, Sep 15). */
 .sort-list .list-row:not(.is-done) { cursor: pointer; }
-.sort-list .list-row:not(.is-done):hover td { background: #fafbfc; }
+.sort-list .list-row:not(.is-done):not(.is-open):hover td { background-image: linear-gradient(rgba(29, 110, 165, 0.05), rgba(29, 110, 165, 0.05)); }
 /* The one alert on a Needs a fix row: an amber triangle before the title. */
 .sort-list .fix-mark { color: #6b4e00; font-size: .85em; margin-right: .4rem; }
 .sort-list .list-actions { white-space: nowrap; text-align: right; }
