@@ -326,6 +326,15 @@ function listLiveRow(row, { props, rerender, ctx, reshare }) {
   const titleTd = el('td');
   const badges = listBadges(row, { rows: props.rows, dupes: ctx.dupes, reshare, today: props.today });
   if (badges.length) { const wrap = el('div', 'list-badges'); wrap.append(...badges); titleTd.append(wrap); }
+  // One amber triangle leads the title of a row that needs a fix (Kate, Sep
+  // 15, option B): the alert without the bubble. The reason stays grey.
+  const reasons = fixReasons(row, ctx);
+  if (reasons.length) {
+    const mark = faIcon('triangle-exclamation');
+    mark.classList.add('fix-mark');
+    mark.title = reasons.join(' · ');
+    titleTd.append(mark);
+  }
   titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
   const meta = listMeta(row);
   if (meta) titleTd.append(el('span', 'item-source', meta));
@@ -334,7 +343,7 @@ function listLiveRow(row, { props, rerender, ctx, reshare }) {
   if (row.blurb) titleTd.append(el('p', 'list-desc', row.blurb));
 
   // The subtype, and under Needs a fix the reasons, in the same quiet grey.
-  const whereTd = el('td', 'list-where', [row.subtype, ...fixReasons(row, ctx)].filter(Boolean).join(' · '));
+  const whereTd = el('td', 'list-where', [row.subtype, ...reasons].filter(Boolean).join(' · '));
 
   const actTd = el('td', 'queue-actions list-actions');
   const skip = el('button', 'linkish', 'Skip');

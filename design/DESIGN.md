@@ -80,7 +80,8 @@ with authors or source · date, the first two lines of the description, subtype,
 Skip · Delete. Rows carry NO amber marks (Kate, Sep 15): everything that cannot
 be kept yet (no type, link not opened) and every possible duplicate sits under
 the one amber pill, Needs a fix, with the reasons in the subtype column in the
-same quiet grey; a fixed row moves to its section. Spotlight requested is a
+same quiet grey and one amber triangle (`fa-triangle-exclamation`) leading the
+title (option B, Sep 15); a fixed row moves to its section. Spotlight requested is a
 grey fact badge like External submission. Amber means "needs doing", nowhere
 else on the screen. A chevron opens Finalize's white detail card in place
 (description, notes, type + Change or the picker itself when a type is missing,
