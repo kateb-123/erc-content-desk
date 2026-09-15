@@ -56,8 +56,10 @@ Report, ERC Research), Event (A&M, Off-Campus, Webinar-Online), Opportunity
 
 Five tabs in the header: **Home, Sort, Finalize, Publish to Exchange, Send to
 Newsletter**, plus a **Build newsletter** pill on the right that opens the builder
-at `/builder/` in a new tab. Under the header sits one status line that carries
-loading and error messages for the whole app.
+at `/builder/` in a new tab. On Home the tabs and the pill are hidden (Kate,
+Sep 15: the front door's quick links are its menu; the pipeline screens keep the
+tabs, Home among them as the way back). Under the header sits one status line
+that carries loading and error messages for the whole app.
 
 Every screen head is a bare title plus a **View info** toggle that opens a tinted
 instruction panel, and (where the pipeline continues) one outlined door pill (the header's Build newsletter look, Sep 15)
@@ -84,7 +86,9 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   *Listserv sign-up* (each with Open and Copy; Copy puts one sentence with the
   public page's link on the clipboard, ready to paste into an email). The Policy
   Exchange door card is gone: the Exchange is reached from the strip.
-- **The queue table** at the bottom: every waiting and parked item, newest first,
+- **The queue table**, folded: hidden until the strip's *In the queue* count is
+  clicked (a chevron on the count says which way it is), then it opens under the
+  form and stays open for the visit. Every waiting and parked item, newest first,
   sortable, with a red trash can per row. Deleting greys the row in place with an
   Undo for the rest of the session. A row still being read says "Reading...".
 

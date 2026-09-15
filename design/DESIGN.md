@@ -44,7 +44,8 @@ template and the public Exchange site.
 - Focus: accent border + `0 0 0 3px` tint halo (quiet — louder highlights were rejected).
 - Active nav pill shadow: `0 2px 10px rgba(29,110,165,.35)`.
 - Nav is bubble pills everywhere; active = filled accent + white text; the builder's
-  wizard pills add numbered circles.
+  wizard pills add numbered circles. Home shows none of them: it is the front door
+  (Kate's Sep 15 sketch), and its four quick links are its menu.
 
 ## Icons
 

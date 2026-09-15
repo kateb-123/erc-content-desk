@@ -394,6 +394,10 @@ export function render() {
     if (here) tab.setAttribute('aria-current', 'page'); else tab.removeAttribute('aria-current');
   }
   document.title = state.screen === 'home' ? 'ERC Content Desk' : `${SCREEN_NAMES[state.screen]} · ERC Content Desk`;
+  // The front door has no menu: its quick links are the menu (Kate, Sep 15,
+  // "this is the main landing page. so it doesn't need the menu on the top").
+  // The pipeline screens keep the tabs, Home among them as the way back.
+  document.body.classList.toggle('is-front', state.screen === 'home');
   const switched = shownScreen !== null && shownScreen !== state.screen;
   if (shownScreen !== state.screen) {
     const from = SCREEN_ORDER.indexOf(shownScreen);
