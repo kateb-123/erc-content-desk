@@ -146,3 +146,18 @@ test('buildSubmission keeps a separate original_text when one is given, so sprea
   assert.equal(row.blurb, '');
   assert.equal(row.original_text, 'date: 7/6/26\nsource: TPR');
 });
+
+// Errors land on their fields (design audit finding 13, Sep 15): the status
+// line still lists them, and the field each one names turns red and takes focus.
+test('fieldFor names the form field a validation message is about', async () => {
+  const { fieldFor } = await import('../js/intake.js');
+  assert.equal(fieldFor('Add a link.'), 'link');
+  assert.equal(fieldFor('That link needs to be a normal web link (http or https).'), 'link');
+  assert.equal(fieldFor('Add your name or initials.'), 'submitter');
+  assert.equal(fieldFor('Pick a subtype.'), 'type');
+  assert.equal(fieldFor('Pick a real type.'), 'type');
+  assert.equal(fieldFor('Pick a type before a subtype.'), 'type');
+  assert.equal(fieldFor("That email address doesn't look right."), 'submitter_email');
+  assert.equal(fieldFor('Add your email address.'), 'submitter_email');
+  assert.equal(fieldFor('Something else entirely.'), '');
+});

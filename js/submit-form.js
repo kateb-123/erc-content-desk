@@ -10,7 +10,7 @@ import { subtypesFor, TYPE_ORDER, TYPE_LABELS } from './schema.js';
 export function pickType(selection, type) {
   return selection.type === type ? selection : { type, subtype: '' };
 }
-import { validateSubmission } from './intake.js';
+import { validateSubmission, fieldFor } from './intake.js';
 import { withScheme } from './links.js';
 import { checkSvg, dotsLoader, loadingLabel } from './icons.js';
 import { runPool } from './pool.js';
@@ -75,12 +75,12 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
       <input id="sf-title" type="text" autocomplete="off">
       <label for="sf-blurb">Description <span class="hint">(paste whatever you have — dates, abstract, the whole announcement; headlines can skip this)</span></label>
       <textarea id="sf-blurb" rows="6"></textarea>
-      <label for="sf-link">Link</label>
+      <label for="sf-link">Link <span class="hint">(required)</span></label>
       <input id="sf-link" type="url" autocomplete="off">
       <fieldset class="type-picker"></fieldset>
       <label class="check"><input id="sf-spotlight" type="checkbox">
         Requesting ERC Spotlight / newsletter feature</label>
-      <label for="sf-submitter">Your name or initials</label>
+      <label for="sf-submitter">Your name or initials <span class="hint">(required)</span></label>
       <input id="sf-submitter" type="text" autocomplete="off">
       <button type="submit" class="primary submit-btn">Submit</button>
       <p class="status" role="status" aria-live="polite"></p>
@@ -107,6 +107,34 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
   const typeBox = form.querySelector('.type-picker');
   const legend = el('legend', '', 'Type');
   const bulkDoor = container.querySelector('.bulk-door');
+
+  // Errors land on their fields (design audit 13, Sep 15): the field a message
+  // names turns red, says so to assistive tech, and the first one takes focus.
+  // The status line under the button still lists them all.
+  const FIELD_EL = { link: '#sf-link', submitter: '#sf-submitter', type: '.type-picker' };
+  const clearOne = node => { node.classList.remove('is-invalid'); node.removeAttribute('aria-invalid'); };
+  function clearInvalid() {
+    for (const sel of Object.values(FIELD_EL)) clearOne(form.querySelector(sel));
+  }
+  function markInvalid(errors) {
+    let first = null;
+    for (const message of errors) {
+      const sel = FIELD_EL[fieldFor(message)];
+      const node = sel && form.querySelector(sel);
+      if (!node) continue;
+      node.classList.add('is-invalid');
+      node.setAttribute('aria-invalid', 'true');
+      first ??= node;
+    }
+    (first?.matches('input') ? first : first?.querySelector('input'))?.focus();
+  }
+  for (const kind of ['input', 'change']) {
+    form.addEventListener(kind, event => {
+      for (const node of [event.target, event.target.closest('.type-picker')]) {
+        if (node?.classList.contains('is-invalid')) clearOne(node);
+      }
+    });
+  }
 
   // After a single submit the form gives way to a confirmation; "Submit
   // another" brings the (already reset) form back with the name kept.
@@ -182,7 +210,11 @@ export function renderSubmitForm(container, { onSubmitted } = {}) {
     event.preventDefault();
     const body = readForm();
     const errors = validateSubmission(body);
-    if (errors.length) return show(statusEl, errors.join(' '), 'error');
+    clearInvalid();
+    if (errors.length) {
+      markInvalid(errors);
+      return show(statusEl, errors.join(' '), 'error');
+    }
     const btn = form.querySelector('.submit-btn');
     btn.disabled = true;
     btn.hidden = true;   // gone while sending — no double-clicks

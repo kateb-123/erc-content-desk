@@ -50,3 +50,17 @@ export function buildSubmission({
     submitted_at: submittedAt,
   });
 }
+
+/**
+ * Which form field a validation message is about, so the form can mark it
+ * and put focus there: 'link', 'submitter', 'submitter_email', 'type', or
+ * '' for a message about nothing in particular.
+ */
+export function fieldFor(message) {
+  const m = String(message ?? '').toLowerCase();
+  if (m.includes('email')) return 'submitter_email';
+  if (m.includes('link')) return 'link';
+  if (m.includes('name or initials')) return 'submitter';
+  if (m.includes('type')) return 'type';
+  return '';
+}

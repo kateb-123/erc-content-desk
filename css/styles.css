@@ -456,6 +456,10 @@ button:active:not(:disabled) { transform: scale(0.98); }
 
 @keyframes rise-in { from { opacity: 0; transform: translateY(4px); } }
 
+/* A field named by a validation message turns red; the status line still lists them all. */
+.submit-form input.is-invalid, .submit-form textarea.is-invalid { border-color: var(--err); }
+.submit-form .type-picker.is-invalid { border-left: 2px solid var(--err); padding-left: .6rem; }
+
 /* Quiet focus: on-theme ring instead of the browser default highlight. */
 input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus {
   outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--tint);
