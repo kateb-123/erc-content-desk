@@ -314,7 +314,7 @@ function listLiveRow(row, { props, rerender, ctx, reshare }) {
   // description and the type column live in the open row.
 
   const actTd = el('td', 'queue-actions list-actions');
-  const skip = el('button', 'linkish', 'Skip');
+  const skip = el('button', 'linkish skip-link', 'Skip');
   skip.type = 'button';
   skip.addEventListener('click', () => { disableRow(); onDecideRow('circleback'); });
   const del = el('button', 'linkish trash-link', ' Delete');
