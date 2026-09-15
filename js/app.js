@@ -17,7 +17,7 @@ const state = {
   screen: 'home',
   loaded: false,
   busy: false,
-  sortFilter: '',           // '' = all; 'untyped' or a type key (view state)
+  sortFilter: '',           // '' = all; 'fix', 'erc', or a type key (view state)
   sortedThisVisit: 0,       // decisions made since page load (view state)
   undoStack: [],            // [{ id, prevStatus }] — every decision, newest last
   sortedIds: new Set(),     // decided since this page opened — they stay listed, greyed (view state)

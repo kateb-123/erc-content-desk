@@ -96,7 +96,7 @@
 "Off-Campus"
 "Webinar-Online"
 "All"
-"Needs a type"
+"Needs a fix"
 "ERC"
 "Research"
 "Events"
@@ -161,7 +161,7 @@
 "Rewrite [N] descriptions"
 "Re-check"
 "Fix in Finalize"
-"fix in Sort's Needs a type"
+"fix in Sort's Needs a fix"
 "Publish [N] to the Exchange"
 "Send [N] to the [Month D] issue"
 "Send to the [Month D] issue"
@@ -378,5 +378,5 @@
 "Everything here is kept unless you drop it. Delete what does not belong, Skip what you are not sure about, then Keep the rest."
 "What is left needs a type or a link check before it can be kept. Open the row to do that."
 "No description. A headline can go without one." · "No description yet."
-"Link needs a check" · "Needs a type"
+"No type" · "Link not opened" (the reasons in a Needs a fix row's subtype column; the amber row marks are gone, Sep 15)
 "Deleted" · "Skipped" · "Kept" (sunk rows of the headline list, each with "Undo")

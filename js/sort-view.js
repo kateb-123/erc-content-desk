@@ -3,8 +3,8 @@
  * nothing here writes anywhere.
  */
 import { isoToSlash } from './queue-view.js';
-import { TYPE_ORDER } from './schema.js';
-import { pendingRows } from './workflow.js';
+import { TYPE_ORDER, isValidSubtype } from './schema.js';
+import { duplicateFlags, linkCheckState, pendingRows } from './workflow.js';
 
 function oldestFirst(a, b) {
   const left = String(a.submitted_at ?? '');
@@ -51,21 +51,50 @@ export function readerQueue(rows) {
  * is exactly what that pill lists (Sep 15 — an ERC event used to be counted
  * under both ERC and Events, and a row with a legacy type under neither).
  */
-export function sortCounts(rows) {
+export function sortCounts(rows, ctx = fixContext(rows)) {
   const pending = pendingRows(rows).filter(r => !awaitingReader(r));
   const fixups = keptUntyped(rows).length;
-  const counts = { all: pending.length + fixups, erc: 0, untyped: fixups, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 };
-  for (const r of pending) counts[sectionOf(r)]++;
+  const counts = { all: pending.length + fixups, erc: 0, fix: fixups, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 };
+  for (const r of pending) counts[sectionOf(r, ctx)]++;
   return counts;
 }
 
-/** Which section a row belongs to: 'erc', a TYPE_ORDER type, or 'untyped'. */
-export function sectionOf(row) {
-  if (isErc(row)) return 'erc';
-  return TYPE_ORDER.includes(row.type) ? row.type : 'untyped';
+/** No real type yet: nothing picked, or a subtype the schema does not know. */
+export function needsType(row) {
+  return !row.type || !isValidSubtype(row.type, row.subtype);
 }
 
-const SECTION_ORDER = ['untyped', 'erc', ...TYPE_ORDER];
+/** What a row cannot tell about itself: the rest of the queue, for duplicates. */
+export function fixContext(rows) {
+  return { rows, dupes: duplicateFlags(rows) };
+}
+
+/**
+ * Why a row sits under Needs a fix (Kate, Sep 15): the two things that keep it
+ * out of Keep the rest, and a possible duplicate of an item that is not live
+ * yet. One section gathers them, so the rows themselves carry no amber marks.
+ */
+export function fixReasons(row, ctx) {
+  const rows = ctx?.rows ?? [];
+  const dupes = ctx?.dupes ?? duplicateFlags(rows);
+  const out = [];
+  if (needsType(row)) out.push('No type');
+  if (linkCheckState(row) === 'alert') out.push('Link not opened');
+  if (dupes.has(row.id)) {
+    const prior = rows.find(r => r.id === dupes.get(row.id));
+    if (prior && !String(prior.published_at ?? '').trim()) out.push(dupeBadgeText(prior));
+  }
+  return out;
+}
+
+/** Which section a row belongs to: 'fix', 'erc', or a TYPE_ORDER type. */
+export function sectionOf(row, ctx) {
+  if (fixReasons(row, ctx).length) return 'fix';
+  if (isErc(row)) return 'erc';
+  return TYPE_ORDER.includes(row.type) ? row.type : 'fix';
+}
+
+const SECTION_ORDER = ['fix', 'erc', ...TYPE_ORDER];
 
 const PRIOR_WORDS = { trashed: 'deleted', kept: 'kept', circleback: 'parked', new: 'in the queue' };
 
@@ -87,12 +116,12 @@ export function isNewToday(row, today) {
 /**
  * A section as a list (Kate, Sep 11, option A): its pending rows in stream
  * order, then the ones decided this session at the bottom, greyed, so a
- * mistake stays in reach. Needs a type also lists kept rows that lost their
+ * mistake stays in reach. Needs a fix also lists kept rows that lost their
  * type, since typing is their fix.
  */
-export function sectionRows(rows, section, sessionDecided = new Set()) {
-  const here = rows.filter(r => sectionOf(r) === section && !awaitingReader(r));
-  const fixups = section === 'untyped' ? keptUntyped(rows) : [];
+export function sectionRows(rows, section, sessionDecided = new Set(), ctx = fixContext(rows)) {
+  const here = rows.filter(r => sectionOf(r, ctx) === section && !awaitingReader(r));
+  const fixups = section === 'fix' ? keptUntyped(rows) : [];
   const live = [...here.filter(r => r.status === 'new'), ...fixups].sort(oldestFirst);
   const seen = new Set();
   const listed = live.filter(r => !seen.has(r.id) && seen.add(r.id));
@@ -111,7 +140,8 @@ export function sectionRows(rows, section, sessionDecided = new Set()) {
  * through them one at a time took too long.
  */
 export function allSections(rows, sessionDecided = new Set()) {
+  const ctx = fixContext(rows);
   return SECTION_ORDER
-    .map(section => ({ section, ...sectionRows(rows, section, sessionDecided) }))
+    .map(section => ({ section, ...sectionRows(rows, section, sessionDecided, ctx) }))
     .filter(g => g.live.length || g.done.length);
 }

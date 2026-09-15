@@ -3,11 +3,11 @@
  * section; All lists every section in turn, each with its own Keep the
  * rest. Rows carry Skip and Delete; the chevron opens the detail card.
  */
-import { duplicateFlags, linkCheckState, reshareFlags, missingFields } from './workflow.js';
-import { TYPE_ORDER, TYPE_LABELS, subtypesFor, isValidSubtype, typeIsFlat } from './schema.js';
+import { linkCheckState, reshareFlags, missingFields } from './workflow.js';
+import { TYPE_ORDER, TYPE_LABELS, subtypesFor, typeIsFlat } from './schema.js';
 import { isoToDisplay } from './rows-to-issue.js';
 import { safeHref, withScheme } from './links.js';
-import { sortCounts, isErc, readerQueue, dupeBadgeText, isNewToday, sectionRows, allSections } from './sort-view.js';
+import { sortCounts, isErc, readerQueue, isNewToday, sectionRows, allSections, needsType, fixReasons, fixContext } from './sort-view.js';
 import { buildImageControl } from './item-image.js';
 import { titleWithInfo } from './screen-info.js';
 import { faIcon, forwardIcon } from './icons.js';
@@ -18,9 +18,10 @@ let openListId = null;
 let listPanel = null;   // 'edit' | 'type' | null
 
 const FILTER_LABELS = [
-  // 'Needs a type', not 'To review': it counts only untyped items, and a
-  // first-timer read the old name as "everything waiting" (usability run F24).
-  ['', 'All'], ['untyped', 'Needs a type'], ['erc', 'ERC'], ['erc_event', 'ERC events'],
+  // 'Needs a fix' (Kate, Sep 15): the one amber thing on the screen. It gathers
+  // every row that cannot be kept yet (no type, link not opened) and possible
+  // duplicates, so the rows themselves carry no amber marks.
+  ['', 'All'], ['fix', 'Needs a fix'], ['erc', 'ERC'], ['erc_event', 'ERC events'],
   ['research', 'Research'],
   ['event', 'Events'], ['opportunity', 'Opportunities'], ['headline', 'Headlines'],
 ];
@@ -196,10 +197,6 @@ function buildLinkAlert(row, href, onVerify) {
   return alert;
 }
 
-/** One decision for the whole page: Keep the rest. Rows with an unchecked
- *  link stay out of it, as the card keeps its Keep locked for the same reason. */
-const needsType = row => !row.type || !isValidSubtype(row.type, row.subtype);
-
 const sectionLabel = section => FILTER_LABELS.find(([k]) => k === section)?.[1] ?? section;
 
 // Out of Keep the rest for the reasons the card used to lock Keep: an
@@ -230,11 +227,11 @@ function sectionHead(props, section, keepable, main, withUndo) {
 }
 
 function sectionTable(props, group, rerender) {
-  const dupes = duplicateFlags(props.rows);
+  const ctx = fixContext(props.rows);
   const reshare = reshareFlags(props.rows, props.today ?? '');
   const table = el('table', 'queue-table sort-list');
   const body = el('tbody');
-  for (const row of group.live) body.append(...listLiveRow(row, { props, rerender, dupes, reshare }));
+  for (const row of group.live) body.append(...listLiveRow(row, { props, rerender, ctx, reshare }));
   for (const row of group.done) body.append(listDoneRow(row, props.onUndoRow));
   table.append(body);
   const scroll = el('div', 'table-scroll');
@@ -243,7 +240,7 @@ function sectionTable(props, group, rerender) {
 }
 
 const KEEP_HINT = 'Everything here is kept unless you drop it. Delete what does not belong, Skip what you are not sure about, then Keep the rest.';
-const FIX_HINT = 'What is left needs a type or a link check before it can be kept. Open the row to do that.';
+const FIX_HINT = 'Set a type or check the link and the row moves to its section. A duplicate stays until you delete one copy, or keep it with the rest.';
 
 function emptyLine(props) {
   const waiting = readerQueue(props.rows).length;
@@ -263,7 +260,7 @@ function renderSectionList(main, props, section) {
     return;
   }
   main.append(el('p', 'hint list-hint',
-    keepable.length ? KEEP_HINT : group.live.length ? FIX_HINT : 'All sorted.'));
+    section === 'fix' ? FIX_HINT : group.live.length ? KEEP_HINT : 'All sorted.'));
   main.append(sectionTable(props, group, rerender));
 }
 
@@ -288,8 +285,7 @@ function renderAllList(main, props) {
     main.append(emptyLine(props));
     return;
   }
-  main.append(el('p', 'hint list-hint',
-    groups.some(g => keepableIn(g.live).length) ? KEEP_HINT : FIX_HINT));
+  main.append(el('p', 'hint list-hint', KEEP_HINT));
   for (const group of groups) {
     const block = el('section', 'list-section');
     block.append(sectionHead(props, group.section, keepableIn(group.live), main, false));
@@ -298,20 +294,22 @@ function renderAllList(main, props) {
   }
 }
 
+/** Facts about the row, all quiet grey (Kate, Sep 15: amber is for Needs a
+ *  fix only). A possible duplicate is a fix, so it is named there, not here. */
 function listBadges(row, { rows, dupes, reshare, today }) {
   const out = [];
   if (isNewToday(row, today)) out.push(el('span', 'badge badge-new', 'New'));
-  if (row.spotlight_request) out.push(el('span', 'badge badge-star', 'Spotlight requested'));
+  if (row.spotlight_request) out.push(el('span', 'badge', 'Spotlight requested'));
   if (row.submitter_email) out.push(el('span', 'badge', 'External submission'));
   if (reshare.has(row.id)) out.push(el('span', 'badge', 'In a past issue'));
   else if (dupes.has(row.id)) {
     const prior = rows.find(r => r.id === dupes.get(row.id));
-    out.push(prior?.published_at ? el('span', 'badge', 'Already live') : el('span', 'badge badge-dupe', dupeBadgeText(prior)));
+    if (prior?.published_at) out.push(el('span', 'badge', 'Already live'));
   }
   return out;
 }
 
-function listLiveRow(row, { props, rerender, dupes, reshare }) {
+function listLiveRow(row, { props, rerender, ctx, reshare }) {
   const open = openListId === row.id;
   const tr = el('tr', `list-row${open ? ' is-open' : ''}`);
   const disableRow = () => { for (const x of tr.querySelectorAll('button')) x.disabled = true; };
@@ -326,7 +324,7 @@ function listLiveRow(row, { props, rerender, dupes, reshare }) {
   chevTd.append(chev);
 
   const titleTd = el('td');
-  const badges = listBadges(row, { rows: props.rows, dupes, reshare, today: props.today });
+  const badges = listBadges(row, { rows: props.rows, dupes: ctx.dupes, reshare, today: props.today });
   if (badges.length) { const wrap = el('div', 'list-badges'); wrap.append(...badges); titleTd.append(wrap); }
   titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
   const meta = listMeta(row);
@@ -335,12 +333,8 @@ function listLiveRow(row, { props, rerender, dupes, reshare }) {
   // kept (option A); the chevron opens the rest.
   if (row.blurb) titleTd.append(el('p', 'list-desc', row.blurb));
 
-  const whereTd = el('td', 'list-where');
-  whereTd.append(row.subtype || '');
-  const marks = [];
-  if (needsType(row)) marks.push(el('span', 'badge badge-dupe', 'Needs a type'));
-  if (linkCheckState(row) === 'alert') marks.push(el('span', 'badge badge-dupe', 'Link needs a check'));
-  for (const m of marks) whereTd.append(whereTd.childNodes.length ? ' ' : '', m);
+  // The subtype, and under Needs a fix the reasons, in the same quiet grey.
+  const whereTd = el('td', 'list-where', [row.subtype, ...fixReasons(row, ctx)].filter(Boolean).join(' · '));
 
   const actTd = el('td', 'queue-actions list-actions');
   const skip = el('button', 'linkish', 'Skip');
@@ -483,7 +477,9 @@ function buildCardNotes(row) {
 
 export function renderSort(container, props) {
   container.replaceChildren();
-  const { rows, filter, onFilter, onGoTo } = props;
+  const { rows, onFilter, onGoTo } = props;
+  // A section key stashed before a rename (sessionStorage) falls back to All.
+  const filter = FILTER_KEYS.includes(props.filter) ? props.filter : '';
 
   const counts = sortCounts(rows);
 
@@ -502,7 +498,7 @@ export function renderSort(container, props) {
     const count = key === '' ? counts.all : counts[key];
     let cls = 'sort-filter';
     if (filter === key) cls += ' is-active';
-    if (key === 'untyped' && count > 0) cls += ' is-alert';   // work you have to go through
+    if (key === 'fix' && count > 0) cls += ' is-alert';   // the one notification on the screen
     const btn = el('button', cls, `${label} (${count})`);
     btn.type = 'button';
     btn.addEventListener('click', () => onFilter(key));

@@ -84,16 +84,18 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   Undo for the rest of the session. A row still being read says "Reading...".
 
 ### Sort (the screen that matters most)
-A left column of section pills, each with a count: All, Needs a type, ERC, ERC
-events, Research, Events, Opportunities, Headlines. Needs a type glows amber while
-it holds anything.
+A left column of section pills, each with a count: All, Needs a fix, ERC, ERC
+events, Research, Events, Opportunities, Headlines. Needs a fix glows amber while
+it holds anything; it is the one notification on the screen (Sep 15). It gathers
+every row that cannot be kept yet (no type, a link the desk could not open) and
+every possible duplicate, with the reason in the subtype column. Rows elsewhere
+carry no amber marks; a fixed row moves to its section.
 
 - **Every pill is a list** (Sep 11; the one-card stream was dropped Sep 15
   because going card by card took too long): a table of rows, each with a
   chevron, the title with authors or source and date, the first two lines of the
   description, the subtype, and **Skip** and **Delete**. One filled **Keep the rest
-  (N)** button sits at the top right of the list. Rows that still need a type or a
-  link check wear an amber mark and stay out of Keep the rest. The chevron expands
+  (N)** button sits at the top right of the list. The chevron expands
   the row in place into the same white detail card Finalize uses: full description,
   notes, the type line with Change (or the type picker itself when a type is
   missing), Open source, the link alert, and Edit. A decided row sinks to the

@@ -1,18 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { keptUntyped, sortCounts, sectionOf, allSections } from '../js/sort-view.js';
+import { keptUntyped, sortCounts, sectionOf, allSections, fixReasons } from '../js/sort-view.js';
 
 // Shuffled on purpose: statuses mixed in, groups interleaved, dates unordered.
+// Every typed row carries a real subtype: without one it would sit under Needs a fix.
 const rows = [
-  { id: 'h1', status: 'new', type: 'headline', submitted_at: '2026-08-20T10:00:00Z' },
-  { id: 'r2', status: 'new', type: 'research', submitted_at: '2026-08-26T09:00:00Z' },
-  { id: 'kept', status: 'kept', type: 'event', submitted_at: '2026-08-19T09:00:00Z' },
+  { id: 'h1', status: 'new', type: 'headline', subtype: 'Texas', submitted_at: '2026-08-20T10:00:00Z' },
+  { id: 'r2', status: 'new', type: 'research', subtype: 'Report', submitted_at: '2026-08-26T09:00:00Z' },
+  { id: 'kept', status: 'kept', type: 'event', subtype: 'Off-Campus', submitted_at: '2026-08-19T09:00:00Z' },
   { id: 'u1', status: 'new', type: '', submitted_at: '2026-08-25T12:00:00Z' },
-  { id: 'e1', status: 'new', type: 'event', submitted_at: '2026-08-24T08:00:00Z' },
-  { id: 'r1', status: 'new', type: 'research', submitted_at: '2026-08-22T08:00:00Z' },
-  { id: 'o1', status: 'new', type: 'opportunity', submitted_at: '2026-08-23T08:00:00Z' },
+  { id: 'e1', status: 'new', type: 'event', subtype: 'Off-Campus', submitted_at: '2026-08-24T08:00:00Z' },
+  { id: 'r1', status: 'new', type: 'research', subtype: 'Report', submitted_at: '2026-08-22T08:00:00Z' },
+  { id: 'o1', status: 'new', type: 'opportunity', subtype: 'Other', submitted_at: '2026-08-23T08:00:00Z' },
   { id: 'weird', status: 'new', type: 'legacy-type', submitted_at: '2026-08-21T08:00:00Z' },
-  { id: 'r3', status: 'new', type: 'research', submitted_at: '' },
+  { id: 'r3', status: 'new', type: 'research', subtype: 'Report', submitted_at: '' },
   { id: 'erc1', status: 'new', type: 'event', subtype: 'A&M', spotlight_request: true, submitted_at: '2026-08-24T09:00:00Z' },
   { id: 'erc2', status: 'new', type: 'research', subtype: 'ERC Research', submitted_at: '2026-08-23T09:00:00Z' },
 ];
@@ -23,7 +24,7 @@ test('sortCounts totals pending rows per bucket, each row in one bucket only', (
   // type, where it is listed. Before Sep 15 the first two double-counted and
   // the third counted nowhere.
   assert.deepEqual(sortCounts(rows), {
-    all: 10, erc: 2, untyped: 2, erc_event: 0, research: 3, event: 1, opportunity: 1, headline: 1,
+    all: 10, erc: 2, fix: 2, erc_event: 0, research: 3, event: 1, opportunity: 1, headline: 1,
   });
 });
 
@@ -45,7 +46,7 @@ test('allSections orders a section oldest first, the way the card stream did', a
 test('kept rows without a type come back to Sort, unless already in an issue or live', () => {
   const rows = [
     { id: 1, status: 'kept', type: '' },
-    { id: 2, status: 'kept', type: 'event' },
+    { id: 2, status: 'kept', type: 'event', subtype: 'Off-Campus' },
     { id: 3, status: 'kept', type: '', newsletter_issue: '2026-09-01' },
     { id: 4, status: 'kept', type: '', published_at: '2026-08-25' },
     { id: 5, status: 'new', type: '' },
@@ -78,8 +79,8 @@ test('trashed and skipped session rows stay listed too — any decision is rever
 });
 
 test('a session-decided row that is also a kept fix-up appears once, not twice', () => {
-  const rows = [{ id: 1, status: 'kept', type: '' }, { id: 2, status: 'new', type: 'event' }];
-  const untyped = allSections(rows, new Set([1])).find(g => g.section === 'untyped');
+  const rows = [{ id: 1, status: 'kept', type: '' }, { id: 2, status: 'new', type: 'event', subtype: 'Off-Campus' }];
+  const untyped = allSections(rows, new Set([1])).find(g => g.section === 'fix');
   const ids = [...untyped.live, ...untyped.done].map(r => r.id);
   assert.deepEqual(ids.filter(id => id === 1).length, 1);
 });
@@ -109,14 +110,14 @@ test('ERC Events lead, ahead of research', () => {
 
 test('a row still waiting for the reader never reaches a list or a count', () => {
   const waiting = [
-    { id: 'p1', status: 'new', type: 'event', pending_read: 'yes', submitted_at: '2026-09-10T10:00:00Z' },
+    { id: 'p1', status: 'new', type: 'event', subtype: 'Off-Campus', pending_read: 'yes', submitted_at: '2026-09-10T10:00:00Z' },
     { id: 'p2', status: 'new', type: '', pending_read: 'yes', submitted_at: '2026-09-10T10:01:00Z' },
-    { id: 'e9', status: 'new', type: 'event', pending_read: '', submitted_at: '2026-09-10T09:00:00Z' },
+    { id: 'e9', status: 'new', type: 'event', subtype: 'Off-Campus', pending_read: '', submitted_at: '2026-09-10T09:00:00Z' },
   ];
   assert.deepEqual(allSections(waiting).flatMap(g => g.live.map(r => r.id)), ['e9']);
   const counts = sortCounts(waiting);
   assert.equal(counts.all, 1);
-  assert.equal(counts.untyped, 0);
+  assert.equal(counts.fix, 0);
   assert.equal(counts.event, 1);
 });
 
@@ -154,15 +155,15 @@ test('isNewToday marks what was submitted today, by the same UTC date the desk u
 test('sectionRows: a section\'s pending rows oldest first, this session\'s decided ones at the bottom, nothing else', async () => {
   const { sectionRows } = await import('../js/sort-view.js');
   const rs = [
-    { id: 'h2', status: 'new', type: 'headline', submitted_at: '2026-09-10T10:00:00Z' },
-    { id: 'gone', status: 'trashed', type: 'headline', submitted_at: '2026-09-09T10:00:00Z' },
-    { id: 'h1', status: 'new', type: 'headline', submitted_at: '2026-09-08T10:00:00Z' },
-    { id: 'old', status: 'trashed', type: 'headline', submitted_at: '2026-09-01T10:00:00Z' },
-    { id: 'kept', status: 'kept', type: 'headline', submitted_at: '2026-09-07T10:00:00Z' },
-    { id: 'parked', status: 'circleback', type: 'headline', submitted_at: '2026-09-06T10:00:00Z' },
-    { id: 'reading', status: 'new', type: 'headline', pending_read: 'yes', submitted_at: '2026-09-11T10:00:00Z' },
-    { id: 'erc', status: 'new', type: 'headline', spotlight_request: true, submitted_at: '2026-09-05T10:00:00Z' },
-    { id: 'ev', status: 'new', type: 'event', submitted_at: '2026-09-05T10:00:00Z' },
+    { id: 'h2', status: 'new', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-10T10:00:00Z' },
+    { id: 'gone', status: 'trashed', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-09T10:00:00Z' },
+    { id: 'h1', status: 'new', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-08T10:00:00Z' },
+    { id: 'old', status: 'trashed', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-01T10:00:00Z' },
+    { id: 'kept', status: 'kept', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-07T10:00:00Z' },
+    { id: 'parked', status: 'circleback', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-06T10:00:00Z' },
+    { id: 'reading', status: 'new', type: 'headline', subtype: 'Texas', pending_read: 'yes', submitted_at: '2026-09-11T10:00:00Z' },
+    { id: 'erc', status: 'new', type: 'headline', subtype: 'Texas', spotlight_request: true, submitted_at: '2026-09-05T10:00:00Z' },
+    { id: 'ev', status: 'new', type: 'event', subtype: 'Off-Campus', submitted_at: '2026-09-05T10:00:00Z' },
   ];
   const { live, done } = sectionRows(rs, 'headline', new Set(['gone', 'kept', 'parked']));
   assert.deepEqual(live.map(r => r.id), ['h1', 'h2']);
@@ -176,22 +177,22 @@ test('sectionRows for Needs a type also lists kept rows that lost their type, si
   const rs = [
     { id: 'u1', status: 'new', type: '', submitted_at: '2026-09-10T10:00:00Z' },
     { id: 'k1', status: 'kept', type: 'legacy-type', submitted_at: '2026-09-09T10:00:00Z' },
-    { id: 'ok', status: 'new', type: 'event', submitted_at: '2026-09-08T10:00:00Z' },
+    { id: 'ok', status: 'new', type: 'event', subtype: 'Off-Campus', submitted_at: '2026-09-08T10:00:00Z' },
   ];
-  assert.deepEqual(sectionRows(rs, 'untyped').live.map(r => r.id), ['k1', 'u1']);
+  assert.deepEqual(sectionRows(rs, 'fix').live.map(r => r.id), ['k1', 'u1']);
 });
 
 test('allSections: every non-empty section in pill order, each row in exactly one of them', async () => {
   const { allSections } = await import('../js/sort-view.js');
   const rs = [
-    { id: 'h1', status: 'new', type: 'headline', submitted_at: '2026-08-20T10:00:00Z' },
+    { id: 'h1', status: 'new', type: 'headline', subtype: 'Texas', submitted_at: '2026-08-20T10:00:00Z' },
     { id: 'u1', status: 'new', type: '', submitted_at: '2026-08-25T12:00:00Z' },
-    { id: 'e1', status: 'new', type: 'event', submitted_at: '2026-08-24T08:00:00Z' },
-    { id: 'erc1', status: 'new', type: 'event', spotlight_request: true, submitted_at: '2026-08-24T09:00:00Z' },
-    { id: 'old', status: 'kept', type: 'research', submitted_at: '2026-08-01T08:00:00Z' },
+    { id: 'e1', status: 'new', type: 'event', subtype: 'Off-Campus', submitted_at: '2026-08-24T08:00:00Z' },
+    { id: 'erc1', status: 'new', type: 'event', subtype: 'Off-Campus', spotlight_request: true, submitted_at: '2026-08-24T09:00:00Z' },
+    { id: 'old', status: 'kept', type: 'research', subtype: 'Report', submitted_at: '2026-08-01T08:00:00Z' },
   ];
   const groups = allSections(rs);
-  assert.deepEqual(groups.map(g => g.section), ['untyped', 'erc', 'event', 'headline']);
+  assert.deepEqual(groups.map(g => g.section), ['fix', 'erc', 'event', 'headline']);
   assert.deepEqual(groups.map(g => g.live.map(r => r.id)), [['u1'], ['erc1'], ['e1'], ['h1']]);
   const ids = groups.flatMap(g => g.live.map(r => r.id));
   assert.equal(new Set(ids).size, ids.length);
@@ -199,7 +200,7 @@ test('allSections: every non-empty section in pill order, each row in exactly on
 
 test('allSections keeps a section that only holds rows decided this session', async () => {
   const { allSections } = await import('../js/sort-view.js');
-  const rs = [{ id: 'gone', status: 'trashed', type: 'headline', submitted_at: '2026-08-20T10:00:00Z' }];
+  const rs = [{ id: 'gone', status: 'trashed', type: 'headline', subtype: 'Texas', submitted_at: '2026-08-20T10:00:00Z' }];
   assert.deepEqual(allSections(rs, new Set(['gone'])).map(g => g.section), ['headline']);
   assert.deepEqual(allSections(rs).map(g => g.section), []);
 });
@@ -208,18 +209,55 @@ test('a pill count equals the rows that pill lists, and the counts sum to All', 
   const groups = allSections(rows);
   const counts = sortCounts(rows);
   for (const g of groups) assert.equal(counts[g.section], g.live.length, `${g.section} count`);
-  const bySection = ['untyped', 'erc', 'erc_event', 'research', 'event', 'opportunity', 'headline']
+  const bySection = ['fix', 'erc', 'erc_event', 'research', 'event', 'opportunity', 'headline']
     .reduce((n, k) => n + counts[k], 0);
   assert.equal(bySection, counts.all);
 });
 
 test('an ERC row counts once, under ERC, not again under its own type', () => {
-  const rs = [{ id: 'e', status: 'new', type: 'event', spotlight_request: true, submitted_at: '2026-09-01T00:00:00Z' }];
-  assert.deepEqual(sortCounts(rs), { all: 1, erc: 1, untyped: 0, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 });
+  const rs = [{ id: 'e', status: 'new', type: 'event', subtype: 'Off-Campus', spotlight_request: true, submitted_at: '2026-09-01T00:00:00Z' }];
+  assert.deepEqual(sortCounts(rs), { all: 1, erc: 1, fix: 0, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 });
 });
 
 test('a row with a legacy type counts under Needs a type, where it is listed', () => {
   const rs = [{ id: 'w', status: 'new', type: 'legacy-type', submitted_at: '2026-09-01T00:00:00Z' }];
-  assert.equal(sortCounts(rs).untyped, 1);
-  assert.equal(allSections(rs)[0].section, 'untyped');
+  assert.equal(sortCounts(rs).fix, 1);
+  assert.equal(allSections(rs)[0].section, 'fix');
+});
+
+// Needs a fix (Kate, Sep 15): one section gathers every row that cannot be
+// kept yet, plus possible duplicates, instead of amber marks on rows.
+const ok = { id: 'ok', status: 'new', type: 'research', subtype: 'Report', link: 'https://a.org/1', link_checked: 'ok', submitted_at: '2026-09-01T00:00:00Z' };
+
+test('fixReasons names what keeps a row out of Keep the rest, and a possible duplicate', () => {
+  assert.deepEqual(fixReasons(ok, { rows: [ok] }), []);
+  assert.deepEqual(fixReasons({ ...ok, type: '' }, { rows: [] }), ['No type']);
+  assert.deepEqual(fixReasons({ ...ok, subtype: 'Not a real one' }, { rows: [] }), ['No type']);
+  assert.deepEqual(fixReasons({ ...ok, link_checked: 'failed' }, { rows: [] }), ['Link not opened']);
+  assert.deepEqual(fixReasons({ ...ok, link_checked: 'mismatch' }, { rows: [] }), ['Link not opened']);
+  assert.deepEqual(fixReasons({ ...ok, type: '', link_checked: 'failed' }, { rows: [] }), ['No type', 'Link not opened']);
+});
+
+test('a later row with the same link as an unpublished earlier one is a fix; a live earlier one is only a fact', () => {
+  const earlier = { ...ok, id: 'first', headline: 'Earlier', submitted_at: '2026-08-26T00:00:00Z' };
+  const later = { ...ok, id: 'second', submitted_at: '2026-08-27T00:00:00Z' };
+  assert.deepEqual(fixReasons(later, { rows: [earlier, later] }), ['Same link as "Earlier", in the queue 8/26']);
+  assert.deepEqual(fixReasons(earlier, { rows: [earlier, later] }), []);
+  const live = { ...earlier, status: 'kept', published_at: '2026-08-28' };
+  assert.deepEqual(fixReasons(later, { rows: [live, later] }), []);
+});
+
+test('sectionOf sends any row with a fix to the fix section, ahead of ERC and its type', () => {
+  const rs = [{ ...ok, id: 'l', link_checked: 'failed' }, { ...ok, id: 'e', spotlight_request: true, link_checked: 'failed' }];
+  assert.equal(sectionOf(rs[0], { rows: rs }), 'fix');
+  assert.equal(sectionOf(rs[1], { rows: rs }), 'fix');
+  assert.equal(sectionOf(ok, { rows: [ok] }), 'research');
+});
+
+test('a row with an unchecked link lists under Needs a fix only, never also under its type', () => {
+  const rs = [ok, { ...ok, id: 'bad', link_checked: 'failed', submitted_at: '2026-09-02T00:00:00Z' }];
+  const groups = allSections(rs);
+  assert.deepEqual(groups.map(g => [g.section, g.live.map(r => r.id)]), [['fix', ['bad']], ['research', ['ok']]]);
+  assert.equal(sortCounts(rs).fix, 1);
+  assert.equal(sortCounts(rs).research, 1);
 });

@@ -72,13 +72,17 @@ look, everywhere it appears.
 | **Keep the rest (N)** | ✓ `fa-check` | the ONE filled button on a Sort section list, right of the list head | keep every listed row that has a real type and a checked link; Skip and Delete on each row are the only other actions there (Sep 11) |
 
 Sort is tables, not cards (Sep 11 option A; Sep 15 the card stream went too):
-every section pill (Needs a type, ERC, ERC events, Research, Events,
+every section pill (Needs a fix, ERC, ERC events, Research, Events,
 Opportunities, Headlines) lists its own section, and All stacks every non-empty
 section in that order, each under its own heading with its own Keep the rest.
 One Undo last for the screen sits above the stack. Each row: chevron, title
-with authors or source · date, the first two lines of the description, subtype
-(with an amber "Needs a type" or "Link needs a check" mark when it applies),
-Skip · Delete. A chevron opens Finalize's white detail card in place
+with authors or source · date, the first two lines of the description, subtype,
+Skip · Delete. Rows carry NO amber marks (Kate, Sep 15): everything that cannot
+be kept yet (no type, link not opened) and every possible duplicate sits under
+the one amber pill, Needs a fix, with the reasons in the subtype column in the
+same quiet grey; a fixed row moves to its section. Spotlight requested is a
+grey fact badge like External submission. Amber means "needs doing", nowhere
+else on the screen. A chevron opens Finalize's white detail card in place
 (description, notes, type + Change or the picker itself when a type is missing,
 Open source, the link alert, Edit). Decided rows sink to the bottom, greyed
 (deleted ones struck through) with Undo.
