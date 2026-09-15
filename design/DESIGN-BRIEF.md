@@ -99,11 +99,12 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
 ### Next issue (Kate, Sep 15: "a list like a table. you can quick add to that", "a new page", "quick add is a whole thing for the newsletter ... it will get added to the queue for sort so everything is talking to each other")
 A front-door page like Home: no tabs, a **Main page** link with a left arrow
 above the title. The title is the issue date with the count badge ("Sep 22
-issue 4"). The lede says what the page is ("What Kathy will pull into the
-builder.") with **Quick add** on its right. The table is the queue's shape:
+issue 4") and **Quick add** on its right; no lede (Kate, Sep 15: the panel's
+first title "was slop", so the words went). The table is the queue's shape:
 Title with the source under it, Type, Submitted, and a red **Remove** per row
 that takes the item out of the issue (it stays in the queue). Quick add opens a
-dashed panel under the table holding the submit form (no whole-doc door): what
+dashed panel under the table headed "Add to the Sep 22 issue", holding the
+submit form (no whole-doc door): what
 it saves lands in this issue AND in the queue at once, and the table shows it
 with a grey **Not sorted yet** badge until Sort has had it (Skipped if Sort
 parked it). The status line says "In the next issue, and in the queue for

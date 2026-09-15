@@ -65,16 +65,13 @@ export function renderIssue(container, props) {
   const inIssue = issueRows(rows, issue);
   h2.append(' ', el('span', 'queue-badge', String(inIssue.length)));
 
-  // ── The lede, with Quick add on its right. ──
-  const lede = el('div', 'issue-lede');
-  lede.append(el('p', 'lede', 'What Kathy will pull into the builder.'));
+  // ── Quick add sits right of the title; no lede, the table says it all. ──
   const quick = el('button', 'mini-btn', quickOpen ? 'Close quick add' : 'Quick add');
   quick.type = 'button';
   quick.setAttribute('aria-expanded', String(quickOpen));
   quick.setAttribute('aria-controls', 'issue-quick');
   quick.addEventListener('click', () => { quickOpen = !quickOpen; renderIssue(container, props); });
-  lede.append(quick);
-  parts.push(lede);
+  head.append(quick);
 
   // ── The table: what is in. ──
   if (!inIssue.length) {
@@ -114,8 +111,7 @@ export function renderIssue(container, props) {
     if (!panel) {
       panel = el('section', 'quick-panel');
       panel.id = 'issue-quick';
-      panel.append(el('h3', '', 'Quick add · a new item for this issue'));
-      panel.append(el('p', 'quick-note', `It goes into the ${title} and into the queue, so Sort sees it too.`));
+      panel.append(el('h3', '', `Add to the ${title}`));
       const mount = el('div');
       panel.append(mount);
       renderSubmitForm(mount, { bulk: false, onSubmitted: data => onQuickAdd(data) });

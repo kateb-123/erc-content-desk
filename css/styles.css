@@ -415,11 +415,10 @@ button.quick-link { cursor: pointer; }
    Quick add on the lede's right opens the dashed panel with the submit form. */
 .back-link { margin: .25rem 0 .6rem; }
 .screen-head h2 .queue-badge { vertical-align: middle; margin-left: .45rem; }
-.issue-lede { display: flex; align-items: center; gap: 1rem; margin: .4rem 0 .9rem; }
-.issue-lede .lede { flex: 1; margin: 0; }
+.screen-head .mini-btn { margin-left: auto; align-self: center; }
+#screen-issue .table-scroll { margin-top: .9rem; }
 .quick-panel { margin-top: 1.25rem; border: 1px dashed var(--line); border-radius: 12px; background: #fff; padding: 1rem 1.25rem 1.25rem; }
-.quick-panel h3 { font-size: .9rem; margin: 0 0 .2rem; }
-.quick-panel > .quick-note { margin-bottom: .9rem; }
+.quick-panel h3 { font-size: .95rem; margin: 0 0 .75rem; }
 
 @media (max-width: 720px) {
   .home-grid { grid-template-columns: 1fr; }

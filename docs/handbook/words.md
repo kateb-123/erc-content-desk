@@ -17,9 +17,7 @@
 "Save & Export"
 "Add to the queue"
 "[Mon D] issue" (the Next issue page's title, with the count badge)
-"Quick add · a new item for this issue" (the Next issue page's panel)
-"What Kathy will pull into the builder." (the Next issue page's lede)
-"It goes into the [Mon D] issue and into the queue, so Sort sees it too." (under the panel's heading)
+"Add to the [Mon D] issue" (the Next issue page's quick add panel)
 "Share whatever details you have."
 "Events, research, opportunities — if it belongs in the ERC newsletter or on the Policy Exchange, share it here. The ERC team reviews everything before it is published."
 "Exchange updated"
