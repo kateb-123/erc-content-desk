@@ -105,7 +105,9 @@ export function sectionOf(row, ctx) {
   return TYPE_ORDER.includes(row.type) ? row.type : 'fix';
 }
 
-const SECTION_ORDER = ['fix', 'erc', ...TYPE_ORDER];
+// Skipped last (Kate, Sep 15, option B): every parked row, any type, waits there
+// with Keep and Delete, so a Skip is never the end of the road.
+const SECTION_ORDER = ['fix', 'erc', ...TYPE_ORDER, 'skipped'];
 
 const PRIOR_WORDS = { trashed: 'deleted', kept: 'kept', circleback: 'parked', new: 'in the queue' };
 
@@ -130,7 +132,16 @@ export function isNewToday(row, today) {
  * mistake stays in reach. Needs a fix also lists kept rows that lost their
  * type, since typing is their fix.
  */
-export function sectionRows(rows, section, sessionDecided = new Set(), ctx = fixContext(rows)) {
+export function sectionRows(rows, section, sessionDecided = new Set(), ctx = fixContext(rows), decidedFrom = new Map()) {
+  // Decided from Skipped this session (decidedFrom says what the row was before):
+  // it greys under Skipped with Undo, not in its type section.
+  const fromSkipped = r => decidedFrom.get(r.id) === 'circleback';
+  if (section === 'skipped') {
+    return {
+      live: rows.filter(r => r.status === 'circleback' && !awaitingReader(r)).sort(oldestFirst),
+      done: rows.filter(r => r.status !== 'circleback' && sessionDecided.has(r.id) && fromSkipped(r)).sort(oldestFirst),
+    };
+  }
   const here = rows.filter(r => sectionOf(r, ctx) === section && !awaitingReader(r));
   const fixups = section === 'fix' ? keptUntyped(rows) : [];
   const live = [...here.filter(r => r.status === 'new'), ...fixups].sort(oldestFirst);
@@ -140,7 +151,7 @@ export function sectionRows(rows, section, sessionDecided = new Set(), ctx = fix
     live: listed,
     // A kept fix-up decided this session is already live above as the fix-up —
     // it must not also appear greyed at the bottom.
-    done: here.filter(r => r.status !== 'new' && sessionDecided.has(r.id) && !seen.has(r.id))
+    done: here.filter(r => r.status !== 'new' && sessionDecided.has(r.id) && !fromSkipped(r) && !seen.has(r.id))
       .sort(oldestFirst),
   };
 }
@@ -150,9 +161,9 @@ export function sectionRows(rows, section, sessionDecided = new Set(), ctx = fix
  * the one walk the counts are read from, and the invariant the tests hold
  * (one row, one section). The screen itself shows one section at a time.
  */
-export function allSections(rows, sessionDecided = new Set()) {
+export function allSections(rows, sessionDecided = new Set(), decidedFrom = new Map()) {
   const ctx = fixContext(rows);
   return SECTION_ORDER
-    .map(section => ({ section, ...sectionRows(rows, section, sessionDecided, ctx) }))
+    .map(section => ({ section, ...sectionRows(rows, section, sessionDecided, ctx, decidedFrom) }))
     .filter(g => g.live.length || g.done.length);
 }

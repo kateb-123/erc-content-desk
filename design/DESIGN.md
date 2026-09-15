@@ -58,7 +58,7 @@ look, everywhere it appears.
 | Action | Icon | Look | Means |
 |---|---|---|---|
 | **Keep** | ✓ `fa-check` | filled accent button (the ONE per card) | accept into the pipeline / accept the rewrite |
-| **Skip** | — | quiet muted word | park it (status stays `circleback` underneath) |
+| **Skip** | — | quiet muted word | park it (status stays `circleback` underneath); it waits under Sort's Skipped pill with Keep and Delete (Sep 15) |
 | **Delete** | `fa-trash-can` | red quiet link | trash the ITEM for good (any screen, any time) |
 | **Edit** | `fa-pen` | accent quiet link | inline edit, persists on Save |
 | **Use original** | `fa-rotate-left` | quiet word | reject the rewrite, keep the Sheet text |
@@ -73,9 +73,12 @@ look, everywhere it appears.
 
 Sort is one table at a time (Sep 11 option A; Sep 15 the card stream went,
 then the stacked All view): the menu on the left (Needs a fix, ERC, ERC
-events, Research, Events, Opportunities, Headlines) picks a section, and the
+events, Research, Events, Opportunities, Headlines, Skipped) picks a section, and the
 screen lands on the first one that holds anything, Needs a fix first. There
-is no All. Each table has its own Keep the rest and Undo last in its head.
+is no All. Skipped, last on the menu, holds every parked row of any type with
+Keep and Delete per row (option B, Sep 15), so a Skip is never the end of the
+road; each row there wears its type as a grey badge, and a row kept or deleted
+there greys there with Undo. Each table has its own Keep the rest and Undo last in its head.
 Each row: chevron, title
 with authors or source · date, Skip · Delete, and nothing else (Sep 15,
 option B: the description and the type column live in the open row). The

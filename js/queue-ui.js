@@ -26,6 +26,8 @@ function el(tag, className, text) {
 function titleCell(row) {
   const cell = el('td');
   cell.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
+  // A parked row says so (Sep 15); it waits under Sort's Skipped pill.
+  if (row.status === 'circleback') cell.append(' ', el('span', 'badge', 'Skipped'));
   if (row.source) cell.append(el('span', 'item-source', row.source));
   return cell;
 }

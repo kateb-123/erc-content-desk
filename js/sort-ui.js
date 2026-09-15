@@ -24,6 +24,9 @@ const FILTER_LABELS = [
   ['fix', 'Needs a fix'], ['erc', 'ERC'], ['erc_event', 'ERC events'],
   ['research', 'Research'],
   ['event', 'Events'], ['opportunity', 'Opportunities'], ['headline', 'Headlines'],
+  // Skipped (Kate, Sep 15, option B): every parked row, any type, with Keep and
+  // Delete, so a Skip is never the end of the road. Last on the menu.
+  ['skipped', 'Skipped'],
 ];
 const FILTER_KEYS = FILTER_LABELS.map(([k]) => k);
 
@@ -226,12 +229,12 @@ function sectionHead(props, section, keepable, main, withUndo) {
   return head;
 }
 
-function sectionTable(props, group, rerender) {
+function sectionTable(props, group, rerender, section) {
   const ctx = fixContext(props.rows, props.today);
   const reshare = reshareFlags(props.rows, props.today ?? '');
   const table = el('table', 'queue-table sort-list');
   const body = el('tbody');
-  for (const row of group.live) body.append(...listLiveRow(row, { props, rerender, ctx, reshare }));
+  for (const row of group.live) body.append(...listLiveRow(row, { props, rerender, ctx, reshare, section }));
   for (const row of group.done) body.append(listDoneRow(row, props.onUndoRow, props.today));
   table.append(body);
   const scroll = el('div', 'table-scroll');
@@ -241,6 +244,7 @@ function sectionTable(props, group, rerender) {
 
 const KEEP_HINT = 'Everything here is kept unless you drop it. Delete what does not belong, Skip what you are not sure about, then Keep the rest.';
 const FIX_HINT = 'Set a type or check the link and the row moves to its section. A duplicate stays until you delete one copy, or keep it with the rest.';
+const SKIPPED_HINT = 'You parked these. Keep what is ready now, Delete what is not, or leave it here.';
 
 function emptyLine(props) {
   const waiting = readerQueue(props.rows).length;
@@ -252,7 +256,8 @@ function emptyLine(props) {
 function renderSectionList(main, props, section) {
   const rerender = () => renderSectionList(main, props, section);
   main.replaceChildren();
-  const group = sectionRows(props.rows, section, props.sessionDecided ?? new Set());
+  const group = sectionRows(props.rows, section, props.sessionDecided ?? new Set(),
+    fixContext(props.rows, props.today), props.decidedFrom ?? new Map());
   const keepable = keepableIn(group.live);
   main.append(sectionHead(props, section, keepable, main, true));
   if (!group.live.length && !group.done.length) {
@@ -260,8 +265,8 @@ function renderSectionList(main, props, section) {
     return;
   }
   main.append(el('p', 'hint list-hint',
-    section === 'fix' ? FIX_HINT : group.live.length ? KEEP_HINT : 'All sorted.'));
-  main.append(sectionTable(props, group, rerender));
+    section === 'fix' ? FIX_HINT : section === 'skipped' ? SKIPPED_HINT : group.live.length ? KEEP_HINT : 'All sorted.'));
+  main.append(sectionTable(props, group, rerender, section));
 }
 
 function listBadges(row, { rows, dupes, reshare, today }) {
@@ -277,7 +282,7 @@ function listBadges(row, { rows, dupes, reshare, today }) {
   return out;
 }
 
-function listLiveRow(row, { props, rerender, ctx, reshare }) {
+function listLiveRow(row, { props, rerender, ctx, reshare, section }) {
   const open = openListId === row.id;
   const tr = el('tr', `list-row${open ? ' is-open' : ''}`);
   const disableRow = () => { for (const x of tr.querySelectorAll('button')) x.disabled = true; };
@@ -297,6 +302,8 @@ function listLiveRow(row, { props, rerender, ctx, reshare }) {
 
   const titleTd = el('td');
   const badges = listBadges(row, { rows: props.rows, dupes: ctx.dupes, reshare, today: props.today });
+  // Skipped mixes types, so each row names its own.
+  if (section === 'skipped' && row.type) badges.unshift(el('span', 'badge', TYPE_LABELS[row.type] ?? row.type));
   if (badges.length) { const wrap = el('div', 'list-badges'); wrap.append(...badges); titleTd.append(wrap); }
   // One amber triangle leads the title of a row that needs a fix (Kate, Sep
   // 15, option B): the alert without the bubble. The reason stays grey.
@@ -314,15 +321,29 @@ function listLiveRow(row, { props, rerender, ctx, reshare }) {
   // description and the type column live in the open row.
 
   const actTd = el('td', 'queue-actions list-actions');
-  const skip = el('button', 'linkish skip-link', 'Skip');
-  skip.type = 'button';
-  skip.addEventListener('click', () => { disableRow(); onDecideRow('circleback'); });
+  function onDecideRow(action) { props.onDecide?.(row, action); }
+  if (section === 'skipped') {
+    // A parked row's way forward is Keep (once it can be kept) or Delete; Skip
+    // would be a no-op here. An unkeepable row shows the triangle and no Keep
+    // until its type or link is fixed in the open row.
+    if (!needsType(row) && linkCheckState(row) !== 'alert') {
+      const keepWord = el('button', 'linkish', ' Keep');
+      keepWord.type = 'button';
+      keepWord.prepend(faIcon('check'));
+      keepWord.addEventListener('click', () => { disableRow(); onDecideRow('keep'); });
+      actTd.append(keepWord);
+    }
+  } else {
+    const skip = el('button', 'linkish skip-link', 'Skip');
+    skip.type = 'button';
+    skip.addEventListener('click', () => { disableRow(); onDecideRow('circleback'); });
+    actTd.append(skip);
+  }
   const del = el('button', 'linkish trash-link', ' Delete');
   del.type = 'button';
   del.prepend(faIcon('trash-can'));
   del.addEventListener('click', () => { disableRow(); onDecideRow('trash'); });
-  function onDecideRow(action) { props.onDecide?.(row, action); }
-  actTd.append(skip, del);
+  actTd.append(del);
 
   tr.append(chevTd, titleTd, actTd);
   if (!open) return [tr];
@@ -464,7 +485,7 @@ export function renderSort(container, props) {
 
   const head = el('div', 'screen-head');
   const info = titleWithInfo('Sort', 'sort',
-    'Each section is a list. Delete what does not belong, Skip what you are not sure about (it stays in the queue), then Keep the rest of a section in one press. Click a row to read it, edit it, set its type, or check its link. A row with no type or an unchecked link stays out of Keep the rest until you fix it (Delete works any time).');
+    'Each section is a list. Delete what does not belong, Skip what you are not sure about (it waits under Skipped), then Keep the rest of a section in one press. Click a row to read it, edit it, set its type, or check its link. A row with no type or an unchecked link stays out of Keep the rest until you fix it (Delete works any time).');
   head.append(info.row);
   const door = el('button', 'primary head-action', 'Go to Finalize');
   door.append(forwardIcon());

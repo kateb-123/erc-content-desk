@@ -23,8 +23,9 @@ The public submission form lives outside this repo (a small GitHub Pages site) a
 posts to `/api/submit` behind a Cloudflare Turnstile check.
 
 **Sort**: every section pill (Needs a fix, ERC, ERC events, Research, Events,
-Opportunities, Headlines) is a list with **Skip** and **Delete** per row and one
+Opportunities, Headlines, Skipped) is a list with **Skip** and **Delete** per row and one
 **Keep the rest**; one table shows at a time, picked from the menu on the left.
+A skipped row waits under Skipped, any type, with **Keep** and **Delete**.
 Decisions are click only. Nothing reaches the list until the reader has filed it.
 
 **Finalize**: one batched Opus call rewrites kept events, ERC events, and

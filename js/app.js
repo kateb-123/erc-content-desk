@@ -21,6 +21,7 @@ const state = {
   sortedThisVisit: 0,       // decisions made since page load (view state)
   undoStack: [],            // [{ id, prevStatus }] — every decision, newest last
   sortedIds: new Set(),     // decided since this page opened — they stay listed, greyed (view state)
+  decidedFrom: new Map(),   // id -> status before this session's decision: where Undo takes it back, and a row kept from Skipped greys under Skipped (view state)
   lastDecision: null,       // the top of undoStack (what Undo would restore)
   rewriteReview: new Map(), // id -> the pre-rewrite description, until she checks it (view state)
   verifiedIds: new Set(),   // rewrites she has checked this visit (view state)
@@ -170,6 +171,7 @@ function change(rows, { decision = false, step = true } = {}) {
 function decide(row, action, note = '') {
   // A decided row holds its place, greyed at the bottom of its section, so a
   // mistake stays in reach. Deciding never moves you.
+  state.decidedFrom.set(row.id, row.status);
   if (!state.sortedIds.has(row.id)) {
     state.sortedThisVisit += 1;
     state.sortedIds.add(row.id);
@@ -185,6 +187,7 @@ function decide(row, action, note = '') {
 function keepAll(rows) {
   if (!rows.length) return;
   for (const r of rows) {
+    state.decidedFrom.set(r.id, r.status);
     if (state.sortedIds.has(r.id)) continue;
     state.sortedThisVisit += 1;
     state.sortedIds.add(r.id);
@@ -194,9 +197,12 @@ function keepAll(rows) {
 
 /** Undo on one greyed row of the headline list: back to the queue, in place. */
 function undoRow(row) {
+  // Back to what it was: a row kept from Skipped returns to Skipped, not to new.
+  const back = state.decidedFrom.get(row.id) ?? 'new';
   state.sortedIds.delete(row.id);
+  state.decidedFrom.delete(row.id);
   state.sortedThisVisit = Math.max(0, state.sortedThisVisit - 1);
-  change([undecide(row)], { step: false });
+  change([{ ...undecide(row), status: back }], { step: false });
 }
 
 // Rows still waiting for the reader are read before Sort shows a card: the
@@ -240,7 +246,7 @@ async function undoLast() {
   state.lastDecision = state.undoStack[state.undoStack.length - 1] ?? null;
   if (last.decision) {
     state.sortedThisVisit = Math.max(0, state.sortedThisVisit - last.rows.length);
-    for (const r of last.rows) state.sortedIds.delete(r.id);
+    for (const r of last.rows) { state.sortedIds.delete(r.id); state.decidedFrom.delete(r.id); }
   }
   noteChange(last.rows);   // restore the rows exactly as they were
 }
@@ -413,6 +419,7 @@ export function render() {
       onGoTo: goTo,
       lastDecision: state.lastDecision,
       sessionDecided: state.sortedIds,
+      decidedFrom: state.decidedFrom,
       onFilter: key => { state.sortFilter = key; saveSortSpot(); render(); },
       onDecide: decide, onUndo: undoLast, onKeepAll: keepAll, onUndoRow: undoRow,
       onEditRow: (row, changes) => change([{ ...row, ...changes }]),

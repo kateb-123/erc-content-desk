@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { keptUntyped, sortCounts, sectionOf, allSections, fixReasons, landingSection, pendingRowCount } from '../js/sort-view.js';
+import { keptUntyped, sortCounts, sectionOf, allSections, sectionRows, fixReasons, landingSection, pendingRowCount } from '../js/sort-view.js';
 
 // Shuffled on purpose: statuses mixed in, groups interleaved, dates unordered.
 // Every typed row carries a real subtype: without one it would sit under Needs a fix.
@@ -24,7 +24,7 @@ test('sortCounts totals pending rows per bucket, each row in one bucket only', (
   // type, where it is listed. Before Sep 15 the first two double-counted and
   // the third counted nowhere.
   assert.deepEqual(sortCounts(rows), {
-    erc: 2, fix: 2, erc_event: 0, research: 3, event: 1, opportunity: 1, headline: 1,
+    erc: 2, fix: 2, erc_event: 0, research: 3, event: 1, opportunity: 1, headline: 1, skipped: 0,
   });
 });
 
@@ -218,7 +218,7 @@ test('a pill count equals the rows that pill lists, and the counts sum to All', 
 
 test('an ERC row counts once, under ERC, not again under its own type', () => {
   const rs = [{ id: 'e', status: 'new', type: 'event', subtype: 'Off-Campus', spotlight_request: true, submitted_at: '2026-09-01T00:00:00Z' }];
-  assert.deepEqual(sortCounts(rs), { erc: 1, fix: 0, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 });
+  assert.deepEqual(sortCounts(rs), { erc: 1, fix: 0, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0, skipped: 0 });
 });
 
 test('a row with a legacy type counts under Needs a type, where it is listed', () => {
@@ -276,4 +276,50 @@ test('pendingRowCount is what the queue still has for Sort: pending rows the rea
   assert.equal(pendingRowCount(rows), 10);
   assert.equal(pendingRowCount([{ id: 1, status: 'kept', type: '' }]), 1);
   assert.equal(pendingRowCount([{ id: 2, status: 'new', type: 'event', subtype: 'A&M', pending_read: 'yes' }]), 0);
+});
+
+// Skipped (Kate, Sep 15, option B): a parked row waits under its own pill, any
+// type, with Keep and Delete, so a Skip is never the end of the road. Before
+// this only Home listed circle-backs, and only with a trash can.
+test('a skipped row lives under Skipped, whatever its type, and in no other section', () => {
+  const rs = [
+    { id: 'p1', status: 'circleback', type: 'research', subtype: 'Report', submitted_at: '2026-09-02T00:00:00Z' },
+    { id: 'p2', status: 'circleback', type: '', submitted_at: '2026-09-01T00:00:00Z' },
+    { id: 'n1', status: 'new', type: 'research', subtype: 'Report', submitted_at: '2026-09-03T00:00:00Z' },
+    { id: 'reading', status: 'circleback', type: 'event', subtype: 'A&M', pending_read: 'yes', submitted_at: '2026-09-04T00:00:00Z' },
+  ];
+  const groups = allSections(rs);
+  assert.deepEqual(groups.map(g => [g.section, g.live.map(r => r.id)]), [['research', ['n1']], ['skipped', ['p2', 'p1']]]);
+  assert.equal(sortCounts(rs).skipped, 2);
+  assert.equal(sortCounts(rs).fix, 0);   // an untyped parked row waits under Skipped, not Needs a fix
+});
+
+test('Skipped is the last pill; Sort lands there only when nothing else is waiting', () => {
+  assert.equal(landingSection({ fix: 0, erc: 0, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0, skipped: 2 }), 'skipped');
+  assert.equal(landingSection({ fix: 0, erc: 0, erc_event: 0, research: 1, event: 0, opportunity: 0, headline: 0, skipped: 2 }), 'research');
+});
+
+test('a row skipped this session greys in its own section and is already live under Skipped', () => {
+  const rs = [
+    { id: 'r1', status: 'circleback', type: 'research', subtype: 'Report', submitted_at: '2026-09-02T00:00:00Z' },
+    { id: 'r2', status: 'new', type: 'research', subtype: 'Report', submitted_at: '2026-09-03T00:00:00Z' },
+  ];
+  const decided = new Set(['r1']);
+  const from = new Map([['r1', 'new']]);
+  assert.deepEqual(sectionRows(rs, 'research', decided, undefined, from).done.map(r => r.id), ['r1']);
+  assert.deepEqual(sectionRows(rs, 'skipped', decided, undefined, from).live.map(r => r.id), ['r1']);
+});
+
+test('a row kept or deleted from Skipped greys under Skipped, not in its type section', () => {
+  const rs = [
+    { id: 'k', status: 'kept', type: 'research', subtype: 'Report', submitted_at: '2026-09-02T00:00:00Z' },
+    { id: 'd', status: 'trashed', type: 'event', subtype: 'A&M', submitted_at: '2026-09-01T00:00:00Z' },
+    { id: 'p', status: 'circleback', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-03T00:00:00Z' },
+  ];
+  const decided = new Set(['k', 'd']);
+  const from = new Map([['k', 'circleback'], ['d', 'circleback']]);
+  const groups = allSections(rs, decided, from);
+  assert.deepEqual(groups.map(g => g.section), ['skipped']);
+  assert.deepEqual(groups[0].live.map(r => r.id), ['p']);
+  assert.deepEqual(groups[0].done.map(r => r.id), ['d', 'k']);
 });

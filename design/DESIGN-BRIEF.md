@@ -85,13 +85,15 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
 
 ### Sort (the screen that matters most)
 A left column of section pills, each with a count: Needs a fix, ERC, ERC
-events, Research, Events, Opportunities, Headlines. One table shows at a time;
+events, Research, Events, Opportunities, Headlines, Skipped. One table shows at a time;
 the screen lands on the first pill that holds anything. Needs a fix glows amber while
 it holds anything; it is the one notification on the screen (Sep 15). It gathers
 every row that cannot be kept yet (no type, a link the desk could not open) and
 every possible duplicate, with the reason in the subtype column and one amber
 triangle before the title. Rows elsewhere carry no amber marks; a fixed row
-moves to its section.
+moves to its section. Skipped, last on the menu, holds every parked row of any
+type with Keep and Delete per row (option B, Sep 15): a Skip is never the end
+of the road.
 
 - **Every pill is a list** (Sep 11; the one-card stream was dropped Sep 15
   because going card by card took too long): a table of rows, each with a

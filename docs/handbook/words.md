@@ -43,7 +43,7 @@
 "(optional — a flyer, PDF, or picture)"
 "Your name"
 "Your email address"
-"Each section is a list. Delete what does not belong, Skip what you are not sure about (it stays in the queue), then Keep the rest of a section in one press. The chevron opens a row to read it, edit it, set its type, or check its link. A row with no type or an unchecked link stays out of Keep the rest until you fix it (Delete works any time)."
+"Each section is a list. Delete what does not belong, Skip what you are not sure about (it waits under Skipped), then Keep the rest of a section in one press. Click a row to read it, edit it, set its type, or check its link. A row with no type or an unchecked link stays out of Keep the rest until you fix it (Delete works any time)."
 "(untitled)"
 "Note: [text]"
 "from [name]"
@@ -376,7 +376,9 @@
 
 "Keep the rest (N)"
 "Everything here is kept unless you drop it. Delete what does not belong, Skip what you are not sure about, then Keep the rest."
+"You parked these. Keep what is ready now, Delete what is not, or leave it here." (the Skipped pill's hint, Sep 15)
 "What is left needs a type or a link check before it can be kept. Open the row to do that."
 "No description. A headline can go without one." · "No description yet."
 "No type" · "Link not opened" (the reasons in a Needs a fix row's subtype column; the amber row marks are gone, Sep 15)
 "Deleted" · "Skipped" · "Kept" (sunk rows of the headline list, each with "Undo")
+"Skipped" (the last pill, Sep 15: every parked row, any type, each wearing its type as a badge, with " Keep" and " Delete"; Home's queue marks a parked row with a "Skipped" badge)
