@@ -21,7 +21,9 @@ Canonical values. Mirrored in code at `css/styles.css` `:root` (desk) and
 | page | `#fbfbfd` | page background (both apps) |
 | ok | `#1d6f4f` | success |
 | err | `#a32d2d` | destructive text/links (Delete, Remove) |
-| amber alert | bg `#fdf3d7`, text `#6b4e00` | needs-attention bubbles and alerts |
+| amber alert | bg `#fdf3d7`, text `#6b4e00`, line `#f2e3ae` | needs-attention bubbles, alerts, and the needs-a-rewrite row tint (`--amber-bg`, `--amber`, `--amber-line` since Sep 15; the old second amber `#fdf5dd` is gone) |
+| hover fill | `rgba(29,110,165,.05)` | row hover, layered over whatever tint the row has (`--hover`) |
+| accent deep | `#14507a` | the active shade as text: New badge, picked chip, Adding chip (`--accent-deep`) |
 
 The builder's `--bp-*` tokens mirror these values (unified in the Sep 2, 2026
 uniformity pass — `--bp-ink`, `--bp-card-border`, and `--bp-input-border` all
