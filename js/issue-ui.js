@@ -45,7 +45,8 @@ function typeText(row) {
 export function renderIssue(container, props) {
   const { rows, schedule, today, loaded, onBack, onQuickAdd, onRemove } = props;
   const issue = nextIssueDate(schedule, today);
-  const title = issue ? `${isoToShort(issue, today)} issue` : 'Next issue';
+  const when = isoToShort(issue, today);
+  const title = issue ? `Next newsletter, ${when}` : 'Next newsletter';
   const parts = [];
 
   const back = el('button', 'linkish back-link', ' Main page');
@@ -111,7 +112,7 @@ export function renderIssue(container, props) {
     if (!panel) {
       panel = el('section', 'quick-panel');
       panel.id = 'issue-quick';
-      panel.append(el('h3', '', `Add to the ${title}`));
+      panel.append(el('h3', '', `Add to the ${when} newsletter`));
       const mount = el('div');
       panel.append(mount);
       renderSubmitForm(mount, { bulk: false, onSubmitted: data => onQuickAdd(data) });

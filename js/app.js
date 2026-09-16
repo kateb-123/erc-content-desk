@@ -243,7 +243,7 @@ async function stampSubmitted(data) {
   if (!row) return;
   await whenSaved();
   const ok = await persist([markNewsletterIssue(row, issue)]);
-  if (ok) setStatus('In the next issue, and in the queue for Sort.', 'ok');
+  if (ok) setStatus('In the next newsletter, and in the queue for Sort.', 'ok');
 }
 
 function goTo(key, filter) {
@@ -397,7 +397,7 @@ try {
 } catch { /* ignore bad stashes */ }
 
 const SCREEN_ORDER = ['home', 'issue', 'sort', 'finalize', 'publish', 'build'];
-const SCREEN_NAMES = { issue: 'Next issue', sort: 'Sort', finalize: 'Finalize', publish: 'Publish to Exchange', build: 'Send to Newsletter' };
+const SCREEN_NAMES = { issue: 'Next newsletter', sort: 'Sort', finalize: 'Finalize', publish: 'Publish to Exchange', build: 'Send to Newsletter' };
 let shownScreen = null;
 
 /** A screen switch tells assistive tech where it landed: the incoming title
@@ -420,7 +420,7 @@ export function render() {
   // The front door has no menu: its quick links are the menu (Kate, Sep 15,
   // "this is the main landing page. so it doesn't need the menu on the top").
   // The pipeline screens keep the tabs, Home among them as the way back. The
-  // Next issue page is a front-door page too, with its own way back.
+  // Next newsletter page is a front-door page too, with its own way back.
   document.body.classList.toggle('is-front', state.screen === 'home' || state.screen === 'issue');
   const switched = shownScreen !== null && shownScreen !== state.screen;
   if (shownScreen !== state.screen) {

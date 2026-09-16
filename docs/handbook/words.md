@@ -16,8 +16,8 @@
 "Preview & Edit"
 "Save & Export"
 "Add to the queue"
-"[Mon D] issue" (the Next issue page's title, with the count badge)
-"Add to the [Mon D] issue" (the Next issue page's quick add panel)
+"Next newsletter, [Mon D]" (the Next newsletter page's title, with the count badge)
+"Add to the [Mon D] newsletter" (the Next newsletter page's quick add panel)
 "Share whatever details you have."
 "Events, research, opportunities — if it belongs in the ERC newsletter or on the Policy Exchange, share it here. The ERC team reviews everything before it is published."
 "Exchange updated"
@@ -142,8 +142,8 @@
 
 "Submit"
 "Submit another"
-"Quick add" / "Close quick add" (the Next issue page)
-"Remove" (the Next issue page's table; takes the item out of the issue, it stays in the queue)
+"Quick add" / "Close quick add" (the Next newsletter page)
+"Remove" (the Next newsletter page's table; takes the item out of the issue, it stays in the queue)
 "Copy" / "Copied" / "Can't copy" (Home's rail)
 "Add all to the queue"
 "Add [N] to the queue"
@@ -194,8 +194,8 @@
 "Policy Exchange ↗"
 "Sort" (Home's rail, with "Work the queue, then send to the newsletter" under it)
 "Newsletter builder" (Home's rail, with "Kathy's tool" under it)
-"[Mon D] issue" (Home's rail, with "[N] items in · [N] kept and waiting" under it; opens the Next issue page)
-"Main page" (the Next issue page's way back, with a left arrow)
+"Next newsletter" (Home's rail, with "[Mon D] · [N] items so far" or "... · nothing in yet" under it; opens the Next newsletter page)
+"Main page" (the Next newsletter page's way back, with a left arrow)
 "Policy Exchange" (Home's rail, with "The public hub" under it)
 "Share an item" (Home's rail, with "The public share page" under it)
 "Listserv sign-up" (Home's rail, with "The sign-up page" under it)
@@ -211,7 +211,7 @@
 # Statuses
 
 "Loading…"
-"In the next issue, and in the queue for Sort." (the Next issue page, after quick add saves)
+"In the next newsletter, and in the queue for Sort." (the Next newsletter page, after quick add saves)
 "Sending…"
 "Sending"
 "Sending [N] to the newsletter…"
@@ -269,7 +269,7 @@
 
 # Errors
 
-"No issue date is scheduled yet." (the Next issue page, no schedule)
+"No issue date is scheduled yet." (the Next newsletter page, no schedule)
 "Add your email address."
 "That email address doesn't look right."
 "Add a link."
@@ -334,7 +334,7 @@
 
 # Empty states
 
-"Nothing in yet." (the Next issue page)
+"Nothing in yet." (the Next newsletter page)
 "Nothing to sort."
 "All sorted."
 "Nothing waiting. Enjoy it."
@@ -351,7 +351,7 @@
 
 # Badges
 
-"Not sorted yet" (the Next issue page's table: a quick-added item Sort has not had yet)
+"Not sorted yet" (the Next newsletter page's table: a quick-added item Sort has not had yet)
 "Spotlight requested"
 "External submission"
 "In a past issue"

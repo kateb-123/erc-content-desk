@@ -66,7 +66,7 @@ async function postSubmission(body) {
  * Render the shared submit form (single item + bulk door) into container.
  * onSubmitted fires after anything actually lands in the queue; a single
  * submission passes the reply ({ id }), so a caller can pick the row up.
- * bulk: false leaves out the whole-doc door (the Next issue page, Sep 15).
+ * bulk: false leaves out the whole-doc door (the Next newsletter page, Sep 15).
  */
 export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
   let selection = { type: '', subtype: '' };

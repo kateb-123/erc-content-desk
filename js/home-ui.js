@@ -2,7 +2,7 @@
  * Home, the team's main page (Kate's Sep 15 sketch, layout A): a stats strip
  * on top — last issue, Exchange updated, next newsletter, the queue count —
  * then the shared submit form with the six quick links in the right rail
- * (Sort, Newsletter builder, the next issue, whose page holds the table and
+ * (Sort, Newsletter builder, Next newsletter, whose page holds the table and
  * quick add, Policy
  * Exchange, Share an item, Listserv sign-up; Kate's list and order, Sep 15),
  * and the queue table folded at the bottom (a details, its own chevron; Kate, Sep 15:
@@ -110,9 +110,10 @@ function quickShare(icon, title, desc, href, line) {
 /** The next-issue card: the date and one line of counts. It opens the Next
  *  issue page, where the table and quick add live (Kate, Sep 15). */
 function issueCard({ rows, loaded, today, issue, onGoTo }) {
-  const title = issue ? `${isoToShort(issue, today)} issue` : 'Next issue';
-  const line = !loaded ? '…' : (issue ? issueLine(issueSummary(rows, issue)) : 'No issue date scheduled');
-  return quickGo('paper-plane', title, line, () => onGoTo('issue'));
+  const line = !loaded ? '…'
+    : issue ? issueLine(issueSummary(rows, issue).inIssue, isoToShort(issue, today))
+    : 'No issue date scheduled';
+  return quickGo('paper-plane', 'Next newsletter', line, () => onGoTo('issue'));
 }
 
 export function renderHome(container, props) {

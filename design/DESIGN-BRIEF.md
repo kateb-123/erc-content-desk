@@ -83,8 +83,8 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   progress popup.
 - **Six quick links** in the right rail, Kate's list in her order (Sep 15): *Sort*
   (goes to Sort, which also sends to the newsletter), *Newsletter builder* (a new
-  tab), **the next issue** (its date and one line of counts, "4 items in · 7 kept
-  and waiting"; it opens the Next issue page), *Policy Exchange* (Open, and Copy
+  tab), **Next newsletter** ("Sep 22 · 4 items so far" under it, Kate's pick A of
+  three, Sep 15; it opens the Next newsletter page), *Policy Exchange* (Open, and Copy
   for the site's address), *Share an
   item* and *Listserv sign-up* (each with Open and Copy; Copy puts one sentence
   with the public page's link on the clipboard, ready to paste into an email).
@@ -96,18 +96,18 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   sortable, with a red trash can per row. Deleting greys the row in place with an
   Undo for the rest of the session. A row still being read says "Reading...".
 
-### Next issue (Kate, Sep 15: "a list like a table. you can quick add to that", "a new page", "quick add is a whole thing for the newsletter ... it will get added to the queue for sort so everything is talking to each other")
+### Next newsletter (Kate, Sep 15: "a list like a table. you can quick add to that", "a new page", "quick add is a whole thing for the newsletter ... it will get added to the queue for sort so everything is talking to each other")
 A front-door page like Home: no tabs, a **Main page** link with a left arrow
-above the title. The title is the issue date with the count badge ("Sep 22
-issue 4") and **Quick add** on its right; no lede (Kate, Sep 15: the panel's
+above the title. The title is "Next newsletter, Sep 22" with the count badge and
+**Quick add** on its right; no lede (Kate, Sep 15: the panel's
 first title "was slop", so the words went). The table is the queue's shape:
 Title with the source under it, Type, Submitted, and a red **Remove** per row
 that takes the item out of the issue (it stays in the queue). Quick add opens a
-dashed panel under the table headed "Add to the Sep 22 issue", holding the
+dashed panel under the table headed "Add to the Sep 22 newsletter", holding the
 submit form (no whole-doc door): what
 it saves lands in this issue AND in the queue at once, and the table shows it
 with a grey **Not sorted yet** badge until Sort has had it (Skipped if Sort
-parked it). The status line says "In the next issue, and in the queue for
+parked it). The status line says "In the next newsletter, and in the queue for
 Sort." A row Sort deletes leaves the issue with it. Send to Newsletter stays as
 the way to pick from what is already kept.
 

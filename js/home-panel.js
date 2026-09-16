@@ -57,9 +57,8 @@ export function issueSummary(rows, issue) {
   return { inIssue, waiting: buildPool(rows).length };
 }
 
-/** The card's one quiet line under the issue date. */
-export function issueLine({ inIssue, waiting }) {
-  const first = inIssue === 0 ? 'Nothing in yet' : `${inIssue} item${inIssue === 1 ? '' : 's'} in`;
-  const second = waiting === 0 ? 'nothing else waiting' : `${waiting} kept and waiting`;
-  return `${first} · ${second}`;
+/** The Next newsletter card's one quiet line: the date, then how many so far. */
+export function issueLine(count, when) {
+  const tally = count === 0 ? 'nothing in yet' : `${count} item${count === 1 ? '' : 's'} so far`;
+  return `${when} · ${tally}`;
 }

@@ -89,8 +89,8 @@ test('issueSummary counts what is stamped for the issue and what is kept and wai
   assert.deepEqual(issueSummary(rows, '2026-09-22'), { inIssue: 2, waiting: 2 });
 });
 
-test('issueLine reads as one quiet line, singular when it must', () => {
-  assert.equal(issueLine({ inIssue: 4, waiting: 7 }), '4 items in · 7 kept and waiting');
-  assert.equal(issueLine({ inIssue: 1, waiting: 0 }), '1 item in · nothing else waiting');
-  assert.equal(issueLine({ inIssue: 0, waiting: 1 }), 'Nothing in yet · 1 kept and waiting');
+test('issueLine is the date, then how many so far, singular when it must (Kate\'s pick A, Sep 15)', () => {
+  assert.equal(issueLine(4, 'Sep 22'), 'Sep 22 · 4 items so far');
+  assert.equal(issueLine(1, 'Sep 22'), 'Sep 22 · 1 item so far');
+  assert.equal(issueLine(0, 'Sep 22'), 'Sep 22 · nothing in yet');
 });
