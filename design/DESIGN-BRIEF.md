@@ -66,11 +66,11 @@ instruction panel, and (where the pipeline continues) one outlined door pill (th
 on the right with a right arrow: Go to Finalize, Go to Publish, Send to newsletter.
 
 ### Home
-- **Stats strip** (Kate's Sep 15 sketch, layout A), one line of facts: *Last issue*
-  (the newest date in the builder's archive index), *Exchange updated* (when the
-  public site's file last changed; the fact is the link to the Exchange), *Next
-  newsletter* (the next issue date), *In the queue* with a count badge (clicking
-  scrolls to the table).
+- **Stats strip** (Kate's Sep 15 sketch, layout A), one line of three facts, her
+  list: *Last issue* (the newest date in the builder's archive index), *Exchange
+  updated* (when the public site's file last changed; the fact is the link to the
+  Exchange), *In the queue* with a count badge and a chevron (clicking opens the
+  queue fold and goes there). The next newsletter's date lives on its rail card.
 - **Add to the queue** form on the left: Title, Description ("paste whatever you
   have"), Link, a spotlight checkbox, Type radios (picking a type reveals its
   subtypes under it, labelled Subtype), and "Your name or initials". Submit saves
@@ -81,7 +81,9 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   Claude. The items appear in a review table (each with Remove, click a row to
   peek) and nothing saves until **Add all to the queue**, which opens a blocking
   progress popup.
-- **Six quick links** in the right rail, Kate's list in her order (Sep 15): *Sort*
+- **Six quick links** in the right rail, Kate's list in her order (Sep 15), a
+  hairline after the third (her pick B: places to go above it, things to hand
+  out below it, no words): *Sort*
   (goes to Sort, which also sends to the newsletter), *Newsletter builder* (a new
   tab), **Next newsletter** ("Sep 22 · 4 items so far" under it, Kate's pick A of
   three, Sep 15; it opens the Next newsletter page), *Policy Exchange* (Open, and Copy

@@ -1,6 +1,6 @@
 /**
  * Home, the team's main page (Kate's Sep 15 sketch, layout A): a stats strip
- * on top — last issue, Exchange updated, next newsletter, the queue count —
+ * on top — last issue, Exchange updated, the queue count —
  * then the shared submit form with the six quick links in the right rail
  * (Sort, Newsletter builder, Next newsletter, whose page holds the table and
  * quick add, Policy
@@ -139,6 +139,7 @@ export function renderHome(container, props) {
     // The fold: a native details, closed on arrival, whose open state lives in
     // the DOM (the element is never rebuilt, so a data re-render keeps it).
     const fold = el('details', 'queue-fold');
+    fold.id = 'home-queue';
     fold.append(el('summary'), el('div', 'queue-body'));
     container.replaceChildren(strip, grid, fold);
   }
@@ -148,15 +149,23 @@ export function renderHome(container, props) {
   strip.replaceChildren();
   strip.append(fact('Last issue', dash(isoToShort(lastIssue, today))));
   strip.append(fact('Exchange updated', dash(isoToShort(hubUpdated, today)), EXCHANGE_URL));
-  strip.append(fact('Next newsletter', dash(isoToShort(nextIssueDate(schedule, today), today))));
-
+  // Three facts (Kate's list, Sep 15); the next newsletter's date lives on
+  // its card in the rail. The count opens the queue fold and goes there.
   const count = loaded ? String(queueBadgeCount(rows)) : '·';
-  const queueFact = el('div', 'strip-fact');
+  const queueFact = el('button', 'strip-fact strip-jump');
+  queueFact.type = 'button';
+  queueFact.setAttribute('aria-controls', 'home-queue');
   queueFact.append(el('span', 'strip-label', 'In the queue'));
   const queueSide = el('span', 'strip-side');
   queueSide.append(el('span', 'queue-badge', count));
   queueSide.append(el('span', 'strip-label', 'waiting'));
+  queueSide.append(faIcon('chevron-down'));
   queueFact.append(queueSide);
+  queueFact.addEventListener('click', () => {
+    const fold = container.querySelector('.queue-fold');
+    fold.open = true;
+    fold.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
   strip.append(queueFact);
 
   // ── The quick links, six in the rail (Kate's list, in her order, Sep 15). ──
@@ -165,6 +174,7 @@ export function renderHome(container, props) {
     quickGo('layer-group', 'Sort', 'Work the queue, then send to the newsletter', () => onGoTo('sort')),
     quickOut('envelope', 'Newsletter builder', "Kathy's tool", BUILDER_PATH),
     issueCard({ rows, loaded, today, issue: nextIssueDate(schedule, today), onGoTo }),
+    el('hr', 'rail-rule'),   // places to go above, things to hand out below (Kate's pick B, Sep 15)
     quickShare('globe', 'Policy Exchange', 'The public hub', EXCHANGE_URL, EXCHANGE_URL),
     quickShare('share-nodes', 'Share an item', 'The public share page', SHARE_PATH, shareLine(SHARE_PATH)),
     quickShare('user-plus', 'Listserv sign-up', 'The sign-up page', SIGNUP_PATH, signupLine(SIGNUP_PATH)),
