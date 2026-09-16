@@ -84,7 +84,10 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
 - **Six quick links** in the right rail, Kate's list in her order (Sep 15), a
   hairline after the third (her pick B: places to go above it, things to hand
   out below it, no words): *Sort*
-  (goes to Sort, which also sends to the newsletter), *Newsletter builder* (a new
+  (opens the pipeline in a NEW window at `/#sort`, Kate, Sep 15: "a new section and
+  a new set of activities"; that window keeps its hash in step with the screen so a
+  reload stays put, and has no Home tab, the front door being the window it came
+  from), *Newsletter builder* (a new
   tab), **Next newsletter** ("Sep 22 · 4 items so far" under it, Kate's pick A of
   three, Sep 15; it opens the Next newsletter page), *Policy Exchange* (Open, and Copy
   for the site's address), *Share an

@@ -444,6 +444,8 @@ button.quick-link { cursor: pointer; }
 
 /* The front door (Home) wears no menu: the quick links are the menu. */
 .desk.is-front .screen-nav, .desk.is-front .builder-door { display: none; }
+/* A window opened at a section (/#sort) has no Home tab: the front door is the window it came from. */
+.desk.is-section .screen-tab[data-screen="home"] { display: none; }
 .queue-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin: 0 0 .75rem; }
 .queue-head h2 { font-size: 1.1rem; margin: 0; flex: 1; }
 .queue-table { width: 100%; border-collapse: collapse; font-size: .85rem; background: #fff; border: 1px solid var(--line); }

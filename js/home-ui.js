@@ -171,7 +171,8 @@ export function renderHome(container, props) {
   // ── The quick links, six in the rail (Kate's list, in her order, Sep 15). ──
   const rail = container.querySelector('.quick-rail');
   rail.replaceChildren(
-    quickGo('layer-group', 'Sort', 'Work the queue, then send to the newsletter', () => onGoTo('sort')),
+    // Sort opens in a new window: a new section, a new set of activities (Kate, Sep 15).
+    quickOut('layer-group', 'Sort', 'Work the queue, then send to the newsletter', '/#sort'),
     quickOut('envelope', 'Newsletter builder', "Kathy's tool", BUILDER_PATH),
     issueCard({ rows, loaded, today, issue: nextIssueDate(schedule, today), onGoTo }),
     el('hr', 'rail-rule'),   // places to go above, things to hand out below (Kate's pick B, Sep 15)

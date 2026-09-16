@@ -192,7 +192,7 @@
 
 "Build newsletter ↗"
 "Policy Exchange ↗"
-"Sort" (Home's rail, with "Work the queue, then send to the newsletter" under it)
+"Sort" (Home's rail, with "Work the queue, then send to the newsletter" under it; opens the pipeline in a new window)
 "Newsletter builder" (Home's rail, with "Kathy's tool" under it)
 "Next newsletter" (Home's rail, with "[Mon D] · [N] items so far" or "... · nothing in yet" under it; opens the Next newsletter page)
 "Main page" (the Next newsletter page's way back, with a left arrow)

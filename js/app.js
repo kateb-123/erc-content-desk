@@ -397,6 +397,15 @@ try {
 } catch { /* ignore bad stashes */ }
 
 const SCREEN_ORDER = ['home', 'issue', 'sort', 'finalize', 'publish', 'build'];
+// The pipeline's screens can be opened straight from a hash (/#sort). Home's
+// Sort card opens one in a NEW window (Kate, Sep 15: "a new section and a new
+// set of activities is about to be done"); that window keeps its hash in step
+// so a reload stays put, and hides the Home tab, since the front door is the
+// window it came from.
+const SECTION_KEYS = ['sort', 'finalize', 'publish', 'build'];
+const openedAt = location.hash.slice(1);
+const isSectionWindow = SECTION_KEYS.includes(openedAt);
+if (isSectionWindow) state.screen = openedAt;
 const SCREEN_NAMES = { issue: 'Next newsletter', sort: 'Sort', finalize: 'Finalize', publish: 'Publish to Exchange', build: 'Send to Newsletter' };
 let shownScreen = null;
 
@@ -422,6 +431,9 @@ export function render() {
   // The pipeline screens keep the tabs, Home among them as the way back. The
   // Next newsletter page is a front-door page too, with its own way back.
   document.body.classList.toggle('is-front', state.screen === 'home' || state.screen === 'issue');
+  document.body.classList.toggle('is-section', isSectionWindow);
+  const hash = SECTION_KEYS.includes(state.screen) ? `#${state.screen}` : '';
+  if (location.hash !== hash) history.replaceState(null, '', hash || location.pathname);
   const switched = shownScreen !== null && shownScreen !== state.screen;
   if (shownScreen !== state.screen) {
     const from = SCREEN_ORDER.indexOf(shownScreen);
@@ -562,4 +574,9 @@ for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {
 })();
 
 render();   // the shell paints before the first fetch, not after it (usability run F19)
-reload();
+reload().then(() => {
+  // A window opened at a section runs that screen's arrival step once the
+  // rows are in, the way goTo would have.
+  if (openedAt === 'sort') readBeforeSort();
+  if (openedAt === 'publish' && !state.publishPreview) loadPublishPreview();
+});
