@@ -4,6 +4,7 @@ import { readAllWaiting } from './reader-client.js';
 import { readerQueue } from './sort-view.js';
 import { dotsLoader, loadingLabel } from './icons.js';
 import { renderHome } from './home-ui.js';
+import { renderSidebar } from './sidebar-ui.js';
 import { renderIssue } from './issue-ui.js';
 import { latestIssue } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
@@ -397,11 +398,10 @@ try {
 } catch { /* ignore bad stashes */ }
 
 const SCREEN_ORDER = ['home', 'issue', 'sort', 'finalize', 'publish', 'build'];
-// The pipeline's screens can be opened straight from a hash (/#sort). Home's
-// Sort card opens one in a NEW window (Kate, Sep 15: "a new section and a new
-// set of activities is about to be done"); that window keeps its hash in step
-// so a reload stays put, and hides the Home tab, since the front door is the
-// window it came from.
+// The pipeline's screens can be opened straight from a hash (/#sort). The
+// sidebar's Pipeline items open one in a NEW window from the front door (Kate,
+// Sep 15: "a new section and a new set of activities is about to be done");
+// that window keeps its hash in step so a reload stays put.
 const SECTION_KEYS = ['sort', 'finalize', 'publish', 'build'];
 const openedAt = location.hash.slice(1);
 const isSectionWindow = SECTION_KEYS.includes(openedAt);
@@ -420,18 +420,10 @@ function focusHeading(section) {
 
 export function render() {
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
-  for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {
-    const here = tab.dataset.screen === state.screen;
-    tab.classList.toggle('is-active', here);
-    if (here) tab.setAttribute('aria-current', 'page'); else tab.removeAttribute('aria-current');
-  }
+  renderSidebar(document.querySelector('.side'), { screen: state.screen, isSectionWindow, onGo: goTo });
   document.title = state.screen === 'home' ? 'ERC Content Desk' : `${SCREEN_NAMES[state.screen]} · ERC Content Desk`;
-  // The front door has no menu: its quick links are the menu (Kate, Sep 15,
-  // "this is the main landing page. so it doesn't need the menu on the top").
-  // The pipeline screens keep the tabs, Home among them as the way back. The
-  // Next newsletter page is a front-door page too, with its own way back.
-  document.body.classList.toggle('is-front', state.screen === 'home' || state.screen === 'issue');
-  document.body.classList.toggle('is-section', isSectionWindow);
+  // One sidebar on every page (Kate, Sep 16). In the pipeline's own window
+  // its items switch in place; from the front door they open that window.
   const hash = SECTION_KEYS.includes(state.screen) ? `#${state.screen}` : '';
   if (location.hash !== hash) history.replaceState(null, '', hash || location.pathname);
   const switched = shownScreen !== null && shownScreen !== state.screen;
@@ -468,7 +460,6 @@ export function render() {
   } else if (state.screen === 'issue') {
     renderIssue(screens.issue, {
       ...common, loaded: state.loaded,
-      onBack: () => goTo('home'),
       onQuickAdd: stampSubmitted,
       onRemove: row => unsendFromNewsletter([row.id]),
     });
@@ -542,10 +533,6 @@ export function render() {
     });
   }
   if (switched) focusHeading(screens[state.screen]);
-}
-
-for (const tab of document.querySelectorAll('.screen-tab[data-screen]')) {
-  tab.addEventListener('click', () => goTo(tab.dataset.screen));
 }
 
 // Home's "Exchange updated" fact: when news.csv last changed, not the date

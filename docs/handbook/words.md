@@ -144,7 +144,7 @@
 "Submit another"
 "Quick add" / "Close quick add" (the Next newsletter page)
 "Remove" (the Next newsletter page's table; takes the item out of the issue, it stays in the queue)
-"Copy" / "Copied" / "Can't copy" (Home's rail)
+"Copy" / "Copied" / "Can't copy" (the sidebar's copy icons, as titles)
 "Add all to the queue"
 "Add [N] to the queue"
 "Nothing left to add"
@@ -192,13 +192,11 @@
 
 "Build newsletter ↗"
 "Policy Exchange ↗"
-"Sort" (Home's rail, with "Work the queue, then send to the newsletter" under it; opens the pipeline in a new window)
-"Newsletter builder" (Home's rail, with "Kathy's tool" under it)
-"Next newsletter" (Home's rail, with "[Mon D] · [N] items so far" or "... · nothing in yet" under it; opens the Next newsletter page)
-"Main page" (the Next newsletter page's way back, with a left arrow)
-"Policy Exchange" (Home's rail, with "The public hub" under it)
-"Share an item" (Home's rail, with "The public share page" under it)
-"Listserv sign-up" (Home's rail, with "The sign-up page" under it)
+"ERC Content Desk" / "Pipeline" / "Newsletter" / "Policy Exchange" (the sidebar's groups, Sep 16)
+"Sort" / "Finalize" / "Publish to Exchange" / "Send to Newsletter" (the sidebar's Pipeline items; open the pipeline in a new window from the front door)
+"Next newsletter" / "Newsletter builder" / "Past newsletters" (the sidebar's Newsletter items)
+"Policy Exchange" / "Share an item" / "Listserv sign-up" (the sidebar's Policy Exchange items, each with a copy icon, "Copy the link for [item]", then "Copied")
+"Next newsletter" (the strip, with "[Mon D] · [N] items so far" or "... · nothing in yet"; opens the Next newsletter page)
 "Open ↗"
 "Open source ↗"
 "Verify link ↗"

@@ -54,23 +54,28 @@ Report, ERC Research), Event (A&M, Off-Campus, Webinar-Online), Opportunity
 
 ## 3. The screens, and what every control does
 
-Five tabs in the header: **Home, Sort, Finalize, Publish to Exchange, Send to
-Newsletter**, plus a **Build newsletter** pill on the right that opens the builder
-at `/builder/` in a new tab. On Home the tabs and the pill are hidden (Kate,
-Sep 15: the front door's quick links are its menu; the pipeline screens keep the
-tabs, Home among them as the way back). Under the header sits one status line
-that carries loading and error messages for the whole app.
+A sidebar down the left of every page (Kate, Sep 16, from the Claude Design
+docs; the tabs and the header pill are gone): **ERC Content Desk**; under
+**Pipeline**, Sort, Finalize, Publish to Exchange, Send to Newsletter; under
+**Newsletter**, Next newsletter, Newsletter builder, Past newsletters; under
+**Policy Exchange**, Policy Exchange, Share an item, Listserv sign-up, each of
+those three with a copy icon that puts one sentence with the link on the
+clipboard. From the front door the Pipeline items open the pipeline in its own
+window, which has the same sidebar and switches in place; the builder and the
+public pages open a new tab. Above the content sits one status line that carries
+loading and error messages for the whole app.
 
 Every screen head is a bare title plus a **View info** toggle that opens a tinted
 instruction panel, and (where the pipeline continues) one outlined door pill (the header's Build newsletter look, Sep 15)
 on the right with a right arrow: Go to Finalize, Go to Publish, Send to newsletter.
 
 ### Home
-- **Stats strip** (Kate's Sep 15 sketch, layout A), one line of three facts, her
-  list: *Last issue* (the newest date in the builder's archive index), *Exchange
-  updated* (when the public site's file last changed; the fact is the link to the
-  Exchange), *In the queue* with a count badge and a chevron (clicking opens the
-  queue fold and goes there). The next newsletter's date lives on its rail card.
+- **Stats strip** (Kate's Sep 15 sketch, layout A), one line of facts: *Last
+  issue* (the newest date in the builder's archive index), *Exchange updated* (when
+  the public site's file last changed; the fact is the link to the Exchange), *Next
+  newsletter* ("Sep 22 · 4 items so far"; clicking opens the Next newsletter page),
+  *In the queue* with a count badge and a chevron (clicking opens the queue fold
+  and goes there).
 - **Add to the queue** form on the left: Title, Description ("paste whatever you
   have"), Link, a spotlight checkbox, Type radios (picking a type reveals its
   subtypes under it, labelled Subtype), and "Your name or initials". Submit saves
@@ -81,19 +86,8 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   Claude. The items appear in a review table (each with Remove, click a row to
   peek) and nothing saves until **Add all to the queue**, which opens a blocking
   progress popup.
-- **Six quick links** in the right rail, Kate's list in her order (Sep 15), a
-  hairline after the third (her pick B: places to go above it, things to hand
-  out below it, no words): *Sort*
-  (opens the pipeline in a NEW window at `/#sort`, Kate, Sep 15: "a new section and
-  a new set of activities"; that window keeps its hash in step with the screen so a
-  reload stays put, and has no Home tab, the front door being the window it came
-  from), *Newsletter builder* (a new
-  tab), **Next newsletter** ("Sep 22 · 4 items so far" under it, Kate's pick A of
-  three, Sep 15; it opens the Next newsletter page), *Policy Exchange* (Open, and Copy
-  for the site's address), *Share an
-  item* and *Listserv sign-up* (each with Open and Copy; Copy puts one sentence
-  with the public page's link on the clipboard, ready to paste into an email).
-  Home breathes more than the pipeline screens: a wider grid gap, roomier cards.
+- **No rail** since Sep 16: the six quick links became the sidebar, so the form runs
+  the full column width.
 - **The queue**, folded at the bottom: a closed section headed *In the queue*
   with the count badge and a chevron on the left; click the heading and the table
   opens under it, and it stays the way you left it for the visit (Kate, Sep 15:
@@ -102,8 +96,8 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   Undo for the rest of the session. A row still being read says "Reading...".
 
 ### Next newsletter (Kate, Sep 15: "a list like a table. you can quick add to that", "a new page", "quick add is a whole thing for the newsletter ... it will get added to the queue for sort so everything is talking to each other")
-A front-door page like Home: no tabs, a **Main page** link with a left arrow
-above the title. The title is "Next newsletter, Sep 22" with the count badge and
+Reached from the sidebar or the strip's Next newsletter fact; the sidebar is the
+way back. The title is "Next newsletter, Sep 22" with the count badge and
 **Quick add** on its right; no lede (Kate, Sep 15: the panel's
 first title "was slop", so the words went). The table is the queue's shape:
 Title with the source under it, Type, Submitted, and a red **Remove** per row

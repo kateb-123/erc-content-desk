@@ -9,36 +9,27 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="/css/styles.css?v=82" />
+  <link rel="stylesheet" href="/css/styles.css?v=83" />
 </head>
 <body class="desk">
-  <header class="desk-header">
-    <div class="desk-bar">
-    <h1>ERC Content Desk</h1>
-    <nav class="screen-nav" aria-label="Screens">
-      <button class="screen-tab is-active" data-screen="home">Home</button>
-      <button class="screen-tab" data-screen="sort">Sort</button>
-      <button class="screen-tab" data-screen="finalize">Finalize</button>
-      <button class="screen-tab" data-screen="publish">Publish to Exchange</button>
-      <button class="screen-tab" data-screen="build">Send to Newsletter</button>
-      <!-- Public /submit page exists but isn't in play yet (Kate, Aug 31) — link hidden until the team's intake path is settled. -->
-    </nav>
-    <a class="builder-door" href="/builder/" target="_blank" rel="noreferrer">Build newsletter ↗</a>
-    </div>
-    <p id="desk-status" class="status" role="status" aria-live="polite"></p>
-  </header>
+  <!-- The sidebar (Kate, Sep 16): built by js/sidebar-ui.js from js/sidebar-view.js. -->
+  <nav class="side" aria-label="Desk"></nav>
 
-  <main>
-    <section id="screen-home" class="screen"></section>
-    <section id="screen-issue" class="screen" hidden></section>
-    <section id="screen-sort" class="screen" hidden></section>
-    <section id="screen-finalize" class="screen" hidden></section>
-    <section id="screen-publish" class="screen" hidden></section>
-    <section id="screen-build" class="screen" hidden></section>
-  </main>
+  <div class="desk-main">
+    <h1 class="sr-only">ERC Content Desk</h1>
+    <p id="desk-status" class="status" role="status" aria-live="polite"></p>
+    <main>
+      <section id="screen-home" class="screen"></section>
+      <section id="screen-issue" class="screen" hidden></section>
+      <section id="screen-sort" class="screen" hidden></section>
+      <section id="screen-finalize" class="screen" hidden></section>
+      <section id="screen-publish" class="screen" hidden></section>
+      <section id="screen-build" class="screen" hidden></section>
+    </main>
+  </div>
 
 
   <!-- Bump ?v when you change the JS so browsers load the new code. -->
-  <script type="module" src="/js/app.js?v=105"></script>
+  <script type="module" src="/js/app.js?v=106"></script>
 </body>
 </html>

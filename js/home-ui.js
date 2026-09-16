@@ -1,30 +1,19 @@
 /**
- * Home, the team's main page (Kate's Sep 15 sketch, layout A): a stats strip
- * on top — last issue, Exchange updated, the queue count —
- * then the shared submit form with the six quick links in the right rail
- * (Sort, Newsletter builder, Next newsletter, whose page holds the table and
- * quick add, Policy
- * Exchange, Share an item, Listserv sign-up; Kate's list and order, Sep 15),
- * and the queue table folded at the bottom (a details, its own chevron; Kate, Sep 15:
- * "just queue on the bottom and you can expand it out"). Home is the front
- * door, so the header's tabs are hidden on it (app.js sets body.is-front).
- * The form and the fold are mounted once and left alone on re-renders, so
- * typing is never wiped and the fold stays the way it was left; the strip,
- * the rail and the table inside the fold rebuild.
+ * Home, the team's main page (Kate's Sep 15 sketch; the sidebar since Sep 16):
+ * a stats strip on top — last issue, Exchange updated, next newsletter, the
+ * queue count — then the shared submit form, and the queue table folded at
+ * the bottom (a details, its own chevron). Every way elsewhere is in the
+ * sidebar. The form and the fold are mounted once and left alone on
+ * re-renders, so typing is never wiped and the fold stays the way it was
+ * left; the strip and the table inside the fold rebuild.
  */
 import { renderSubmitForm } from './submit-form.js';
 import { dotsLoader, faIcon } from './icons.js';
 import { renderQueueTable } from './queue-ui.js';
-import { queueBadgeCount, shareLine, signupLine, issueSummary, issueLine } from './home-panel.js';
+import { queueBadgeCount, issueSummary, issueLine } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
 import { isoToShort } from './queue-view.js';
-
-const EXCHANGE_URL = 'https://erc-policy-exchange.vercel.app/';
-// The public share and sign-up pages live in the Policy Exchange hub — a
-// separate origin from the desk on purpose: nothing on them can lead back here.
-const SHARE_PATH = 'https://erc-policy-exchange.vercel.app/share/';
-const SIGNUP_PATH = 'https://erc-policy-exchange.vercel.app/newsletter/';
-const BUILDER_PATH = '/builder/';
+import { EXCHANGE_URL } from './sidebar-view.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -46,76 +35,6 @@ function fact(label, value, href) {
   return node;
 }
 
-/** A Copy button that puts one line on the clipboard and says so for a moment. */
-function copyButton(text) {
-  const copy = el('button', 'mini-btn', 'Copy');
-  copy.type = 'button';
-  copy.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      copy.textContent = 'Copied';
-    } catch {
-      copy.textContent = "Can't copy";
-    }
-    setTimeout(() => { copy.textContent = 'Copy'; }, 1500);
-  });
-  return copy;
-}
-
-function openButton(href) {
-  const open = el('a', 'mini-btn', 'Open ↗');
-  open.href = href;
-  open.target = '_blank';
-  open.rel = 'noreferrer';
-  return open;
-}
-
-/** The text half of a quick link: an icon, a title, a quiet line under it. */
-function quickText(icon, title, desc) {
-  const text = el('span', 'quick-text');
-  text.append(el('span', 'quick-title', title));
-  text.append(el('span', 'quick-desc', desc));
-  return [faIcon(icon), text];
-}
-
-/** A quick link that goes to a desk screen. */
-function quickGo(icon, title, desc, onClick) {
-  const btn = el('button', 'quick-link');
-  btn.type = 'button';
-  btn.append(...quickText(icon, title, desc));
-  btn.addEventListener('click', onClick);
-  return btn;
-}
-
-/** A quick link that opens another site in a new tab. */
-function quickOut(icon, title, desc, href) {
-  const a = el('a', 'quick-link');
-  a.href = href;
-  a.target = '_blank';
-  a.rel = 'noreferrer';
-  a.append(...quickText(icon, title, desc));
-  return a;
-}
-
-/** A quick link the team hands on: Open the page, or Copy a line with its link. */
-function quickShare(icon, title, desc, href, line) {
-  const card = el('div', 'quick-link');
-  card.append(...quickText(icon, title, desc));
-  const acts = el('span', 'quick-acts');
-  acts.append(openButton(href), copyButton(line));
-  card.append(acts);
-  return card;
-}
-
-/** The next-issue card: the date and one line of counts. It opens the Next
- *  issue page, where the table and quick add live (Kate, Sep 15). */
-function issueCard({ rows, loaded, today, issue, onGoTo }) {
-  const line = !loaded ? '…'
-    : issue ? issueLine(issueSummary(rows, issue).inIssue, isoToShort(issue, today))
-    : 'No issue date scheduled';
-  return quickGo('paper-plane', 'Next newsletter', line, () => onGoTo('issue'));
-}
-
 export function renderHome(container, props) {
   const {
     rows, schedule, today, loaded, hubUpdated, lastIssue,
@@ -135,7 +54,7 @@ export function renderHome(container, props) {
     const mount = el('div');
     formSide.append(mount);
     renderSubmitForm(mount, { onSubmitted });
-    grid.append(formSide, el('aside', 'quick-rail'));
+    grid.append(formSide);
     // The fold: a native details, closed on arrival, whose open state lives in
     // the DOM (the element is never rebuilt, so a data re-render keeps it).
     const fold = el('details', 'queue-fold');
@@ -149,8 +68,16 @@ export function renderHome(container, props) {
   strip.replaceChildren();
   strip.append(fact('Last issue', dash(isoToShort(lastIssue, today))));
   strip.append(fact('Exchange updated', dash(isoToShort(hubUpdated, today)), EXCHANGE_URL));
-  // Three facts (Kate's list, Sep 15); the next newsletter's date lives on
-  // its card in the rail. The count opens the queue fold and goes there.
+  // The next newsletter's date and count (back on the strip since the rail
+  // went, Sep 16); it opens the Next newsletter page.
+  const issue = nextIssueDate(schedule, today);
+  const nextFact = el('button', 'strip-fact strip-go');
+  nextFact.type = 'button';
+  nextFact.append(el('span', 'strip-label', 'Next newsletter'));
+  nextFact.append(el('span', 'strip-value', dash(issue ? issueLine(issueSummary(rows, issue).inIssue, isoToShort(issue, today)) : '')));
+  nextFact.addEventListener('click', () => onGoTo('issue'));
+  strip.append(nextFact);
+  // The count opens the queue fold and goes there.
   const count = loaded ? String(queueBadgeCount(rows)) : '·';
   const queueFact = el('button', 'strip-fact strip-jump');
   queueFact.type = 'button';
@@ -167,19 +94,6 @@ export function renderHome(container, props) {
     fold.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
   strip.append(queueFact);
-
-  // ── The quick links, six in the rail (Kate's list, in her order, Sep 15). ──
-  const rail = container.querySelector('.quick-rail');
-  rail.replaceChildren(
-    // Sort opens in a new window: a new section, a new set of activities (Kate, Sep 15).
-    quickOut('layer-group', 'Sort', 'Work the queue, then send to the newsletter', '/#sort'),
-    quickOut('envelope', 'Newsletter builder', "Kathy's tool", BUILDER_PATH),
-    issueCard({ rows, loaded, today, issue: nextIssueDate(schedule, today), onGoTo }),
-    el('hr', 'rail-rule'),   // places to go above, things to hand out below (Kate's pick B, Sep 15)
-    quickShare('globe', 'Policy Exchange', 'The public hub', EXCHANGE_URL, EXCHANGE_URL),
-    quickShare('share-nodes', 'Share an item', 'The public share page', SHARE_PATH, shareLine(SHARE_PATH)),
-    quickShare('user-plus', 'Listserv sign-up', 'The sign-up page', SIGNUP_PATH, signupLine(SIGNUP_PATH)),
-  );
 
   // ── The queue, folded at the bottom. The summary is the heading. ──
   const summary = container.querySelector('.queue-fold summary');

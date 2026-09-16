@@ -4,8 +4,7 @@
  * quick add to that", then "a new page", then "quick add is a whole thing for
  * the newsletter, not something from the queue. it will get added to the
  * queue for sort so everything is talking to each other"). Reached from
- * Home's rail. A front-door page like Home: the header's tabs stay hidden
- * and the way out is back to the main page. Quick add opens the submit form;
+ * the sidebar (the strip's Next newsletter fact opens it too). Quick add opens the submit form;
  * what it saves lands in this issue AND in the queue, so Sort sees it too,
  * and the table marks it Not sorted yet until Sort has. Remove takes an
  * item out of the issue; it stays in the queue.
@@ -43,17 +42,11 @@ function typeText(row) {
 }
 
 export function renderIssue(container, props) {
-  const { rows, schedule, today, loaded, onBack, onQuickAdd, onRemove } = props;
+  const { rows, schedule, today, loaded, onQuickAdd, onRemove } = props;
   const issue = nextIssueDate(schedule, today);
   const when = isoToShort(issue, today);
   const title = issue ? `Next newsletter, ${when}` : 'Next newsletter';
   const parts = [];
-
-  const back = el('button', 'linkish back-link', ' Main page');
-  back.type = 'button';
-  back.prepend(faIcon('arrow-left'));
-  back.addEventListener('click', onBack);
-  parts.push(back);
 
   const head = el('div', 'screen-head');
   const h2 = el('h2', '', title);

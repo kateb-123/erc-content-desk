@@ -1,4 +1,5 @@
 :root {
+  --side-bg: #f3f5f8;          /* the sidebar's ground, a shade under the page */
   --ink: #1c2229;
   --muted: #55606c;
   --line: #dbdfe5;
@@ -139,29 +140,53 @@ label.radio { display: block; margin: .15rem 0; font-size: .95rem; color: var(--
 .status-busy { color: var(--muted); }
 .status-note { color: var(--muted); }
 
-.desk { max-width: 68rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
-/* Title and tabs share one line so the page headers below stand out. */
-.desk-bar { display: flex; align-items: center; gap: 2.5rem; flex-wrap: wrap; }
-.desk-header h1 { font-size: 1.2rem; margin: 0; }
+/* The shell (Kate, Sep 16, from the Claude Design docs: "I like the sidebar the
+   most. but then I think keep our stuff"): a sidebar down the left on every
+   page, the desk's own type and color, the content column beside it. */
+.desk { display: flex; min-height: 100vh; margin: 0; padding: 0; }
+.desk-main { flex: 1 1 auto; min-width: 0; padding: 1.5rem 2.5rem 6rem; box-sizing: border-box; }
+.desk-main > * { max-width: 68rem; margin-left: auto; margin-right: auto; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.side {
+  width: 248px; flex: 0 0 auto; box-sizing: border-box;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  background: var(--side-bg); border-right: 1px solid var(--line);
+  padding: 1.25rem .75rem; display: flex; flex-direction: column; gap: 1.25rem;
+}
+.side-group { display: flex; flex-direction: column; gap: 2px; }
+.side-label {
+  padding: 0 .5rem .35rem; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600;
+  font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+}
+.side-row { display: flex; align-items: center; gap: .15rem; }
+.side-item {
+  flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: .6rem;
+  padding: .45rem .5rem; border-radius: 6px; color: var(--ink); text-decoration: none; font-size: .95rem;
+}
+.side-item .fa-solid { width: 1rem; text-align: center; font-size: .75rem; color: var(--muted); flex: none; }
+.side-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.side-item:hover { background: var(--hover); color: var(--accent); }
+.side-item.is-current { background: var(--tint); color: var(--accent-deep); font-weight: 600; }
+.side-item.is-current .fa-solid { color: var(--accent); }
+.side-item.is-brand { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: 1rem; }
+.side-copy {
+  flex: none; border: 0; background: none; padding: .4rem .45rem; border-radius: 6px;
+  color: var(--muted); font-size: .8rem; cursor: pointer; line-height: 1;
+}
+.side-copy:hover { color: var(--accent); background: var(--tint); }
+.side-copy .fa-check { color: var(--ok); }
 
 /* Doors (Kate, Sep 15, option A): every way onward wears one look, the outlined
-   accent pill: the header's Build newsletter, Go to Finalize, Go to Publish,
-   Send to Newsletter, the receipt's door. The one filled button on a screen is
-   then always its decision. */
-.door, .builder-door {
+   accent pill: Go to Finalize, Go to Publish, Send to Newsletter, the receipt's
+   door. The one filled button on a screen is then always its decision. */
+.door {
   display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
   border: 1.5px solid var(--accent); border-radius: 999px;
   background: #fff; padding: .4rem 1rem; color: var(--accent); text-decoration: none;
   font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .85rem; cursor: pointer;
 }
-.door:hover:not(:disabled), .builder-door:hover { background: var(--tint); border-color: var(--accent); }
-.builder-door { margin-left: auto; }
-
-/* Bubble pills (the builder's look): the active screen is a filled pill. */
-.screen-nav { display: flex; gap: .5rem; flex-wrap: wrap; }
-.screen-tab { border: none; border-radius: 999px; background: none; padding: .45rem 1rem; color: var(--muted); font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .85rem; }
-.screen-tab:hover:not(:disabled):not(.is-active) { border: none; background: var(--tint); color: var(--accent); }
-.screen-tab.is-active { color: #fff; background: var(--accent); }
+.door:hover:not(:disabled) { background: var(--tint); border-color: var(--accent); }
 
 .screen-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin: 1.75rem 0 1rem; }
 .screen-head h2 { font-size: 1.35rem; margin: 0; }
@@ -357,7 +382,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 
 /* Home screen */
 /* Home breathes a little more than the pipeline screens (Kate, Sep 15: "a little spacing overall"). */
-.home-grid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 2rem; align-items: start; margin-top: 2rem; }
+.home-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; align-items: start; margin-top: 2rem; }
 .home-form.card { padding: 1.75rem; }
 .home-form h2 { font-size: 1.1rem; margin: 0 0 .25rem; }
 
@@ -386,23 +411,6 @@ button.strip-fact:hover .strip-label { color: var(--accent); }
   font-family: Outfit, "Segoe UI", sans-serif; font-size: .85rem; font-weight: 700;
 }
 
-/* The quick links: four in the right rail. Open and Copy sit on their own
-   line under the words, so a title never wraps around them. */
-.quick-rail { display: flex; flex-direction: column; gap: .9rem; }
-.rail-rule { border: 0; border-top: 1px solid var(--line); margin: .1rem .25rem; }   /* places to go | things to hand out */
-.quick-link {
-  display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .75rem;
-  background: #fff; border: 1px solid var(--line); border-radius: 12px;
-  padding: .95rem 1.05rem; font: inherit; text-align: left; color: inherit; text-decoration: none;
-  box-sizing: border-box; width: 100%;
-}
-a.quick-link:hover, button.quick-link:hover { border-color: var(--accent); }
-button.quick-link { cursor: pointer; }
-.quick-link .fa-solid { color: var(--accent); width: 1rem; text-align: center; }
-.quick-text { display: flex; flex-direction: column; flex: 1 1 0; min-width: 0; }
-.quick-title { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .95rem; }
-.quick-desc { font-size: .82rem; color: var(--muted); }
-.quick-acts { display: flex; gap: .4rem; width: 100%; padding-left: 1.7rem; box-sizing: border-box; }
 .mini-btn {
   font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .8rem;
   color: var(--accent); border: 1px solid var(--line); border-radius: 999px;
@@ -415,7 +423,6 @@ button.quick-link { cursor: pointer; }
 
 /* Next issue: a front-door page (Sep 15). The way back sits above the title;
    Quick add on the lede's right opens the dashed panel with the submit form. */
-.back-link { margin: .25rem 0 .6rem; }
 .screen-head h2 .queue-badge { vertical-align: middle; margin-left: .45rem; }
 .screen-head .mini-btn { margin-left: auto; align-self: center; }
 #screen-issue .table-scroll { margin-top: .9rem; }
@@ -442,10 +449,6 @@ button.quick-link { cursor: pointer; }
 .queue-body { margin-top: .75rem; }
 .queue-head.is-bare { justify-content: flex-end; }
 
-/* The front door (Home) wears no menu: the quick links are the menu. */
-.desk.is-front .screen-nav, .desk.is-front .builder-door { display: none; }
-/* A window opened at a section (/#sort) has no Home tab: the front door is the window it came from. */
-.desk.is-section .screen-tab[data-screen="home"] { display: none; }
 .queue-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin: 0 0 .75rem; }
 .queue-head h2 { font-size: 1.1rem; margin: 0; flex: 1; }
 .queue-table { width: 100%; border-collapse: collapse; font-size: .85rem; background: #fff; border: 1px solid var(--line); }
