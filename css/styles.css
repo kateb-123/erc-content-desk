@@ -386,24 +386,21 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .home-form.card { padding: 1.75rem; }
 .home-form h2 { font-size: 1.1rem; margin: 0 0 .25rem; }
 
-/* The stats strip: one line of facts across the top (Sep 15 sketch). */
-.stats-strip {
-  display: flex; align-items: center; flex-wrap: wrap; gap: .5rem 1.75rem;
-  background: #fff; border: 1px solid var(--line); border-radius: 12px;
-  padding: .85rem 1.25rem; margin-top: 1.75rem;
+/* The stats: four icon cards on the tint (Kate's pick J of four, Sep 16).
+   A grid, so a narrow window gets two rows instead of a broken line. */
+.stats-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .75rem; margin-top: 1.75rem; }
+.stat {
+  display: flex; flex-direction: column; align-items: flex-start; gap: .35rem;
+  padding: .9rem 1rem 1rem; border-radius: 12px; background: var(--tint);
+  border: 1px solid transparent; color: var(--ink); text-decoration: none; text-align: left;
+  font: inherit; cursor: default; box-sizing: border-box; width: 100%;
 }
-.strip-fact {
-  display: inline-flex; align-items: baseline; gap: .45rem;
-  font: inherit; color: inherit; text-decoration: none; background: none; border: 0; padding: 0;
-}
-.strip-fact + .strip-fact { border-left: 1px solid var(--line); padding-left: 1.75rem; }
-.strip-label { font-size: .8rem; color: var(--muted); white-space: nowrap; }
-.strip-value { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: .95rem; white-space: nowrap; }
-.strip-side { display: inline-flex; align-items: center; gap: .4rem; }
-a.strip-fact:hover .strip-value { color: var(--accent); text-decoration: underline; }
-button.strip-fact { cursor: pointer; }
-button.strip-fact:hover .strip-label { color: var(--accent); }
-.strip-jump .fa-solid { font-size: .7rem; color: var(--accent); margin-left: .2rem; }
+a.stat, button.stat { cursor: pointer; }
+a.stat:hover, button.stat:hover { border-color: var(--accent); }
+.stat .fa-solid { color: var(--accent); font-size: 1rem; }
+.stat-label { font-size: .8rem; color: var(--tint-ink); }
+.stat-value { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: 1.5rem; line-height: 1.1; color: var(--accent-deep); }
+.stat-value small { font-family: Karla, "Segoe UI", sans-serif; font-weight: 400; font-size: .85rem; color: var(--tint-ink); }
 .queue-badge {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 1.4rem; height: 1.4rem; padding: 0 .3rem;

@@ -57,8 +57,12 @@ export function issueSummary(rows, issue) {
   return { inIssue, waiting: buildPool(rows).length };
 }
 
-/** The Next newsletter card's one quiet line: the date, then how many so far. */
+/** How many are in the next newsletter, in words. */
+export function issueTally(count) {
+  return count === 0 ? 'nothing in yet' : `${count} item${count === 1 ? '' : 's'} so far`;
+}
+
+/** The date, then the tally, as one quiet line. */
 export function issueLine(count, when) {
-  const tally = count === 0 ? 'nothing in yet' : `${count} item${count === 1 ? '' : 's'} so far`;
-  return `${when} · ${tally}`;
+  return `${when} · ${issueTally(count)}`;
 }

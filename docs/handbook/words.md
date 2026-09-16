@@ -196,7 +196,7 @@
 "Sort" / "Finalize" / "Publish to Exchange" / "Send to Newsletter" (the sidebar's Pipeline items; open the pipeline in a new window from the front door)
 "Next newsletter" / "Newsletter builder" / "Past newsletters" (the sidebar's Newsletter items)
 "Policy Exchange" / "Share an item" / "Listserv sign-up" (the sidebar's Policy Exchange items, each with a copy icon, "Copy the link for [item]", then "Copied")
-"Next newsletter" (the strip, with "[Mon D] · [N] items so far" or "... · nothing in yet"; opens the Next newsletter page)
+"In the queue" / "Next newsletter" / "Exchange updated" / "Last newsletter" (the four stat cards on Home, Sep 16; the first says "[N] waiting", the second "[Mon D]" with "[N] items so far" or "nothing in yet" beside it)
 "Open ↗"
 "Open source ↗"
 "Verify link ↗"

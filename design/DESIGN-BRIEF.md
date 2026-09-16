@@ -70,12 +70,13 @@ instruction panel, and (where the pipeline continues) one outlined door pill (th
 on the right with a right arrow: Go to Finalize, Go to Publish, Send to newsletter.
 
 ### Home
-- **Stats strip** (Kate's Sep 15 sketch, layout A), one line of facts: *Last
-  issue* (the newest date in the builder's archive index), *Exchange updated* (when
-  the public site's file last changed; the fact is the link to the Exchange), *Next
-  newsletter* ("Sep 22 · 4 items so far"; clicking opens the Next newsletter page),
-  *In the queue* with a count badge and a chevron (clicking opens the queue fold
-  and goes there).
+- **Four stat cards** on the tint (Kate's pick J of four card variations, Sep 16,
+  after the one-line strip wrapped into a mess at her window width), each an icon,
+  a label and the value in the deep accent: *In the queue* ("14 waiting"; clicking
+  opens the queue fold and goes there), *Next newsletter* ("Sep 22", "1 item so far"
+  small beside it; clicking opens the Next newsletter page), *Exchange updated* (the
+  link to the Exchange), *Last newsletter* (the newest date in the builder's archive
+  index; the link to Past newsletters). A grid, so a narrow window gets two rows.
 - **Add to the queue** form on the left: Title, Description ("paste whatever you
   have"), Link, a spotlight checkbox, Type radios (picking a type reveals its
   subtypes under it, labelled Subtype), and "Your name or initials". Submit saves

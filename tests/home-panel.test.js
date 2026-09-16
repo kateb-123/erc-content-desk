@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { queueBadgeCount, queueOrder, latestIssue, shareLine, signupLine, issueSummary, issueLine } from '../js/home-panel.js';
+import { queueBadgeCount, queueOrder, latestIssue, shareLine, signupLine, issueSummary, issueLine, issueTally } from '../js/home-panel.js';
 
 test('queueBadgeCount counts new plus parked rows', () => {
   const rows = [
@@ -93,4 +93,10 @@ test('issueLine is the date, then how many so far, singular when it must (Kate\'
   assert.equal(issueLine(4, 'Sep 22'), 'Sep 22 · 4 items so far');
   assert.equal(issueLine(1, 'Sep 22'), 'Sep 22 · 1 item so far');
   assert.equal(issueLine(0, 'Sep 22'), 'Sep 22 · nothing in yet');
+});
+
+test('issueTally is the count half of the line, on its own for the card (Kate\'s pick J, Sep 16)', () => {
+  assert.equal(issueTally(4), '4 items so far');
+  assert.equal(issueTally(1), '1 item so far');
+  assert.equal(issueTally(0), 'nothing in yet');
 });
