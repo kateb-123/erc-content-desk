@@ -99,17 +99,36 @@
   --tag-border-outline: #161616;
   --tag-color-outline: #161616;
 
-  /* Palette steps we read directly: the loader's ramp, and the text shades of
-     green and yellow (support-success and support-warning are icon colours and
-     do not clear 4.5:1 as text). */
-  --blue-30: #a6c8ff;
-  --blue-40: #78a9ff;
-  --blue-50: #4589ff;
-  --blue-60: #0f62fe;
-  --blue-70: #0043ce;
-  --blue-80: #002d9c;
+  /* Palette steps we read directly: the text shades of green and yellow
+     (support-success and support-warning are icon colours and do not clear
+     4.5:1 as text). */
   --green-60: #198038;
   --yellow-70: #684e00;
+
+  /* The accent ramps, one per app (Kate, Sep 17, pick G of eight in the
+     switcher: "a different shade of blue, lighter, less aggressive"): the desk
+     keeps its own blue from before Carbon, the builder takes Carbon's teal, so
+     the two apps differ by hue and by nothing else. Each app's :root maps the
+     accent tokens (button, link, focus, interactive, highlight, the info note,
+     the New tag, the loader's ramp) to its --accent-NN steps. */
+  --desk-blue-10: #eaf2f8;
+  --desk-blue-20: #d5e6f2;
+  --desk-blue-30: #9ec9e8;
+  --desk-blue-40: #63a3cd;
+  --desk-blue-50: #4a8cbf;
+  --desk-blue-60: #1d6ea5;
+  --desk-blue-70: #19608f;
+  --desk-blue-80: #14507a;
+  --desk-blue-alpha: rgba(29, 110, 165, .06);
+  --teal-10: #d9fbfb;
+  --teal-20: #9ef0f0;
+  --teal-30: #3ddbd9;
+  --teal-40: #08bdba;
+  --teal-50: #009d9a;
+  --teal-60: #007d79;
+  --teal-70: #005d5d;
+  --teal-80: #004144;
+  --teal-alpha: rgba(0, 125, 121, .06);
 
   /* Spacing steps: use them for every gap, margin and pad; 10px is a bug. */
   --spacing-01: 2px;

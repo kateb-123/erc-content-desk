@@ -1,10 +1,24 @@
 /* The desk in IBM Carbon (Kate, Sep 17, 2026: "adopt Carbon's look", picture A
-   of four). Every value below is a Carbon token from /css/tokens.css; the
-   desk's own names are aliases so the rules read in the desk's vocabulary. */
+   of four; then "a smidge grey" and "a different shade of blue": white boxes
+   with a hairline instead of grey tiles, the chosen things in the accent's
+   tint, and the desk's own blue as the accent, pick G). Every value below is a
+   token from /css/tokens.css; the desk's own names are aliases so the rules
+   read in the desk's vocabulary. */
 :root {
+  /* The accent: desk-blue (Kate, Sep 17, pick G). Carbon's blue tokens are remapped here; nothing else moves. */
+  --accent-10: var(--desk-blue-10); --accent-20: var(--desk-blue-20); --accent-30: var(--desk-blue-30); --accent-40: var(--desk-blue-40);
+  --accent-50: var(--desk-blue-50); --accent-60: var(--desk-blue-60); --accent-70: var(--desk-blue-70); --accent-80: var(--desk-blue-80);
+  --accent-alpha: var(--desk-blue-alpha);
+  --button-primary: var(--accent-60); --button-primary-hover: var(--accent-70); --button-primary-active: var(--accent-80);
+  --button-tertiary: var(--accent-60); --button-tertiary-hover: var(--accent-70); --button-tertiary-active: var(--accent-80);
+  --link-primary: var(--accent-60); --link-primary-hover: var(--accent-70);
+  --focus: var(--accent-60); --border-interactive: var(--accent-60); --interactive: var(--accent-60);
+  --highlight: var(--accent-20); --notification-info-background: var(--accent-10); --notification-info-border: var(--accent-20); --support-info: var(--accent-70);
+  --tag-background-blue: var(--accent-20); --tag-color-blue: var(--accent-80);
   --bg: var(--background);
   --side-bg: var(--background);        /* Carbon's side nav sits on the page ground */
-  --layer: var(--layer-01);            /* the first container on the page: cards, lists, tables */
+  --layer: var(--layer-02);            /* a card, a list, a table: a white box with a hairline (Sep 17, pick C) */
+  --layer-line: var(--border-subtle-01);
   --ink: var(--text-primary);
   --muted: var(--text-secondary);
   --line: var(--border-subtle-00);     /* hairlines on the page */
@@ -12,12 +26,12 @@
   --accent: var(--button-primary);
   --accent-hover: var(--button-primary-hover);
   --accent-deep: var(--button-primary-active);
-  --accent-soft: var(--blue-30);       /* the loader ramp's light end; Publish's held segment */
-  --tint: var(--notification-info-background);   /* soft blue fills: info notes, ERC and held rows */
+  --accent-soft: var(--accent-30);     /* the loader ramp's light end; Publish's held segment */
+  --tint: var(--notification-info-background);   /* the accent's palest step: info notes, ERC and held rows, the stat tiles */
   --tint-ink: var(--text-primary);
-  --selected: var(--layer-selected-01);          /* the chosen row, the lit menu item */
-  --hover: var(--background-hover);
-  --row-hover: var(--layer-hover-01);
+  --selected: var(--highlight);                  /* the chosen row, the lit menu item: the accent's second step (Sep 17, pick C) */
+  --hover: var(--accent-alpha);
+  --row-hover: var(--accent-10);
   --ok: var(--green-60);               /* success as text */
   --ok-mark: var(--support-success);   /* success as an icon */
   --ok-bg: var(--notification-success-background);
@@ -43,10 +57,10 @@ body {
 
 h1, h2, h3 { font-family: var(--font-sans); letter-spacing: 0; }
 
-/* A tile: Carbon's first layer, no border, square. */
+/* A card: a white box with a hairline, square (Kate, Sep 17, pick C; Carbon's grey tile before). */
 .card {
   background: var(--layer);
-  border: 0;
+  border: 1px solid var(--layer-line);
   border-radius: 0;
   padding: var(--spacing-05);
 }
@@ -207,8 +221,8 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 
 /* Tables: Carbon's data table on the first layer. The header row sits on the
    accent layer, rows divide with the in-layer hairline, hover lifts a row. */
-.grid { width: 100%; border-collapse: collapse; background: var(--layer); border: 0; border-radius: 0; }
-.grid th { text-align: left; font-weight: 600; color: var(--ink); background: var(--layer-accent-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--line-in); }
+.grid { width: 100%; border-collapse: collapse; background: var(--layer); border: 1px solid var(--layer-line); border-radius: 0; }
+.grid th { text-align: left; font-weight: 600; color: var(--ink); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--line-in); }
 .grid td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--line-in); vertical-align: top; color: var(--muted); }
 .grid td.blank { color: var(--line-in); }
 .grid td.wrap { max-width: 22rem; }
@@ -340,7 +354,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .f-progress i { display: block; height: 100%; background: var(--interactive); border-radius: 0; }
 .f-split { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr); gap: var(--spacing-05); align-items: start; }
 @media (max-width: 900px) { .f-split { grid-template-columns: minmax(0, 1fr); } }
-.f-list { background: var(--layer); border: 0; border-radius: 0; overflow: hidden; }
+.f-list { background: var(--layer); border: 1px solid var(--layer-line); border-radius: 0; overflow: hidden; }
 .f-group-head {
   display: flex; align-items: center; gap: var(--spacing-03); width: 100%; box-sizing: border-box; margin: 0; height: auto;
   padding: var(--spacing-03) var(--spacing-05) var(--spacing-02); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; background: none;
@@ -417,7 +431,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .f-edit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-03) var(--spacing-04); }
 @media (max-width: 700px) { .f-edit-grid { grid-template-columns: 1fr 1fr; } }
 .f-edit-grid label { margin: 0; }
-.f-edit-card { background: var(--layer-02); border: 1px solid var(--line-in); border-radius: 0; padding: var(--spacing-05); margin: var(--spacing-01) 0 var(--spacing-02); }
+.f-edit-card { background: var(--layer-01); border: 0; border-radius: 0; padding: var(--spacing-05); margin: var(--spacing-01) 0 var(--spacing-02); }
 .f-edit-grid input, .f-edit-grid textarea { margin-top: var(--spacing-02); background: var(--field-01); }
 .f-edit-blurb { grid-column: 1 / -1; }
 .f-edit-media { grid-column: 1 / -1; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
@@ -465,16 +479,16 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .stats-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--spacing-05); margin-top: var(--spacing-05); }
 .stat {
   display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-03);
-  height: auto; padding: var(--spacing-05); border-radius: 0; background: var(--layer);
+  height: auto; padding: var(--spacing-05); border-radius: 0; background: var(--tint);
   border: 1px solid transparent; color: var(--ink); text-decoration: none; text-align: left;
   font: inherit; letter-spacing: .16px; cursor: default; box-sizing: border-box; width: 100%;
   transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
 a.stat, button.stat { cursor: pointer; }
-a.stat:hover, button.stat:hover:not(:disabled) { background: var(--row-hover); border-color: transparent; color: var(--ink); }
-.stat .fa-solid { color: var(--icon-secondary); font-size: 16px; }
-.stat-label { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
-.stat-value { font-size: 28px; line-height: 36px; font-weight: 400; color: var(--ink); }   /* heading-04 */
+a.stat:hover, button.stat:hover:not(:disabled) { background: var(--highlight); border-color: transparent; color: var(--ink); }
+.stat .fa-solid { color: var(--accent); font-size: 16px; }
+.stat-label { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--ink); }
+.stat-value { font-size: 28px; line-height: 36px; font-weight: 400; color: var(--accent-deep); }   /* heading-04 */
 .stat-value small { font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 400; color: var(--muted); }
 /* The queue count: a round tag in the accent. */
 .queue-badge {
@@ -526,8 +540,8 @@ a.stat:hover, button.stat:hover:not(:disabled) { background: var(--row-hover); b
 
 .queue-head { display: flex; align-items: baseline; gap: var(--spacing-05); flex-wrap: wrap; margin: 0 0 var(--spacing-04); }
 .queue-head h2 { font-size: 20px; line-height: 28px; font-weight: 600; margin: 0; flex: 1; }
-.queue-table { width: 100%; border-collapse: collapse; background: var(--layer); border: 0; }
-.queue-table th { text-align: left; font-weight: 600; color: var(--ink); background: var(--layer-accent-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--line-in); white-space: nowrap; }
+.queue-table { width: 100%; border-collapse: collapse; background: var(--layer); border: 1px solid var(--layer-line); }
+.queue-table th { text-align: left; font-weight: 600; color: var(--ink); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--line-in); white-space: nowrap; }
 .queue-table th .sort-btn { border: none; background: none; padding: 0; height: auto; font: inherit; font-weight: 600; color: var(--ink); cursor: pointer; white-space: nowrap; }
 .queue-table th .sort-btn:hover:not(:disabled) { background: none; border: none; color: var(--link-primary); }
 .queue-table th:nth-child(2) { width: 22%; }
@@ -582,7 +596,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 @keyframes check-draw { to { stroke-dashoffset: 0; } }
 .pub-done-anim .door { animation: rise-in var(--duration-fast-02) var(--ease-standard) var(--duration-moderate-02) both; }
 /* Publish report chips + the post-publish receipt (Kate's Direction A). */
-.pub-receipt { background: var(--layer); border: 0; border-radius: 0; padding: var(--spacing-08) var(--spacing-06); text-align: center; margin-top: var(--spacing-05); }
+.pub-receipt { background: var(--layer); border: 1px solid var(--layer-line); border-radius: 0; padding: var(--spacing-08) var(--spacing-06); text-align: center; margin-top: var(--spacing-05); }
 .pub-receipt .check-ring { width: 54px; height: 54px; border-radius: var(--radius-round); background: var(--ok-bg); display: inline-flex; align-items: center; justify-content: center; margin-bottom: var(--spacing-04); }
 .pub-receipt .receipt-check { width: 26px; height: 26px; margin: 0; vertical-align: 0; }
 .pub-receipt h3 { font-size: 20px; line-height: 28px; font-weight: 600; margin: 0 0 var(--spacing-02); }
@@ -605,12 +619,12 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
   border-radius: var(--radius-round); border: 2px solid var(--background); box-sizing: border-box;
   animation: dots-slide 3s ease-in-out infinite;
 }
-.dots-loader .dot:nth-child(1) { background: var(--blue-30); animation-delay: .5s; }
-.dots-loader .dot:nth-child(2) { background: var(--blue-40); animation-delay: .4s; }
-.dots-loader .dot:nth-child(3) { background: var(--blue-50); animation-delay: .3s; }
-.dots-loader .dot:nth-child(4) { background: var(--blue-60); animation-delay: .2s; }
-.dots-loader .dot:nth-child(5) { background: var(--blue-70); animation-delay: .1s; }
-.dots-loader .dot:nth-child(6) { background: var(--blue-80); animation-delay: 0s; }
+.dots-loader .dot:nth-child(1) { background: var(--accent-30); animation-delay: .5s; }
+.dots-loader .dot:nth-child(2) { background: var(--accent-40); animation-delay: .4s; }
+.dots-loader .dot:nth-child(3) { background: var(--accent-50); animation-delay: .3s; }
+.dots-loader .dot:nth-child(4) { background: var(--accent-60); animation-delay: .2s; }
+.dots-loader .dot:nth-child(5) { background: var(--accent-70); animation-delay: .1s; }
+.dots-loader .dot:nth-child(6) { background: var(--accent-80); animation-delay: 0s; }
 @keyframes dots-slide {
   15% { transform: translateX(0); }
   45%, 65% { transform: translateX(calc(var(--dl-w, 250px) - var(--dl-s, 20px))); }
@@ -648,7 +662,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
    the rows down the left, the chosen row's card on the right, kept in view
    while the list scrolls. Finalize's list and card, with Sort's fix panel. */
 .sort-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: var(--spacing-05); align-items: start; }
-.sort-rows { background: var(--layer); border: 0; border-radius: 0; overflow: hidden; }
+.sort-rows { background: var(--layer); border: 1px solid var(--layer-line); border-radius: 0; overflow: hidden; }
 .sort-row, .f-list-row {
   display: flex; align-items: flex-start; gap: var(--spacing-03); width: 100%; height: auto; box-sizing: border-box; text-align: left;
   padding: var(--spacing-04) var(--spacing-05); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; background: transparent;
@@ -657,7 +671,8 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 }
 .sort-rows > :first-child { border-top: 0; }
 .sort-row:hover:not(:disabled), .f-list-row:hover:not(:disabled) { border-color: var(--line-in); background: var(--row-hover); color: var(--ink); }
-.sort-row.is-selected, .f-list-row.is-selected { background-color: var(--selected); box-shadow: inset 3px 0 0 var(--border-interactive); }
+.sort-row.is-selected, .f-list-row.is-selected { background-color: var(--selected); color: var(--accent-deep); box-shadow: inset 3px 0 0 var(--border-interactive); }
+.sort-row.is-selected:hover:not(:disabled), .f-list-row.is-selected:hover:not(:disabled) { background: var(--selected); color: var(--accent-deep); }   /* the chosen row keeps its tint under the mouse */
 .sort-row-text, .f-row-text { display: flex; flex-direction: column; gap: var(--spacing-01); min-width: 0; flex: 1 1 auto; }
 .sort-row-badges { display: flex; flex-wrap: wrap; gap: var(--spacing-02); margin-bottom: var(--spacing-01); }
 .sort-row-badges .badge { margin-right: 0; }
@@ -666,7 +681,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 /* The one alert on a Needs a fix row: the warning triangle before the title. */
 .sort-row .fix-mark { color: var(--amber-mark); font-size: 12px; margin-top: 3px; flex: none; }
 .sort-row .fa-chevron-right { color: var(--icon-primary); font-size: 11px; margin-top: 4px; flex: none; }
-.sort-done { display: flex; align-items: flex-start; gap: var(--spacing-03); padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--line-in); background: var(--bg); }
+.sort-done { display: flex; align-items: flex-start; gap: var(--spacing-03); padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--line-in); background: var(--layer-01); }
 .sort-done .sort-row-title, .sort-done .sort-row-meta { color: var(--muted); }
 .sort-done.is-trashed .sort-row-title { text-decoration: line-through; }
 .sort-done-acts { margin-left: auto; white-space: nowrap; }
@@ -685,8 +700,8 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .sort-card-acts { display: flex; align-items: center; gap: var(--spacing-05); border-top: 1px solid var(--line-in); padding-top: var(--spacing-05); margin-top: var(--spacing-03); }
 .sort-card-right { margin-left: auto; display: flex; align-items: center; gap: var(--spacing-05); }
 .sort-card .sort-edit { margin: 0; }
-.sort-card input, .sort-card textarea, .f-card input, .f-card textarea { background: var(--field-02); }
-.f-edit-card input, .f-edit-card textarea { background: var(--field-01); }   /* a field on a white box is grey again (Carbon's layer model) */
+.sort-card input, .sort-card textarea, .f-card input, .f-card textarea { background: var(--field-01); }   /* a field on a white card is grey (Carbon's layer model) */
+.f-edit-card input, .f-edit-card textarea { background: var(--field-02); }   /* a field on the grey edit box is white (Carbon's layer model) */
 /* The fix panel: Carbon's inline notification, a warning while the row needs
    a fix, informational while a type changes. */
 .fix-panel { border: 1px solid var(--line-in); border-left: 3px solid var(--support-info); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); background: var(--layer-02); }
@@ -728,7 +743,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
    Escape, and the dim swallows every click underneath. Carbon's modal: the
    overlay, a square layer, no border. */
 .busy-dim { position: fixed; inset: 0; z-index: 50; background: var(--overlay); display: grid; place-items: center; }
-.busy-card { background: var(--layer); border: 0; border-radius: 0; padding: var(--spacing-06) var(--spacing-07); width: 380px; max-width: calc(100vw - 2rem); text-align: center; }
+.busy-card { background: var(--layer); border: 1px solid var(--layer-line); border-radius: 0; padding: var(--spacing-06) var(--spacing-07); width: 380px; max-width: calc(100vw - 2rem); text-align: center; }
 .busy-card h2 { font-size: 20px; line-height: 28px; font-weight: 600; margin: 0; }
 .busy-count { font-size: 16px; line-height: 22px; font-weight: 600; margin: var(--spacing-03) 0 0; }
 .busy-count span { color: var(--muted); font-weight: 400; }

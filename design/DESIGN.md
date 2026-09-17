@@ -8,9 +8,14 @@ before deploy.
 ## The system: IBM Carbon (Sep 17, 2026)
 
 Both apps wear IBM Carbon v11's White theme (Kate, Sep 17, from four pictures
-of Sort at four depths: "A: full Carbon"). Carbon is a square, one-blue,
-one-family system; its rules below replace the desk's own radii, fonts and
-colours of Sep 1 to Sep 16. The tokens live in `css/tokens.css`, the one file
+of Sort at four depths: "A: full Carbon"), with two amendments of the same
+night: cards, lists and tables are white boxes with a hairline instead of
+Carbon's grey tiles, and the chosen things wear the accent's tint ("it's all a
+smidge grey", pick C of four); and each app has its own accent hue, the desk
+its blue from before Carbon and the builder Carbon's teal ("a different shade
+of blue, lighter, less aggressive", pick G of eight in a switcher; "we just
+want a little variation"). Carbon is a square, one-family system; its rules
+below replace the desk's own radii and fonts of Sep 1 to Sep 16. The tokens live in `css/tokens.css`, the one file
 where a colour, a size or a face is written down; every page loads it first.
 `css/styles.css` (desk), `builder/css/styles.css` (builder, `--bp-*`) and
 `builder/archive.html` alias the names they use. The source is the
@@ -25,15 +30,16 @@ allows a hex only in `css/tokens.css`.
 | Token | Value | Use |
 |---|---|---|
 | `--background` | `#ffffff` | the page (both apps), the sidebar's ground |
-| `--layer-01` | `#f4f4f4` | the first container on the page: cards, lists, tables, the busy popup (`--layer`) |
-| `--layer-02` | `#ffffff` | a container inside a layer: the fix panel, edit cards, the diff boxes |
+| `--layer-02` / `--border-subtle-01` | `#ffffff` / `#c6c6c6` | a card, a list, a table, the receipt, the busy popup: a white box with a hairline (`--layer`, `--layer-line`; pick C, Sep 17) |
+| `--layer-01` | `#f4f4f4` | a grey box inside a card: Finalize's edit box, decided Sort rows, table header rows, the builder's edit stage |
 | `--layer-accent-01` | `#e0e0e0` | table header rows, progress tracks, the edit stage |
-| `--layer-hover-01` / `--layer-selected-01` | `#e8e8e8` / `#e0e0e0` | row hover (`--row-hover`); the chosen row and the lit menu item (`--selected`), always with a 3px `--border-interactive` bar |
+| `--accent-10` / `--accent-20` | the desk `#eaf2f8` / `#d5e6f2`, the builder `#d9fbfb` / `#9ef0f0` | row hover and the stat tiles (`--row-hover`, `--tint`); the chosen row and the lit menu item (`--selected`, in `--accent-deep` text with a 3px `--border-interactive` bar) |
+| `--accent-alpha` | the accent at 6% | the hover wash on quiet buttons and menu rows (`--hover`), layered over any tint |
 | `--field-01` / `--field-02` | `#f4f4f4` / `#ffffff` | fields: white on a layer, grey on the page |
 | `--text-primary` / `--text-secondary` / `--text-helper` / `--text-placeholder` | `#161616` / `#525252` / `#6f6f6f` / `#a8a8a8` | ink (`--ink`), quiet text (`--muted`), helper lines, placeholders (placeholders are decoration, never the only label) |
 | `--border-subtle-00` / `--border-subtle-01` | `#e0e0e0` / `#c6c6c6` | hairlines on the page (`--line`) and inside a layer (`--line-in`); dividers only |
 | `--border-strong-01` | `#8d8d8d` | the line under a field, dashed drop zones, tag outlines: anything interactive holds 3:1 |
-| `--button-primary` / `-hover` / `-active` | `#0f62fe` / `#0050e6` / `#002d9c` | the one blue (`--accent`, `--accent-hover`, `--accent-deep`): filled buttons, tertiary outlines, the active tab bar |
+| `--button-primary` / `-hover` / `-active` | the desk `#1d6ea5` / `#19608f` / `#14507a` (`--desk-blue-60/70/80`); the builder `#007d79` / `#005d5d` / `#004144` (`--teal-60/70/80`) | the one accent per app (`--accent`, `--accent-hover`, `--accent-deep`): filled buttons, tertiary outlines, links, focus, the active tab bar, the lit step. Each app's `:root` maps Carbon's blue tokens (button, tertiary, link, focus, interactive, highlight, the info note, the New tag) to its `--accent-NN` ramp; IBM blue `#0f62fe` is Carbon's default and appears nowhere on screen |
 | `--button-secondary` / `-hover` | `#393939` / `#474747` | the builder's Back, Save to the archive, Download: Carbon's dark grey beside a primary |
 | `--button-disabled` / `--text-on-color-disabled` | `#c6c6c6` / `#8d8d8d` | a locked Keep: full opacity, grey fill |
 | `--link-primary` / `-hover` | `#0f62fe` / `#0043ce` | links and the quiet action words |
@@ -44,7 +50,7 @@ allows a hex only in `css/tokens.css`.
 | `--support-info` | `#0043ce` | the info note's bar |
 | `--notification-*-background` / `-border` | info `#edf5ff`, success `#defbe6`, warning `#fcf4d6`, error `#fff1f1` | inline notes: the info panel (`--tint`), the fix panel, the link ask, the builder's status boxes; text on them is `--text-primary` |
 | `--tag-background-*` / `--tag-color-*` | gray `#e0e0e0`/`#161616`, blue `#d0e2ff`/`#0043ce`, yellow `#fddc69`/`#684e00` | tags: a fact, New, a duplicate; the picked type pill; the queue count |
-| `--blue-30` to `--blue-80` | the ramp | the sliding-dots loader; `--blue-30` is Publish's held segment (`--accent-soft`) |
+| `--accent-30` to `--accent-80` | the app's ramp | the sliding-dots loader; `--accent-30` is Publish's held segment (`--accent-soft`) |
 | `--background-inverse` / `--link-inverse` | `#393939` / `#78a9ff` | the builder's Undo toast |
 | `--overlay` | `#16161680` | the dim behind the busy popup and the tutorial |
 | `--spacing-01` to `--spacing-10` | 2, 4, 8, 12, 16, 24, 32, 40, 48, 64px | every gap, pad and margin; 16 is the default; 10px is a bug |
@@ -70,10 +76,13 @@ template and the public Exchange site.
   and the sidebar. The only round things are tags (`--radius-tag-md` 12px at
   24px tall, `--radius-tag-lg` 16px on the 32px type pills), the queue count,
   the toggle and the loader's dots.
-- **Layers, not borders.** A card is a tile on `--layer-01` with no border; a
-  container inside it sits on `--layer-02` with a `--line-in` hairline. A list
-  is one tile; its rows divide with `--line-in`, lift to `--layer-hover-01`, and
-  the chosen one sits on `--layer-selected-01` with a 3px blue bar on the left.
+- **White boxes with a hairline** (pick C, Sep 17; Carbon's grey tiles before).
+  A card, a list or a table is `--layer-02` with a 1px `--layer-line` hairline;
+  a box inside a card (Finalize's edit box) is `--layer-01` with no border. Rows
+  divide with `--line-in`, lift to `--accent-10` on hover, and the chosen one
+  sits on `--accent-20` in `--accent-deep` text with a 3px accent bar on the
+  left. Fields are `--field-01` grey on a white card and `--field-02` white on
+  a grey box. The accent's tint means "this one"; grey means "a box".
 - **Buttons.** 40px tall (32px in a screen head or a section head, 48px for the
   builder's export trio), 16px side padding, the label left. A primary is the
   blue fill with its icon in a 64px right slot (48px on the small size); with no
@@ -114,7 +123,8 @@ template and the public Exchange site.
   pipeline) as a fold that remembers being shut and always opens on a pipeline
   screen. Group labels are label-01 with the group's icon in `--icon-secondary`;
   the 32px rows under them carry none and sit indented; Sort shows the queue
-  count; the lit row sits on `--layer-selected-01` in 600 with the 3px bar. On
+  count; the lit row sits on `--accent-20` in `--accent-deep` at 600 with the
+  3px bar. On
   a Desk work screen the sidebar tucks away (Kate, Sep 16, from four clickable
   options: "b when it's expanded and the button. but also the thin grey bar to
   the left like C"): a 48px strip holds one ghost menu button; open, the sidebar
@@ -225,6 +235,8 @@ thing everywhere (see the vocabulary table).
 - No shadows at all (Kate, Sep 2; Carbon agrees): layers separate things, and
   focus is an outline.
 - No hex outside `css/tokens.css`; no size off the spacing scale.
+- One accent hue per app, and that is the only way the desk and the builder
+  differ: the desk its blue, the builder Carbon's teal.
 - Colour is never the only signal: a status colour ships with its icon and a word.
 - Nothing is "done" without a screenshot from the running sandbox.
 
