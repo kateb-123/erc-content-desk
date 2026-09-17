@@ -1,146 +1,160 @@
+/* The desk in IBM Carbon (Kate, Sep 17, 2026: "adopt Carbon's look", picture A
+   of four). Every value below is a Carbon token from /css/tokens.css; the
+   desk's own names are aliases so the rules read in the desk's vocabulary. */
 :root {
-  --accent-soft: #9ec9e8;      /* the loader ramp's light end; Publish's held segment */
-  --side-bg: #f3f5f8;          /* the sidebar's ground, a shade under the page */
-  --ink: #1c2229;
-  --muted: #55606c;
-  --line: #dbdfe5;
-  --bg: #fbfbfd;
-  --accent: #1d6ea5;
-  --tint: #eaf2f8;
-  --ok: #1d6f4f;
-  --err: #a32d2d;
-  --radius: 8px;
-  /* Sep 15: the ambers, the accent's deep shade as text, and the row hover were
-     hardcoded in twenty places (two slightly different ambers among them). */
-  --amber-bg: #fdf3d7;
-  --amber: #6b4e00;
-  --amber-line: #f2e3ae;
-  --accent-deep: #14507a;
-  --hover: rgba(29, 110, 165, 0.05);
-  --tint-ink: #2b4a61;
-  --ok-bg: #e3efe8;
+  --bg: var(--background);
+  --side-bg: var(--background);        /* Carbon's side nav sits on the page ground */
+  --layer: var(--layer-01);            /* the first container on the page: cards, lists, tables */
+  --ink: var(--text-primary);
+  --muted: var(--text-secondary);
+  --line: var(--border-subtle-00);     /* hairlines on the page */
+  --line-in: var(--border-subtle-01);  /* hairlines inside a layer */
+  --accent: var(--button-primary);
+  --accent-hover: var(--button-primary-hover);
+  --accent-deep: var(--button-primary-active);
+  --accent-soft: var(--blue-30);       /* the loader ramp's light end; Publish's held segment */
+  --tint: var(--notification-info-background);   /* soft blue fills: info notes, ERC and held rows */
+  --tint-ink: var(--text-primary);
+  --selected: var(--layer-selected-01);          /* the chosen row, the lit menu item */
+  --hover: var(--background-hover);
+  --row-hover: var(--layer-hover-01);
+  --ok: var(--green-60);               /* success as text */
+  --ok-mark: var(--support-success);   /* success as an icon */
+  --ok-bg: var(--notification-success-background);
+  --err: var(--support-error);
+  --amber-bg: var(--notification-warning-background);
+  --amber: var(--yellow-70);           /* warning as text */
+  --amber-mark: var(--support-warning); /* warning as an icon: the triangle */
+  --amber-line: var(--notification-warning-border);
+  --radius: var(--radius-none);
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: Karla, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 14px; line-height: 20px; letter-spacing: .16px;   /* body-01 */
   color: var(--ink);
   background: var(--bg);
-  line-height: 1.5;
 }
 
-h1, h2, h3 { font-family: Outfit, "Segoe UI", sans-serif; }
+h1, h2, h3 { font-family: var(--font-sans); letter-spacing: 0; }
 
+/* A tile: Carbon's first layer, no border, square. */
 .card {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 1.5rem;
+  background: var(--layer);
+  border: 0;
+  border-radius: 0;
+  padding: var(--spacing-05);
 }
 
 .submit-page .card { width: 100%; max-width: 34rem; }
 
-h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
-.lede { color: var(--muted); margin: 0 0 1.5rem; }
+h1 { font-size: 28px; line-height: 36px; font-weight: 400; margin: 0 0 var(--spacing-02); }   /* heading-04 */
+.lede { color: var(--muted); margin: 0 0 var(--spacing-06); }
 
-label { display: block; font-size: .85rem; color: var(--muted); margin: 1rem 0 .25rem; }
+/* label-01: 12px with .32px tracking, quiet, over the field. */
+label { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: var(--spacing-05) 0 var(--spacing-03); }
 
-input[type="text"], input[type="url"], textarea, select {
+/* Fields: Carbon's underlined field on the field surface, 40px tall. */
+input[type="text"], input[type="url"], input[type="search"], input[type="email"], textarea, select {
   width: 100%;
-  font: inherit;
-  padding: .5rem .6rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: #fff;
+  font: inherit; letter-spacing: .16px;
+  height: 40px; padding: 0 var(--spacing-05);
+  border: 0; border-bottom: 1px solid var(--border-strong-01);
+  border-radius: 0;
+  background: var(--field-02);
   color: inherit;
 }
+input::placeholder, textarea::placeholder { color: var(--text-placeholder); opacity: 1; }
+textarea { resize: vertical; height: auto; min-height: 80px; padding: 11px var(--spacing-05); }
+select { padding-right: var(--spacing-07); }
 
-textarea { resize: vertical; }
-
+/* Chrome buttons are Carbon's tertiary: an accent outline that fills on hover.
+   Text-styled buttons (.linkish and friends) opt out below. */
 button {
-  font: inherit;
-  font-family: Outfit, "Segoe UI", sans-serif;
-  font-weight: 600;
-  padding: .5rem 1rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: #fff;
-  color: var(--ink);
+  display: inline-flex; align-items: center;
+  font: inherit; font-weight: 400; letter-spacing: .16px;
+  height: 40px; padding: 0 var(--spacing-05);
+  border: 1px solid var(--accent);
+  border-radius: 0;
+  background: transparent;
+  color: var(--accent);
   cursor: pointer;
 }
 
-/* Text-styled buttons read as prose, not chrome — they keep the body font. */
+/* Text-styled buttons read as prose, not chrome. */
 .linkish, .sort-btn, .undo-link { font-family: inherit; font-weight: inherit; }
 
-button:hover:not(:disabled) { border-color: var(--ink); }
-button:disabled { opacity: .5; cursor: default; }
+button:hover:not(:disabled) { background: var(--accent); color: var(--text-on-color); border-color: var(--accent); }
+button:disabled { cursor: default; color: var(--text-on-color-disabled); border-color: var(--button-disabled); }
 
 /* The submit form (Claude Design round two, Kate's pick Sep 16): Title and
    Link side by side, the type as pills, and initials, Spotlight and Submit on
    one row at the foot. */
-.sf-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 1.25rem; }
-.sf-foot { display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap; margin-top: 1.25rem; }
+.sf-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 var(--spacing-06); }
+.sf-foot { display: flex; align-items: flex-end; gap: var(--spacing-05); flex-wrap: wrap; margin-top: var(--spacing-06); }
 .sf-foot .sf-initials label { margin-top: 0; }
 .sf-foot .sf-initials input { width: 7rem; }
-.sf-foot label.check { margin: 0 0 .6rem; display: flex; align-items: center; gap: .4rem; }
-.submit-form .submit-btn { margin-left: auto; padding: .5rem 1.5rem; }
+.sf-foot label.check { margin: 0 0 var(--spacing-03); display: flex; align-items: center; gap: var(--spacing-03); font-size: 14px; letter-spacing: .16px; color: var(--ink); }
+.submit-form .submit-btn { margin-left: auto; }
 
-/* Type and subtype pills */
-.type-picker { border: none; padding: 0; margin: 1rem 0 0; }
-.type-picker legend { font-size: .85rem; color: var(--muted); padding: 0; margin-bottom: .4rem; }
-.pill-row { display: flex; flex-wrap: wrap; gap: .5rem; }
-.type-word.is-small { padding: .3rem .85rem; font-size: .85rem; }
-.subtype-label { display: block; font-size: .75rem; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: .75rem 0 .4rem; }
-.type-hint { margin: .5rem 0 0; font-size: .85rem; }
+/* Type and subtype pills: Carbon's selectable tags, 32px, the picked one blue. */
+.type-picker { border: none; padding: 0; margin: var(--spacing-05) 0 0; }
+.type-picker legend { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); padding: 0; margin-bottom: var(--spacing-03); }
+.pill-row { display: flex; flex-wrap: wrap; gap: var(--spacing-03); }
+.type-word.is-small { height: 24px; padding: 0 var(--spacing-03); font-size: 12px; letter-spacing: .32px; border-radius: var(--radius-tag-md); }
+.subtype-label { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: var(--spacing-04) 0 var(--spacing-03); }
+.type-hint { margin: var(--spacing-03) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
 
 /* Bulk "whole doc" door */
-.bulk-door { margin-top: 1.25rem; border: 1px dashed var(--line); border-radius: var(--radius); padding: .75rem 1rem; background: #fff; }
+.bulk-door { margin-top: var(--spacing-06); border: 1px dashed var(--border-strong-01); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); background: var(--field-02); }
 .bulk-door summary { cursor: pointer; color: var(--muted); }
-.bulk-drop { display: block; border: 1px dashed var(--line); border-radius: var(--radius); padding: 1.1rem 1rem; margin: .6rem 0 .2rem; text-align: center; cursor: pointer; background: #fff; color: var(--muted); }
-.bulk-drop strong { color: var(--ink); font-weight: 500; }
-.bulk-drop .hint { display: block; margin-top: .3rem; }
+.bulk-drop { display: block; border: 1px dashed var(--border-strong-01); border-radius: 0; padding: var(--spacing-06) var(--spacing-05); margin: var(--spacing-03) 0 var(--spacing-01); text-align: center; cursor: pointer; background: var(--field-02); color: var(--muted); }
+.bulk-drop strong { color: var(--ink); font-weight: 600; }
+.bulk-drop .hint { display: block; margin-top: var(--spacing-02); font-size: 12px; letter-spacing: .32px; color: var(--text-helper); }
 .bulk-drop.is-drag { border-color: var(--accent); background: var(--tint); }
-.bulk-templates { font-size: .85rem; color: var(--muted); margin: .5rem 0 0; }
-.bulk-templates a { color: var(--accent); font-weight: 600; text-decoration: none; }
-.bulk-table { margin: .4rem 0 .8rem; }
+.bulk-templates { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: var(--spacing-03) 0 0; }
+.bulk-templates a { color: var(--link-primary); text-decoration: none; }
+.bulk-templates a:hover { color: var(--link-primary-hover); text-decoration: underline; }
+.bulk-table { margin: var(--spacing-02) 0 var(--spacing-04); }
 .bulk-row.has-text { cursor: pointer; }
-.bulk-row.has-text:hover td { background: var(--hover); }
+.bulk-row.has-text:hover td { background: var(--row-hover); }
 .bulk-peek td { border-top: none; padding-top: 0; }
 .bulk-remove { width: 6.5rem; text-align: right; }
 
-/* Newsletter — the hand-off to the standalone builder (mock) */
-.nl-issue { font-size: .9rem; color: var(--muted); margin: 0 0 .6rem; }
-.nl-issue select { width: auto; min-width: 12rem; font: inherit; padding: .25rem .4rem; border: 1px solid var(--line); border-radius: 8px; }
+/* Newsletter: the hand-off to the standalone builder */
+.nl-issue { font-size: 14px; color: var(--muted); margin: 0 0 var(--spacing-03); }
+.nl-issue select { width: auto; min-width: 12rem; height: 32px; padding: 0 var(--spacing-07) 0 var(--spacing-03); font: inherit; letter-spacing: .16px; }
 .nl-row { cursor: pointer; }
-.nl-row:hover td { background: var(--hover); }
+.nl-row:hover td { background: var(--row-hover); }
 .nl-check { width: 2rem; }
-.nl-sent { margin: .25rem 0 1.25rem; }
-.nl-sent summary { cursor: pointer; color: var(--muted); font-size: .9rem; }
-.nl-sent .queue-table { margin-top: .5rem; }
+.nl-sent { margin: var(--spacing-02) 0 var(--spacing-06); }
+.nl-sent summary { cursor: pointer; color: var(--muted); }
+.nl-sent .queue-table { margin-top: var(--spacing-03); }
 .nl-group { margin: 0; }
-.nl-group-summary { cursor: pointer; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; }
+.nl-group-summary { cursor: pointer; font-weight: 600; }
 /* Timing on the newsletter pool: events for a later issue dim and sink; the
-   "Send early?" ask wears the card language's amber bubble (Sort's verify
-   loop), so a question about timing looks the same everywhere it appears. */
+   "Send early?" ask is a warning note (Sort's verify loop), so a question
+   about timing looks the same everywhere it appears. */
 .nl-row.nl-later { opacity: .55; }
 .nl-row.nl-later:hover { opacity: .85; }
-.nl-row .badge { margin-top: .15rem; }
+.nl-row .badge { margin-top: var(--spacing-01); }
 .nl-ask {
-  display: block; width: fit-content; margin: .35rem 0 .1rem;
-  font-size: .85rem; color: var(--amber); background: var(--amber-bg);
-  border: 1px solid var(--amber-line); border-radius: 8px; padding: .35rem .7rem;
+  display: block; width: fit-content; margin: var(--spacing-02) 0 0;
+  font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--ink); background: var(--amber-bg);
+  border: 1px solid var(--amber-line); border-left: 3px solid var(--amber-mark); border-radius: 0; padding: var(--spacing-03) var(--spacing-04);
 }
-.nl-ask .alert-mark, .nl-ask .fa-clock { margin-right: .25rem; }
-.nl-ask .alert-word { color: var(--amber); }
+.nl-ask .alert-mark, .nl-ask .fa-clock { margin-right: var(--spacing-02); color: var(--amber-mark); }
+.nl-ask .alert-word { color: var(--link-primary); }
 .nl-ask .nl-cancel { font-weight: 400; }
-.nl-past .badge { margin-left: .1rem; }
+.nl-past .badge { margin-left: var(--spacing-01); }
 .nl-past-act { text-align: right; width: 6.5rem; }
 .nl-group-scroll { max-height: 340px; overflow-y: auto; }
-.bulk-door .bulk-status { min-height: 1.4rem; margin: 1rem 0 0; font-size: .9rem; }
+.bulk-door .bulk-status { min-height: 20px; margin: var(--spacing-05) 0 0; }
 
-.status { min-height: 1.4rem; margin: 0; font-size: .9rem; }
+.status { min-height: 20px; margin: 0; font-size: 14px; }
 .status-ok { color: var(--ok); }
 .status-error { color: var(--err); }
 .status-busy { color: var(--muted); }
@@ -148,177 +162,218 @@ button:disabled { opacity: .5; cursor: default; }
 
 /* The shell (Kate, Sep 16, from the Claude Design docs: "I like the sidebar the
    most. but then I think keep our stuff"): a sidebar down the left on every
-   page, the desk's own type and color, the content column beside it. */
+   page, the content column beside it. */
 .desk { display: flex; min-height: 100vh; margin: 0; padding: 0; }
 /* Every page's first line sits 44px down, the desk and the builder alike (style audit, Sep 16):
-   .5rem here, the status line's one-line slot, then the first element's .85rem. */
-.desk-main { flex: 1 1 auto; min-width: 0; padding: .5rem 2.5rem 6rem; box-sizing: border-box; }
+   8px here, the status line's one-line slot, then the first element's 16px. */
+.desk-main { flex: 1 1 auto; min-width: 0; padding: var(--spacing-03) var(--spacing-07) var(--spacing-10); box-sizing: border-box; }
 .desk-main > * { max-width: 68rem; margin-left: auto; margin-right: auto; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 /* The sidebar's own rules live in css/sidebar.css, shared with the builder's pages. */
 
-/* Doors (Kate, Sep 15, option A): every way onward wears one look, the outlined
-   accent pill: Go to Finalize, Go to Publish, Send to Newsletter, the receipt's
-   door. The one filled button on a screen is then always its decision. */
+/* Doors (Kate, Sep 15, option A): every way onward wears one look, Carbon's
+   tertiary button with the arrow in its right slot: Go to Finalize, Go to
+   Publish, Send to Newsletter, the receipt's door. The one filled button on a
+   screen is then always its decision. */
 .door {
-  display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
-  border: 1.5px solid var(--accent); border-radius: 999px;
-  background: #fff; padding: .4rem 1rem; color: var(--accent); text-decoration: none;
-  font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .85rem; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: space-between; gap: var(--spacing-06);
+  height: 32px; padding: 0 var(--spacing-04);
+  border: 1px solid var(--accent); border-radius: 0;
+  background: transparent; color: var(--accent); text-decoration: none;
+  font: inherit; letter-spacing: .16px; cursor: pointer;
 }
-.door:hover:not(:disabled) { background: var(--tint); border-color: var(--accent); }
+.door:hover:not(:disabled) { background: var(--accent); color: var(--text-on-color); border-color: var(--accent); }
 
-.screen-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin: .85rem 0 1rem; }
-.screen-head h2 { font-size: 1.35rem; margin: 0; }
-.title-row { display: flex; align-items: baseline; gap: .9rem; }
-.info-toggle { border: none; background: none; padding: 0; font: inherit; font-weight: 600; font-size: .85rem; color: var(--accent); cursor: pointer; }
-.info-toggle:hover:not(:disabled) { border: none; text-decoration: underline; }
-.info-panel { background: var(--tint); border-radius: 8px; padding: .7rem 1rem; margin: .6rem 0 .4rem; font-size: .9rem; color: var(--tint-ink); max-width: 46rem; }
-/* Header buttons: the screen's decision is a slim primary; its door is an outlined pill; both sit right. */
-.screen-head button.primary { margin-left: auto; font-size: .85rem; padding: .35rem .9rem; align-self: center; }
+.screen-head { display: flex; align-items: baseline; gap: var(--spacing-05); flex-wrap: wrap; margin: var(--spacing-05) 0 var(--spacing-05); }
+.screen-head h2 { font-size: 28px; line-height: 36px; font-weight: 400; margin: 0; }   /* heading-04 */
+.title-row { display: flex; align-items: baseline; gap: var(--spacing-04); }
+.info-toggle { border: none; background: none; padding: 0; height: auto; font: inherit; letter-spacing: .16px; color: var(--link-primary); cursor: pointer; }
+.info-toggle:hover:not(:disabled) { border: none; background: none; color: var(--link-primary-hover); text-decoration: underline; }
+/* The info panel is Carbon's inline notification, informational. */
+.info-panel {
+  background: var(--tint); border: 1px solid var(--notification-info-border); border-left: 3px solid var(--support-info);
+  border-radius: 0; padding: var(--spacing-04) var(--spacing-05); margin: var(--spacing-03) 0 var(--spacing-03); color: var(--tint-ink); max-width: 46rem;
+}
+/* Header buttons: the screen's decision is a small primary; its door is the tertiary; both sit right. */
+.screen-head button.primary { margin-left: auto; height: 32px; padding: 0 var(--spacing-09) 0 var(--spacing-04); align-self: center; }
+.screen-head button.primary .fa-solid { right: var(--spacing-04); }
 .screen-head .door { margin-left: auto; align-self: center; }
 .head-action .fa-arrow-right { font-size: .85em; }
 .screen-head .lede { margin: 0; flex: 1; }
 
-
-.grid { width: 100%; border-collapse: collapse; font-size: .85rem; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-.grid th { text-align: left; font-weight: 500; color: var(--muted); padding: .5rem .6rem; border-bottom: 1px solid var(--line); }
-.grid td { padding: .5rem .6rem; border-top: 1px solid var(--line); vertical-align: top; }
-.grid td.blank { color: var(--line); }
+/* Tables: Carbon's data table on the first layer. The header row sits on the
+   accent layer, rows divide with the in-layer hairline, hover lifts a row. */
+.grid { width: 100%; border-collapse: collapse; background: var(--layer); border: 0; border-radius: 0; }
+.grid th { text-align: left; font-weight: 600; color: var(--ink); background: var(--layer-accent-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--line-in); }
+.grid td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--line-in); vertical-align: top; color: var(--muted); }
+.grid td.blank { color: var(--line-in); }
 .grid td.wrap { max-width: 22rem; }
 
-.empty { color: var(--muted); padding: 2rem; text-align: center; }
+.empty { color: var(--muted); padding: var(--spacing-07); text-align: center; }
 
+.source-link { color: var(--link-primary); }
 
-.source-link { color: var(--accent); }
+.flag { display: flex; align-items: center; gap: var(--spacing-02); margin: 0; color: var(--ink); }
+button.trash-link, .trash-link { color: var(--button-danger-secondary); }
 
-.flag { display: flex; align-items: center; gap: .3rem; margin: 0; font-size: .85rem; color: var(--ink); }
-button.trash-link, .trash-link { color: var(--err); }
-
-
-
-button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* The primary: Carbon's filled button, the label left and the icon in its
+   64px right slot. One per card. */
+button.primary {
+  position: relative; justify-content: flex-start; gap: 0;
+  padding: 0 var(--spacing-10) 0 var(--spacing-05);
+  background: var(--accent); border-color: transparent; color: var(--text-on-color);
+}
+button.primary .fa-solid { position: absolute; right: var(--spacing-05); top: 50%; transform: translateY(-50%); margin: 0; font-size: 14px; }
+button.primary:not(:has(.fa-solid)) { padding-right: var(--spacing-05); }   /* no icon, no slot */
+button.primary:hover:not(:disabled) { background: var(--accent-hover); border-color: transparent; color: var(--text-on-color); }
+button.primary:active:not(:disabled) { background: var(--accent-deep); }
+button.primary:disabled { background: var(--button-disabled); border-color: transparent; color: var(--text-on-color-disabled); }
 /* Door grammar off the screen head: the receipt's door and the post-send door are .door too. */
 .slim-door .fa-arrow-right { font-size: .85em; }
-.warn { background: #fff; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 0 12px 12px 0; padding: .75rem 1rem; margin-bottom: 1rem; font-size: .85rem; }
+.warn { background: var(--tint); border: 1px solid var(--notification-info-border); border-left: 3px solid var(--support-info); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); margin-bottom: var(--spacing-05); }
 
 /* v2 screens */
-/* Badge temperatures: bare .badge = ghost fact ("Already live", "In a past
-   issue", "Spotlight requested" — same look as Publish's ghost chip);
-   .badge-dupe = amber caution (the builder's duplicate warning; Sort's rows
-   carry none since Sep 15, Needs a fix gathers them). Amber ink: var(--amber). */
-.badge { display: inline-block; font-size: 0.72rem; padding: 0.1rem 0.45rem; border-radius: 999px; margin-right: 0.4rem; background: none; border: 1px dashed var(--line); color: var(--muted); white-space: nowrap; }
+/* Tags (Carbon's 24px pill, label-01 type), one colour per meaning: bare
+   .badge = a grey fact ("Already live", "In a past issue", "Spotlight
+   requested"); .badge-new = blue; .badge-dupe = yellow caution (the builder's
+   duplicate warning; Sort's rows carry none since Sep 15, Needs a fix gathers
+   them). */
+.badge {
+  display: inline-flex; align-items: center; height: 24px; padding: 0 var(--spacing-03); margin-right: var(--spacing-02);
+  border-radius: var(--radius-tag-md); border: 1px solid transparent;
+  background: var(--tag-background-gray); color: var(--tag-color-gray);
+  font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 400; white-space: nowrap;
+}
 /* In the newsletter pool's type cell the badge sits on its own line under the subtype. */
-.nl-table .badge { margin-top: .25rem; }
-.badge-dupe { background: var(--amber-bg); border-color: var(--amber-line); border-style: solid; color: var(--amber); }
-.badge-new { background: var(--tint); border-color: var(--tint); border-style: solid; color: var(--accent-deep); }
-.edit-link { color: var(--accent); font-weight: 600; font-size: .95rem; }
-.edit-link .fa-solid { margin-right: .3rem; font-size: .9em; }
-.link-alert { margin: .6rem 0 .2rem; font-size: .85rem; color: var(--amber); background: var(--amber-bg); border: 1px solid var(--amber-line); border-radius: 8px; padding: .55rem .9rem; }
+.nl-table .badge { margin-top: var(--spacing-02); }
+.badge-dupe { background: var(--tag-background-yellow); color: var(--tag-color-yellow); }
+.badge-new { background: var(--tag-background-blue); color: var(--tag-color-blue); }
+.edit-link { color: var(--link-primary); }
+.edit-link .fa-solid { margin-right: var(--spacing-02); font-size: .9em; }
+/* The link ask: a warning note. */
+.link-alert {
+  margin: var(--spacing-03) 0 var(--spacing-01); color: var(--ink); background: var(--amber-bg);
+  border: 1px solid var(--amber-line); border-left: 3px solid var(--amber-mark); border-radius: 0; padding: var(--spacing-03) var(--spacing-04);
+}
 .link-alert .alert-line { margin: 0; }
-.link-alert .alert-mark { color: var(--amber); margin-right: .15rem; font-size: .9em; }
-.link-alert a { color: var(--amber); font-weight: 600; }
+.link-alert .alert-mark { color: var(--amber-mark); margin-right: var(--spacing-01); font-size: .9em; }
+.link-alert a { color: var(--link-primary); }
 .link-alert .alert-change { display: none; }
-.link-alert .alert-change.is-open { display: block; margin: .45rem 0 0; }
-.link-alert input[type="url"] { font-size: .8rem; padding: .25rem .5rem; width: 16rem; max-width: 100%; border-color: var(--amber-line); border-radius: 8px; }
+.link-alert .alert-change.is-open { display: block; margin: var(--spacing-03) 0 0; }
+.link-alert input[type="url"] { height: 32px; font-size: 12px; letter-spacing: .32px; padding: 0 var(--spacing-03); width: 16rem; max-width: 100%; }
 .link-alert.is-clickable { cursor: pointer; }
-.alert-word { color: var(--accent); font-weight: 600; font-size: .85rem; text-decoration: none; }
-.alert-word:hover { text-decoration: underline; }
-.link-alert input.is-invalid { border-color: var(--err); }
+.alert-word { color: var(--link-primary); text-decoration: none; }
+.alert-word:hover { color: var(--link-primary-hover); text-decoration: underline; }
+.link-alert input.is-invalid { border-bottom-color: var(--err); outline: 2px solid var(--err); outline-offset: -2px; }
 
-
-
-
-.sort-nav .sort-filter.is-alert:not(.is-active) { background: var(--amber-bg); color: var(--amber); }
-.sort-nav .sort-filter.is-alert:not(.is-active):hover { background: var(--amber-line); color: var(--amber); }
-.type-word { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: .45rem 1rem; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .9rem; color: var(--ink); cursor: pointer; }
-.type-word:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-.type-word.is-picked { background: var(--tint); border-color: var(--accent); color: var(--accent-deep); }
-.type-word.is-picked::before { content: "\2713"; margin-right: .35em; }
+/* Needs a fix, the one warning tab: yellow-70 for its word, the triangle in support-warning. */
+.sort-nav .sort-filter.is-alert:not(.is-active) { color: var(--amber); }
+.sort-nav .sort-filter.is-alert:not(.is-active):hover { color: var(--amber); border-bottom-color: var(--amber-mark); }
+.sort-nav .sort-filter.is-alert.is-active { color: var(--amber); border-bottom-color: var(--amber-mark); }
+/* Type pills: Carbon's selectable tag, 32px, outlined; the picked one blue. */
+.type-word {
+  display: inline-flex; align-items: center; height: 32px; padding: 0 var(--spacing-04);
+  border: 1px solid var(--border-strong-01); border-radius: var(--radius-tag-lg);
+  background: var(--layer-02); color: var(--ink);
+  font: inherit; letter-spacing: .16px; cursor: pointer;
+}
+.type-word:hover:not(:disabled) { background: var(--layer-hover-01); color: var(--ink); border-color: var(--border-strong-01); }
+.type-word.is-picked { background: var(--tag-background-blue); border-color: var(--tag-background-blue); color: var(--tag-color-blue); }
+.type-word.is-picked:hover:not(:disabled) { background: var(--tag-background-blue); border-color: var(--tag-background-blue); color: var(--tag-color-blue); }
+.type-word.is-picked::before { content: "\2713"; margin-right: var(--spacing-02); }
 .sort-delete { margin-right: auto; }
-.sort-edit { margin: .4rem 0 .8rem; display: grid; gap: .6rem; }
-.sort-edit-field { display: block; font-size: .85rem; color: var(--muted); }
-.sort-edit-field input, .sort-edit-field textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: .9rem; padding: .4rem .5rem; border: 1px solid var(--line); border-radius: 8px; margin-top: .2rem; }
-.img-upload { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; }
-.img-upload .btn-outline { font-size: .85rem; }
-.img-status { font-size: .85rem; color: var(--muted); display: inline-flex; align-items: center; gap: .5rem; }
-.sort-edit-actions { display: flex; gap: .6rem; }
-.sort-edit-actions button, .f-edit-actions button { font-size: .9rem; border-radius: var(--radius); }
-.sort-edit-actions .primary { padding: .45rem 1.2rem; }
-.sort-edit-actions .btn-outline { padding: .45rem 1.2rem; }
-/* Section menu: the pills in one row on top (Claude Design round two, Kate's pick C, Sep 16). */
-.sort-body { margin-top: .6rem; }
-.sort-nav { display: flex; flex-wrap: wrap; gap: .3rem; margin: 0 0 1rem; }
-.sort-nav .sort-filter { padding: .35rem .75rem; }
+.sort-edit { margin: var(--spacing-02) 0 var(--spacing-04); display: grid; gap: var(--spacing-03); }
+.sort-edit-field { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.sort-edit-field input, .sort-edit-field textarea { margin-top: var(--spacing-03); }
+.img-upload { display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; }
+.img-upload .btn-outline { height: 32px; padding: 0 var(--spacing-04); }
+.img-status { color: var(--muted); display: inline-flex; align-items: center; gap: var(--spacing-03); }
+.sort-edit-actions { display: flex; gap: var(--spacing-03); }
+/* Section menu: the sections as Carbon tabs, one row on top (Claude Design round two, Kate's pick C, Sep 16). */
+.sort-body { margin-top: var(--spacing-03); }
+.sort-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 0; margin: 0 0 var(--spacing-05); border-bottom: 1px solid var(--line); }
+.sort-nav .sort-filter { flex: none; }
 .sort-main { min-width: 0; }
-.sort-group { font-weight: 600; margin: .2rem 0 0; }
+.sort-group { font-weight: 600; margin: var(--spacing-01) 0 0; }
 /* Undo sits under the section label. The row keeps its height when disabled so
    a fresh stack doesn't start the card higher and drop it on the first decision. */
 .undo-link {
-  display: block; border: none; background: none; padding: 0;
-  margin: .15rem 0 .5rem; font-size: .85rem; font-weight: 600; line-height: 1.4;   /* the quiet links' weight (style audit, Sep 16) */
-  color: var(--accent); cursor: pointer;
+  display: block; border: none; background: none; padding: 0; height: auto;
+  margin: var(--spacing-01) 0 var(--spacing-03); font: inherit; letter-spacing: .16px;
+  color: var(--link-primary); cursor: pointer;
 }
-.undo-link:hover:not(:disabled) { border: none; text-decoration: underline; }
-.undo-link:disabled { color: var(--muted); opacity: .55; cursor: default; }
-.sort-filter { border: none; border-radius: 999px; background: none; padding: .35rem .9rem; color: var(--muted); cursor: pointer; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .85rem; }
-.sort-filter:hover:not(.is-active) { border: none; background: var(--tint); color: var(--accent); }
-.sort-filter.is-active { color: #fff; background: var(--accent); }
-.type-line { font-size: .85rem; color: var(--muted); margin: .6rem 0 0; }
+.undo-link:hover:not(:disabled) { border: none; background: none; color: var(--link-primary-hover); text-decoration: underline; }
+.undo-link:disabled { color: var(--text-disabled); cursor: default; border: none; }
+.sort-filter {
+  height: 40px; padding: 0 var(--spacing-05); margin-bottom: -1px;
+  border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none;
+  color: var(--muted); cursor: pointer; font: inherit; letter-spacing: .16px;
+  transition: border-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
+}
+.sort-filter:hover:not(.is-active) { border: 0; border-bottom: 2px solid var(--border-strong-01); background: none; color: var(--ink); }
+.sort-filter.is-active { color: var(--ink); font-weight: 600; background: none; border-bottom-color: var(--border-interactive); }
+.type-line { color: var(--muted); margin: var(--spacing-03) 0 0; }
 .type-line .type-label { color: var(--ink); }
-/* Quiet action words: one weight, one size, icon spacing built in; never
-   wrap between icon and word. Skip/Use original are the muted pair. */
-.linkish { border: none; background: none; padding: 0; color: var(--accent); cursor: pointer; font-size: .85rem; font-weight: 600; white-space: nowrap; }
-.linkish:hover:not(:disabled) { text-decoration: underline; }
-.linkish .fa-solid { margin-right: .3rem; font-size: .9em; }
+/* Quiet action words: Carbon's ghost button, the word in the link colour with
+   a fill on hover; never wrap between icon and word. Skip/Use original are the
+   muted pair. */
+.linkish {
+  display: inline-flex; align-items: center; height: 32px; padding: 0 var(--spacing-03); margin: 0 calc(-1 * var(--spacing-03));
+  border: none; border-radius: 0; background: none; color: var(--link-primary); cursor: pointer; white-space: nowrap;
+  transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
+}
+.linkish:hover:not(:disabled) { background: var(--hover); border: none; color: var(--link-primary-hover); }
+.linkish .fa-solid { margin-right: var(--spacing-02); font-size: .9em; }
 .linkish.skip-link, button.skip-link { color: var(--muted); }
 .linkish.skip-link:hover:not(:disabled), button.skip-link:hover:not(:disabled) { color: var(--ink); }
-/* Finalize — rows as they will look on the Policy Exchange (mock v2) */
-.finalize-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
-.finalize-head .lede { margin-bottom: .5rem; }
-/* Finalize as a list and a card (Claude Design round two, Kate's pick Sep 16). */
-.f-progress { height: 6px; border-radius: 999px; background: var(--tint); overflow: hidden; margin: -.25rem 0 1.25rem; }
-.f-progress i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
-.f-split { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr); gap: 1.25rem; align-items: start; }
+.linkish.trash-link:hover:not(:disabled), button.trash-link:hover:not(:disabled) { color: var(--button-danger-hover); }
+/* Finalize: rows as they will look on the Policy Exchange */
+.finalize-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-05); }
+.finalize-head .lede { margin-bottom: var(--spacing-03); }
+/* Finalize as a list and a card (Claude Design round two, Kate's pick Sep 16).
+   The progress bar is Carbon's: 8px, square, on the accent layer. */
+.f-progress { height: 8px; border-radius: 0; background: var(--layer-accent-01); overflow: hidden; margin: calc(-1 * var(--spacing-02)) 0 var(--spacing-06); }
+.f-progress i { display: block; height: 100%; background: var(--interactive); border-radius: 0; }
+.f-split { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr); gap: var(--spacing-05); align-items: start; }
 @media (max-width: 900px) { .f-split { grid-template-columns: minmax(0, 1fr); } }
-.f-list { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.f-list { background: var(--layer); border: 0; border-radius: 0; overflow: hidden; }
 .f-group-head {
-  display: flex; align-items: center; gap: .5rem; width: 100%; box-sizing: border-box; margin: 0;
-  padding: .6rem .85rem .4rem; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none;
-  font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); text-align: left;
+  display: flex; align-items: center; gap: var(--spacing-03); width: 100%; box-sizing: border-box; margin: 0; height: auto;
+  padding: var(--spacing-03) var(--spacing-05) var(--spacing-02); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; background: none;
+  font: inherit; font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600; color: var(--muted); text-align: left;
 }
 .f-list > .f-group-head:first-child { border-top: 0; }
 .f-group-head.is-fold { cursor: pointer; }
-.f-group-head.is-fold:hover:not(:disabled) { border-color: var(--line); color: var(--accent); }
+.f-group-head.is-fold:hover:not(:disabled) { background: var(--row-hover); border-color: var(--line-in); color: var(--ink); }
 .f-group-count { margin-left: auto; font-weight: 600; letter-spacing: 0; }
 .f-group-head .fa-solid { font-size: .6rem; }
 /* Finalize's rows follow Sort's (style audit, Sep 16): the row, text, title and
    meta rules below are shared with .sort-row, so long titles wrap on both. */
 .f-list-row.is-rewrite { background-color: var(--amber-bg); }
-.f-list-row .fa-check { color: var(--ok); flex: none; margin-top: .3rem; }
-.f-keep-all { margin: .7rem 0 0 .2rem; }
-.f-keep-all .fa-solid { margin-right: .3rem; }
-.f-card .type-line { margin: 0 0 .35rem; }
-.f-card .f-verify-actions { border-top: 1px solid var(--line); padding-top: .85rem; margin-top: 1rem; }
+.f-list-row .fa-check { color: var(--ok-mark); flex: none; margin-top: var(--spacing-01); }
+.f-keep-all { margin: var(--spacing-04) 0 0 var(--spacing-01); }
+.f-keep-all .fa-solid { margin-right: var(--spacing-02); }
+.f-card .type-line { margin: 0 0 var(--spacing-02); }
+.f-card .f-verify-actions { border-top: 1px solid var(--line-in); padding-top: var(--spacing-05); margin-top: var(--spacing-05); }
 .f-card .f-verify-actions .skip-link { margin-left: auto; }
 .f-card .f-verify-actions .trash-link + .primary { margin-left: auto; }
-.f-diff-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .75rem; margin: .6rem 0 0; }
-.f-diff-box { border: 1px solid var(--line); border-radius: 8px; padding: .7rem .85rem; background: #fff; }
-.f-diff-box.is-after { background: var(--tint); border-color: var(--tint); }
+.f-diff-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-04); margin: var(--spacing-03) 0 0; }
+.f-diff-box { border: 1px solid var(--line-in); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); background: var(--layer-02); }
+.f-diff-box.is-after { background: var(--tint); border-color: var(--notification-info-border); }
 .f-diff-box .f-old, .f-diff-box .f-blurb-text { margin: 0; }
 .f-diff-box .f-old { color: var(--ink); }
-.f-original { border: 1px solid var(--amber-line); background: var(--amber-bg); border-radius: 8px; padding: .7rem .85rem; margin-top: .5rem; }
-.f-original .f-diff-label { color: var(--amber); }
+.f-original { border: 1px solid var(--line-in); border-left: 3px solid var(--border-strong-01); background: var(--layer-02); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); margin-top: var(--spacing-03); }
+.f-original .f-diff-label { color: var(--muted); }
 .f-original .f-blurb-text { margin: 0; }
-.f-pane-empty, .sort-pane-empty { border: 1px dashed var(--line); border-radius: 12px; padding: 2.5rem 1rem; text-align: center; color: var(--muted); }
-/* Team trial: clicking Publish runs a mock — a ghosted "forthcoming" shadow
+.f-pane-empty, .sort-pane-empty { border: 1px dashed var(--border-strong-01); border-radius: 0; padding: var(--spacing-08) var(--spacing-05); text-align: center; color: var(--muted); }
+/* Team trial: clicking Publish runs a mock, a ghosted "forthcoming" shadow
    alert during the posting beat, then the normal success receipt. */
-.p-shade { text-align: center; padding: 2rem 1rem 1rem; opacity: .7; }
-.p-shade-line { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: 1rem; color: var(--muted); margin: 0; }
-.p-shade .dots-loader { margin-top: 1rem; }
+.p-shade { text-align: center; padding: var(--spacing-07) var(--spacing-05) var(--spacing-05); opacity: .7; }
+.p-shade-line { font-weight: 600; font-size: 16px; line-height: 22px; color: var(--muted); margin: 0; }
+.p-shade .dots-loader { margin-top: var(--spacing-05); }
 .finalize-table tr.f-item { cursor: pointer; }
-/* Hover layers on top of a status tint (ERC blue, rewrite amber) instead of replacing it. */
+/* Hover layers on top of a status tint (ERC blue, rewrite yellow) instead of replacing it. */
 .finalize-table tr.f-item:not(.is-open):hover td { background-image: linear-gradient(var(--hover), var(--hover)); }
 .finalize-table tr.f-erc td { background: var(--tint); }
 .finalize-table tr.needs-rewrite td { background: var(--amber-bg); }
@@ -326,147 +381,150 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 /* The chevron sits left on every table, one Font Awesome glyph (Kate, Sep 15, option A). */
 .finalize-table th.f-caret, .finalize-table td.f-caret { width: 2rem; padding-right: 0; }
 .finalize-table .chevron-btn { font-size: .8rem; }
-.finalize-table tr.f-detail-row td { border-top: none; padding: .2rem 2.4rem 1rem; }
-.chevron-btn { appearance: none; border: 0; background: transparent; cursor: pointer; padding: 2px; border-radius: 8px; display: inline-flex; color: var(--accent); }
-.chevron-btn:hover { background: rgba(29, 110, 165, 0.08); }
+.finalize-table tr.f-detail-row td { border-top: none; padding: var(--spacing-01) var(--spacing-08) var(--spacing-05); }
+.chevron-btn { appearance: none; border: 0; background: transparent; cursor: pointer; height: 32px; width: 32px; padding: 0; justify-content: center; border-radius: 0; display: inline-flex; color: var(--icon-primary); }
+.chevron-btn:hover:not(:disabled) { background: var(--hover); color: var(--icon-primary); border: 0; }
 .f-detail-cols {
-  display: grid; grid-template-columns: minmax(160px, 220px) 1fr; gap: 1.6rem; align-items: start;
-  background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.2rem; margin: .2rem 0 .4rem;
+  display: grid; grid-template-columns: minmax(160px, 220px) 1fr; gap: var(--spacing-06); align-items: start;
+  background: var(--layer-02); border: 1px solid var(--line-in); border-radius: 0; padding: var(--spacing-05); margin: var(--spacing-01) 0 var(--spacing-02);
 }
-.f-facts { margin: 0; display: grid; gap: .6rem; padding: 0 1rem 0 0; border-right: 1px solid var(--line); }
+.f-facts { margin: 0; display: grid; gap: var(--spacing-03); padding: 0 var(--spacing-05) 0 0; border-right: 1px solid var(--line-in); }
 @media (max-width: 700px) { .f-facts { border-right: none; padding: 0; } }
 @media (max-width: 700px) { .f-detail-cols { grid-template-columns: 1fr; } }
 .f-fact { display: grid; gap: 1px; }
-.f-fact-label { font-size: .78rem; color: var(--muted); }
-.f-fact-value { margin: 0; font-size: .9rem; font-weight: 500; color: var(--ink); }
-.f-detail-label { margin: 0 0 .25rem; font-family: inherit; font-size: .85rem; font-weight: 500; color: var(--muted); }
-.f-blurb-text { margin: 0 0 .6rem; font-size: .9rem; color: var(--ink); max-width: 60rem; }
-.f-check-card { max-width: 680px; margin-top: .25rem; }
-.f-check-card .type-line { margin: 0 0 .4rem; }
-.f-check-title { margin: 0 0 .1rem; font-size: 1.05rem; }
-.f-check-source { margin: 0 0 .9rem; color: var(--muted); font-size: .88rem; }
-.f-diff-label { margin: 0 0 .15rem; font-size: .78rem; color: var(--muted); }
-.f-old { margin: 0 0 .5rem; font-size: .9rem; color: var(--muted); max-width: 60rem; }
+.f-fact-label { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.f-fact-value { margin: 0; color: var(--ink); }
+.f-detail-label { margin: 0 0 var(--spacing-02); font: inherit; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.f-blurb-text { margin: 0 0 var(--spacing-03); color: var(--ink); max-width: 60rem; }
+.f-check-card { max-width: 680px; margin-top: var(--spacing-02); }
+.f-check-card .type-line { margin: 0 0 var(--spacing-02); }
+.f-check-title { margin: 0 0 var(--spacing-01); font-size: 16px; line-height: 22px; font-weight: 600; }
+.f-check-source { margin: 0 0 var(--spacing-04); color: var(--muted); }
+.f-diff-label { margin: 0 0 var(--spacing-01); font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.f-old { margin: 0 0 var(--spacing-03); color: var(--muted); max-width: 60rem; }
 .f-old .diff-del { text-decoration: line-through; color: var(--amber); }
-.f-blurb-text .diff-add { background: var(--ok-bg); border-radius: 3px; padding: 0 2px; }
-.f-verify-actions { display: flex; gap: .6rem; align-items: center; margin: .6rem 0 .2rem; }
-.f-verify-actions .primary, .f-verify-actions .btn-outline, .sort-card-acts .primary {
-  display: inline-flex; align-items: center; gap: .45rem; border-radius: var(--radius); padding: .55rem 1.2rem; font-size: .95rem;
-}
+.f-blurb-text .diff-add { background: var(--ok-bg); border-radius: 0; padding: 0 2px; }
+.f-verify-actions { display: flex; gap: var(--spacing-03); align-items: center; margin: var(--spacing-03) 0 var(--spacing-01); }
 
-.btn-outline { background: #fff; border: 1px solid var(--line); color: var(--ink); }
-.btn-outline:hover:not(:disabled) { border-color: var(--ink); }
-.f-verify-actions .linkish .fa-solid, .trash-link .fa-solid { margin-right: .3rem; font-size: .9em; }
-.rewrite-note { margin: 0 0 .6rem; font-size: .85rem; color: var(--amber); }
-.f-edit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem .8rem; }
+/* The secondary beside a primary: Carbon's tertiary, the base button. */
+.btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+.btn-outline:hover:not(:disabled) { background: var(--accent); color: var(--text-on-color); }
+.f-verify-actions .linkish .fa-solid, .trash-link .fa-solid { margin-right: var(--spacing-02); font-size: .9em; }
+.rewrite-note { margin: 0 0 var(--spacing-03); color: var(--amber); }
+.f-edit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-03) var(--spacing-04); }
 @media (max-width: 700px) { .f-edit-grid { grid-template-columns: 1fr 1fr; } }
-.f-edit-grid label { margin: 0; font-size: .78rem; color: var(--muted); }
-.f-edit-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.2rem; margin: .2rem 0 .4rem; }
-.f-edit-grid input, .f-edit-grid textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: .85rem; padding: .35rem .45rem; border: 1px solid var(--line); border-radius: 8px; margin-top: .15rem; }
+.f-edit-grid label { margin: 0; }
+.f-edit-card { background: var(--layer-02); border: 1px solid var(--line-in); border-radius: 0; padding: var(--spacing-05); margin: var(--spacing-01) 0 var(--spacing-02); }
+.f-edit-grid input, .f-edit-grid textarea { margin-top: var(--spacing-02); background: var(--field-01); }
 .f-edit-blurb { grid-column: 1 / -1; }
-.f-edit-actions { display: flex; gap: .5rem; margin-top: .6rem; }
+.f-edit-actions { display: flex; gap: var(--spacing-03); margin-top: var(--spacing-03); }
 
-/* Publish — queue-style fate groups (mock) */
-.p-group { font-size: .95rem; margin: 1.4rem 0 .35rem; }
-.p-group-hint { margin: 0 0 .4rem; }
+/* Publish: queue-style fate groups */
+.p-group { font-size: 16px; line-height: 22px; font-weight: 600; margin: var(--spacing-06) 0 var(--spacing-02); }
+.p-group-hint { margin: 0 0 var(--spacing-02); }
 .publish-table tr.p-held td { background: var(--tint); }
 .publish-table tr.p-notready td { background: var(--amber-bg); }
 .publish-table tr.p-skip .item-title { color: var(--muted); font-weight: 400; }
 /* Publish as one table (Claude Design round two, Kate's pick Sep 16): a bar
    whose segments share the rows by fate, a legend that filters, a Fate column.
    Token colours only: the held segment is the loader ramp's light blue. */
-.p-fate-box { margin: .25rem 0 1rem; }
-.p-fate-bar { display: flex; gap: 2px; height: 10px; border-radius: 999px; overflow: hidden; background: var(--page); }
+.p-fate-box { margin: var(--spacing-02) 0 var(--spacing-05); }
+.p-fate-bar { display: flex; gap: 2px; height: 8px; border-radius: 0; overflow: hidden; background: var(--layer-accent-01); }
 .p-seg { display: block; min-width: 6px; }
 .p-seg-adding { background: var(--accent); }
 .p-seg-held { background: var(--accent-soft); }
-.p-seg-fix { background: var(--amber-line); }
-.p-seg-live { background: var(--line); }
-.p-legend { display: flex; flex-wrap: wrap; gap: .25rem 1.1rem; margin-top: .45rem; }
-.p-legend-item { display: inline-flex; align-items: center; gap: .4rem; border: 0; background: none; padding: .1rem 0; font-family: inherit; font-weight: 400; font-size: .85rem; color: var(--muted); cursor: pointer; }
-.p-legend-item:hover:not(:disabled) { color: var(--accent); }
-.p-legend-item.is-active { color: var(--accent-deep); font-weight: 700; }
-.p-dot { width: 9px; height: 9px; border-radius: 999px; flex: none; }
+.p-seg-fix { background: var(--tag-background-yellow); }
+.p-seg-live { background: var(--border-strong-01); }
+.p-legend { display: flex; flex-wrap: wrap; gap: var(--spacing-02) var(--spacing-05); margin-top: var(--spacing-03); }
+.p-legend-item { display: inline-flex; align-items: center; gap: var(--spacing-03); height: auto; border: 0; background: none; padding: var(--spacing-01) 0; font: inherit; letter-spacing: .16px; color: var(--muted); cursor: pointer; }
+.p-legend-item:hover:not(:disabled) { color: var(--ink); background: none; border: 0; }
+.p-legend-item.is-active { color: var(--ink); font-weight: 600; }
+.p-dot { width: 8px; height: 8px; border-radius: 0; flex: none; }
 .publish-table th.p-fate, .publish-table td.p-fate { width: 9.5rem; font-weight: 600; }
-.publish-table tr.p-adding td.p-fate { color: var(--accent); }
+.publish-table tr.p-adding td.p-fate { color: var(--link-primary); }
 .publish-table tr.p-held td.p-fate { color: var(--muted); }
 .publish-table tr.p-skip td { color: var(--muted); }
 .publish-table tr.p-skip td.p-fate { font-weight: 400; }
 .publish-table .p-fate-fix { color: var(--amber); font-weight: 600; text-decoration: underline; }
-.p-fix { display: block; margin-top: .25rem; }
+.p-fix { display: block; margin-top: var(--spacing-02); }
 .table-scroll { overflow-x: auto; }
 
 /* Home screen */
 /* Home breathes a little more than the pipeline screens (Kate, Sep 15: "a little spacing overall"). */
-.home-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; align-items: start; margin-top: 2rem; }
-.home-form.card { padding: 1.75rem; }
-.home-form h2 { font-size: 1.1rem; margin: 0 0 .25rem; }
+.home-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--spacing-07); align-items: start; margin-top: var(--spacing-07); }
+.home-form.card { padding: var(--spacing-06); }
+.home-form h2 { font-size: 20px; line-height: 28px; font-weight: 600; margin: 0 0 var(--spacing-02); }   /* heading-03 */
 
-/* The stats: four icon cards on the tint (Kate's pick J of four, Sep 16).
-   A grid, so a narrow window gets two rows instead of a broken line. */
-.stats-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .75rem; margin-top: .85rem; }
+/* The stats: four tiles (Kate's pick J of four, Sep 16; Carbon tiles since
+   Sep 17). A grid, so a narrow window gets two rows instead of a broken line. */
+.stats-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--spacing-05); margin-top: var(--spacing-05); }
 .stat {
-  display: flex; flex-direction: column; align-items: flex-start; gap: .35rem;
-  padding: .9rem 1rem 1rem; border-radius: 12px; background: var(--tint);
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-03);
+  height: auto; padding: var(--spacing-05); border-radius: 0; background: var(--layer);
   border: 1px solid transparent; color: var(--ink); text-decoration: none; text-align: left;
-  font: inherit; cursor: default; box-sizing: border-box; width: 100%;
+  font: inherit; letter-spacing: .16px; cursor: default; box-sizing: border-box; width: 100%;
+  transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
 a.stat, button.stat { cursor: pointer; }
-a.stat:hover, button.stat:hover { border-color: var(--accent); }
-.stat .fa-solid { color: var(--accent); font-size: 1rem; }
-.stat-label { font-size: .8rem; color: var(--tint-ink); }
-.stat-value { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: 1.5rem; line-height: 1.1; color: var(--accent-deep); }
-.stat-value small { font-family: Karla, "Segoe UI", sans-serif; font-weight: 400; font-size: .85rem; color: var(--tint-ink); }
+a.stat:hover, button.stat:hover:not(:disabled) { background: var(--row-hover); border-color: transparent; color: var(--ink); }
+.stat .fa-solid { color: var(--icon-secondary); font-size: 16px; }
+.stat-label { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.stat-value { font-size: 28px; line-height: 36px; font-weight: 400; color: var(--ink); }   /* heading-04 */
+.stat-value small { font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 400; color: var(--muted); }
+/* The queue count: a round tag in the accent. */
 .queue-badge {
   display: inline-flex; align-items: center; justify-content: center;
-  min-width: 1.4rem; height: 1.4rem; padding: 0 .3rem;
-  border-radius: 999px; background: var(--accent); color: #fff;
-  font-family: Outfit, "Segoe UI", sans-serif; font-size: .85rem; font-weight: 700;
+  min-width: 24px; height: 24px; padding: 0 var(--spacing-03);
+  border-radius: var(--radius-tag-md); background: var(--tag-background-blue); color: var(--tag-color-blue);
+  font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600;
 }
 
+/* A small tertiary. */
 .mini-btn {
-  font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .8rem;
-  color: var(--accent); border: 1px solid var(--line); border-radius: 999px;
-  padding: .25rem .8rem; background: #fff; cursor: pointer; text-decoration: none; white-space: nowrap;
+  display: inline-flex; align-items: center; height: 32px; padding: 0 var(--spacing-04);
+  font: inherit; letter-spacing: .16px;
+  color: var(--accent); border: 1px solid var(--accent); border-radius: 0;
+  background: transparent; cursor: pointer; text-decoration: none; white-space: nowrap;
 }
-.mini-btn:hover { border-color: var(--accent); background: var(--tint); }
+.mini-btn:hover { background: var(--accent); color: var(--text-on-color); }
 
-/* Quiet notes under a control (the Next issue page's quick add). */
-.quick-note { font-size: .75rem; color: var(--muted); margin: 0; }
+/* Helper text under a control (the Next issue page's quick add). */
+.quick-note { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); margin: 0; }
 
 /* Next issue: a front-door page (Sep 15). The way back sits above the title;
    Quick add on the lede's right opens the dashed panel with the submit form. */
-.screen-head h2 .queue-badge { vertical-align: middle; margin-left: .45rem; }
+.screen-head h2 .queue-badge { vertical-align: middle; margin-left: var(--spacing-03); }
 .screen-head .mini-btn { margin-left: auto; align-self: center; }
-#screen-issue .table-scroll { margin-top: .9rem; }
-.quick-panel { margin-top: 1.25rem; border: 1px dashed var(--line); border-radius: 12px; background: #fff; padding: 1rem 1.25rem 1.25rem; }
-.quick-panel h3 { font-size: .95rem; margin: 0 0 .75rem; }
+#screen-issue .table-scroll { margin-top: var(--spacing-04); }
+.quick-panel { margin-top: var(--spacing-06); border: 1px dashed var(--border-strong-01); border-radius: 0; background: var(--layer-02); padding: var(--spacing-05) var(--spacing-06) var(--spacing-06); }
+.quick-panel h3 { font-size: 16px; line-height: 22px; font-weight: 600; margin: 0 0 var(--spacing-04); }
 
 @media (max-width: 720px) {
   .home-grid { grid-template-columns: 1fr; }
 }
 
 /* Queue table (bottom of Home) */
-.item-title { font-weight: 500; }
+.item-title { font-weight: 400; color: var(--ink); }
 /* The queue, folded at the bottom of Home: a details whose summary is the
    heading, chevron left like every other opener, turned when open. */
-.queue-fold { margin-top: 3rem; }
+.queue-fold { margin-top: var(--spacing-09); }
 .queue-fold summary {
-  list-style: none; cursor: pointer; display: flex; align-items: center; gap: .6rem;
-  font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: 1.1rem;
+  list-style: none; cursor: pointer; display: flex; align-items: center; gap: var(--spacing-03);
+  font-size: 20px; line-height: 28px; font-weight: 600;
 }
 .queue-fold summary::-webkit-details-marker { display: none; }
-.queue-fold summary .fa-solid { font-size: .8rem; color: var(--muted); transition: transform 150ms; }
+.queue-fold summary .fa-solid { font-size: .8rem; color: var(--icon-secondary); transition: transform var(--duration-fast-02) var(--ease-standard); }
 .queue-fold[open] summary .fa-solid { transform: rotate(180deg); }
-.queue-fold summary:hover .fa-solid { color: var(--accent); }
-.queue-body { margin-top: .75rem; }
+.queue-fold summary:hover .fa-solid { color: var(--icon-primary); }
+.queue-body { margin-top: var(--spacing-04); }
 .queue-head.is-bare { justify-content: flex-end; }
 
-.queue-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin: 0 0 .75rem; }
-.queue-head h2 { font-size: 1.1rem; margin: 0; flex: 1; }
-.queue-table { width: 100%; border-collapse: collapse; font-size: .85rem; background: #fff; border: 1px solid var(--line); }
-.queue-table th { text-align: left; font-weight: 500; color: var(--muted); padding: .5rem .6rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
-.queue-table th .sort-btn { border: none; background: none; padding: 0; font: inherit; font-weight: 500; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.queue-head { display: flex; align-items: baseline; gap: var(--spacing-05); flex-wrap: wrap; margin: 0 0 var(--spacing-04); }
+.queue-head h2 { font-size: 20px; line-height: 28px; font-weight: 600; margin: 0; flex: 1; }
+.queue-table { width: 100%; border-collapse: collapse; background: var(--layer); border: 0; }
+.queue-table th { text-align: left; font-weight: 600; color: var(--ink); background: var(--layer-accent-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--line-in); white-space: nowrap; }
+.queue-table th .sort-btn { border: none; background: none; padding: 0; height: auto; font: inherit; font-weight: 600; color: var(--ink); cursor: pointer; white-space: nowrap; }
+.queue-table th .sort-btn:hover:not(:disabled) { background: none; border: none; color: var(--link-primary); }
 .queue-table th:nth-child(2) { width: 22%; }
 .queue-table th:nth-child(3) { width: 13%; }
 /* Finalize's chevron column comes first, so its Title/Type/Date widths sit one column over. */
@@ -477,86 +535,87 @@ a.stat:hover, button.stat:hover { border-color: var(--accent); }
 .nl-table th:nth-child(2) { width: auto; }
 .nl-table th:nth-child(3) { width: 22%; }
 .nl-table th:nth-child(4) { width: 13%; }
-.finalize-table .list-badges { margin-top: .3rem; }
-.queue-table .item-source { display: block; font-size: .8rem; color: var(--muted); margin-top: .15rem; }
-.queue-table td { padding: .5rem .6rem; border-top: 1px solid var(--line); vertical-align: top; }
-.queue-table td.missing { color: var(--muted); }
+.finalize-table .list-badges { margin-top: var(--spacing-02); }
+.queue-table .item-source { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin-top: var(--spacing-01); }
+.queue-table td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--line-in); vertical-align: top; color: var(--muted); }
+.queue-table tbody tr:hover td { background-image: linear-gradient(var(--hover), var(--hover)); }
+.queue-table td.missing { color: var(--text-helper); }
 
-/* Motion — fast and purposeful (Emil-weighted); state never waits on it.
-   Reduced-motion users get instant state changes via the block at the end. */
-button { transition: border-color .15s ease-out, background-color .15s ease-out, color .15s ease-out, transform .1s ease-out; }
-button:active:not(:disabled) { transform: scale(0.98); }
+/* Motion: Carbon's productive easing, 70ms for a colour and 110ms for a move;
+   state never waits on it. Reduced-motion users get instant changes via the
+   block at the end. No press scale: Carbon buttons change colour, not size. */
+button { transition: border-color var(--duration-fast-01) var(--ease-productive), background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive); }
 
 @keyframes rise-in { from { opacity: 0; transform: translateY(4px); } }
 
 /* A field named by a validation message turns red; the status line still lists them all. */
-.submit-form input.is-invalid, .submit-form textarea.is-invalid { border-color: var(--err); }
-.submit-form .type-picker.is-invalid { border-left: 2px solid var(--err); padding-left: .6rem; }
+.submit-form input.is-invalid, .submit-form textarea.is-invalid { border-bottom-color: var(--err); outline: 2px solid var(--err); outline-offset: -2px; }
+.submit-form .type-picker.is-invalid { border-left: 2px solid var(--err); padding-left: var(--spacing-03); }
 .submit-form .type-picker.is-invalid .type-word:not(.is-picked) { border-color: var(--err); }
-.submit-form input.is-invalid:focus { border-color: var(--err); }
+.submit-form input.is-invalid:focus { border-bottom-color: var(--err); outline-color: var(--err); }
 
-/* Quiet focus: on-theme ring instead of the browser default highlight. */
-input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus {
-  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--tint);
+/* Focus: Carbon's 2px ring, drawn inside the control, no halo. */
+input[type="text"]:focus, input[type="url"]:focus, input[type="search"]:focus, input[type="email"]:focus, textarea:focus, select:focus {
+  outline: 2px solid var(--focus); outline-offset: -2px; border-bottom-color: transparent; box-shadow: none;
 }
-/* The same look on every other control when the keyboard drives (design audit 20): accent line plus the tint halo. */
-button:focus-visible, a:focus-visible, summary:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 1px; box-shadow: 0 0 0 4px var(--tint); }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; box-shadow: none; }
+button.primary:focus-visible { box-shadow: inset 0 0 0 1px var(--focus-inset); }   /* Carbon's inset ring keeps the focus visible on the fill */
 /* A screen title takes focus on a switch so assistive tech hears it; no ring on a heading or the busy card. */
 h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 
 /* After a single submit: the form gives way to a confirmation + Submit another. */
-.submit-done .done-line { color: var(--ok); font-weight: 500; margin: 0 0 .25rem; }
-.submit-done button { margin-top: .75rem; }
+.submit-done .done-line { color: var(--ok); margin: 0 0 var(--spacing-02); }
+.submit-done button { margin-top: var(--spacing-04); }
 
 /* Bulk review: rows settle in once after the file splits (not on remove/peek). */
-.bulk-table tr.row-in { animation: rise-in 180ms cubic-bezier(0.33, 1, 0.68, 1) both; animation-delay: calc(min(var(--i, 0), 20) * 18ms); }
+.bulk-table tr.row-in { animation: rise-in var(--duration-fast-02) var(--ease-standard) both; animation-delay: calc(min(var(--i, 0), 20) * 12ms); }
 
-/* Confirmations (submit + publish): the check draws itself; on Publish the
-   door to Build follows a beat later. */
-.check-icon { width: 18px; height: 18px; vertical-align: -3px; margin-right: 6px; color: var(--ok); }
-.draw-check path { stroke-dasharray: 24; stroke-dashoffset: 24; animation: check-draw 350ms cubic-bezier(0.33, 1, 0.68, 1) 80ms forwards; }
+/* Confirmations (submit + publish): the check draws itself inside Carbon's
+   240ms cap; on Publish the door to Build follows a beat later. */
+.check-icon { width: 18px; height: 18px; vertical-align: -3px; margin-right: 6px; color: var(--ok-mark); }
+.draw-check path { stroke-dasharray: 24; stroke-dashoffset: 24; animation: check-draw var(--duration-moderate-02) var(--ease-standard) 70ms forwards; }
 @keyframes check-draw { to { stroke-dashoffset: 0; } }
-.pub-done-anim .door { animation: rise-in 200ms cubic-bezier(0.33, 1, 0.68, 1) 250ms both; }
+.pub-done-anim .door { animation: rise-in var(--duration-fast-02) var(--ease-standard) var(--duration-moderate-02) both; }
 /* Publish report chips + the post-publish receipt (Kate's Direction A). */
-.pub-receipt { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 2.5rem 1.5rem; text-align: center; margin-top: 1rem; }
-.pub-receipt .check-ring { width: 54px; height: 54px; border-radius: 999px; background: var(--tint); display: inline-flex; align-items: center; justify-content: center; margin-bottom: .8rem; }
+.pub-receipt { background: var(--layer); border: 0; border-radius: 0; padding: var(--spacing-08) var(--spacing-06); text-align: center; margin-top: var(--spacing-05); }
+.pub-receipt .check-ring { width: 54px; height: 54px; border-radius: var(--radius-round); background: var(--ok-bg); display: inline-flex; align-items: center; justify-content: center; margin-bottom: var(--spacing-04); }
 .pub-receipt .receipt-check { width: 26px; height: 26px; margin: 0; vertical-align: 0; }
-.pub-receipt h3 { font-family: Outfit, "Segoe UI", sans-serif; font-size: 1.3rem; margin: 0 0 .25rem; }
-.pub-receipt p { color: var(--muted); margin: 0 0 1.4rem; }
+.pub-receipt h3 { font-size: 20px; line-height: 28px; font-weight: 600; margin: 0 0 var(--spacing-02); }
+.pub-receipt p { color: var(--muted); margin: 0 0 var(--spacing-06); }
 
 /* Tab or section switch: the incoming pane nudges in from the direction of travel. */
-.slide-in-right { animation: slide-in-r 180ms cubic-bezier(0.33, 1, 0.68, 1); }
-.slide-in-left { animation: slide-in-l 180ms cubic-bezier(0.33, 1, 0.68, 1); }
+.slide-in-right { animation: slide-in-r var(--duration-fast-02) var(--ease-standard); }
+.slide-in-left { animation: slide-in-l var(--duration-fast-02) var(--ease-standard); }
 @keyframes slide-in-r { from { opacity: 0; transform: translateX(16px); } }
 @keyframes slide-in-l { from { opacity: 0; transform: translateX(-16px); } }
 
 /* Sort decisions move no pixels (Kate, Sep 9). The decided card is replaced at
    once; the sliver on the left is what records it. No exit animation. */
 
-/* Sliding-dots loader (Kate's pick, Sep 1) — six dots slide across a track
-   with staggered delays, recolored to the desk blues. Mini = inline size. */
-.dots-loader { position: relative; height: var(--dl-s, 20px); width: var(--dl-w, 250px); margin: 1.5rem auto; }
+/* Sliding-dots loader (Kate's pick, Sep 1): six dots slide across a track with
+   staggered delays, on Carbon's blue ramp. Mini = inline size. */
+.dots-loader { position: relative; height: var(--dl-s, 20px); width: var(--dl-w, 250px); margin: var(--spacing-06) auto; }
 .dots-loader .dot {
   position: absolute; height: var(--dl-s, 20px); width: var(--dl-s, 20px);
-  border-radius: 100%; border: 2px solid #fff; box-sizing: border-box;
+  border-radius: var(--radius-round); border: 2px solid var(--background); box-sizing: border-box;
   animation: dots-slide 3s ease-in-out infinite;
 }
-.dots-loader .dot:nth-child(1) { background: #9ec9e8; animation-delay: .5s; }
-.dots-loader .dot:nth-child(2) { background: #63a3cd; animation-delay: .4s; }
-.dots-loader .dot:nth-child(3) { background: #4a8cbf; animation-delay: .3s; }
-.dots-loader .dot:nth-child(4) { background: #1d6ea5; animation-delay: .2s; }
-.dots-loader .dot:nth-child(5) { background: #19608f; animation-delay: .1s; }
-.dots-loader .dot:nth-child(6) { background: #14507a; animation-delay: 0s; }
+.dots-loader .dot:nth-child(1) { background: var(--blue-30); animation-delay: .5s; }
+.dots-loader .dot:nth-child(2) { background: var(--blue-40); animation-delay: .4s; }
+.dots-loader .dot:nth-child(3) { background: var(--blue-50); animation-delay: .3s; }
+.dots-loader .dot:nth-child(4) { background: var(--blue-60); animation-delay: .2s; }
+.dots-loader .dot:nth-child(5) { background: var(--blue-70); animation-delay: .1s; }
+.dots-loader .dot:nth-child(6) { background: var(--blue-80); animation-delay: 0s; }
 @keyframes dots-slide {
   15% { transform: translateX(0); }
   45%, 65% { transform: translateX(calc(var(--dl-w, 250px) - var(--dl-s, 20px))); }
   95% { transform: translateX(0); }
 }
-.dots-mini { --dl-w: 90px; --dl-s: 10px; display: inline-block; vertical-align: middle; margin: 0 8px 0 0; }
+.dots-mini { --dl-w: 90px; --dl-s: 10px; display: inline-block; vertical-align: middle; margin: 0 var(--spacing-03) 0 0; }
 /* Busy status labels get trailing dots that type themselves. */
 .dots-text::after { content: ""; animation: dots-text 3s infinite; }
 @keyframes dots-text { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }
-.status .dots-loader { margin: .5rem 0 .4rem; }
+.status .dots-loader { margin: var(--spacing-03) 0 var(--spacing-02); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -571,95 +630,102 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 /* Home queue: the trash can column. One click deletes and the row stays put,
    greyed with an Undo, because the rows are dense and a mis-click is cheap. */
 .queue-actions { text-align: right; white-space: nowrap; }
-.queue-actions .trash-link { padding: .1rem .3rem; }
+.queue-actions .trash-link { height: 24px; padding: 0 var(--spacing-02); margin: 0; }
 .queue-row.is-deleted td { opacity: .5; }
-/* Sort as a list (every section pill): one Keep for the page, rows sink when decided. */
-.list-head { display: flex; align-items: center; gap: 1rem; margin: 0 0 .35rem; }
+/* Sort as a list (every section tab): one Keep for the page, rows sink when decided. */
+.list-head { display: flex; align-items: center; gap: var(--spacing-05); margin: 0 0 var(--spacing-02); }
 .list-head .sort-group { margin: 0; }
 .list-head .undo-link { margin: 0; }
-.list-head .list-keep { margin-left: auto; font-size: .85rem; padding: .4rem 1rem; }
-.list-hint { margin: 0 0 .7rem; }
+.list-head .list-keep { margin-left: auto; height: 32px; padding: 0 var(--spacing-09) 0 var(--spacing-04); white-space: nowrap; flex: none; }
+.list-head .list-keep .fa-solid { right: var(--spacing-04); }
+.list-hint { margin: 0 0 var(--spacing-04); }
 /* Sort as a list and a card (Claude Design round two, Kate's pick C, Sep 16):
    the rows down the left, the chosen row's card on the right, kept in view
    while the list scrolls. Finalize's list and card, with Sort's fix panel. */
-.sort-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 1.25rem; align-items: start; }
-.sort-rows { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.sort-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: var(--spacing-05); align-items: start; }
+.sort-rows { background: var(--layer); border: 0; border-radius: 0; overflow: hidden; }
 .sort-row, .f-list-row {
-  display: flex; align-items: flex-start; gap: .5rem; width: 100%; box-sizing: border-box; text-align: left;
-  padding: .6rem .8rem; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: #fff;
-  font-family: Karla, "Segoe UI", sans-serif; font-weight: 400; color: var(--ink); cursor: pointer;
+  display: flex; align-items: flex-start; gap: var(--spacing-03); width: 100%; height: auto; box-sizing: border-box; text-align: left;
+  padding: var(--spacing-04) var(--spacing-05); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; background: transparent;
+  font: inherit; letter-spacing: .16px; color: var(--ink); cursor: pointer;
+  transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
 .sort-rows > :first-child { border-top: 0; }
-.sort-row:hover:not(:disabled), .f-list-row:hover:not(:disabled) { border-color: var(--line); background-image: linear-gradient(var(--hover), var(--hover)); }
-.sort-row.is-selected, .f-list-row.is-selected { background-color: var(--tint); }
-.sort-row-text, .f-row-text { display: flex; flex-direction: column; gap: .1rem; min-width: 0; flex: 1 1 auto; }
-.sort-row-badges { display: flex; flex-wrap: wrap; gap: .3rem; margin-bottom: .1rem; }
+.sort-row:hover:not(:disabled), .f-list-row:hover:not(:disabled) { border-color: var(--line-in); background: var(--row-hover); color: var(--ink); }
+.sort-row.is-selected, .f-list-row.is-selected { background-color: var(--selected); box-shadow: inset 3px 0 0 var(--border-interactive); }
+.sort-row-text, .f-row-text { display: flex; flex-direction: column; gap: var(--spacing-01); min-width: 0; flex: 1 1 auto; }
+.sort-row-badges { display: flex; flex-wrap: wrap; gap: var(--spacing-02); margin-bottom: var(--spacing-01); }
 .sort-row-badges .badge { margin-right: 0; }
-.sort-row-title, .f-row-title { font-size: .88rem; font-weight: 500; line-height: 1.35; }
-.sort-row-meta, .f-row-type { font-size: .78rem; color: var(--muted); }
-/* The one alert on a Needs a fix row: an amber triangle before the title. */
-.sort-row .fix-mark { color: var(--amber); font-size: .75rem; margin-top: .3rem; flex: none; }
-.sort-row .fa-chevron-right { color: var(--accent); font-size: .7rem; margin-top: .35rem; flex: none; }
-.sort-done { display: flex; align-items: flex-start; gap: .5rem; padding: .6rem .8rem; border-top: 1px solid var(--line); background: var(--bg); }
+.sort-row-title, .f-row-title { font-size: 14px; line-height: 18px; font-weight: 400; }
+.sort-row-meta, .f-row-type { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+/* The one alert on a Needs a fix row: the warning triangle before the title. */
+.sort-row .fix-mark { color: var(--amber-mark); font-size: 12px; margin-top: 3px; flex: none; }
+.sort-row .fa-chevron-right { color: var(--icon-primary); font-size: 11px; margin-top: 4px; flex: none; }
+.sort-done { display: flex; align-items: flex-start; gap: var(--spacing-03); padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--line-in); background: var(--bg); }
 .sort-done .sort-row-title, .sort-done .sort-row-meta { color: var(--muted); }
 .sort-done.is-trashed .sort-row-title { text-decoration: line-through; }
 .sort-done-acts { margin-left: auto; white-space: nowrap; }
-.sort-card { display: flex; flex-direction: column; gap: .6rem; }
+.sort-card { display: flex; flex-direction: column; gap: var(--spacing-03); }
 /* One card rule for Sort and Finalize: the same padding, and in view while a long list scrolls. */
-.sort-card, .f-card { padding: 1.25rem 1.4rem; box-sizing: border-box; position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
-.sort-card h3 { margin: 0; font-size: 1.05rem; line-height: 1.3; }
-.sort-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .75rem; }
+.sort-card, .f-card { padding: var(--spacing-05); box-sizing: border-box; position: sticky; top: var(--spacing-05); max-height: calc(100vh - 2rem); overflow-y: auto; }
+.sort-card h3 { margin: 0; font-size: 16px; line-height: 22px; font-weight: 600; }   /* heading-02 */
+.sort-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02) var(--spacing-04); }
 .sort-card-top .type-line { margin: 0; }
 .sort-card-top .badge { margin-right: 0; }
-.sort-card-meta { margin: -.35rem 0 0; font-size: .85rem; color: var(--muted); }
+.sort-card-meta { margin: calc(-1 * var(--spacing-02)) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
 .sort-card .f-blurb-text { margin: 0; }
 .sort-card .f-blurb-text.is-quiet { color: var(--muted); }
-.sort-card .item-note, .sort-card .card-note { margin: 0; font-size: .85rem; color: var(--muted); }
-.sort-card-source { margin: 0; font-size: .85rem; color: var(--muted); }
-.sort-card-acts { display: flex; align-items: center; gap: 1rem; border-top: 1px solid var(--line); padding-top: .8rem; margin-top: .2rem; }
-.sort-card-right { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+.sort-card .item-note, .sort-card .card-note { margin: 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.sort-card-source { margin: 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.sort-card-acts { display: flex; align-items: center; gap: var(--spacing-05); border-top: 1px solid var(--line-in); padding-top: var(--spacing-05); margin-top: var(--spacing-03); }
+.sort-card-right { margin-left: auto; display: flex; align-items: center; gap: var(--spacing-05); }
 .sort-card .sort-edit { margin: 0; }
-/* The fix panel: amber while the row needs a fix, plain while a type changes. */
-.fix-panel { border: 1px solid var(--line); border-radius: 8px; padding: .7rem .85rem; background: #fff; }
-.fix-panel.is-alert { border-color: var(--amber-line); background: var(--amber-bg); }
-.fix-head { margin: 0 0 .35rem; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
-.fix-head.is-alert { color: var(--amber); }
-.fix-head .fa-solid { margin-right: .35rem; }
-.fix-panel > .fix-head ~ .fix-head { margin-top: .75rem; }
-.fix-line { margin: 0; font-size: .88rem; color: var(--ink); }
-.radio-line { display: flex; align-items: center; gap: .45rem; margin: .15rem 0; font-size: .9rem; color: var(--ink); cursor: pointer; }
+.sort-card input, .sort-card textarea, .f-card input, .f-card textarea { background: var(--field-02); }
+/* The fix panel: Carbon's inline notification, a warning while the row needs
+   a fix, informational while a type changes. */
+.fix-panel { border: 1px solid var(--line-in); border-left: 3px solid var(--support-info); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); background: var(--layer-02); }
+.fix-panel.is-alert { border-color: var(--amber-line); border-left-color: var(--amber-mark); background: var(--amber-bg); }
+.fix-head { margin: 0 0 var(--spacing-02); font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600; color: var(--muted); }
+.fix-head.is-alert { color: var(--ink); }
+.fix-head .fa-solid { margin-right: var(--spacing-02); }
+.fix-head.is-alert .fa-solid { color: var(--amber-mark); }
+.fix-panel > .fix-head ~ .fix-head { margin-top: var(--spacing-04); }
+.fix-line { margin: 0; color: var(--ink); }
+.radio-line { display: flex; align-items: center; gap: var(--spacing-03); margin: var(--spacing-01) 0; color: var(--ink); cursor: pointer; }
 .radio-line input { margin: 0; accent-color: var(--accent); }
-.sub-radios { margin: .1rem 0 .3rem 1.45rem; padding-left: .7rem; border-left: 2px solid var(--line); }
-.sub-radios .radio-line { font-size: .85rem; }
+.sub-radios { margin: var(--spacing-01) 0 var(--spacing-02) var(--spacing-06); padding-left: var(--spacing-04); border-left: 1px solid var(--line-in); }
+.sub-radios .radio-line { font-size: 12px; line-height: 16px; letter-spacing: .32px; margin: var(--spacing-02) 0; }
 .fix-panel .link-alert { margin: 0; padding: 0; border: 0; background: none; }
 .fix-panel .link-alert .alert-mark { display: none; }
-.fix-panel > .skip-link { margin-top: .35rem; }
+.fix-panel > .skip-link { margin-top: var(--spacing-02); }
+.fix-panel .linkish { margin-left: 0; }
 @media (max-width: 900px) {
   .sort-split { grid-template-columns: minmax(0, 1fr); }
   .sort-card, .f-card { position: static; max-height: none; }
 }
 .queue-row.is-deleted .queue-actions { opacity: 1; }
-.queue-gone { font-size: .8rem; color: var(--muted); margin-right: .5rem; }
+.queue-gone { font-size: 12px; letter-spacing: .32px; color: var(--muted); margin-right: var(--spacing-03); }
 
 /* The publish receipt's spare-copy link: quiet, under the door button, because
-   the download already happened — this is only for getting it again. */
-.receipt-download { display: block; margin: .7rem auto 0; font-size: .85rem; color: var(--muted); }
-.receipt-download:hover { border: none; color: var(--accent); text-decoration: underline; }
+   the download already happened; this is only for getting it again. */
+.receipt-download { display: inline-flex; margin: var(--spacing-04) auto 0; color: var(--muted); }
+.receipt-download:hover:not(:disabled) { border: none; color: var(--link-primary); text-decoration: underline; }
 
-/* Sort's quiet "couldn't find it" notes. Deliberately NOT the amber alert
-   bubble: that bubble is a demand (verify the link), these are information —
-   they never block Keep (Kate, Sep 9). */
-.card-note { font-size: .85rem; color: var(--muted); margin: .4rem 0 0; }
-.card-note .fa-circle-question { margin-right: .35rem; color: var(--muted); }
+/* Sort's quiet "couldn't find it" notes. Deliberately NOT the warning note:
+   that note is a demand (verify the link), these are information; they never
+   block Keep (Kate, Sep 9). */
+.card-note { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: var(--spacing-02) 0 0; }
+.card-note .fa-circle-question { margin-right: var(--spacing-02); color: var(--icon-secondary); }
 
-/* The bulk upload progress popup (Kate, Sep 10 — she was clicking around
+/* The bulk upload progress popup (Kate, Sep 10: she was clicking around
    mid-upload and double-submitting). Blocking by design: no close button, no
-   Escape, and the dim swallows every click underneath. */
-.busy-dim { position: fixed; inset: 0; z-index: 50; background: rgba(28, 34, 41, .45); display: grid; place-items: center; }
-.busy-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 1.6rem 1.8rem; width: 380px; max-width: calc(100vw - 2rem); text-align: center; }
-.busy-card h2 { font-size: 1.15rem; font-weight: 700; margin: 0; }
-.busy-count { font-family: Outfit, "Segoe UI", sans-serif; font-size: 1.05rem; font-weight: 700; margin: .45rem 0 0; }
-.busy-count span { color: var(--muted); font-weight: 600; }
-.busy-track { height: 8px; border-radius: 999px; background: var(--tint); overflow: hidden; margin: 1rem 0 .7rem; }
-.busy-fill { height: 100%; border-radius: 999px; background: var(--accent); transition: width .2s ease; }
-.busy-note { color: var(--muted); font-size: .85rem; margin: 0; }
+   Escape, and the dim swallows every click underneath. Carbon's modal: the
+   overlay, a square layer, no border. */
+.busy-dim { position: fixed; inset: 0; z-index: 50; background: var(--overlay); display: grid; place-items: center; }
+.busy-card { background: var(--layer); border: 0; border-radius: 0; padding: var(--spacing-06) var(--spacing-07); width: 380px; max-width: calc(100vw - 2rem); text-align: center; }
+.busy-card h2 { font-size: 20px; line-height: 28px; font-weight: 600; margin: 0; }
+.busy-count { font-size: 16px; line-height: 22px; font-weight: 600; margin: var(--spacing-03) 0 0; }
+.busy-count span { color: var(--muted); font-weight: 400; }
+.busy-track { height: 8px; border-radius: 0; background: var(--layer-accent-01); overflow: hidden; margin: var(--spacing-05) 0 var(--spacing-04); }
+.busy-fill { height: 100%; border-radius: 0; background: var(--interactive); transition: width var(--duration-fast-02) var(--ease-standard); }
+.busy-note { color: var(--muted); margin: 0; }

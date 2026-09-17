@@ -1,0 +1,144 @@
+/* IBM Carbon v11, the White theme: the one place a colour, a size or a face is
+   written down (Kate, Sep 17, 2026: "adopt Carbon's look", picture A of four).
+   Every page loads this first; the desk, the builder and Past newsletters then
+   name what they use in their own :root, in Carbon's names or as aliases of
+   them. Values are Carbon's own (tokens.json in the ibm-carbon-template
+   export), so nothing here is a design decision of ours. */
+:root {
+  /* Surfaces: the page, then layers stacked on it. */
+  --background: #ffffff;
+  --background-hover: #8d8d8d1f;
+  --background-active: #8d8d8d80;
+  --background-selected: #8d8d8d33;
+  --background-inverse: #393939;
+  --layer-01: #f4f4f4;
+  --layer-02: #ffffff;
+  --layer-accent-01: #e0e0e0;
+  --layer-hover-01: #e8e8e8;
+  --layer-active-01: #c6c6c6;
+  --layer-selected-01: #e0e0e0;
+  --field-01: #f4f4f4;
+  --field-02: #ffffff;
+  --field-hover-01: #e8e8e8;
+  --overlay: #16161680;
+
+  /* Lines: subtle ones divide, strong ones bound a control. */
+  --border-subtle-00: #e0e0e0;
+  --border-subtle-01: #c6c6c6;
+  --border-strong-01: #8d8d8d;
+  --border-interactive: #0f62fe;
+  --border-disabled: #c6c6c6;
+
+  /* Text and icons. */
+  --text-primary: #161616;
+  --text-secondary: #525252;
+  --text-helper: #6f6f6f;
+  --text-placeholder: #a8a8a8;
+  --text-disabled: #16161640;
+  --text-on-color: #ffffff;
+  --text-on-color-disabled: #8d8d8d;
+  --text-inverse: #ffffff;
+  --text-error: #da1e28;
+  --link-primary: #0f62fe;
+  --link-primary-hover: #0043ce;
+  --link-inverse: #78a9ff;
+  --icon-primary: #161616;
+  --icon-secondary: #525252;
+  --icon-disabled: #16161640;
+
+  /* Buttons. */
+  --button-primary: #0f62fe;
+  --button-primary-hover: #0050e6;
+  --button-primary-active: #002d9c;
+  --button-secondary: #393939;
+  --button-secondary-hover: #474747;
+  --button-secondary-active: #6f6f6f;
+  --button-tertiary: #0f62fe;
+  --button-tertiary-hover: #0050e6;
+  --button-tertiary-active: #002d9c;
+  --button-danger-primary: #da1e28;
+  --button-danger-secondary: #da1e28;
+  --button-danger-hover: #b81922;
+  --button-danger-active: #750e13;
+  --button-disabled: #c6c6c6;
+
+  /* Focus, selection, loading. */
+  --focus: #0f62fe;
+  --focus-inset: #ffffff;
+  --highlight: #d0e2ff;
+  --interactive: #0f62fe;
+  --toggle-off: #8d8d8d;
+  --skeleton-background: #e8e8e8;
+  --skeleton-element: #c6c6c6;
+
+  /* Status: each colour ships with its icon; the word beside it is text-primary. */
+  --support-error: #da1e28;
+  --support-success: #24a148;
+  --support-warning: #f1c21b;
+  --support-info: #0043ce;
+  --notification-error-background: #fff1f1;
+  --notification-error-border: #da1e284d;
+  --notification-success-background: #defbe6;
+  --notification-success-border: #24a1484d;
+  --notification-warning-background: #fcf4d6;
+  --notification-warning-border: #f1c21b4d;
+  --notification-info-background: #edf5ff;
+  --notification-info-border: #0043ce4d;
+
+  /* Tags. */
+  --tag-background-blue: #d0e2ff;
+  --tag-color-blue: #0043ce;
+  --tag-background-gray: #e0e0e0;
+  --tag-color-gray: #161616;
+  --tag-background-green: #a7f0ba;
+  --tag-color-green: #0e6027;
+  --tag-background-yellow: #fddc69;
+  --tag-color-yellow: #684e00;
+  --tag-background-red: #ffd7d9;
+  --tag-color-red: #a2191f;
+  --tag-border-outline: #161616;
+  --tag-color-outline: #161616;
+
+  /* Palette steps we read directly: the loader's ramp, and the text shades of
+     green and yellow (support-success and support-warning are icon colours and
+     do not clear 4.5:1 as text). */
+  --blue-30: #a6c8ff;
+  --blue-40: #78a9ff;
+  --blue-50: #4589ff;
+  --blue-60: #0f62fe;
+  --blue-70: #0043ce;
+  --blue-80: #002d9c;
+  --green-60: #198038;
+  --yellow-70: #684e00;
+
+  /* Spacing steps: use them for every gap, margin and pad; 10px is a bug. */
+  --spacing-01: 2px;
+  --spacing-02: 4px;
+  --spacing-03: 8px;
+  --spacing-04: 12px;
+  --spacing-05: 16px;
+  --spacing-06: 24px;
+  --spacing-07: 32px;
+  --spacing-08: 40px;
+  --spacing-09: 48px;
+  --spacing-10: 64px;
+
+  /* Shape: Carbon is square. The only round things are tags, the toggle and icons. */
+  --radius-none: 0;
+  --radius-round: 9999px;
+  --radius-tag-sm: 9px;
+  --radius-tag-md: 12px;
+  --radius-tag-lg: 16px;
+
+  /* Type: one family, three weights (300, 400, 600). */
+  --font-sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+
+  /* Motion: 70ms for a colour, 110ms for a move, nothing over 240ms. */
+  --ease-standard: cubic-bezier(0.2, 0, 0.38, 0.9);
+  --ease-productive: cubic-bezier(0, 0, 0.38, 0.9);
+  --duration-fast-01: 70ms;
+  --duration-fast-02: 110ms;
+  --duration-moderate-01: 150ms;
+  --duration-moderate-02: 240ms;
+}
