@@ -2,7 +2,7 @@
  * Pure view helpers for the Home queue table: sorting and formatting dates.
  * View state only — callers keep the state; nothing here touches the Sheet.
  */
-import { TYPE_LABELS } from './schema.js';
+import { typeDisplay } from './schema.js';
 import { pendingRows, circlebackRows } from './workflow.js';
 
 /**
@@ -19,7 +19,7 @@ export function queueRows(rows, justDeleted = new Set()) {
 
 const KEYS = {
   title: r => r.headline || r.link || '',
-  type: r => (r.type ? (TYPE_LABELS[r.type] ?? r.type) : ''),
+  type: r => (r.type ? typeDisplay(r.type) : ''),
   submitter: r => r.submitter || '',
   submitted: r => String(r.submitted_at ?? ''),
 };
@@ -38,6 +38,40 @@ export function sortRows(rows, column, direction) {
   });
 }
 
+
+/** One link, whichever way it was typed: scheme, www and a trailing slash do
+ *  not make a different page. Case is folded too; a same-page match is what
+ *  we want, not a byte match. */
+function linkKey(link) {
+  return String(link ?? '').trim().toLowerCase()
+    .replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/+$/, '');
+}
+
+/**
+ * The row already waiting in the queue with this link, if any (audit round
+ * two, e19): { id, title, when } for the form's "Already in the queue" ask,
+ * or null. Only what is still waiting counts (new and parked rows); a kept
+ * row is out of the queue, and Sort's Needs a fix catches the rest.
+ */
+export function queueMatch(link, rows, todayIso) {
+  const key = linkKey(link);
+  if (!key) return null;
+  const hit = [...pendingRows(rows), ...circlebackRows(rows)].find(r => linkKey(r.link) === key);
+  if (!hit) return null;
+  return { id: hit.id, title: hit.headline || hit.link || '(untitled)', when: isoToShort(hit.submitted_at, todayIso) };
+}
+
+/**
+ * After a row action the pressed control is gone from the rebuilt table; this
+ * is the key of the control now in its place (audit round two, e17): Delete's
+ * Undo, and Undo's trash can (Remove's, on Next newsletter). '' when the key
+ * has no partner, so the caller falls back.
+ */
+export function partnerFocusKey(key, action = 'delete') {
+  const m = /^(delete|remove|undo):(.+)$/.exec(String(key ?? ''));
+  if (!m) return '';
+  return m[1] === 'undo' ? `${action}:${m[2]}` : `undo:${m[2]}`;
+}
 
 const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

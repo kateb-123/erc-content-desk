@@ -6,7 +6,7 @@
  * through for normalizeBulkItems to warn about and untype — untyped items
  * enter untyped, and Sort's "To review" catches them.
  */
-import { TYPES, TYPE_LABELS } from '../../js/schema.js';
+import { TYPES, TYPE_LABELS, TYPE_DISPLAY } from '../../js/schema.js';
 
 const HEADER_ALIASES = {
   title: ['title', 'headline', 'name', 'item'],
@@ -22,7 +22,8 @@ function typeFromValue(value) {
   const n = norm(value);
   if (!n) return '';
   if (TYPES[n]) return n;
-  const byLabel = Object.entries(TYPE_LABELS).find(([, label]) => norm(label) === n);
+  // The sheet's labels and the words the desk shows both count (audit round two, f7).
+  const byLabel = [...Object.entries(TYPE_LABELS), ...Object.entries(TYPE_DISPLAY)].find(([, label]) => norm(label) === n);
   if (byLabel) return byLabel[0];
   const singular = n.replace(/s$/, '');
   if (TYPES[singular]) return singular;

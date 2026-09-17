@@ -65,6 +65,20 @@ export const TYPE_LABELS = {
   opportunity: 'Opportunity', headline: 'Headline',
 };
 
+/** What a type is called on screen (audit round two, f7): sentence case, as
+ *  DESIGN.md asks. TYPE_LABELS above is what the sheet and the bulk parser
+ *  know and stays as it is; only the words shown change. */
+export const TYPE_DISPLAY = {
+  erc_event: 'ERC event',
+  research: 'New research', event: 'Event',
+  opportunity: 'Opportunity', headline: 'Headline',
+};
+
+export function typeDisplay(type) {
+  const key = String(type ?? '');
+  return Object.prototype.hasOwnProperty.call(TYPE_DISPLAY, key) ? TYPE_DISPLAY[key] : key;
+}
+
 /** `${type}|${subtype}` -> [newsletter section key, group key] (see js/model.js). */
 export const NEWSLETTER_MAP = {
   'opportunity|Funding & Grants': ['opportunities', 'funding'],

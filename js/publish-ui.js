@@ -7,7 +7,7 @@
 import { readyToPublish } from './workflow.js';
 import { PUBLISH_PAUSED } from './flags.js';
 import { hubCsvFilename } from './hub-csv.js';
-import { TYPE_LABELS } from './schema.js';
+import { typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { detailBody } from './finalize-ui.js';
 import { checkSvg, dotsLoader, faIcon, forwardIcon } from './icons.js';
@@ -64,7 +64,8 @@ function itemRows({ row, fate }, { rerender, onGoTo, today }) {
   caret.type = 'button';
   caret.dataset.focus = `chev:${row.id}`;
   caret.setAttribute('aria-expanded', String(isOpen));
-  caret.setAttribute('aria-label', isOpen ? 'Hide details' : 'Show details');
+  const name = row.headline || row.link || 'this item';
+  caret.setAttribute('aria-label', `${isOpen ? 'Hide' : 'Show'} details for ${name}`);   // five carets, five names (audit round two, e15)
   caret.append(faIcon(isOpen ? 'chevron-up' : 'chevron-down'));
   caretTd.append(caret);
   tr.append(caretTd);   // left, one glyph, like Sort (Kate, Sep 15, option A)
@@ -74,7 +75,7 @@ function itemRows({ row, fate }, { rerender, onGoTo, today }) {
   if (row.source) titleTd.append(el('span', 'item-source', row.source));
   tr.append(titleTd);
   const typeTd = el('td');
-  typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : ''));
+  typeTd.append(el('span', '', row.type ? typeDisplay(row.type) : ''));
   if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
   tr.append(typeTd);
   tr.append(el('td', '', isoToShort(row.submitted_at, today) || ''));
@@ -207,7 +208,8 @@ export function renderPublish(container, props) {
   if (confirming && adding.length && !busy && !showReceipt) {
     head.querySelector('[data-focus="publish"]')?.remove();
     const ask = el('div', 'nl-ask p-ask');
-    ask.append(faIcon('triangle-exclamation'), ` Publish ${adding.length} to the live Exchange? `);
+    // Body text, the count and "live" in 600: the one ask before the public write reads as a question (audit round two, e10).
+    ask.append(faIcon('triangle-exclamation'), ' Publish ', el('strong', '', String(adding.length)), ' to the ', el('strong', '', 'live'), ' Exchange? ');
     const ok = el('button', 'linkish alert-word', 'Confirm');
     ok.type = 'button';
     ok.dataset.focus = 'publish';
@@ -225,6 +227,7 @@ export function renderPublish(container, props) {
     });
     const no = el('button', 'linkish alert-word nl-cancel', 'Cancel');
     no.type = 'button';
+    no.dataset.focus = 'publish';   // back on the Publish button the ask replaced (audit round two, d3)
     no.addEventListener('click', () => { confirming = false; rerender(); });
     ask.append(ok, ' \u00b7 ', no);
     head.append(ask);

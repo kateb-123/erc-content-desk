@@ -46,3 +46,15 @@ test('junk types get untyped by the shared normalizer, and shells drop', () => {
   assert.equal(items[0].type, '');
   assert.equal(warnings.length, 1);
 });
+
+// Audit round two, f7: the desk now shows "New research" and "ERC event", so a
+// spreadsheet that uses the words on screen maps as surely as one using the old labels.
+test('rowsToItems reads a type written as the desk shows it', () => {
+  const items = rowsToItems([
+    ['Title', 'Link', 'Type'],
+    ['A study', 'https://a.org', 'New research'],
+    ['A talk', 'https://b.org', 'ERC event'],
+    ['Old words', 'https://c.org', 'New Ed Policy Research'],
+  ]);
+  assert.deepEqual(items.map(i => i.type), ['research', 'erc_event', 'research']);
+});

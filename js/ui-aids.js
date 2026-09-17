@@ -8,17 +8,20 @@
  * on the key's new element after, or on a fallback (the card's title).
  */
 
-/** The data-focus key of the focused control inside container, or null. */
+/** The data-focus key of the focused control inside container; '' when focus
+ *  is inside on a control without a key; null when focus is elsewhere. */
 export function focusKeyIn(container) {
   const active = document.activeElement;
-  if (!active || !container.contains(active)) return null;
-  return active.dataset?.focus || null;
+  if (!active || active === document.body || !container.contains(active)) return null;
+  return active.dataset?.focus || '';
 }
 
-/** Focus the control that now carries the key, else the fallback. */
+/** Focus the control that now carries the key, else the fallback. A keyless
+ *  control ('') goes straight to the fallback, so a redraw from a radio, a
+ *  Save or a Cancel never drops the keyboard to the page (audit round two, d3). */
 export function restoreFocus(container, key, fallback) {
-  if (!key) return false;
-  const next = container.querySelector(`[data-focus="${CSS.escape(key)}"]`);
+  if (key === null || key === undefined) return false;
+  const next = key && container.querySelector(`[data-focus="${CSS.escape(key)}"]`);
   if (next && !next.disabled) { next.focus({ preventScroll: true }); return true; }
   if (fallback) { fallback.tabIndex = -1; fallback.focus({ preventScroll: true }); return true; }
   return false;

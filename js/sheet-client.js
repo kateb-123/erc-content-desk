@@ -24,7 +24,7 @@ const json = (res, what) => readReply(res, what);
 /** GET the whole desk: rows plus the newsletter schedule. */
 export async function fetchDesk() {
   try {
-    const data = await json(await fetch('/api/sheet'), 'load the desk');
+    const data = await json(await fetch('/api/sheet'), 'load');   // "The desk couldn't load right now", not "load the desk" twice
     return { rows: data.rows ?? [], schedule: data.schedule ?? [] };
   } catch (err) {
     if (err instanceof TypeError) throw new Error("Couldn't reach the server. Check your connection.");

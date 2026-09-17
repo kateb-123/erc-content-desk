@@ -6,6 +6,11 @@
    --line-in, --accent, --selected, --hover); a page without the desk
    stylesheet mirrors them in its own :root, as the builder does. Its buttons
    are styled here in full, since the builder has no base button rule. */
+/* Two rules every page needs, so they live with the one stylesheet every page loads (audit round two, d2 and e27):
+   sr-only for the cues the sidebar emits, and the skip link, off screen until it takes focus. */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.skip-to-main { position: absolute; left: var(--spacing-05); top: -100px; z-index: 100; height: 40px; padding: 0 var(--spacing-05); display: inline-flex; align-items: center; background: var(--background); color: var(--link-primary); font: inherit; letter-spacing: .16px; text-decoration: none; border: 1px solid var(--border-subtle-01); }
+.skip-to-main:focus { top: var(--spacing-03); outline: 2px solid var(--focus); outline-offset: -2px; }
 .side, .side *, .side-strip, .side-strip * { box-sizing: border-box; }
 .side, .side-strip { font-family: var(--font-sans); font-size: 14px; line-height: 20px; letter-spacing: .16px; }
 .side {
@@ -37,7 +42,7 @@
 .side-item:not(.is-brand) { padding-left: var(--spacing-07); }   /* no icon on the items: an indent under their heading */
 .side-count { flex: none; font-size: 12px; letter-spacing: .32px; color: var(--muted); font-weight: 400; }
 .side-item .side-out { width: auto; font-size: 10px; color: var(--icon-secondary); }   /* leaves the desk: a small glyph (design audit b16) */
-.side-item:hover { background: var(--row-hover); color: var(--ink); }
+.side-item:hover { background: var(--row-hover, var(--hover)); color: var(--ink); }   /* the builder's pages name --hover only (audit round two, e28) */
 .side-item.is-current { background: var(--selected); color: var(--accent-deep); font-weight: 600; box-shadow: inset 3px 0 0 var(--border-interactive); }
 .side-item.is-current .fa-solid { color: var(--accent); }
 .side-item.is-brand { height: 40px; font-weight: 600; }
@@ -46,7 +51,7 @@
   width: 32px; height: 32px; border: 0; background: none; padding: 0; border-radius: 0;
   color: var(--icon-secondary); font-size: 12px; cursor: pointer; line-height: 1; margin: 0;
 }
-.side .side-copy:hover:not(:disabled) { color: var(--icon-primary); background: var(--row-hover); border: 0; }
+.side .side-copy:hover:not(:disabled) { color: var(--icon-primary); background: var(--row-hover, var(--hover)); border: 0; }
 .side-copy .fa-check { color: var(--support-success); }
 /* Desk work tucks the sidebar away (Kate, Sep 16: "b when it's expanded and
    the button. but also the thin grey bar to the left like C"): a thin strip
@@ -71,7 +76,7 @@
   transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
 .side-close { display: none; }
-.side-strip .side-burger:hover:not(:disabled), .side .side-close:hover:not(:disabled) { background: var(--row-hover); color: var(--icon-primary); border: 0; }
+.side-strip .side-burger:hover:not(:disabled), .side .side-close:hover:not(:disabled) { background: var(--row-hover, var(--hover)); color: var(--icon-primary); border: 0; }
 .side.can-close .side-close { display: inline-flex; }
 .side a:focus-visible, .side button:focus-visible, .side-strip button:focus-visible {
   outline: 2px solid var(--focus); outline-offset: -2px; box-shadow: none;

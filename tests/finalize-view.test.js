@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges, fieldsForType, dateField } from '../js/finalize-view.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges, fieldsForType, dateField, editFields, editBase } from '../js/finalize-view.js';
 
 const keeps = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }];
 
@@ -73,4 +73,25 @@ test('dateField: dates and deadlines are date inputs, the rest text', () => {
   assert.equal(dateField('deadline'), true);
   assert.equal(dateField('time'), false);
   assert.equal(dateField('headline'), false);
+});
+
+// Audit round two, e11: one edit form on Sort and Finalize: the type's fields plus the link.
+test('editFields: the fields for the type, then the link, once', () => {
+  assert.deepEqual(editFields('headline'), ['headline', 'source', 'blurb', 'link']);
+  assert.deepEqual(editFields('event'), ['headline', 'date', 'time', 'location', 'source', 'blurb', 'link']);
+  assert.equal(editFields('').filter(f => f === 'link').length, 1);
+});
+
+// Audit round two, e8: the description opens with the original text when there is
+// no rewrite yet, and that prefill is not a change until it is edited.
+test('editBase: the description falls back to the original text', () => {
+  assert.equal(editBase({ blurb: '', original_text: 'The original.' }).blurb, 'The original.');
+  assert.equal(editBase({ blurb: 'Rewritten.', original_text: 'The original.' }).blurb, 'Rewritten.');
+  assert.equal(editBase({}).blurb, '');
+});
+test('editChanges: an untouched prefill is no change; an edited one is', () => {
+  const row = { headline: 'T', blurb: '', original_text: 'The original.' };
+  const base = editBase(row);
+  assert.deepEqual(editChanges(row, { headline: 'T', blurb: 'The original.' }, base), {});
+  assert.deepEqual(editChanges(row, { headline: 'T', blurb: 'The original, trimmed.' }, base), { blurb: 'The original, trimmed.' });
 });

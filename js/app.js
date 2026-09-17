@@ -1,7 +1,7 @@
 /** Entry point. Owns all state; screens are pure renderers. */
 import { fetchDesk, saveRows, readNewRows, readReply, plainError } from './sheet-client.js';
 import { readAllWaiting } from './reader-client.js';
-import { readerQueue } from './sort-view.js';
+import { readerQueue, undoWords, withoutRow } from './sort-view.js';
 import { dotsLoader, loadingLabel } from './icons.js';
 import { renderHome } from './home-ui.js';
 import { renderSidebar } from './sidebar-ui.js';
@@ -25,7 +25,7 @@ const state = {
   busy: false,
   sortFilter: '',           // '' = not picked yet (Sort lands where the work is); 'fix', 'erc', or a type key
   sortedThisVisit: 0,       // decisions made since page load (view state)
-  undoStack: [],            // [{ id, prevStatus }] — every decision, newest last
+  undoStack: [],            // [{ rows, decision, kind }]: every Sort change, newest last
   sortedIds: new Set(),     // decided since this page opened — they stay listed, greyed (view state)
   decidedFrom: new Map(),   // id -> status before this session's decision: where Undo takes it back, and a row kept from Skipped greys under Skipped (view state)
   lastDecision: null,       // the top of undoStack (what Undo would restore)
@@ -51,9 +51,12 @@ const statusEl = document.querySelector('#desk-status');
 export function setStatus(message, kind = 'busy', action = null) {
   statusEl.className = `status status-${kind}`;
   statusEl.setAttribute('role', kind === 'error' ? 'alert' : 'status');
-  // Anything in flight shows the dots loader, text underneath (Kate, Sep 1).
+  // Anything in flight shows the dots loader beside its words (Kate, Sep 1); with
+  // a retry button, the sentence does not also say to try again.
+  if (action) message = message.replace(/ Try again in a minute\.$/, '');
   if (kind === 'busy' && message) {
-    statusEl.replaceChildren(dotsLoader(), loadingLabel(message));
+    // Inline, one line tall: a message never moves the page (audit round two, e7).
+    statusEl.replaceChildren(dotsLoader(true), loadingLabel(message));
   } else {
     statusEl.textContent = message;
   }
@@ -79,7 +82,8 @@ export async function reload() {
     setStatus('', 'ok');
   } catch (err) {
     state.loadFailed = !state.loaded;
-    setStatus(plainError(err), 'error');
+    // The way to try again sits on the line that says why, not inside a closed fold (audit round two, d5).
+    setStatus(plainError(err), 'error', { label: 'Try again', onClick: reload });
   }
   render();
 }
@@ -184,16 +188,18 @@ function whenSaved() {
 /** Every Sort mutation goes through here: snapshot the rows as they are (for
  *  Undo), then apply + queue the save. Covers decisions, inline edits, the
  *  type picker and the link check — so Undo can walk back any of them. */
-function change(rows, { decision = false, step = true } = {}) {
+function change(rows, { decision = false, kind = 'edit' } = {}) {
   const before = rows
     .map(r => state.rows.find(x => x._rowNumber === r._rowNumber))
     .filter(Boolean);
   if (before.length) {
-    state.undoStack.push({ rows: before, decision, step });
+    state.undoStack.push({ rows: before, decision, kind });
     state.lastDecision = state.undoStack[state.undoStack.length - 1];
   }
   noteChange(rows);
 }
+
+const DECIDED_WORDS = { keep: 'Kept', trash: 'Deleted', circleback: 'Skipped' };
 
 function decide(row, action, note = '') {
   // A decided row holds its place, greyed at the bottom of its section, so a
@@ -206,7 +212,9 @@ function decide(row, action, note = '') {
   const next = action === 'keep' ? keep(row)
     : action === 'trash' ? trash(row)
     : circleback(row, note);
-  change([next], { decision: true });   // the list updates now; the write drains behind it
+  change([next], { decision: true, kind: action });   // the list updates now; the write drains behind it
+  // The decision in words, for everyone and for a screen reader (audit round two, e9).
+  setStatus(`${DECIDED_WORDS[action] ?? 'Done'}: ${row.headline || row.link || 'this item'}`, 'ok');
 }
 
 /** The headline list's one button: keep every row still standing, as one
@@ -219,7 +227,8 @@ function keepAll(rows) {
     state.sortedThisVisit += 1;
     state.sortedIds.add(r.id);
   }
-  change(rows.map(keep), { decision: true, step: false });
+  change(rows.map(keep), { decision: true, kind: 'keep-all' });
+  setStatus(`Kept ${rows.length}`, 'ok');
 }
 
 /** Undo on one greyed row of the headline list: back to the queue, in place. */
@@ -229,7 +238,11 @@ function undoRow(row) {
   state.sortedIds.delete(row.id);
   state.decidedFrom.delete(row.id);
   state.sortedThisVisit = Math.max(0, state.sortedThisVisit - 1);
-  change([{ ...undecide(row), status: back }], { step: false });
+  // The row's own Undo leaves the stack, so Undo last cannot re-apply it (audit round two, e3).
+  state.undoStack = withoutRow(state.undoStack, row.id);
+  state.lastDecision = state.undoStack[state.undoStack.length - 1] ?? null;
+  setStatus(undoWords({ kind: { kept: 'keep', trashed: 'trash', circleback: 'circleback' }[row.status], rows: [row] }), 'ok');
+  noteChange([{ ...undecide(row), status: back }]);
 }
 
 // Rows still waiting for the reader are read before Sort shows a card: the
@@ -242,9 +255,10 @@ async function readBeforeSort() {
   try {
     const { failed } = await readAllWaiting(ids, readNewRows);
     await reload();
-    if (failed) setStatus(`${failed} new item${failed === 1 ? '' : 's'} couldn't be read yet. Reload to try again.`, 'error');
+    // A failed read offers its own retry; a reload would drop the greyed rows and Undo (audit round two, e12).
+    if (failed) setStatus(`${failed} new item${failed === 1 ? '' : 's'} couldn't be read yet.`, 'error', { label: 'Try again', onClick: readBeforeSort });
   } catch (err) {
-    setStatus(plainError(err), 'error');
+    setStatus(plainError(err), 'error', { label: 'Try again', onClick: readBeforeSort });
   }
 }
 
@@ -256,17 +270,29 @@ async function stampSubmitted(data) {
   const today = new Date().toISOString().slice(0, 10);
   const issue = nextIssueDate(state.schedule, today);
   const id = data?.id;
-  if (!issue || !id) { await reload(); return; }
+  if (!id) { await reload(); return; }   // nothing came back to stamp; the reload shows what landed
+  if (!issue) { await reload(); throw new Error('No issue date is scheduled, so it is in the queue only.'); }
   // The reader fills the title and description first, so the stamp's write
   // never lands under the reader's; a read that fails leaves the bare link,
   // which Sort will show and read again.
   try { await readAllWaiting([id], readNewRows); } catch { /* Sort catches up */ }
   await reload();
   const row = state.rows.find(r => r.id === id);
-  if (!row) return;
+  if (!row) throw new Error("It is in the queue, but the desk couldn't find it to stamp it for the newsletter.");
   await whenSaved();
-  const ok = await persist([markNewsletterIssue(row, issue)]);
-  if (ok) setStatus('In the next newsletter, and in the queue for Sort.', 'ok');
+  // The outcome goes back to the panel that asked, which resolves to "In the
+  // Sep 22 newsletter" or shows the error with Try again; nothing lands at the
+  // top of the page (audit round two, e20). A failed stamp leaves the row
+  // unstamped in memory and in the sheet alike, so there is nothing to resync.
+  const stamped = markNewsletterIssue(row, issue);
+  try {
+    await saveRows([stamped]);
+  } catch (err) {
+    throw new Error(plainError(err));
+  }
+  state.rows = state.rows.map(r => r._rowNumber === stamped._rowNumber ? stamped : r);
+  state.publishPreview = null;   // data changed: the next Publish visit re-checks
+  render();
 }
 
 function goTo(key, filter) {
@@ -297,6 +323,7 @@ async function undoLast() {
     state.sortedThisVisit = Math.max(0, state.sortedThisVisit - last.rows.length);
     for (const r of last.rows) { state.sortedIds.delete(r.id); state.decidedFrom.delete(r.id); }
   }
+  setStatus(undoWords(last), 'ok');   // says what came back, so the effect is never a guess (audit round two, e3)
   noteChange(last.rows);   // restore the rows exactly as they were
 }
 
@@ -453,10 +480,10 @@ export function render() {
   // One sidebar on every page (Kate, Sep 16). In the pipeline's own window
   // its items switch in place; from the front door they open that window.
   // Every screen but the front door keeps an address, as a history entry, so
-  // Back and a reload land where the reader was (design audit b21); the skip
-  // link's #main is left alone.
+  // Back and a reload land where the reader was (design audit b21). The skip
+  // link moves focus without touching the address (audit round two, e2).
   const hash = screenHash(state.screen);
-  if (location.hash !== hash && location.hash !== '#main') {
+  if (location.hash !== hash) {
     if (shownScreen === null) history.replaceState(null, '', hash || location.pathname);
     else history.pushState(null, '', hash || location.pathname);
   }
@@ -485,11 +512,10 @@ export function render() {
       onSubmitted: reload,
       onRefresh: reload,
       // The queue's trash can, through the same queued write as Sort. Undo hands
-      // back the status the row actually had — a deleted circle-back must come
-      // back a circle-back, not a fresh submission.
-      onDeleteFromQueue: (row, action) => change([
-        action === 'trash' ? trash(row) : { ...row, status: action },
-      ]),
+      // back the row as it was before the delete, status and newsletter stamp
+      // included, so a deleted circle-back comes back a circle-back and a
+      // quick-added item keeps its issue (audit round two, e21).
+      onDeleteFromQueue: (row, action) => change([action === 'trash' ? trash(row) : row]),
     });
   } else if (state.screen === 'issue') {
     renderIssue(screens.issue, {
@@ -508,15 +534,15 @@ export function render() {
       decidedFrom: state.decidedFrom,
       onFilter: key => { state.sortFilter = key; saveSortSpot(); render(); },
       onDecide: decide, onUndo: undoLast, onKeepAll: keepAll, onUndoRow: undoRow,
-      onEditRow: (row, changes) => change([{ ...row, ...changes }]),
+      onEditRow: (row, changes) => change([{ ...row, ...changes }], { kind: 'edit' }),
       // Type + subtype + provenance move together in one queued write.
       onEditType: (row, type, subtype) => change([{
         ...row, type, subtype: subtype || row.subtype,
         auto_filled: withoutAutoFilled(row.auto_filled, subtype ? ['type', 'subtype'] : ['type']),
-      }]),
+      }], { kind: 'type' }),
       onVerifyLink: (row, newLink) => change([{
         ...row, ...(newLink ? { link: newLink } : {}), link_checked: 'human',
-      }]),
+      }], { kind: 'link' }),
     });
   } else if (state.screen === 'finalize') {
     renderFinalize(screens.finalize, {
@@ -632,9 +658,17 @@ export function render() {
 
 // Back, Forward and a typed address switch screens like a menu pick would.
 window.addEventListener('hashchange', () => {
-  if (location.hash === '#main') return;
   const target = openedScreen(location.hash).screen ?? 'home';
   if (target !== state.screen) goTo(target);
+});
+
+// The skip link focuses the page's main without a #main in the address, so
+// the per-screen addresses and Back keep working after it (audit round two, e2).
+document.querySelector('.skip-to-main')?.addEventListener('click', event => {
+  event.preventDefault();
+  const main = document.querySelector('#main');
+  main.tabIndex = -1;
+  main.focus();
 });
 
 render();   // the shell paints before the first fetch, not after it (usability run F19)

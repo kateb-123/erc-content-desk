@@ -148,3 +148,16 @@ test('a flat type (ERC Event) has no subtype step: picking the type is the whole
   assert.equal(typeIsFlat(''), false);
   assert.equal(typeIsFlat('banana'), false);
 });
+
+// ── In-app type names (audit round two, f7): sentence case on screen, the sheet keys untouched ──
+
+test('typeDisplay gives the in-app name for every type, in sentence case, and leaves the sheet keys alone', async () => {
+  const { TYPE_DISPLAY, typeDisplay, TYPE_LABELS, TYPE_ORDER } = await import('../js/schema.js');
+  assert.deepEqual(TYPE_DISPLAY, {
+    erc_event: 'ERC event', research: 'New research', event: 'Event', opportunity: 'Opportunity', headline: 'Headline',
+  });
+  for (const type of TYPE_ORDER) assert.equal(typeDisplay(type), TYPE_DISPLAY[type]);
+  assert.equal(typeDisplay('banana'), 'banana');   // an unknown key shows as itself, never blank
+  assert.equal(typeDisplay(''), '');
+  assert.equal(TYPE_LABELS.research, 'New Ed Policy Research');   // what the sheet and the bulk parser know is unchanged
+});

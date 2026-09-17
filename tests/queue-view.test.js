@@ -23,7 +23,7 @@ test('sortRows desc reverses', () => {
 });
 
 test('sortRows by type uses the display label, empty type sinks last both ways', () => {
-  // labels: event->Event, research->New Ed Policy Research, opportunity->Opportunity
+  // in-app names: event->Event, research->New research, opportunity->Opportunity
   assert.deepEqual(sortRows(rows, 'type', 'asc').map(r => r.id), ['c', 'b', 'a', 'd']);
   assert.deepEqual(sortRows(rows, 'type', 'desc').map(r => r.id), ['a', 'b', 'c', 'd']);
 });
@@ -81,4 +81,49 @@ test('isoToShort gives "Aug 26", adding the year only when it is not this year',
   assert.equal(isoToShort(''), '');
   assert.equal(isoToShort('2026-13-01', '2026-09-15'), '');
   assert.equal(isoToShort('garbage', '2026-09-15'), '');
+});
+
+// ── The link already in the queue (audit round two, e19) ──
+
+test('queueMatch finds the waiting row with the same link and says when it came in', async () => {
+  const { queueMatch } = await import('../js/queue-view.js');
+  const rows = [
+    { id: 'a', status: 'new', headline: 'IES grants', link: 'https://ies.ed.gov/funding/305a', submitted_at: '2026-08-23T10:00:00Z' },
+    { id: 'b', status: 'kept', headline: 'Kept one', link: 'https://kept.org/x', submitted_at: '2026-08-20T10:00:00Z' },
+    { id: 'c', status: 'circleback', headline: 'Parked one', link: 'https://parked.org/y/', submitted_at: '2025-12-01T10:00:00Z' },
+  ];
+  assert.deepEqual(queueMatch('https://ies.ed.gov/funding/305a', rows, '2026-09-17'), { id: 'a', title: 'IES grants', when: 'Aug 23' });
+  // The same page with a trailing slash, a bare scheme or a www is the same link.
+  assert.equal(queueMatch('http://www.ies.ed.gov/funding/305a/', rows, '2026-09-17')?.id, 'a');
+  assert.deepEqual(queueMatch('https://parked.org/y', rows, '2026-09-17'), { id: 'c', title: 'Parked one', when: 'Dec 1, 2025' });
+  // A kept row is not in the queue, and an empty link matches nothing.
+  assert.equal(queueMatch('https://kept.org/x', rows, '2026-09-17'), null);
+  assert.equal(queueMatch('', rows, '2026-09-17'), null);
+  assert.equal(queueMatch('https://nowhere.org', rows, '2026-09-17'), null);
+});
+
+test('queueMatch falls back to the link as the title when the row has none', async () => {
+  const { queueMatch } = await import('../js/queue-view.js');
+  const rows = [{ id: 'a', status: 'new', headline: '', link: 'https://x.org/p', submitted_at: '' }];
+  assert.deepEqual(queueMatch('https://x.org/p', rows, '2026-09-17'), { id: 'a', title: 'https://x.org/p', when: '' });
+});
+
+// ── The keyboard's place after a row action (audit round two, e17) ──
+
+test('partnerFocusKey names the control that takes the place of the one just pressed', async () => {
+  const { partnerFocusKey } = await import('../js/queue-view.js');
+  assert.equal(partnerFocusKey('delete:r1'), 'undo:r1');        // after Delete, land on that row's Undo
+  assert.equal(partnerFocusKey('undo:r1'), 'delete:r1');        // after Undo, back on its trash can
+  assert.equal(partnerFocusKey('remove:r1', 'remove'), 'undo:r1');
+  assert.equal(partnerFocusKey('undo:r1', 'remove'), 'remove:r1');
+  assert.equal(partnerFocusKey('refresh'), '');                 // anything else has no partner
+  assert.equal(partnerFocusKey(''), '');
+  assert.equal(partnerFocusKey(null), '');
+});
+
+test('queueRows accepts the snapshot map the queue keeps for Undo', async () => {
+  const { queueRows } = await import('../js/queue-view.js');
+  const rows = [{ id: 'a', status: 'new' }, { id: 'b', status: 'trashed' }];
+  const justDeleted = new Map([['b', { id: 'b', status: 'circleback', newsletter_issue: '2026-09-22' }]]);
+  assert.deepEqual(queueRows(rows, justDeleted).map(r => r.id), ['a', 'b']);
 });

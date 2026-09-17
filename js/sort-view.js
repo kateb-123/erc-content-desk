@@ -193,3 +193,33 @@ export function nextSectionWithRows(counts, current) {
   const order = [...SECTION_ORDER.slice(at + 1), ...SECTION_ORDER.slice(0, Math.max(at, 0))];
   return order.find(k => counts[k] > 0) ?? null;
 }
+
+const UNDO_VERBS = { keep: 'kept', circleback: 'skipped', trash: 'deleted' };
+const UNDO_NOUNS = { edit: 'the edit to', type: 'the type on', link: 'the link check on' };
+
+/** What Undo last just restored, in words for the status line (audit round two, e3). */
+export function undoWords(entry) {
+  const rows = entry?.rows ?? [];
+  const name = rows[0]?.headline || rows[0]?.link || 'this item';
+  if (entry?.kind === 'keep-all') return `Undid: kept ${rows.length}`;
+  if (UNDO_VERBS[entry?.kind]) return `Undid: ${UNDO_VERBS[entry.kind]} ${name}`;
+  return `Undid: ${UNDO_NOUNS[entry?.kind] ?? 'the change to'} ${name}`;
+}
+
+/** The undo stack without one row: a row's own Undo already put it back, so
+ *  Undo last must never re-apply that decision (audit round two, e3). */
+export function withoutRow(stack, id) {
+  return stack
+    .map(entry => ({ ...entry, rows: entry.rows.filter(r => r.id !== id) }))
+    .filter(entry => entry.rows.length);
+}
+
+/** The tab a key moves to in a row of tabs, or null (audit round two, e14). */
+export function adjacentTab(keys, current, key) {
+  const at = keys.indexOf(current);
+  if (key === 'Home') return keys[0];
+  if (key === 'End') return keys[keys.length - 1];
+  if (key === 'ArrowRight') return keys[(at + 1) % keys.length];
+  if (key === 'ArrowLeft') return keys[(at - 1 + keys.length) % keys.length];
+  return null;
+}

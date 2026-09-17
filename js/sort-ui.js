@@ -9,11 +9,11 @@
  * the next row; decided rows grey at the bottom of the list with Undo.
  */
 import { linkCheckState, reshareFlags, missingFields } from './workflow.js';
-import { TYPE_ORDER, TYPE_LABELS, subtypesFor, typeIsFlat } from './schema.js';
+import { TYPE_ORDER, typeDisplay, subtypesFor, typeIsFlat } from './schema.js';
 import { isoToShort } from './queue-view.js';
-import { safeHref, withScheme } from './links.js';
-import { sortCounts, readerQueue, isNewToday, sectionRows, landingSection, needsType, fixReasons, fixContext, keepBlock, nextSelected, nextSectionWithRows } from './sort-view.js';
-import { buildImageControl } from './item-image.js';
+import { safeHref } from './links.js';
+import { sortCounts, readerQueue, isNewToday, sectionRows, landingSection, needsType, fixReasons, fixContext, keepBlock, nextSelected, nextSectionWithRows, adjacentTab } from './sort-view.js';
+import { buildEditForm, holdIfDirty } from './edit-form.js';
 import { titleWithInfo } from './screen-info.js';
 import { faIcon, forwardIcon } from './icons.js';
 import { focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
@@ -24,7 +24,8 @@ import { focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
 let selectedId = null;
 let lastIndex = 0;
 let listPanel = null;   // 'edit' | 'type' | null
-let editDirty = false;  // the open edit form has unsaved typing (design audit b1)
+let openForm = null;    // the card's open edit form, so every way out can hold its typing (audit round two, e4)
+let landOnTitle = false; // a decision was made: the next card's title takes focus and is read (audit round two, e9)
 
 const FILTER_LABELS = [
   // 'Needs a fix' (Kate, Sep 15): the one amber thing on the screen. It gathers
@@ -53,51 +54,6 @@ function el(tag, className, text) {
   return node;
 }
 
-/** The inline editor (Title, Description, Link, and Media on ERC items). Shared by
- *  the card and the section list, so a field never exists in only one place.
- *  `read` returns what is typed, for a decision to carry (Kate, Sep 9). */
-function buildEditForm(row, { onSave, onCancel }) {
-    const form = el('div', 'sort-edit');
-  const mkField = (label, value, rows) => {
-    const wrap = el('label', 'sort-edit-field', label);
-    const input = rows ? el('textarea') : el('input');
-    if (rows) input.rows = rows; else input.type = 'text';
-    input.value = value ?? '';
-    wrap.append(input);
-    form.append(wrap);
-    return input;
-  };
-  const titleIn = mkField('Title', row.headline);
-  const blurbIn = mkField('Description', row.blurb, 4);
-  const linkIn = mkField('Link', row.link);
-  editDirty = false;
-  form.addEventListener('input', () => { editDirty = true; });
-  // Any item can carry a picture (flyer, cover); it rides the row's
-  // infographic column into the hub and the newsletter (every item since
-  // Kate's Sep 17 ask; ERC only before). A div, not a label: a label would
-  // forward stray clicks to the upload button.
-  const mediaWrap = el('div', 'sort-edit-field', 'Media');
-  const imgCtl = buildImageControl(row.infographic, () => {});
-  mediaWrap.append(imgCtl.el);
-  form.append(mediaWrap);
-  const read = () => ({
-    headline: titleIn.value.trim(), blurb: blurbIn.value, link: withScheme(linkIn.value.trim()),
-    infographic: imgCtl.get(),
-  });
-  const rowBtns = el('div', 'sort-edit-actions');
-  const save = el('button', 'primary', 'Save');
-  save.type = 'button';
-  save.addEventListener('click', () => {
-    onSave(read());
-  });
-  const cancel = el('button', 'btn-outline', 'Cancel');
-  cancel.type = 'button';
-  cancel.addEventListener('click', () => onCancel());
-  rowBtns.append(save, cancel);
-  form.append(rowBtns);
-  return { el: form, read };
-}
-
 /** The type as radios, the picked type's subtypes as indented radios under it
  *  (Claude Design round two, Sep 16). Picking the subtype IS the save (Kate,
  *  Sep 1); a flat type (ERC Event) saves on the type pick (Sep 10). */
@@ -106,11 +62,12 @@ function buildTypeRadios(row, onCommit) {
   const legend = el('legend', 'sr-only', 'Type');
   const name = `sort-type-${row.id}`;
   let pickedType = row.type || '';
-  const radioLine = (group, label, checked, onChange) => {
+  const radioLine = (group, label, checked, onChange, key) => {
     const line = el('label', 'radio-line');
     const input = el('input');
     input.type = 'radio';
     input.name = group;
+    input.dataset.focus = key;   // a pick redraws the card; the keyboard keeps its place (audit round two, d3)
     input.checked = checked;
     input.addEventListener('change', onChange);
     line.append(input, ` ${label}`);
@@ -119,17 +76,17 @@ function buildTypeRadios(row, onCommit) {
   const render = () => {
     box.replaceChildren(legend);
     for (const t of TYPE_ORDER) {
-      box.append(radioLine(name, TYPE_LABELS[t] ?? t, t === pickedType, () => {
+      box.append(radioLine(name, typeDisplay(t), t === pickedType, () => {
         pickedType = t;
         if (typeIsFlat(t)) { onCommit(t, ''); return; }
         render();
         box.querySelector(`input[name="${name}"]:checked`)?.focus();
-      }));
+      }, `type:${t}`));
       if (t !== pickedType || typeIsFlat(t)) continue;
       const subs = el('fieldset', 'sub-radios');
       subs.append(el('legend', 'sr-only', 'Subtype'));
       for (const sub of subtypesFor(t)) {
-        subs.append(radioLine(`${name}-sub`, sub, row.type === t && row.subtype === sub, () => onCommit(t, sub)));
+        subs.append(radioLine(`${name}-sub`, sub, row.type === t && row.subtype === sub, () => onCommit(t, sub), `sub:${sub}`));
       }
       box.append(subs);
     }
@@ -153,19 +110,24 @@ function buildLinkAlert(row, href, onVerify) {
   line.append(' ', row.link_checked === 'mismatch' ? 'This link may open a different item.' : "The desk couldn't open this page.");
   const works = el('button', 'linkish alert-word', 'Confirm');
   works.type = 'button';
+  works.dataset.focus = 'link-confirm';
   works.addEventListener('click', () => onVerify());
   const change = el('button', 'linkish alert-word', 'Change');
   change.type = 'button';
-  const changeRow = el('p', 'alert-change');
+  change.dataset.focus = 'link-change';
+  const changeRow = el('div', 'alert-change');
   const input = document.createElement('input');
   input.type = 'url';
-  input.placeholder = 'paste the right link';
-  input.setAttribute('aria-label', 'New link');
+  input.id = `new-link-${row.id}`;
+  input.placeholder = 'https://';
+  const fieldLabel = el('label', 'alert-field-label', 'New link');   // a visible name, not a placeholder (audit round two, f4)
+  fieldLabel.htmlFor = input.id;
   const bad = el('p', 'field-error', 'Paste a full http(s) link');
   bad.id = `link-error-${row.id}`;
   bad.hidden = true;
   const saveLink = el('button', 'linkish alert-word', 'Save');
   saveLink.type = 'button';
+  saveLink.dataset.focus = 'link-save';
   change.addEventListener('click', () => { changeRow.classList.add('is-open'); input.focus(); });
   const saveFixed = () => {
     const fixed = input.value.trim();
@@ -189,6 +151,7 @@ function buildLinkAlert(row, href, onVerify) {
     after.hidden = true;
     const a = el('a', 'alert-word', 'Verify link ↗');
     a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
+    a.append(el('span', 'sr-only', ' (opens in a new tab)'));   // as the sidebar says it (audit round two, f13)
     a.addEventListener('click', () => { after.hidden = false; });
     line.append(' ', a);
   } else {
@@ -198,7 +161,7 @@ function buildLinkAlert(row, href, onVerify) {
     line.append(' Missing link');
   }
   line.append(after);
-  changeRow.append(input, ' ', saveLink, bad);
+  changeRow.append(fieldLabel, input, ' ', saveLink, bad);
   alert.append(line, changeRow);
   if (href) {
     // The whole amber box is the ask, not only the two words in it — the
@@ -236,6 +199,7 @@ function sectionHead(props, section, keepable, main, withUndo) {
     keepBtn.dataset.focus = 'keep-rest';
     keepBtn.prepend(faIcon('check'));
     keepBtn.addEventListener('click', () => {
+      if (holdIfDirty(openForm, main.querySelector('.sort-card'))) return;
       for (const x of main.querySelectorAll('button')) x.disabled = true;
       props.onKeepAll?.(keepable);
     });
@@ -275,6 +239,7 @@ function renderSectionList(main, props, section) {
   const rerender = () => renderSectionList(main, props, section);
   const focusKey = focusKeyIn(main);   // a redraw keeps the keyboard's place (design audit a1)
   main.replaceChildren();
+  openForm = null;
   const ctx = fixContext(props.rows, props.today);
   const group = sectionRows(props.rows, section, props.sessionDecided ?? new Set(), ctx, props.decidedFrom ?? new Map());
   const keepable = keepableIn(group.live);
@@ -342,26 +307,15 @@ function sortRowItem(row, { props, rerender, ctx, section, index }) {
   const text = el('span', 'sort-row-text');
   const badges = [];
   if (isNewToday(row, props.today)) badges.push(el('span', 'badge badge-new', 'New'));
-  if (section === 'skipped' && row.type) badges.push(el('span', 'badge', TYPE_LABELS[row.type] ?? row.type));
+  if (section === 'skipped' && row.type) badges.push(el('span', 'badge', typeDisplay(row.type)));
   if (badges.length) { const wrap = el('span', 'sort-row-badges'); wrap.append(...badges); text.append(wrap); }
   text.append(el('span', 'sort-row-title', row.headline || row.link || '(untitled)'));
   const meta = listMeta(row, props.today);
   if (meta) text.append(el('span', 'sort-row-meta', meta));
   item.append(text);
-  if (selected) item.append(faIcon('chevron-right'));
   item.addEventListener('click', () => {
-    // Unsaved typing in the card is not thrown away by a row click: the card
-    // says so instead, in place, so the typing stays (design audit b1).
-    if (listPanel === 'edit' && editDirty && row.id !== selectedId) {
-      const card = item.closest('.sort-main')?.querySelector('.sort-card');
-      if (card && !card.querySelector('.edit-warn')) {
-        const note = el('p', 'field-error edit-warn', 'Save or cancel this edit first.');
-        note.setAttribute('role', 'status');
-        card.prepend(note);
-      }
-      card?.querySelector('input, textarea')?.focus({ preventScroll: true });
-      return;
-    }
+    // Unsaved typing in the card is not thrown away by a row click (design audit b1).
+    if (row.id !== selectedId && holdIfDirty(openForm, item.closest('.sort-main')?.querySelector('.sort-card'))) return;
     selectedId = row.id; lastIndex = index; listPanel = null; rerender();
   });
   return item;
@@ -372,11 +326,17 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
   const card = el('div', 'card sort-card');
   const lock = () => { for (const x of card.querySelectorAll('button, input')) x.disabled = true; };
   if (listPanel === 'edit') {
-    const form = buildEditForm(row, {
-      onSave: changes => { lock(); listPanel = null; props.onEditRow?.(row, changes); },
+    card.append(el('h3', '', row.headline || row.link || '(untitled)'));
+    openForm = buildEditForm(row, {
+      onSave: changes => {
+        listPanel = null;
+        if (!Object.keys(changes).length) { rerender(); return; }
+        lock();
+        props.onEditRow?.(row, changes);
+      },
       onCancel: () => { listPanel = null; rerender(); },
     });
-    card.append(form.el);
+    card.append(openForm.el);
     return card;
   }
   // The top line, as on Finalize's card: the type with Change, then the badges.
@@ -385,7 +345,7 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
   const top = el('div', 'sort-card-top');
   if (!typeMissing && listPanel !== 'type') {
     const line = el('p', 'type-line');
-    line.append(el('span', 'type-label', [TYPE_LABELS[row.type] ?? row.type, row.subtype].filter(Boolean).join(' · ')), ' · ');
+    line.append(el('span', 'type-label', [typeDisplay(row.type), row.subtype].filter(Boolean).join(' · ')), ' · ');
     const change = el('button', 'linkish', 'Change');
     change.type = 'button';
     change.dataset.focus = 'change';
@@ -418,8 +378,9 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
       panel.append(panelHead('Needs a type', true), buildTypeRadios(row, commitType));
     } else if (listPanel === 'type') {
       panel.append(panelHead('Type', false), buildTypeRadios(row, commitType));
-      const cancel = el('button', 'linkish skip-link', 'Cancel');
+      const cancel = el('button', 'linkish quiet-link', 'Cancel');
       cancel.type = 'button';
+      cancel.dataset.focus = 'change';   // back on Change, where the panel was opened (audit round two, d3)
       cancel.addEventListener('click', () => { listPanel = null; rerender(); });
       panel.append(cancel);
     }
@@ -441,6 +402,7 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
   if (href && !linkAlert) {
     const a = el('a', 'source-link', 'Open source ↗');
     a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
+    a.append(el('span', 'sr-only', ' (opens in a new tab)'));
     parts.push(a);
   }
   const from = [row.submitter && `from ${row.submitter}`, row.submitted_at && isoToShort(row.submitted_at, props.today)].filter(Boolean).join(', ');
@@ -459,14 +421,14 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
   del.type = 'button';
   del.dataset.focus = 'delete';
   del.prepend(faIcon('trash-can'));
-  del.addEventListener('click', () => { lock(); props.onDecide?.(row, 'trash'); });
+  del.addEventListener('click', () => { lock(); landOnTitle = true; props.onDecide?.(row, 'trash'); });
   acts.append(edit, del);
   const right = el('span', 'sort-card-right');
   if (section !== 'skipped') {
-    const skip = el('button', 'linkish skip-link', 'Skip');
+    const skip = el('button', 'linkish quiet-link', 'Skip');
     skip.type = 'button';
     skip.dataset.focus = 'skip';
-    skip.addEventListener('click', () => { lock(); props.onDecide?.(row, 'circleback'); });
+    skip.addEventListener('click', () => { lock(); landOnTitle = true; props.onDecide?.(row, 'circleback'); });
     right.append(skip);
   }
   const keep = el('button', 'primary', ' Keep');
@@ -475,7 +437,7 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
   keep.prepend(faIcon('check'));
   const blocked = keepBlock(row);
   if (blocked) { keep.disabled = true; keep.title = blocked; }
-  keep.addEventListener('click', () => { lock(); props.onDecide?.(row, 'keep'); });
+  keep.addEventListener('click', () => { lock(); landOnTitle = true; props.onDecide?.(row, 'keep'); });
   right.append(keep);
   acts.append(right);
   card.append(acts);
@@ -527,7 +489,7 @@ function buildCardNotes(row) {
     const words = missing.map(f => FIELD_WORDS[f] ?? f).join(', ');
     const them = missing.length === 1 && missing[0] !== 'authors' ? 'it' : 'them';
     const why = row.link_checked === 'failed' ? ". The desk couldn't read the page" : '';
-    note.append(` No ${words} yet${why}. Add ${them} in Finalize.`);
+    note.append(` No ${words} yet${why}. Add ${them} with Edit.`);   // Edit is one form on both cards now (audit round two, e11)
     notes.push(note);
   }
   if (String(row.needs_review ?? '').trim()) {
@@ -558,12 +520,15 @@ export function renderSort(container, props) {
   head.append(info.row);
   const door = el('button', 'door head-action', 'Go to Finalize');
   door.append(forwardIcon());
-  door.addEventListener('click', () => onGoTo?.('finalize'));
+  door.addEventListener('click', () => { if (!holdIfDirty(openForm, container.querySelector('.sort-card'))) onGoTo?.('finalize'); });
   head.append(door);
   container.append(head, info.panel);
 
+  // Carbon's tabs, read as tabs: one tab stop, Left and Right between them (audit round two, e14).
   const nav = el('nav', 'sort-nav');
+  nav.setAttribute('role', 'tablist');
   nav.setAttribute('aria-label', 'Sections');
+  const leave = key => { if (!holdIfDirty(openForm, container.querySelector('.sort-card'))) onFilter(key); };
   for (const [key, label] of FILTER_LABELS) {
     const count = counts[key];
     let cls = 'sort-filter';
@@ -571,12 +536,26 @@ export function renderSort(container, props) {
     if (key === 'fix' && count > 0) cls += ' is-alert';   // the one notification on the screen
     const btn = el('button', cls, `${label} (${count})`);
     btn.type = 'button';
+    btn.id = `sort-tab-${key}`;
     btn.dataset.focus = `tab:${key}`;
-    if (filter === key) btn.setAttribute('aria-current', 'true');
-    btn.addEventListener('click', () => onFilter(key));
+    btn.setAttribute('role', 'tab');
+    btn.setAttribute('aria-selected', String(filter === key));
+    btn.setAttribute('aria-controls', 'sort-panel');
+    btn.tabIndex = filter === key ? 0 : -1;
+    btn.addEventListener('click', () => leave(key));
     nav.append(btn);
   }
+  nav.addEventListener('keydown', event => {
+    const next = adjacentTab(FILTER_KEYS, filter, event.key);
+    if (!next) return;
+    event.preventDefault();
+    nav.querySelector(`[data-focus="tab:${next}"]`)?.focus();
+    leave(next);
+  });
   const main = el('div', 'sort-main');
+  main.id = 'sort-panel';
+  main.setAttribute('role', 'tabpanel');
+  main.setAttribute('aria-labelledby', `sort-tab-${filter}`);
   const body = el('div', 'sort-body');
   body.append(nav, main);
   container.append(body);
@@ -588,7 +567,15 @@ export function renderSort(container, props) {
   lastFilter = filter;
 
   renderSectionList(main, props, filter);
-  restoreFocus(container, focusKey, container.querySelector('.sort-card h3'));
+  const title = container.querySelector('.sort-card h3');
+  if (landOnTitle && title) {
+    // After Keep, Skip or Delete the next item's title is read, and the keys still work from it.
+    title.tabIndex = -1;
+    title.focus({ preventScroll: true });
+  } else {
+    restoreFocus(container, focusKey, title ?? container.querySelector('.sort-pane-empty button'));
+  }
+  landOnTitle = false;
   bindShortcuts(container);
 }
 

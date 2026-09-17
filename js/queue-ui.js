@@ -4,15 +4,17 @@
  * type, and submission date. Sort is view state only; nothing here is a link.
  */
 import { dotsLoader, faIcon } from './icons.js';
-import { TYPE_LABELS } from './schema.js';
-import { sortRows, isoToShort, queueRows } from './queue-view.js';
+import { typeDisplay } from './schema.js';
+import { sortRows, isoToShort, queueRows, partnerFocusKey } from './queue-view.js';
+import { focusKeyIn, restoreFocus } from './ui-aids.js';
 
 // View state only — resets on reload, never persisted.
 let sortState = { column: 'submitted', dir: 'desc' };
-// Deleted from this table since the page opened, id -> the status it had before.
+// Deleted from this table since the page opened, id -> the row as it was.
 // They stay listed, greyed, with an Undo — the trash can is one click and the
-// rows are dense (Kate, Sep 9). The prior status matters: deleting a circle-back
-// and undoing it must give back a circle-back, not a new row.
+// rows are dense (Kate, Sep 9). The whole row matters, not just its status:
+// Undo puts back a circle-back as a circle-back and a quick-added item with
+// its newsletter stamp (audit round two, e21).
 const justDeleted = new Map();
 
 function el(tag, className, text) {
@@ -20,6 +22,23 @@ function el(tag, className, text) {
   if (className) node.className = className;
   if (text !== undefined) node.textContent = text;
   return node;
+}
+
+/**
+ * The mark an in-flight row action leaves in its button's place: the mini
+ * dots with a word for assistive tech, carrying the button's focus key so the
+ * redraw that follows can land on the row's partner control (audit round two,
+ * e17). Takes focus only when the button had it.
+ */
+export function inFlight(button, key, word) {
+  const wait = el('span', 'queue-wait');
+  wait.tabIndex = -1;
+  wait.dataset.focus = key;
+  wait.append(dotsLoader(true), el('span', 'sr-only', word));
+  const had = document.activeElement === button;
+  button.replaceWith(wait);
+  if (had) wait.focus({ preventScroll: true });
+  return wait;
 }
 
 /** Title with the source in small muted text underneath (when there is one). */
@@ -36,37 +55,38 @@ function submittedDate(row, today) {
   return isoToShort(row.submitted_at, today) || '';
 }
 
-function bodyRow(row, { onDelete, rerender, today }) {
+function bodyRow(row, { onDelete, today }) {
   const gone = justDeleted.has(row.id);
   const tr = el('tr', `queue-row${gone ? ' is-deleted' : ''}`);
   tr.append(titleCell(row));
   // A row the reader has not filed yet says so; its type is not settled.
   if (row.pending_read === 'yes') tr.append(el('td', 'missing', 'Reading…'));
   // "No type" in words, muted: a red dash read as an error and said nothing (Sep 15).
-  else tr.append(el('td', row.type ? '' : 'missing', row.type ? (TYPE_LABELS[row.type] ?? row.type) : 'No type'));
+  else tr.append(el('td', row.type ? '' : 'missing', row.type ? typeDisplay(row.type) : 'No type'));
   tr.append(el('td', '', submittedDate(row, today)));
 
+  // The caller's change re-renders the table; there is no stale redraw here.
   const actions = el('td', 'queue-actions');
   if (gone) {
     actions.append(el('span', 'queue-gone', 'Deleted'));
     const undo = el('button', 'linkish', 'Undo');
     undo.type = 'button';
+    undo.dataset.focus = `undo:${row.id}`;
     undo.addEventListener('click', () => {
-      const wasStatus = justDeleted.get(row.id) ?? 'new';
+      const snapshot = justDeleted.get(row.id) ?? row;
       justDeleted.delete(row.id);
-      onDelete?.(row, wasStatus);
-      rerender();
+      onDelete?.(snapshot, 'restore');
     });
     actions.append(undo);
   } else {
     const del = el('button', 'linkish trash-link', '');
     del.type = 'button';
+    del.dataset.focus = `delete:${row.id}`;
     del.setAttribute('aria-label', `Delete ${row.headline || row.link || 'this item'}`);
     del.append(faIcon('trash-can'));
     del.addEventListener('click', () => {
-      justDeleted.set(row.id, row.status);
+      justDeleted.set(row.id, row);
       onDelete?.(row, 'trash');
-      rerender();
     });
     actions.append(del);
   }
@@ -76,6 +96,7 @@ function bodyRow(row, { onDelete, rerender, today }) {
 
 export function renderQueueTable(container, { rows, today, onRefresh, onDelete, bare = false }) {
   const rerender = () => renderQueueTable(container, { rows, today, onRefresh, onDelete, bare });
+  const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place (audit round two, e17)
   container.replaceChildren();
 
   // bare: the caller owns the heading (Home's fold, Sep 15); only Refresh stays.
@@ -83,17 +104,26 @@ export function renderQueueTable(container, { rows, today, onRefresh, onDelete, 
   if (!bare) head.append(el('h2', '', 'In the queue'));
   const refresh = el('button', '', 'Refresh');
   refresh.type = 'button';
+  refresh.dataset.focus = 'refresh';
   refresh.addEventListener('click', () => {
-    refresh.hidden = true;   // gone while refreshing — the dots take its place
-    head.append(dotsLoader(true));
+    inFlight(refresh, 'refresh', 'Refreshing');   // gone while refreshing; the dots take its place
     onRefresh();
   });
   head.append(refresh);
   container.append(head);
 
+  // After Delete the keyboard lands on that row's Undo, after Undo on its
+  // trash can; a control that is simply gone hands over to Refresh.
+  const land = () => {
+    if (focusKey === null) return;
+    if (restoreFocus(container, focusKey, null)) return;
+    restoreFocus(container, partnerFocusKey(focusKey) || 'refresh', refresh);
+  };
+
   const listed = queueRows(rows, justDeleted);
   if (!listed.length) {
     container.append(el('p', 'empty', 'Nothing waiting. Enjoy it.'));
+    land();
     return;
   }
 
@@ -110,6 +140,7 @@ export function renderQueueTable(container, { rows, today, onRefresh, onDelete, 
     if (active) th.setAttribute('aria-sort', sortState.dir === 'desc' ? 'descending' : 'ascending');
     const btn = el('button', 'sort-btn', col.label);
     btn.type = 'button';
+    btn.dataset.focus = `sort:${col.key}`;
     btn.append(faIcon(active ? (sortState.dir === 'desc' ? 'arrow-down' : 'arrow-up') : 'sort'));
     if (active) btn.append(el('span', 'sr-only', sortState.dir === 'desc' ? ', sorted descending' : ', sorted ascending'));
     btn.addEventListener('click', () => {
@@ -126,11 +157,12 @@ export function renderQueueTable(container, { rows, today, onRefresh, onDelete, 
   table.append(thead);
   const body = el('tbody');
   for (const row of sortRows(listed, sortState.column, sortState.dir)) {
-    body.append(bodyRow(row, { onDelete, rerender, today }));
+    body.append(bodyRow(row, { onDelete, today }));
   }
   table.append(body);
 
   const scroll = el('div', 'table-scroll');
   scroll.append(table);
   container.append(scroll);
+  land();
 }

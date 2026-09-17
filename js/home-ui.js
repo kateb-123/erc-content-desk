@@ -22,6 +22,17 @@ function el(tag, className, text) {
   return node;
 }
 
+/**
+ * What a stat tile shows for a value (audit round two, d5): a real value is
+ * loud; waiting, a failed read and an empty fact are quiet words, so "Unknown"
+ * never wears the display size a date does.
+ */
+export function statWords({ waiting, failed, value, empty }) {
+  if (failed) return { text: "Couldn't load", quiet: true };
+  if (waiting) return { text: '…', quiet: true };
+  return value ? { text: value, quiet: false } : { text: empty, quiet: true };
+}
+
 /** When the first load failed: the reason is in the status line; this is the way to try again (design audit a5). */
 export function tryAgain(onRefresh) {
   const box = el('p', 'load-failed');
@@ -32,20 +43,28 @@ export function tryAgain(onRefresh) {
   return box;
 }
 
+// The rows as of the last render, for the form's "already in the queue" check:
+// the form is mounted once, so it asks for them instead of holding a stale copy.
+let currentRows = [];
+
 /**
  * One stat card (Kate's pick J, Sep 16): an icon, a label, the value in the
  * deep accent, on the tint. An href makes it a link out; an onClick makes
- * it a button; neither makes it a plain card.
+ * it a button; neither makes it a plain card. The cue glyph at the label's
+ * right says what the tile does before the mouse arrives: a chevron for the
+ * fold, an arrow for a screen, the box-and-arrow for a new tab (audit round two, e23).
  */
-function stat({ icon, label, value, unit, href, onClick, controls, expanded }) {
+function stat({ icon, label, words, unit, href, onClick, controls, expanded, cue }) {
   const node = el(href ? 'a' : onClick ? 'button' : 'div', 'stat');
   if (href) { node.href = href; node.target = '_blank'; node.rel = 'noreferrer'; }
   if (onClick) { node.type = 'button'; node.addEventListener('click', onClick); }
   if (controls) { node.setAttribute('aria-controls', controls); node.setAttribute('aria-expanded', String(Boolean(expanded))); }
   node.append(faIcon(icon));
-  node.append(el('span', 'stat-label', label));
-  const v = el('span', 'stat-value', value);
-  if (unit) v.append(' ', el('small', '', unit));
+  const lab = el('span', 'stat-label', label);
+  if (cue) lab.append(faIcon(cue));
+  node.append(lab);
+  const v = el('span', `stat-value${words.quiet ? ' is-empty' : ''}`, words.text);
+  if (unit && !words.quiet) v.append(' ', el('small', '', unit));
   node.append(v);
   if (href) node.append(el('span', 'sr-only', ' (opens in a new tab)'));
   return node;
@@ -56,6 +75,7 @@ export function renderHome(container, props) {
     rows, schedule, today, loaded, loadFailed, hubUpdated, lastIssue,
     onGoTo, onSubmitted, onRefresh, onDeleteFromQueue,
   } = props;
+  currentRows = rows;
   // The shell (form, links, headings) paints immediately — only the
   // data-backed parts wait on the ~4s Sheet read, so the page is usable at once.
   let strip = container.querySelector('.stats-strip');
@@ -69,7 +89,7 @@ export function renderHome(container, props) {
     formSide.append(el('p', 'lede', 'Share whatever details you have.'));
     const mount = el('div');
     formSide.append(mount);
-    renderSubmitForm(mount, { onSubmitted });
+    renderSubmitForm(mount, { onSubmitted, knownLinks: () => currentRows });
     grid.append(formSide);
     // The fold: a native details, closed on arrival, whose open state lives in
     // the DOM (the element is never rebuilt, so a data re-render keeps it).
@@ -81,33 +101,46 @@ export function renderHome(container, props) {
   }
 
   // ── The stats: four cards on the tint (Kate's pick J of four, Sep 16). ──
-  // A card with nothing to show says so in a word (the style audit, Sep 16: no dashes on screen).
-  const dash = (v, empty) => (!loaded ? '…' : (v || empty));
+  // A card with nothing to show says so in a word (the style audit, Sep 16: no dashes on screen);
+  // a card whose read failed says that (audit round two, d5). The two outer cards have their
+  // own reads and show them as soon as they land.
+  const sheet = { waiting: !loaded && !loadFailed, failed: loadFailed && !loaded };
   const issue = nextIssueDate(schedule, today);
   const count = loaded ? String(queueBadgeCount(rows)) : '·';   // the queue card and the fold's heading share it
   strip.replaceChildren(
     stat({
-      icon: 'inbox', label: 'In the queue',
-      value: loaded ? count : '…', unit: loaded ? 'waiting' : '',
+      icon: 'inbox', label: 'In the queue', cue: 'chevron-down',
+      words: statWords({ ...sheet, value: loaded ? count : '', empty: '0' }), unit: 'waiting',
       controls: 'home-queue',
       expanded: container.querySelector('.queue-fold')?.open ?? false,
       onClick: () => {
-        // Open the fold and put the reader on it (design audit b15).
+        // Open the fold and put the reader on it (design audit b15); no smooth
+        // scroll for anyone who asked for less motion (audit round two, f11).
         const fold = container.querySelector('.queue-fold');
         fold.open = true;
-        fold.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        fold.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
         const summary = fold.querySelector('summary');
         summary.focus({ preventScroll: true });
         container.querySelector('.stat[aria-controls="home-queue"]')?.setAttribute('aria-expanded', 'true');
       },
     }),
     stat({
-      icon: 'paper-plane', label: 'Next newsletter',
-      value: dash(isoToShort(issue, today), 'Not set'), unit: loaded && issue ? issueTally(issueSummary(rows, issue).inIssue) : '',
+      icon: 'paper-plane', label: 'Next newsletter', cue: 'arrow-right',
+      words: statWords({ ...sheet, value: isoToShort(issue, today), empty: 'Not set' }),
+      unit: loaded && issue ? issueTally(issueSummary(rows, issue).inIssue) : '',
       onClick: () => onGoTo('issue'),
     }),
-    stat({ icon: 'globe', label: 'Exchange updated', value: dash(isoToShort(hubUpdated, today), 'Unknown'), href: EXCHANGE_URL }),
-    stat({ icon: 'envelope-open-text', label: 'Last newsletter', value: dash(isoToShort(lastIssue, today), 'None yet'), href: ARCHIVE_PATH }),
+    stat({
+      icon: 'globe', label: 'Exchange updated', cue: 'arrow-up-right-from-square',
+      words: statWords({ waiting: hubUpdated === null, failed: false, value: isoToShort(hubUpdated, today), empty: 'Unknown' }),
+      href: EXCHANGE_URL,
+    }),
+    stat({
+      icon: 'envelope-open-text', label: 'Last newsletter', cue: 'arrow-up-right-from-square',
+      words: statWords({ waiting: lastIssue === null, failed: false, value: isoToShort(lastIssue, today), empty: 'None yet' }),
+      href: ARCHIVE_PATH,
+    }),
   );
 
   // ── The queue, folded at the bottom. The summary is the heading. ──

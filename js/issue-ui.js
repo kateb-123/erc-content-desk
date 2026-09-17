@@ -10,18 +10,24 @@
  * item out of the issue; it stays in the queue.
  */
 import { faIcon, dotsLoader } from './icons.js';
-import { isoToShort } from './queue-view.js';
+import { isoToShort, partnerFocusKey } from './queue-view.js';
 import { nextIssueDate } from './schedule.js';
 import { issueRows } from './issue-view.js';
-import { TYPE_LABELS } from './schema.js';
+import { typeDisplay } from './schema.js';
 import { renderSubmitForm } from './submit-form.js';
 import { tryAgain } from './home-ui.js';
+import { inFlight } from './queue-ui.js';
+import { titleWithInfo } from './screen-info.js';
+import { focusKeyIn, restoreFocus } from './ui-aids.js';
 
 let quickOpen = false;   // view state: the form stays open across re-renders
 let quickJustOpened = false;   // the panel takes focus once, on the click that opened it (design audit b15)
 const justRemoved = new Map();   // removed this visit, id -> the row as it was: listed greyed with Undo (design audit c6)
+let currentRows = [];   // the rows as of the last render, for the form's "already in the queue" check
 
 export function resetIssueEntry() { quickOpen = false; justRemoved.clear(); }
+
+const INFO = 'Quick add puts an item in this issue and in the queue for Sort at once. Remove takes an item out of this issue; it stays in the queue. Not sorted yet marks an item Sort has not had yet.';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -41,20 +47,23 @@ function titleCell(row) {
 }
 
 function typeText(row) {
-  return row.type ? (TYPE_LABELS[row.type] ?? row.type) : 'No type';
+  return row.type ? typeDisplay(row.type) : 'No type';
 }
 
 export function renderIssue(container, props) {
   const { rows, schedule, today, loaded, loadFailed, onQuickAdd, onRemove, onRestore, onRefresh } = props;
+  currentRows = rows;
   const issue = nextIssueDate(schedule, today);
   const when = isoToShort(issue, today);
   const title = issue ? `Next newsletter, ${when}` : 'Next newsletter';
   const parts = [];
 
+  // The title with View info beside it, as on every other screen (audit round two, e25).
   const head = el('div', 'screen-head');
-  const h2 = el('h2', '', title);
-  head.append(h2);
-  parts.push(head);
+  const info = titleWithInfo(title, 'issue', INFO);
+  const h2 = info.row.querySelector('h2');
+  head.append(info.row);
+  parts.push(head, info.panel);
 
   if (!loaded) { container.replaceChildren(...parts, loadFailed ? tryAgain(onRefresh) : dotsLoader()); return; }
   if (!issue) {
@@ -77,8 +86,9 @@ export function renderIssue(container, props) {
   // ── Quick add sits right of the title; no lede, the table says it all. ──
   const quick = el('button', 'mini-btn', quickOpen ? 'Close quick add' : 'Quick add');
   quick.type = 'button';
+  quick.dataset.focus = 'quick';
   quick.setAttribute('aria-expanded', String(quickOpen));
-  quick.setAttribute('aria-controls', 'issue-quick');
+  if (quickOpen) quick.setAttribute('aria-controls', 'issue-quick');   // only while the panel is in the page (audit round two, f12)
   quick.addEventListener('click', () => { quickOpen = !quickOpen; quickJustOpened = quickOpen; renderIssue(container, props); });
   head.append(quick);
 
@@ -93,7 +103,14 @@ export function renderIssue(container, props) {
       panel.append(el('h3', '', `Add to the ${when} newsletter`));
       const mount = el('div');
       panel.append(mount);
-      renderSubmitForm(mount, { bulk: false, onSubmitted: data => onQuickAdd(data) });
+      // The confirmation names this destination and waits for the stamp, in the panel (audit round two, e20).
+      renderSubmitForm(mount, {
+        bulk: false,
+        onSubmitted: data => onQuickAdd(data),
+        knownLinks: () => currentRows,
+        pendingLine: `Adding it to the ${when} newsletter`,
+        doneLine: `In the ${when} newsletter, and in the queue for Sort.`,
+      });
     }
     parts.push(panel);
   }
@@ -117,8 +134,9 @@ export function renderIssue(container, props) {
       const td = el('td', 'bulk-remove');
       const remove = el('button', 'linkish trash-link', ' Remove');
       remove.type = 'button';
+      remove.dataset.focus = `remove:${row.id}`;
       remove.prepend(faIcon('trash-can'));
-      remove.addEventListener('click', () => { remove.disabled = true; justRemoved.set(row.id, row); onRemove(row); });
+      remove.addEventListener('click', () => { inFlight(remove, `remove:${row.id}`, 'Removing'); justRemoved.set(row.id, row); onRemove(row); });
       td.append(remove);
       tr.append(td);
       tbody.append(tr);
@@ -132,7 +150,8 @@ export function renderIssue(container, props) {
       td.append(el('span', 'queue-gone', 'Removed'));
       const undo = el('button', 'linkish', 'Undo');
       undo.type = 'button';
-      undo.addEventListener('click', () => { undo.disabled = true; justRemoved.delete(row.id); onRestore?.(row); });
+      undo.dataset.focus = `undo:${row.id}`;
+      undo.addEventListener('click', () => { inFlight(undo, `undo:${row.id}`, 'Putting it back'); justRemoved.delete(row.id); onRestore?.(row); });
       td.append(undo);
       tr.append(td);
       tbody.append(tr);
@@ -144,11 +163,19 @@ export function renderIssue(container, props) {
   }
 
   // The form is mounted once per opening and left alone across re-renders,
-  // so typing survives a data refresh.
+  // so typing survives a data refresh; focus inside it survives too, and a
+  // table action's focus lands on its partner (audit round two, e17).
+  const active = document.activeElement;
+  const inPanel = Boolean(panel?.contains(active));
+  const focusKey = inPanel ? null : focusKeyIn(container);
   container.replaceChildren(...parts);
   if (panel && quickJustOpened) {
     quickJustOpened = false;
     panel.querySelector('#sf-title')?.focus({ preventScroll: true });
     panel.scrollIntoView({ block: 'nearest' });
+  } else if (inPanel) {
+    active.focus({ preventScroll: true });
+  } else if (focusKey !== null && !restoreFocus(container, focusKey, null)) {
+    restoreFocus(container, partnerFocusKey(focusKey, 'remove') || 'quick', h2);
   }
 }

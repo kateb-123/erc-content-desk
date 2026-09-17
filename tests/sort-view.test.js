@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { keptUntyped, sortCounts, sectionOf, allSections, sectionRows, fixReasons, landingSection, pendingRowCount, keepBlock, nextSelected, nextSectionWithRows } from '../js/sort-view.js';
+import { keptUntyped, sortCounts, sectionOf, allSections, sectionRows, fixReasons, landingSection, pendingRowCount, keepBlock, nextSelected, nextSectionWithRows, undoWords, withoutRow, adjacentTab } from '../js/sort-view.js';
 
 // Shuffled on purpose: statuses mixed in, groups interleaved, dates unordered.
 // Every typed row carries a real subtype: without one it would sit under Needs a fix.
@@ -345,4 +345,37 @@ test('nextSectionWithRows finds the next section that holds anything, wrapping r
   assert.equal(nextSectionWithRows(counts, 'research'), 'opportunity');
   assert.equal(nextSectionWithRows(counts, 'opportunity'), 'research');
   assert.equal(nextSectionWithRows({ ...counts, research: 0, opportunity: 0 }, 'fix'), null);
+});
+
+// Audit round two, e3: Undo last says what it undid, and a row's own Undo takes
+// that row out of the stack so Undo last can never re-apply its decision.
+test('undoWords: names what an undo restored', () => {
+  const row = { headline: 'Teacher pay study' };
+  assert.equal(undoWords({ kind: 'keep', rows: [row] }), 'Undid: kept Teacher pay study');
+  assert.equal(undoWords({ kind: 'circleback', rows: [row] }), 'Undid: skipped Teacher pay study');
+  assert.equal(undoWords({ kind: 'trash', rows: [row] }), 'Undid: deleted Teacher pay study');
+  assert.equal(undoWords({ kind: 'keep-all', rows: [row, row, row] }), 'Undid: kept 3');
+  assert.equal(undoWords({ kind: 'edit', rows: [row] }), 'Undid: the edit to Teacher pay study');
+  assert.equal(undoWords({ kind: 'type', rows: [row] }), 'Undid: the type on Teacher pay study');
+  assert.equal(undoWords({ kind: 'link', rows: [row] }), 'Undid: the link check on Teacher pay study');
+  assert.equal(undoWords({ kind: 'keep', rows: [{ link: 'https://x.org' }] }), 'Undid: kept https://x.org');
+});
+
+test('withoutRow: drops one row from every entry and empties the entries it leaves', () => {
+  const a = { id: 'a' }, b = { id: 'b' };
+  const stack = [{ kind: 'keep', rows: [a] }, { kind: 'keep-all', rows: [a, b] }, { kind: 'edit', rows: [b] }];
+  const out = withoutRow(stack, 'a');
+  assert.deepEqual(out.map(e => [e.kind, e.rows.map(r => r.id)]), [['keep-all', ['b']], ['edit', ['b']]]);
+  assert.equal(stack.length, 3, 'the stack passed in is not changed');
+});
+
+// Audit round two, e14: the section tabs are one tab stop; Left and Right move between them.
+test('adjacentTab: Left and Right wrap, Home and End jump, other keys do nothing', () => {
+  const keys = ['fix', 'erc', 'research'];
+  assert.equal(adjacentTab(keys, 'erc', 'ArrowRight'), 'research');
+  assert.equal(adjacentTab(keys, 'research', 'ArrowRight'), 'fix');
+  assert.equal(adjacentTab(keys, 'fix', 'ArrowLeft'), 'research');
+  assert.equal(adjacentTab(keys, 'erc', 'Home'), 'fix');
+  assert.equal(adjacentTab(keys, 'fix', 'End'), 'research');
+  assert.equal(adjacentTab(keys, 'fix', 'Enter'), null);
 });

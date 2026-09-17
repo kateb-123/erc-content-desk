@@ -9,17 +9,18 @@
  */
 import { readyToPublish, canRewrite, needsDescription } from './workflow.js';
 import { isErc } from './sort-view.js';
-import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
+import { TYPE_ORDER, typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { dotsLoader, faIcon, forwardIcon, loadingLabel } from './icons.js';
-import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges, fieldsForType, dateField } from './finalize-view.js';
-import { buildImageControl } from './item-image.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection } from './finalize-view.js';
+import { buildEditForm, holdIfDirty } from './edit-form.js';
 import { titleWithInfo } from './screen-info.js';
 import { focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
 
 
 // View state only — resets on reload, never persisted.
 let editingId = null;
+let openForm = null;        // the open edit form, so every way out can hold its typing (audit round two, e4)
 let selectedId = null;      // the row the card shows
 let noneOpen = false;       // the No rewrite needed group, folded by default
 // Deleted from this screen since it opened, id -> the row as it was. They stay
@@ -137,51 +138,7 @@ export function detailBody(row, extra, today) {
   return wrap;
 }
 
-const FIELD_TITLES = {
-  headline: 'Title', date: 'Date', source: 'Source', topic: 'Topic',
-  blurb: 'Description', deadline: 'Deadline', authors: 'Authors',
-  time: 'Time', location: 'Location',
-};
-
-function editBody(row, { onSave, onCancel }) {
-  const wrap = el('div', 'f-edit-card');
-  const grid = el('div', 'f-edit-grid');
-  const inputs = {};
-  // Only the fields this type uses, dates as date inputs (design audit b4).
-  const fields = fieldsForType(row.type);
-  for (const field of fields) {
-    const label = el('label', field === 'blurb' ? 'f-edit-blurb' : '', FIELD_TITLES[field] ?? field);
-    const input = field === 'blurb' ? el('textarea') : el('input');
-    if (field === 'blurb') input.rows = 3;
-    else input.type = dateField(field) ? 'date' : 'text';
-    input.value = row[field] ?? '';
-    inputs[field] = input;
-    label.append(input);
-    grid.append(label);
-  }
-  // Media on every item (Kate, Sep 17): a small Add media under the fields;
-  // the picture rides the row's infographic column into the hub and the newsletter.
-  const media = el('div', 'f-edit-media', 'Media');
-  const imgCtl = buildImageControl(row.infographic, () => {});
-  media.append(imgCtl.el);
-  grid.append(media);
-  wrap.append(grid);
-  const actions = el('div', 'f-edit-actions');
-  const save = el('button', 'primary', 'Save');
-  save.type = 'button';
-  save.addEventListener('click', () => {
-    const values = Object.fromEntries(fields.map(field => [field, inputs[field].value]));
-    onSave(row, editChanges(row, { ...values, infographic: imgCtl.get() }));
-  });
-  const cancel = el('button', 'btn-outline', 'Cancel');
-  cancel.type = 'button';
-  cancel.addEventListener('click', onCancel);
-  actions.append(save, cancel);
-  wrap.append(actions);
-  return wrap;
-}
-
-const typeText = row => [row.type ? (TYPE_LABELS[row.type] ?? row.type) : '', row.subtype].filter(Boolean).join(' · ');
+const typeText = row => [row.type ? typeDisplay(row.type) : '', row.subtype].filter(Boolean).join(' · ');
 
 /** The head of every card: type line, title, source. */
 function cardHead(card, row) {
@@ -208,14 +165,16 @@ function toolLinks(actions, row, { rerender, onTrash, lock }) {
 function editCard(row, { onSave, rerender }) {
   const card = el('div', 'card f-card');
   cardHead(card, row);
-  card.append(editBody(row, {
-    onSave: (r, changes) => {
+  // The one edit form, the same as Sort's (audit round two, e11).
+  openForm = buildEditForm(row, {
+    onSave: changes => {
       editingId = null;
-      if (Object.keys(changes).length) onSave(r, changes);
+      if (Object.keys(changes).length) onSave(row, changes);
       else rerender();
     },
     onCancel: () => { editingId = null; rerender(); },
-  }));
+  });
+  card.append(openForm.el);
   return card;
 }
 
@@ -246,7 +205,7 @@ function checkCard(row, { old, nextId, onVerify, onRevert, onCheckEdit, onTrash,
   const lock = () => { for (const b of card.querySelectorAll('button')) b.disabled = true; };
   toolLinks(actions, row, { rerender, onTrash, lock });
   if (old) {
-    const revert = el('button', 'linkish skip-link', ' Use original');
+    const revert = el('button', 'linkish quiet-link', ' Use original');
     revert.type = 'button';
     revert.dataset.focus = 'revert';
     revert.prepend(faIcon('rotate-left'));
@@ -295,12 +254,20 @@ export function renderFinalize(container, props) {
   const { rows, today, review, verified, reviewTotal, busy, rewroteNote, lastKeepAll, onEditRow, onCheckEdit, onRewrite, onVerifyRewrite, onVerifyAll, onUndoKeepAll, onRevertRewrite, onTrash, onRestore, onGoTo } = props;
   const rerender = () => renderFinalize(container, props);
   const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place (design audit a1)
+  const held = () => holdIfDirty(openForm, container.querySelector('.f-card'));
   container.replaceChildren();
+  openForm = null;
   const keeps = standingOrder(readyToPublish(rows));
   const handled = id => review?.has(id) || verified?.has(id);
   const pending = keeps.filter(r => needsRewrite(r) && !handled(r.id));
   const checks = review?.size ?? 0;
   const stage = finalizeStage({ pending: pending.length, checks });
+  const groups = finalizeGroups(keeps, {
+    pending: new Set(pending.map(r => r.id)),
+    review: new Set(review?.keys?.() ?? []),
+    verified: verified ?? new Set(),
+  });
+  const toCheck = groups.find(g => g.key === 'check')?.rows ?? [];
 
   // ── The head: title, one line of progress, one action on the right. ──
   const head = el('div', 'screen-head finalize-head');
@@ -313,7 +280,7 @@ export function renderFinalize(container, props) {
     : finalizeProgress(stage, { pending: pending.length, keeps: keeps.length });
   const lede = el('p', 'lede');
   if (lastKeepAll?.length && onUndoKeepAll) {
-    // Keep all remaining is one click; its way back sits where the count was (design audit b5).
+    // Keep the rest is one click; its way back sits where the count was (design audit b5).
     lede.append(`Kept ${lastKeepAll.length} rewrite${lastKeepAll.length === 1 ? '' : 's'}. `);
     const undo = el('button', 'linkish', 'Undo');
     undo.type = 'button';
@@ -329,13 +296,23 @@ export function renderFinalize(container, props) {
   if (!busy && stage === 'before') {
     const btn = el('button', 'primary', `Rewrite ${pending.length} description${pending.length === 1 ? '' : 's'}`);
     btn.dataset.focus = 'rewrite';
-    btn.addEventListener('click', () => { btn.disabled = true; onRewrite(); });
+    btn.addEventListener('click', () => { if (held()) return; btn.disabled = true; onRewrite(); });
     head.append(btn);
+  } else if (!busy && stage === 'checking' && onVerifyAll) {
+    // The bulk keep, named and drawn as on Sort (audit round two, f3).
+    if (toCheck.length > 1) {
+      const all = el('button', 'primary', ` Keep the rest (${toCheck.length})`);
+      all.type = 'button';
+      all.dataset.focus = 'keep-all';
+      all.prepend(faIcon('check'));
+      all.addEventListener('click', () => { if (held()) return; all.disabled = true; selectedId = null; onVerifyAll(toCheck.map(r => r.id)); });
+      head.append(all);
+    }
   } else if (!busy && stage === 'plain' && keeps.length) {
     const btn = el('button', 'door head-action', 'Go to Publish');
     btn.dataset.focus = 'door';
     btn.append(forwardIcon());
-    btn.addEventListener('click', () => onGoTo('publish'));
+    btn.addEventListener('click', () => { if (!held()) onGoTo('publish'); });
     head.append(btn);
   }
   container.append(head);
@@ -365,11 +342,6 @@ export function renderFinalize(container, props) {
   }
 
   // ── The list on the left. ──
-  const groups = finalizeGroups(keeps, {
-    pending: new Set(pending.map(r => r.id)),
-    review: new Set(review?.keys?.() ?? []),
-    verified: verified ?? new Set(),
-  });
   selectedId = pickSelection(groups, selectedId);
   const onlyNone = groups.length === 1 && groups[0].key === 'none';
 
@@ -383,8 +355,8 @@ export function renderFinalize(container, props) {
       toggle.type = 'button';
       toggle.dataset.focus = `group:${group.key}`;
       toggle.setAttribute('aria-expanded', String(open));
-      toggle.append(el('span', '', group.label), el('span', 'f-group-count', String(group.rows.length)), faIcon(open ? 'chevron-up' : 'chevron-right'));
-      toggle.addEventListener('click', () => { noneOpen = !open; rerender(); });
+      toggle.append(faIcon(open ? 'chevron-down' : 'chevron-right'), el('span', '', group.label), el('span', 'f-group-count', String(group.rows.length)));
+      toggle.addEventListener('click', () => { if (held()) return; noneOpen = !open; rerender(); });
       list.append(toggle);
     } else {
       list.append(el('p', 'f-group-head', group.label));
@@ -395,12 +367,18 @@ export function renderFinalize(container, props) {
       item.type = 'button';
       item.dataset.focus = `row:${row.id}`;
       if (row.id === selectedId) item.setAttribute('aria-current', 'true');
+      if (group.key === 'rewrite') {
+        // Colour is never the only signal: the triangle, as on Sort's rows (audit round two, f14).
+        const mark = faIcon('triangle-exclamation');
+        mark.classList.add('fix-mark');
+        item.append(mark);
+      }
       const text = el('span', 'f-row-text');
       text.append(el('span', 'f-row-title', row.headline || row.link || '(untitled)'));
       if (row.type) text.append(el('span', 'f-row-type', typeText(row)));
       item.append(text);
       if (group.key === 'done') item.append(faIcon('check'));
-      item.addEventListener('click', () => { selectedId = row.id; editingId = null; rerender(); });
+      item.addEventListener('click', () => { if (row.id !== selectedId && held()) return; selectedId = row.id; editingId = null; rerender(); });
       list.append(item);
     }
   }
@@ -421,15 +399,6 @@ export function renderFinalize(container, props) {
     }
   }
   side.append(list);
-  const toCheck = groups.find(g => g.key === 'check')?.rows ?? [];
-  if (toCheck.length > 1 && onVerifyAll) {
-    const all = el('button', 'linkish f-keep-all', ` Keep all remaining (${toCheck.length})`);
-    all.type = 'button';
-    all.dataset.focus = 'keep-all';
-    all.prepend(faIcon('check'));
-    all.addEventListener('click', () => { all.disabled = true; selectedId = null; onVerifyAll(toCheck.map(r => r.id)); });
-    side.append(all);
-  }
   split.append(side);
 
   // ── The card on the right. ──
@@ -442,6 +411,7 @@ export function renderFinalize(container, props) {
     empty.append(verified?.size ? 'Every rewrite is checked. ' : 'Nothing needs a rewrite. ');
     const go = el('button', 'linkish', 'Go to Publish');
     go.type = 'button';
+    go.dataset.focus = 'door-empty';
     go.append(' ', forwardIcon());
     go.addEventListener('click', () => onGoTo('publish'));
     empty.append(go);
@@ -458,5 +428,5 @@ export function renderFinalize(container, props) {
   container.append(split);
   const card = split.querySelector('.f-card');
   if (card) markOverflow(card);
-  restoreFocus(container, focusKey, card?.querySelector('h3') ?? card);
+  restoreFocus(container, focusKey, card?.querySelector('h3') ?? split.querySelector('.f-pane-empty button'));
 }

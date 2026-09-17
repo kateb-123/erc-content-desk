@@ -32,13 +32,15 @@ export function openBusyOverlay({ title, total, note = '' }) {
   const card = el('div', 'busy-card');
   card.setAttribute('role', 'dialog');
   card.setAttribute('aria-modal', 'true');
-  card.setAttribute('aria-live', 'polite');
   card.tabIndex = -1;
 
   const heading = el('h2', '', title);
   heading.id = 'busy-title';
   card.setAttribute('aria-labelledby', heading.id);
   const count = el('div', 'busy-count');
+  // The count line is read whole, "3 of 40", not the bare number (audit round two, f5).
+  count.setAttribute('aria-live', 'polite');
+  count.setAttribute('aria-atomic', 'true');
   const doneEl = el('strong', '', '0');
   count.append(doneEl, el('span', '', ` of ${total}`));
   const track = el('div', 'busy-track');

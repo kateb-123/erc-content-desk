@@ -9,7 +9,7 @@ import { titleWithInfo } from './screen-info.js';
 import { faIcon } from './icons.js';
 import { buildPool, newsletterOnly, reshareFlags } from './workflow.js';
 import { isErc } from './sort-view.js';
-import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
+import { TYPE_ORDER, typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { eventTiming, deadlineState } from './schedule.js';
 import { focusKeyIn, restoreFocus } from './ui-aids.js';
@@ -53,13 +53,20 @@ function issueLabel(iso) {
     .toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 }
 
+/** A fold's summary: the chevron on the left, as on every opener (audit round two, f1). */
+function foldSummary(text, className = '') {
+  const summary = el('summary', className);
+  summary.append(faIcon('chevron-right'), el('span', '', text));
+  return summary;
+}
+
 /** Mistakes found later: what's already stamped for this issue, with a way back. */
 function sentSection(container, { rows, issue, onUnsend }) {
   if (!issue || !onUnsend) return;
   const sent = rows.filter(r => String(r.newsletter_issue ?? '') === issue);
   if (!sent.length) return;
   const box = el('details', 'nl-sent');
-  box.append(el('summary', '', `Already sent to this issue (${sent.length})`));
+  box.append(foldSummary(`Already sent to this issue (${sent.length})`));
   const table = el('table', 'queue-table nl-table');
   const tbody = el('tbody');
   for (const row of sent) {
@@ -91,7 +98,7 @@ function pastSection(container, { past, onTrash, onRestore, rows }) {
   const deleted = [...justDeleted.values()].filter(r => rows.find(x => x.id === r.id)?.status === 'trashed');
   if (!past.length && !deleted.length) return;
   const fold = el('details', 'nl-sent nl-past');
-  fold.append(el('summary', '', `Past items (${past.length + deleted.length})`));
+  fold.append(foldSummary(`Past items (${past.length + deleted.length})`));
   const table = el('table', 'queue-table');
   const tbody = el('tbody');
   for (const { row, why, when } of past) {
@@ -203,15 +210,6 @@ export function renderNewsletter(container, props) {
   }
   lead.append(lede);
   head.append(lead);
-  if (!justSent && live.length && !busy) {
-    const btn = el('button', 'primary', selected.length
-      ? `Send ${selected.length} to the ${issueLabel(issue)} issue`
-      : `Send to the ${issueLabel(issue)} issue`);
-    btn.dataset.focus = 'send';
-    btn.disabled = !selected.length || !issue;
-    btn.addEventListener('click', () => { btn.disabled = true; onSend(selected, issue); });
-    head.append(btn);
-  }
   container.append(head);
 
   if (justSent) {
@@ -277,7 +275,7 @@ export function renderNewsletter(container, props) {
       if (fold.open) collapsedGroups.delete(label);
       else collapsedGroups.add(label);
     });
-    const summary = el('summary', 'p-group nl-group-summary', `${label} · ${pickedHere} of ${group.length} picked`);
+    const summary = foldSummary(`${label} · ${pickedHere} of ${group.length} picked`, 'p-group nl-group-summary');
     fold.append(summary);
     fold.dataset.group = label;
     const table = el('table', 'queue-table nl-table');
@@ -339,6 +337,7 @@ export function renderNewsletter(container, props) {
           ask.append(faIcon('clock'), ' Send early? ');
           const ok = el('button', 'linkish alert-word', 'Confirm');
           ok.type = 'button';
+          ok.dataset.focus = `pick:${row.id}`;   // back on the row's box after the ask (audit round two, d3)
           ok.addEventListener('click', e => {
             e.stopPropagation();
             confirmedEarly.add(row.id);
@@ -349,6 +348,7 @@ export function renderNewsletter(container, props) {
           askConfirm = ok;
           const no = el('button', 'linkish alert-word nl-cancel', 'Cancel');
           no.type = 'button';
+          no.dataset.focus = `pick:${row.id}`;
           no.addEventListener('click', e => {
             e.stopPropagation();
             askOpenId = null;
@@ -363,7 +363,7 @@ export function renderNewsletter(container, props) {
       }
       tr.append(titleTd);
       const typeTd = el('td');
-      typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : ''));
+      typeTd.append(el('span', '', row.type ? typeDisplay(row.type) : ''));
       if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
       if (newsletterOnly(row)) typeTd.append(el('span', 'badge', 'Newsletter only'));
       tr.append(typeTd);
@@ -376,6 +376,21 @@ export function renderNewsletter(container, props) {
     scroll.append(table);
     fold.append(scroll);
     container.append(fold);
+  }
+
+  // Send and the count ride at the foot of the window while the groups scroll (audit round two, e13).
+  if (!justSent && live.length && !busy) {
+    const foot = el('div', 'nl-foot');
+    foot.append(el('span', 'nl-picked', `${selected.length} picked`));
+    const btn = el('button', 'primary', selected.length
+      ? `Send ${selected.length} to the ${issueLabel(issue)} issue`
+      : `Send to the ${issueLabel(issue)} issue`);
+    btn.dataset.focus = 'send';
+    btn.disabled = !selected.length || !issue;
+    if (btn.disabled) btn.title = issue ? 'Pick at least one item' : 'Pick an issue';
+    btn.addEventListener('click', () => { btn.disabled = true; onSend(selected, issue); });
+    foot.append(btn);
+    container.append(foot);
   }
 
   pastSection(container, { past, onTrash, onRestore, rows });
