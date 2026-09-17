@@ -24,6 +24,13 @@ export const ARCHIVE_PATH = '/builder/archive.html';
  *  (Kate, Sep 15: "a new section and a new set of activities"). */
 export const SECTION_SCREENS = ['sort', 'finalize', 'publish', 'build'];
 
+/** The builder's pages carry the desk's sidebar too (Kate, Sep 16): the
+ *  builder itself and Past newsletters, named by the items they light. */
+export const BUILDER_SCREENS = ['builder', 'past'];
+
+// Where the menu tucks behind the thin strip: Desk work, and the builder.
+const TUCKED_SCREENS = [...SECTION_SCREENS, 'builder'];
+
 // Claude Design round two, Kate's pick (Sep 16): the team's links first, the
 // pipeline last as a "Desk work" fold; icons on the group headings, none on
 // the items under them; Sort shows the queue count.
@@ -57,19 +64,48 @@ export function foldOpen(stored, screen) {
 }
 
 /** Desk work tucks the sidebar away (Kate, Sep 16: "b when it's expanded and
- *  the button. but also the thin grey bar to the left like C"). On a pipeline
- *  screen a thin grey strip holds the menu button until it is opened; open,
- *  the sidebar is back in place with a close button. The front door always
- *  keeps its sidebar. */
+ *  the button. but also the thin grey bar to the left like C"), and so does
+ *  the builder ("make the newsletter builder behave like the sort does with
+ *  the menu"). There a thin grey strip holds the menu button until it is
+ *  opened; open, the sidebar is back in place with a close button. The front
+ *  door and Past newsletters always keep their sidebar. */
 export function menuLayout(screen, open) {
-  const tucks = SECTION_SCREENS.includes(screen);
+  const tucks = TUCKED_SCREENS.includes(screen);
   return { strip: tucks && !open, sidebar: !tucks || open, close: tucks && open };
 }
 
-/** Which item is lit for a screen; '' when none is. */
+/** Which item is lit for a screen; '' when none is. The builder's pages are
+ *  named by their items' keys. */
 export function currentKey(screen) {
-  const item = NAV.flatMap(g => g.items).find(i => i.screen === screen);
+  const items = NAV.flatMap(g => g.items);
+  const item = items.find(i => i.screen === screen) ?? items.find(i => i.key === screen);
   return item ? item.key : '';
+}
+
+/** Where an item leads, and how, from the screen the sidebar is drawn on.
+ *  Inside the desk its screens switch in place, the pipeline opens its own
+ *  window from the front door, and outside pages open a new tab. On the
+ *  builder's pages every desk page is a plain link: the pipeline still opens
+ *  its window; the desk, Next newsletter and the builder's own pages open in
+ *  place; outside sites open a new tab. */
+export function itemLink(item, screen, isSectionWindow) {
+  const pipeline = SECTION_SCREENS.includes(item.screen);
+  if (BUILDER_SCREENS.includes(screen)) {
+    if (item.screen) return { href: item.screen === 'home' ? '/' : `/#${item.screen}`, newTab: pipeline, inPlace: false };
+    return { href: item.href, newTab: !item.href.startsWith('/'), inPlace: false };
+  }
+  const newTab = opensNewWindow(item, isSectionWindow);
+  return { href: item.href ?? (pipeline ? `/#${item.screen}` : '/'), newTab, inPlace: !newTab && Boolean(item.screen) };
+}
+
+/** The screen a desk address opens on: a pipeline hash makes the pipeline's
+ *  own window; #issue lands on Next newsletter (the builder's menu links
+ *  there); anything else is the front door. */
+export function openedScreen(hash) {
+  const key = String(hash ?? '').replace(/^#/, '');
+  if (SECTION_SCREENS.includes(key)) return { screen: key, isSectionWindow: true };
+  if (key === 'issue') return { screen: 'issue', isSectionWindow: false };
+  return { screen: null, isSectionWindow: false };
 }
 
 /** Whether a click on the item leaves this window: every outside page does;

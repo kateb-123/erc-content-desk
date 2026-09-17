@@ -67,7 +67,9 @@ window, which has the same sidebar and switches in place; the builder and the
 public pages open a new tab. On a Desk work screen the sidebar tucks behind a
 thin grey strip with one menu button (Kate, Sep 16, after clicking through four
 options); open, it is back in place and pushes the page over, and a pick, the
-close button on the same spot, or Escape tucks it away again. Above the content sits one status line that carries
+close button on the same spot, or Escape tucks it away again. The builder's pages
+carry the same sidebar: the builder tucked like Desk work, Past newsletters open
+like Home. Above the content sits one status line that carries
 loading and error messages for the whole app.
 
 Every screen head is a bare title plus a **View info** toggle that opens a tinted
@@ -200,7 +202,9 @@ door to the builder. A fold at the bottom lists what was already sent, each with
 **Remove** (which returns it to the pool, and is not the same as Delete).
 
 ### The builder (`/builder/`, its own page)
-A four-step wizard with numbered pills: **Review** (pick the issue, Pull from the
+Like Sort since Sep 16 (Kate's pick B): the desk's sidebar tucked behind the thin
+strip, no header bar (its links live in the menu), a **Newsletter builder** title
+on the page with the steps under it. A four-step wizard with numbered pills: **Review** (pick the issue, Pull from the
 desk, see what is staged) -> **Outline** (reorder, enable sections, Featured toggle)
 -> **Preview & Edit** (a live email preview; click any text to edit it in a rail
 card, add an item, upload a picture) -> **Save & Export** (Copy HTML for Outlook,

@@ -26,8 +26,11 @@ Canonical values. Mirrored in code at `css/styles.css` `:root` (desk) and
 | accent deep | `#14507a` | the active shade as text: New badge, picked chip, Adding chip (`--accent-deep`) |
 
 The builder's `--bp-*` tokens mirror these values (unified in the Sep 2, 2026
-uniformity pass — `--bp-ink`, `--bp-card-border`, and `--bp-input-border` all
-resolve to the desk values now). `#19608f` is the accent's HOVER shade only,
+uniformity pass: `--bp-ink`, `--bp-card-border`, and `--bp-input-border` all
+resolve to the desk values now). Since Sep 16 the builder also carries the desk's
+sidebar (`css/sidebar.css`, shared), so its `:root` mirrors the desk names that
+stylesheet reads (`--side-bg`, `--ink`, `--muted`, `--line`, `--accent`, `--tint`,
+`--accent-deep`, `--ok`, `--hover`). `#19608f` is the accent's HOVER shade only,
 never a resting color.
 
 Maroon `#500000` is FORBIDDEN in-app — it lives only in the newsletter email
@@ -57,7 +60,11 @@ template and the public Exchange site.
   the sidebar is back in place and pushes the page over, with a quiet close
   button on the menu button's own spot. A pick, the close button or Escape tucks
   it away; every screen starts tucked. The front door keeps its sidebar. The
-  builder keeps its bubble wizard pills with numbered circles.
+  builder's pages carry the same sidebar (Kate, Sep 16, option B: "make the
+  newsletter builder behave like the sort does with the menu"): the builder tucks
+  it like Desk work, its header bar is gone, and a Newsletter builder title sits
+  on the page with the steps under it; Past newsletters keeps it open like Home.
+  The builder keeps its bubble wizard pills with numbered circles.
 
 ## Icons
 
@@ -84,7 +91,7 @@ look, everywhere it appears.
 | **Upload media** → Replace / Remove media | — | quiet outline button + muted Remove word | attach a picture or PDF flyer to an item (ERC cards in Sort; newsletter items in the builder) — the URL rides the row’s infographic column into the email |
 | **Send early? → Confirm / Cancel** | fa-clock on the bubble | amber bubble, one ask (same as Verify link) | picking an event that belongs to a later issue — the words stay bare, the bubble carries the icon |
 | Door buttons (Go to Finalize/Publish, Send to Newsletter, the receipt's door) | → `fa-arrow-right` | outlined accent pill, the header's Build newsletter look (Sep 15, option A), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
-| **Sidebar items** (ERC Content Desk; Policy Exchange: Policy Exchange, Share an item, Listserv sign-up; Newsletter: Next newsletter, Newsletter builder, Past newsletters; Desk work: Sort, Finalize, Publish to Exchange, Send to Newsletter) | one FA glyph per group heading (`fa-globe`, `fa-envelope-open-text`, `fa-layer-group`), none on the items; the Desk work heading adds a chevron | plain indented rows in the sidebar, the lit one on the tint; the three hand-outs carry a small `fa-copy` icon on the right; Sort carries the queue count | every way around the desk (Kate, Sep 16). Pipeline items open the pipeline in its own window from the front door (`/#sort`, Sep 15) and switch in place inside it; outside pages open a new tab; the copy icon hands over one sentence with the link and turns into a check for a moment |
+| **Sidebar items** (ERC Content Desk; Policy Exchange: Policy Exchange, Share an item, Listserv sign-up; Newsletter: Next newsletter, Newsletter builder, Past newsletters; Desk work: Sort, Finalize, Publish to Exchange, Send to Newsletter) | one FA glyph per group heading (`fa-globe`, `fa-envelope-open-text`, `fa-layer-group`), none on the items; the Desk work heading adds a chevron | plain indented rows in the sidebar, the lit one on the tint; the three hand-outs carry a small `fa-copy` icon on the right; Sort carries the queue count | every way around the desk (Kate, Sep 16). Pipeline items open the pipeline in its own window from the front door (`/#sort`, Sep 15) and switch in place inside it; outside pages open a new tab; on the builder's pages every desk page is a plain link (the pipeline still opens its window; the desk, Next newsletter at `/#issue` and the builder's own pages open in place); the copy icon hands over one sentence with the link and turns into a check for a moment |
 | **Show the menu / Hide the menu** | `fa-bars` / `fa-xmark` | outlined 8px square on the thin grey strip / quiet icon on the same spot in the sidebar's top row | Desk work screens only: bring the sidebar back in place, tuck it away again (Sep 16) |
 | **Keep the rest (N)** | ✓ `fa-check` | filled accent button, right of a Sort section's head | keep every listed row that has a real type and a checked link (Sep 11); one row at a time is Keep on its card (Sep 16) |
 

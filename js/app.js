@@ -5,6 +5,7 @@ import { readerQueue } from './sort-view.js';
 import { dotsLoader, loadingLabel } from './icons.js';
 import { renderHome } from './home-ui.js';
 import { renderSidebar } from './sidebar-ui.js';
+import { openedScreen } from './sidebar-view.js';
 import { renderIssue } from './issue-ui.js';
 import { latestIssue, queueBadgeCount } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
@@ -404,8 +405,11 @@ const SCREEN_ORDER = ['home', 'issue', 'sort', 'finalize', 'publish', 'build'];
 // that window keeps its hash in step so a reload stays put.
 const SECTION_KEYS = ['sort', 'finalize', 'publish', 'build'];
 const openedAt = location.hash.slice(1);
-const isSectionWindow = SECTION_KEYS.includes(openedAt);
-if (isSectionWindow) state.screen = openedAt;
+// A pipeline hash makes this the pipeline's window; #issue (the builder's menu
+// links there) lands on Next newsletter in an ordinary front-door window.
+const opened = openedScreen(location.hash);
+const isSectionWindow = opened.isSectionWindow;
+if (opened.screen) state.screen = opened.screen;
 const SCREEN_NAMES = { issue: 'Next newsletter', sort: 'Sort', finalize: 'Finalize', publish: 'Publish to Exchange', build: 'Send to Newsletter' };
 let shownScreen = null;
 

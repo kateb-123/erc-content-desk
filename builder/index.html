@@ -3,21 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ERC Newsletter Builder</title>
+  <title>Newsletter builder · ERC Content Desk</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="css/styles.css?v=36" />
+  <link rel="stylesheet" href="/css/sidebar.css?v=2" />
+  <link rel="stylesheet" href="css/styles.css?v=37" />
 </head>
-<body>
-  <header class="app-header">
-    <div class="app-header-inner">
-      <h1>ERC Newsletter Builder</h1>
-      <span class="header-links">
-        <a class="archive-link" href="archive.html">View past newsletters</a>
-        <a class="archive-link" href="https://erc-policy-exchange.vercel.app/" target="_blank" rel="noreferrer">Policy Exchange <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
-        <a class="desk-door" href="/"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> ERC Content Desk</a>
-      </span>
-    </div>
-  </header>
+<body class="builder-shell">
+  <!-- The desk's sidebar, tucked behind a thin strip like Desk work (Kate, Sep 16):
+       built by /js/sidebar-ui.js. Past newsletters, the Policy Exchange and the
+       desk live in it; the header that carried them is gone. -->
+  <nav class="side" aria-label="Desk"></nav>
+
+  <div class="builder-main">
+  <div class="builder-head"><h1>Newsletter builder</h1></div>
 
   <nav class="step-nav" aria-label="Wizard steps">
     <ol class="step-list">
@@ -50,8 +48,9 @@
     <button id="btn-back" class="btn btn-secondary" disabled><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back</button>
     <button id="btn-next" class="btn btn-primary">Next <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
   </footer>
+  </div>
 
   <!-- Bump ?v when you change the JS so browsers load the new code (cache-busting). -->
-  <script type="module" src="js/app.js?v=30"></script>
+  <script type="module" src="js/app.js?v=31"></script>
 </body>
 </html>

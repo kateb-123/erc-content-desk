@@ -8,7 +8,7 @@
  * screen the sidebar tucks behind a thin grey strip with a menu button and
  * comes back in place when opened (Kate, Sep 16, from four clickable options).
  */
-import { NAV, SECTION_SCREENS, currentKey, opensNewWindow, foldOpen, menuLayout } from './sidebar-view.js';
+import { NAV, currentKey, foldOpen, menuLayout, itemLink } from './sidebar-view.js';
 import { faIcon } from './icons.js';
 
 const FOLD_KEY = 'desk.deskWorkFold';
@@ -107,17 +107,18 @@ function build(nav, { isSectionWindow, onGo, screenRef }) {
       a.dataset.key = item.key;
       // A pick tucks the Desk work menu away again, before the screen switches.
       a.addEventListener('click', () => { if (menuOpen) setMenu(false); });
-      // Only the pipeline's screens answer to a hash; the front door's pages start at /.
-      a.href = item.href ?? (SECTION_SCREENS.includes(item.screen) ? `/#${item.screen}` : '/');
+      // Inside the desk its screens switch in place; on the builder's pages
+      // every desk page is a plain link (itemLink holds the rule).
+      const link = itemLink(item, screenRef.screen, isSectionWindow);
+      a.href = link.href;
       if (item.icon) a.append(faIcon(item.icon));
       a.append(el('span', 'side-text', item.label));
       if (item.count) a.append(el('span', 'side-count'));
-      if (opensNewWindow(item, isSectionWindow)) {
+      if (link.newTab) {
         a.target = '_blank';
         a.rel = 'noreferrer';
-      } else {
-        a.addEventListener('click', (event) => { event.preventDefault(); onGo(item.screen); });
       }
+      if (link.inPlace) a.addEventListener('click', (event) => { event.preventDefault(); onGo(item.screen); });
       row.append(a);
       if (item.copy) row.append(copyButton(item));
       box.append(row);

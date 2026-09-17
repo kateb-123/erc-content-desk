@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { NAV, currentKey, opensNewWindow, foldOpen, menuLayout } from '../js/sidebar-view.js';
+import { NAV, EXCHANGE_URL, currentKey, opensNewWindow, foldOpen, menuLayout, itemLink, openedScreen } from '../js/sidebar-view.js';
 
 test('the sidebar puts the team\'s links first and the pipeline last as Desk work (Claude Design round two, Kate\'s pick Sep 16)', () => {
   assert.deepEqual(NAV.map(g => g.label), ['', 'Policy Exchange', 'Newsletter', 'Desk work']);
@@ -67,4 +67,47 @@ test('the front door keeps its sidebar, with no strip and no close button, whate
       assert.deepEqual(menuLayout(screen, open), { strip: false, sidebar: true, close: false }, `${screen} ${open}`);
     }
   }
+});
+
+const item = key => NAV.flatMap(g => g.items).find(i => i.key === key);
+
+test('the builder\'s pages light their own items: Newsletter builder, Past newsletters', () => {
+  assert.equal(currentKey('builder'), 'builder');
+  assert.equal(currentKey('past'), 'past');
+});
+
+test('the builder tucks its menu like Desk work; Past newsletters keeps it open like Home (Kate, Sep 16)', () => {
+  assert.deepEqual(menuLayout('builder', false), { strip: true, sidebar: false, close: false });
+  assert.deepEqual(menuLayout('builder', true), { strip: false, sidebar: true, close: true });
+  assert.deepEqual(menuLayout('past', false), { strip: false, sidebar: true, close: false });
+  assert.deepEqual(menuLayout('past', true), { strip: false, sidebar: true, close: false });
+});
+
+test('inside the desk, items keep their links: screens switch in place, the pipeline opens its window from the front door, outside pages open a new tab', () => {
+  assert.deepEqual(itemLink(item('home'), 'home', false), { href: '/', newTab: false, inPlace: true });
+  assert.deepEqual(itemLink(item('issue'), 'home', false), { href: '/', newTab: false, inPlace: true });
+  assert.deepEqual(itemLink(item('sort'), 'home', false), { href: '/#sort', newTab: true, inPlace: false });
+  assert.deepEqual(itemLink(item('sort'), 'finalize', true), { href: '/#sort', newTab: false, inPlace: true });
+  assert.deepEqual(itemLink(item('builder'), 'home', false), { href: '/builder/', newTab: true, inPlace: false });
+  assert.deepEqual(itemLink(item('exchange'), 'sort', true), { href: EXCHANGE_URL, newTab: true, inPlace: false });
+});
+
+test('on the builder\'s pages every desk page is a plain link: the pipeline opens its window, the desk and the builder\'s own pages open in place', () => {
+  for (const screen of ['builder', 'past']) {
+    assert.deepEqual(itemLink(item('home'), screen, false), { href: '/', newTab: false, inPlace: false }, screen);
+    assert.deepEqual(itemLink(item('issue'), screen, false), { href: '/#issue', newTab: false, inPlace: false }, screen);
+    assert.deepEqual(itemLink(item('sort'), screen, false), { href: '/#sort', newTab: true, inPlace: false }, screen);
+    assert.deepEqual(itemLink(item('build'), screen, false), { href: '/#build', newTab: true, inPlace: false }, screen);
+    assert.deepEqual(itemLink(item('builder'), screen, false), { href: '/builder/', newTab: false, inPlace: false }, screen);
+    assert.deepEqual(itemLink(item('past'), screen, false), { href: '/builder/archive.html', newTab: false, inPlace: false }, screen);
+    assert.deepEqual(itemLink(item('exchange'), screen, false), { href: EXCHANGE_URL, newTab: true, inPlace: false }, screen);
+  }
+});
+
+test('a link to /#issue lands on Next newsletter without becoming the pipeline\'s window; a pipeline hash still does', () => {
+  assert.deepEqual(openedScreen('#issue'), { screen: 'issue', isSectionWindow: false });
+  assert.deepEqual(openedScreen('#sort'), { screen: 'sort', isSectionWindow: true });
+  assert.deepEqual(openedScreen('#build'), { screen: 'build', isSectionWindow: true });
+  assert.deepEqual(openedScreen(''), { screen: null, isSectionWindow: false });
+  assert.deepEqual(openedScreen('#nowhere'), { screen: null, isSectionWindow: false });
 });

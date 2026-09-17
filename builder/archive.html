@@ -3,17 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Past Newsletters — ERC Newsletter Builder</title>
+  <title>Past newsletters · ERC Content Desk</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karla:wght@400;600;700&family=Outfit:wght@600;700&display=swap" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="/css/sidebar.css?v=2" />
   <style>
-    body { margin: 0; background: #fbfbfd; color: #1c2229; line-height: 1.5;
+    /* The desk's names, which the shared sidebar reads. */
+    :root { --side-bg: #f3f5f8; --ink: #1c2229; --muted: #55606c; --line: #dbdfe5; --accent: #1d6ea5;
+      --tint: #eaf2f8; --accent-deep: #14507a; --ok: #1d6f4f; --hover: rgba(29, 110, 165, 0.05); }
+    /* The desk's sidebar stays open here, like Home (Kate, Sep 16). */
+    body { margin: 0; background: #fbfbfd; color: #1c2229; line-height: 1.5; display: flex; min-height: 100vh;
       font-family: Karla, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .page-main { flex: 1 1 auto; min-width: 0; }
     .wrap { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
     h1 { font-family: Outfit, "Segoe UI", sans-serif; font-size: 1.35rem; margin: 0 0 .25rem; }
     .lede { color: #55606c; margin: 0 0 1.5rem; }
-    a.back { color: #1d6ea5; text-decoration: none; font-weight: 600; }
-    a.back .fa-solid { margin-right: .35rem; font-size: .85em; }
     ul { list-style: none; margin: 1.5rem 0 0; padding: 0; background: #fff; border: 1px solid #dbdfe5; border-radius: 12px; }
     li { border-top: 1px solid #eef0f3; }
     li:first-child { border-top: none; }
@@ -44,12 +48,18 @@
   </style>
 </head>
 <body>
+  <nav class="side" aria-label="Desk"></nav>
+  <div class="page-main">
   <div class="wrap">
-    <a class="back" href="./"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to the builder</a>
-    <h1 style="margin-top: 1rem;">Past newsletters</h1>
+    <h1>Past newsletters</h1>
     <p class="lede">Every issue saved to the archive, newest first. Click one to read it.</p>
     <ul id="list"><li><div class="dots-loader" aria-hidden="true"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="dots-caption">Loading</div></li></ul>
   </div>
+  </div>
+  <script type="module">
+    import { renderSidebar } from '/js/sidebar-ui.js';
+    renderSidebar(document.querySelector('.side'), { screen: 'past', isSectionWindow: false, onGo: () => {}, queueCount: null });
+  </script>
   <script>
     fetch('newsletters/index.json', { cache: 'no-store' })
       .then((res) => res.json())

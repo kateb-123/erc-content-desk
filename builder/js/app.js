@@ -17,6 +17,7 @@ import { renderNewsletter, renderProse } from './template.js';
 import { saveState, loadState, clearState } from './state.js';
 import { getField, setField } from './editpath.js';
 import { computePreviewScale } from './preview.js';
+import { renderSidebar } from '../../js/sidebar-ui.js';
 
 // ---------------------------------------------------------------------------
 // State
@@ -2028,5 +2029,7 @@ window.__slugify = slugify;
 window.__saveState = saveState;
 window.__loadState = loadState;
 window.__clearState = clearState;
+// The desk's sidebar, tucked behind the thin strip like Desk work (Kate, Sep 16).
+renderSidebar(document.querySelector('.side'), { screen: 'builder', isSectionWindow: false, onGo: () => {}, queueCount: null });
 goTo('review');
 maybeShowRestoreBanner();

@@ -8,8 +8,8 @@
 "Send to Newsletter"
 "Share something — ERC"
 "Share something with the ERC"
-"ERC Newsletter Builder"
-"Past Newsletters — ERC Newsletter Builder"
+"Newsletter builder" (the builder's title since Sep 16; the header's "ERC Newsletter Builder" is gone)
+"Newsletter builder · ERC Content Desk" / "Past newsletters · ERC Content Desk" (the builder's tab titles)
 "Past newsletters"
 "Review"
 "Outline"
@@ -202,8 +202,6 @@
 "Open the newsletter builder ↗"
 "Word template"
 "Spreadsheet template"
-"View past newsletters"
-"Back to the builder"
 
 # Statuses
 
