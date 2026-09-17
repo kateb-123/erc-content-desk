@@ -79,9 +79,12 @@ on the right with a right arrow: Go to Finalize, Go to Publish, Send to newslett
   small beside it; clicking opens the Next newsletter page), *Exchange updated* (the
   link to the Exchange), *Last newsletter* (the newest date in the builder's archive
   index; the link to Past newsletters). A grid, so a narrow window gets two rows.
-- **Add to the queue** form on the left: Title, Description ("paste whatever you
-  have"), Link, a spotlight checkbox, Type radios (picking a type reveals its
-  subtypes under it, labelled Subtype), and "Your name or initials". Submit saves
+- **Add to the queue** form (Claude Design round two, Kate's pick Sep 16): Title and
+  Link side by side, Description ("paste whatever you have"), the Type as pills
+  (picking one reveals its subtypes as smaller pills under a Subtype label; ERC
+  Event has none and shows "an event the ERC runs"), then one row at the foot:
+  "Your initials", the Spotlight checkbox, and Submit on the right. The same form
+  is the Next newsletter page's Quick add. Submit saves
   at once and swaps the form for a drawn-check confirmation, "Got it, in the
   queue.", and a **Submit another** button. A link with no other field is valid.
 - **The spreadsheet door** under the form: drop or choose a .docx, .md, .txt,

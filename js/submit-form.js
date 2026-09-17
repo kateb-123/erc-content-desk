@@ -10,6 +10,20 @@ import { subtypesFor, TYPE_ORDER, TYPE_LABELS } from './schema.js';
 export function pickType(selection, type) {
   return selection.type === type ? selection : { type, subtype: '' };
 }
+
+/**
+ * The type pills (Claude Design round two, Kate's pick Sep 16): every type as
+ * a pill, the picked one marked; the picked type's subtypes as a second row;
+ * ERC Event is flat and gets the hint that tells it apart from Event (F13).
+ */
+export function typeChoices(selection) {
+  const types = TYPE_ORDER.map(value => ({ value, label: TYPE_LABELS[value] ?? value, picked: selection.type === value }));
+  const subtypes = selection.type
+    ? subtypesFor(selection.type).map(value => ({ value, label: value, picked: selection.subtype === value }))
+    : [];
+  const hint = selection.type === 'erc_event' ? 'an event the ERC runs' : '';
+  return { types, subtypes, hint };
+}
 import { validateSubmission, fieldFor } from './intake.js';
 import { withScheme } from './links.js';
 import { checkSvg, dotsLoader, loadingLabel } from './icons.js';
@@ -73,18 +87,22 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
 
   container.innerHTML = `
     <form class="submit-form" novalidate>
-      <label for="sf-title">Title</label>
-      <input id="sf-title" type="text" autocomplete="off">
+      <div class="sf-pair">
+        <div><label for="sf-title">Title</label>
+          <input id="sf-title" type="text" autocomplete="off"></div>
+        <div><label for="sf-link">Link <span class="hint">(required)</span></label>
+          <input id="sf-link" type="url" autocomplete="off" placeholder="https://"></div>
+      </div>
       <label for="sf-blurb">Description <span class="hint">(paste whatever you have — dates, abstract, the whole announcement; headlines can skip this)</span></label>
-      <textarea id="sf-blurb" rows="6"></textarea>
-      <label for="sf-link">Link <span class="hint">(required)</span></label>
-      <input id="sf-link" type="url" autocomplete="off">
+      <textarea id="sf-blurb" rows="4"></textarea>
       <fieldset class="type-picker"></fieldset>
-      <label class="check"><input id="sf-spotlight" type="checkbox">
-        Requesting ERC Spotlight / newsletter feature</label>
-      <label for="sf-submitter">Your name or initials <span class="hint">(required)</span></label>
-      <input id="sf-submitter" type="text" autocomplete="off">
-      <button type="submit" class="primary submit-btn">Submit</button>
+      <div class="sf-foot">
+        <div class="sf-initials"><label for="sf-submitter">Your initials <span class="hint">(required)</span></label>
+          <input id="sf-submitter" type="text" autocomplete="off"></div>
+        <label class="check"><input id="sf-spotlight" type="checkbox">
+          Requesting ERC Spotlight / newsletter feature</label>
+        <button type="submit" class="primary submit-btn">Submit</button>
+      </div>
       <p class="status" role="status" aria-live="polite"></p>
     </form>
     <details class="bulk-door">
@@ -164,35 +182,32 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
     doneBox.hidden = false;
   }
 
-  function radio(name, value, labelText, checked, onChange) {
-    const label = el('label', 'radio');
-    const input = Object.assign(el('input'), { type: 'radio', name, value, checked });
-    input.addEventListener('change', onChange);
-    label.append(input, ` ${labelText}`);
-    return label;
+  // The type as pills, the picked type's subtypes as a second row (Claude
+  // Design round two, Kate's pick Sep 16). Buttons, so they never submit.
+  function pill(label, picked, onClick, small = false) {
+    const b = el('button', `type-word${small ? ' is-small' : ''}${picked ? ' is-picked' : ''}`, label);
+    b.type = 'button';
+    b.setAttribute('aria-pressed', String(picked));
+    b.addEventListener('click', onClick);
+    return b;
   }
 
   function renderTypePicker() {
-    typeBox.replaceChildren(legend);
-    for (const type of TYPE_ORDER) {
-      const choice = radio('sf-type', type, TYPE_LABELS[type], selection.type === type, () => {
-        selection = pickType(selection, type);
-        renderTypePicker();
-      });
-      // "ERC Event" next to "Event" needs a word of difference (usability run F13).
-      if (type === 'erc_event') choice.append(el('span', 'hint type-hint', 'an event the ERC runs'));
-      typeBox.append(choice);
-      if (selection.type !== type) continue;
-      const subtypes = subtypesFor(type);
-      if (!subtypes.length) continue;   // ERC Event is flat — no empty picker box
-      const sub = el('div', 'subtype-list');
-      sub.append(el('span', 'subtype-label', 'Subtype'));   // the reveal gets a name (F14)
-      for (const subtype of subtypes) {
-        sub.append(radio('sf-subtype', subtype, subtype, selection.subtype === subtype, () => {
-          selection = { ...selection, subtype };
-        }));
+    const { types, subtypes, hint } = typeChoices(selection);
+    const row = el('div', 'pill-row');
+    for (const t of types) {
+      row.append(pill(t.label, t.picked, () => { selection = pickType(selection, t.value); renderTypePicker(); }));
+    }
+    typeBox.replaceChildren(legend, row);
+    // "ERC Event" next to "Event" needs a word of difference (usability run F13).
+    if (hint) typeBox.append(el('p', 'hint type-hint', hint));
+    if (subtypes.length) {
+      typeBox.append(el('span', 'subtype-label', 'Subtype'));   // the reveal gets a name (F14)
+      const subRow = el('div', 'pill-row');
+      for (const s of subtypes) {
+        subRow.append(pill(s.label, s.picked, () => { selection = { ...selection, subtype: s.value }; renderTypePicker(); }, true));
       }
-      typeBox.append(sub);
+      typeBox.append(subRow);
     }
   }
   renderTypePicker();

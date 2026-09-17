@@ -36,7 +36,7 @@
 "(paste whatever you have — dates, abstract, the whole announcement)"
 "Link"
 "Requesting ERC Spotlight / newsletter feature"
-"Your name or initials"
+"Your initials" (the submit form's label since Sep 16; the error still says "Add your name or initials.")
 "Have a whole doc or spreadsheet? Add it here — it gets split into items you review first."
 "Drop a file here or click to choose one"
 ".docx, .md, .txt, .xlsx, .csv — items are shown for review before anything is saved"

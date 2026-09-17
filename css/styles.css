@@ -76,18 +76,23 @@ button {
 button:hover:not(:disabled) { border-color: var(--ink); }
 button:disabled { opacity: .5; cursor: default; }
 
-.submit-form .submit-btn {
-  width: 100%;
-  margin-top: 1.5rem;
-}
+/* The submit form (Claude Design round two, Kate's pick Sep 16): Title and
+   Link side by side, the type as pills, and initials, Spotlight and Submit on
+   one row at the foot. */
+.sf-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 1.25rem; }
+.sf-foot { display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap; margin-top: 1.25rem; }
+.sf-foot .sf-initials label { margin-top: 0; }
+.sf-foot .sf-initials input { width: 7rem; }
+.sf-foot label.check { margin: 0 0 .6rem; display: flex; align-items: center; gap: .4rem; }
+.submit-form .submit-btn { margin-left: auto; padding: .5rem 1.5rem; }
 
-/* Radio type/subtype picker */
+/* Type and subtype pills */
 .type-picker { border: none; padding: 0; margin: 1rem 0 0; }
-.type-picker legend { font-size: .85rem; color: var(--muted); padding: 0; margin-bottom: .25rem; }
-label.radio { display: block; margin: .15rem 0; font-size: .95rem; color: var(--ink); }
-.subtype-list { margin: .2rem 0 .4rem 1.6rem; padding-left: .8rem; border-left: 2px solid var(--line); }
-.subtype-label { display: block; font-size: .75rem; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: .1rem 0 .25rem; }
-.type-hint { margin-left: .5rem; font-size: .85rem; }
+.type-picker legend { font-size: .85rem; color: var(--muted); padding: 0; margin-bottom: .4rem; }
+.pill-row { display: flex; flex-wrap: wrap; gap: .5rem; }
+.type-word.is-small { padding: .3rem .85rem; font-size: .85rem; }
+.subtype-label { display: block; font-size: .75rem; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: .75rem 0 .4rem; }
+.type-hint { margin: .5rem 0 0; font-size: .85rem; }
 
 /* Bulk "whole doc" door */
 .bulk-door { margin-top: 1.25rem; border: 1px dashed var(--line); border-radius: var(--radius); padding: .75rem 1rem; background: #fff; }
@@ -271,7 +276,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .type-word { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: .45rem 1rem; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .9rem; color: var(--ink); cursor: pointer; }
 .type-word:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .type-word.is-picked { background: var(--tint); border-color: var(--accent); color: var(--accent-deep); }
-.type-word.is-picked::before { content: "\2713 "; }
+.type-word.is-picked::before { content: "\2713"; margin-right: .35em; }
 .sort-delete { margin-right: auto; }
 .sort-edit { margin: .4rem 0 .8rem; display: grid; gap: .6rem; }
 .sort-edit-field { display: block; font-size: .85rem; color: var(--muted); }
@@ -484,6 +489,7 @@ button:active:not(:disabled) { transform: scale(0.98); }
 /* A field named by a validation message turns red; the status line still lists them all. */
 .submit-form input.is-invalid, .submit-form textarea.is-invalid { border-color: var(--err); }
 .submit-form .type-picker.is-invalid { border-left: 2px solid var(--err); padding-left: .6rem; }
+.submit-form .type-picker.is-invalid .type-word:not(.is-picked) { border-color: var(--err); }
 .submit-form input.is-invalid:focus { border-color: var(--err); }
 
 /* Quiet focus: on-theme ring instead of the browser default highlight. */
