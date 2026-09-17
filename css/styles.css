@@ -58,7 +58,8 @@ h1 { font-size: 28px; line-height: 36px; font-weight: 400; margin: 0 0 var(--spa
 label { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: var(--spacing-05) 0 var(--spacing-03); }
 
 /* Fields: Carbon's underlined field on the field surface, 40px tall. */
-input[type="text"], input[type="url"], input[type="search"], input[type="email"], textarea, select {
+/* Every text-like input, typed or not (Finalize's edit form makes bare inputs). */
+input:not([type]), input[type="text"], input[type="url"], input[type="search"], input[type="email"], input[type="date"], input[type="number"], textarea, select {
   width: 100%;
   font: inherit; letter-spacing: .16px;
   height: 40px; padding: 0 var(--spacing-05);
@@ -555,7 +556,7 @@ button { transition: border-color var(--duration-fast-01) var(--ease-productive)
 .submit-form input.is-invalid:focus { border-bottom-color: var(--err); outline-color: var(--err); }
 
 /* Focus: Carbon's 2px ring, drawn inside the control, no halo. */
-input[type="text"]:focus, input[type="url"]:focus, input[type="search"]:focus, input[type="email"]:focus, textarea:focus, select:focus {
+input:not([type]):focus, input[type="text"]:focus, input[type="url"]:focus, input[type="search"]:focus, input[type="email"]:focus, input[type="date"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
   outline: 2px solid var(--focus); outline-offset: -2px; border-bottom-color: transparent; box-shadow: none;
 }
 button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; box-shadow: none; }
