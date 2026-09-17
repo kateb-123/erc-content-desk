@@ -41,6 +41,9 @@ let trialPosting = false; // showing the "posting…" shadow alert
 let trialDone = 0;        // count on the mocked receipt (0 = not yet)
 let confirming = false;   // the one ask before the append-only write (design audit b6)
 
+/** Arriving at Publish never lands on a standing ask. */
+export function resetPublishAsk() { confirming = false; }
+
 function el(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;

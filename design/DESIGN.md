@@ -150,10 +150,10 @@ look, everywhere it appears.
 |---|---|---|---|
 | **Keep** | ✓ `fa-check` | the primary: blue fill, the check in its right slot (the ONE per card) | accept into the pipeline / accept the rewrite |
 | **Skip** | none | muted ghost button | park it (status stays `circleback` underneath); it waits under Sort's Skipped pill with Keep and Delete (Sep 15) |
-| **Delete** | `fa-trash-can` | red ghost button | trash the ITEM for good (any screen, any time) |
+| **Delete** | `fa-trash-can` | red ghost button | trash the ITEM for good (any screen, any time); the row stays listed greyed with Undo for the visit on Sort, the queue, Finalize and Send to Newsletter (design audit, Sep 17) |
 | **Edit** | `fa-pen` | blue ghost button | inline edit, persists on Save |
 | **Use original** | `fa-rotate-left` | muted ghost button | reject the rewrite, keep the Sheet text |
-| **Remove** | `fa-trash-can` | red ghost button | take OUT of the newsletter issue (returns to the pool); shares Delete's icon by Kate's explicit pick |
+| **Remove** | `fa-trash-can` | red ghost button | take OUT of the newsletter issue (returns to the pool); shares Delete's icon by Kate's explicit pick; on Next newsletter and in the builder the row stays listed with Undo (Sep 17) |
 | **Verify link ↗ → Confirm / Change** | `fa-triangle-exclamation` | warning note, one ask | open the source, then stamp it good or paste a new link |
 | **View info / Hide info** | none | blue word beside every screen/step title | opens the tinted instruction panel |
 | **Re-check** | none | a link in Publish's lede | force a fresh hub check |
@@ -162,7 +162,8 @@ look, everywhere it appears.
 | Door buttons (Go to Finalize/Publish, Send to Newsletter, the receipt's door) | → `fa-arrow-right` | Carbon's tertiary button with the arrow in its right slot (Sep 15, option A; square since Sep 17), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
 | **Sidebar items** (ERC Content Desk; Policy Exchange: Policy Exchange, Share an item, Listserv sign-up; Newsletter: Next newsletter, Newsletter builder, Past newsletters; Desk work: Sort, Finalize, Publish to Exchange, Send to Newsletter) | one FA glyph per group heading (`fa-globe`, `fa-envelope-open-text`, `fa-layer-group`), none on the items; the Desk work heading adds a chevron | 32px indented rows in the sidebar, the lit one on the selected layer with a 3px blue bar; the three hand-outs carry a small `fa-copy` icon on the right; Sort carries the queue count | every way around the desk (Kate, Sep 16). Pipeline items open the pipeline in its own window from the front door (`/#sort`, Sep 15) and switch in place inside it; outside pages open a new tab; on the builder's pages every desk page is a plain link (the pipeline still opens its window; the desk, Next newsletter at `/#issue` and the builder's own pages open in place); the copy icon hands over one sentence with the link and turns into a check for a moment |
 | **Show the menu / Hide the menu** | `fa-bars` / `fa-xmark` | ghost icon button on the 48px strip / the same on the same spot in the sidebar's top row | Desk work screens only: bring the sidebar back in place, tuck it away again (Sep 16) |
-| **Keep the rest (N)** | ✓ `fa-check` | the small primary, right of a Sort section's head | keep every listed row that has a real type and a checked link (Sep 11); one row at a time is Keep on its card (Sep 16) |
+| **Keep the rest (N)** | ✓ `fa-check` | the small primary, right of a Sort section's head | keep every listed row that has a real type and a checked link (Sep 11); one row at a time is Keep on its card (Sep 16). Keys on Sort (Sep 17): up and down move, K keeps, S skips, D deletes, U undoes |
+| **Publish N to the Exchange → Confirm / Cancel** | `fa-triangle-exclamation` on the ask | the primary, then one warning note in its place | the one ask before the append-only write to the public site (design audit b6, Sep 17); Keep all remaining on Finalize gets "Kept N rewrites. Undo" instead of an ask |
 
 Sort is one section at a time (Sep 11 option A; Sep 15 the card stream and the
 stacked All view went), drawn as a list and a card (Claude Design round two,

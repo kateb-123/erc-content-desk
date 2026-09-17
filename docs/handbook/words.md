@@ -402,3 +402,23 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "No type" · "Link not opened" (the tooltip on a Needs a fix row's amber triangle)
 "Deleted" · "Skipped" · "Kept" (decided rows at the bottom of a Sort list, each with "Undo")
 "Skipped" (the last pill, Sep 15: every parked row, any type, each wearing its type as a badge, with " Keep" and " Delete"; Home's queue marks a parked row with a "Skipped" badge)
+
+## Added Sep 17, 2026 (the third design audit's fixes)
+"Save or cancel this edit first." (Sort, a row click while the card's edit form has unsaved typing)
+"Deleted" and "Undo" (Finalize and Send to Newsletter, a deleted row kept listed for the visit)
+"Removed" and "Undo" (Next newsletter, a removed row kept listed for the visit)
+"Pick more" (Send to Newsletter, after a send)
+"Kept [N] rewrites. Undo" (Finalize, after Keep all remaining)
+"Publish [N] to the live Exchange? Confirm · Cancel" (Publish, the one ask)
+"Rewriting [N] descriptions" (Finalize, under the dots)
+"[N] changes not saved yet. Still trying. Retry now" (the status line after two failed saves)
+"The desk couldn't load. Try again" (Home and Next newsletter after a failed first load)
+"No issue date is scheduled yet. Add a date to the Schedule sheet, then refresh." with a Refresh button
+"Paste a full http(s) link" (Sort's Change link, a bad paste)
+"Nothing left here." (Finalize's card pane when every keep is deleted)
+"Added [N]. [M] did not go through; they are listed above. Retry, or remove them." and "Retry [M]" (the bulk door)
+"Subtype (required)"
+"(opens in a new tab)" (assistive tech only, on every link that leaves the window)
+"Show the text" / "Hide the text" (the bulk review's chevron)
+"Use a PNG, JPG, GIF, WebP or PDF." and "The desk couldn't upload that file (server error [N]). Try again."
+"Keys: up and down move through the list, K keeps, S skips, D deletes, U undoes the last decision." (Sort's View info)

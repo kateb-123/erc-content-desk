@@ -11,7 +11,7 @@ import { latestIssue, queueBadgeCount } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
 import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
-import { renderPublish, downloadCsv } from './publish-ui.js';
+import { renderPublish, downloadCsv, resetPublishAsk } from './publish-ui.js';
 import { renderNewsletter, resetNewsletterEntry } from './newsletter-ui.js';
 import { keep, trash, circleback, undecide, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToPublish, canRewrite } from './workflow.js';
 
@@ -281,6 +281,7 @@ function goTo(key, filter) {
     // only after something changed (persist clears it) or via Re-check.
     state.justPublished = 0;
     state.publishedCsv = '';
+    resetPublishAsk();
     state.screen = key;
     if (!state.publishPreview) { loadPublishPreview(); return; }
   }
