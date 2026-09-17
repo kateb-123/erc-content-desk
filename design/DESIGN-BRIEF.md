@@ -258,17 +258,23 @@ and shows a loader; publishing takes a moment and then shows a receipt.
 
 All of this is specified with exact values in `design/DESIGN.md`. The short form:
 
-- **Colour**: one brand blue `#1d6ea5` for filled buttons, links and active pills;
-  a tint `#eaf2f8` for highlights and soft fills; ink `#1c2229`, muted `#55606c`,
-  hairline `#dbdfe5`, page `#fbfbfd`; green `#1d6f4f` for success, red `#a32d2d`
-  for destructive words; amber (`#fdf3d7` on `#6b4e00`) for the one-ask bubbles.
-  **Maroon `#500000` is forbidden in the app**: it belongs to the outward newsletter
-  and public site only.
-- **Type**: Outfit for headings, buttons and pills; Karla for body. Both from Google
-  Fonts. No other faces without approval.
-- **Shape**: 8px on controls and inputs, 12px on cards and tables, 999px on pills,
-  chips and badges. Focus is an accent border plus a 3px tint halo. Decorative
-  shadows are out; flat fills only.
+- **The system**: IBM Carbon v11, White theme, since Sep 17 (Kate: "A: full
+  Carbon"). The tokens are in `css/tokens.css`; the paragraphs below are the
+  short form.
+- **Colour**: IBM blue `#0f62fe` for filled buttons, tertiary outlines, links
+  and the lit tab or step; a white page with `#f4f4f4` layers for cards, lists
+  and tables; ink `#161616`, quiet text `#525252`, hairlines `#e0e0e0` on the
+  page and `#c6c6c6` inside a layer; success, warning, error and info each as a
+  Carbon `support-*` icon colour with a pale notification surface, and a darker
+  shade (`#198038`, `#684e00`, `#da1e28`) when the meaning is carried by words.
+  **Maroon `#500000` is forbidden in the app**: it belongs to the outward
+  newsletter and public site only.
+- **Type**: IBM Plex Sans for everything, 300, 400 and 600, on Carbon's
+  productive scale (14/20 body with .16px tracking, 12/16 labels with .32px,
+  28/36 regular page titles). From Google Fonts. No other faces without approval.
+- **Shape**: square. Radius 0 on buttons, fields, cards, tables and notes; only
+  tags, the queue count, the toggle and the loader's dots are round. Fields are
+  underlined, not boxed. Focus is a 2px blue ring inside the control. No shadows.
 - **Icons**: Font Awesome 7.3.1 Free, as small glyph accents only, always
   `aria-hidden`. Two hand-drawn inline SVGs stay: the check that draws itself and
   the sliding-dots loader.

@@ -1,5 +1,10 @@
 # Code Book
 
+> **Superseded Sep 17, 2026.** Both apps moved to IBM Carbon (White theme).
+> The live values are in `css/tokens.css` and the rules in `design/DESIGN.md`;
+> everything below records the desk's own look of Sep 1 to Sep 16.
+
+
 Reading copy of the shipped CSS, as of Sep 2, 2026. The truth is
 `css/styles.css` and `builder/css/styles.css`; the style contract is
 `design/DESIGN.md`. Later additions (Sort's section lists, the bulk progress
