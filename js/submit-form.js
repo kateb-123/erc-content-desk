@@ -26,7 +26,7 @@ export function typeChoices(selection) {
 }
 import { validateSubmission, fieldFor } from './intake.js';
 import { withScheme } from './links.js';
-import { checkSvg, dotsLoader, loadingLabel } from './icons.js';
+import { checkSvg, dotsLoader, loadingLabel, faIcon } from './icons.js';
 import { runPool } from './pool.js';
 import { openBusyOverlay } from './busy-overlay.js';
 
@@ -277,8 +277,26 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
     const tbody = el('tbody');
     bulkItems.forEach((item, i) => {
       const tr = el('tr', 'bulk-row');
-      // Rows settle in once, right after the split — not on remove/peek.
+      // Rows settle in once, right after the split, not on remove or peek.
       if (settle) { tr.classList.add('row-in'); tr.style.setProperty('--i', i); }
+      // The peek is a chevron button, like Finalize's table (design audit b18).
+      const text = item.blurb || item.original_text;
+      const caretTd = el('td', 'f-caret');
+      if (text) {
+        const caret = el('button', 'chevron-btn');
+        caret.type = 'button';
+        caret.setAttribute('aria-expanded', String(bulkOpen.has(i)));
+        caret.setAttribute('aria-label', bulkOpen.has(i) ? 'Hide the text' : 'Show the text');
+        caret.append(faIcon(bulkOpen.has(i) ? 'chevron-up' : 'chevron-down'));
+        caret.addEventListener('click', () => {
+          if (bulkOpen.has(i)) bulkOpen.delete(i);
+          else bulkOpen.add(i);
+          renderBulkReview();
+          bulkItemsBox.querySelectorAll('.chevron-btn')[[...bulkItems.keys()].filter(k => bulkItems[k].blurb || bulkItems[k].original_text).indexOf(i)]?.focus();
+        });
+        caretTd.append(caret);
+      }
+      tr.append(caretTd);
       const titleTd = el('td');
       titleTd.append(el('span', 'item-title', item.title || item.link || '(untitled)'));
       if (item.link) titleTd.append(el('span', 'item-source', item.link));
@@ -290,28 +308,18 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
       const rmTd = el('td', 'bulk-remove');
       const rm = el('button', 'linkish', 'Remove');
       rm.type = 'button';
-      rm.addEventListener('click', event => {
-        event.stopPropagation();
+      rm.addEventListener('click', () => {
         bulkItems.splice(i, 1);
         bulkOpen.clear();
         renderBulkReview();
       });
       rmTd.append(rm);
       tr.append(rmTd);
-      const text = item.blurb || item.original_text;
-      if (text) {
-        tr.classList.add('has-text');
-        tr.addEventListener('click', () => {
-          if (bulkOpen.has(i)) bulkOpen.delete(i);
-          else bulkOpen.add(i);
-          renderBulkReview();
-        });
-      }
       tbody.append(tr);
       if (text && bulkOpen.has(i)) {
         const peek = el('tr', 'bulk-peek');
         const td = el('td');
-        td.colSpan = 3;
+        td.colSpan = 4;
         td.append(el('p', 'f-blurb-text', text));
         peek.append(td);
         tbody.append(peek);
@@ -404,15 +412,17 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
     } finally {
       overlay.close();   // never leave the page locked behind the dim
     }
-    const failures = items.filter((_, i) => !results[i]?.ok).map(item => item.title || item.link);
-    const saved = items.length - failures.length;
-    bulkReview.hidden = true;
-    bulkItems = [];
-    bulkFile.value = '';
-    show(bulkStatus, failures.length
-      ? `Added ${saved}. Couldn't add: ${failures.join('; ')}`
-      : `Added all ${saved} to the queue`, failures.length ? 'error' : 'ok');
-    if (!failures.length) bulkStatus.prepend(checkSvg());
+    const failed = items.filter((_, i) => !results[i]?.ok);
+    const saved = items.length - failed.length;
+    // What failed stays in the review for a retry (design audit b19); only a clean run clears it.
+    bulkItems = failed;
+    bulkOpen.clear();
+    if (failed.length) { renderBulkReview(); bulkConfirm.textContent = `Retry ${failed.length}`; }
+    else { bulkReview.hidden = true; bulkFile.value = ''; }
+    show(bulkStatus, failed.length
+      ? `Added ${saved}. ${failed.length} did not go through; they are listed above. Retry, or remove them.`
+      : `Added all ${saved} to the queue`, failed.length ? 'error' : 'ok');
+    if (!failed.length) bulkStatus.prepend(checkSvg());
     if (saved) onSubmitted?.();
     event.target.disabled = false;
     event.target.hidden = false;

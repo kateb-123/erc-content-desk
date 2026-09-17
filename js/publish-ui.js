@@ -13,6 +13,7 @@ import { detailBody } from './finalize-ui.js';
 import { checkSvg, dotsLoader, faIcon, forwardIcon } from './icons.js';
 import { titleWithInfo } from './screen-info.js';
 import { FATES, publishRows, legendItems, filterByFate, fateShares } from './publish-view.js';
+import { focusKeyIn, restoreFocus } from './ui-aids.js';
 
 /** Hand the browser a file. Kate's Chrome puts downloads straight in her Drive,
  *  which is the whole point: publishing leaves a spare copy without a Drive API,
@@ -38,6 +39,7 @@ let celebrated = ''; // which publish already played its confirmation — revisi
 // endpoint, so nothing reaches the live Exchange. Per-page-load state.
 let trialPosting = false; // showing the "posting…" shadow alert
 let trialDone = 0;        // count on the mocked receipt (0 = not yet)
+let confirming = false;   // the one ask before the append-only write (design audit b6)
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -57,6 +59,7 @@ function itemRows({ row, fate }, { rerender, onGoTo, today }) {
   const caretTd = el('td', 'f-caret');
   const caret = el('button', 'chevron-btn');
   caret.type = 'button';
+  caret.dataset.focus = `chev:${row.id}`;
   caret.setAttribute('aria-expanded', String(isOpen));
   caret.setAttribute('aria-label', isOpen ? 'Hide details' : 'Show details');
   caret.append(faIcon(isOpen ? 'chevron-up' : 'chevron-down'));
@@ -115,6 +118,7 @@ function fateBar(container, list, rerender) {
   for (const item of legendItems(list)) {
     const b = el('button', `p-legend-item${fateFilter === item.key ? ' is-active' : ''}`);
     b.type = 'button';
+    b.dataset.focus = `legend:${item.key}`;
     b.setAttribute('aria-pressed', String(fateFilter === item.key));
     b.append(el('span', `p-dot p-seg-${item.key}`), item.text);
     b.addEventListener('click', () => { fateFilter = fateFilter === item.key ? null : item.key; rerender(); });
@@ -127,6 +131,7 @@ function fateBar(container, list, rerender) {
 export function renderPublish(container, props) {
   const { rows, today, preview, busy, justPublished, onPublish, onGoTo, onRecheck, publishedCsv } = props;
   const rerender = () => renderPublish(container, props);
+  const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place (design audit a1)
   // The mocked receipt stands in for a real one during the trial.
   const showReceipt = justPublished || (PUBLISH_PAUSED && trialDone);
   const isTrial = !justPublished && PUBLISH_PAUSED && Boolean(trialDone);
@@ -156,6 +161,7 @@ export function renderPublish(container, props) {
     lede.append(preview ? 'Checked against the live Exchange · ' : 'The check did not go through · ');
     const again = el('button', 'linkish', 'Re-check');
     again.type = 'button';
+    again.dataset.focus = 'recheck';
     again.addEventListener('click', () => { again.disabled = true; onRecheck?.(); });
     lede.append(again);
   }
@@ -172,7 +178,10 @@ export function renderPublish(container, props) {
   } else if (preview && !busy && !trialPosting && adding.length) {
     // The button disappears while publishing — the status loader takes over.
     const btn = el('button', 'primary', `Publish ${adding.length} to the Exchange`);
+    btn.dataset.focus = 'publish';
     btn.addEventListener('click', () => {
+      // First click asks; the ask's Confirm does the work (the Send early shape).
+      if (!confirming) { confirming = true; rerender(); return; }
       btn.disabled = true;
       if (PUBLISH_PAUSED) {
         // Trial: no real publish — show the "forthcoming" alert, then mock success.
@@ -191,6 +200,32 @@ export function renderPublish(container, props) {
     btn.append(forwardIcon());
     btn.addEventListener('click', () => onGoTo('build'));
     head.append(btn);
+  }
+  if (confirming && adding.length && !busy && !showReceipt) {
+    head.querySelector('[data-focus="publish"]')?.remove();
+    const ask = el('div', 'nl-ask p-ask');
+    ask.append(faIcon('triangle-exclamation'), ` Publish ${adding.length} to the live Exchange? `);
+    const ok = el('button', 'linkish alert-word', 'Confirm');
+    ok.type = 'button';
+    ok.dataset.focus = 'publish';
+    ok.addEventListener('click', () => {
+      confirming = false;
+      ok.disabled = true;
+      if (PUBLISH_PAUSED) {
+        const n = adding.length;
+        trialPosting = true;
+        rerender();
+        setTimeout(() => { trialPosting = false; trialDone = n; rerender(); }, 1100);
+      } else {
+        onPublish();
+      }
+    });
+    const no = el('button', 'linkish alert-word nl-cancel', 'Cancel');
+    no.type = 'button';
+    no.addEventListener('click', () => { confirming = false; rerender(); });
+    ask.append(ok, ' \u00b7 ', no);
+    head.append(ask);
+    queueMicrotask(() => ok.focus({ preventScroll: true }));
   }
   container.append(head);
 
@@ -265,4 +300,5 @@ export function renderPublish(container, props) {
   const scroll = el('div', 'table-scroll');
   scroll.append(table);
   container.append(scroll);
+  restoreFocus(container, focusKey, null);
 }

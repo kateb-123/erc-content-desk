@@ -16,6 +16,7 @@ import { sortCounts, readerQueue, isNewToday, sectionRows, landingSection, needs
 import { buildImageControl } from './item-image.js';
 import { titleWithInfo } from './screen-info.js';
 import { faIcon, forwardIcon } from './icons.js';
+import { focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
 
 // The section's view state: which row the card shows, where it stood (so a
 // decision moves to the row now in its place), and which of the card's
@@ -23,6 +24,7 @@ import { faIcon, forwardIcon } from './icons.js';
 let selectedId = null;
 let lastIndex = 0;
 let listPanel = null;   // 'edit' | 'type' | null
+let editDirty = false;  // the open edit form has unsaved typing (design audit b1)
 
 const FILTER_LABELS = [
   // 'Needs a fix' (Kate, Sep 15): the one amber thing on the screen. It gathers
@@ -38,6 +40,7 @@ const FILTER_LABELS = [
 const FILTER_KEYS = FILTER_LABELS.map(([k]) => k);
 
 let lastFilter = null;  // detects a section jump so the list slides like the screens do
+let liveOrder = [];     // the section's live row ids in list order, for the arrow keys
 
 // A decision moves no pixels (Kate, Sep 9): the decided row greys in place at
 // the bottom of its section, with Undo. On a 95-item session even a 260ms
@@ -67,6 +70,8 @@ function buildEditForm(row, { onSave, onCancel }) {
   const titleIn = mkField('Title', row.headline);
   const blurbIn = mkField('Description', row.blurb, 4);
   const linkIn = mkField('Link', row.link);
+  editDirty = false;
+  form.addEventListener('input', () => { editDirty = true; });
   // Any item can carry a picture (flyer, cover); it rides the row's
   // infographic column into the hub and the newsletter (every item since
   // Kate's Sep 17 ask; ERC only before). A div, not a label: a label would
@@ -220,6 +225,7 @@ function sectionHead(props, section, keepable, main, withUndo) {
   if (withUndo) {
     const undo = el('button', 'undo-link', 'Undo last');
     undo.type = 'button';
+    undo.dataset.focus = 'undo';
     undo.disabled = !props.lastDecision;
     undo.addEventListener('click', () => props.onUndo());
     head.append(undo);
@@ -227,6 +233,7 @@ function sectionHead(props, section, keepable, main, withUndo) {
   if (keepable.length) {
     const keepBtn = el('button', 'primary list-keep', ` Keep the rest (${keepable.length})`);
     keepBtn.type = 'button';
+    keepBtn.dataset.focus = 'keep-rest';
     keepBtn.prepend(faIcon('check'));
     keepBtn.addEventListener('click', () => {
       for (const x of main.querySelectorAll('button')) x.disabled = true;
@@ -255,6 +262,7 @@ function emptyPane(props, section, words = 'Nothing left in this section. ') {
   const next = nextSectionWithRows(sortCounts(props.rows), section);
   const go = el('button', 'linkish', next ? `Next: ${sectionLabel(next)}` : 'Go to Finalize');
   go.type = 'button';
+  go.dataset.focus = 'next';
   go.append(' ', forwardIcon());
   go.addEventListener('click', () => (next ? props.onFilter(next) : props.onGoTo?.('finalize')));
   pane.append(go);
@@ -265,11 +273,13 @@ function emptyPane(props, section, words = 'Nothing left in this section. ') {
  *  and the card side by side. */
 function renderSectionList(main, props, section) {
   const rerender = () => renderSectionList(main, props, section);
+  const focusKey = focusKeyIn(main);   // a redraw keeps the keyboard's place (design audit a1)
   main.replaceChildren();
   const ctx = fixContext(props.rows, props.today);
   const group = sectionRows(props.rows, section, props.sessionDecided ?? new Set(), ctx, props.decidedFrom ?? new Map());
   const keepable = keepableIn(group.live);
   main.append(sectionHead(props, section, keepable, main, true));
+  liveOrder = group.live.map(r => r.id);
   if (!group.live.length && !group.done.length) {
     // An empty pill points at the work that is left; only an empty queue
     // says why it is empty.
@@ -294,8 +304,11 @@ function renderSectionList(main, props, section) {
   for (const row of group.done) list.append(doneRowItem(row, props.onUndoRow, props.today));
   split.append(list);
   const row = group.live.find(r => r.id === selectedId);
-  split.append(row ? sortCard(row, { props, rerender, ctx, reshare, section }) : emptyPane(props, section));
+  const card = row ? sortCard(row, { props, rerender, ctx, reshare, section }) : emptyPane(props, section);
+  split.append(card);
   main.append(split);
+  if (row) markOverflow(card);
+  restoreFocus(main, focusKey, card.querySelector('h3') ?? card);
 }
 
 function listBadges(row, { rows, dupes, reshare, today }) {
@@ -317,6 +330,7 @@ function sortRowItem(row, { props, rerender, ctx, section, index }) {
   const selected = row.id === selectedId;
   const item = el('button', `sort-row${selected ? ' is-selected' : ''}`);
   item.type = 'button';
+  item.dataset.focus = `row:${row.id}`;
   if (selected) item.setAttribute('aria-current', 'true');
   const reasons = fixReasons(row, ctx);
   if (reasons.length) {
@@ -335,7 +349,21 @@ function sortRowItem(row, { props, rerender, ctx, section, index }) {
   if (meta) text.append(el('span', 'sort-row-meta', meta));
   item.append(text);
   if (selected) item.append(faIcon('chevron-right'));
-  item.addEventListener('click', () => { selectedId = row.id; lastIndex = index; listPanel = null; rerender(); });
+  item.addEventListener('click', () => {
+    // Unsaved typing in the card is not thrown away by a row click: the card
+    // says so instead, in place, so the typing stays (design audit b1).
+    if (listPanel === 'edit' && editDirty && row.id !== selectedId) {
+      const card = item.closest('.sort-main')?.querySelector('.sort-card');
+      if (card && !card.querySelector('.edit-warn')) {
+        const note = el('p', 'field-error edit-warn', 'Save or cancel this edit first.');
+        note.setAttribute('role', 'status');
+        card.prepend(note);
+      }
+      card?.querySelector('input, textarea')?.focus({ preventScroll: true });
+      return;
+    }
+    selectedId = row.id; lastIndex = index; listPanel = null; rerender();
+  });
   return item;
 }
 
@@ -360,6 +388,7 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
     line.append(el('span', 'type-label', [TYPE_LABELS[row.type] ?? row.type, row.subtype].filter(Boolean).join(' · ')), ' · ');
     const change = el('button', 'linkish', 'Change');
     change.type = 'button';
+    change.dataset.focus = 'change';
     change.addEventListener('click', () => { listPanel = 'type'; rerender(); });
     line.append(change);
     top.append(line);
@@ -423,10 +452,12 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
   const acts = el('div', 'sort-card-acts');
   const edit = el('button', 'linkish edit-link', ' Edit');
   edit.type = 'button';
+  edit.dataset.focus = 'edit';
   edit.prepend(faIcon('pen'));
   edit.addEventListener('click', () => { listPanel = 'edit'; rerender(); });
   const del = el('button', 'linkish trash-link', ' Delete');
   del.type = 'button';
+  del.dataset.focus = 'delete';
   del.prepend(faIcon('trash-can'));
   del.addEventListener('click', () => { lock(); props.onDecide?.(row, 'trash'); });
   acts.append(edit, del);
@@ -434,11 +465,13 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
   if (section !== 'skipped') {
     const skip = el('button', 'linkish skip-link', 'Skip');
     skip.type = 'button';
+    skip.dataset.focus = 'skip';
     skip.addEventListener('click', () => { lock(); props.onDecide?.(row, 'circleback'); });
     right.append(skip);
   }
   const keep = el('button', 'primary', ' Keep');
   keep.type = 'button';
+  keep.dataset.focus = 'keep';
   keep.prepend(faIcon('check'));
   const blocked = keepBlock(row);
   if (blocked) { keep.disabled = true; keep.title = blocked; }
@@ -472,6 +505,7 @@ function doneRowItem(row, onUndoRow, today) {
   acts.append(el('span', 'queue-gone', DONE_WORDS[row.status] ?? row.status));
   const undo = el('button', 'linkish', 'Undo');
   undo.type = 'button';
+  undo.dataset.focus = `undo:${row.id}`;
   undo.addEventListener('click', () => { undo.disabled = true; onUndoRow?.(row); });
   acts.append(undo);
   item.append(text, acts);
@@ -510,6 +544,7 @@ function buildCardNotes(row) {
 }
 
 export function renderSort(container, props) {
+  const focusKey = focusKeyIn(container);
   container.replaceChildren();
   const { rows, onFilter, onGoTo } = props;
   const counts = sortCounts(rows);
@@ -519,7 +554,7 @@ export function renderSort(container, props) {
 
   const head = el('div', 'screen-head');
   const info = titleWithInfo('Sort', 'sort',
-    'Each section is a list. Click a row to see it in the card: set its type, check its link, edit it, then Keep, Skip or Delete it (Skip waits under Skipped). Keep the rest keeps a whole section in one press. A row with no type or an unchecked link cannot be kept until you fix it; Delete works any time.');
+    'Each section is a list. Click a row to see it in the card: set its type, check its link, edit it, then Keep, Skip or Delete it (Skip waits under Skipped). Keep the rest keeps a whole section in one press. A row with no type or an unchecked link cannot be kept until you fix it; Delete works any time. Keys: up and down move through the list, K keeps, S skips, D deletes, U undoes the last decision.');
   head.append(info.row);
   const door = el('button', 'door head-action', 'Go to Finalize');
   door.append(forwardIcon());
@@ -536,6 +571,7 @@ export function renderSort(container, props) {
     if (key === 'fix' && count > 0) cls += ' is-alert';   // the one notification on the screen
     const btn = el('button', cls, `${label} (${count})`);
     btn.type = 'button';
+    btn.dataset.focus = `tab:${key}`;
     if (filter === key) btn.setAttribute('aria-current', 'true');
     btn.addEventListener('click', () => onFilter(key));
     nav.append(btn);
@@ -552,4 +588,30 @@ export function renderSort(container, props) {
   lastFilter = filter;
 
   renderSectionList(main, props, filter);
+  restoreFocus(container, focusKey, container.querySelector('.sort-card h3'));
+  bindShortcuts(container);
+}
+
+/** The keys (design audit b13): arrows move through the list, K keeps, S
+ *  skips, D deletes, U undoes. Each one presses the button it names, so the
+ *  rules (a locked Keep, no Skip under Skipped) hold. Not while typing. */
+function bindShortcuts(container) {
+  if (container.dataset.keys) return;
+  container.dataset.keys = '1';
+  container.addEventListener('keydown', event => {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.target.closest('input, textarea, select, [contenteditable]')) return;
+    // Focus first, then press: the redraw that follows keeps the keyboard on the pressed control's successor.
+    const press = key => { const b = container.querySelector(`[data-focus="${key}"]`); if (b && !b.disabled) { event.preventDefault(); b.focus({ preventScroll: true }); b.click(); } };
+    const k = event.key.toLowerCase();
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      const at = liveOrder.indexOf(selectedId);
+      const next = liveOrder[at + (event.key === 'ArrowDown' ? 1 : -1)];
+      if (next) press(`row:${next}`);
+      else event.preventDefault();
+    } else if (k === 'k') press('keep');
+    else if (k === 's') press('skip');
+    else if (k === 'd') press('delete');
+    else if (k === 'u') press('undo');
+  });
 }

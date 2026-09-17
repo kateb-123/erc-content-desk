@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges } from '../js/finalize-view.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges, fieldsForType, dateField } from '../js/finalize-view.js';
 
 const keeps = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }];
 
@@ -57,4 +57,20 @@ test('editChanges: only the fields that changed, trimmed, the media URL among th
   );
   assert.deepEqual(editChanges(row, { headline: 'Old', blurb: 'Same', infographic: '' }), {});
   assert.deepEqual(editChanges({ headline: 'Old', infographic: 'https://x.org/a.png' }, { headline: 'Old', infographic: '' }), { infographic: '' });
+});
+
+test('fieldsForType: the edit form shows only the fields a type uses (design audit b4)', () => {
+  assert.deepEqual(fieldsForType('event'), ['headline', 'date', 'time', 'location', 'source', 'blurb']);
+  assert.deepEqual(fieldsForType('erc_event'), ['headline', 'date', 'time', 'location', 'source', 'blurb']);
+  assert.deepEqual(fieldsForType('opportunity'), ['headline', 'deadline', 'topic', 'source', 'blurb']);
+  assert.deepEqual(fieldsForType('research'), ['headline', 'authors', 'source', 'topic', 'blurb']);
+  assert.deepEqual(fieldsForType('headline'), ['headline', 'source', 'blurb']);
+  assert.deepEqual(fieldsForType(''), ['headline', 'date', 'source', 'topic', 'blurb', 'deadline', 'authors', 'time', 'location']);
+});
+
+test('dateField: dates and deadlines are date inputs, the rest text', () => {
+  assert.equal(dateField('date'), true);
+  assert.equal(dateField('deadline'), true);
+  assert.equal(dateField('time'), false);
+  assert.equal(dateField('headline'), false);
 });

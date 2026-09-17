@@ -39,6 +39,7 @@ const state = {
   hubUpdated: null,
   lastIssue: null,          // newest archived issue date, for Home's strip
   rewroteNote: null,
+  lastKeepAll: null,        // [{ id, old }] from the last Keep all remaining, until undone or left (design audit b5)
 };
 
 const screens = Object.fromEntries(['home', 'issue', 'sort', 'finalize', 'publish', 'build']
@@ -255,7 +256,7 @@ function goTo(key, filter) {
   if (key !== state.screen) setStatus('');   // last screen's message doesn't follow
   if (key === 'sort' && filter) { state.sortFilter = filter; saveSortSpot(); }   // Publish's "fix in Sort" lands on the pill it names
   if (key === 'sort' && state.screen !== 'sort') readBeforeSort();
-  if (key === 'finalize' && state.screen !== 'finalize') resetFinalizeEntry();
+  if (key === 'finalize' && state.screen !== 'finalize') { resetFinalizeEntry(); state.lastKeepAll = null; }
   // The ticks survive a hop to another screen (Kate, Sep 15); only the receipt resets.
   if (key === 'build' && state.screen !== 'build') state.justSent = null;
   if (key === 'publish' && state.screen !== 'publish') {
@@ -473,6 +474,7 @@ export function render() {
       onQuickAdd: stampSubmitted,
       onRefresh: reload,
       onRemove: row => unsendFromNewsletter([row.id]),
+      onRestore: row => persist([row]),   // Undo on Remove: the row as it was, stamp included (design audit c6)
     });
   } else if (state.screen === 'sort') {
     renderSort(screens.sort, {
@@ -496,7 +498,7 @@ export function render() {
   } else if (state.screen === 'finalize') {
     renderFinalize(screens.finalize, {
       ...common, review: state.rewriteReview, verified: state.verifiedIds,
-      reviewTotal: state.reviewTotal, busy: state.busy, rewroteNote: state.rewroteNote,
+      reviewTotal: state.reviewTotal, busy: state.busy, rewroteNote: state.rewroteNote, lastKeepAll: state.lastKeepAll,
       onEditRow: (row, changes) => noteChange([{ ...row, ...changes }]),
       onRewrite: runRewrite,
       // Every check decision stamps rewrite_checked so the state survives reload
@@ -513,21 +515,40 @@ export function render() {
       onVerifyAll: ids => {
         const stamp = new Date().toISOString();
         const changed = [];
+        const before = [];
         for (const id of ids) {
           const row = state.rows.find(r => r.id === id);
+          before.push({ id, old: state.rewriteReview.get(id) ?? '' });
           state.rewriteReview.delete(id);
           state.verifiedIds.add(id);
           if (row) changed.push({ ...row, rewrite_checked: stamp });
         }
+        state.lastKeepAll = before;
+        if (changed.length) persist(changed); else render();
+      },
+      // The way back from Keep all remaining: the originals return and the checks reopen (design audit b5).
+      onUndoKeepAll: () => {
+        const back = state.lastKeepAll ?? [];
+        state.lastKeepAll = null;
+        const changed = [];
+        for (const { id, old } of back) {
+          const row = state.rows.find(r => r.id === id);
+          if (!row) continue;
+          state.rewriteReview.set(id, old);
+          state.verifiedIds.delete(id);
+          changed.push({ ...row, blurb: old, rewrite_checked: '' });
+        }
+        state.reviewTotal = state.rewriteReview.size;
         if (changed.length) persist(changed); else render();
       },
       onTrash: row => {
-        // Junk spotted mid-finalize goes straight out (Kate, Sep 1) — and any
-        // open check for it is dropped so the queue count stays honest.
+        // Junk spotted mid-finalize goes out at once, its open check dropped so
+        // the count stays honest; the screen keeps it listed with Undo (design audit a3).
         state.rewriteReview.delete(row.id);
         state.verifiedIds.delete(row.id);
         persist([trash(row)]);
       },
+      onRestore: row => persist([row]),
       onRevertRewrite: row => {
         const old = state.rewriteReview.get(row.id) ?? '';
         state.rewriteReview.delete(row.id);
@@ -554,6 +575,8 @@ export function render() {
       onSend: sendToNewsletter,
       onUnsend: unsendFromNewsletter,
       onTrash: row => persist([trash(row)]),
+      onRestore: row => persist([row]),
+      onPickMore: () => { state.justSent = null; render(); },   // back to the pool after a send (design audit b12)
     });
   }
   if (switched) focusHeading(screens[state.screen]);

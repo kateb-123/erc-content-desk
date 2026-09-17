@@ -137,8 +137,6 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .bulk-templates a { color: var(--link-primary); text-decoration: none; }
 .bulk-templates a:hover { color: var(--link-primary-hover); text-decoration: underline; }
 .bulk-table { margin: var(--spacing-02) 0 var(--spacing-04); }
-.bulk-row.has-text { cursor: pointer; }
-.bulk-row.has-text:hover td { background: var(--row-hover); }
 .bulk-peek td { border-top: none; padding-top: 0; }
 .bulk-remove { width: 6.5rem; text-align: right; }
 
@@ -219,6 +217,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .screen-head button.primary { margin-left: auto; height: 32px; padding: 0 var(--spacing-09) 0 var(--spacing-04); align-self: center; }
 .screen-head button.primary .fa-solid { right: var(--spacing-04); }
 .screen-head .door { margin-left: auto; align-self: center; }
+.screen-head .p-ask { margin-left: auto; align-self: center; }   /* the one ask before Publish, in the button's place (design audit b6) */
 .head-action .fa-arrow-right { font-size: .85em; }
 .screen-head .lede { margin: 0; flex: 1; }
 
@@ -373,6 +372,9 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 /* Finalize's rows follow Sort's (style audit, Sep 16): the row, text, title and
    meta rules below are shared with .sort-row, so long titles wrap on both. */
 .f-list-row.is-rewrite { background-color: var(--amber-bg); }
+.f-list-row.is-deleted { cursor: default; color: var(--muted); align-items: center; }
+.f-list-row.is-deleted .f-row-title { text-decoration: line-through; }
+.f-list-row.is-deleted .linkish { margin-left: auto; }
 .f-list-row .fa-check { color: var(--ok-mark); flex: none; margin-top: var(--spacing-01); }
 .f-keep-all { margin: var(--spacing-04) 0 0 var(--spacing-01); }
 .f-keep-all .fa-solid { margin-right: var(--spacing-02); }
@@ -696,6 +698,8 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .sort-card { display: flex; flex-direction: column; gap: var(--spacing-03); }
 /* One card rule for Sort and Finalize: the same padding, and in view while a long list scrolls. */
 .sort-card, .f-card { padding: var(--spacing-05); box-sizing: border-box; position: sticky; top: var(--spacing-05); max-height: calc(100vh - 2rem); overflow-y: auto; }
+/* A card taller than the window fades at its foot until the reader scrolls to the end (design audit c3). */
+.sort-card.is-more::after, .f-card.is-more::after { content: ""; position: sticky; bottom: calc(-1 * var(--spacing-05)); display: block; height: 40px; margin: -40px 0 calc(-1 * var(--spacing-05)); flex: none; background: linear-gradient(transparent, var(--layer)); pointer-events: none; }
 .sort-card h3 { margin: 0; font-size: 16px; line-height: 22px; font-weight: 600; }   /* heading-02 */
 .sort-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02) var(--spacing-04); }
 .sort-card-top .type-line { margin: 0; }

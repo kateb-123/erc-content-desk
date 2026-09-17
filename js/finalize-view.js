@@ -59,3 +59,23 @@ export function editChanges(row, values) {
   }
   return changes;
 }
+
+/** The fields an edit form shows for a type (design audit b4): a research
+ *  item has no time or location, an event no deadline. An unknown or empty
+ *  type keeps every field, so nothing is lost on a row the reader could not
+ *  place. Order is the form's reading order. */
+export function fieldsForType(type) {
+  const per = {
+    event: ['headline', 'date', 'time', 'location', 'source', 'blurb'],
+    erc_event: ['headline', 'date', 'time', 'location', 'source', 'blurb'],
+    opportunity: ['headline', 'deadline', 'topic', 'source', 'blurb'],
+    research: ['headline', 'authors', 'source', 'topic', 'blurb'],
+    headline: ['headline', 'source', 'blurb'],
+  };
+  return per[type] ?? ['headline', 'date', 'source', 'topic', 'blurb', 'deadline', 'authors', 'time', 'location'];
+}
+
+/** Dates and deadlines are date inputs, so a typed "Oct 3" cannot vanish from every meta line. */
+export function dateField(field) {
+  return field === 'date' || field === 'deadline';
+}

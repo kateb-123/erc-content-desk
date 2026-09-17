@@ -18,8 +18,10 @@ import { renderSubmitForm } from './submit-form.js';
 import { tryAgain } from './home-ui.js';
 
 let quickOpen = false;   // view state: the form stays open across re-renders
+let quickJustOpened = false;   // the panel takes focus once, on the click that opened it (design audit b15)
+const justRemoved = new Map();   // removed this visit, id -> the row as it was: listed greyed with Undo (design audit c6)
 
-export function resetIssueEntry() { quickOpen = false; }
+export function resetIssueEntry() { quickOpen = false; justRemoved.clear(); }
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -43,7 +45,7 @@ function typeText(row) {
 }
 
 export function renderIssue(container, props) {
-  const { rows, schedule, today, loaded, loadFailed, onQuickAdd, onRemove, onRefresh } = props;
+  const { rows, schedule, today, loaded, loadFailed, onQuickAdd, onRemove, onRestore, onRefresh } = props;
   const issue = nextIssueDate(schedule, today);
   const when = isoToShort(issue, today);
   const title = issue ? `Next newsletter, ${when}` : 'Next newsletter';
@@ -67,6 +69,7 @@ export function renderIssue(container, props) {
   }
 
   const inIssue = issueRows(rows, issue);
+  const removed = [...justRemoved.values()].filter(r => !inIssue.some(x => x.id === r.id));
   const badge = el('span', 'queue-badge', String(inIssue.length));
   badge.append(el('span', 'sr-only', ' items'));
   h2.append(' ', badge);
@@ -76,11 +79,27 @@ export function renderIssue(container, props) {
   quick.type = 'button';
   quick.setAttribute('aria-expanded', String(quickOpen));
   quick.setAttribute('aria-controls', 'issue-quick');
-  quick.addEventListener('click', () => { quickOpen = !quickOpen; renderIssue(container, props); });
+  quick.addEventListener('click', () => { quickOpen = !quickOpen; quickJustOpened = quickOpen; renderIssue(container, props); });
   head.append(quick);
 
+  // Quick add's panel sits right under the head, where the click was, not
+  // below a long table (design audit b15).
+  let panel = null;
+  if (quickOpen) {
+    panel = container.querySelector('.quick-panel');
+    if (!panel) {
+      panel = el('section', 'quick-panel');
+      panel.id = 'issue-quick';
+      panel.append(el('h3', '', `Add to the ${when} newsletter`));
+      const mount = el('div');
+      panel.append(mount);
+      renderSubmitForm(mount, { bulk: false, onSubmitted: data => onQuickAdd(data) });
+    }
+    parts.push(panel);
+  }
+
   // ── The table: what is in. ──
-  if (!inIssue.length) {
+  if (!inIssue.length && !removed.length) {
     parts.push(el('p', 'empty', 'Nothing in yet.'));
   } else {
     const table = el('table', 'queue-table issue-table');
@@ -99,8 +118,22 @@ export function renderIssue(container, props) {
       const remove = el('button', 'linkish trash-link', ' Remove');
       remove.type = 'button';
       remove.prepend(faIcon('trash-can'));
-      remove.addEventListener('click', () => { remove.disabled = true; onRemove(row); });
+      remove.addEventListener('click', () => { remove.disabled = true; justRemoved.set(row.id, row); onRemove(row); });
       td.append(remove);
+      tr.append(td);
+      tbody.append(tr);
+    }
+    for (const row of removed) {
+      const tr = el('tr', 'queue-row is-deleted');
+      tr.append(titleCell(row));
+      tr.append(el('td', '', typeText(row)));
+      tr.append(el('td', '', isoToShort(row.submitted_at, today) || ''));
+      const td = el('td', 'bulk-remove queue-actions');
+      td.append(el('span', 'queue-gone', 'Removed'));
+      const undo = el('button', 'linkish', 'Undo');
+      undo.type = 'button';
+      undo.addEventListener('click', () => { undo.disabled = true; justRemoved.delete(row.id); onRestore?.(row); });
+      td.append(undo);
       tr.append(td);
       tbody.append(tr);
     }
@@ -110,19 +143,12 @@ export function renderIssue(container, props) {
     parts.push(scroll);
   }
 
-  // ── Quick add: the submit form, mounted once per opening and left alone
-  //    across re-renders so typing survives a data refresh. ──
-  if (quickOpen) {
-    let panel = container.querySelector('.quick-panel');
-    if (!panel) {
-      panel = el('section', 'quick-panel');
-      panel.id = 'issue-quick';
-      panel.append(el('h3', '', `Add to the ${when} newsletter`));
-      const mount = el('div');
-      panel.append(mount);
-      renderSubmitForm(mount, { bulk: false, onSubmitted: data => onQuickAdd(data) });
-    }
-    parts.push(panel);
-  }
+  // The form is mounted once per opening and left alone across re-renders,
+  // so typing survives a data refresh.
   container.replaceChildren(...parts);
+  if (panel && quickJustOpened) {
+    quickJustOpened = false;
+    panel.querySelector('#sf-title')?.focus({ preventScroll: true });
+    panel.scrollIntoView({ block: 'nearest' });
+  }
 }

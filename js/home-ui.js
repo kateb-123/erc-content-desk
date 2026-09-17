@@ -37,11 +37,11 @@ export function tryAgain(onRefresh) {
  * deep accent, on the tint. An href makes it a link out; an onClick makes
  * it a button; neither makes it a plain card.
  */
-function stat({ icon, label, value, unit, href, onClick, controls }) {
+function stat({ icon, label, value, unit, href, onClick, controls, expanded }) {
   const node = el(href ? 'a' : onClick ? 'button' : 'div', 'stat');
   if (href) { node.href = href; node.target = '_blank'; node.rel = 'noreferrer'; }
   if (onClick) { node.type = 'button'; node.addEventListener('click', onClick); }
-  if (controls) node.setAttribute('aria-controls', controls);
+  if (controls) { node.setAttribute('aria-controls', controls); node.setAttribute('aria-expanded', String(Boolean(expanded))); }
   node.append(faIcon(icon));
   node.append(el('span', 'stat-label', label));
   const v = el('span', 'stat-value', value);
@@ -76,6 +76,7 @@ export function renderHome(container, props) {
     const fold = el('details', 'queue-fold');
     fold.id = 'home-queue';
     fold.append(el('summary'), el('div', 'queue-body'));
+    fold.addEventListener('toggle', () => container.querySelector('.stat[aria-controls="home-queue"]')?.setAttribute('aria-expanded', String(fold.open)));
     container.replaceChildren(strip, grid, fold);
   }
 
@@ -89,10 +90,15 @@ export function renderHome(container, props) {
       icon: 'inbox', label: 'In the queue',
       value: loaded ? count : '…', unit: loaded ? 'waiting' : '',
       controls: 'home-queue',
+      expanded: container.querySelector('.queue-fold')?.open ?? false,
       onClick: () => {
+        // Open the fold and put the reader on it (design audit b15).
         const fold = container.querySelector('.queue-fold');
         fold.open = true;
         fold.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const summary = fold.querySelector('summary');
+        summary.focus({ preventScroll: true });
+        container.querySelector('.stat[aria-controls="home-queue"]')?.setAttribute('aria-expanded', 'true');
       },
     }),
     stat({

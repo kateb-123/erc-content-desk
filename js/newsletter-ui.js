@@ -12,6 +12,7 @@ import { isErc } from './sort-view.js';
 import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { eventTiming, deadlineState } from './schedule.js';
+import { focusKeyIn, restoreFocus } from './ui-aids.js';
 
 // The builder lives inside this project — same origin, one deploy.
 const BUILDER_URL = '/builder/';
@@ -29,12 +30,13 @@ let picked = new Set(); // nothing goes unless she picks it
 let issuePick = '';     // '' = the next issue on the schedule
 let confirmedEarly = new Set(); // later-event ids okayed via "Send early?" this visit
 let askOpenId = null;           // later-event row currently asking
+const justDeleted = new Map();  // past items deleted this visit, id -> the row as it was (design audit a3)
 
 // Folded categories survive re-renders (every checkbox click re-renders).
 const collapsedGroups = new Set();
 
 /** After a Send: nothing carries over to the next pick. */
-export function resetNewsletterEntry() { picked = new Set(); issuePick = ''; confirmedEarly = new Set(); askOpenId = null; }
+export function resetNewsletterEntry() { picked = new Set(); issuePick = ''; confirmedEarly = new Set(); askOpenId = null; justDeleted.clear(); }
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -84,10 +86,12 @@ function sentSection(container, { rows, issue, onUnsend }) {
 
 /** What the issue has outrun: an event that happens before it lands, an
  *  opportunity that closes first. Not pickable — the move left is Delete. */
-function pastSection(container, { past, onTrash }) {
-  if (!past.length) return;
+function pastSection(container, { past, onTrash, onRestore, rows }) {
+  // Deleted this visit: still listed, greyed, with Undo.
+  const deleted = [...justDeleted.values()].filter(r => rows.find(x => x.id === r.id)?.status === 'trashed');
+  if (!past.length && !deleted.length) return;
   const fold = el('details', 'nl-sent nl-past');
-  fold.append(el('summary', '', `Past items (${past.length})`));
+  fold.append(el('summary', '', `Past items (${past.length + deleted.length})`));
   const table = el('table', 'queue-table');
   const tbody = el('tbody');
   for (const { row, why, when } of past) {
@@ -102,10 +106,26 @@ function pastSection(container, { past, onTrash }) {
     if (onTrash) {
       const del = el('button', 'linkish trash-link', ' Delete');
       del.type = 'button';
+      del.dataset.focus = `delete:${row.id}`;
       del.prepend(faIcon('trash-can'));
-      del.addEventListener('click', () => { del.disabled = true; onTrash(row); });
+      del.addEventListener('click', () => { del.disabled = true; justDeleted.set(row.id, row); onTrash(row); });
       actTd.append(del);
     }
+    tr.append(actTd);
+    tbody.append(tr);
+  }
+  for (const row of deleted) {
+    const tr = el('tr', 'queue-row is-deleted');
+    const titleTd = el('td');
+    titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
+    tr.append(titleTd);
+    const actTd = el('td', 'nl-past-act');
+    actTd.append(el('span', 'queue-gone', 'Deleted'));
+    const undo = el('button', 'linkish', 'Undo');
+    undo.type = 'button';
+    undo.dataset.focus = `undo:${row.id}`;
+    undo.addEventListener('click', () => { undo.disabled = true; justDeleted.delete(row.id); onRestore?.(row); });
+    actTd.append(undo);
     tr.append(actTd);
     tbody.append(tr);
   }
@@ -115,10 +135,11 @@ function pastSection(container, { past, onTrash }) {
 }
 
 export function renderNewsletter(container, props) {
-  const { rows, schedule, today, busy, justSent, onSend, onUnsend, onTrash } = props;
+  const { rows, schedule, today, busy, justSent, onSend, onUnsend, onTrash, onRestore, onPickMore } = props;
   const rerender = () => renderNewsletter(container, props);
   // Each group scrolls in its own box; every click rebuilds the screen, so the
   // positions ride across or an opened ask lands out of view below the fold.
+  const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place (design audit a1)
   const scrollTops = new Map();
   for (const fold of container.querySelectorAll('[data-group]')) {
     const box = fold.querySelector('.nl-group-scroll');
@@ -186,6 +207,7 @@ export function renderNewsletter(container, props) {
     const btn = el('button', 'primary', selected.length
       ? `Send ${selected.length} to the ${issueLabel(issue)} issue`
       : `Send to the ${issueLabel(issue)} issue`);
+    btn.dataset.focus = 'send';
     btn.disabled = !selected.length || !issue;
     btn.addEventListener('click', () => { btn.disabled = true; onSend(selected, issue); });
     head.append(btn);
@@ -194,10 +216,17 @@ export function renderNewsletter(container, props) {
 
   if (justSent) {
     const open = el('p', '');
-    // Same door clothes as every other onward door — slim primary.
+    // The onward door, then a way back to the pool (design audit b12).
     const a = el('a', 'door slim-door', 'Open the newsletter builder ↗');
     a.href = BUILDER_URL; a.target = '_blank'; a.rel = 'noreferrer';
+    a.append(el('span', 'sr-only', ' (opens in a new tab)'));
     open.append(a);
+    if (onPickMore) {
+      const more = el('button', 'linkish', 'Pick more');
+      more.type = 'button';
+      more.addEventListener('click', () => onPickMore());
+      open.append(' ', more);
+    }
     container.append(open);
     return;
   }
@@ -210,6 +239,7 @@ export function renderNewsletter(container, props) {
     pickRow.append(label, ' ');
     const select = el('select');
     select.id = 'nl-issue';
+    select.dataset.focus = 'issue';
     for (const date of upcoming) {
       const opt = el('option', '', issueLabel(date));
       opt.value = date;
@@ -279,6 +309,7 @@ export function renderNewsletter(container, props) {
       const box = el('input');
       box.type = 'checkbox';
       box.setAttribute('aria-label', `Pick ${row.headline || row.link || 'this item'}`);
+      box.dataset.focus = `pick:${row.id}`;
       box.checked = picked.has(row.id);
       box.addEventListener('click', event => event.stopPropagation());
       box.addEventListener('change', () => pickGesture(row));
@@ -347,7 +378,7 @@ export function renderNewsletter(container, props) {
     container.append(fold);
   }
 
-  pastSection(container, { past, onTrash });
+  pastSection(container, { past, onTrash, onRestore, rows });
 
   // Put the scroll boxes back where they were, then make sure an open ask is
   // on screen and holding focus — otherwise the click reads as a no-op.
@@ -357,5 +388,6 @@ export function renderNewsletter(container, props) {
     if (box && top) box.scrollTop = top;
   }
   if (askRow) askRow.scrollIntoView({ block: 'nearest' });
-  askConfirm?.focus({ preventScroll: true });
+  if (askConfirm) askConfirm.focus({ preventScroll: true });
+  else restoreFocus(container, focusKey, null);
 }

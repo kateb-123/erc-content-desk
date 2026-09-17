@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { NAV, EXCHANGE_URL, currentKey, opensNewWindow, foldOpen, menuLayout, itemLink, openedScreen } from '../js/sidebar-view.js';
+import { NAV, EXCHANGE_URL, currentKey, opensNewWindow, foldOpen, menuLayout, itemLink, openedScreen, screenHash } from '../js/sidebar-view.js';
 
 test('the sidebar puts the team\'s links first and the pipeline last as Desk work (Claude Design round two, Kate\'s pick Sep 16)', () => {
   assert.deepEqual(NAV.map(g => g.label), ['', 'Policy Exchange', 'Newsletter', 'Desk work']);
@@ -85,7 +85,7 @@ test('the builder tucks its menu like Desk work; Past newsletters keeps it open 
 
 test('inside the desk, items keep their links: screens switch in place, the pipeline opens its window from the front door, outside pages open a new tab', () => {
   assert.deepEqual(itemLink(item('home'), 'home', false), { href: '/', newTab: false, inPlace: true });
-  assert.deepEqual(itemLink(item('issue'), 'home', false), { href: '/', newTab: false, inPlace: true });
+  assert.deepEqual(itemLink(item('issue'), 'home', false), { href: '/#issue', newTab: false, inPlace: true });   // the page has an address (design audit b21)
   assert.deepEqual(itemLink(item('sort'), 'home', false), { href: '/#sort', newTab: true, inPlace: false });
   assert.deepEqual(itemLink(item('sort'), 'finalize', true), { href: '/#sort', newTab: false, inPlace: true });
   assert.deepEqual(itemLink(item('builder'), 'home', false), { href: '/builder/', newTab: true, inPlace: false });
@@ -110,4 +110,12 @@ test('a link to /#issue lands on Next newsletter without becoming the pipeline\'
   assert.deepEqual(openedScreen('#build'), { screen: 'build', isSectionWindow: true });
   assert.deepEqual(openedScreen(''), { screen: null, isSectionWindow: false });
   assert.deepEqual(openedScreen('#nowhere'), { screen: null, isSectionWindow: false });
+});
+
+test('screenHash: the pipeline screens and Next newsletter carry a hash, the front door none (design audit b21)', () => {
+  assert.equal(screenHash('sort'), '#sort');
+  assert.equal(screenHash('build'), '#build');
+  assert.equal(screenHash('issue'), '#issue');
+  assert.equal(screenHash('home'), '');
+  assert.equal(screenHash(null), '');
 });

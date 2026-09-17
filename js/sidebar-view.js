@@ -95,7 +95,15 @@ export function itemLink(item, screen, isSectionWindow) {
     return { href: item.href, newTab: !item.href.startsWith('/'), inPlace: false };
   }
   const newTab = opensNewWindow(item, isSectionWindow);
-  return { href: item.href ?? (pipeline ? `/#${item.screen}` : '/'), newTab, inPlace: !newTab && Boolean(item.screen) };
+  return { href: item.href ?? (screenHash(item.screen) ? `/${screenHash(item.screen)}` : '/'), newTab, inPlace: !newTab && Boolean(item.screen) };
+}
+
+/** The address a screen keeps: the pipeline's screens and Next newsletter
+ *  carry a hash so a reload or a bookmark lands back on them (design audit
+ *  b21); the front door has none. */
+export function screenHash(screen) {
+  if (SECTION_SCREENS.includes(screen) || screen === 'issue') return `#${screen}`;
+  return '';
 }
 
 /** The screen a desk address opens on: a pipeline hash makes the pipeline's
