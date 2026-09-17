@@ -46,6 +46,14 @@ template and the public Exchange site.
 - Radii: **8px** controls/inputs · **12px** cards/tables · **999px** pills/chips/badges.
 - Focus: accent border + `0 0 0 3px` tint halo (quiet — louder highlights were rejected).
 - Active nav pill shadow: `0 2px 10px rgba(29,110,165,.35)`.
+- Every page's first line (a screen title, Home's stat cards, the builder's title,
+  Past newsletters' title) sits 44px from the top of the window; on the desk the
+  status line keeps its one-line slot above it, so a message never moves the page
+  (style audit, Sep 16).
+- Sort and Finalize share one list row and one card: titles wrap at .88rem with the
+  source or type under them in .78rem, the chosen row sits on the tint, and the card
+  (1.25rem × 1.4rem padding) stays in view while the list scrolls. The builder's step
+  titles sit one size under its page title (1.1rem against 1.35rem).
 - The desk's nav is a sidebar down the left of every page (Kate, Sep 16, from the
   Claude Design docs: "I like the sidebar the most. but then I think keep our
   stuff"): 248px, `--side-bg`, four groups in the order of Claude Design's second

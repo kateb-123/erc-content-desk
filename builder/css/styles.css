@@ -87,7 +87,7 @@ body.builder-shell { flex-direction: row; }
   margin: 0 auto;
   max-width: 820px;
   width: 100%;
-  padding: 30px 32px 14px;
+  padding: 44px 32px 14px;   /* the desk's 44px first line (style audit, Sep 16) */
 }
 .builder-head h1 {
   font-family: var(--bp-heading-font);
@@ -226,7 +226,7 @@ body.builder-shell { flex-direction: row; }
 
 .wizard-step h2 {
   font-family: var(--bp-heading-font);
-  font-size: 1.35rem;
+  font-size: 1.1rem;   /* one size under the page title (style audit, Sep 16) */
   font-weight: 700;
   color: var(--bp-ink);
   margin: 0;

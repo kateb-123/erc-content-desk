@@ -140,7 +140,7 @@ button:disabled { opacity: .5; cursor: default; }
 .nl-group-scroll { max-height: 340px; overflow-y: auto; }
 .bulk-door .bulk-status { min-height: 1.4rem; margin: 1rem 0 0; font-size: .9rem; }
 
-.status { min-height: 1.4rem; margin: 1rem 0 0; font-size: .9rem; }
+.status { min-height: 1.4rem; margin: 0; font-size: .9rem; }
 .status-ok { color: var(--ok); }
 .status-error { color: var(--err); }
 .status-busy { color: var(--muted); }
@@ -150,7 +150,9 @@ button:disabled { opacity: .5; cursor: default; }
    most. but then I think keep our stuff"): a sidebar down the left on every
    page, the desk's own type and color, the content column beside it. */
 .desk { display: flex; min-height: 100vh; margin: 0; padding: 0; }
-.desk-main { flex: 1 1 auto; min-width: 0; padding: 1.5rem 2.5rem 6rem; box-sizing: border-box; }
+/* Every page's first line sits 44px down, the desk and the builder alike (style audit, Sep 16):
+   .5rem here, the status line's one-line slot, then the first element's .85rem. */
+.desk-main { flex: 1 1 auto; min-width: 0; padding: .5rem 2.5rem 6rem; box-sizing: border-box; }
 .desk-main > * { max-width: 68rem; margin-left: auto; margin-right: auto; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
@@ -167,7 +169,7 @@ button:disabled { opacity: .5; cursor: default; }
 }
 .door:hover:not(:disabled) { background: var(--tint); border-color: var(--accent); }
 
-.screen-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin: 1.75rem 0 1rem; }
+.screen-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin: .85rem 0 1rem; }
 .screen-head h2 { font-size: 1.35rem; margin: 0; }
 .title-row { display: flex; align-items: baseline; gap: .9rem; }
 .info-toggle { border: none; background: none; padding: 0; font: inherit; font-weight: 600; font-size: .85rem; color: var(--accent); cursor: pointer; }
@@ -291,21 +293,12 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .f-group-head.is-fold:hover:not(:disabled) { border-color: var(--line); color: var(--accent); }
 .f-group-count { margin-left: auto; font-weight: 600; letter-spacing: 0; }
 .f-group-head .fa-solid { font-size: .6rem; }
-.f-list-row {
-  display: flex; align-items: center; gap: .5rem; width: 100%; box-sizing: border-box; text-align: left;
-  padding: .55rem .85rem; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: #fff;
-  font-family: Karla, "Segoe UI", sans-serif; font-weight: 400; color: var(--ink); cursor: pointer;
-}
-.f-list-row:hover:not(:disabled) { border-color: var(--line); background-image: linear-gradient(var(--hover), var(--hover)); }
+/* Finalize's rows follow Sort's (style audit, Sep 16): the row, text, title and
+   meta rules below are shared with .sort-row, so long titles wrap on both. */
 .f-list-row.is-rewrite { background-color: var(--amber-bg); }
-.f-list-row.is-selected { background-color: var(--tint); }
-.f-row-text { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
-.f-row-title { font-size: .85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.f-row-type { font-size: .75rem; color: var(--muted); }
-.f-list-row .fa-check { color: var(--ok); flex: none; }
+.f-list-row .fa-check { color: var(--ok); flex: none; margin-top: .3rem; }
 .f-keep-all { margin: .7rem 0 0 .2rem; }
 .f-keep-all .fa-solid { margin-right: .3rem; }
-.f-card { padding: 1.25rem 1.4rem; }
 .f-card .type-line { margin: 0 0 .35rem; }
 .f-card .f-verify-actions { border-top: 1px solid var(--line); padding-top: .85rem; margin-top: 1rem; }
 .f-card .f-verify-actions .skip-link { margin-left: auto; }
@@ -357,7 +350,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .f-old .diff-del { text-decoration: line-through; color: var(--amber); }
 .f-blurb-text .diff-add { background: var(--ok-bg); border-radius: 3px; padding: 0 2px; }
 .f-verify-actions { display: flex; gap: .6rem; align-items: center; margin: .6rem 0 .2rem; }
-.f-verify-actions .primary, .f-verify-actions .btn-outline {
+.f-verify-actions .primary, .f-verify-actions .btn-outline, .sort-card-acts .primary {
   display: inline-flex; align-items: center; gap: .45rem; border-radius: var(--radius); padding: .55rem 1.2rem; font-size: .95rem;
 }
 
@@ -411,7 +404,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 
 /* The stats: four icon cards on the tint (Kate's pick J of four, Sep 16).
    A grid, so a narrow window gets two rows instead of a broken line. */
-.stats-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .75rem; margin-top: 1.75rem; }
+.stats-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .75rem; margin-top: .85rem; }
 .stat {
   display: flex; flex-direction: column; align-items: flex-start; gap: .35rem;
   padding: .9rem 1rem 1rem; border-radius: 12px; background: var(--tint);
@@ -591,19 +584,19 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
    while the list scrolls. Finalize's list and card, with Sort's fix panel. */
 .sort-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 1.25rem; align-items: start; }
 .sort-rows { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-.sort-row {
+.sort-row, .f-list-row {
   display: flex; align-items: flex-start; gap: .5rem; width: 100%; box-sizing: border-box; text-align: left;
   padding: .6rem .8rem; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: #fff;
   font-family: Karla, "Segoe UI", sans-serif; font-weight: 400; color: var(--ink); cursor: pointer;
 }
 .sort-rows > :first-child { border-top: 0; }
-.sort-row:hover:not(:disabled) { border-color: var(--line); background-image: linear-gradient(var(--hover), var(--hover)); }
-.sort-row.is-selected { background-color: var(--tint); }
-.sort-row-text { display: flex; flex-direction: column; gap: .1rem; min-width: 0; flex: 1 1 auto; }
+.sort-row:hover:not(:disabled), .f-list-row:hover:not(:disabled) { border-color: var(--line); background-image: linear-gradient(var(--hover), var(--hover)); }
+.sort-row.is-selected, .f-list-row.is-selected { background-color: var(--tint); }
+.sort-row-text, .f-row-text { display: flex; flex-direction: column; gap: .1rem; min-width: 0; flex: 1 1 auto; }
 .sort-row-badges { display: flex; flex-wrap: wrap; gap: .3rem; margin-bottom: .1rem; }
 .sort-row-badges .badge { margin-right: 0; }
-.sort-row-title { font-size: .88rem; font-weight: 500; line-height: 1.35; }
-.sort-row-meta { font-size: .78rem; color: var(--muted); }
+.sort-row-title, .f-row-title { font-size: .88rem; font-weight: 500; line-height: 1.35; }
+.sort-row-meta, .f-row-type { font-size: .78rem; color: var(--muted); }
 /* The one alert on a Needs a fix row: an amber triangle before the title. */
 .sort-row .fix-mark { color: var(--amber); font-size: .75rem; margin-top: .3rem; flex: none; }
 .sort-row .fa-chevron-right { color: var(--accent); font-size: .7rem; margin-top: .35rem; flex: none; }
@@ -611,7 +604,9 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .sort-done .sort-row-title, .sort-done .sort-row-meta { color: var(--muted); }
 .sort-done.is-trashed .sort-row-title { text-decoration: line-through; }
 .sort-done-acts { margin-left: auto; white-space: nowrap; }
-.sort-card { display: flex; flex-direction: column; gap: .6rem; padding: 1.1rem 1.25rem; box-sizing: border-box; position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
+.sort-card { display: flex; flex-direction: column; gap: .6rem; }
+/* One card rule for Sort and Finalize: the same padding, and in view while a long list scrolls. */
+.sort-card, .f-card { padding: 1.25rem 1.4rem; box-sizing: border-box; position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
 .sort-card h3 { margin: 0; font-size: 1.05rem; line-height: 1.3; }
 .sort-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .75rem; }
 .sort-card-top .type-line { margin: 0; }
@@ -623,7 +618,6 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .sort-card-source { margin: 0; font-size: .85rem; color: var(--muted); }
 .sort-card-acts { display: flex; align-items: center; gap: 1rem; border-top: 1px solid var(--line); padding-top: .8rem; margin-top: .2rem; }
 .sort-card-right { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
-.sort-card-acts .primary { padding: .45rem 1.2rem; }
 .sort-card .sort-edit { margin: 0; }
 /* The fix panel: amber while the row needs a fix, plain while a type changes. */
 .fix-panel { border: 1px solid var(--line); border-radius: 8px; padding: .7rem .85rem; background: #fff; }
@@ -642,7 +636,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .fix-panel > .skip-link { margin-top: .35rem; }
 @media (max-width: 900px) {
   .sort-split { grid-template-columns: minmax(0, 1fr); }
-  .sort-card { position: static; max-height: none; }
+  .sort-card, .f-card { position: static; max-height: none; }
 }
 .queue-row.is-deleted .queue-actions { opacity: 1; }
 .queue-gone { font-size: .8rem; color: var(--muted); margin-right: .5rem; }
