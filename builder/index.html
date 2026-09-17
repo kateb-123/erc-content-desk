@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&display=swap" />
   <link rel="stylesheet" href="/css/tokens.css?v=2" />
-  <link rel="stylesheet" href="/css/sidebar.css?v=6" />
-  <link rel="stylesheet" href="css/styles.css?v=43" />
+  <link rel="stylesheet" href="/css/sidebar.css?v=7" />
+  <link rel="stylesheet" href="css/styles.css?v=44" />
 </head>
 <body class="builder-shell">
   <!-- The desk's sidebar, tucked behind a thin strip like Desk work (Kate, Sep 16):
@@ -21,10 +21,11 @@
 
   <nav class="step-nav" aria-label="Wizard steps">
     <ol class="step-list">
-      <li class="step-indicator" data-nav-step="review">Review</li>
-      <li class="step-indicator" data-nav-step="triage">Outline</li>
-      <li class="step-indicator" data-nav-step="edit">Preview &amp; Edit</li>
-      <li class="step-indicator" data-nav-step="export">Save &amp; Export</li>
+      <!-- The li draws the circle and the line; the button inside is the control (b22). -->
+      <li class="step-indicator" data-nav-step="review"><button type="button" class="step-btn">Review</button></li>
+      <li class="step-indicator" data-nav-step="triage"><button type="button" class="step-btn">Outline</button></li>
+      <li class="step-indicator" data-nav-step="edit"><button type="button" class="step-btn">Preview &amp; Edit</button></li>
+      <li class="step-indicator" data-nav-step="export"><button type="button" class="step-btn">Save &amp; Export</button></li>
     </ol>
   </nav>
 
@@ -48,11 +49,13 @@
 
   <footer class="wizard-footer">
     <button id="btn-back" class="btn btn-secondary" disabled><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back</button>
+    <!-- The one-line status slot: what a locked step or Next says with no issue loaded (b23). -->
+    <p id="wizard-status" class="wizard-status" role="status" aria-live="polite"></p>
     <button id="btn-next" class="btn btn-primary">Next <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
   </footer>
   </div>
 
   <!-- Bump ?v when you change the JS so browsers load the new code (cache-busting). -->
-  <script type="module" src="js/app.js?v=33"></script>
+  <script type="module" src="js/app.js?v=34"></script>
 </body>
 </html>

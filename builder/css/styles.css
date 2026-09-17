@@ -134,6 +134,24 @@ body.builder-shell { flex-direction: row; }
 .step-indicator:not(.active):hover { color: var(--bp-ink); }
 .step-indicator:not(.active):hover::before { border-color: var(--bp-ink); color: var(--bp-ink); }
 
+/* The step's button (b22): the li keeps the look, the button is the control. */
+.step-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  cursor: inherit;
+}
+.step-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* A step that needs an issue while none is loaded (b23): no pointer, muted, no hover lift. */
+.step-indicator:has([aria-disabled="true"]) { cursor: default; }
+.step-indicator:has([aria-disabled="true"]):hover { color: var(--bp-muted); }
+.step-indicator:has([aria-disabled="true"]):hover::before { border-color: var(--border-strong-01); color: var(--bp-muted); }
+
 /* The circle: a CSS counter, no JS needed. Incomplete is an outline. */
 .step-indicator::before {
   counter-increment: step-counter;
@@ -216,7 +234,11 @@ body.builder-shell { flex-direction: row; }
 }
 /* The desk's header info pattern, shared verbatim. */
 .title-row { display: flex; align-items: baseline; gap: var(--spacing-04); margin: 0 0 var(--spacing-03); }
-.info-toggle { border: none; background: none; padding: 0; font: inherit; letter-spacing: .16px; color: var(--link-primary); cursor: pointer; }
+/* A ghost button's size (c9), pulled left by its own padding so the word sits where it did. */
+.info-toggle {
+  display: inline-flex; align-items: center; height: 32px; padding: 0 var(--spacing-03); margin-left: calc(-1 * var(--spacing-03));
+  border: none; background: none; font: inherit; letter-spacing: .16px; color: var(--link-primary); cursor: pointer;
+}
 .info-toggle:hover { color: var(--link-primary-hover); text-decoration: underline; }
 .info-panel {
   background: var(--bp-primary-tint); border: 1px solid var(--notification-info-border); border-left: 3px solid var(--support-info);
@@ -245,6 +267,14 @@ body.builder-shell { flex-direction: row; }
   width: 100%;
   max-width: 820px;
   margin: 0 auto;
+}
+
+/* The footer's status line (b23): one quiet line between Back and Next. The
+   40px buttons set the row's height, so a message never moves the page. */
+.wizard-status {
+  flex: 1 1 auto;
+  margin: 0 var(--spacing-05);
+  color: var(--bp-muted);
 }
 
 /* Match the footer to the wider column on the Preview & Edit step. */
@@ -297,119 +327,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 }
 .btn-secondary:not(:disabled):hover { background: var(--button-secondary-hover); }
 .btn-secondary:not(:disabled):active { background: var(--button-secondary-active); }
-
-/* --- Upload / drop zone ----------------------------------- */
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.drop-zone {
-  margin-top: var(--spacing-06);
-  border: 1px dashed var(--border-strong-01);
-  border-radius: 0;
-  padding: var(--spacing-08) var(--spacing-06) var(--spacing-08);
-  text-align: center;
-  background: var(--field-02);
-  cursor: pointer;
-  transition: background-color var(--duration-fast-01) var(--ease-productive), border-color var(--duration-fast-01) var(--ease-productive);
-  outline: none;
-}
-
-.drop-zone:hover {
-  background: var(--field-hover-01);
-  border-color: var(--bp-primary);
-}
-
-.drop-zone:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: -2px;
-  border-color: var(--bp-primary);
-}
-
-.drop-zone--over {
-  background: var(--bp-primary-tint);
-  border-color: var(--bp-primary);
-  border-style: solid;
-}
-
-.drop-icon {
-  width: 52px;
-  height: 52px;
-  margin-bottom: var(--spacing-04);
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  opacity: 0.75;
-  transition: opacity var(--duration-fast-01) var(--ease-productive);
-}
-
-.drop-zone:hover .drop-icon,
-.drop-zone--over .drop-icon {
-  opacity: 1;
-}
-
-.drop-label {
-  color: var(--bp-muted);
-  margin: 0 0 var(--spacing-05);
-}
-
-.drop-hint {
-  display: block;
-  font-size: 12px; line-height: 16px; letter-spacing: .32px;
-  color: var(--bp-faint);
-  margin-top: var(--spacing-02);
-}
-
-.drop-btn {
-  display: inline-flex;
-  cursor: pointer;
-}
-
-/* --- Upload status ---------------------------------------- */
-/* Carbon's inline notification: a surface, a 3px bar in the meaning's colour, text-primary. */
-.upload-status {
-  margin-top: var(--spacing-05);
-  padding: var(--spacing-04) var(--spacing-05);
-  border-radius: 0;
-  border: 1px solid transparent;
-  border-left-width: 3px;
-  color: var(--bp-ink);
-}
-
-.upload-status ul {
-  margin: var(--spacing-02) 0 0;
-  padding-left: var(--spacing-06);
-}
-
-.upload-status li {
-  margin-bottom: var(--spacing-02);
-}
-
-.upload-status--error {
-  background: var(--bp-destructive-tint);
-  border-color: var(--bp-destructive-line);
-  border-left-color: var(--support-error);
-}
-
-.upload-status--warning {
-  background: var(--bp-amber-bg);
-  border-color: var(--bp-amber-line);
-  border-left-color: var(--bp-amber-mark);
-}
-
-.upload-status--success {
-  background: var(--bp-citron-tint);
-  border-color: var(--bp-citron-line);
-  border-left-color: var(--bp-citron-mark);
-}
 
 /* --- Triage step ------------------------------------------ */
 .triage-meta {
@@ -473,10 +390,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   padding: var(--spacing-03) var(--spacing-03);
   border-radius: 0;
   transition: background-color var(--duration-fast-01) var(--ease-productive);
-}
-
-.triage-section-row:hover {
-  background: var(--bp-row-hover);
 }
 
 /* Submit-callout opt-in switch: a compact setting chip, toggle first. */
@@ -560,22 +473,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   display: none;
 }
 
-.triage-toggle-label {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-03);
-  cursor: pointer;
-  flex: 1;
-}
-
-.triage-toggle {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--bp-primary);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
 .triage-section-name {
   font-size: 16px; line-height: 22px; letter-spacing: 0;   /* heading-compact-02 */
   font-weight: 600;
@@ -587,7 +484,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   color: var(--bp-faint);
 }
 
-.triage-subtoggle-row .triage-section-name,
 .triage-switch-label {
   font-size: 14px; line-height: 18px; letter-spacing: .16px;
   font-weight: 600;
@@ -597,6 +493,12 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .triage-section-note {
   font-size: 12px; line-height: 16px; letter-spacing: .32px;
   color: var(--bp-faint);
+}
+/* The Featured rule, once under the Events name, in line with the group labels (b30). */
+.triage-grouped-section > .triage-section-note {
+  display: block;
+  padding-left: var(--spacing-02);
+  margin: var(--spacing-01) 0 var(--spacing-02);
 }
 
 .triage-grouped-section {
@@ -627,21 +529,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   padding: var(--spacing-02) var(--spacing-02) var(--spacing-02) var(--spacing-06);
 }
 
-.triage-peek-btn {
-  background: none;
-  border: 0;
-  cursor: pointer;
-  color: var(--icon-secondary);
-  font-size: 10px;
-  line-height: 1;
-  padding: 0;
-  width: 14px;
-  flex-shrink: 0;
-}
-.triage-peek-btn:hover {
-  color: var(--icon-primary);
-}
-
 .triage-event-title {
   flex: 1;
   color: var(--bp-body);
@@ -650,25 +537,10 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   white-space: nowrap;
 }
 
-/* Read-only inline "peek" of an item's content */
-.triage-item-preview {
-  padding: var(--spacing-01) var(--spacing-03) var(--spacing-03) var(--spacing-06);
-  font-size: 12px; line-height: 16px; letter-spacing: .32px;
-  color: var(--bp-muted);
-}
-.triage-preview-line {
-  margin-bottom: var(--spacing-01);
-}
-.triage-preview-label {
-  color: var(--bp-faint);
-}
-.triage-preview-empty {
-  color: var(--bp-faint);
-}
-
 .triage-featured-label {
   display: flex;
   align-items: center;
+  min-height: 24px;   /* the box stays 16px; the target is the label (c9) */
   gap: var(--spacing-03);
   font-size: 12px; line-height: 16px; letter-spacing: .32px;
   color: var(--bp-muted);
@@ -689,13 +561,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .triage-featured-label:has(.triage-featured-cb:checked) {
   color: var(--bp-ink);
   font-weight: 600;
-}
-
-.triage-event-pos {
-  font-size: 12px; line-height: 16px; letter-spacing: .32px;
-  color: var(--bp-faint);
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 /* Reorder arrows: ghost icon buttons. */
@@ -774,12 +639,13 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 }
 
 .edit-saveall-btn {
+  display: inline-flex; align-items: center; height: 32px;   /* a ghost button's size (c9) */
   background: none;
   border: 0;
   color: var(--link-primary);
   font: inherit; letter-spacing: .16px;
   cursor: pointer;
-  padding: var(--spacing-01) var(--spacing-02);
+  padding: 0 var(--spacing-03);
 }
 .edit-saveall-btn:hover { color: var(--link-primary-hover); text-decoration: underline; }
 
@@ -820,13 +686,14 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   margin-bottom: var(--spacing-01);
 }
 .edit-card-close {
+  display: inline-flex; align-items: center; height: 32px;   /* a ghost button's size (c9) */
   background: none;
   border: 0;
   color: var(--icon-secondary);
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
-  padding: var(--spacing-01) var(--spacing-02);
+  padding: 0 var(--spacing-03);
 }
 .edit-card-close:hover { color: var(--icon-primary); }
 .edit-card-group { margin-bottom: var(--spacing-03); }
@@ -893,6 +760,16 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .rich-btn:hover {
   background: var(--background-hover);
 }
+/* The link ask under the toolbar (c10): a field, Apply and Cancel in one row. */
+.rich-link-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-03);
+  padding: var(--spacing-02) var(--spacing-02);
+  background: var(--layer-accent-01);
+}
+.rich-link-row .rich-link-input { flex: 1 1 auto; width: auto; height: 32px; background: var(--field-02); }
+.rich-link-apply { height: 32px; padding: 0 var(--spacing-04); }
 .rich-editable {
   min-height: 160px;
   max-height: 300px;
@@ -912,7 +789,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .intro-save-btn { margin-top: var(--spacing-03); }
 .img-upload { display: flex; align-items: center; gap: var(--spacing-03); flex-wrap: wrap; }
 .img-upload .pull-status { margin-left: 0; }
-.img-upload .media-add { height: 32px; padding: 0 var(--spacing-03); margin-left: calc(-1 * var(--spacing-03)); display: inline-flex; align-items: center; }
+.img-upload .media-add { margin-left: calc(-1 * var(--spacing-03)); }
 .img-upload .media-add:hover { background: var(--background-hover); text-decoration: none; }
 /* Card footer, desk grammar: Delete far left; Use original · Save on the
    right, with gap and wrap so nothing ever clips. */
@@ -1203,110 +1080,8 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   white-space: nowrap;
 }
 
-/* --- Tutorial -------------------------------------------------------- */
-.tut-scrim {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: var(--overlay);
-  z-index: 900;
-}
-.tut-ring {
-  display: none;
-  position: absolute;
-  z-index: 901;
-  border: 2px solid var(--focus);
-  border-radius: 0;
-  pointer-events: none;
-  transition: top var(--duration-moderate-02) var(--ease-standard), left var(--duration-moderate-02) var(--ease-standard), width var(--duration-moderate-02) var(--ease-standard), height var(--duration-moderate-02) var(--ease-standard);
-}
-/* The tip is Carbon's modal: a square layer on the overlay, no border. */
-.tut-tip {
-  display: none;
-  position: fixed;
-  z-index: 902;
-  max-width: 340px;
-  background: var(--layer-02);
-  border: 0;
-  border-radius: 0;
-  padding: var(--spacing-05) var(--spacing-05);
-  animation: tut-tip-in var(--duration-fast-02) var(--ease-standard);
-}
-.tut-tip--center {
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
-.tut-tip__title {
-  margin: 0 0 var(--spacing-03);
-  font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: 0;
-  color: var(--bp-ink);
-}
-.tut-tip__body {
-  margin: 0 0 var(--spacing-05);
-  color: var(--bp-body);
-}
-.tut-tip__foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-04);
-}
-.tut-tip__foot--center { justify-content: center; }
-.tut-tip__count {
-  font-size: 12px; line-height: 16px; letter-spacing: .32px;
-  color: var(--bp-muted);
-}
-.tut-link {
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--bp-muted);
-  font: inherit;
-  cursor: pointer;
-  text-decoration: underline;
-}
-.tut-link:hover { color: var(--bp-body); }
-/* Replay the tour: a small tertiary. */
-.tut-replay {
-  margin-left: auto;
-  display: inline-flex; align-items: center; height: 32px;
-  background: transparent;
-  color: var(--bp-primary);
-  border: 1px solid var(--bp-primary);
-  border-radius: 0;
-  padding: 0 var(--spacing-04);
-  font: inherit; letter-spacing: .16px;
-  cursor: pointer;
-}
-.tut-replay:hover { background: var(--bp-primary); color: var(--text-on-color); }
-.tut-replay:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
-.tut-tip__link {
-  display: inline-block;
-  margin: calc(-1 * var(--spacing-02)) 0 var(--spacing-03);
-  color: var(--link-primary);
-  text-decoration: underline;
-}
-.tut-tip__body--acked {
-  color: var(--bp-ink);
-  font-weight: 600;
-}
-.tut-tip__next--go {
-  animation: tut-next-pulse 0.9s ease 2;
-}
-@keyframes tut-next-pulse {
-  50% { transform: scale(1.06); }
-}
-@keyframes tut-tip-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 @media (prefers-reduced-motion: reduce) {
   .dots-loader .dot, .dots-text::after { animation: none !important; }
-  .tut-ring { transition: none !important; }
-  .tut-tip { animation: none !important; }
-  .tut-tip__next--go { animation: none !important; }
 }
 
 /* Review / Bucket / Glance */
@@ -1317,7 +1092,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .review-table { width: 100%; border-collapse: collapse; margin-top: var(--spacing-05); background: var(--layer-02); border: 1px solid var(--bp-line-in); }
 .review-table th { text-align: left; font-weight: 600; color: var(--bp-ink); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--bp-line-in); }
 .review-table td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--bp-line-in); vertical-align: top; color: var(--bp-muted); }
-.review-table tbody tr:hover td { background: var(--bp-row-hover); color: var(--bp-ink); }
 .review-table-sub { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--bp-muted); margin-top: var(--spacing-01); font-weight: 400; }
 
 /* Edit-column add-on panels (Introduction, Add an item). */

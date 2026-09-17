@@ -1,5 +1,5 @@
 /**
- * app.js — ERC Newsletter Builder wizard shell
+ * app.js: ERC Newsletter Builder wizard shell
  *
  * Holds wizard state and step navigation. Later tasks import the
  * pure-logic modules (parser/serialize/template/model) as they wire up
@@ -9,7 +9,7 @@
 import { SECTION_REGISTRY, mergeIssueItems, createEmptyIssue, mergeIssues, deleteItem, insertItem, issueLinks, issueItemIds, partitionPulled, countIssueItems } from './model.js';
 
 // The builder lives INSIDE the desk's project (/builder/), so the desk's API
-// is same-origin — relative fetches, no CORS. ?desk= still overrides for
+// is same-origin: relative fetches, no CORS. ?desk= still overrides for
 // unusual dev setups.
 const DESK_URL = new URLSearchParams(window.location.search).get('desk') || '';
 let pullMessage = ''; // survives the Outline re-render after a pull
@@ -18,17 +18,17 @@ import { saveState, loadState, clearState } from './state.js';
 import { getField, setField } from './editpath.js';
 import { computePreviewScale } from './preview.js';
 import { renderSidebar } from '../../js/sidebar-ui.js';
+import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage } from './wizard.js';
+import { arrowKeyTarget, normalizeLinkUrl } from './editing.js';
 
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
 
-const STEPS = ['review', 'triage', 'edit', 'export'];
-
 const state = {
   /** @type {object|null} Parsed newsletter issue model */
   issue: null,
-  /** @type {object|null} Deep-clone of issue at parse/restore time — used by "Revert to original" */
+  /** @type {object|null} Deep-clone of issue at parse/restore time, used by "Revert to original" */
   baseline: null,
   /** @type {string} Current wizard step key */
   step: 'review',
@@ -56,7 +56,7 @@ function dotsLoader(mini = false) {
   return wrap;
 }
 
-/** "Pulling" + dots that type themselves — for busy status labels. */
+/** "Pulling" + dots that type themselves, for busy status labels. */
 function loadingLabel(message) {
   const frag = document.createDocumentFragment();
   frag.append(message.replace(/…$/, ''));
@@ -86,6 +86,11 @@ const scheduleSave = debounce(() => {
 
 const btnBack = document.getElementById('btn-back');
 const btnNext = document.getElementById('btn-next');
+/** The footer's one-line status slot: what a locked step says (b23). */
+const wizardStatus = document.getElementById('wizard-status');
+function setWizardStatus(msg) {
+  if (wizardStatus) wizardStatus.textContent = msg;
+}
 
 /** Small Font Awesome glyph, same convention as the desk's faIcon(). */
 function faIcon(name) {
@@ -100,6 +105,31 @@ const stepSections = document.querySelectorAll('[data-step]');
 
 /** @type {NodeListOf<HTMLElement>} */
 const stepIndicators = document.querySelectorAll('[data-nav-step]');
+
+/**
+ * The step buttons' state: the lit one, the finished ones (a check once an
+ * issue is loaded and the step sits before the current one), and which are
+ * reachable. The button inside each step carries aria-current and
+ * aria-disabled for a screen reader (b22). Runs on every goTo and again when
+ * an issue arrives on Review.
+ */
+function syncStepNav() {
+  const idx = STEPS.indexOf(state.step);
+  const hasIssue = Boolean(state.issue);
+  stepIndicators.forEach((indicator) => {
+    const navStep = indicator.dataset.navStep;
+    const isActive = navStep === state.step;
+    const navIdx = STEPS.indexOf(navStep);
+    indicator.classList.toggle('active', isActive);
+    indicator.classList.toggle('completed', hasIssue && !isActive && navIdx > -1 && navIdx < idx);
+    const btn = indicator.querySelector('button');
+    if (!btn) return;
+    if (isActive) btn.setAttribute('aria-current', 'step');
+    else btn.removeAttribute('aria-current');
+    if (canEnterStep(navStep, hasIssue)) btn.removeAttribute('aria-disabled');
+    else btn.setAttribute('aria-disabled', 'true');
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Navigation
@@ -129,19 +159,8 @@ function goTo(step) {
     }
   });
 
-  // Update step indicator highlights + completed check-pills.
-  // A step reads as "completed" (green check) once an issue is loaded and it
-  // sits before the current step in the flow.
-  stepIndicators.forEach((indicator) => {
-    const navStep = indicator.dataset.navStep;
-    const isActive = navStep === step;
-    const navIdx = STEPS.indexOf(navStep);
-    indicator.classList.toggle('active', isActive);
-    indicator.classList.toggle(
-      'completed',
-      Boolean(state.issue) && !isActive && navIdx > -1 && navIdx < idx,
-    );
-  });
+  syncStepNav();
+  setWizardStatus('');
 
   // Enable/disable the footer nav pair (the one Back/Next on the page)
   btnBack.disabled = idx === 0;
@@ -164,20 +183,29 @@ function goBack() {
 }
 function goNext() {
   const idx = STEPS.indexOf(state.step);
-  if (idx < STEPS.length - 1) goTo(STEPS[idx + 1]);
+  if (idx >= STEPS.length - 1) return;
+  const next = STEPS[idx + 1];
+  // The same gate as the step buttons (b23): with no issue, Next says why and stays.
+  if (!canEnterStep(next, Boolean(state.issue))) { setWizardStatus(LOCKED_STEP_MESSAGE); return; }
+  goTo(next);
 }
 btnBack.addEventListener('click', goBack);
 btnNext.addEventListener('click', goNext);
 
-// Step indicators are clickable — jump straight to any step. Review is
-// always reachable; the later steps need a loaded issue.
+// The step buttons jump straight to any step. Review is always reachable; the
+// later steps need a loaded issue, and say so on the status line (b22, b23).
 stepIndicators.forEach((ind) => {
-  ind.addEventListener('click', () => {
+  const btn = ind.querySelector('button');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
     const target = ind.dataset.navStep;
     if (!target || target === state.step) return;
-    const builderSteps = ['triage', 'edit', 'export'];
-    if (builderSteps.includes(target) && !state.issue) return;
+    if (!canEnterStep(target, Boolean(state.issue))) { setWizardStatus(LOCKED_STEP_MESSAGE); return; }
     goTo(target);
+  });
+  // The whole step stays a click surface (its number circle included); the button is the control.
+  ind.addEventListener('click', (e) => {
+    if (e.target !== btn && !btn.contains(e.target)) btn.click();
   });
 });
 
@@ -243,6 +271,7 @@ function renderReview() {
     // The issue keeps the display string the header renders ("July 01, 2026").
     state.issue.date = isoToDisplayDate(dateSelect.value);
     scheduleSave();
+    syncStepNav();
   });
   dateLabel.appendChild(dateSelect);
   metaSection.appendChild(dateLabel);
@@ -289,11 +318,13 @@ function renderReview() {
   sideDoor.className = 'template-help';
   const pullBtn = document.createElement('button');
   pullBtn.type = 'button';
-  // The step's one real action — a filled primary, like the desk's Rewrite/Publish.
+  // The step's one real action: a filled primary, like the desk's Rewrite/Publish.
   pullBtn.className = 'btn btn-primary md-sidedoor-btn';
   pullBtn.textContent = 'Pull from the desk';
   const pullStatus = document.createElement('span');
   pullStatus.className = 'pull-status';
+  pullStatus.setAttribute('role', 'status');    // read aloud as it changes (a7)
+  pullStatus.setAttribute('aria-live', 'polite');
   pullStatus.textContent = pullMessage;
   const setPull = (msg, busy = false) => {
     pullMessage = msg;
@@ -304,7 +335,7 @@ function renderReview() {
     const iso = displayDateToISO(state.issue?.date || '');
     if (!iso) return setPull('Set the issue date first.');
     pullBtn.disabled = true;
-    pullBtn.hidden = true;   // gone while pulling — no double-clicks
+    pullBtn.hidden = true;   // gone while pulling; no double-clicks
     setPull('Pulling…', true);
     try {
       const res = await fetch(`${DESK_URL}/api/newsletter-pull?issue=${iso}`);
@@ -327,7 +358,7 @@ function renderReview() {
         scheduleSave();
       }
       setPull(already ? `Pulled ${fresh} new · ${already} already here.` : `Pulled ${fresh} from the desk.`);
-      if (fresh) renderReview();
+      if (fresh) { renderReview(); syncStepNav(); }
     } catch {
       setPull("Couldn't reach the desk. Try again.");
     } finally {
@@ -405,7 +436,7 @@ function displayDateToISO(str) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-/** "2026-07-01" → "July 01, 2026" (component-wise — no timezone drift). */
+/** "2026-07-01" → "July 01, 2026" (component-wise, no timezone drift). */
 function isoToDisplayDate(value) {
   const [y, m, d] = value.split('-').map(Number);
   if (!y || !m || !d) return '';
@@ -414,11 +445,12 @@ function isoToDisplayDate(value) {
 
 /**
  * Delete one item from the issue, with a transient Undo toast. Shared by the
- * Outline row ✕ and the Preview & Edit card's Delete button. `rerender` rebuilds
+ * Outline row's Remove and the Preview & Edit card's Remove. `rerender` rebuilds
  * whichever step is showing so the removal (and any undo) is reflected at once.
+ * `fromKeyboard` (a click with detail 0) hands focus to the toast's Undo (b31).
  */
 let _undoToastTimer = null;
-function deleteItemWithUndo(itemId, rerender) {
+function deleteItemWithUndo(itemId, rerender, fromKeyboard = false) {
   const removed = deleteItem(state.issue, itemId);
   if (!removed) return;
   scheduleSave();
@@ -428,17 +460,24 @@ function deleteItemWithUndo(itemId, rerender) {
     insertItem(state.issue, removed.sectionKey, removed.index, removed.item);
     scheduleSave();
     rerender();
-  });
+  }, { focusUndo: fromKeyboard });
 }
 
-/** Bottom toast with an Undo button; auto-dismisses after a few seconds. */
-function showUndoToast(message, onUndo) {
+/**
+ * Bottom toast with an Undo button; auto-dismisses after a few seconds. A
+ * live region, and it sits in the DOM right after the edit column (or the
+ * wizard body) so it reads in place rather than at the end of the page; with
+ * `focusUndo` the Undo button takes focus, for a removal made from the
+ * keyboard (a7, b31).
+ */
+function showUndoToast(message, onUndo, { focusUndo = false } = {}) {
   clearTimeout(_undoToastTimer);
   const prior = document.querySelector('.undo-toast');
   if (prior) prior.remove();
 
   const toast = document.createElement('div');
   toast.className = 'undo-toast';
+  toast.setAttribute('role', 'status');
   const msg = document.createElement('span');
   msg.className = 'undo-toast__msg';
   msg.textContent = message;              // user-derived title → textContent only
@@ -453,8 +492,11 @@ function showUndoToast(message, onUndo) {
   });
   toast.appendChild(msg);
   toast.appendChild(btn);
-  document.body.appendChild(toast);
+  const anchor = document.querySelector('.edit-column') || document.querySelector('.wizard-body');
+  if (anchor) anchor.after(toast);
+  else document.body.appendChild(toast);
   requestAnimationFrame(() => toast.classList.add('undo-toast--visible'));
+  if (focusUndo) btn.focus();
   _undoToastTimer = setTimeout(() => {
     toast.classList.remove('undo-toast--visible');
     toast.addEventListener('transitionend', () => toast.remove(), { once: true });
@@ -475,10 +517,19 @@ function renderTriage() {
   if (h2) {
     container.appendChild(h2);
     attachStepInfo(container, h2, 'triage',
-      'Drag sections into order and switch them on or off. The issue builds in this order. Featured marks the lead item.');
+      'Put the items in order with the arrows, mark one event Featured, and switch the Submit your research callout on or off. The issue builds in this order.');
   }
 
   const issue = state.issue;
+
+  // Nothing pulled yet: one line, and no empty section list to puzzle over (b24).
+  if (!issue || !countIssueItems(issue)) {
+    const msg = document.createElement('p');
+    msg.className = 'edit-empty-msg';
+    msg.textContent = 'No issue loaded. Pull from the desk on the Review step first.';
+    container.appendChild(msg);
+    return;
+  }
 
   // ── Sections ─────────────────────────────────────────────────────────────
   const sectionsHeading = document.createElement('h3');
@@ -500,7 +551,7 @@ function renderTriage() {
     // auto-hide (nothing to render).
     if (secData) secData.enabled = !isEmpty;
 
-    // Section name — with item count (e.g. "ERC Spotlight (2)") when non-empty
+    // Section name, with item count (e.g. "ERC Spotlight (2)") when non-empty
     const nameSpan = document.createElement('span');
     nameSpan.className = 'triage-section-name';
     nameSpan.textContent = isEmpty ? reg.label : `${reg.label} (${items.length})`;
@@ -525,9 +576,21 @@ function renderTriage() {
       sectionContainer.className = 'triage-grouped-section';
 
       const renderSectionItems = () => {
+        // Remember which arrow had focus, so the rebuild can hand it back (b27).
+        const focused = document.activeElement;
+        const memo = focused && sectionContainer.contains(focused) && focused.dataset.moveItem
+          ? { item: focused.dataset.moveItem, dir: focused.dataset.moveDir } : null;
         sectionContainer.innerHTML = '';
         const secItems = (issue && issue.sections && issue.sections[reg.key] && issue.sections[reg.key].items) || [];
         const hasGroups = reg.groups && reg.groups.length > 0;
+
+        // The one rule for Featured, printed once under the section's name (b30).
+        if (reg.key === 'events') {
+          const rule = document.createElement('div');
+          rule.className = 'triage-section-note';
+          rule.textContent = 'One event is featured; it pins to the top under a Featured heading.';
+          sectionContainer.appendChild(rule);
+        }
 
         // Bucket items for display: one bucket per non-empty group (labeled),
         // then a trailing unlabeled bucket for any items that didn't match a
@@ -551,7 +614,7 @@ function renderTriage() {
           if (bucket.label) {
             const grpLabel = document.createElement('div');
             grpLabel.className = 'triage-group-label';
-            grpLabel.textContent = bucket.label; // registry constant — safe as textContent
+            grpLabel.textContent = bucket.label; // registry constant, safe as textContent
             sectionContainer.appendChild(grpLabel);
           }
 
@@ -566,7 +629,7 @@ function renderTriage() {
             const evRow = document.createElement('div');
             evRow.className = 'triage-event-row';
 
-            // Title (user-derived — textContent only)
+            // Title (user-derived, textContent only)
             const titleSpan = document.createElement('span');
             titleSpan.className = 'triage-event-title';
             titleSpan.textContent = (item.fields && item.fields.title) || '(untitled)';
@@ -577,6 +640,8 @@ function renderTriage() {
             upBtn.className = 'triage-reorder-btn';
             upBtn.append(faIcon('arrow-up'));
             upBtn.setAttribute('aria-label', `Move "${title}" up`);
+            upBtn.dataset.moveItem = item.id;
+            upBtn.dataset.moveDir = 'up';
             upBtn.disabled = grpIdx === 0;
             upBtn.addEventListener('click', () => {
               const allItems = issue.sections[reg.key].items;
@@ -593,6 +658,8 @@ function renderTriage() {
             downBtn.className = 'triage-reorder-btn';
             downBtn.append(faIcon('arrow-down'));
             downBtn.setAttribute('aria-label', `Move "${title}" down`);
+            downBtn.dataset.moveItem = item.id;
+            downBtn.dataset.moveDir = 'down';
             downBtn.disabled = grpIdx === bucketItems.length - 1;
             downBtn.addEventListener('click', () => {
               const allItems = issue.sections[reg.key].items;
@@ -605,16 +672,16 @@ function renderTriage() {
 
             evRow.appendChild(titleSpan);
 
-            // Featured toggle — events section only. Compact; the "what it does"
-            // note is a hover tooltip so it doesn't repeat on every row.
+            // Featured toggle, events section only. The rule sits once under
+            // the section's name, not on every row (b30).
             if (reg.key === 'events') {
               const featLabel = document.createElement('label');
               featLabel.className = 'triage-featured-label';
-              featLabel.title = 'Pins this event to the top under a Featured heading. Choose one.';
 
               const featCb = document.createElement('input');
               featCb.type = 'checkbox';
               featCb.className = 'triage-featured-cb';
+              featCb.setAttribute('aria-label', `Feature "${title}"`);
               featCb.checked = !!item.featured;
               featCb.addEventListener('change', () => {
                 const evItems = issue.sections.events.items;
@@ -631,14 +698,14 @@ function renderTriage() {
               evRow.appendChild(featLabel);
             }
 
-            // Reorder arrows — grouped so they can reveal on row hover/focus.
+            // Reorder arrows, grouped so they can reveal on row hover/focus.
             const reorderGroup = document.createElement('div');
             reorderGroup.className = 'triage-reorder-group';
             reorderGroup.appendChild(upBtn);
             reorderGroup.appendChild(downBtn);
             evRow.appendChild(reorderGroup);
 
-            // Remove this item from the issue (with Undo) — the desk's Remove:
+            // Remove this item from the issue (with Undo), the desk's Remove:
             // red quiet link with the trash icon, never a bare ✕.
             const delBtn = document.createElement('button');
             delBtn.type = 'button';
@@ -646,25 +713,34 @@ function renderTriage() {
             delBtn.append(faIcon('trash-can'), ' Remove');
             delBtn.setAttribute('aria-label', `Remove "${title}" from the issue`);
             delBtn.title = 'Removes this item from the issue';
-            delBtn.addEventListener('click', () => deleteItemWithUndo(item.id, renderTriage));
+            delBtn.addEventListener('click', (e) => deleteItemWithUndo(item.id, renderTriage, e.detail === 0));
             evRow.appendChild(delBtn);
 
             sectionContainer.appendChild(evRow);
           }
+        }
+
+        if (memo) {
+          const same = sectionContainer.querySelector(`[data-move-item="${CSS.escape(memo.item)}"][data-move-dir="${memo.dir}"]`);
+          const other = sectionContainer.querySelector(`[data-move-item="${CSS.escape(memo.item)}"]:not([data-move-dir="${memo.dir}"])`);
+          const target = same && !same.disabled ? same : other;
+          if (target && !target.disabled) target.focus();
         }
       };
 
       renderSectionItems();
       sectionsList.appendChild(sectionContainer);
 
-      // ERC Research: optional "Submit your research" callout — a trailing
+      // ERC Research: optional "Submit your research" callout, a trailing
       // on/off switch beneath the research items.
       if (reg.key === 'research') {
         const subRow = document.createElement('div');
         subRow.className = 'triage-switch-row';
 
-        const subName = document.createElement('span');
+        // The visible words are the switch's label, so a screen reader names it (a8).
+        const subName = document.createElement('label');
         subName.className = 'triage-switch-label';
+        subName.htmlFor = 'submit-callout-switch';
         subName.textContent = 'Submit your research callout';
 
         const switchLine = document.createElement('div');
@@ -675,8 +751,11 @@ function renderTriage() {
         sw.title = 'Show this callout in the newsletter for this issue';
         const subCb = document.createElement('input');
         subCb.type = 'checkbox';
+        subCb.id = 'submit-callout-switch';
         subCb.className = 'triage-switch-input';
+        subCb.setAttribute('role', 'switch');
         subCb.checked = secData.showSubmit !== false;
+        subCb.setAttribute('aria-checked', String(subCb.checked));
         const track = document.createElement('span');
         track.className = 'triage-switch-track';
         sw.appendChild(subCb);
@@ -688,6 +767,7 @@ function renderTriage() {
 
         subCb.addEventListener('change', () => {
           secData.showSubmit = subCb.checked;
+          subCb.setAttribute('aria-checked', String(subCb.checked));
           stateLabel.textContent = subCb.checked ? 'On' : 'Off';
           scheduleSave();
         });
@@ -708,23 +788,35 @@ function renderTriage() {
 // Edit step ("Preview & Edit")
 // ---------------------------------------------------------------------------
 
-/** CSS injected into the editable iframe to show hover affordance. */
-const EDIT_HOVER_CSS = `
+/**
+ * CSS injected into the editable iframe to show hover affordance. Built when
+ * the iframe loads so the colours come from the builder's own tokens: the
+ * hover wash (--accent-alpha) while the pointer is over an item, the chosen
+ * tint (--highlight) for the flash on click (c11).
+ */
+function editHoverCss() {
+  const tokens = getComputedStyle(document.documentElement);
+  const wash = tokens.getPropertyValue('--accent-alpha').trim();
+  const chosen = tokens.getPropertyValue('--highlight').trim();
+  return `
 [data-edit-field] {
   cursor: pointer;
-  border-radius: 2px;
   transition: outline 0.1s;
 }
 /* Hovering any field highlights every field of that whole item (applied by JS),
-   since clicking edits the whole item at once. Soft translucent fill (not a
-   hard outline) so the item reads as one gentle highlight. The matching
-   box-shadow pads the fill out a few px and bridges the gaps between fields. */
+   since clicking edits the whole item at once. A translucent fill, not a hard
+   outline, so the item reads as one gentle highlight; the matching box-shadow
+   pads the fill out a few px and bridges the gaps between fields. */
 .ec-edit-hover {
-  background-color: rgba(254, 200, 102, 0.35);
-  box-shadow: 0 0 0 4px rgba(254, 200, 102, 0.35);
-  border-radius: 2px;
+  background-color: ${wash};
+  box-shadow: 0 0 0 4px ${wash};
+}
+.ec-edit-flash {
+  background-color: ${chosen};
+  box-shadow: 0 0 0 4px ${chosen};
 }
 `;
+}
 
 /**
  * Open editor cards, keyed by item ref ("section::item"). Lets several items
@@ -733,9 +825,18 @@ const EDIT_HOVER_CSS = `
  */
 const openCards = new Map();
 
+/** Counter behind the edit cards' field ids, so each label points at its own field (a9). */
+let editFieldSeq = 0;
+
 /** Stable key for an item ref group. */
 function refKey(section, item) {
   return `${section}::${item || ''}`;
+}
+
+/** A card's first field that can take focus: never the hidden link row's input or a file input. */
+function firstField(card) {
+  return [...card.querySelectorAll('input, textarea, [contenteditable]')]
+    .find((el) => el.type !== 'file' && !el.closest('[hidden]')) || null;
 }
 
 /**
@@ -760,11 +861,11 @@ const PREVIEW_WIDTH = 705;
     edit column always fits and there's never a horizontal scrollbar. */
 const PREVIEW_MAX_SCALE = 0.95;
 
-/** Persistent edit-column width (px) — matches .edit-column in styles.css. */
+/** Persistent edit-column width (px), matches .edit-column in styles.css. */
 const COLUMN_W = 340;
-/** Flex gap between preview and edit column — matches .edit-layout gap. */
+/** Flex gap between preview and edit column, matches .edit-layout gap. */
 const EDIT_GAP = 20;
-/** Horizontal padding on ONE side of the gray stage — matches .edit-preview-wrap. */
+/** Horizontal padding on ONE side of the gray stage, matches .edit-preview-wrap. */
 const STAGE_PAD = 24;
 
 /**
@@ -779,7 +880,7 @@ function refreshEditIframe(iframe) {
 /**
  * The introduction's home in the edit column: a panel with the same rich
  * editor the cards use, bound to issue.intro. The preview refreshes as you
- * type (debounced) — the editor lives outside the iframe, so focus holds.
+ * type (debounced); the editor lives outside the iframe, so focus holds.
  */
 function buildIntroPanel(iframe) {
   const details = document.createElement('details');
@@ -820,7 +921,7 @@ function buildIntroPanel(iframe) {
 let miscItemSeq = 0;
 
 /**
- * The one-off door: add a single item by hand — something that never went
+ * The one-off door: add a single item by hand, something that never went
  * through the desk. Section and group pickers, the fields the templates
  * render, and an Add button. The item is a first-class citizen afterwards
  * (click-to-edit, reorder, delete).
@@ -966,10 +1067,10 @@ function wireIframeEditing(iframe, editStepContainer) {
 
   // Inject hover affordance CSS
   const style = doc.createElement('style');
-  style.textContent = EDIT_HOVER_CSS;
+  style.textContent = editHoverCss();
   (doc.head || doc.documentElement).appendChild(style);
 
-  // Hover affordance — highlight EVERY field of the item under the cursor, so
+  // Hover affordance: highlight EVERY field of the item under the cursor, so
   // it's clear the click edits the whole item, not just the piece hovered.
   let hovered = [];
   const clearHover = () => {
@@ -996,7 +1097,7 @@ function wireIframeEditing(iframe, editStepContainer) {
     if (!to) clearHover();
   });
 
-  // Click listener — open an editor for the whole item the clicked field
+  // Click listener: open an editor for the whole item the clicked field
   // belongs to (all of its fields at once), not just the one piece clicked.
   doc.addEventListener('click', (e) => {
     const target = e.target.closest('[data-edit-field]');
@@ -1038,12 +1139,12 @@ function collectItemNodes(doc, section, item) {
 /** Briefly highlight the clicked item so its editor card is easy to connect. */
 function flashItem(doc, section, item) {
   const els = collectItemNodes(doc, section, item);
-  els.forEach((el) => el.classList.add('ec-edit-hover'));
-  setTimeout(() => els.forEach((el) => el.classList.remove('ec-edit-hover')), 600);
+  els.forEach((el) => el.classList.add('ec-edit-flash'));
+  setTimeout(() => els.forEach((el) => el.classList.remove('ec-edit-flash')), 600);
 }
 
 /** PDF flyers become a PNG in the browser (first page) so email clients can
- *  show them — pdf.js loads lazily from the CDN only when a PDF arrives. */
+ *  show them; pdf.js loads lazily from the CDN only when a PDF arrives. */
 async function pdfFirstPageToPng(file) {
   const pdfjs = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
   pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
@@ -1055,7 +1156,7 @@ async function pdfFirstPageToPng(file) {
   canvas.width = Math.round(viewport.width);
   canvas.height = Math.round(viewport.height);
   // intent 'print' keeps the raster off requestAnimationFrame, which browsers
-  // pause in a background tab — otherwise switching tabs mid-upload leaves the
+  // pause in a background tab; otherwise switching tabs mid-upload leaves the
   // conversion stuck on "Converting the PDF" until you come back.
   await page.render({ canvasContext: canvas.getContext('2d'), viewport, intent: 'print' }).promise;
   return new Promise((resolve, reject) =>
@@ -1110,6 +1211,8 @@ function buildImageControl(initial, onChange) {
   removeBtn.textContent = 'Remove media';
   const status = document.createElement('span');
   status.className = 'pull-status';
+  status.setAttribute('role', 'status');    // read aloud as it changes (a7)
+  status.setAttribute('aria-live', 'polite');
   let value = initial || '';
   const sync = () => {
     pick.textContent = value ? 'Replace media' : 'Add media';
@@ -1129,7 +1232,7 @@ function buildImageControl(initial, onChange) {
   fileInput.addEventListener('change', async () => {
     const file = fileInput.files[0];
     if (!file) return;
-    pick.hidden = true;   // gone while uploading — no double-clicks
+    pick.hidden = true;   // gone while uploading; no double-clicks
     removeBtn.hidden = true;
     try {
       value = await uploadItemImage(file, msg => setStatus(msg, true));
@@ -1168,13 +1271,13 @@ function collectItemFields(doc, section, item) {
   }
   // Titles render as hyperlinks, so expose the link URL for editing too
   // (right under the title). The url isn't its own visible element, so it
-  // won't be picked up above — add it explicitly. Also lets you ADD a link
+  // won't be picked up above; add it explicitly. Also lets you ADD a link
   // to an item that doesn't have one yet.
   if (seen.has('title') && !seen.has('url')) {
     const ti = refs.findIndex((r) => r.field === 'title');
     refs.splice(ti + 1, 0, { section, item, field: 'url' });
   }
-  // Same move for an optional picture — sections that render one get the
+  // Same move for an optional picture: sections that render one get the
   // field even when it's empty, so a URL can be added from the card.
   if (seen.has('title') && !seen.has('image') && IMAGE_SECTIONS.has(section)) {
     refs.push({ section, item, field: 'image' });
@@ -1206,7 +1309,7 @@ function humanize(key) {
 }
 
 /**
- * Converts a contentEditable's HTML back into the markdown we store — the
+ * Converts a contentEditable's HTML back into the markdown we store, the
  * inverse of renderProse for the constructs the toolbar can produce:
  * bold (**), italic (*), links ([text](url)), and line breaks.
  */
@@ -1238,14 +1341,18 @@ function htmlToMarkdown(html) {
  * A small WYSIWYG editor for prose fields: a Bold / Italic / Link toolbar over a
  * contentEditable region. Renders stored markdown via renderProse and reports
  * changes back as markdown (via htmlToMarkdown). Returns a uniform field handle.
+ * `labelledBy` names the sublabel that is the editor's accessible name (a9).
  */
-function buildRichEditor(initialMd, onChange) {
+function buildRichEditor(initialMd, onChange, { labelledBy = '' } = {}) {
   const wrap = document.createElement('div');
   wrap.className = 'rich-editor';
 
   const editable = document.createElement('div');
   editable.className = 'rich-editable';
   editable.contentEditable = 'true';
+  editable.setAttribute('role', 'textbox');
+  editable.setAttribute('aria-multiline', 'true');
+  if (labelledBy) editable.setAttribute('aria-labelledby', labelledBy);
   editable.innerHTML = renderProse(initialMd || '');
 
   const emit = () => onChange(htmlToMarkdown(editable.innerHTML));
@@ -1266,16 +1373,102 @@ function buildRichEditor(initialMd, onChange) {
   };
   toolbar.appendChild(mkBtn('B', 'Bold', () => document.execCommand('bold')));
   toolbar.appendChild(mkBtn('I', 'Italic', () => document.execCommand('italic'), true));
-  const linkBtn = mkBtn('', 'Add link', () => {
-    const url = window.prompt('Link URL:');
-    if (url) document.execCommand('createLink', false, url);
+
+  // The link ask is a row under the toolbar, not window.prompt (c10): it keeps
+  // the selection, pre-fills from a link the caret sits in, adds https:// when
+  // the scheme is missing, and Escape or Cancel puts it away.
+  const linkRow = document.createElement('div');
+  linkRow.className = 'rich-link-row';
+  linkRow.hidden = true;
+  const linkInput = document.createElement('input');
+  linkInput.type = 'text';
+  linkInput.className = 'edit-card-input rich-link-input';
+  linkInput.placeholder = 'https://';
+  linkInput.setAttribute('aria-label', 'Link address');
+  const applyBtn = document.createElement('button');
+  applyBtn.type = 'button';
+  applyBtn.className = 'btn btn-primary rich-link-apply';
+  applyBtn.textContent = 'Apply';
+  const cancelLinkBtn = document.createElement('button');
+  cancelLinkBtn.type = 'button';
+  cancelLinkBtn.className = 'edit-card-revert';
+  cancelLinkBtn.textContent = 'Cancel';
+  linkRow.append(linkInput, applyBtn, cancelLinkBtn);
+
+  let savedRange = null;
+  let savedAnchor = null;
+  const closeLinkRow = () => {
+    linkRow.hidden = true;
+    savedRange = null;
+    savedAnchor = null;
+    editable.focus();
+  };
+  const openLinkRow = () => {
+    const sel = window.getSelection();
+    const inEditor = sel && sel.rangeCount > 0 && editable.contains(sel.anchorNode);
+    savedRange = inEditor ? sel.getRangeAt(0).cloneRange() : null;
+    const node = savedRange ? savedRange.commonAncestorContainer : null;
+    const el = node && node.nodeType === Node.ELEMENT_NODE ? node : node && node.parentElement;
+    savedAnchor = el && el.closest ? el.closest('a') : null;
+    if (savedAnchor && !editable.contains(savedAnchor)) savedAnchor = null;
+    linkInput.value = savedAnchor ? savedAnchor.getAttribute('href') || '' : '';
+    linkRow.hidden = false;
+    linkInput.focus();
+    linkInput.select();
+  };
+  const applyLink = () => {
+    const url = normalizeLinkUrl(linkInput.value);
+    if (!url) { closeLinkRow(); return; }
+    if (savedAnchor) {
+      savedAnchor.setAttribute('href', url);
+    } else if (savedRange) {
+      editable.focus();
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(savedRange);
+      if (savedRange.collapsed) {
+        // Nothing selected: the address becomes the link's own text.
+        const a = document.createElement('a');
+        a.href = url;
+        a.textContent = url;
+        savedRange.insertNode(a);
+        savedRange.setStartAfter(a);
+        savedRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(savedRange);
+      } else {
+        document.execCommand('createLink', false, url);
+      }
+    }
+    linkRow.hidden = true;
+    savedRange = null;
+    savedAnchor = null;
+    editable.focus();
+    emit();
+  };
+  applyBtn.addEventListener('click', applyLink);
+  cancelLinkBtn.addEventListener('click', closeLinkRow);
+  linkInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); applyLink(); }
   });
-  linkBtn.innerHTML = '<i class="fa-solid fa-link" aria-hidden="true"></i>';
+  linkRow.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); closeLinkRow(); }
+  });
+
+  const linkBtn = document.createElement('button');
+  linkBtn.type = 'button';
+  linkBtn.className = 'rich-btn';
+  linkBtn.title = 'Add link';
+  linkBtn.setAttribute('aria-label', 'Add link');
+  linkBtn.append(faIcon('link'));
+  linkBtn.addEventListener('mousedown', (e) => e.preventDefault());
+  linkBtn.addEventListener('click', () => { if (linkRow.hidden) openLinkRow(); else closeLinkRow(); });
   toolbar.appendChild(linkBtn);
 
   editable.addEventListener('input', emit);
 
   wrap.appendChild(toolbar);
+  wrap.appendChild(linkRow);
   wrap.appendChild(editable);
   return {
     el: wrap,
@@ -1303,7 +1496,7 @@ function openItemEditor(refs, iframe) {
   const existing = openCards.get(key);
   if (existing) {
     existing.card.scrollIntoView({ block: 'nearest' });
-    const first = existing.card.querySelector('input, textarea, [contenteditable]');
+    const first = firstField(existing.card);
     if (first) first.focus();
     return;
   }
@@ -1311,9 +1504,12 @@ function openItemEditor(refs, iframe) {
   const card = document.createElement('div');
   card.className = 'edit-card';
   card.setAttribute('role', 'group');
+  // The card's name for a screen reader: the item's title, else the field's (a9).
+  const cardTitle = refs[0].item ? getField(state.issue, { ...refs[0], field: 'title' }) : '';
+  card.setAttribute('aria-label', cardTitle || FIELD_LABELS[refs[0].field] || humanize(refs[0].section));
 
-  // Header: just a close control (× behaves like Save — edits are live). No
-  // title label — the fields below make it clear which item you're editing.
+  // Header: just a close control (× behaves like Save; edits are live). No
+  // title label; the fields below make it clear which item you're editing.
   const header = document.createElement('div');
   header.className = 'edit-card-header';
   const closeBtn = document.createElement('button');
@@ -1332,12 +1528,17 @@ function openItemEditor(refs, iframe) {
   for (const ref of refs) {
     const group = document.createElement('div');
     group.className = 'edit-card-group';
-    const sub = document.createElement('span');
+    const isLong = ref.field === 'summary' || ref.field === 'intro' || ref.field === 'description';
+    // Every field's sublabel names it for a screen reader (a9): a <label for>
+    // on a text field, an id the editor or the media group points at otherwise.
+    editFieldSeq += 1;
+    const fieldId = `edit-field-${editFieldSeq}`;
+    const sub = document.createElement(ref.field === 'image' || isLong ? 'span' : 'label');
     sub.className = 'edit-card-sublabel';
+    sub.id = `${fieldId}-label`;
     sub.textContent = FIELD_LABELS[ref.field] || humanize(ref.field);
     group.appendChild(sub);
 
-    const isLong = ref.field === 'summary' || ref.field === 'intro' || ref.field === 'description';
     const onEdit = (value) => {
       setField(state.issue, ref, value);
       scheduleSave();
@@ -1346,19 +1547,23 @@ function openItemEditor(refs, iframe) {
 
     if (ref.field === 'image') {
       const ctl = buildImageControl(getField(state.issue, ref) ?? '', onEdit);
+      ctl.el.setAttribute('role', 'group');
+      ctl.el.setAttribute('aria-labelledby', sub.id);
       group.appendChild(ctl.el);
       card.appendChild(group);
       fieldInputs.push({ ref, get: ctl.get, set: ctl.set, focus: ctl.focus });
     } else if (isLong) {
       // Prose fields get a WYSIWYG editor (bold / italic / link) that stores
       // markdown. Live-renders as the newsletter does (via renderProse).
-      const rich = buildRichEditor(getField(state.issue, ref) ?? '', onEdit);
+      const rich = buildRichEditor(getField(state.issue, ref) ?? '', onEdit, { labelledBy: sub.id });
       group.appendChild(rich.el);
       card.appendChild(group);
       fieldInputs.push({ ref, get: rich.getMd, set: rich.setMd, focus: rich.focus });
     } else {
       const inputEl = document.createElement('input');
       inputEl.type = 'text';
+      inputEl.id = fieldId;
+      sub.htmlFor = fieldId;
       inputEl.className = 'edit-card-input';
       inputEl.value = getField(state.issue, ref) ?? '';
       inputEl.addEventListener('input', () => onEdit(inputEl.value));
@@ -1373,9 +1578,30 @@ function openItemEditor(refs, iframe) {
     }
   }
 
-  // Footer: quiet Revert + Save (commit & close this one card).
+  // What the fields held when the card opened, for Cancel (b29).
+  const opened = fieldInputs.map((f) => ({ ref: f.ref, value: getField(state.issue, f.ref) ?? '' }));
+
+  // Footer: quiet Use original and Cancel, then Save (commit & close this one card).
   const actions = document.createElement('div');
   actions.className = 'edit-card-actions';
+  const cancelBtn = document.createElement('button');
+  cancelBtn.type = 'button';
+  cancelBtn.className = 'edit-card-revert';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.addEventListener('click', () => {
+    let changed = false;
+    opened.forEach(({ ref, value }, i) => {
+      if ((getField(state.issue, ref) ?? '') === value) return;
+      setField(state.issue, ref, value);
+      fieldInputs[i].set(value);
+      changed = true;
+    });
+    if (changed) {
+      scheduleSave();
+      refreshEditIframe(iframe);
+    }
+    closeCard(key);
+  });
   const revertBtn = document.createElement('button');
   revertBtn.type = 'button';
   revertBtn.className = 'edit-card-revert';
@@ -1384,7 +1610,7 @@ function openItemEditor(refs, iframe) {
     let reverted = 0;
     for (const f of fieldInputs) {
       // No baseline entry (item added after the snapshot, or no snapshot
-      // yet) means there is no original — leave the field alone rather
+      // yet) means there is no original; leave the field alone rather
       // than blanking it.
       const original = getField(state.baseline, f.ref);
       if (original === undefined || original === null) continue;
@@ -1401,20 +1627,22 @@ function openItemEditor(refs, iframe) {
   saveBtn.className = 'btn btn-primary edit-card-save';
   saveBtn.textContent = 'Save';
   saveBtn.addEventListener('click', () => closeCard(key));
-  // Delete this whole item (with Undo) — only for real items, not the intro.
+  // Remove this whole item from the issue (with Undo), only for real items,
+  // not the intro. The desk's word for taking an item out of an issue (b26).
   const itemId = refs[0] && refs[0].item;
   if (itemId) {
     const delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.className = 'edit-card-delete';
-    delBtn.append(faIcon('trash-can'), ' Delete');
-    delBtn.addEventListener('click', () => {
+    delBtn.append(faIcon('trash-can'), ' Remove');
+    delBtn.addEventListener('click', (e) => {
       closeCard(key);
-      deleteItemWithUndo(itemId, renderEdit);
+      deleteItemWithUndo(itemId, renderEdit, e.detail === 0);
     });
     actions.appendChild(delBtn);
   }
   actions.appendChild(revertBtn);
+  actions.appendChild(cancelBtn);
   actions.appendChild(saveBtn);
   card.appendChild(actions);
 
@@ -1426,16 +1654,25 @@ function openItemEditor(refs, iframe) {
   requestAnimationFrame(() => fieldInputs[0] && fieldInputs[0].focus());
 }
 
-/** Close one card (commit is implicit — edits are already live). */
+/**
+ * Close one card (commit is implicit; edits are already live). Focus moves to
+ * the next card's first field (the previous card's, failing that), else to the
+ * column's title, so it never falls off the page (b31).
+ */
 function closeCard(key) {
   const entry = openCards.get(key);
   if (!entry) return;
+  const neighbour = entry.card.nextElementSibling || entry.card.previousElementSibling;
   entry.card.remove();
   openCards.delete(key);
   updateColumnChrome();
+  const field = neighbour && firstField(neighbour);
+  if (field) { field.focus(); return; }
+  const title = document.querySelector('.edit-column-title');
+  if (title) title.focus();
 }
 
-/** Save all — close every open card. Does NOT navigate. */
+/** Save all: close every open card. Does NOT navigate. */
 function closeAllCards() {
   for (const { card } of openCards.values()) card.remove();
   openCards.clear();
@@ -1523,6 +1760,10 @@ function buildReorderPanel(iframe) {
 
   const render = () => {
     body.innerHTML = '';
+    const hint = document.createElement('p');
+    hint.className = 'addon-hint';
+    hint.textContent = 'Drag a row, or focus it and press the arrow keys.';
+    body.appendChild(hint);
     for (const reg of SECTION_REGISTRY) {
       const sec = state.issue.sections[reg.key];
       const secItems = (sec && sec.items) || [];
@@ -1530,7 +1771,7 @@ function buildReorderPanel(iframe) {
 
       const secLabel = document.createElement('div');
       secLabel.className = 'reorder-section-label';
-      secLabel.textContent = reg.label; // registry constant — safe as textContent
+      secLabel.textContent = reg.label; // registry constant, safe as textContent
       body.appendChild(secLabel);
 
       for (const bucket of bucketSectionItems(reg, secItems)) {
@@ -1544,10 +1785,32 @@ function buildReorderPanel(iframe) {
         const listEl = document.createElement('div');
         listEl.className = 'reorder-list';
 
+        // One move for the drop and the arrow keys alike; the moved row keeps
+        // focus across the rebuild (b27).
+        const move = (fromIdx, toIdx, focusId) => {
+          moveWithinBucket(state.issue.sections[reg.key].items, bucket.items, fromIdx, toIdx);
+          render();
+          refreshEditIframe(iframe);
+          scheduleSave();
+          if (!focusId) return;
+          const again = body.querySelector(`.reorder-row[data-item-id="${CSS.escape(focusId)}"]`);
+          if (again) again.focus();
+        };
+
         bucket.items.forEach((item, idx) => {
           const rowEl = document.createElement('div');
           rowEl.className = 'reorder-row';
           rowEl.draggable = bucket.items.length > 1;
+          rowEl.dataset.itemId = item.id;
+          if (rowEl.draggable) {
+            rowEl.tabIndex = 0;
+            rowEl.addEventListener('keydown', (e) => {
+              const to = arrowKeyTarget(e.key, idx, bucket.items.length);
+              if (to === null) return;
+              e.preventDefault();
+              move(idx, to, item.id);
+            });
+          }
 
           const grip = document.createElement('span');
           grip.className = 'reorder-grip';
@@ -1557,7 +1820,7 @@ function buildReorderPanel(iframe) {
 
           const titleSpan = document.createElement('span');
           titleSpan.className = 'reorder-title';
-          // User-derived — textContent only.
+          // User-derived, textContent only.
           titleSpan.textContent = (item.fields && item.fields.title) || '(untitled)';
           rowEl.appendChild(titleSpan);
 
@@ -1587,10 +1850,7 @@ function buildReorderPanel(iframe) {
             const fromIdx = Number(listEl.dataset.dragIdx);
             if (!Number.isInteger(fromIdx)) return;
             e.preventDefault();
-            moveWithinBucket(state.issue.sections[reg.key].items, bucket.items, fromIdx, idx);
-            render();
-            refreshEditIframe(iframe);
-            scheduleSave();
+            move(fromIdx, idx);
           });
 
           listEl.appendChild(rowEl);
@@ -1643,7 +1903,7 @@ function renderEdit() {
   const iframe = document.createElement('iframe');
   iframe.className = 'edit-preview-iframe';
   iframe.setAttribute('title', 'Newsletter preview: click fields to edit');
-  // No inner scrollbar — the iframe is sized to the full content height and the
+  // No inner scrollbar: the iframe is sized to the full content height and the
   // PAGE owns scrolling, so the only scrollbar is the browser's (outside the
   // sheet). Suppresses the faint phantom scrollbar the `zoom` transform would
   // otherwise leave on the newsletter from sub-pixel height rounding.
@@ -1703,6 +1963,7 @@ function renderEdit() {
   colHeader.className = 'edit-column-header';
   const colTitle = document.createElement('span');
   colTitle.className = 'edit-column-title';
+  colTitle.tabIndex = -1;   // where focus lands when the last card closes (b31)
   colTitle.textContent = 'Editing';
   const saveAllBtn = document.createElement('button');
   saveAllBtn.type = 'button';
@@ -1752,8 +2013,9 @@ function slugify(date) {
 }
 
 /**
- * Show a temporary toast message in `container`.
- * Auto-dismisses after `duration` ms.
+ * Show a toast message in `container`. A success is a polite status that
+ * fades after `duration` ms; an error is an alert that stays until the next
+ * click on the export row or the next toast (a7).
  * @param {HTMLElement} container
  * @param {string} message
  * @param {'success'|'error'} [type='success']
@@ -1766,13 +2028,16 @@ function showExportToast(container, message, type = 'success', duration = 2800) 
 
   const toast = document.createElement('div');
   toast.className = `export-toast export-toast--${type}`;
-  // Use textContent — never innerHTML — for user-derived or code-derived messages
+  if (type === 'error') toast.setAttribute('role', 'alert');
+  else { toast.setAttribute('role', 'status'); toast.setAttribute('aria-live', 'polite'); }
+  // Use textContent, never innerHTML, for user-derived or code-derived messages
   toast.textContent = message;
   container.appendChild(toast);
 
   // Fade in
   requestAnimationFrame(() => toast.classList.add('export-toast--visible'));
 
+  if (type === 'error') return;
   setTimeout(() => {
     toast.classList.remove('export-toast--visible');
     toast.addEventListener('transitionend', () => toast.remove(), { once: true });
@@ -1803,7 +2068,7 @@ function copyHtml() {
 
   if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
     navigator.clipboard.writeText(html).then(onSuccess, (err) => {
-      // Clipboard API rejected — try fallback
+      // Clipboard API rejected; try fallback
       try {
         fallbackCopy(html);
         onSuccess();
@@ -1812,7 +2077,7 @@ function copyHtml() {
       }
     });
   } else {
-    // No Clipboard API — use execCommand fallback
+    // No Clipboard API; use execCommand fallback
     try {
       fallbackCopy(html);
       onSuccess();
@@ -1889,7 +2154,7 @@ function renderExport() {
   if (!state.issue) {
     const msg = document.createElement('p');
     msg.className = 'edit-empty-msg';
-    msg.textContent = 'No issue loaded. Build one from Review, or add content from a .md on the Outline step.';
+    msg.textContent = 'No issue loaded. Build one from Review.';
     container.appendChild(msg);
     return;
   }
@@ -1900,9 +2165,14 @@ function renderExport() {
   desc.textContent = 'Your newsletter is ready. Copy the HTML to paste directly into Outlook Web App, or download the file.';
   container.appendChild(desc);
 
-  // Button row
+  // Button row. An error toast has no timeout; the next click on the row
+  // clears it (in the capture phase, so a button's own new toast survives).
   const btnRow = document.createElement('div');
   btnRow.className = 'export-btn-row';
+  btnRow.addEventListener('click', () => {
+    const err = container.querySelector('.export-toast--error');
+    if (err) err.remove();
+  }, true);
 
   // Copy HTML
   const copyBtn = document.createElement('button');
@@ -1918,7 +2188,7 @@ function renderExport() {
   dlHtmlBtn.textContent = 'Download .html';
   dlHtmlBtn.addEventListener('click', downloadHtml);
 
-  // Save to the archive — commits the issue's HTML through the desk, so it
+  // Save to the archive: commits the issue's HTML through the desk, so it
   // shows up under "View past newsletters" for good.
   const archiveBtn = document.createElement('button');
   archiveBtn.type = 'button';
@@ -1928,7 +2198,7 @@ function renderExport() {
     const iso = displayDateToISO(state.issue?.date || '');
     if (!iso) { showExportToast(container, 'Set the issue date on Review first.', 'error'); return; }
     archiveBtn.disabled = true;
-    archiveBtn.hidden = true;   // gone while saving — no double-clicks
+    archiveBtn.hidden = true;   // gone while saving; no double-clicks
     const saveStatus = document.createElement('span');
     saveStatus.className = 'pull-status';
     saveStatus.append(dotsLoader(true), loadingLabel('Saving…'));
@@ -1958,11 +2228,11 @@ function renderExport() {
 
   container.appendChild(btnRow);
 
-  // Toast target — toasts are appended here
+  // Toast target: toasts are appended here
 }
 
 // ---------------------------------------------------------------------------
-// Boot — restore prompt
+// Boot: restore prompt
 // ---------------------------------------------------------------------------
 
 /**
@@ -1985,7 +2255,7 @@ function maybeShowRestoreBanner() {
 
   const msg = document.createElement('p');
   msg.className = 'restore-banner__msg';
-  msg.textContent = 'Restore your in-progress newsletter?';
+  msg.textContent = restoreBannerMessage(saved);   // names the date and the count (a10)
 
   const btnRow = document.createElement('div');
   btnRow.className = 'restore-banner__btns';
@@ -2005,9 +2275,14 @@ function maybeShowRestoreBanner() {
   discardBtn.type = 'button';
   discardBtn.className = 'btn btn-secondary restore-banner__btn';
   discardBtn.textContent = 'Discard';
-  discardBtn.addEventListener('click', () => {
+  discardBtn.addEventListener('click', (e) => {
     clearState();
     banner.remove();
+    // Gone from storage, not from memory: Undo writes it back and asks again (a10).
+    showUndoToast('Discarded the saved issue', () => {
+      saveState(saved);
+      maybeShowRestoreBanner();
+    }, { focusUndo: e.detail === 0 });
   });
 
   btnRow.appendChild(restoreBtn);

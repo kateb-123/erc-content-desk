@@ -110,11 +110,12 @@
 "Pick an issue…"
 "Item"
 "Section"
-"Drag sections into order and switch them on or off. The issue builds in this order. Featured marks the lead item."
+"Put the items in order with the arrows, mark one event Featured, and switch the Submit your research callout on or off. The issue builds in this order." (Outline's info panel, Sep 17; it used to describe drag-and-drop sections that never existed)
 "Sections"
 "Featured Research"
 "Featured"
-"Pins this event to the top under a Featured heading. Choose one."
+Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; straight quotes, like the arrows' Move "[title]" up)
+"One event is featured; it pins to the top under a Featured heading." (the note under Events on Outline, Sep 17; was a tooltip on every row)
 "Removes this item from the issue"
 "Submit your research callout"
 "Show this callout in the newsletter for this issue"
@@ -132,11 +133,12 @@
 "Bold"
 "Italic"
 "Add link"
-"Link URL:"
+"Link address" with the placeholder "https://" (the link row under the editor's toolbar, Sep 17; the browser's "Link URL:" prompt is gone)
 "Reorder items"
+"Drag a row, or focus it and press the arrow keys." (the Reorder items panel's hint, Sep 17)
 "Copy the finished HTML for Outlook, save the issue to the archive, or download the file. Copy HTML is the one Outlook needs."
 "Your newsletter is ready. Copy the HTML to paste directly into Outlook Web App, or download the file."
-"Restore your in-progress newsletter?"
+"Restore the in-progress newsletter for [Month D, YYYY] ([N] items)?" / "Restore the in-progress newsletter ([N] items)?" (the restore banner, Sep 17; "[N] item" when it is one)
 
 # Buttons
 
@@ -179,6 +181,10 @@
 "Pull from the desk"
 "Add to the issue"
 "Save all"
+"Cancel" (a Preview & Edit card, Sep 17: puts the fields back as they were when the card opened, then closes it)
+"Remove" (a Preview & Edit card, Sep 17; was "Delete": it takes the item out of the issue, with Undo)
+"Apply" / "Cancel" (the link row under the editor's toolbar, Sep 17)
+"Retry" (Past newsletters, when the archive will not load, Sep 17)
 "Copy HTML"
 "Download .html"
 "Save to the archive"
@@ -256,6 +262,8 @@
 "Off"
 "Saved"
 "Removed “[title]”"
+"Discarded the saved issue" (the Undo toast after Discard on the restore banner, Sep 17)
+"Pick an issue and pull from the desk first." (the builder footer's status line when a later step or Next is pressed with no issue loaded, Sep 17)
 "HTML copied to clipboard!"
 "Saving…"
 "Saved to the archive (replaced the earlier save)."
@@ -340,9 +348,10 @@
 "(nothing pulled for this section)"
 "No issue loaded. Pull from the desk on the Review step first."
 "Click any text in the preview on the left. It opens here to edit."
-"No issue loaded. Build one from Review, or add content from a .md on the Outline step."
+"No issue loaded. Build one from Review." (Save & Export, Sep 17; the ".md on the Outline step" clause described a door that is gone)
+"No issue loaded. Pull from the desk on the Review step first." (Outline too since Sep 17, in place of the empty section list)
 "No issues scheduled on the desk"
-"Nothing archived yet."
+"Nothing archived yet. Save an issue from the builder's Save & Export step and it appears here." (Past newsletters, Sep 17)
 
 # Badges
 
