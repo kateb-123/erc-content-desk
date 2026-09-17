@@ -9,6 +9,16 @@
    ============================================================ */
 
 :root {
+  /* The accent: teal (Kate, Sep 17, pick G). Carbon's blue tokens are remapped here; nothing else moves. */
+  --accent-10: var(--teal-10); --accent-20: var(--teal-20); --accent-30: var(--teal-30); --accent-40: var(--teal-40);
+  --accent-50: var(--teal-50); --accent-60: var(--teal-60); --accent-70: var(--teal-70); --accent-80: var(--teal-80);
+  --accent-alpha: var(--teal-alpha);
+  --button-primary: var(--accent-60); --button-primary-hover: var(--accent-70); --button-primary-active: var(--accent-80);
+  --button-tertiary: var(--accent-60); --button-tertiary-hover: var(--accent-70); --button-tertiary-active: var(--accent-80);
+  --link-primary: var(--accent-60); --link-primary-hover: var(--accent-70);
+  --focus: var(--accent-60); --border-interactive: var(--accent-60); --interactive: var(--accent-60);
+  --highlight: var(--accent-20); --notification-info-background: var(--accent-10); --notification-info-border: var(--accent-20); --support-info: var(--accent-70);
+  --tag-background-blue: var(--accent-20); --tag-color-blue: var(--accent-80);
   --bp-primary: var(--button-primary);
   --bp-primary-hover: var(--button-primary-hover);
   --bp-primary-active: var(--button-primary-active);
@@ -32,7 +42,7 @@
   --bp-line-in: var(--border-subtle-01);
   --bp-hairline: var(--border-subtle-00);
   --bp-input-border: var(--border-strong-01);
-  --bp-row-hover: var(--layer-hover-01);
+  --bp-row-hover: var(--accent-10);
   --bp-tint-ink: var(--text-primary);
   --bp-amber-bg: var(--notification-warning-background);
   --bp-amber: var(--yellow-70);
@@ -48,9 +58,10 @@
   --accent: var(--button-primary);
   --tint: var(--notification-info-background);
   --accent-deep: var(--button-primary-active);
-  --selected: var(--layer-selected-01);
+  --selected: var(--highlight);
   --ok: var(--green-60);
-  --hover: var(--background-hover);
+  --hover: var(--accent-alpha);
+  --accent-deep: var(--button-primary-active);
 }
 
 /* The hidden attribute wins over every display rule below (the buttons are inline-flex). */
@@ -190,10 +201,10 @@ body.builder-shell { flex-direction: row; }
   padding-right: var(--spacing-05);
 }
 
-/* The step's card is a tile: the first layer, square, no border. */
+/* The step's card: a white box with a hairline, square (Kate, Sep 17, pick C). */
 .wizard-step {
-  background: var(--bp-layer);
-  border: 0;
+  background: var(--background);
+  border: 1px solid var(--bp-line-in);
   border-radius: 0;
   padding: var(--spacing-07);
 }
@@ -427,7 +438,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   font: inherit; letter-spacing: .16px;
   color: var(--bp-body);
   width: 260px;
-  background: var(--field-02);
+  background: var(--field-01);
 }
 .triage-field-input::placeholder { color: var(--text-placeholder); opacity: 1; }
 
@@ -1303,8 +1314,8 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .pull-status { margin-left: var(--spacing-03); color: var(--bp-muted); display: inline-block; }
 
 /* Review step: what's in the issue, as Carbon's data table on the tile. */
-.review-table { width: 100%; border-collapse: collapse; margin-top: var(--spacing-05); background: var(--layer-02); border: 0; }
-.review-table th { text-align: left; font-weight: 600; color: var(--bp-ink); background: var(--layer-accent-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--bp-line-in); }
+.review-table { width: 100%; border-collapse: collapse; margin-top: var(--spacing-05); background: var(--layer-02); border: 1px solid var(--bp-line-in); }
+.review-table th { text-align: left; font-weight: 600; color: var(--bp-ink); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--bp-line-in); }
 .review-table td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--bp-line-in); vertical-align: top; color: var(--bp-muted); }
 .review-table tbody tr:hover td { background: var(--bp-row-hover); color: var(--bp-ink); }
 .review-table-sub { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--bp-muted); margin-top: var(--spacing-01); font-weight: 400; }
@@ -1323,12 +1334,12 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   border-radius: var(--radius-round); border: 2px solid var(--background); box-sizing: border-box;
   animation: dots-slide 3s ease-in-out infinite;
 }
-.dots-loader .dot:nth-child(1) { background: var(--blue-30); animation-delay: .5s; }
-.dots-loader .dot:nth-child(2) { background: var(--blue-40); animation-delay: .4s; }
-.dots-loader .dot:nth-child(3) { background: var(--blue-50); animation-delay: .3s; }
-.dots-loader .dot:nth-child(4) { background: var(--blue-60); animation-delay: .2s; }
-.dots-loader .dot:nth-child(5) { background: var(--blue-70); animation-delay: .1s; }
-.dots-loader .dot:nth-child(6) { background: var(--blue-80); animation-delay: 0s; }
+.dots-loader .dot:nth-child(1) { background: var(--accent-30); animation-delay: .5s; }
+.dots-loader .dot:nth-child(2) { background: var(--accent-40); animation-delay: .4s; }
+.dots-loader .dot:nth-child(3) { background: var(--accent-50); animation-delay: .3s; }
+.dots-loader .dot:nth-child(4) { background: var(--accent-60); animation-delay: .2s; }
+.dots-loader .dot:nth-child(5) { background: var(--accent-70); animation-delay: .1s; }
+.dots-loader .dot:nth-child(6) { background: var(--accent-80); animation-delay: 0s; }
 @keyframes dots-slide {
   15% { transform: translateX(0); }
   45%, 65% { transform: translateX(calc(var(--dl-w, 250px) - var(--dl-s, 20px))); }
