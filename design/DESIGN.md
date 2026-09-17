@@ -79,29 +79,38 @@ look, everywhere it appears.
 | **Send early? → Confirm / Cancel** | fa-clock on the bubble | amber bubble, one ask (same as Verify link) | picking an event that belongs to a later issue — the words stay bare, the bubble carries the icon |
 | Door buttons (Go to Finalize/Publish, Send to Newsletter, the receipt's door) | → `fa-arrow-right` | outlined accent pill, the header's Build newsletter look (Sep 15, option A), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
 | **Sidebar items** (ERC Content Desk; Policy Exchange: Policy Exchange, Share an item, Listserv sign-up; Newsletter: Next newsletter, Newsletter builder, Past newsletters; Desk work: Sort, Finalize, Publish to Exchange, Send to Newsletter) | one FA glyph per group heading (`fa-globe`, `fa-envelope-open-text`, `fa-layer-group`), none on the items; the Desk work heading adds a chevron | plain indented rows in the sidebar, the lit one on the tint; the three hand-outs carry a small `fa-copy` icon on the right; Sort carries the queue count | every way around the desk (Kate, Sep 16). Pipeline items open the pipeline in its own window from the front door (`/#sort`, Sep 15) and switch in place inside it; outside pages open a new tab; the copy icon hands over one sentence with the link and turns into a check for a moment |
-| **Keep the rest (N)** | ✓ `fa-check` | the ONE filled button on a Sort section list, right of the list head | keep every listed row that has a real type and a checked link; Skip and Delete on each row are the only other actions there (Sep 11) |
+| **Keep the rest (N)** | ✓ `fa-check` | filled accent button, right of a Sort section's head | keep every listed row that has a real type and a checked link (Sep 11); one row at a time is Keep on its card (Sep 16) |
 
-Sort is one table at a time (Sep 11 option A; Sep 15 the card stream went,
-then the stacked All view): the menu on the left (Needs a fix, ERC, ERC
-events, Research, Events, Opportunities, Headlines, Skipped) picks a section, and the
-screen lands on the first one that holds anything, Needs a fix first. There
-is no All. Skipped, last on the menu, holds every parked row of any type with
-Keep and Delete per row (option B, Sep 15), so a Skip is never the end of the
-road; each row there wears its type as a grey badge, and a row kept or deleted
-there greys there with Undo. Each table has its own Keep the rest and Undo last in its head.
-Each row: chevron, title
-with authors or source · date, Skip · Delete, and nothing else (Sep 15,
-option B: the description and the type column live in the open row). The
-whole row opens it, not just the chevron. Rows carry NO amber marks (Kate, Sep 15): everything that cannot
-be kept yet (no type, link not opened) and every possible duplicate sits under
-the one amber pill, Needs a fix, with the reasons in the subtype column in the
-same quiet grey and one amber triangle (`fa-triangle-exclamation`) leading the
-title (option B, Sep 15); a fixed row moves to its section. Spotlight requested is a
-grey fact badge like External submission. Amber means "needs doing", nowhere
-else on the screen. A chevron opens Finalize's white detail card in place
-(description, notes, type + Change or the picker itself when a type is missing,
-Open source, the link alert, Edit). Decided rows sink to the bottom, greyed
-(deleted ones struck through) with Undo.
+Sort is one section at a time (Sep 11 option A; Sep 15 the card stream and the
+stacked All view went), drawn as a list and a card (Claude Design round two,
+Kate's pick C, Sep 16). The sections sit as pills in one row on top (Needs a
+fix, ERC, ERC events, Research, Events, Opportunities, Headlines, Skipped); the
+screen lands on the first one that holds anything, Needs a fix first. There is
+no All. Under the pills: the section's name, Undo last and Keep the rest, one
+hint, then the list on the left and the card on the right (1 : 1.25). A list
+row is the title with authors or source · date, plus a New badge on a row that
+came in today; the chosen row sits on the tint with a chevron. The card stays in
+view while the list scrolls: the type line with Change and the badges on top (as
+on Finalize's card), the title, the meta line, the description, notes, Open
+source · from whom, then Edit · Delete far left and Skip · Keep right. A
+decision moves the card to the row now in its place; decided rows sink to the
+bottom of the list, greyed (deleted ones struck through) with Undo. When a
+section runs out, a dashed pane takes the card's place and names the next
+section that holds anything (or Go to Finalize).
+
+Amber means "needs doing", nowhere else on the screen (Kate, Sep 15). Needs a
+fix, the one amber pill, gathers every row that cannot be kept yet (no type,
+link not opened) and every possible duplicate; one amber triangle
+(`fa-triangle-exclamation`) leads each of its titles, and a fixed row moves to
+its section. On the card, the amber fix panel says each reason: **Needs a type**
+(the types as radios, the picked type's subtypes indented under it; the subtype
+pick is the save, a flat ERC Event saves on the type pick), **Check the link**
+(the Verify link ask), **Possible duplicate** (which item it matches). Keep stays
+locked at half strength until the type and the link are settled, and its tooltip
+says which. Change on the type line opens the same radios in a plain panel with
+Cancel. Skipped, last on the menu, holds every parked row of any type (option B,
+Sep 15), each wearing its type as a grey badge; its card has Keep and Delete, no
+Skip. Spotlight requested is a grey fact badge like External submission.
 
 Placement grammar: tools (Edit) pair with Delete far LEFT of a card footer; the
 decision pair (secondary then primary) sits RIGHT; the position counter sits alone

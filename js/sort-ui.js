@@ -1,20 +1,27 @@
 /**
- * Sort: one table at a time (Kate, Sep 15). The menu on the left picks a
- * section; the screen lands on the first one that holds anything, Needs a
- * fix first. Rows carry Skip and Delete; the whole row opens its detail.
+ * Sort: one section at a time (Kate, Sep 15), drawn as a list and a card
+ * (Claude Design round two, Kate's pick C, Sep 16). The sections sit as
+ * pills on top; the screen lands on the first one that holds anything, Needs
+ * a fix first. Down the left, the section's rows (title, source and date);
+ * on the right, one card for the chosen row: its badges, a fix panel (the
+ * type as radios, subtypes under the picked type; the link check), the
+ * description, and Edit · Delete · Skip · Keep. A decision moves the card to
+ * the next row; decided rows grey at the bottom of the list with Undo.
  */
 import { linkCheckState, reshareFlags, missingFields } from './workflow.js';
 import { TYPE_ORDER, TYPE_LABELS, subtypesFor, typeIsFlat } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { safeHref, withScheme } from './links.js';
-import { sortCounts, isErc, readerQueue, isNewToday, sectionRows, landingSection, needsType, fixReasons, fixContext } from './sort-view.js';
+import { sortCounts, isErc, readerQueue, isNewToday, sectionRows, landingSection, needsType, fixReasons, fixContext, keepBlock, nextSelected, nextSectionWithRows } from './sort-view.js';
 import { buildImageControl } from './item-image.js';
 import { titleWithInfo } from './screen-info.js';
 import { faIcon, forwardIcon } from './icons.js';
 
-// The list's view state: which row is expanded, and which of its detail
-// panels (edit form, type picker) is open.
-let openListId = null;
+// The section's view state: which row the card shows, where it stood (so a
+// decision moves to the row now in its place), and which of the card's
+// panels (edit form, type change) is open.
+let selectedId = null;
+let lastIndex = 0;
 let listPanel = null;   // 'edit' | 'type' | null
 
 const FILTER_LABELS = [
@@ -88,51 +95,42 @@ function buildEditForm(row, { onSave, onCancel }) {
   return { el: form, read };
 }
 
-/** The type and subtype chips. Tapping the subtype is the save; a flat type
- *  (ERC Event) saves on the type tap. Shared by the card and the section list. */
-function buildTypePicker(row, onCommit) {
-    const fix = el('div', 'type-pick');
-  fix.append(el('p', 'pick-label', 'Select a type'));
-  const typeChips = el('div', 'type-row');
-  const subWrap = el('div', 'sub-pick');
-  const subChips = el('div', 'type-row');
-  const subLabel = el('p', 'pick-label');
-  subWrap.append(subLabel, subChips);
+/** The type as radios, the picked type's subtypes as indented radios under it
+ *  (Claude Design round two, Sep 16). Picking the subtype IS the save (Kate,
+ *  Sep 1); a flat type (ERC Event) saves on the type pick (Sep 10). */
+function buildTypeRadios(row, onCommit) {
+  const box = el('div', 'type-radios');
+  const name = `sort-type-${row.id}`;
   let pickedType = row.type || '';
-  let pickedSub = row.subtype || '';
-  // Tapping the subtype IS the save — no extra button (Kate, Sep 1).
-  const commit = () => {
-    fix.replaceChildren(el('p', 'pick-saved', '✓ Saved'));
-    onCommit(pickedType, pickedSub);
+  const radioLine = (group, label, checked, onChange) => {
+    const line = el('label', 'radio-line');
+    const input = el('input');
+    input.type = 'radio';
+    input.name = group;
+    input.checked = checked;
+    input.addEventListener('change', onChange);
+    line.append(input, ` ${label}`);
+    return line;
   };
-  const renderSubs = () => {
-    // Name the picked type so switching (Event -> Opportunity) reads clearly.
-    subLabel.textContent = pickedType ? `${TYPE_LABELS[pickedType] ?? pickedType} — now the subtype:` : '';
-    subChips.replaceChildren(...subtypesFor(pickedType).map(s => {
-      const b = el('button', `type-word${s === pickedSub ? ' is-picked' : ''}`, s);
-      b.type = 'button';
-      b.addEventListener('click', () => { pickedSub = s; commit(); });
-      return b;
-    }));
-    subWrap.classList.toggle('is-open', Boolean(pickedType));
+  const render = () => {
+    box.replaceChildren();
+    for (const t of TYPE_ORDER) {
+      box.append(radioLine(name, TYPE_LABELS[t] ?? t, t === pickedType, () => {
+        pickedType = t;
+        if (typeIsFlat(t)) { onCommit(t, ''); return; }
+        render();
+        box.querySelector(`input[name="${name}"]:checked`)?.focus();
+      }));
+      if (t !== pickedType || typeIsFlat(t)) continue;
+      const subs = el('div', 'sub-radios');
+      for (const sub of subtypesFor(t)) {
+        subs.append(radioLine(`${name}-sub`, sub, row.type === t && row.subtype === sub, () => onCommit(t, sub)));
+      }
+      box.append(subs);
+    }
   };
-  const renderTypes = () => {
-    typeChips.replaceChildren(...TYPE_ORDER.map(t => {
-      const b = el('button', `type-word${t === pickedType ? ' is-picked' : ''}`, TYPE_LABELS[t] ?? t);
-      b.type = 'button';
-      b.addEventListener('click', () => {
-        if (pickedType !== t) { pickedType = t; pickedSub = ''; }
-        // ERC Event has no subtype, so the type tap is the save; the card
-        // used to wait for a subtype that does not exist (Kate, Sep 10).
-        if (typeIsFlat(t)) { commit(); return; }
-        renderTypes(); renderSubs();
-      });
-      return b;
-    }));
-  };
-  renderTypes(); renderSubs();
-  fix.append(typeChips, subWrap);
-  return fix;
+  render();
+  return box;
 }
 
 /** The amber Verify-link ask: open the source, then Confirm or Change. Shared by
@@ -229,19 +227,6 @@ function sectionHead(props, section, keepable, main, withUndo) {
   return head;
 }
 
-function sectionTable(props, group, rerender, section) {
-  const ctx = fixContext(props.rows, props.today);
-  const reshare = reshareFlags(props.rows, props.today ?? '');
-  const table = el('table', 'queue-table sort-list');
-  const body = el('tbody');
-  for (const row of group.live) body.append(...listLiveRow(row, { props, rerender, ctx, reshare, section }));
-  for (const row of group.done) body.append(listDoneRow(row, props.onUndoRow, props.today));
-  table.append(body);
-  const scroll = el('div', 'table-scroll');
-  scroll.append(table);
-  return scroll;
-}
-
 const KEEP_HINT = 'Everything here is kept unless you drop it. Delete what does not belong, Skip what you are not sure about, then Keep the rest.';
 const FIX_HINT = 'Set a type or check the link and the row moves to its section. A duplicate stays until you delete one copy, or keep it with the rest.';
 const SKIPPED_HINT = 'You parked these. Keep what is ready now, Delete what is not, or leave it here.';
@@ -252,21 +237,55 @@ function emptyLine(props) {
     : props.sortedCount ? 'All sorted.' : 'Nothing to sort.');
 }
 
-/** One section on its own, from its pill. */
+/** The card's stand-in when the section has nothing live: say so, and point
+ *  at the next section that holds anything, or on to Finalize. */
+function emptyPane(props, section, words = 'Nothing left in this section. ') {
+  const pane = el('div', 'sort-pane-empty');
+  pane.append(words);
+  const next = nextSectionWithRows(sortCounts(props.rows), section);
+  const go = el('button', 'linkish', next ? `Next: ${sectionLabel(next)}` : 'Go to Finalize');
+  go.type = 'button';
+  go.append(' ', forwardIcon());
+  go.addEventListener('click', () => (next ? props.onFilter(next) : props.onGoTo?.('finalize')));
+  pane.append(go);
+  return pane;
+}
+
+/** One section on its own, from its pill: the head, the hint, then the list
+ *  and the card side by side. */
 function renderSectionList(main, props, section) {
   const rerender = () => renderSectionList(main, props, section);
   main.replaceChildren();
-  const group = sectionRows(props.rows, section, props.sessionDecided ?? new Set(),
-    fixContext(props.rows, props.today), props.decidedFrom ?? new Map());
+  const ctx = fixContext(props.rows, props.today);
+  const group = sectionRows(props.rows, section, props.sessionDecided ?? new Set(), ctx, props.decidedFrom ?? new Map());
   const keepable = keepableIn(group.live);
   main.append(sectionHead(props, section, keepable, main, true));
   if (!group.live.length && !group.done.length) {
-    main.append(emptyLine(props));
+    // An empty pill points at the work that is left; only an empty queue
+    // says why it is empty.
+    main.append(nextSectionWithRows(sortCounts(props.rows), section)
+      ? emptyPane(props, section, 'Nothing in this section. ') : emptyLine(props));
     return;
   }
-  main.append(el('p', 'hint list-hint',
-    section === 'fix' ? FIX_HINT : section === 'skipped' ? SKIPPED_HINT : group.live.length ? KEEP_HINT : 'All sorted.'));
-  main.append(sectionTable(props, group, rerender, section));
+  if (group.live.length) {
+    main.append(el('p', 'hint list-hint', section === 'fix' ? FIX_HINT : section === 'skipped' ? SKIPPED_HINT : KEEP_HINT));
+  }
+
+  const liveIds = group.live.map(r => r.id);
+  const before = selectedId;
+  selectedId = nextSelected(liveIds, selectedId, lastIndex);
+  if (selectedId !== before) listPanel = null;
+  if (selectedId) lastIndex = liveIds.indexOf(selectedId);
+
+  const reshare = reshareFlags(props.rows, props.today ?? '');
+  const split = el('div', 'sort-split');
+  const list = el('div', 'sort-rows');
+  group.live.forEach((row, index) => list.append(sortRowItem(row, { props, rerender, ctx, section, index })));
+  for (const row of group.done) list.append(doneRowItem(row, props.onUndoRow, props.today));
+  split.append(list);
+  const row = group.live.find(r => r.id === selectedId);
+  split.append(row ? sortCard(row, { props, rerender, ctx, reshare, section }) : emptyPane(props, section));
+  main.append(split);
 }
 
 function listBadges(row, { rows, dupes, reshare, today }) {
@@ -282,136 +301,142 @@ function listBadges(row, { rows, dupes, reshare, today }) {
   return out;
 }
 
-function listLiveRow(row, { props, rerender, ctx, reshare, section }) {
-  const open = openListId === row.id;
-  const tr = el('tr', `list-row${open ? ' is-open' : ''}`);
-  const disableRow = () => { for (const x of tr.querySelectorAll('button')) x.disabled = true; };
-
-  const chevTd = el('td', 'list-chev');
-  const chev = el('button', 'chevron-btn');
-  chev.type = 'button';
-  chev.setAttribute('aria-expanded', String(open));
-  chev.setAttribute('aria-label', open ? 'Hide details' : 'Show details');
-  chev.append(faIcon(open ? 'chevron-up' : 'chevron-down'));
-  const toggle = () => { openListId = open ? null : row.id; listPanel = null; rerender(); };
-  chev.addEventListener('click', toggle);
-  chevTd.append(chev);
-  // The whole row opens it, not just the chevron (Kate, Sep 15). Buttons and
-  // links inside the row keep their own jobs.
-  tr.addEventListener('click', e => { if (!e.target.closest('button, a, input, textarea, select, label')) toggle(); });
-
-  const titleTd = el('td');
-  const badges = listBadges(row, { rows: props.rows, dupes: ctx.dupes, reshare, today: props.today });
-  // Skipped mixes types, so each row names its own.
-  if (section === 'skipped' && row.type) badges.unshift(el('span', 'badge', TYPE_LABELS[row.type] ?? row.type));
-  if (badges.length) { const wrap = el('div', 'list-badges'); wrap.append(...badges); titleTd.append(wrap); }
-  // One amber triangle leads the title of a row that needs a fix (Kate, Sep
-  // 15, option B): the alert without the bubble. The reason stays grey.
+/** A live row in the list: the amber triangle when it needs a fix, the title,
+ *  who or where and when. Skipped mixes types, so its rows name their own. */
+function sortRowItem(row, { props, rerender, ctx, section, index }) {
+  const selected = row.id === selectedId;
+  const item = el('button', `sort-row${selected ? ' is-selected' : ''}`);
+  item.type = 'button';
+  if (selected) item.setAttribute('aria-current', 'true');
   const reasons = fixReasons(row, ctx);
   if (reasons.length) {
     const mark = faIcon('triangle-exclamation');
     mark.classList.add('fix-mark');
     mark.title = reasons.join(' · ');
-    titleTd.append(mark);
+    item.append(mark);
   }
-  titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
+  const text = el('span', 'sort-row-text');
+  const badges = [];
+  if (isNewToday(row, props.today)) badges.push(el('span', 'badge badge-new', 'New'));
+  if (section === 'skipped' && row.type) badges.push(el('span', 'badge', TYPE_LABELS[row.type] ?? row.type));
+  if (badges.length) { const wrap = el('span', 'sort-row-badges'); wrap.append(...badges); text.append(wrap); }
+  text.append(el('span', 'sort-row-title', row.headline || row.link || '(untitled)'));
   const meta = listMeta(row, props.today);
-  if (meta) titleTd.append(el('span', 'item-source', meta));
-  // Title, source, date, nothing else (Kate, Sep 15, option B): the
-  // description and the type column live in the open row.
-
-  const actTd = el('td', 'queue-actions list-actions');
-  function onDecideRow(action) { props.onDecide?.(row, action); }
-  if (section === 'skipped') {
-    // A parked row's way forward is Keep (once it can be kept) or Delete; Skip
-    // would be a no-op here. An unkeepable row shows the triangle and no Keep
-    // until its type or link is fixed in the open row.
-    if (!needsType(row) && linkCheckState(row) !== 'alert') {
-      const keepWord = el('button', 'linkish', ' Keep');
-      keepWord.type = 'button';
-      keepWord.prepend(faIcon('check'));
-      keepWord.addEventListener('click', () => { disableRow(); onDecideRow('keep'); });
-      actTd.append(keepWord);
-    }
-  } else {
-    const skip = el('button', 'linkish skip-link', 'Skip');
-    skip.type = 'button';
-    skip.addEventListener('click', () => { disableRow(); onDecideRow('circleback'); });
-    actTd.append(skip);
-  }
-  const del = el('button', 'linkish trash-link', ' Delete');
-  del.type = 'button';
-  del.prepend(faIcon('trash-can'));
-  del.addEventListener('click', () => { disableRow(); onDecideRow('trash'); });
-  actTd.append(del);
-
-  tr.append(chevTd, titleTd, actTd);
-  if (!open) return [tr];
-  const dtr = el('tr', 'list-detail-row');
-  const dtd = el('td');
-  dtd.colSpan = 3;
-  dtd.append(listDetail(row, { props, rerender }));
-  dtr.append(dtd);
-  return [tr, dtr];
+  if (meta) text.append(el('span', 'sort-row-meta', meta));
+  item.append(text);
+  if (selected) item.append(faIcon('chevron-right'));
+  item.addEventListener('click', () => { selectedId = row.id; lastIndex = index; listPanel = null; rerender(); });
+  return item;
 }
 
-/** The expanded row: Finalize's white detail card, with the card's own
- *  edit form, type picker, and link alert inside it. */
-function listDetail(row, { props, rerender }) {
-  const box = el('div', 'f-detail list-detail');
-  const lock = () => { for (const x of box.querySelectorAll('button')) x.disabled = true; };
+/** The card for the chosen row. */
+function sortCard(row, { props, rerender, ctx, reshare, section }) {
+  const card = el('div', 'card sort-card');
+  const lock = () => { for (const x of card.querySelectorAll('button, input')) x.disabled = true; };
   if (listPanel === 'edit') {
     const form = buildEditForm(row, {
       onSave: changes => { lock(); listPanel = null; props.onEditRow?.(row, changes); },
       onCancel: () => { listPanel = null; rerender(); },
     });
-    box.append(form.el);
-    return box;
+    card.append(form.el);
+    return card;
   }
-  box.append(row.blurb
-    ? el('p', 'f-blurb-text', row.blurb)
-    : el('p', 'f-blurb-text is-quiet', row.type === 'headline' ? 'No description. A headline can go without one.' : 'No description yet.'));
-  if (row.note) box.append(el('p', 'item-note', `Note: ${row.note}`));
-  for (const note of buildCardNotes(row)) box.append(note);
-  const pickOpen = listPanel === 'type' || needsType(row);
-  // One line: type · Change · Open source · from whom, separated only where
-  // both sides exist (an untyped row has no leading dot).
-  const line = el('p', 'type-line');
-  const parts = [];
-  if (row.type) parts.push(el('span', 'type-label', [TYPE_LABELS[row.type] ?? row.type, row.subtype].filter(Boolean).join(' · ')));
-  if (!pickOpen) {
+  // The top line, as on Finalize's card: the type with Change, then the badges.
+  // No type yet: the fix panel below asks for one instead.
+  const typeMissing = needsType(row);
+  const top = el('div', 'sort-card-top');
+  if (!typeMissing && listPanel !== 'type') {
+    const line = el('p', 'type-line');
+    line.append(el('span', 'type-label', [TYPE_LABELS[row.type] ?? row.type, row.subtype].filter(Boolean).join(' · ')), ' · ');
     const change = el('button', 'linkish', 'Change');
     change.type = 'button';
     change.addEventListener('click', () => { listPanel = 'type'; rerender(); });
-    parts.push(change);
+    line.append(change);
+    top.append(line);
   }
+  top.append(...listBadges(row, { rows: props.rows, dupes: ctx.dupes, reshare, today: props.today }));
+  if (top.childNodes.length) card.append(top);
+  card.append(el('h3', '', row.headline || row.link || '(untitled)'));
+  const meta = listMeta(row, props.today);
+  if (meta) card.append(el('p', 'sort-card-meta', meta));
+
+  // The fix panel (amber) holds every reason the row sits under Needs a fix:
+  // no type, an unchecked link, a possible duplicate. Change on the type line
+  // opens the same radios in a plain panel.
+  const linkAlert = linkCheckState(row) === 'alert';
+  const dupe = fixReasons(row, ctx).find(r => r !== 'No type' && r !== 'Link not opened');
   const href = safeHref(row.link);
-  if (href && linkCheckState(row) !== 'alert') {
+  const panelHead = (words, alert) => {
+    const h = el('p', `fix-head${alert ? ' is-alert' : ''}`);
+    if (alert) h.append(faIcon('triangle-exclamation'));
+    h.append(words);
+    return h;
+  };
+  const commitType = (type, subtype) => { lock(); listPanel = null; props.onEditType?.(row, type, subtype); };
+  if (typeMissing || linkAlert || dupe || listPanel === 'type') {
+    const panel = el('div', `fix-panel${typeMissing || linkAlert || dupe ? ' is-alert' : ''}`);
+    if (typeMissing) {
+      panel.append(panelHead('Needs a type', true), buildTypeRadios(row, commitType));
+    } else if (listPanel === 'type') {
+      panel.append(panelHead('Type', false), buildTypeRadios(row, commitType));
+      const cancel = el('button', 'linkish skip-link', 'Cancel');
+      cancel.type = 'button';
+      cancel.addEventListener('click', () => { listPanel = null; rerender(); });
+      panel.append(cancel);
+    }
+    if (linkAlert) {
+      panel.append(panelHead('Check the link', true));
+      panel.append(buildLinkAlert(row, href, newLink => { lock(); props.onVerifyLink?.(row, newLink); }));
+    }
+    if (dupe) panel.append(panelHead('Possible duplicate', true), el('p', 'fix-line', dupe));
+    card.append(panel);
+  }
+
+  card.append(row.blurb
+    ? el('p', 'f-blurb-text', row.blurb)
+    : el('p', 'f-blurb-text is-quiet', row.type === 'headline' ? 'No description. A headline can go without one.' : 'No description yet.'));
+  if (row.note) card.append(el('p', 'item-note', `Note: ${row.note}`));
+  for (const note of buildCardNotes(row)) card.append(note);
+  const source = el('p', 'sort-card-source');
+  const parts = [];
+  if (href && !linkAlert) {
     const a = el('a', 'source-link', 'Open source ↗');
     a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
     parts.push(a);
   }
-  const from = [row.submitter && `from ${row.submitter}`, row.submitted_at && isoToShort(row.submitted_at, props.today)]
-    .filter(Boolean).join(', ');
-  // A plain span: .sort-list makes .item-source a block, which broke the line
-  // and left the separator dangling (the stray dot after Open source).
+  const from = [row.submitter && `from ${row.submitter}`, row.submitted_at && isoToShort(row.submitted_at, props.today)].filter(Boolean).join(', ');
   if (from) parts.push(el('span', '', from));
-  parts.forEach((part, i) => { if (i) line.append(' · '); line.append(part); });
-  if (parts.length) box.append(line);
-  if (pickOpen) {
-    box.append(buildTypePicker(row, (type, subtype) => { lock(); listPanel = null; props.onEditType?.(row, type, subtype); }));
-  }
-  if (linkCheckState(row) === 'alert') {
-    box.append(buildLinkAlert(row, href, newLink => { lock(); props.onVerifyLink?.(row, newLink); }));
-  }
-  const acts = el('p', 'f-detail-actions');
+  parts.forEach((part, i) => { if (i) source.append(' · '); source.append(part); });
+  if (parts.length) card.append(source);
+
+  // Edit and Delete far left; Skip and the one filled Keep on the right.
+  const acts = el('div', 'sort-card-acts');
   const edit = el('button', 'linkish edit-link', ' Edit');
   edit.type = 'button';
   edit.prepend(faIcon('pen'));
   edit.addEventListener('click', () => { listPanel = 'edit'; rerender(); });
-  acts.append(edit);
-  box.append(acts);
-  return box;
+  const del = el('button', 'linkish trash-link', ' Delete');
+  del.type = 'button';
+  del.prepend(faIcon('trash-can'));
+  del.addEventListener('click', () => { lock(); props.onDecide?.(row, 'trash'); });
+  acts.append(edit, del);
+  const right = el('span', 'sort-card-right');
+  if (section !== 'skipped') {
+    const skip = el('button', 'linkish skip-link', 'Skip');
+    skip.type = 'button';
+    skip.addEventListener('click', () => { lock(); props.onDecide?.(row, 'circleback'); });
+    right.append(skip);
+  }
+  const keep = el('button', 'primary', ' Keep');
+  keep.type = 'button';
+  keep.prepend(faIcon('check'));
+  const blocked = keepBlock(row);
+  if (blocked) { keep.disabled = true; keep.title = blocked; }
+  keep.addEventListener('click', () => { lock(); props.onDecide?.(row, 'keep'); });
+  right.append(keep);
+  acts.append(right);
+  card.append(acts);
+  return card;
 }
 
 const DONE_WORDS = { trashed: 'Deleted', circleback: 'Skipped', kept: 'Kept' };
@@ -426,22 +451,21 @@ function listMeta(row, today) {
   ].filter(Boolean).join(' · ');
 }
 
-function listDoneRow(row, onUndoRow, today) {
-  const tr = el('tr', `list-row is-done is-${row.status}`);
-  tr.append(el('td', 'list-chev'));
-  const titleTd = el('td');
-  titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
+/** A decided row, greyed at the bottom of the list with its word and Undo. */
+function doneRowItem(row, onUndoRow, today) {
+  const item = el('div', `sort-done is-${row.status}`);
+  const text = el('span', 'sort-row-text');
+  text.append(el('span', 'sort-row-title', row.headline || row.link || '(untitled)'));
   const meta = listMeta(row, today);
-  if (meta) titleTd.append(el('span', 'item-source', meta));
-  tr.append(titleTd);
-  const actTd = el('td', 'queue-actions list-actions');
-  actTd.append(el('span', 'queue-gone', DONE_WORDS[row.status] ?? row.status));
+  if (meta) text.append(el('span', 'sort-row-meta', meta));
+  const acts = el('span', 'sort-done-acts');
+  acts.append(el('span', 'queue-gone', DONE_WORDS[row.status] ?? row.status));
   const undo = el('button', 'linkish', 'Undo');
   undo.type = 'button';
   undo.addEventListener('click', () => { undo.disabled = true; onUndoRow?.(row); });
-  actTd.append(undo);
-  tr.append(actTd);
-  return tr;
+  acts.append(undo);
+  item.append(text, acts);
+  return item;
 }
 
 /** Two quiet notes, only when the reader came up short: missing fields, and the
@@ -458,7 +482,7 @@ function buildCardNotes(row) {
     // Says what to do and, when the page could not be read, why (F7).
     const words = missing.map(f => FIELD_WORDS[f] ?? f).join(', ');
     const them = missing.length === 1 && missing[0] !== 'authors' ? 'it' : 'them';
-    const why = row.link_checked === 'failed' ? " — the desk couldn't read the page" : '';
+    const why = row.link_checked === 'failed' ? ". The desk couldn't read the page" : '';
     note.append(` No ${words} yet${why}. Add ${them} in Finalize.`);
     notes.push(note);
   }
@@ -467,8 +491,8 @@ function buildCardNotes(row) {
     note.append(faIcon('circle-question'));
     const filled = String(row.auto_filled ?? '').split(',').map(f => f.trim()).filter(Boolean);
     note.append(filled.length
-      ? ` The reader wasn't sure about this one — check what it filled in: ${filled.join(', ')}`
-      : " The reader wasn't sure about this one — check its fields");
+      ? ` The reader wasn't sure about this one. Check what it filled in: ${filled.join(', ')}`
+      : " The reader wasn't sure about this one. Check its fields.");
     notes.push(note);
   }
 
@@ -485,7 +509,7 @@ export function renderSort(container, props) {
 
   const head = el('div', 'screen-head');
   const info = titleWithInfo('Sort', 'sort',
-    'Each section is a list. Delete what does not belong, Skip what you are not sure about (it waits under Skipped), then Keep the rest of a section in one press. Click a row to read it, edit it, set its type, or check its link. A row with no type or an unchecked link stays out of Keep the rest until you fix it (Delete works any time).');
+    'Each section is a list. Click a row to see it in the card: set its type, check its link, edit it, then Keep, Skip or Delete it (Skip waits under Skipped). Keep the rest keeps a whole section in one press. A row with no type or an unchecked link cannot be kept until you fix it; Delete works any time.');
   head.append(info.row);
   const door = el('button', 'door head-action', 'Go to Finalize');
   door.append(forwardIcon());
@@ -509,6 +533,7 @@ export function renderSort(container, props) {
   const body = el('div', 'sort-body');
   body.append(nav, main);
   container.append(body);
+  if (lastFilter !== filter) { selectedId = null; lastIndex = 0; listPanel = null; }
   if (lastFilter !== null && lastFilter !== filter) {
     main.classList.add(FILTER_KEYS.indexOf(filter) > FILTER_KEYS.indexOf(lastFilter)
       ? 'slide-in-right' : 'slide-in-left');

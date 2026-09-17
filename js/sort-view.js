@@ -167,3 +167,29 @@ export function allSections(rows, sessionDecided = new Set(), decidedFrom = new 
     .map(section => ({ section, ...sectionRows(rows, section, sessionDecided, ctx, decidedFrom) }))
     .filter(g => g.live.length || g.done.length);
 }
+
+// ── Sort as a list and a card (Claude Design round two, Kate's pick C, Sep 16) ──
+
+/** Why the card's Keep is locked, in the words of its tooltip; '' when the
+ *  row can be kept. The same two reasons keep a row out of Keep the rest. */
+export function keepBlock(row) {
+  if (needsType(row)) return 'Set a type first';
+  if (linkCheckState(row) === 'alert') return 'Check the link first';
+  return '';
+}
+
+/** The row the card shows: the chosen one while it is live; otherwise the
+ *  row now standing where it stood (so a decision moves you to the next);
+ *  otherwise none. */
+export function nextSelected(liveIds, selectedId, lastIndex = 0) {
+  if (selectedId && liveIds.includes(selectedId)) return selectedId;
+  if (!liveIds.length) return null;
+  return liveIds[Math.min(Math.max(lastIndex, 0), liveIds.length - 1)];
+}
+
+/** The next section after `current` that holds anything, wrapping round. */
+export function nextSectionWithRows(counts, current) {
+  const at = SECTION_ORDER.indexOf(current);
+  const order = [...SECTION_ORDER.slice(at + 1), ...SECTION_ORDER.slice(0, Math.max(at, 0))];
+  return order.find(k => counts[k] > 0) ?? null;
+}

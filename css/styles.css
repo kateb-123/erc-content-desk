@@ -72,7 +72,7 @@ button {
 }
 
 /* Text-styled buttons read as prose, not chrome — they keep the body font. */
-.linkish, .sort-btn, .undo-link, .carousel-arrow { font-family: inherit; font-weight: inherit; }
+.linkish, .sort-btn, .undo-link { font-family: inherit; font-weight: inherit; }
 
 button:hover:not(:disabled) { border-color: var(--ink); }
 button:disabled { opacity: .5; cursor: default; }
@@ -228,7 +228,6 @@ button:disabled { opacity: .5; cursor: default; }
 
 .flag { display: flex; align-items: center; gap: .3rem; margin: 0; font-size: .85rem; color: var(--ink); }
 button.trash-link, .trash-link { color: var(--err); }
-.f-detail-actions { display: inline-flex; gap: .35rem; align-items: baseline; }
 
 
 
@@ -247,7 +246,6 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .nl-table .badge { margin-top: .25rem; }
 .badge-dupe { background: var(--amber-bg); border-color: var(--amber-line); border-style: solid; color: var(--amber); }
 .badge-new { background: var(--tint); border-color: var(--tint); border-style: solid; color: var(--accent-deep); }
-.card-pos { position: absolute; top: 1rem; right: 1.1rem; font-size: .78rem; color: var(--muted); }
 .edit-link { color: var(--accent); font-weight: 600; font-size: .95rem; }
 .edit-link .fa-solid { margin-right: .3rem; font-size: .9em; }
 .link-alert { margin: .6rem 0 .2rem; font-size: .85rem; color: var(--amber); background: var(--amber-bg); border: 1px solid var(--amber-line); border-radius: 8px; padding: .55rem .9rem; }
@@ -261,18 +259,12 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .alert-word { color: var(--accent); font-weight: 600; font-size: .85rem; text-decoration: none; }
 .alert-word:hover { text-decoration: underline; }
 .link-alert input.is-invalid { border-color: var(--err); }
-.type-pick { margin-top: .9rem; }
-.pick-label { font-size: .78rem; color: var(--muted); margin: 0 0 .5rem; }
 
 
 
 
-.sub-pick { display: none; }
-.sub-pick.is-open { display: block; margin-top: .8rem; }
-.pick-saved { color: var(--ok); font-size: .875rem; margin: 0; }
 .sort-nav .sort-filter.is-alert:not(.is-active) { background: var(--amber-bg); color: var(--amber); }
 .sort-nav .sort-filter.is-alert:not(.is-active):hover { background: var(--amber-line); color: var(--amber); }
-.type-row { display: flex; gap: .5rem; flex-wrap: wrap; margin: .3rem 0 .6rem; }
 .type-word { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: .45rem 1rem; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .9rem; color: var(--ink); cursor: pointer; }
 .type-word:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .type-word.is-picked { background: var(--tint); border-color: var(--accent); color: var(--accent-deep); }
@@ -288,14 +280,11 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .sort-edit-actions button, .f-edit-actions button { font-size: .9rem; border-radius: var(--radius); }
 .sort-edit-actions .primary { padding: .45rem 1.2rem; }
 .sort-edit-actions .btn-outline { padding: .45rem 1.2rem; }
-/* Section menu: on the left, same bubble pills as the screen tabs. */
-.sort-body { display: flex; align-items: flex-start; gap: 2.5rem; margin-top: .6rem; }
-.sort-nav { display: flex; flex-direction: column; align-items: flex-start; gap: .35rem; min-width: 9.5rem; }
-.sort-main { flex: 1; min-width: 0; }
-@media (max-width: 700px) {
-  .sort-body { display: block; }
-  .sort-nav { flex-direction: row; flex-wrap: wrap; margin-bottom: .8rem; }
-}
+/* Section menu: the pills in one row on top (Claude Design round two, Kate's pick C, Sep 16). */
+.sort-body { margin-top: .6rem; }
+.sort-nav { display: flex; flex-wrap: wrap; gap: .3rem; margin: 0 0 1rem; }
+.sort-nav .sort-filter { padding: .35rem .75rem; }
+.sort-main { min-width: 0; }
 .sort-group { font-weight: 600; margin: .2rem 0 0; }
 /* Undo sits under the section label. The row keeps its height when disabled so
    a fresh stack doesn't start the card higher and drop it on the first decision. */
@@ -306,10 +295,6 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 }
 .undo-link:hover:not(:disabled) { border: none; text-decoration: underline; }
 .undo-link:disabled { color: var(--muted); opacity: .55; cursor: default; }
-.sort-carousel { display: flex; align-items: center; gap: .35rem; max-width: 700px; }
-.carousel-arrow { border: none; background: none; padding: .5rem .45rem; font-size: 1.7rem; line-height: 1; color: var(--accent); cursor: pointer; }
-.carousel-arrow:hover:not(:disabled) { border: none; color: var(--ink); }
-.carousel-arrow:disabled { color: var(--line); opacity: 1; cursor: default; }
 .sort-filter { border: none; border-radius: 999px; background: none; padding: .35rem .9rem; color: var(--muted); cursor: pointer; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .85rem; }
 .sort-filter:hover:not(.is-active) { border: none; background: var(--tint); color: var(--accent); }
 .sort-filter.is-active { color: #fff; background: var(--accent); }
@@ -368,7 +353,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .f-original { border: 1px solid var(--amber-line); background: var(--amber-bg); border-radius: 8px; padding: .7rem .85rem; margin-top: .5rem; }
 .f-original .f-diff-label { color: var(--amber); }
 .f-original .f-blurb-text { margin: 0; }
-.f-pane-empty { border: 1px dashed var(--line); border-radius: 12px; padding: 2.5rem 1rem; text-align: center; color: var(--muted); }
+.f-pane-empty, .sort-pane-empty { border: 1px dashed var(--line); border-radius: 12px; padding: 2.5rem 1rem; text-align: center; color: var(--muted); }
 /* Team trial: clicking Publish runs a mock — a ghosted "forthcoming" shadow
    alert during the posting beat, then the normal success receipt. */
 .p-shade { text-align: center; padding: 2rem 1rem 1rem; opacity: .7; }
@@ -636,31 +621,64 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .list-head .undo-link { margin: 0; }
 .list-head .list-keep { margin-left: auto; font-size: .85rem; padding: .4rem 1rem; }
 .list-hint { margin: 0 0 .7rem; }
-.sort-list { font-size: .9rem; border-radius: 12px; overflow: hidden; }
-.sort-list td { padding: .6rem .7rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
-.sort-list tr:last-child td { border-bottom: 0; }
-.sort-list .list-chev { width: 2rem; padding-right: 0; }
-.sort-list .list-chev .chevron-btn { font-size: .8rem; }
-.sort-list .item-source { display: block; font-size: .8rem; color: var(--muted); margin-top: .1rem; }
-.sort-list .list-badges { margin-bottom: .15rem; }
-.sort-list .list-detail .item-note, .sort-list .list-detail .card-note { font-size: .85rem; color: var(--muted); margin: .3rem 0; }
-/* The whole row is the handle for its detail (Kate, Sep 15). */
-.sort-list .list-row:not(.is-done) { cursor: pointer; }
-.sort-list .list-row:not(.is-done):not(.is-open):hover td { background-image: linear-gradient(var(--hover), var(--hover)); }
+/* Sort as a list and a card (Claude Design round two, Kate's pick C, Sep 16):
+   the rows down the left, the chosen row's card on the right, kept in view
+   while the list scrolls. Finalize's list and card, with Sort's fix panel. */
+.sort-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 1.25rem; align-items: start; }
+.sort-rows { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.sort-row {
+  display: flex; align-items: flex-start; gap: .5rem; width: 100%; box-sizing: border-box; text-align: left;
+  padding: .6rem .8rem; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: #fff;
+  font-family: Karla, "Segoe UI", sans-serif; font-weight: 400; color: var(--ink); cursor: pointer;
+}
+.sort-rows > :first-child { border-top: 0; }
+.sort-row:hover:not(:disabled) { border-color: var(--line); background-image: linear-gradient(var(--hover), var(--hover)); }
+.sort-row.is-selected { background-color: var(--tint); }
+.sort-row-text { display: flex; flex-direction: column; gap: .1rem; min-width: 0; flex: 1 1 auto; }
+.sort-row-badges { display: flex; flex-wrap: wrap; gap: .3rem; margin-bottom: .1rem; }
+.sort-row-badges .badge { margin-right: 0; }
+.sort-row-title { font-size: .88rem; font-weight: 500; line-height: 1.35; }
+.sort-row-meta { font-size: .78rem; color: var(--muted); }
 /* The one alert on a Needs a fix row: an amber triangle before the title. */
-.sort-list .fix-mark { color: var(--amber); font-size: .85em; margin-right: .4rem; }
-.sort-list .list-actions { white-space: nowrap; text-align: right; }
-.sort-list .list-actions .linkish { margin-left: .9rem; }
-.sort-list tr.is-open td { background: var(--tint); border-bottom: 0; }
-.sort-list .list-detail-row td { background: var(--tint); padding-top: 0; }
-.sort-list .list-detail { margin: 0 0 .5rem; }
-.sort-list .list-detail .type-line { margin: .5rem 0; font-size: .88rem; }
-.sort-list .list-detail .f-detail-actions { margin: .4rem 0 0; }
-.sort-list .f-blurb-text.is-quiet { color: var(--muted); }
-.sort-list tr.is-done td { color: var(--muted); background: var(--bg); }
-.sort-list tr.is-done .item-title { color: var(--muted); }
-.sort-list tr.is-trashed .item-title { text-decoration: line-through; }
-.sort-list tr.is-done .list-actions { color: var(--muted); }
+.sort-row .fix-mark { color: var(--amber); font-size: .75rem; margin-top: .3rem; flex: none; }
+.sort-row .fa-chevron-right { color: var(--accent); font-size: .7rem; margin-top: .35rem; flex: none; }
+.sort-done { display: flex; align-items: flex-start; gap: .5rem; padding: .6rem .8rem; border-top: 1px solid var(--line); background: var(--bg); }
+.sort-done .sort-row-title, .sort-done .sort-row-meta { color: var(--muted); }
+.sort-done.is-trashed .sort-row-title { text-decoration: line-through; }
+.sort-done-acts { margin-left: auto; white-space: nowrap; }
+.sort-card { display: flex; flex-direction: column; gap: .6rem; padding: 1.1rem 1.25rem; box-sizing: border-box; position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
+.sort-card h3 { margin: 0; font-size: 1.05rem; line-height: 1.3; }
+.sort-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .75rem; }
+.sort-card-top .type-line { margin: 0; }
+.sort-card-top .badge { margin-right: 0; }
+.sort-card-meta { margin: -.35rem 0 0; font-size: .85rem; color: var(--muted); }
+.sort-card .f-blurb-text { margin: 0; }
+.sort-card .f-blurb-text.is-quiet { color: var(--muted); }
+.sort-card .item-note, .sort-card .card-note { margin: 0; font-size: .85rem; color: var(--muted); }
+.sort-card-source { margin: 0; font-size: .85rem; color: var(--muted); }
+.sort-card-acts { display: flex; align-items: center; gap: 1rem; border-top: 1px solid var(--line); padding-top: .8rem; margin-top: .2rem; }
+.sort-card-right { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+.sort-card-acts .primary { padding: .45rem 1.2rem; }
+.sort-card .sort-edit { margin: 0; }
+/* The fix panel: amber while the row needs a fix, plain while a type changes. */
+.fix-panel { border: 1px solid var(--line); border-radius: 8px; padding: .7rem .85rem; background: #fff; }
+.fix-panel.is-alert { border-color: var(--amber-line); background: var(--amber-bg); }
+.fix-head { margin: 0 0 .35rem; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.fix-head.is-alert { color: var(--amber); }
+.fix-head .fa-solid { margin-right: .35rem; }
+.fix-panel > .fix-head ~ .fix-head { margin-top: .75rem; }
+.fix-line { margin: 0; font-size: .88rem; color: var(--ink); }
+.radio-line { display: flex; align-items: center; gap: .45rem; margin: .15rem 0; font-size: .9rem; color: var(--ink); cursor: pointer; }
+.radio-line input { margin: 0; accent-color: var(--accent); }
+.sub-radios { margin: .1rem 0 .3rem 1.45rem; padding-left: .7rem; border-left: 2px solid var(--line); }
+.sub-radios .radio-line { font-size: .85rem; }
+.fix-panel .link-alert { margin: 0; padding: 0; border: 0; background: none; }
+.fix-panel .link-alert .alert-mark { display: none; }
+.fix-panel > .skip-link { margin-top: .35rem; }
+@media (max-width: 900px) {
+  .sort-split { grid-template-columns: minmax(0, 1fr); }
+  .sort-card { position: static; max-height: none; }
+}
 .queue-row.is-deleted .queue-actions { opacity: 1; }
 .queue-gone { font-size: .8rem; color: var(--muted); margin-right: .5rem; }
 

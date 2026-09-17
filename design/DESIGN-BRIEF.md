@@ -117,38 +117,40 @@ Sort." A row Sort deletes leaves the issue with it. Send to Newsletter stays as
 the way to pick from what is already kept.
 
 ### Sort (the screen that matters most)
-A left column of section pills, each with a count: Needs a fix, ERC, ERC
-events, Research, Events, Opportunities, Headlines, Skipped. One table shows at a time;
-the screen lands on the first pill that holds anything. Needs a fix glows amber while
-it holds anything; it is the one notification on the screen (Sep 15). It gathers
-every row that cannot be kept yet (no type, a link the desk could not open) and
-every possible duplicate, with the reason in the subtype column and one amber
-triangle before the title. Rows elsewhere carry no amber marks; a fixed row
-moves to its section. Skipped, last on the menu, holds every parked row of any
-type with Keep and Delete per row (option B, Sep 15): a Skip is never the end
-of the road.
+A list and a card (Claude Design round two, Kate's pick C, Sep 16). The section
+pills sit in one row on top, each with a count: Needs a fix, ERC, ERC events,
+Research, Events, Opportunities, Headlines, Skipped. One section shows at a time;
+the screen lands on the first pill that holds anything. Needs a fix glows amber
+while it holds anything; it is the one notification on the screen (Sep 15). It
+gathers every row that cannot be kept yet (no type, a link the desk could not
+open) and every possible duplicate, one amber triangle before each title. Rows
+elsewhere carry no amber marks; a fixed row moves to its section. Skipped, last on
+the menu, holds every parked row of any type (option B, Sep 15): a Skip is never
+the end of the road.
 
-- **Every pill is a list** (Sep 11; the one-card stream was dropped Sep 15
-  because going card by card took too long): a table of rows, each with a
-  chevron, the title with authors or source and date, and **Skip** and
-  **Delete**; nothing else (the description and type live in the open row, and
-  clicking anywhere on the row opens it). One filled **Keep the rest
-  (N)** button sits at the top right of the list. The chevron expands
-  the row in place into the same white detail card Finalize uses: full description,
-  notes, the type line with Change (or the type picker itself when a type is
-  missing), Open source, the link alert, and Edit. A decided row sinks to the
-  bottom of the list, greyed (deleted ones struck through) with an Undo.
+- **The list and the card.** Under the section's name, Undo last and one filled
+  **Keep the rest (N)**, the rows run down the left: the title with authors or
+  source and date, and a New badge on a row that came in today. Clicking a row
+  shows it in the card on the right, which stays in view while the list scrolls:
+  the type line with Change and the badges, the title, the meta line, the
+  description, notes, Open source, then **Edit** and **Delete** on the left and
+  **Skip** and **Keep** on the right. A decision moves the card to the next row;
+  the decided row sinks to the bottom of the list, greyed (deleted ones struck
+  through) with an Undo. A section with nothing left shows a dashed pane naming
+  the next section that holds anything.
+- **The fix panel** (amber, on the card of a row under Needs a fix) says each
+  reason in words: Needs a type, Check the link, Possible duplicate. Keep stays
+  locked until the type and the link are settled; Skip and Delete always work.
 - A pill's count is exactly the rows it lists. There is no All view (Sep 15,
   Kate: one table per section, the menu pulls up the next).
 - **Edit** opens Title, Description, Link (and a picture control on ERC items) in
-  place, with Save and Cancel. Whatever is typed is carried by whichever button
-  ends the card.
-- **The type picker**: "Select a type" chips, then the subtype chips. Tapping the
-  subtype is the save; there is no Save button. A flat type (ERC Event) saves on
-  the type tap.
-- **The amber link bubble**: the whole bubble opens the source in a new tab, and
-  only then do **Confirm** and **Change** appear. Change reveals a field to paste a
-  corrected link. Keep stays locked until the link is settled; Skip always works.
+  the card, with Save and Cancel.
+- **The type picker**: the types as radios, the picked type's subtypes indented
+  under it. Picking the subtype is the save; there is no Save button. A flat type
+  (ERC Event) saves on the type pick. Change opens the same radios, with Cancel.
+- **The amber link ask**: Verify link opens the source in a new tab, and only then
+  do **Confirm** and **Change** appear. Change reveals a field to paste a corrected
+  link.
 
 ### Finalize
 A list and a card (Claude Design round two, Kate's pick Sep 16). Under the title a

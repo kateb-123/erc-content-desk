@@ -22,10 +22,11 @@ description, in the background. The spreadsheet door takes a whole `.xlsx`, `.cs
 The public submission form lives outside this repo (a small GitHub Pages site) and
 posts to `/api/submit` behind a Cloudflare Turnstile check.
 
-**Sort**: every section pill (Needs a fix, ERC, ERC events, Research, Events,
-Opportunities, Headlines, Skipped) is a list with **Skip** and **Delete** per row and one
-**Keep the rest**; one table shows at a time, picked from the menu on the left.
-A skipped row waits under Skipped, any type, with **Keep** and **Delete**.
+**Sort**: one section at a time (Needs a fix, ERC, ERC events, Research, Events,
+Opportunities, Headlines, Skipped), picked from the pills on top. The rows run down
+the left; the card on the right shows the chosen row with **Edit**, **Delete**,
+**Skip** and **Keep**, and each section has one **Keep the rest**. A skipped row
+waits under Skipped, any type, with **Keep** and **Delete**.
 Decisions are click only. Nothing reaches the list until the reader has filed it.
 
 **Finalize**: one batched Opus call rewrites kept events, ERC events, and

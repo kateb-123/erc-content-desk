@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { keptUntyped, sortCounts, sectionOf, allSections, sectionRows, fixReasons, landingSection, pendingRowCount } from '../js/sort-view.js';
+import { keptUntyped, sortCounts, sectionOf, allSections, sectionRows, fixReasons, landingSection, pendingRowCount, keepBlock, nextSelected, nextSectionWithRows } from '../js/sort-view.js';
 
 // Shuffled on purpose: statuses mixed in, groups interleaved, dates unordered.
 // Every typed row carries a real subtype: without one it would sit under Needs a fix.
@@ -322,4 +322,27 @@ test('a row kept or deleted from Skipped greys under Skipped, not in its type se
   assert.deepEqual(groups.map(g => g.section), ['skipped']);
   assert.deepEqual(groups[0].live.map(r => r.id), ['p']);
   assert.deepEqual(groups[0].done.map(r => r.id), ['d', 'k']);
+});
+
+// ── Sort as a list and a card (Claude Design round two, Kate's pick C, Sep 16) ──
+
+test('keepBlock says why Keep is locked: a type first, then the link; nothing when it can be kept', () => {
+  assert.equal(keepBlock({ type: '', subtype: '', link: 'https://x.org', link_checked: 'ok' }), 'Set a type first');
+  assert.equal(keepBlock({ type: 'headline', subtype: 'Texas', link: 'https://x.org', link_checked: 'failed' }), 'Check the link first');
+  assert.equal(keepBlock({ type: 'headline', subtype: 'Texas', link: 'https://x.org', link_checked: 'ok' }), '');
+});
+
+test('nextSelected keeps the chosen row while it is live, else takes the row now in its place', () => {
+  assert.equal(nextSelected(['a', 'b', 'c'], 'b', 1), 'b');
+  assert.equal(nextSelected(['a', 'c'], 'b', 1), 'c');
+  assert.equal(nextSelected(['a'], 'c', 2), 'a');
+  assert.equal(nextSelected([], 'a', 0), null);
+  assert.equal(nextSelected(['a', 'b'], null, 0), 'a');
+});
+
+test('nextSectionWithRows finds the next section that holds anything, wrapping round, else none', () => {
+  const counts = { fix: 0, erc: 0, erc_event: 0, research: 2, event: 0, opportunity: 1, headline: 0, skipped: 0 };
+  assert.equal(nextSectionWithRows(counts, 'research'), 'opportunity');
+  assert.equal(nextSectionWithRows(counts, 'opportunity'), 'research');
+  assert.equal(nextSectionWithRows({ ...counts, research: 0, opportunity: 0 }, 'fix'), null);
 });

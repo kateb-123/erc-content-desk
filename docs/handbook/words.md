@@ -45,12 +45,12 @@
 "(optional — a flyer, PDF, or picture)"
 "Your name"
 "Your email address"
-"Each section is a list. Delete what does not belong, Skip what you are not sure about (it waits under Skipped), then Keep the rest of a section in one press. Click a row to read it, edit it, set its type, or check its link. A row with no type or an unchecked link stays out of Keep the rest until you fix it (Delete works any time)."
+"Each section is a list. Click a row to see it in the card: set its type, check its link, edit it, then Keep, Skip or Delete it (Skip waits under Skipped). Keep the rest keeps a whole section in one press. A row with no type or an unchecked link cannot be kept until you fix it; Delete works any time." (Sort's info panel, Sep 16)
 "(untitled)"
 "Note: [text]"
 "from [name]"
-"Select a type"
-"[Type] — now the subtype:"
+"Needs a type" · "Type" · "Check the link" · "Possible duplicate" (the heads in the fix panel on Sort's card, Sep 16)
+"Set a type first" · "Check the link first" (the tooltip on Sort's Keep while it is locked)
 "paste the right link"
 "Filed by the desk from the link/description — check it."
 "Rewrite the descriptions that need an ERC voice, then check each one: Keep saves the rewrite, Use original leaves the text as it was. Click any row on the left to see it, edit it, or delete it. Then go to Publish." (Finalize's info panel, Sep 16)
@@ -386,8 +386,9 @@
 "Keep the rest (N)"
 "Everything here is kept unless you drop it. Delete what does not belong, Skip what you are not sure about, then Keep the rest."
 "You parked these. Keep what is ready now, Delete what is not, or leave it here." (the Skipped pill's hint, Sep 15)
-"What is left needs a type or a link check before it can be kept. Open the row to do that."
+"Nothing left in this section. " · "Nothing in this section. " then "Next: [section]" or "Go to Finalize" (the dashed pane in the card's place, Sep 16)
+"No [fields] yet. Add it in Finalize." · "No [fields] yet. The desk couldn't read the page. Add them in Finalize." · "The reader wasn't sure about this one. Check what it filled in: [fields]" · "The reader wasn't sure about this one. Check its fields." (the quiet notes on Sort's card)
 "No description. A headline can go without one." · "No description yet."
-"No type" · "Link not opened" (the reasons in a Needs a fix row's subtype column; the amber row marks are gone, Sep 15)
-"Deleted" · "Skipped" · "Kept" (sunk rows of the headline list, each with "Undo")
+"No type" · "Link not opened" (the tooltip on a Needs a fix row's amber triangle)
+"Deleted" · "Skipped" · "Kept" (decided rows at the bottom of a Sort list, each with "Undo")
 "Skipped" (the last pill, Sep 15: every parked row, any type, each wearing its type as a badge, with " Keep" and " Delete"; Home's queue marks a parked row with a "Skipped" badge)
