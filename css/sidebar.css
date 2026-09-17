@@ -2,12 +2,14 @@
    sidebar the most. but then I think keep our stuff"), shared by the desk and
    the builder's pages, drawn as Carbon's side nav since Sep 17: 256px on the
    page ground, 32px rows, the lit row on the selected layer with a 3px bar.
-   It reads the desk's token names (--side-bg, --ink, --muted, --line,
-   --accent, --selected, --hover); a page without the desk stylesheet mirrors
-   them in its own :root, as the builder does. Its buttons are styled here in
-   full, since the builder has no base button rule. */
-/* Two rules every page needs, so they live with the one stylesheet every page loads (audit round two, d2 and e27):
-   sr-only for the cues the sidebar emits, and the skip link, off screen until it takes focus. */
+   It reads Carbon's own names from /css/tokens.css, so no page mirrors the
+   desk's aliases for it; a row hover takes --row-hover where a page sets one
+   (the desk does) and the accent's 6% wash otherwise. Its buttons are styled
+   here in full, since the builder has no base button rule. */
+/* Rules every page needs, so they live with the one stylesheet every page loads (audit round two, d2 and e27):
+   the hidden attribute, sr-only for the cues the sidebar emits, and the skip link, off screen until it takes focus. */
+/* The hidden attribute wins over every display rule on either app (the buttons are inline-flex). */
+[hidden] { display: none !important; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .skip-to-main { position: absolute; left: var(--spacing-05); top: -100px; z-index: 100; height: 40px; padding: 0 var(--spacing-05); display: inline-flex; align-items: center; background: var(--background); color: var(--link-primary); font: inherit; letter-spacing: .16px; text-decoration: none; border: 1px solid var(--border-subtle-01); }
 .skip-to-main:focus { top: var(--spacing-03); outline: 2px solid var(--focus); outline-offset: -2px; }
@@ -16,42 +18,42 @@
 .side {
   width: 256px; flex: 0 0 auto;
   position: sticky; top: 0; height: 100vh; overflow-y: auto;
-  background: var(--side-bg); border-right: 1px solid var(--line);
+  background: var(--background); border-right: 1px solid var(--border-subtle-00);
   padding: var(--spacing-05) 0; display: flex; flex-direction: column; gap: var(--spacing-05);
 }
 .side-group { display: flex; flex-direction: column; gap: 0; }
 .side-label {
   display: flex; align-items: center; gap: var(--spacing-03);
   padding: 0 var(--spacing-05) var(--spacing-03); font-weight: 600;
-  font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted);
+  font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-secondary);
 }
 .side-label .fa-solid { width: 16px; text-align: center; font-size: 12px; color: var(--icon-secondary); flex: none; }
 .side-fold { border: 0; background: none; cursor: pointer; text-align: left; width: 100%; height: auto; margin: 0; }
 /* The desk's base button hover (accent fill) outranks a bare class hover, so these carry the .side prefix (design audit b17, Sep 17). */
-.side .side-fold:hover:not(:disabled) { background: none; border: 0; color: var(--ink); }
+.side .side-fold:hover:not(:disabled) { background: none; border: 0; color: var(--text-primary); }
 .side-fold .side-chevron { width: auto; font-size: 9px; color: var(--icon-secondary); margin-left: var(--spacing-01); }
 .side-group.is-folded .side-row { display: none; }
 .side-row { display: flex; align-items: center; gap: 0; padding-right: var(--spacing-03); }
 .side-item {
   flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: var(--spacing-03);
-  height: 32px; padding: 0 var(--spacing-05); border-radius: 0; color: var(--ink); text-decoration: none;
+  height: 32px; padding: 0 var(--spacing-05); border-radius: 0; color: var(--text-primary); text-decoration: none;
   transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
 .side-item .fa-solid { width: 16px; text-align: center; font-size: 12px; color: var(--icon-secondary); flex: none; }
 .side-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 auto; }
 .side-item:not(.is-brand) { padding-left: var(--spacing-07); }   /* no icon on the items: an indent under their heading */
-.side-count { flex: none; font-size: 12px; letter-spacing: .32px; color: var(--muted); font-weight: 400; }
+.side-count { flex: none; font-size: 12px; letter-spacing: .32px; color: var(--text-secondary); font-weight: 400; }
 .side-item .side-out { width: auto; font-size: 10px; color: var(--icon-secondary); }   /* leaves the desk: a small glyph (design audit b16) */
-.side-item:hover { background: var(--row-hover, var(--hover)); color: var(--ink); }   /* the builder's pages name --hover only (audit round two, e28) */
-.side-item.is-current { background: var(--selected); color: var(--accent-deep); font-weight: 600; box-shadow: inset 3px 0 0 var(--border-interactive); }
-.side-item.is-current .fa-solid { color: var(--accent); }
+.side-item:hover { background: var(--row-hover, var(--accent-alpha)); color: var(--text-primary); }   /* the desk sets --row-hover; the builder's pages take the wash (audit round two, e28) */
+.side-item.is-current { background: var(--highlight); color: var(--button-primary-active); font-weight: 600; box-shadow: inset 3px 0 0 var(--border-interactive); }
+.side-item.is-current .fa-solid { color: var(--button-primary); }
 .side-item.is-brand { height: 40px; font-weight: 600; }
 .side-copy {
   flex: none; display: inline-flex; align-items: center; justify-content: center;
   width: 32px; height: 32px; border: 0; background: none; padding: 0; border-radius: 0;
   color: var(--icon-secondary); font-size: 12px; cursor: pointer; line-height: 1; margin: 0;
 }
-.side .side-copy:hover:not(:disabled) { color: var(--icon-primary); background: var(--row-hover, var(--hover)); border: 0; }
+.side .side-copy:hover:not(:disabled) { color: var(--icon-primary); background: var(--row-hover, var(--accent-alpha)); border: 0; }
 .side-copy .fa-check { color: var(--support-success); }
 /* Desk work tucks the sidebar away (Kate, Sep 16: "b when it's expanded and
    the button. but also the thin grey bar to the left like C"): a thin strip
@@ -66,7 +68,7 @@
   display: flex; flex-direction: column; align-items: center;
   width: 48px; flex: 0 0 auto; box-sizing: border-box;
   position: sticky; top: 0; height: 100vh; padding-top: var(--spacing-05);
-  background: var(--side-bg); border-right: 1px solid var(--line);
+  background: var(--background); border-right: 1px solid var(--border-subtle-00);
 }
 /* The menu button and its close: Carbon's ghost icon buttons. */
 .side-burger, .side-close {
@@ -76,9 +78,40 @@
   transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
 .side-close { display: none; }
-.side-strip .side-burger:hover:not(:disabled), .side .side-close:hover:not(:disabled) { background: var(--row-hover, var(--hover)); color: var(--icon-primary); border: 0; }
+.side-strip .side-burger:hover:not(:disabled), .side .side-close:hover:not(:disabled) { background: var(--row-hover, var(--accent-alpha)); color: var(--icon-primary); border: 0; }
 .side.can-close .side-close { display: inline-flex; }
 .side a:focus-visible, .side button:focus-visible, .side-strip button:focus-visible {
   outline: 2px solid var(--focus); outline-offset: -2px; box-shadow: none;
 }
-@media (prefers-reduced-motion: reduce) { .side.can-close { animation: none; } }
+
+/* Sliding-dots loader (Kate's pick, Sep 1), the one copy for both apps: six
+   dots slide across a track with staggered delays, on the app's own accent
+   ramp. Mini = the inline size for status rows. It lives here because every
+   page loads this file and every page draws it; the desk sizes it for the
+   status line and Publish's shade in css/styles.css. */
+.dots-loader { position: relative; height: var(--dl-s, 20px); width: var(--dl-w, 250px); margin: var(--spacing-06) auto; }
+.dots-loader .dot {
+  position: absolute; height: var(--dl-s, 20px); width: var(--dl-s, 20px);
+  border-radius: var(--radius-round); border: 2px solid var(--background); box-sizing: border-box;
+  animation: dots-slide 3s ease-in-out infinite;
+}
+.dots-loader .dot:nth-child(1) { background: var(--accent-30); animation-delay: .5s; }
+.dots-loader .dot:nth-child(2) { background: var(--accent-40); animation-delay: .4s; }
+.dots-loader .dot:nth-child(3) { background: var(--accent-50); animation-delay: .3s; }
+.dots-loader .dot:nth-child(4) { background: var(--accent-60); animation-delay: .2s; }
+.dots-loader .dot:nth-child(5) { background: var(--accent-70); animation-delay: .1s; }
+.dots-loader .dot:nth-child(6) { background: var(--accent-80); animation-delay: 0s; }
+@keyframes dots-slide {
+  15% { transform: translateX(0); }
+  45%, 65% { transform: translateX(calc(var(--dl-w, 250px) - var(--dl-s, 20px))); }
+  95% { transform: translateX(0); }
+}
+.dots-mini { --dl-w: 90px; --dl-s: 10px; display: inline-block; vertical-align: middle; margin: 0 var(--spacing-03) 0 0; }
+/* Busy status labels get trailing dots that type themselves. */
+.dots-text::after { content: ""; animation: dots-text 3s infinite; }
+@keyframes dots-text { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .side.can-close { animation: none; }
+  .dots-loader .dot, .dots-text::after { animation: none; }
+}

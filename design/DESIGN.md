@@ -17,8 +17,8 @@ of blue, lighter, less aggressive", pick G of eight in a switcher; "we just
 want a little variation"). Carbon is a square, one-family system; its rules
 below replace the desk's own radii and fonts of Sep 1 to Sep 16. The tokens live in `css/tokens.css`, the one file
 where a colour, a size or a face is written down; every page loads it first.
-`css/styles.css` (desk), `builder/css/styles.css` (builder, `--bp-*`) and
-`builder/archive.html` alias the names they use. The source is the
+Both apps and the shared sidebar read Carbon's own names; each app's `:root`
+maps only its accent ramp onto Carbon's blue tokens. The source is the
 `ibm-carbon-template` export (tokens.json, Sep 16); nothing in tokens.css is
 a design decision of ours.
 
@@ -39,7 +39,7 @@ allows a hex only in `css/tokens.css`.
 | `--text-primary` / `--text-secondary` / `--text-helper` / `--text-placeholder` | `#161616` / `#525252` / `#6f6f6f` / `#a8a8a8` | ink (`--ink`), quiet text (`--muted`), helper lines, placeholders (placeholders are decoration, never the only label) |
 | `--border-subtle-00` / `--border-subtle-01` | `#e0e0e0` / `#c6c6c6` | hairlines on the page (`--line`) and inside a layer (`--line-in`); dividers only |
 | `--border-strong-01` | `#8d8d8d` | the line under a field, dashed drop zones, tag outlines: anything interactive holds 3:1 |
-| `--button-primary` / `-hover` / `-active` | the desk `#1d6ea5` / `#19608f` / `#14507a` (`--desk-blue-60/70/80`); the builder `#007d79` / `#005d5d` / `#004144` (`--teal-60/70/80`) | the one accent per app (`--accent`, `--accent-hover`, `--accent-deep`): filled buttons, tertiary outlines, links, focus, the active tab bar, the lit step. Each app's `:root` maps Carbon's blue tokens (button, tertiary, link, focus, interactive, highlight, the info note, the New tag) to its `--accent-NN` ramp; IBM blue `#0f62fe` is Carbon's default and appears nowhere on screen |
+| `--button-primary` / `-hover` / `-active` | the desk `#1d6ea5` / `#19608f` / `#14507a` (`--desk-blue-60/70/80`); the builder `#007d79` / `#005d5d` / `#004144` (`--teal-60/70/80`) | the one accent per app (`--accent`, `--accent-deep`): filled buttons, tertiary outlines, links, focus, the active tab bar, the lit step. Each app's `:root` maps Carbon's blue tokens (button, tertiary, link, focus, interactive, highlight, the info note, the New tag) to its `--accent-NN` ramp; IBM blue `#0f62fe` is Carbon's default and appears nowhere on screen |
 | `--button-secondary` / `-hover` | `#393939` / `#474747` | the builder's Back, Save to the archive, Download: Carbon's dark grey beside a primary |
 | `--button-disabled` / `--text-on-color-disabled` | `#c6c6c6` / `#8d8d8d` | a locked Keep: full opacity, grey fill |
 | `--link-primary` / `-hover` | `#0f62fe` / `#0043ce` | links and the quiet action words |
@@ -50,7 +50,7 @@ allows a hex only in `css/tokens.css`.
 | `--support-info` | `#0043ce` | the info note's bar |
 | `--notification-*-background` / `-border` | info `#edf5ff`, success `#defbe6`, warning `#fcf4d6`, error `#fff1f1` | inline notes: the info panel (`--tint`), the fix panel, the link ask, the builder's status boxes; text on them is `--text-primary` |
 | `--tag-background-*` / `--tag-color-*` | gray `#e0e0e0`/`#161616`, blue `#d0e2ff`/`#0043ce`, yellow `#fddc69`/`#684e00` | tags: a fact, New, a duplicate; the picked type pill; the queue count |
-| `--accent-30` to `--accent-80` | the app's ramp | the sliding-dots loader; `--accent-30` is Publish's held segment (`--accent-soft`) |
+| `--accent-30` to `--accent-80` | the app's ramp | the sliding-dots loader; `--accent-30` is Publish's held segment |
 | `--background-inverse` / `--link-inverse` | `#393939` / `#78a9ff` | the builder's Undo toast |
 | `--overlay` | `#16161680` | the dim behind the busy popup and the tutorial |
 | `--spacing-01` to `--spacing-10` | 2, 4, 8, 12, 16, 24, 32, 40, 48, 64px | every gap, pad and margin; 16 is the default; 10px is a bug |

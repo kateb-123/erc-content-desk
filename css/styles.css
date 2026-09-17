@@ -14,8 +14,6 @@
   --focus: var(--accent-60); --border-interactive: var(--accent-60); --interactive: var(--accent-60);
   --highlight: var(--accent-20); --notification-info-background: var(--accent-10); --notification-info-border: var(--accent-20); --support-info: var(--accent-70);
   --tag-background-blue: var(--accent-20); --tag-color-blue: var(--accent-80);
-  --bg: var(--background);
-  --side-bg: var(--background);        /* Carbon's side nav sits on the page ground */
   --layer: var(--layer-02);            /* a card, a list, a table: a white box with a hairline (Sep 17, pick C) */
   --layer-line: var(--border-subtle-01);
   --ink: var(--text-primary);
@@ -23,11 +21,8 @@
   --line: var(--border-subtle-00);     /* hairlines on the page */
   --line-in: var(--border-subtle-01);  /* hairlines inside a layer */
   --accent: var(--button-primary);
-  --accent-hover: var(--button-primary-hover);
   --accent-deep: var(--button-primary-active);
-  --accent-soft: var(--accent-30);     /* the loader ramp's light end; Publish's held segment */
   --tint: var(--notification-info-background);   /* the accent's palest step: info notes, ERC and held rows, the stat tiles */
-  --tint-ink: var(--text-primary);
   --selected: var(--highlight);                  /* the chosen row, the lit menu item: the accent's second step (Sep 17, pick C) */
   --hover: var(--accent-alpha);
   --row-hover: var(--accent-10);
@@ -42,15 +37,12 @@
 }
 
 * { box-sizing: border-box; }
-/* The hidden attribute wins over every display rule below (the buttons are inline-flex). */
-[hidden] { display: none !important; }
-
 body {
   margin: 0;
   font-family: var(--font-sans);
   font-size: 14px; line-height: 20px; letter-spacing: .16px;   /* body-01 */
   color: var(--ink);
-  background: var(--bg);
+  background: var(--background);
 }
 
 h2, h3 { font-family: var(--font-sans); letter-spacing: 0; }
@@ -95,9 +87,6 @@ button {
   cursor: pointer;
 }
 
-/* Text-styled buttons read as prose, not chrome. */
-.linkish, .sort-btn, .undo-link { font-family: inherit; font-weight: inherit; }
-
 button:hover:not(:disabled) { background: var(--accent); color: var(--text-on-color); border-color: var(--accent); }
 button:disabled { cursor: default; color: var(--text-on-color-disabled); border-color: var(--button-disabled); }
 
@@ -113,29 +102,53 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .sf-foot .sf-initials input { width: 7rem; }
 .sf-foot label.check { margin: var(--spacing-06) 0 0; min-height: 40px; display: flex; align-items: center; gap: var(--spacing-03); font-size: 14px; letter-spacing: .16px; color: var(--ink); }
 .submit-form .submit-btn { margin-left: auto; margin-top: var(--spacing-06); }
+/* The description's hint is a helper line under the field, not part of the label (f8). */
+.submit-form .sf-help { margin: var(--spacing-02) 0 0; }
+/* The one ask before a link already in the queue goes in again (e19): the warning note where the primary was. */
+.submit-form .sf-ask { margin: var(--spacing-05) 0 0; font-size: 14px; line-height: 20px; letter-spacing: .16px; padding: var(--spacing-04) var(--spacing-05); }
+.submit-form .sf-ask:focus { outline: 2px solid var(--focus); outline-offset: -2px; }
 
 /* Type and subtype pills: Carbon's selectable tags, 32px, the picked one blue. */
 .type-picker { border: none; padding: 0; margin: var(--spacing-05) 0 0; }
 .type-picker legend { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); padding: 0; margin-bottom: var(--spacing-03); }
 .pill-row { display: flex; flex-wrap: wrap; gap: var(--spacing-03); }
+.type-word {
+  display: inline-flex; align-items: center; height: 32px; padding: 0 var(--spacing-04);
+  border: 1px solid var(--border-strong-01); border-radius: var(--radius-tag-lg);
+  background: var(--layer-02); color: var(--ink);
+  font: inherit; letter-spacing: .16px; cursor: pointer;
+}
+.type-word:hover:not(:disabled) { background: var(--layer-hover-01); color: var(--ink); border-color: var(--border-strong-01); }
+.type-word.is-picked { background: var(--tag-background-blue); border-color: var(--tag-background-blue); color: var(--tag-color-blue); }
+.type-word.is-picked:hover:not(:disabled) { background: var(--tag-background-blue); border-color: var(--tag-background-blue); color: var(--tag-color-blue); }
+.type-word.is-picked::before { content: "\f00c"; font-family: "Font Awesome 7 Free"; font-weight: 900; font-size: 11px; margin-right: var(--spacing-02); }
 .type-word.is-small { height: 24px; padding: 0 var(--spacing-03); font-size: 12px; letter-spacing: .32px; border-radius: var(--radius-tag-md); }
 .subtype-label { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: var(--spacing-04) 0 var(--spacing-03); }
 .type-hint { margin: var(--spacing-03) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
 
-/* Bulk "whole doc" door */
 /* Bulk "whole doc" door: closed, a hairline row with the chevron opener like the
    queue fold; dashed is for the drop zone alone (audit round two, e22). */
 .bulk-door { margin-top: var(--spacing-06); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; padding: var(--spacing-03) 0 0; background: none; }
 .bulk-door summary { list-style: none; display: flex; align-items: center; gap: var(--spacing-03); min-height: 32px; cursor: pointer; color: var(--muted); }
-.bulk-drop { display: block; border: 1px dashed var(--border-strong-01); border-radius: 0; padding: var(--spacing-06) var(--spacing-05); margin: var(--spacing-03) 0 var(--spacing-01); text-align: center; cursor: pointer; background: var(--field-02); color: var(--muted); }
+/* The opener: the queue fold's chevron, turned when open; no native marker. */
+.bulk-door summary::-webkit-details-marker { display: none; }
+.bulk-door summary .fa-chevron-down { width: 12px; text-align: center; font-size: 11px; color: var(--icon-secondary); transition: transform var(--duration-fast-02) var(--ease-standard); }
+.bulk-door[open] summary .fa-chevron-down { transform: rotate(180deg); }
+.bulk-door summary:hover { color: var(--ink); }
+.bulk-door summary:hover .fa-chevron-down { color: var(--icon-primary); }
+/* A file dragged over the intake card lights the door, whether it is open or shut. */
+.bulk-door.is-drag summary { color: var(--accent); }
+.bulk-drop { display: block; border: 1px dashed var(--border-strong-01); border-radius: 0; padding: var(--spacing-06) var(--spacing-05); margin: var(--spacing-04) 0 var(--spacing-01); text-align: center; cursor: pointer; background: var(--field-02); color: var(--muted); }
 .bulk-drop strong { color: var(--ink); font-weight: 600; }
 .bulk-drop .hint { display: block; margin-top: var(--spacing-02); font-size: 12px; letter-spacing: .32px; color: var(--text-helper); }
-.bulk-drop.is-drag { border-color: var(--accent); background: var(--tint); }
+.bulk-drop.is-drag, .bulk-door.is-drag .bulk-drop { border-color: var(--accent); background: var(--tint); }
+.bulk-drop.is-busy { cursor: default; color: var(--text-helper); }   /* the zone reads its file's name while a split runs (f9) */
 .bulk-drop:focus-within { outline: 2px solid var(--focus); outline-offset: -2px; }   /* the hidden file input is in the tab order (design audit a6) */
 .bulk-templates { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: var(--spacing-03) 0 0; }
 .bulk-templates a { color: var(--link-primary); text-decoration: none; }
 .bulk-templates a:hover { color: var(--link-primary-hover); text-decoration: underline; }
 .bulk-table { margin: var(--spacing-02) 0 var(--spacing-04); }
+.bulk-table .field-error { margin-top: var(--spacing-01); }
 .bulk-remove { width: 6.5rem; text-align: right; }
 
 /* Newsletter: the hand-off to the standalone builder */
@@ -147,8 +160,6 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .nl-sent { margin: var(--spacing-02) 0 var(--spacing-06); }
 .nl-sent summary { cursor: pointer; color: var(--muted); }
 .nl-sent .queue-table { margin-top: var(--spacing-03); }
-.nl-group { margin: 0; }
-.nl-group-summary { cursor: pointer; font-weight: 600; }
 /* Timing on the newsletter pool: events for a later issue dim and sink; the
    "Send early?" ask is a warning note (Sort's verify loop), so a question
    about timing looks the same everywhere it appears. */
@@ -160,7 +171,6 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 }
 .nl-ask .alert-mark, .nl-ask .fa-clock { margin-right: var(--spacing-02); color: var(--amber-mark); }
 .nl-ask .alert-word { color: var(--link-primary); }
-.nl-ask .nl-cancel { font-weight: 400; }
 .nl-past .badge { margin-left: var(--spacing-01); }
 .nl-past-act { text-align: right; width: 6.5rem; }
 .nl-group-scroll { max-height: 340px; overflow-y: auto; }
@@ -170,11 +180,11 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .nl-group > summary .fa-chevron-right, .nl-sent > summary .fa-chevron-right, .nl-past > summary .fa-chevron-right { width: 12px; text-align: center; font-size: 11px; color: var(--icon-secondary); transition: transform var(--duration-fast-01) var(--ease-productive); }
 .nl-group[open] > summary .fa-chevron-right, .nl-sent[open] > summary .fa-chevron-right, .nl-past[open] > summary .fa-chevron-right { transform: rotate(90deg); }
 /* Send and the pick count ride at the foot of the window while the groups scroll (audit round two, e13). */
-.nl-foot { position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center; justify-content: flex-end; gap: var(--spacing-05); padding: var(--spacing-04) 0; margin-top: var(--spacing-05); background: var(--bg); border-top: 1px solid var(--line); }
+.nl-foot { position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center; justify-content: flex-end; gap: var(--spacing-05); padding: var(--spacing-04) 0; margin-top: var(--spacing-05); background: var(--background); border-top: 1px solid var(--line); }
 .nl-foot .nl-picked { color: var(--muted); }
 .bulk-door .bulk-status { min-height: 0; margin: 0; }   /* takes no room until it has words */
 
-.status { min-height: 20px; margin: 0; font-size: 14px; position: sticky; top: 0; z-index: 2; background: var(--bg); }   /* stays in view down a long list (design audit b3) */
+.status { min-height: 20px; margin: 0; font-size: 14px; position: sticky; top: 0; z-index: 2; background: var(--background); }   /* stays in view down a long list (design audit b3) */
 .status-ok { color: var(--ok); }
 .status-error { color: var(--err); }
 .status-busy { color: var(--muted); }
@@ -204,6 +214,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
   font: inherit; letter-spacing: .16px; cursor: pointer;
 }
 .door:hover:not(:disabled) { background: var(--accent); color: var(--text-on-color); border-color: var(--accent); }
+.door .fa-arrow-right { font-size: .85em; }
 
 .screen-head { display: flex; align-items: baseline; gap: var(--spacing-05); flex-wrap: wrap; margin: var(--spacing-05) 0 var(--spacing-05); }
 .screen-head h2 { font-size: 28px; line-height: 36px; font-weight: 400; margin: 0; }   /* heading-04 */
@@ -213,17 +224,18 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 /* The info panel is Carbon's inline notification, informational. */
 .info-panel {
   background: var(--tint); border: 1px solid var(--notification-info-border); border-left: 3px solid var(--support-info);
-  border-radius: 0; padding: var(--spacing-04) var(--spacing-05); margin: var(--spacing-03) 0 var(--spacing-03); color: var(--tint-ink); max-width: 46rem;
+  border-radius: 0; padding: var(--spacing-04) var(--spacing-05); margin: var(--spacing-03) 0 var(--spacing-03); color: var(--text-primary); max-width: 46rem;
 }
 /* Header buttons: the screen's decision is a small primary; its door is the tertiary; both sit right. */
-.screen-head button.primary { margin-left: auto; height: 32px; padding: 0 var(--spacing-09) 0 var(--spacing-04); align-self: center; }
-.screen-head button.primary .fa-solid { right: var(--spacing-04); }
+/* The small primary: a screen head's decision and Sort's Keep the rest. Stays
+   above button.primary:not(:has(.fa-solid)) so an icon-less one keeps its 16px. */
+.screen-head button.primary, .list-head .list-keep { margin-left: auto; align-self: center; height: 32px; padding: 0 var(--spacing-09) 0 var(--spacing-04); }
+.screen-head button.primary .fa-solid, .list-head .list-keep .fa-solid { right: var(--spacing-04); }
 .screen-head .door { margin-left: auto; align-self: center; }
 .screen-head .p-ask { margin-left: auto; align-self: center; font-size: 14px; line-height: 20px; letter-spacing: .16px; padding: var(--spacing-04) var(--spacing-05); }   /* the one ask before Publish, in the button's place (design audit b6), at body-01 (audit round two, e10) */
 .screen-head .p-ask strong { font-weight: 600; }
 .nl-ask .linkish { margin: 0; height: 24px; padding: 0 var(--spacing-02); }   /* the words stay clear of the buttons (audit round two, e10) */
-.head-action .fa-arrow-right { font-size: .85em; }
-.screen-head .lede { margin: 0; flex: 1; }
+.screen-head .lede { margin: 0 0 var(--spacing-03); flex: 1; }
 
 .empty { color: var(--muted); padding: var(--spacing-07); text-align: center; }
 
@@ -240,11 +252,9 @@ button.primary {
 }
 button.primary .fa-solid { position: absolute; right: var(--spacing-05); top: 50%; transform: translateY(-50%); margin: 0; font-size: 14px; }
 button.primary:not(:has(.fa-solid)) { padding-right: var(--spacing-05); }   /* no icon, no slot */
-button.primary:hover:not(:disabled) { background: var(--accent-hover); border-color: transparent; color: var(--text-on-color); }
+button.primary:hover:not(:disabled) { background: var(--button-primary-hover); border-color: transparent; color: var(--text-on-color); }
 button.primary:active:not(:disabled) { background: var(--accent-deep); }
 button.primary:disabled { background: var(--button-disabled); border-color: transparent; color: var(--text-on-color-disabled); }
-/* Door grammar off the screen head: the receipt's door and the post-send door are .door too. */
-.slim-door .fa-arrow-right { font-size: .85em; }
 
 /* Tags (Carbon's 24px pill, label-01 type), one colour per meaning: bare
    .badge = a grey fact ("Already live", "In a past issue", "Spotlight
@@ -261,8 +271,6 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .nl-table .badge { margin-top: var(--spacing-02); }
 .badge-dupe { background: var(--tag-background-yellow); color: var(--tag-color-yellow); }
 .badge-new { background: var(--tag-background-blue); color: var(--tag-color-blue); }
-.edit-link { color: var(--link-primary); }
-.edit-link .fa-solid { margin-right: var(--spacing-02); font-size: .9em; }
 /* The link ask, inside the fix panel: the panel draws the warning box. */
 .link-alert .alert-line { margin: 0; }
 .link-alert .alert-change { display: none; }
@@ -280,17 +288,6 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .sort-nav .sort-filter.is-alert:not(.is-active) { color: var(--amber); }
 .sort-nav .sort-filter.is-alert:not(.is-active):hover { color: var(--amber); border-bottom-color: var(--amber-mark); }
 .sort-nav .sort-filter.is-alert.is-active, .sort-nav .sort-filter.is-alert.is-active:hover:not(:disabled) { color: var(--amber); border-bottom-color: var(--amber-mark); }
-/* Type pills: Carbon's selectable tag, 32px, outlined; the picked one blue. */
-.type-word {
-  display: inline-flex; align-items: center; height: 32px; padding: 0 var(--spacing-04);
-  border: 1px solid var(--border-strong-01); border-radius: var(--radius-tag-lg);
-  background: var(--layer-02); color: var(--ink);
-  font: inherit; letter-spacing: .16px; cursor: pointer;
-}
-.type-word:hover:not(:disabled) { background: var(--layer-hover-01); color: var(--ink); border-color: var(--border-strong-01); }
-.type-word.is-picked { background: var(--tag-background-blue); border-color: var(--tag-background-blue); color: var(--tag-color-blue); }
-.type-word.is-picked:hover:not(:disabled) { background: var(--tag-background-blue); border-color: var(--tag-background-blue); color: var(--tag-color-blue); }
-.type-word.is-picked::before { content: "\f00c"; font-family: "Font Awesome 7 Free"; font-weight: 900; font-size: 11px; margin-right: var(--spacing-02); }
 .img-upload { display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; }
 .img-upload .media-add { margin-left: 0; }   /* the small Add media word (Kate, Sep 17), a ghost button */
 .img-thumb { width: 48px; height: 48px; object-fit: cover; border: 1px solid var(--line-in); flex: none; }   /* the attached picture, in view (design audit b8) */
@@ -301,7 +298,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .sort-body { margin-top: var(--spacing-03); }
 .sort-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 0; margin: 0 0 var(--spacing-05); border-bottom: 1px solid var(--line); }
 .sort-nav .sort-filter { flex: none; }
-.sort-group { font-weight: 600; margin: var(--spacing-01) 0 0; }
+.sort-group { font-weight: 600; margin: 0; }
 /* Undo sits under the section label. The row keeps its height when disabled so
    a fresh stack doesn't start the card higher and drop it on the first decision. */
 .undo-link {
@@ -320,7 +317,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .sort-filter:hover:not(.is-active) { border: 0; border-bottom: 2px solid var(--border-strong-01); background: none; color: var(--ink); }
 .sort-filter.is-active { color: var(--ink); font-weight: 600; background: none; border-bottom-color: var(--border-interactive); }
 .sort-filter.is-active:hover:not(:disabled) { background: none; color: var(--ink); border: 0; border-bottom: 2px solid var(--border-interactive); }   /* the base button hover would fill it (audit round two, e5) */
-.type-line { color: var(--muted); margin: var(--spacing-03) 0 0; }
+.type-line { color: var(--muted); margin: 0; }
 .type-line .type-label { color: var(--ink); }
 /* Quiet action words: Carbon's ghost button, the word in the link colour with
    a fill on hover; never wrap between icon and word. Skip/Use original are the
@@ -337,20 +334,17 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .linkish.trash-link:hover:not(:disabled), button.trash-link:hover:not(:disabled) { color: var(--button-danger-hover); }
 /* Finalize: rows as they will look on the Policy Exchange */
 .finalize-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-05); }
-.finalize-head .lede { margin-bottom: var(--spacing-03); }
 /* Finalize as a list and a card (Claude Design round two, Kate's pick Sep 16).
    The progress bar is Carbon's: 8px, square, on the accent layer. */
 .f-progress { height: 8px; border-radius: 0; background: var(--layer-accent-01); overflow: hidden; margin: calc(-1 * var(--spacing-02)) 0 var(--spacing-06); }
 .f-progress i { display: block; height: 100%; background: var(--interactive); border-radius: 0; }
 .f-split { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr); gap: var(--spacing-05); align-items: start; }
 @media (max-width: 900px) { .f-split { grid-template-columns: minmax(0, 1fr); } }
-.f-list { background: var(--layer); border: 1px solid var(--layer-line); border-radius: 0; overflow: hidden; }
 .f-group-head {
   display: flex; align-items: center; gap: var(--spacing-03); width: 100%; box-sizing: border-box; margin: 0; height: auto;
   padding: var(--spacing-03) var(--spacing-05) var(--spacing-02); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; background: none;
   font: inherit; font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600; color: var(--muted); text-align: left;
 }
-.f-list > .f-group-head:first-child { border-top: 0; }
 .f-group-head.is-fold { cursor: pointer; }
 .f-group-head.is-fold:hover:not(:disabled) { background: var(--row-hover); border-color: var(--line-in); color: var(--ink); }
 .f-group-count { margin-left: auto; font-weight: 600; letter-spacing: 0; }
@@ -364,17 +358,13 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .f-list-row.is-deleted .linkish { margin-left: auto; }
 .f-list-row .fa-check { color: var(--ok-mark); flex: none; margin-top: var(--spacing-01); }
 .f-card .type-line { margin: 0 0 var(--spacing-02); }
-.f-card .f-verify-actions { border-top: 1px solid var(--line-in); padding-top: var(--spacing-05); margin-top: var(--spacing-05); }
 .f-card .f-verify-actions .quiet-link { margin-left: auto; }
 .f-card .f-verify-actions .trash-link + .primary { margin-left: auto; }
 .f-diff-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-04); margin: var(--spacing-03) 0 0; }
 .f-diff-box { border: 1px solid var(--line-in); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); background: var(--layer-02); }
 .f-diff-box.is-after { background: var(--tint); border-color: var(--notification-info-border); }
-.f-diff-box .f-old, .f-diff-box .f-blurb-text { margin: 0; }
-.f-diff-box .f-old { color: var(--ink); }
+.f-diff-box .f-blurb-text, .f-original .f-blurb-text, .sort-card .f-blurb-text { margin: 0; }
 .f-original { border: 1px solid var(--line-in); border-left: 3px solid var(--border-strong-01); background: var(--layer-02); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); margin-top: var(--spacing-03); }
-.f-original .f-diff-label { color: var(--muted); }
-.f-original .f-blurb-text { margin: 0; }
 .f-pane-empty, .sort-pane-empty { border: 1px dashed var(--border-strong-01); border-radius: 0; padding: var(--spacing-08) var(--spacing-05); text-align: center; color: var(--muted); }
 /* Team trial: clicking Publish runs a mock, a ghosted "forthcoming" shadow
    alert during the posting beat, then the normal success receipt. */
@@ -405,15 +395,10 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .f-check-title { margin: 0 0 var(--spacing-01); font-size: 16px; line-height: 22px; font-weight: 600; }
 .f-check-source { margin: 0 0 var(--spacing-04); color: var(--muted); }
 .f-diff-label { margin: 0 0 var(--spacing-01); font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
-.f-old { margin: 0 0 var(--spacing-03); color: var(--muted); max-width: 60rem; }
+.f-old { margin: 0; color: var(--ink); max-width: 60rem; }
 .f-old .diff-del { text-decoration: line-through; color: var(--amber); }
 .f-blurb-text .diff-add { background: var(--ok-bg); border-radius: 0; padding: 0 2px; }
-.f-verify-actions { display: flex; gap: var(--spacing-03); align-items: center; margin: var(--spacing-03) 0 var(--spacing-01); }
-
-/* The secondary beside a primary: Carbon's tertiary, the base button. */
-.btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
-.btn-outline:hover:not(:disabled) { background: var(--accent); color: var(--text-on-color); }
-.f-verify-actions .linkish .fa-solid, .trash-link .fa-solid { margin-right: var(--spacing-02); font-size: .9em; }
+.f-verify-actions { display: flex; gap: var(--spacing-03); align-items: center; margin: var(--spacing-05) 0 var(--spacing-01); border-top: 1px solid var(--line-in); padding-top: var(--spacing-05); }
 .rewrite-note { margin: 0 0 var(--spacing-03); color: var(--amber); }
 .f-edit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: var(--spacing-03) var(--spacing-04); }
 .f-edit-grid label { margin: 0; }
@@ -437,7 +422,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .p-fate-bar { display: flex; gap: 2px; height: 8px; border-radius: 0; overflow: hidden; background: var(--layer-accent-01); }
 .p-seg { display: block; min-width: 6px; }
 .p-seg-adding { background: var(--accent); }
-.p-seg-held { background: var(--accent-soft); }
+.p-seg-held { background: var(--accent-30); }
 .p-seg-fix { background: var(--tag-background-yellow); }
 .p-seg-live { background: var(--border-strong-01); }
 .p-legend { display: flex; flex-wrap: wrap; gap: var(--spacing-02) var(--spacing-05); margin-top: var(--spacing-03); }
@@ -447,15 +432,13 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .p-dot { width: 8px; height: 8px; border-radius: 0; flex: none; }
 .publish-table th.p-fate, .publish-table td.p-fate { width: 9.5rem; font-weight: 600; }
 .publish-table tr.p-adding td.p-fate { color: var(--link-primary); }
-.publish-table tr.p-held td.p-fate { color: var(--muted); }
-.publish-table tr.p-skip td { color: var(--muted); }
 .publish-table tr.p-skip td.p-fate { font-weight: 400; }
 .publish-table .p-fate-fix { color: var(--amber); font-weight: 600; text-decoration: underline; }
 .table-scroll { overflow-x: auto; }
 
 /* Home screen */
 /* Home breathes a little more than the pipeline screens (Kate, Sep 15: "a little spacing overall"). */
-.home-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--spacing-07); align-items: start; margin-top: var(--spacing-07); }
+.home-grid { margin-top: var(--spacing-07); }
 .home-form.card { padding: var(--spacing-06); }
 .home-form h2 { font-size: 20px; line-height: 28px; font-weight: 600; margin: 0 0 var(--spacing-02); }   /* heading-03 */
 
@@ -471,9 +454,15 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 }
 a.stat, button.stat { cursor: pointer; }
 a.stat:hover, button.stat:hover:not(:disabled) { background: var(--highlight); border-color: transparent; color: var(--ink); }
-.stat > .fa-solid { color: var(--accent); font-size: 16px; }   /* the leading icon; the label's cue glyph is styled at the end of the file */
-.stat-label { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--ink); }
+.stat > .fa-solid { color: var(--accent); font-size: 16px; }   /* the leading icon */
+/* The label says what the tile does (e23): its words, then a cue glyph at the
+   right in the secondary icon colour; the queue's chevron turns while its fold is open. */
+.stat-label { display: flex; align-items: center; gap: var(--spacing-03); align-self: stretch; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--ink); }
+.stat-label .fa-solid { margin-left: auto; color: var(--icon-secondary); font-size: 12px; transition: transform var(--duration-fast-02) var(--ease-standard); }
+.stat[aria-expanded="true"] .stat-label .fa-chevron-down { transform: rotate(180deg); }
 .stat-value { font-size: 28px; line-height: 36px; font-weight: 400; color: var(--accent-deep); }   /* heading-04 */
+/* A tile with no value yet, none to show, or a failed read says so quietly, in the label's size, in the value's slot (d5). */
+.stat-value.is-empty { font-size: 12px; letter-spacing: .32px; font-weight: 400; color: var(--muted); }
 .stat-value small { font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 400; color: var(--muted); }
 /* The queue count: a round tag in the accent. */
 .queue-badge {
@@ -493,10 +482,6 @@ a.stat:hover, button.stat:hover:not(:disabled) { background: var(--highlight); b
 #screen-issue .table-scroll { margin-top: var(--spacing-04); }
 .quick-panel { margin-top: var(--spacing-06); border: 1px solid var(--layer-line);   /* a white box with a hairline; dashed is for drop zones (audit round two, e22) */ border-radius: 0; background: var(--layer-02); padding: var(--spacing-05) var(--spacing-06) var(--spacing-06); }
 .quick-panel h3 { font-size: 16px; line-height: 22px; font-weight: 600; margin: 0 0 var(--spacing-04); }
-
-@media (max-width: 720px) {
-  .home-grid { grid-template-columns: 1fr; }
-}
 
 /* Queue table (bottom of Home) */
 .item-title { font-weight: 400; color: var(--ink); }
@@ -561,6 +546,10 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 
 /* After a single submit: the form gives way to a confirmation + Submit another. */
 .submit-done .done-line { color: var(--ok); margin: 0 0 var(--spacing-02); }
+/* The done box while the newsletter stamp is in flight, and when it failed (e20). */
+.submit-done .done-line.is-busy { display: flex; align-items: center; gap: var(--spacing-02); color: var(--muted); }
+.submit-done .done-line.is-error { color: var(--err); }
+.submit-done .done-line.is-error .linkish { height: 24px; }
 .submit-done button { margin-top: var(--spacing-04); }
 
 /* Bulk review: rows settle in once after the file splits (not on remove/peek). */
@@ -588,29 +577,8 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 /* Sort decisions move no pixels (Kate, Sep 9). The decided card is replaced at
    once; the sliver on the left is what records it. No exit animation. */
 
-/* Sliding-dots loader (Kate's pick, Sep 1): six dots slide across a track with
-   staggered delays, on Carbon's blue ramp. Mini = inline size. */
-.dots-loader { position: relative; height: var(--dl-s, 20px); width: var(--dl-w, 250px); margin: var(--spacing-06) auto; }
-.dots-loader .dot {
-  position: absolute; height: var(--dl-s, 20px); width: var(--dl-s, 20px);
-  border-radius: var(--radius-round); border: 2px solid var(--background); box-sizing: border-box;
-  animation: dots-slide 3s ease-in-out infinite;
-}
-.dots-loader .dot:nth-child(1) { background: var(--accent-30); animation-delay: .5s; }
-.dots-loader .dot:nth-child(2) { background: var(--accent-40); animation-delay: .4s; }
-.dots-loader .dot:nth-child(3) { background: var(--accent-50); animation-delay: .3s; }
-.dots-loader .dot:nth-child(4) { background: var(--accent-60); animation-delay: .2s; }
-.dots-loader .dot:nth-child(5) { background: var(--accent-70); animation-delay: .1s; }
-.dots-loader .dot:nth-child(6) { background: var(--accent-80); animation-delay: 0s; }
-@keyframes dots-slide {
-  15% { transform: translateX(0); }
-  45%, 65% { transform: translateX(calc(var(--dl-w, 250px) - var(--dl-s, 20px))); }
-  95% { transform: translateX(0); }
-}
-.dots-mini { --dl-w: 90px; --dl-s: 10px; display: inline-block; vertical-align: middle; margin: 0 var(--spacing-03) 0 0; }
-/* Busy status labels get trailing dots that type themselves. */
-.dots-text::after { content: ""; animation: dots-text 3s infinite; }
-@keyframes dots-text { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }
+/* The sliding-dots loader itself is in css/sidebar.css, the one stylesheet
+   every page loads; the desk only sizes it where it sits. */
 .status .dots-loader { margin: 0 var(--spacing-03) 0 0; }   /* inline in the one-line slot (audit round two, e7) */
 
 @media (prefers-reduced-motion: reduce) {
@@ -627,32 +595,33 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
    greyed with an Undo, because the rows are dense and a mis-click is cheap. */
 .queue-actions { text-align: right; white-space: nowrap; }
 .queue-actions .trash-link { height: 24px; padding: 0 var(--spacing-02); margin: 0; }
+/* An in-flight row action's mark: the mini dots where the button was, keyed so focus comes back to the row (e17). */
+.queue-wait { display: inline-flex; align-items: center; height: 24px; }
+.queue-wait:focus { outline: none; }
 .queue-row.is-deleted td { opacity: .5; }
 /* Sort as a list (every section tab): one Keep for the page, rows sink when decided. */
 .list-head { display: flex; align-items: center; gap: var(--spacing-05); margin: 0 0 var(--spacing-02); }
-.list-head .sort-group { margin: 0; }
 .list-head .undo-link { margin: 0; }
-.list-head .list-keep { margin-left: auto; height: 32px; padding: 0 var(--spacing-09) 0 var(--spacing-04); white-space: nowrap; flex: none; }
-.list-head .list-keep .fa-solid { right: var(--spacing-04); }
+.list-head .list-keep { white-space: nowrap; flex: none; }
 .list-hint { margin: 0 0 var(--spacing-04); }
 /* Sort as a list and a card (Claude Design round two, Kate's pick C, Sep 16):
    the rows down the left, the chosen row's card on the right, kept in view
    while the list scrolls. Finalize's list and card, with Sort's fix panel. */
 .sort-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: var(--spacing-05); align-items: start; }
-.sort-rows { background: var(--layer); border: 1px solid var(--layer-line); border-radius: 0; overflow: hidden; }
+.sort-rows, .f-list { background: var(--layer); border: 1px solid var(--layer-line); border-radius: 0; overflow: hidden; }
 .sort-row, .f-list-row {
   display: flex; align-items: flex-start; gap: var(--spacing-03); width: 100%; height: auto; box-sizing: border-box; text-align: left;
   padding: var(--spacing-04) var(--spacing-05); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; background: transparent;
   font: inherit; letter-spacing: .16px; color: var(--ink); cursor: pointer;
   transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
-.sort-rows > :first-child { border-top: 0; }
+.sort-rows > :first-child, .f-list > :first-child { border-top: 0; }
 .sort-row:hover:not(:disabled), .f-list-row:hover:not(:disabled) { border-color: var(--line-in); background: var(--row-hover); color: var(--ink); }
 .sort-row.is-selected, .f-list-row.is-selected { background-color: var(--selected); color: var(--accent-deep); box-shadow: inset 3px 0 0 var(--border-interactive); }
 .sort-row.is-selected:hover:not(:disabled), .f-list-row.is-selected:hover:not(:disabled) { background: var(--selected); color: var(--accent-deep); }   /* the chosen row keeps its tint under the mouse */
 .sort-row-text, .f-row-text { display: flex; flex-direction: column; gap: var(--spacing-01); min-width: 0; flex: 1 1 auto; }
 .sort-row-badges { display: flex; flex-wrap: wrap; gap: var(--spacing-02); margin-bottom: var(--spacing-01); }
-.sort-row-badges .badge { margin-right: 0; }
+.sort-row-badges .badge, .sort-card-top .badge { margin-right: 0; }
 .sort-row-title, .f-row-title { font-size: 14px; line-height: 18px; font-weight: 400; }
 .sort-row-meta, .f-row-type { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
 /* The one alert on a Needs a fix row: the warning triangle before the title. */
@@ -668,13 +637,8 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .sort-card.is-more::after, .f-card.is-more::after { content: ""; position: sticky; bottom: calc(-1 * var(--spacing-05)); display: block; height: 40px; margin: -40px 0 calc(-1 * var(--spacing-05)); flex: none; background: linear-gradient(transparent, var(--layer)); pointer-events: none; }
 .sort-card h3 { margin: 0; font-size: 16px; line-height: 22px; font-weight: 600; }   /* heading-02 */
 .sort-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02) var(--spacing-04); }
-.sort-card-top .type-line { margin: 0; }
-.sort-card-top .badge { margin-right: 0; }
 .sort-card-meta { margin: calc(-1 * var(--spacing-02)) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
-.sort-card .f-blurb-text { margin: 0; }
 .sort-card .f-blurb-text.is-quiet { color: var(--muted); }
-.sort-card .item-note, .sort-card .card-note { margin: 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
-.sort-card-source { margin: 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
 .sort-card-acts { display: flex; align-items: center; gap: var(--spacing-05); border-top: 1px solid var(--line-in); padding-top: var(--spacing-05); margin-top: var(--spacing-03); }
 .sort-card-right { margin-left: auto; display: flex; align-items: center; gap: var(--spacing-05); }
 .sort-card input { background: var(--field-01); }   /* a field on a white card is grey (Carbon's layer model) */
@@ -708,10 +672,11 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .receipt-download { display: inline-flex; margin: var(--spacing-04) auto 0; color: var(--muted); }
 .receipt-download:hover:not(:disabled) { border: none; color: var(--link-primary); text-decoration: underline; }
 
-/* Sort's quiet "couldn't find it" notes. Deliberately NOT the warning note:
-   that note is a demand (verify the link), these are information; they never
-   block Keep (Kate, Sep 9). */
-.card-note { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: var(--spacing-02) 0 0; }
+/* The Sort card's quiet lines, all label-01: the item's note, the "couldn't find
+   it" notes and the source line. Deliberately NOT the warning note: that note is
+   a demand (verify the link), these are information; they never block Keep
+   (Kate, Sep 9). */
+.item-note, .card-note, .sort-card-source { margin: 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
 .card-note .fa-circle-question { margin-right: var(--spacing-02); color: var(--icon-secondary); }
 
 /* The bulk upload progress popup (Kate, Sep 10: she was clicking around
@@ -726,36 +691,3 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .busy-track { height: 8px; border-radius: 0; background: var(--layer-accent-01); overflow: hidden; margin: var(--spacing-05) 0 var(--spacing-04); }
 .busy-fill { height: 100%; border-radius: 0; background: var(--interactive); transition: width var(--duration-fast-02) var(--ease-standard); }
 .busy-note { color: var(--muted); margin: 0; }
-
-/* Front door, audit round two (Sep 17) */
-/* The stat tiles say what they do (e23): a cue glyph at the label's right in the
-   secondary icon colour; the queue's chevron turns while its fold is open. */
-.stat-label { display: flex; align-items: center; gap: var(--spacing-03); align-self: stretch; }
-.stat-label .fa-solid { margin-left: auto; color: var(--icon-secondary); font-size: 12px; transition: transform var(--duration-fast-02) var(--ease-standard); }
-.stat[aria-expanded="true"] .stat-label .fa-chevron-down { transform: rotate(180deg); }
-/* A tile with no value yet, none to show, or a failed read says so quietly, in the label's size, in the value's slot (d5). */
-.stat-value.is-empty { font-size: 12px; letter-spacing: .32px; font-weight: 400; color: var(--muted); }
-/* The description's hint is a helper line under the field, not part of the label (f8). */
-.submit-form .sf-help { margin: var(--spacing-02) 0 0; }
-/* The bulk door's opener: the queue fold's chevron, turned when open; no native marker. */
-.bulk-door summary::-webkit-details-marker { display: none; }
-.bulk-door summary .fa-chevron-down { width: 12px; text-align: center; font-size: 11px; color: var(--icon-secondary); transition: transform var(--duration-fast-02) var(--ease-standard); }
-.bulk-door[open] summary .fa-chevron-down { transform: rotate(180deg); }
-.bulk-door summary:hover { color: var(--ink); }
-.bulk-door summary:hover .fa-chevron-down { color: var(--icon-primary); }
-.bulk-door .bulk-drop { margin-top: var(--spacing-04); }
-/* A file dragged over the intake card lights the door, whether it is open or shut; the zone reads its file's name while a split runs (e22, f9). */
-.bulk-door.is-drag summary { color: var(--accent); }
-.bulk-door.is-drag .bulk-drop { border-color: var(--accent); background: var(--tint); }
-.bulk-drop.is-busy { cursor: default; color: var(--text-helper); }
-.bulk-table .field-error { margin-top: var(--spacing-01); }
-/* The one ask before a link already in the queue goes in again (e19): the warning note where the primary was. */
-.submit-form .sf-ask { margin: var(--spacing-05) 0 0; font-size: 14px; line-height: 20px; letter-spacing: .16px; padding: var(--spacing-04) var(--spacing-05); }
-.submit-form .sf-ask:focus { outline: 2px solid var(--focus); outline-offset: -2px; }
-/* The done box while the newsletter stamp is in flight, and when it failed (e20). */
-.submit-done .done-line.is-busy { display: flex; align-items: center; gap: var(--spacing-02); color: var(--muted); }
-.submit-done .done-line.is-error { color: var(--err); }
-.submit-done .done-line.is-error .linkish { height: 24px; }
-/* An in-flight row action's mark: the mini dots where the button was, keyed so focus comes back to the row (e17). */
-.queue-wait { display: inline-flex; align-items: center; height: 24px; }
-.queue-wait:focus { outline: none; }
