@@ -51,7 +51,7 @@
 "from [name]"
 "Needs a type" · "Type" · "Check the link" · "Possible duplicate" (the heads in the fix panel on Sort's card, Sep 16)
 "Set a type first" · "Check the link first" (the tooltip on Sort's Keep while it is locked)
-"paste the right link"
+"New link" over the field, "https://" as its example (Sort's link fix, audit round two)
 "Filed by the desk from the link/description — check it."
 "Rewrite the descriptions that need an ERC voice, then check each one: Keep saves the rewrite, Use original leaves the text as it was. Click any row on the left to see it, edit it, or delete it. Then go to Publish." (Finalize's info panel, Sep 16)
 "[N] of [M] kept items need an ERC-voice description" / "[D] of [M] rewrites checked" (Finalize's progress line, Sep 16)
@@ -65,7 +65,7 @@
 "Time"
 "Location"
 "Original" / "Before" / "After · ERC voice" / "New description, written from the original text" (Finalize's card)
-"Keep all remaining ([N])" (under Finalize's list)
+"Keep the rest ([N])" (Finalize's head while rewrites wait to be checked; the same words and look as Sort since audit round two)
 "Every rewrite is checked." / "Nothing needs a rewrite." (Finalize's empty card, with "Go to Publish")
 "Everything here was checked against the live Exchange on arrival. Publish sends the Adding group to the site; newsletter-only items stay held for the issue, and anything already live is skipped."
 "[N] adding" / "[N] held for the newsletter" / "[N] needs a fix" or "[N] need a fix" / "Already live" (Publish's legend, Sep 16; Already live never carries a number)
@@ -142,8 +142,8 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 
 # Buttons
 
-"Submit"
-"Submit another"
+"Add to the queue" (the intake form's primary; "Submit" until audit round two)
+"Add another" ("Submit another" until audit round two)
 "Quick add" / "Close quick add" (the Next newsletter page)
 "Remove" (the Next newsletter page's table; takes the item out of the issue, it stays in the queue)
 "Copy" / "Copied" / "Can't copy" (the sidebar's copy icons, as titles)
@@ -397,7 +397,7 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Everything here is kept unless you drop it. Delete what does not belong, Skip what you are not sure about, then Keep the rest."
 "You parked these. Keep what is ready now, Delete what is not, or leave it here." (the Skipped pill's hint, Sep 15)
 "Nothing left in this section. " · "Nothing in this section. " then "Next: [section]" or "Go to Finalize" (the dashed pane in the card's place, Sep 16)
-"No [fields] yet. Add it in Finalize." · "No [fields] yet. The desk couldn't read the page. Add them in Finalize." · "The reader wasn't sure about this one. Check what it filled in: [fields]" · "The reader wasn't sure about this one. Check its fields." (the quiet notes on Sort's card)
+"No [fields] yet. Add it with Edit." · "No [fields] yet. The desk couldn't read the page. Add them with Edit." · "The reader wasn't sure about this one. Check what it filled in: [fields]" · "The reader wasn't sure about this one. Check its fields." (the quiet notes on Sort's card)
 "No description. A headline can go without one." · "No description yet."
 "No type" · "Link not opened" (the tooltip on a Needs a fix row's amber triangle)
 "Deleted" · "Skipped" · "Kept" (decided rows at the bottom of a Sort list, each with "Undo")
@@ -408,7 +408,7 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Deleted" and "Undo" (Finalize and Send to Newsletter, a deleted row kept listed for the visit)
 "Removed" and "Undo" (Next newsletter, a removed row kept listed for the visit)
 "Pick more" (Send to Newsletter, after a send)
-"Kept [N] rewrites. Undo" (Finalize, after Keep all remaining)
+"Kept [N] rewrites. Undo" (Finalize, after Keep the rest)
 "Publish [N] to the live Exchange? Confirm · Cancel" (Publish, the one ask)
 "Rewriting [N] descriptions" (Finalize, under the dots)
 "[N] changes not saved yet. Still trying. Retry now" (the status line after two failed saves)
@@ -422,3 +422,29 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Show the text" / "Hide the text" (the bulk review's chevron)
 "Use a PNG, JPG, GIF, WebP or PDF." and "The desk couldn't upload that file (server error [N]). Try again."
 "Keys: up and down move through the list, K keeps, S skips, D deletes, U undoes the last decision." (Sort's View info)
+
+## Added Sep 17, 2026 (audit round two)
+"Kept: [title]" · "Skipped: [title]" · "Deleted: [title]" · "Kept [N]" (the status line after a decision on Sort)
+"Undid: kept [title]" · "Undid: skipped [title]" · "Undid: deleted [title]" · "Undid: kept [N]" · "Undid: the edit to [title]" · "Undid: the type on [title]" · "Undid: the link check on [title]" (the status line after Undo last or a row's Undo)
+"[N] new items couldn't be read yet. Try again" (the status line when the read before Sort fails)
+"Show details for [title]" · "Hide details for [title]" (Publish's row openers, read aloud)
+"Publish [N] to the live Exchange? Confirm · Cancel", the count and "live" in 600
+"[N] picked" beside "Send [N] to the [date] issue" (Send to Newsletter's foot); "Pick at least one item" · "Pick an issue" (its tooltip while locked)
+"(opens in a new tab)" (read aloud after "Verify link" and "Open source")
+"Description" with "Paste whatever you have: dates, abstract, the whole announcement. Headlines can skip this." as the line under it
+"Already in the queue: [title], [Mon D]. Add anyway · Cancel" (the intake form, a link already waiting)
+"Adding it to the [Mon D] newsletter" then "In the [Mon D] newsletter, and in the queue for Sort." (Quick add, inside its panel); "No issue date is scheduled, so it is in the queue only." · "It is in the queue, but the desk couldn't find it to stamp it for the newsletter." with "Try again"
+"Couldn't load" (Home's tiles after a failed first read, with "Try again" on the status line)
+"No link" (a bulk row that can never go without one) · "Reading [file name]" (the drop zone while a file splits) · "Retry [N]"
+"ERC event" · "New research" · "Event" · "Opportunity" · "Headline" (the type names on screen; the sheet keeps its own labels)
+"Quick add puts an item in this issue and in the queue for Sort at once. Remove takes an item out of this issue; it stays in the queue. Not sorted yet marks an item Sort has not had yet." (Next newsletter's info panel)
+"Pick the issue and pull what the desk staged." · "Put the issue in order." · "Check the issue and change anything in place." · "Copy the issue into Outlook, then archive it." (the builder's step ledes)
+"Pick an issue and pull from the desk first." (under the builder's steps, a locked step pressed)
+"Couldn't load the desk's issues." · "Couldn't reach the desk." with "Retry" (the builder's Review)
+"Not in this issue: [sections]." (the builder's Outline)
+"Preview at [N] percent, as it lands in Outlook. Click any text to edit it." (the builder's Preview & Edit)
+"[Title], [N] of [M]" · "Moved [Title] to [N] of [M]" (the builder's reorder rows, read aloud)
+"Nothing to export yet. Pull from the desk on the Review step first." · "Copied." · "Downloaded."
+"Replace the archived [date] issue? Confirm · Cancel" · "Saved to the archive." · "Saved to the archive, replacing the earlier save." · "Open Past newsletters" · "Start the next issue"
+"Restore the sent [date] issue ([N] items)?" (the builder's banner for an issue already saved to the archive)
+"Pick the issue first." · "Pick the issue on Review first."

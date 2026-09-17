@@ -87,27 +87,45 @@ template and the public Exchange site.
   builder's export trio), 16px side padding, the label left. A primary is the
   blue fill with its icon in a 64px right slot (48px on the small size); with no
   icon the slot goes. Everything beside a primary is Carbon's tertiary: the blue
-  outline that fills on hover (Cancel, the doors, Quick add). The
-  builder's Back and archive buttons are Carbon's secondary, the dark grey fill.
+  outline that fills on hover (Cancel, the doors, Quick add, the builder's Next
+  and Start the next issue). The builder's Back and archive buttons are
+  Carbon's secondary, the dark grey fill. A Save inside an open card whose
+  edits are already live is a ghost word (audit round two, Sep 17).
   Quiet words (Edit, Delete, Skip, Undo, Cancel in a panel) are ghost buttons:
   32px, a `--background-hover` fill on hover, no underline. No press scale.
 - **Fields.** 40px, on the field surface, a `--border-strong-01` line under them
   and nothing else; the focus ring replaces the line. Labels are label-01 above.
 - **Tabs.** Sort's sections are Carbon tabs in one row under a hairline: 40px,
-  quiet text, a 2px `--border-interactive` bar under the lit one, a
-  `--border-strong-01` bar on hover; the row scrolls sideways, never wraps.
+  quiet text, a 2px `--border-interactive` bar under the lit one (it keeps that
+  look under the mouse), a `--border-strong-01` bar on hover; the row scrolls
+  sideways, never wraps. They are read as tabs: one tab stop, Left and Right
+  move between them, Home and End jump (audit round two, Sep 17).
+- **Folds.** Every fold opens from a chevron on its left, pointing right when
+  shut and down when open: Home's queue, Finalize's No rewrite needed, Send to
+  Newsletter's groups, Already sent and Past items. A chevron means a fold and
+  nothing else (audit round two, Sep 17).
+- **Sticky foot.** Send to Newsletter's Send and its "N picked" ride a foot at
+  the bottom of the window, on the page ground under a hairline, while the
+  groups scroll (audit round two, Sep 17).
 - **Notes.** Every panel that speaks is Carbon's inline notification: a
   `--notification-*-background`, a 1px `-border`, a 3px left bar in the
   `--support-*` colour, the matching icon, `--text-primary` words. Info for the
   View info panel and a plain type change; warning for Needs a fix, the link ask,
-  Send early? and the builder's restore banner; success and error for the
-  builder's upload and export results.
+  Send early?, the builder's restore banner and its Replace the archived issue?
+  ask; success and error for the builder's upload, pull, save and export
+  results. An error note that can be retried carries a ghost Retry, and a
+  success that ends a task stays (Saved to the archive, with Open Past
+  newsletters), never a toast that fades (audit round two, Sep 17).
 - **Focus.** `outline: 2px solid var(--focus); outline-offset: -2px`, no halo;
   the primary adds a 1px inset white ring so the ring shows on its own fill.
 - **Steps.** The builder's wizard is Carbon's progress indicator: four equal
   steps under a hairline, a 20px circle at each one's left; reached steps turn
   the line blue, the current step fills its circle and goes 600, a finished one
-  shows a check.
+  shows a check and keeps it when you go back. The whole step is the target,
+  40px tall. A step that needs a pulled issue is drawn in `--text-disabled`
+  with a disabled circle, and pressing it says why on the line right under the
+  steps. A date alone opens nothing: a step opens once a pull brought items
+  (audit round two, Sep 17).
 - Every page's first line (a screen title, Home's stat tiles, the builder's
   title, Past newsletters' title) sits 44px from the top of the window; on the
   desk the status line keeps its one-line slot above it, so a message never
@@ -151,7 +169,7 @@ look, everywhere it appears.
 | **Keep** | ✓ `fa-check` | the primary: blue fill, the check in its right slot (the ONE per card) | accept into the pipeline / accept the rewrite |
 | **Skip** | none | muted ghost button | park it (status stays `circleback` underneath); it waits under Sort's Skipped pill with Keep and Delete (Sep 15) |
 | **Delete** | `fa-trash-can` | red ghost button | trash the ITEM for good (any screen, any time); the row stays listed greyed with Undo for the visit on Sort, the queue, Finalize and Send to Newsletter (design audit, Sep 17) |
-| **Edit** | `fa-pen` | blue ghost button | inline edit, persists on Save |
+| **Edit** | `fa-pen` | blue ghost button | inline edit, persists on Save. One form on Sort and Finalize (audit round two, Sep 17): the fields the type uses, then Link and Media, on the grey edit box; the description opens with the original text when there is no rewrite yet; any way out of an edited form holds with "Save or cancel this edit first." |
 | **Use original** | `fa-rotate-left` | muted ghost button | reject the rewrite, keep the Sheet text |
 | **Remove** | `fa-trash-can` | red ghost button | take OUT of the newsletter issue (returns to the pool); shares Delete's icon by Kate's explicit pick; on Next newsletter and in the builder the row stays listed with Undo (Sep 17) |
 | **Verify link ↗ → Confirm / Change** | `fa-triangle-exclamation` | warning note, one ask | open the source, then stamp it good or paste a new link |
@@ -162,8 +180,8 @@ look, everywhere it appears.
 | Door buttons (Go to Finalize/Publish, Send to Newsletter, the receipt's door) | → `fa-arrow-right` | Carbon's tertiary button with the arrow in its right slot (Sep 15, option A; square since Sep 17), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
 | **Sidebar items** (ERC Content Desk; Policy Exchange: Policy Exchange, Share an item, Listserv sign-up; Newsletter: Next newsletter, Newsletter builder, Past newsletters; Desk work: Sort, Finalize, Publish to Exchange, Send to Newsletter) | one FA glyph per group heading (`fa-globe`, `fa-envelope-open-text`, `fa-layer-group`), none on the items; the Desk work heading adds a chevron | 32px indented rows in the sidebar, the lit one on the selected layer with a 3px blue bar; the three hand-outs carry a small `fa-copy` icon on the right; Sort carries the queue count | every way around the desk (Kate, Sep 16). Pipeline items open the pipeline in its own window from the front door (`/#sort`, Sep 15) and switch in place inside it; outside pages open a new tab; on the builder's pages every desk page is a plain link (the pipeline still opens its window; the desk, Next newsletter at `/#issue` and the builder's own pages open in place); the copy icon hands over one sentence with the link and turns into a check for a moment |
 | **Show the menu / Hide the menu** | `fa-bars` / `fa-xmark` | ghost icon button on the 48px strip / the same on the same spot in the sidebar's top row | Desk work screens only: bring the sidebar back in place, tuck it away again (Sep 16) |
-| **Keep the rest (N)** | ✓ `fa-check` | the small primary, right of a Sort section's head | keep every listed row that has a real type and a checked link (Sep 11); one row at a time is Keep on its card (Sep 16). Keys on Sort (Sep 17): up and down move, K keeps, S skips, D deletes, U undoes |
-| **Publish N to the Exchange → Confirm / Cancel** | `fa-triangle-exclamation` on the ask | the primary, then one warning note in its place | the one ask before the append-only write to the public site (design audit b6, Sep 17); Keep all remaining on Finalize gets "Kept N rewrites. Undo" instead of an ask |
+| **Keep the rest (N)** | ✓ `fa-check` | the small primary, right of a Sort section's head, and right of Finalize's head while rewrites wait to be checked | keep every listed row that has a real type and a checked link (Sep 11); on Finalize, keep every rewrite still to check (one name for both since audit round two); one row at a time is Keep on its card (Sep 16). Keys on Sort (Sep 17): up and down move, K keeps, S skips, D deletes, U undoes. A decision says itself in the status line ("Kept: title") and the next card's title takes focus; Undo last says what it undid |
+| **Publish N to the Exchange → Confirm / Cancel** | `fa-triangle-exclamation` on the ask | the primary, then one warning note in its place | the one ask before the append-only write to the public site (design audit b6, Sep 17), at body-01 with the count and "live" in 600; Keep the rest on Finalize gets "Kept N rewrites. Undo" instead of an ask |
 
 Sort is one section at a time (Sep 11 option A; Sep 15 the card stream and the
 stacked All view went), drawn as a list and a card (Claude Design round two,
@@ -173,7 +191,7 @@ screen lands on the first one that holds anything, Needs a fix first. There is
 no All. Under the pills: the section's name, Undo last and Keep the rest, one
 hint, then the list on the left and the card on the right (1 : 1.25). A list
 row is the title with authors or source · date, plus a New badge on a row that
-came in today; the chosen row sits on the selected layer with a chevron. The card stays in
+came in today; the chosen row sits on the selected layer with its 3px bar (the chevron went in audit round two: a chevron means a fold). The card stays in
 view while the list scrolls: the type line with Change and the badges on top (as
 on Finalize's card), the title, the meta line, the description, notes, Open
 source · from whom, then Edit · Delete far left and Skip · Keep right. A
