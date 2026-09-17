@@ -1,8 +1,8 @@
 /**
- * Link safety. /submit is public, so a submitted link is untrusted input: it
- * reaches the desk, the newsletter HTML, and the public Exchange. Only http(s)
- * URLs are ever treated as links; everything else is dropped rather than
- * rendered as a clickable control.
+ * Link safety. The public share page takes submissions from anyone, so a
+ * submitted link is untrusted input: it reaches the desk, the newsletter HTML
+ * and the public Exchange. Only http(s) URLs are ever treated as links;
+ * everything else is dropped rather than rendered as a clickable control.
  */
 const SAFE_PROTOCOLS = new Set(['http:', 'https:']);
 

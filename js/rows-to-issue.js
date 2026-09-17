@@ -4,9 +4,13 @@
  * The builder's template renders sections of items whose `fields` are named
  * title/url/summary/etc. The hub CSV names the same things headline/link/blurb.
  * This module is the seam between those two vocabularies.
+ *
+ * The issue is built from the builder's own registry, so the two can never
+ * disagree about which sections exist and the pull can never drop a row that
+ * maps to one side's missing section.
  */
 
-import { createEmptyIssue } from './model.js';
+import { createEmptyIssue } from '../builder/js/model.js';
 import { NEWSLETTER_MAP } from './schema.js';
 
 const MONTHS = [
@@ -50,8 +54,8 @@ export function defaultSection(row) {
   return NEWSLETTER_MAP[`${row.type}|${row.subtype}`]?.[0] ?? '';
 }
 
-/** The group inside a section — only meaningful when the section fits the type. */
-export function groupFor(row, sectionKey) {
+/** The group inside a section: only meaningful when the section fits the type. */
+function groupFor(row, sectionKey) {
   const entry = NEWSLETTER_MAP[`${row.type}|${row.subtype}`];
   if (entry && entry[0] === sectionKey) return entry[1];
   if (sectionKey === 'spotlight') {
@@ -61,40 +65,28 @@ export function groupFor(row, sectionKey) {
 }
 
 /**
- * Build an issue from explicit picks. picks: [{ id, sectionKey }] — the Build
- * screen's checkboxes plus any "move to…" overrides. Unpicked rows never
- * appear; that is the whole point of v2's pick-based build.
+ * Everything stamped for an issue, as the builder-shaped issue the pull door
+ * serves. An unmappable row (untyped but stamped, rare) lands in Headlines
+ * rather than vanishing: visible and movable beats silently missing.
  */
-export function issueFromPicks(rows, picks, { date, intro } = {}) {
-  const byId = new Map(rows.map(r => [r.id, r]));
+export function issueForPull(rows, issueDate) {
   const issue = createEmptyIssue();
-  issue.date = date ?? '';
-  issue.intro = intro ?? '';
-  for (const pick of picks ?? []) {
-    const row = byId.get(pick.id);
-    const section = issue.sections[pick.sectionKey];
-    if (!row || !section) continue;
+  issue.date = issueDate ?? '';
+  for (const row of rows) {
+    if (String(row.newsletter_issue ?? '') !== issueDate) continue;
+    const key = defaultSection(row) || 'headlines';
+    const section = issue.sections[key];
+    if (!section) continue;
     section.items.push({
       // Derived from the sheet row's own id: stable across pulls, so a
       // re-pull can never mint a colliding desk_N for a different item.
       id: `desk_${row.id}`,
-      group: groupFor(row, pick.sectionKey),
+      group: groupFor(row, key),
       fields: fieldsFor(row),
     });
     section.enabled = true;
   }
   return issue;
-}
-
-/**
- * Everything stamped for an issue, as the builder-shaped issue the pull door
- * serves. An unmappable row (untyped but stamped — rare) lands in Headlines
- * rather than vanishing: visible and movable beats silently missing.
- */
-export function issueForPull(rows, issueDate) {
-  const stamped = rows.filter(r => String(r.newsletter_issue ?? '') === issueDate);
-  const picks = stamped.map(r => ({ id: r.id, sectionKey: defaultSection(r) || 'headlines' }));
-  return issueFromPicks(rows, picks, { date: issueDate });
 }
 
 /** How many rows are staged per issue — the mismatch message points at these. */

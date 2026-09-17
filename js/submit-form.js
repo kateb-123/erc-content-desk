@@ -1,8 +1,8 @@
 /**
- * The one submit form, shared by /submit and the desk Home screen: the
- * structured single-item form (radio type/subtype) plus the bulk "whole doc"
- * door. All DOM work lives inside renderSubmitForm (added with the renderer)
- * so the pure helpers stay importable under node --test.
+ * The one submit form, shared by Home's Add to the queue and Next
+ * newsletter's quick add: the structured single-item form (radio
+ * type/subtype) plus the bulk "whole doc" door. All DOM work lives inside
+ * renderSubmitForm so the pure helpers stay importable under node --test.
  */
 import { subtypesFor, TYPE_ORDER, typeDisplay } from './schema.js';
 
@@ -11,30 +11,30 @@ export function pickType(selection, type) {
   return selection.type === type ? selection : { type, subtype: '' };
 }
 
-/** Which pill row a type message is about (audit round two, d6): the subtype
+/** Which pill row a type message is about: the subtype
  *  row for "Pick a subtype.", the type row for everything else. */
 export function typeRowFor(message) {
   return /^pick a subtype/i.test(String(message ?? '').trim()) ? 'subtype' : 'type';
 }
 
-/** Why a bulk row cannot land, in a few words (audit round two, e16): a row
+/** Why a bulk row cannot land, in a few words: a row
  *  with no link says so before any attempt; after one, the server's reason. */
 export function bulkRowProblem(item) {
   if (!String(item?.link ?? '').trim()) return 'No link';
   return String(item?.error ?? '');
 }
 
-/** The bulk button's word, from the count and whether this is a retry (audit
- *  round two, f10), so a redraw never forgets that these rows failed. */
+/** The bulk button's word, from the count and whether this is a retry, so a
+ *  redraw never forgets that these rows failed. */
 export function bulkConfirmLabel(count, retrying) {
   if (!count) return 'Nothing left to add';
   return retrying ? `Retry ${count}` : `Add ${count} to the queue`;
 }
 
 /**
- * The type pills (Claude Design round two, Kate's pick Sep 16): every type as
- * a pill, the picked one marked; the picked type's subtypes as a second row;
- * ERC Event is flat and gets the hint that tells it apart from Event (F13).
+ * The type pills: every type as a pill, the picked one marked; the picked
+ * type's subtypes as a second row; ERC Event is flat and gets the hint that
+ * tells it apart from Event.
  */
 export function typeChoices(selection) {
   const types = TYPE_ORDER.map(value => ({ value, label: typeDisplay(value), picked: selection.type === value }));
@@ -76,14 +76,14 @@ function show(target, message, kind) {
 
 /** One bulk item as a submit body. The description is only what the file's
  *  Description column said; extra columns go to the reader as original_text,
- *  never onto the card (usability run F1, Sep 10). */
+ * never onto the card. */
 export function bulkSubmissionBody(item, submitter) {
   return {
     title: item.title || item.link,
     blurb: item.blurb || '',
     original_text: item.original_text || '',
     link: withScheme(item.link),
-    type: item.type || '',        // untyped enters untyped — Sort's To review catches it
+    type: item.type || '',        // untyped enters untyped: Sort's Needs a fix catches it
     subtype: item.subtype || '',
     spotlight: false,
     submitter,
@@ -91,7 +91,7 @@ export function bulkSubmissionBody(item, submitter) {
 }
 
 /** POST one item. A server page instead of JSON (a 502, a timeout) becomes
- *  one plain sentence with the status, never parser noise (audit round two, d7). */
+ * one plain sentence with the status, never parser noise. */
 async function postSubmission(body) {
   const res = await fetch('/api/submit', {
     method: 'POST',
@@ -109,10 +109,10 @@ const todayIso = () => new Date().toISOString().slice(0, 10);
  * submission passes the reply ({ id }), so a caller can pick the row up. When
  * it returns a promise and pendingLine is given, the done box shows
  * pendingLine with the mini dots until that promise settles, then doneLine or
- * the error with Try again (audit round two, e20).
- * bulk: false leaves out the whole-doc door (the Next newsletter page, Sep 15).
+ * the error with Try again.
+ * bulk: false leaves out the whole-doc door (Next newsletter's quick add).
  * knownLinks, when given, returns the desk's rows: a link already waiting in
- * the queue gets one ask before it is added again (audit round two, e19).
+ * the queue gets one ask before it is added again.
  */
 export function renderSubmitForm(container, {
   onSubmitted, bulk = true, knownLinks = null,
@@ -165,7 +165,7 @@ export function renderSubmitForm(container, {
   const bulkDoor = container.querySelector('.bulk-door');
   if (!bulk) bulkDoor.hidden = true;
 
-  // Errors land on their fields (design audit 13, Sep 15): the field a message
+  // Errors land on their fields: the field a message
   // names turns red, says so to assistive tech, and the first one takes focus.
   // The status line under the button still lists them all.
   const FIELD_EL = { link: '#sf-link', submitter: '#sf-submitter', type: '.type-picker' };
@@ -175,10 +175,10 @@ export function renderSubmitForm(container, {
     for (const row of typeBox.querySelectorAll('.pill-row.is-invalid')) row.classList.remove('is-invalid');
     for (const line of form.querySelectorAll('.field-error')) line.remove();
   }
-  // Each message sits under its own field, tied to it for assistive tech (design audit b14);
+  // Each message sits under its own field, tied to it for assistive tech;
   // the status line keeps only what the server says. A type message lands on the pill
   // row it names, the subtype row when that is what is missing, and its first pill takes
-  // focus, so the error is heard and the red sits on the right row (audit round two, d6).
+  // focus, so the error is heard and the red sits on the right row.
   function markInvalid(errors) {
     let first = null;
     const spare = [];
@@ -222,7 +222,7 @@ export function renderSubmitForm(container, {
   doneBox.hidden = true;
   doneBox.setAttribute('role', 'status');
   doneBox.tabIndex = -1;
-  form.after(doneBox);   // where the form was, above the bulk door (design audit a4)
+  form.after(doneBox);   // where the form was, above the bulk door
   function showConfirm(note, run) {
     const line = el('p', 'done-line');
     const settled = () => {
@@ -256,7 +256,7 @@ export function renderSubmitForm(container, {
       form.querySelector('#sf-title').focus();
     });
     doneBox.append(again);
-    // The spreadsheet door stays: a second item often follows the first (F16).
+    // The spreadsheet door stays: a second item often follows the first.
     form.hidden = true;
     doneBox.hidden = false;
     doneBox.focus({ preventScroll: true });
@@ -265,8 +265,8 @@ export function renderSubmitForm(container, {
     else settled();
   }
 
-  // The type as pills, the picked type's subtypes as a second row (Claude
-  // Design round two, Kate's pick Sep 16). Buttons, so they never submit.
+  // The type as pills, the picked type's subtypes as a second row. Buttons,
+  // so they never submit.
   function pill(label, picked, onClick, small = false) {
     const b = el('button', `type-word${small ? ' is-small' : ''}${picked ? ' is-picked' : ''}`, label);
     b.type = 'button';
@@ -279,14 +279,14 @@ export function renderSubmitForm(container, {
     const { types, subtypes, hint } = typeChoices(selection);
     const row = el('div', 'pill-row');
     for (const t of types) {
-      // A pick clears the type error with it; the redraw alone left the red and the stale description behind (audit round two, d6).
+      // A pick clears the type error with it; the redraw alone left the red and the stale description behind.
       row.append(pill(t.label, t.picked, () => { selection = pickType(selection, t.value); clearOne(typeBox); renderTypePicker(); }));
     }
     typeBox.replaceChildren(legend, row);
-    // "ERC Event" next to "Event" needs a word of difference (usability run F13).
+    // "ERC Event" next to "Event" needs a word of difference.
     if (hint) typeBox.append(el('p', 'hint type-hint', hint));
     if (subtypes.length) {
-      const sub = el('span', 'subtype-label', 'Subtype ');   // the reveal gets a name (F14), and says it is required (design audit b14)
+      const sub = el('span', 'subtype-label', 'Subtype ');   // the reveal gets a name, and says it is required
       sub.append(el('span', 'hint', '(required)'));
       typeBox.append(sub);
       const subRow = el('div', 'pill-row');
@@ -311,7 +311,7 @@ export function renderSubmitForm(container, {
   }
 
   // A link already waiting in the queue gets one ask before it goes in again
-  // (audit round two, e19): the warning note in the primary's place, the two
+  //: the warning note in the primary's place, the two
   // outcomes bare words, as Sort's link ask and Publish's ask are drawn.
   let ask = null;
   let addAnyway = false;
@@ -387,12 +387,12 @@ export function renderSubmitForm(container, {
   const bulkCancel = container.querySelector('.bulk-cancel-btn');
   let bulkItems = [];
   const bulkOpen = new Set(); // rows peeked open (index into bulkItems)
-  let splitting = false;      // one split at a time: a second file mid-split is ignored (audit round two, f9)
-  let retrying = false;       // the listed rows are the ones that failed; the button says Retry (audit round two, f10)
+  let splitting = false;      // one split at a time: a second file mid-split is ignored
+  let retrying = false;       // the listed rows are the ones that failed; the button says Retry
 
   /** The split as a queue-style table: title/link, type, Remove; click a row
    *  with text to peek at it. The count lives on the button. A redraw keeps
-   *  the keyboard's place: the peek and Remove carry focus keys (audit round two, e17). */
+   *  the keyboard's place: the peek and Remove carry focus keys. */
   function renderBulkReview(settle = false) {
     const focusKey = focusKeyIn(bulkReview);
     const table = el('table', 'queue-table bulk-table');
@@ -401,7 +401,7 @@ export function renderSubmitForm(container, {
       const tr = el('tr', 'bulk-row');
       // Rows settle in once, right after the split, not on remove or peek.
       if (settle) { tr.classList.add('row-in'); tr.style.setProperty('--i', i); }
-      // The peek is a chevron button, like Finalize's table (design audit b18).
+      // The peek is a chevron button, like Finalize's table.
       const text = item.blurb || item.original_text;
       const caretTd = el('td', 'f-caret');
       if (text) {
@@ -422,7 +422,7 @@ export function renderSubmitForm(container, {
       const titleTd = el('td');
       titleTd.append(el('span', 'item-title', item.title || item.link || '(untitled)'));
       if (item.link) titleTd.append(el('span', 'item-source', item.link));
-      // Why this row cannot land, under it: no link, or what the server said last time (audit round two, e16).
+      // Why this row cannot land, under it: no link, or what the server said last time.
       const problem = bulkRowProblem(item);
       if (problem) titleTd.append(el('p', 'field-error', problem));
       tr.append(titleTd);
@@ -477,7 +477,7 @@ export function renderSubmitForm(container, {
     if (!/\.(docx|md|txt|xlsx|csv)$/i.test(file.name)) {
       return show(bulkStatus, 'Not a supported file. Use .docx, .md, .txt, .xlsx or .csv.', 'error');
     }
-    // While one file is being read the zone says which, takes no other, and the chooser is off (audit round two, f9).
+    // While one file is being read the zone says which, takes no other, and the chooser is off.
     splitting = true;
     bulkFile.disabled = true;
     bulkDrop.classList.add('is-busy');
@@ -517,7 +517,7 @@ export function renderSubmitForm(container, {
 
   // A file dropped anywhere on the intake card opens the door and splits it;
   // one dropped elsewhere goes nowhere, instead of the browser leaving the page
-  // with the typed form (audit round two, e22). Only files: dragging text into
+  // with the typed form. Only files: dragging text into
   // a field keeps working. The drop on the zone itself arrives here too.
   if (bulk) {
     const card = () => container.closest('.card') ?? container;
@@ -570,8 +570,8 @@ export function renderSubmitForm(container, {
     } finally {
       overlay.close();   // never leave the page locked behind the dim
     }
-    // What failed stays in the review for a retry (design audit b19), each row
-    // with its reason (audit round two, e16); only a clean run clears it.
+    // What failed stays in the review for a retry, each row
+    // with its reason; only a clean run clears it.
     const failed = [];
     items.forEach((item, i) => {
       if (results[i]?.ok) return;

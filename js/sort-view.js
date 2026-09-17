@@ -4,7 +4,7 @@
  */
 import { isoToShort } from './queue-view.js';
 import { TYPE_ORDER, isValidSubtype } from './schema.js';
-import { duplicateFlags, linkCheckState, pendingRows } from './workflow.js';
+import { duplicateFlags, linkNeedsCheck } from './workflow.js';
 
 function oldestFirst(a, b) {
   const left = String(a.submitted_at ?? '');
@@ -24,9 +24,8 @@ export function isErc(row) {
   return Boolean(row.spotlight_request) || row.subtype === 'ERC Research';
 }
 
-/** To review leads (fix types first — Kate, Sep 1), then ERC, then the newsletter's type order; oldest first in a group. */
-/** Kept rows that still lack a real type — they come BACK to Sort's To
- *  review (Kate: fixing a type belongs here, not at the bottom of Publish).
+/** Kept rows that still lack a real type: they come BACK to Sort's Needs a
+ *  fix, because fixing a type belongs here, not at the bottom of Publish.
  *  Setting the type releases them; rows already in an issue stay gone. */
 export function keptUntyped(rows) {
   return rows.filter(r => r.status === 'kept'
@@ -35,9 +34,9 @@ export function keptUntyped(rows) {
     && !String(r.newsletter_issue ?? '').trim()).sort(oldestFirst);
 }
 
-/** Submitted but not yet filed by the reader (pending_read, Sep 10). Kate wants
- *  every card read before she sees it, so these wait off the stream. */
-export function awaitingReader(row) {
+/** Submitted but not yet filed by the reader (pending_read). Every card is
+ *  read before she sees it, so these wait out of the sections until it is. */
+function awaitingReader(row) {
   return row.pending_read === 'yes';
 }
 
@@ -46,16 +45,12 @@ export function readerQueue(rows) {
   return rows.filter(r => r.status === 'new' && awaitingReader(r)).map(r => r.id);
 }
 
-/** What the queue still has for Sort: filed pending rows, plus kept fix-ups. */
-export function pendingRowCount(rows) {
-  return pendingRows(rows).filter(r => !awaitingReader(r)).length + keptUntyped(rows).length;
-}
 
 /**
- * Per-pill totals, read off the same walk that builds the tables, so a pill's
- * number is exactly what that pill lists (Sep 15 — an ERC event used to be
- * counted under both ERC and Events, and a row with a legacy type under
- * neither). No All since the tables show one at a time.
+ * Per-tab totals, read off the same walk that builds the lists, so a tab's
+ * number is exactly what that tab lists: an ERC event must not count under
+ * both ERC and Events, nor a row with a legacy type under neither. There is
+ * no All, since the screen shows one section at a time.
  */
 export function sortCounts(rows) {
   const counts = Object.fromEntries(SECTION_ORDER.map(k => [k, 0]));
@@ -63,7 +58,7 @@ export function sortCounts(rows) {
   return counts;
 }
 
-/** Where Sort lands with no pill picked: the first one holding anything,
+/** Where Sort lands with no tab picked: the first one holding anything,
  *  Needs a fix first; Needs a fix again when the queue is empty. */
 export function landingSection(counts) {
   return SECTION_ORDER.find(k => counts[k] > 0) ?? SECTION_ORDER[0];
@@ -81,7 +76,7 @@ export function fixContext(rows, today) {
 }
 
 /**
- * Why a row sits under Needs a fix (Kate, Sep 15): the two things that keep it
+ * Why a row sits under Needs a fix: the two things that keep it
  * out of Keep the rest, and a possible duplicate of an item that is not live
  * yet. One section gathers them, so the rows themselves carry no amber marks.
  */
@@ -90,7 +85,7 @@ export function fixReasons(row, ctx) {
   const dupes = ctx?.dupes ?? duplicateFlags(rows);
   const out = [];
   if (needsType(row)) out.push('No type');
-  if (linkCheckState(row) === 'alert') out.push('Link not opened');
+  if (linkNeedsCheck(row)) out.push('Link not opened');
   if (dupes.has(row.id)) {
     const prior = rows.find(r => r.id === dupes.get(row.id));
     if (prior && !String(prior.published_at ?? '').trim()) out.push(dupeBadgeText(prior, ctx?.today));
@@ -105,14 +100,14 @@ export function sectionOf(row, ctx) {
   return TYPE_ORDER.includes(row.type) ? row.type : 'fix';
 }
 
-// Skipped last (Kate, Sep 15, option B): every parked row, any type, waits there
+// Skipped last: every parked row, any type, waits there
 // with Keep and Delete, so a Skip is never the end of the road.
 const SECTION_ORDER = ['fix', 'erc', ...TYPE_ORDER, 'skipped'];
 
 const PRIOR_WORDS = { trashed: 'deleted', kept: 'kept', circleback: 'parked', new: 'in the queue' };
 
 /** The duplicate badge names the earlier item and what happened to it, so the
- *  flag can be acted on without a search (usability run F8). */
+ * flag can be acted on without a search. */
 export function dupeBadgeText(prior, today) {
   const title = String(prior?.headline ?? '').trim() || '(untitled)';
   const short = title.length > 60 ? `${title.slice(0, 59).replace(/[\s—–:-]+$/, '')}…` : title;
@@ -121,14 +116,14 @@ export function dupeBadgeText(prior, today) {
   return `Same link as "${short}", ${what}${when ? ` ${when}` : ''}`;
 }
 
-/** Submitted today (the desk's UTC date), so a first look can find it (F24). */
+/** Submitted today (the desk's UTC date), so a first look can find it. */
 export function isNewToday(row, today) {
   return Boolean(today) && String(row?.submitted_at ?? '').slice(0, 10) === today;
 }
 
 /**
- * A section as a list (Kate, Sep 11, option A): its pending rows in stream
- * order, then the ones decided this session at the bottom, greyed, so a
+ * A section as a list: its pending rows oldest first,
+ * then the ones decided this session at the bottom, greyed, so a
  * mistake stays in reach. Needs a fix also lists kept rows that lost their
  * type, since typing is their fix.
  */
@@ -157,7 +152,7 @@ export function sectionRows(rows, section, sessionDecided = new Set(), ctx = fix
 }
 
 /**
- * Every section that holds something, in pill order, each with its own rows:
+ * Every section that holds something, in tab order, each with its own rows:
  * the one walk the counts are read from, and the invariant the tests hold
  * (one row, one section). The screen itself shows one section at a time.
  */
@@ -168,13 +163,13 @@ export function allSections(rows, sessionDecided = new Set(), decidedFrom = new 
     .filter(g => g.live.length || g.done.length);
 }
 
-// ── Sort as a list and a card (Claude Design round two, Kate's pick C, Sep 16) ──
+// ── Sort as a list and a card ──
 
 /** Why the card's Keep is locked, in the words of its tooltip; '' when the
  *  row can be kept. The same two reasons keep a row out of Keep the rest. */
 export function keepBlock(row) {
   if (needsType(row)) return 'Set a type first';
-  if (linkCheckState(row) === 'alert') return 'Check the link first';
+  if (linkNeedsCheck(row)) return 'Check the link first';
   return '';
 }
 
@@ -197,7 +192,7 @@ export function nextSectionWithRows(counts, current) {
 const UNDO_VERBS = { keep: 'kept', circleback: 'skipped', trash: 'deleted' };
 const UNDO_NOUNS = { edit: 'the edit to', type: 'the type on', link: 'the link check on' };
 
-/** What Undo last just restored, in words for the status line (audit round two, e3). */
+/** What Undo last just restored, in words for the status line. */
 export function undoWords(entry) {
   const rows = entry?.rows ?? [];
   const name = rows[0]?.headline || rows[0]?.link || 'this item';
@@ -207,14 +202,14 @@ export function undoWords(entry) {
 }
 
 /** The undo stack without one row: a row's own Undo already put it back, so
- *  Undo last must never re-apply that decision (audit round two, e3). */
+ * Undo last must never re-apply that decision. */
 export function withoutRow(stack, id) {
   return stack
     .map(entry => ({ ...entry, rows: entry.rows.filter(r => r.id !== id) }))
     .filter(entry => entry.rows.length);
 }
 
-/** The tab a key moves to in a row of tabs, or null (audit round two, e14). */
+/** The tab a key moves to in a row of tabs, or null. */
 export function adjacentTab(keys, current, key) {
   const at = keys.indexOf(current);
   if (key === 'Home') return keys[0];

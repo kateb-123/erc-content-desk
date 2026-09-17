@@ -25,3 +25,21 @@ test('sr-only and the skip link live in the stylesheet every page loads', () => 
     assert.match(read(page), /css\/sidebar\.css/, `${page} loads the sidebar stylesheet`);
   }
 });
+
+// The reader's uncertainty reaches the desk as the desk's own words, never the
+// model's name or its warnings (the sentence lives in js/sort-ui.js).
+test('no screen string names the model', () => {
+  const offenders = [];
+  for (const dir of ['js', 'builder/js']) {
+    for (const file of readdirSync(new URL(`../${dir}`, import.meta.url))) {
+      if (!file.endsWith('.js')) continue;
+      const text = read(`${dir}/${file}`);
+      for (const [i, line] of text.split('\n').entries()) {
+        const code = line.split('//')[0];
+        if (/['"`][^'"`]*\b(Claude|Anthropic|GPT|the AI)\b/.test(code)) offenders.push(`${dir}/${file}:${i + 1}`);
+      }
+    }
+  }
+  assert.deepEqual(offenders, []);
+});
+

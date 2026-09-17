@@ -1,13 +1,9 @@
 /**
- * Next issue: the newsletter's current state as a table, with quick add
- * (Kate, Sep 15: "it should pretty much show a list like a table. you can
- * quick add to that", then "a new page", then "quick add is a whole thing for
- * the newsletter, not something from the queue. it will get added to the
- * queue for sort so everything is talking to each other"). Reached from
- * the sidebar (the strip's Next newsletter fact opens it too). Quick add opens the submit form;
- * what it saves lands in this issue AND in the queue, so Sort sees it too,
- * and the table marks it Not sorted yet until Sort has. Remove takes an
- * item out of the issue; it stays in the queue.
+ * Next newsletter: the issue's current state as a table, with quick add.
+ * Reached from the sidebar, and from Home's Next newsletter tile. Quick add
+ * opens the submit form; what it saves lands in this issue AND in the queue,
+ * so Sort sees it too, and the table marks it Not sorted yet until Sort has.
+ * Remove takes an item out of the issue; it stays in the queue.
  */
 import { faIcon, dotsLoader } from './icons.js';
 import { isoToShort, partnerFocusKey } from './queue-view.js';
@@ -21,11 +17,11 @@ import { titleWithInfo } from './screen-info.js';
 import { focusKeyIn, restoreFocus } from './ui-aids.js';
 
 let quickOpen = false;   // view state: the form stays open across re-renders
-let quickJustOpened = false;   // the panel takes focus once, on the click that opened it (design audit b15)
-const justRemoved = new Map();   // removed this visit, id -> the row as it was: listed greyed with Undo (design audit c6)
+let quickJustOpened = false;   // the panel takes focus once, on the click that opened it
+// Removed, id -> the row as it was: it stays listed, greyed, with Undo, and
+// keeps standing across screen switches until a reload.
+const justRemoved = new Map();
 let currentRows = [];   // the rows as of the last render, for the form's "already in the queue" check
-
-export function resetIssueEntry() { quickOpen = false; justRemoved.clear(); }
 
 const INFO = 'Quick add puts an item in this issue and in the queue for Sort at once. Remove takes an item out of this issue; it stays in the queue. Not sorted yet marks an item Sort has not had yet.';
 
@@ -58,7 +54,7 @@ export function renderIssue(container, props) {
   const title = issue ? `Next newsletter, ${when}` : 'Next newsletter';
   const parts = [];
 
-  // The title with View info beside it, as on every other screen (audit round two, e25).
+  // The title with View info beside it, as on every other screen.
   const head = el('div', 'screen-head');
   const info = titleWithInfo(title, 'issue', INFO);
   const h2 = info.row.querySelector('h2');
@@ -67,7 +63,7 @@ export function renderIssue(container, props) {
 
   if (!loaded) { container.replaceChildren(...parts, loadFailed ? tryAgain(onRefresh) : dotsLoader()); return; }
   if (!issue) {
-    // A dead end said so and nothing else (design audit c7): where the date lives, and a way to look again.
+    // A dead end said so and nothing else: where the date lives, and a way to look again.
     const empty = el('p', 'empty', 'No issue date is scheduled yet. Add a date to the Schedule sheet, then refresh. ');
     const again = el('button', '', 'Refresh');
     again.type = 'button';
@@ -88,12 +84,12 @@ export function renderIssue(container, props) {
   quick.type = 'button';
   quick.dataset.focus = 'quick';
   quick.setAttribute('aria-expanded', String(quickOpen));
-  if (quickOpen) quick.setAttribute('aria-controls', 'issue-quick');   // only while the panel is in the page (audit round two, f12)
+  if (quickOpen) quick.setAttribute('aria-controls', 'issue-quick');   // only while the panel is in the page
   quick.addEventListener('click', () => { quickOpen = !quickOpen; quickJustOpened = quickOpen; renderIssue(container, props); });
   head.append(quick);
 
   // Quick add's panel sits right under the head, where the click was, not
-  // below a long table (design audit b15).
+  // below a long table.
   let panel = null;
   if (quickOpen) {
     panel = container.querySelector('.quick-panel');
@@ -103,7 +99,7 @@ export function renderIssue(container, props) {
       panel.append(el('h3', '', `Add to the ${when} newsletter`));
       const mount = el('div');
       panel.append(mount);
-      // The confirmation names this destination and waits for the stamp, in the panel (audit round two, e20).
+      // The confirmation names this destination and waits for the stamp, in the panel.
       renderSubmitForm(mount, {
         bulk: false,
         onSubmitted: data => onQuickAdd(data),
@@ -164,7 +160,7 @@ export function renderIssue(container, props) {
 
   // The form is mounted once per opening and left alone across re-renders,
   // so typing survives a data refresh; focus inside it survives too, and a
-  // table action's focus lands on its partner (audit round two, e17).
+  // table action's focus lands on its partner.
   const active = document.activeElement;
   const inPanel = Boolean(panel?.contains(active));
   const focusKey = inPanel ? null : focusKeyIn(container);

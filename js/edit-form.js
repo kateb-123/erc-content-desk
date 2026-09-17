@@ -1,10 +1,10 @@
 /**
- * The one edit form (audit round two, e11). Sort's card and Finalize's card
+ * The one edit form. Sort's card and Finalize's card
  * open the same thing: the fields the row's type uses, then the link and the
  * media, on the grey edit box, dates as date inputs. It opens with editBase,
  * so a description prefilled from the original text is no change until it is
- * edited (e8), and it knows when it holds unsaved typing, so any way out of it
- * can hold instead of throwing the typing away (e4).
+ * edited, and it knows when it holds unsaved typing, so any way out of it
+ * can hold instead of throwing the typing away.
  */
 import { editFields, editBase, editChanges, dateField } from './finalize-view.js';
 import { buildImageControl } from './item-image.js';
@@ -43,7 +43,7 @@ export function buildEditForm(row, { onSave, onCancel }) {
     label.append(input);
     grid.append(label);
   }
-  // Any item can carry a picture or a flyer (Kate, Sep 17). A div, not a
+  // Any item can carry a picture or a flyer. A div, not a
   // label: a label would forward stray clicks to the upload button.
   const media = el('div', 'f-edit-media f-edit-wide', 'Media');
   const imgCtl = buildImageControl(row.infographic, () => { dirty = true; });
@@ -72,8 +72,7 @@ export function buildEditForm(row, { onSave, onCancel }) {
 }
 
 /** A way out of an open, edited form holds instead: the card says so in
- *  place and the typing stays (design audit b1, every exit since round two).
- *  True when it held. */
+ *  place and the typing stays. True when it held. */
 export function holdIfDirty(form, card) {
   if (!form?.isDirty()) return false;
   if (card && !card.querySelector('.edit-warn')) {

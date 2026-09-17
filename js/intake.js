@@ -38,7 +38,7 @@ export function buildSubmission({
     status: 'new',
     headline: s(title),
     blurb: s(blurb),
-    // A spreadsheet's extra columns ride here, not in the description (F1).
+    // A spreadsheet's extra columns ride here, not in the description.
     original_text: s(original_text) || s(blurb),
     link: s(link),
     type: s(type),

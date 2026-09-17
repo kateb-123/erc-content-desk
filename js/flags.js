@@ -9,5 +9,3 @@
  * to reopen publishing.
  */
 export const PUBLISH_PAUSED = true;
-export const PUBLISH_PAUSED_MESSAGE =
-  'Publishing is paused for the team trial. Nothing goes to the Exchange yet.';

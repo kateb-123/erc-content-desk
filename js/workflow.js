@@ -2,9 +2,9 @@
  * Status transitions and derived views over sheet rows. Everything here is
  * pure — callers persist the returned copies. v2 statuses:
  * new -> kept | circleback | trashed; kept rows then gain published_at
- * (Publish screen) and newsletter_issue (Build screen).
+ * (Publish to Exchange) and newsletter_issue (Send to Newsletter).
  */
-import { CSV_COLUMNS, SHEET_COLUMNS, TYPES } from './schema.js';
+import { CSV_COLUMNS, TYPES } from './schema.js';
 
 export function pendingRows(rows) {
   return rows.filter(r => r.status === 'new');
@@ -14,30 +14,19 @@ export function circlebackRows(rows) {
   return rows.filter(r => r.status === 'circleback');
 }
 
-export function decidedRows(rows) {
-  return rows.filter(r => r.status === 'kept' || r.status === 'trashed');
-}
-
 export function keep(row) {
   return { ...row, status: 'kept' };
 }
 
 export function trash(row) {
-  // A deleted item never rides into an issue: the stamp goes with it (Sep 15,
-  // once quick add could stamp a row Sort had not seen yet). Undo restores the
-  // row as it was, stamp included.
+  // A deleted item never rides into an issue: the stamp goes with it, since
+  // quick add can stamp a row Sort has not seen yet. Undo restores the row as
+  // it was, stamp included.
   return { ...row, status: 'trashed', newsletter_issue: '' };
 }
 
-export function circleback(row, note = '') {
-  const trimmed = String(note ?? '').trim();
-  const existing = String(row.note ?? '');
-  const merged = trimmed ? (existing ? `${existing}\n${trimmed}` : trimmed) : existing;
-  return { ...row, status: 'circleback', note: merged };
-}
-
-export function undecide(row) {
-  return { ...row, status: 'new' };
+export function circleback(row) {
+  return { ...row, status: 'circleback' };
 }
 
 /**
@@ -75,15 +64,14 @@ export function linkCheckedFromFetch(pageText) {
 }
 
 /**
- * How Sort treats a row's link. 'alert' = the desk recorded a failed read or
- * a page about a different item (mismatch), an editor must Verify or Change the link; 'verified' = a human did; 'quiet'
- * otherwise — including legacy rows with no link_checked value at all.
+ * Whether Sort has to ask about a row's link: the desk recorded a failed read
+ * or a page about a different item (mismatch), so an editor must Verify or
+ * Change it. A human check and legacy rows with no link_checked value at all
+ * are quiet, and a row with no link has nothing to check.
  */
-export function linkCheckState(row) {
-  if (!String(row.link ?? '').trim()) return 'quiet';
-  if (row.link_checked === 'human') return 'verified';
-  if (row.link_checked === 'failed' || row.link_checked === 'mismatch') return 'alert';
-  return 'quiet';
+export function linkNeedsCheck(row) {
+  if (!String(row.link ?? '').trim()) return false;
+  return row.link_checked === 'failed' || row.link_checked === 'mismatch';
 }
 
 /**
@@ -92,8 +80,8 @@ export function linkCheckState(row) {
  * Research and non-event spotlights) — don't conflate the two.
  */
 export function newsletterOnly(row) {
-  // ERC Events publish like any event (Kate, Sep 10, after her meeting); the
-  // Sep 9 hold is gone.
+  // ERC Events publish like any other event, so only a plain spotlight event
+  // is held back.
   return row.type === 'event' && Boolean(row.spotlight_request) && row.subtype !== 'Webinar-Online';
 }
 
@@ -107,7 +95,7 @@ export function needsErcVoice(row) {
   if (String(row.rewrite_checked ?? '').trim()) return false;
   if (row.type === 'event' || row.type === 'erc_event' || row.type === 'opportunity') return true;
   // A Report's "abstract" is usually a page-long findings summary, so it always
-  // needs the ERC voice (Kate, Sep 9) — not only when it arrived blank.
+  // needs the ERC voice, not only when it arrived blank.
   return row.type === 'research' && (row.subtype === 'Report' || !row.blurb);
 }
 
@@ -115,13 +103,13 @@ const hasText = row => Boolean(String(row.blurb ?? '').trim() || String(row.orig
 
 /** What Rewrite can act on: needs the voice and has words to draft from.
  *  Finalize's count and /api/rewrite's candidates both use this, so the
- *  screen never offers a rewrite the server declines (usability run F2). */
+ *  screen never offers a rewrite the server declines. */
 export function canRewrite(row) {
   return needsErcVoice(row) && hasText(row);
 }
 
 /** Needs the voice but arrived with no text at all (a bare link the reader
- *  couldn't open): a person has to write the description in Edit fields. */
+ *  couldn't open): a person has to write the description with Edit. */
 export function needsDescription(row) {
   return needsErcVoice(row) && !hasText(row);
 }
@@ -130,10 +118,6 @@ export function readyToPublish(rows) {
   // A row stamped into an issue is done with Publish — newsletter-only holds
   // drain here instead of sitting in the held list forever.
   return rows.filter(r => r.status === 'kept' && !r.published_at && !r.newsletter_issue);
-}
-
-export function publishedRows(rows) {
-  return rows.filter(r => r.status === 'kept' && Boolean(r.published_at));
 }
 
 export function buildPool(rows) {
@@ -178,13 +162,6 @@ export function reshareFlags(rows, todayIso) {
   return flags;
 }
 
-/** Parked events whose date has already passed — quietly flagged in the UI. */
-export function staleCirclebacks(rows, todayIso) {
-  return circlebackRows(rows).filter(
-    r => (r.type === 'event' || r.type === 'erc_event') && r.date && r.date < todayIso,
-  );
-}
-
 /**
  * Duplicate detection across ALL history: rows are never deleted, so a link
  * match against every row is the duplicate index. Returns Map<id, priorId>
@@ -204,24 +181,12 @@ export function duplicateFlags(rows) {
   return flags;
 }
 
-export function counts(rows) {
-  return {
-    pending: pendingRows(rows).length,
-    circleback: circlebackRows(rows).length,
-    kept: rows.filter(r => r.status === 'kept').length,
-    trashed: rows.filter(r => r.status === 'trashed').length,
-    readyToPublish: readyToPublish(rows).length,
-    published: publishedRows(rows).length,
-    pool: buildPool(rows).length,
-  };
-}
-
 /**
  * The load-bearing fields this row's type needs and does not have. Driven by the
  * schema's extraFields, plus a date for anything event-shaped — an event with no
- * date is not usable. Sort shows these so Kate can go find them or bin the item
- * (Kate, Sep 9); it never blocks Keep. An untyped row says nothing: fixing the
- * type comes first.
+ * date is not usable. Sort shows these so she can go find them or bin the
+ * item; it never blocks Keep. An untyped row says nothing: fixing the type
+ * comes first.
  */
 export function missingFields(row) {
   const def = TYPES[row?.type];

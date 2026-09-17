@@ -1,9 +1,8 @@
 /**
- * Home, the team's main page (Kate's Sep 15 sketch; the sidebar since Sep 16):
- * four stat cards on top — the queue count, the next newsletter, Exchange
- * updated, the last newsletter — then the shared submit form, and the queue table folded at
- * the bottom (a details, its own chevron). Every way elsewhere is in the
- * sidebar. The form and the fold are mounted once and left alone on
+ * Home, the team's main page: four stat cards on top (the queue count, the
+ * next newsletter, Exchange updated, the last newsletter), then the shared
+ * submit form, and the queue table folded at the bottom (a details, its own
+ * chevron). Every way elsewhere is in the sidebar. The form and the fold are mounted once and left alone on
  * re-renders, so typing is never wiped and the fold stays the way it was
  * left; the strip and the table inside the fold rebuild.
  */
@@ -23,7 +22,7 @@ function el(tag, className, text) {
 }
 
 /**
- * What a stat tile shows for a value (audit round two, d5): a real value is
+ * What a stat tile shows for a value: a real value is
  * loud; waiting, a failed read and an empty fact are quiet words, so "Unknown"
  * never wears the display size a date does.
  */
@@ -33,7 +32,7 @@ export function statWords({ waiting, failed, value, empty }) {
   return value ? { text: value, quiet: false } : { text: empty, quiet: true };
 }
 
-/** When the first load failed: the reason is in the status line; this is the way to try again (design audit a5). */
+/** When the first load failed: the reason is in the status line; this is the way to try again. */
 export function tryAgain(onRefresh) {
   const box = el('p', 'load-failed');
   const btn = el('button', '', 'Try again');
@@ -48,11 +47,11 @@ export function tryAgain(onRefresh) {
 let currentRows = [];
 
 /**
- * One stat card (Kate's pick J, Sep 16): an icon, a label, the value in the
+ * One stat card: an icon, a label, the value in the
  * deep accent, on the tint. An href makes it a link out; an onClick makes
  * it a button; neither makes it a plain card. The cue glyph at the label's
  * right says what the tile does before the mouse arrives: a chevron for the
- * fold, an arrow for a screen, the box-and-arrow for a new tab (audit round two, e23).
+ * fold, an arrow for a screen, the box-and-arrow for a new tab.
  */
 function stat({ icon, label, words, unit, href, onClick, controls, expanded, cue }) {
   const node = el(href ? 'a' : onClick ? 'button' : 'div', 'stat');
@@ -100,9 +99,9 @@ export function renderHome(container, props) {
     container.replaceChildren(strip, grid, fold);
   }
 
-  // ── The stats: four cards on the tint (Kate's pick J of four, Sep 16). ──
-  // A card with nothing to show says so in a word (the style audit, Sep 16: no dashes on screen);
-  // a card whose read failed says that (audit round two, d5). The two outer cards have their
+  // ── The stats: four cards on the tint. ──
+  // A card with nothing to show says so in a word, never a dash;
+  // a card whose read failed says that. The two outer cards have their
   // own reads and show them as soon as they land.
   const sheet = { waiting: !loaded && !loadFailed, failed: loadFailed && !loaded };
   const issue = nextIssueDate(schedule, today);
@@ -114,8 +113,8 @@ export function renderHome(container, props) {
       controls: 'home-queue',
       expanded: container.querySelector('.queue-fold')?.open ?? false,
       onClick: () => {
-        // Open the fold and put the reader on it (design audit b15); no smooth
-        // scroll for anyone who asked for less motion (audit round two, f11).
+        // Open the fold and put the reader on it; no smooth
+        // scroll for anyone who asked for less motion.
         const fold = container.querySelector('.queue-fold');
         fold.open = true;
         const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -150,5 +149,5 @@ export function renderHome(container, props) {
   summary.replaceChildren(faIcon('chevron-down'), el('h2', '', 'In the queue'), badge);
   const body = container.querySelector('.queue-body');
   if (!loaded) body.replaceChildren(loadFailed ? tryAgain(onRefresh) : dotsLoader());
-  else renderQueueTable(body, { rows, schedule, today, onRefresh, onDelete: onDeleteFromQueue, bare: true });
+  else renderQueueTable(body, { rows, today, onRefresh, onDelete: onDeleteFromQueue });
 }

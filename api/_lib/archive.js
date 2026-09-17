@@ -71,7 +71,8 @@ export function archiveLabel(isoDate) {
  * (re-saving an issue is normal), keep newest first.
  */
 export function mergeArchiveIndex(list, isoDate) {
-  const entry = { date: isoDate, file: `${isoDate}.html`, label: archiveLabel(isoDate) };
+  // The file is always <date>.html, so the index carries the date and the label only.
+  const entry = { date: isoDate, label: archiveLabel(isoDate) };
   const rest = (Array.isArray(list) ? list : []).filter(e => e?.date !== isoDate);
   return [...rest, entry].sort((a, b) => String(b.date).localeCompare(String(a.date)));
 }

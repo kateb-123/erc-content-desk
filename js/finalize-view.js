@@ -1,8 +1,7 @@
 /**
- * Finalize as a list and a card (Claude Design round two, Kate's pick Sep 16).
- * Pure, so node --test can hold it: which stage the screen is in, how the
- * kept rows group down the left, the progress line and bar, and which row
- * the card on the right shows.
+ * Finalize as a list and a card. Pure, so node --test can hold it: which
+ * stage the screen is in, how the kept rows group down the left, the progress
+ * line and bar, and which row the card on the right shows.
  */
 
 /** before: rewrites wait; checking: rewrites came back and wait to be
@@ -49,11 +48,10 @@ export function pickSelection(groups, selectedId) {
 }
 
 /** What an edit form changed: each value trimmed, kept only where it differs
- *  from the row. The media URL rides along like any field (Kate, Sep 17:
- *  "a small thing that says add media when you click edit"). */
+ *  from the row. The media URL rides along like any other field. */
 export function editChanges(row, values, base = row) {
   // `base` is what the form opened with; a prefilled description that was not
-  // touched is no change (audit round two, e8).
+  // touched is no change.
   const changes = {};
   for (const [field, raw] of Object.entries(values)) {
     const value = String(raw ?? '').trim();
@@ -63,12 +61,12 @@ export function editChanges(row, values, base = row) {
 }
 
 /** What the edit form opens with: the row, its description falling back to
- *  the original text while no rewrite exists yet (audit round two, e8). */
+ * the original text while no rewrite exists yet. */
 export function editBase(row) {
   return { ...row, blurb: row.blurb || row.original_text || '' };
 }
 
-/** The fields an edit form shows for a type (design audit b4): a research
+/** The fields an edit form shows for a type: a research
  *  item has no time or location, an event no deadline. An unknown or empty
  *  type keeps every field, so nothing is lost on a row the reader could not
  *  place. Order is the form's reading order. */
@@ -83,13 +81,13 @@ export function fieldsForType(type) {
   return per[type] ?? ['headline', 'date', 'source', 'topic', 'blurb', 'deadline', 'authors', 'time', 'location'];
 }
 
-/** Dates and deadlines are date inputs, so a typed "Oct 3" cannot vanish from every meta line. */
-/** One edit form on Sort and Finalize (audit round two, e11): the type's
- *  fields, then the link. Media is a row of its own on both. */
+/** One edit form on Sort and Finalize: the type's fields, then the link.
+ *  Media is a row of its own on both. */
 export function editFields(type) {
-  return [...fieldsForType(type).filter(f => f !== 'link'), 'link'];
+  return [...fieldsForType(type), 'link'];
 }
 
+/** Dates and deadlines are date inputs, so a typed "Oct 3" cannot vanish from every meta line. */
 export function dateField(field) {
   return field === 'date' || field === 'deadline';
 }

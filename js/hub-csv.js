@@ -37,7 +37,7 @@ export function parseCsv(text) {
 }
 
 /**
- * Filename for the copy Kate keeps when she publishes (Sep 9): dated, so a
+ * Filename for the copy Kate keeps when she publishes: dated, so a
  * folder of them sorts chronologically. An unparseable date drops the stamp
  * rather than writing "Invalid Date" into a filename.
  */

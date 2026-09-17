@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { blankRow } from '../js/schema.js';
 import { renderNewsletter } from '../builder/js/template.js';
-import { defaultSection, groupFor, issueFromPicks, issueForPull, stagedCounts, isoToDisplay } from '../js/rows-to-issue.js';
+import { defaultSection, issueForPull, stagedCounts, isoToDisplay } from '../js/rows-to-issue.js';
 
 const pub = o => blankRow({
   status: 'kept', published_at: '2026-08-26T00:00:00.000Z', ...o,
@@ -22,16 +22,12 @@ test('defaultSection follows the map, spotlight flag wins', () => {
   assert.equal(defaultSection(pub({ type: '', subtype: '' })), '');
 });
 
-test('issueFromPicks places picked rows into their (possibly overridden) sections', () => {
-  const rows = [
-    pub({ id: 'a', type: 'event', subtype: 'Webinar-Online', headline: 'Webinar', link: 'https://x.org', blurb: 'B', date: '2026-09-10' }),
-    pub({ id: 'b', type: 'headline', subtype: 'Texas', headline: 'News', link: 'https://y.org' }),
-    pub({ id: 'c', type: 'research', subtype: 'Report', headline: 'Unpicked' }),
-  ];
-  const issue = issueFromPicks(rows, [
-    { id: 'a', sectionKey: 'events' },
-    { id: 'b', sectionKey: 'spotlight' },   // manual override via "move to…"
-  ], { date: 'September 1, 2026', intro: 'Hi' });
+test('issueForPull places stamped rows in their default sections, the spotlight flag winning', () => {
+  const issue = issueForPull([
+    pub({ id: 'a', type: 'event', subtype: 'Webinar-Online', headline: 'Webinar', link: 'https://x.org', blurb: 'B', date: '2026-09-10', newsletter_issue: '2026-09-01' }),
+    pub({ id: 'b', type: 'headline', subtype: 'Texas', headline: 'News', link: 'https://y.org', spotlight_request: true, newsletter_issue: '2026-09-01' }),
+    pub({ id: 'c', type: 'research', subtype: 'Working Paper', headline: 'A later issue', newsletter_issue: '2026-10-06' }),
+  ], '2026-09-01');
   assert.equal(issue.sections.events.items.length, 1);
   assert.equal(issue.sections.events.items[0].fields.title, 'Webinar');
   assert.equal(issue.sections.events.items[0].group, 'offcampus');
@@ -39,41 +35,35 @@ test('issueFromPicks places picked rows into their (possibly overridden) section
   assert.equal(issue.sections.spotlight.items.length, 1);
   assert.equal(issue.sections.spotlight.items[0].group, 'thisandthat');
   assert.equal(issue.sections.policy.enabled, false);
-  assert.equal(issue.date, 'September 1, 2026');
-  assert.equal(issue.intro, 'Hi');
 });
 
 test('a row with an infographic carries it as the item picture', () => {
-  const rows = [pub({
-    id: 'erc-1', type: 'research', subtype: 'ERC Research', headline: 'ERC brief',
-    link: 'https://x.org', infographic: 'https://raw.example.org/img-1.png',
-  })];
-  const issue = issueFromPicks(rows, [{ id: 'erc-1', sectionKey: 'research' }], {});
+  const erc = o => pub({
+    type: 'research', subtype: 'ERC Research', headline: 'ERC brief',
+    link: 'https://x.org', newsletter_issue: '2026-09-01', ...o,
+  });
+  const issue = issueForPull([erc({ id: 'erc-1', infographic: 'https://raw.example.org/img-1.png' })], '2026-09-01');
   assert.equal(issue.sections.research.items[0].fields.image, 'https://raw.example.org/img-1.png');
-  const bare = issueFromPicks(
-    [pub({ id: 'p', type: 'research', subtype: 'Report', headline: 'No picture' })],
-    [{ id: 'p', sectionKey: 'research' }], {});
+  const bare = issueForPull([erc({ id: 'erc-2', headline: 'No picture' })], '2026-09-01');
   assert.equal('image' in bare.sections.research.items[0].fields, false);
 });
 
-test('the ported template renders an issue built from picks', () => {
-  const rows = [
+test('the builder template renders an issue built from desk rows', () => {
+  const issue = issueForPull([
     pub({
       id: 'headline-1',
       type: 'headline', subtype: 'Texas', headline: 'TEFA passes 100,000 awards',
       link: 'https://x.test', blurb: 'Body text.', source: 'Texas Tribune',
+      newsletter_issue: '2026-09-01',
     }),
     pub({
       id: 'opportunity-1',
       type: 'opportunity', subtype: 'Call for Proposals', headline: 'AERA call for papers',
       deadline: '2026-09-09', blurb: 'Submit by the deadline.',
+      newsletter_issue: '2026-09-01',
     }),
-  ];
-
-  const issue = issueFromPicks(rows, [
-    { id: 'headline-1', sectionKey: 'headlines' },
-    { id: 'opportunity-1', sectionKey: 'opportunities' },
-  ], { date: 'August 2026', intro: 'Welcome back.' });
+  ], '2026-09-01');
+  issue.intro = 'Welcome back.';
 
   const html = renderNewsletter(issue);
   assert.ok(html.includes('TEFA passes 100,000 awards'), 'headline item is missing from the HTML');

@@ -1,5 +1,5 @@
 /**
- * Small DOM aids the screens share (design audit, Sep 17).
+ * Small DOM aids the screens share.
  *
  * Every pipeline screen redraws itself with replaceChildren(), which throws
  * the keyboard's place away: the focused row or button is destroyed and focus
@@ -18,7 +18,7 @@ export function focusKeyIn(container) {
 
 /** Focus the control that now carries the key, else the fallback. A keyless
  *  control ('') goes straight to the fallback, so a redraw from a radio, a
- *  Save or a Cancel never drops the keyboard to the page (audit round two, d3). */
+ * Save or a Cancel never drops the keyboard to the page. */
 export function restoreFocus(container, key, fallback) {
   if (key === null || key === undefined) return false;
   const next = key && container.querySelector(`[data-focus="${CSS.escape(key)}"]`);
@@ -29,7 +29,7 @@ export function restoreFocus(container, key, fallback) {
 
 /** A pane that scrolls inside itself shows a fade at its foot until the
  *  reader reaches the bottom, so the buttons below the fold are not a
- *  surprise (design audit c3). Measured after layout. */
+ * surprise. Measured after layout. */
 export function markOverflow(pane) {
   const check = () => pane.classList.toggle('is-more', pane.scrollHeight - pane.scrollTop - pane.clientHeight > 4);
   requestAnimationFrame(check);

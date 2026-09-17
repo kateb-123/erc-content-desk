@@ -2,32 +2,28 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { blankRow } from '../js/schema.js';
 import {
-  pendingRows, circlebackRows, decidedRows,
-  keep, trash, circleback, undecide,
+  pendingRows, circlebackRows,
+  keep, trash, circleback,
   applyExtractedWithProvenance, withoutAutoFilled,
-  readyToPublish, publishedRows, buildPool,
+  readyToPublish, buildPool,
   markPublished, markNewsletterIssue,
-  staleCirclebacks, duplicateFlags, counts,
-  newsletterOnly, linkCheckedFromFetch, linkCheckState, reshareFlags, clearNewsletterIssue,
+  duplicateFlags,
+  newsletterOnly, linkCheckedFromFetch, linkNeedsCheck, reshareFlags, clearNewsletterIssue,
   needsErcVoice, missingFields,
 } from '../js/workflow.js';
 
 const row = o => blankRow({ id: 'r1', status: 'new', ...o });
 
-test('keep, trash, circleback, undecide set status without mutating input', () => {
+test('keep, trash and circleback set status without mutating input', () => {
   const r = row();
   assert.equal(keep(r).status, 'kept');
   assert.equal(trash(r).status, 'trashed');
   assert.equal(circleback(r).status, 'circleback');
-  assert.equal(undecide(circleback(r)).status, 'new');
   assert.equal(r.status, 'new');
 });
 
-test('circleback appends a note on its own line', () => {
-  const r = row({ note: 'from Andy' });
-  assert.equal(circleback(r, 'ask Kathy').note, 'from Andy\nask Kathy');
-  assert.equal(circleback(row(), 'ask Kathy').note, 'ask Kathy');
-  assert.equal(circleback(r).note, 'from Andy');
+test('circleback leaves an existing note untouched', () => {
+  assert.equal(circleback(row({ note: 'from Andy' })).note, 'from Andy');
 });
 
 
@@ -42,9 +38,7 @@ test('filters split by status and publish state', () => {
   ];
   assert.deepEqual(pendingRows(rows).map(r => r.id), ['a']);
   assert.deepEqual(circlebackRows(rows).map(r => r.id), ['b']);
-  assert.deepEqual(decidedRows(rows).map(r => r.id), ['c', 'd', 'e', 'f']);
   assert.deepEqual(readyToPublish(rows).map(r => r.id), ['c']);
-  assert.deepEqual(publishedRows(rows).map(r => r.id), ['d', 'e']);
   assert.deepEqual(buildPool(rows).map(r => r.id), ['d']);
 });
 
@@ -71,16 +65,6 @@ test('markPublished and markNewsletterIssue stamp pure copies', () => {
   assert.equal(p.newsletter_issue, '');
 });
 
-test('staleCirclebacks flags past-dated parked events only', () => {
-  const rows = [
-    row({ id: 'a', status: 'circleback', type: 'event', date: '2026-08-01' }),
-    row({ id: 'b', status: 'circleback', type: 'event', date: '2026-09-09' }),
-    row({ id: 'c', status: 'circleback', type: 'research', date: '2026-08-01' }),
-    row({ id: 'd', status: 'circleback', type: 'event', date: '' }),
-  ];
-  assert.deepEqual(staleCirclebacks(rows, '2026-08-26').map(r => r.id), ['a']);
-});
-
 test('duplicateFlags maps later same-link rows to the earliest submission', () => {
   const rows = [
     row({ id: 'a', link: 'https://x.org/1', submitted_at: '2026-08-01T00:00:00.000Z' }),
@@ -95,20 +79,6 @@ test('duplicateFlags maps later same-link rows to the earliest submission', () =
   assert.equal(flags.has('c'), false);
   assert.equal(flags.has('d'), false); // blank links never flag
   assert.equal(flags.has('e'), false);
-});
-
-test('counts summarizes the v2 buckets', () => {
-  const rows = [
-    row({ id: 'a' }),
-    row({ id: 'b', status: 'circleback' }),
-    row({ id: 'c', status: 'kept' }),
-    row({ id: 'd', status: 'kept', published_at: 'x' }),
-    row({ id: 'e', status: 'trashed' }),
-  ];
-  assert.deepEqual(counts(rows), {
-    pending: 1, circleback: 1, kept: 2, trashed: 1,
-    readyToPublish: 1, published: 1, pool: 1,
-  });
 });
 
 test('applyExtractedWithProvenance fills blanks only and records what it filled', () => {
@@ -136,15 +106,15 @@ test('linkCheckedFromFetch maps page text to ok/failed', () => {
   assert.equal(linkCheckedFromFetch(undefined), 'failed');
 });
 
-test('linkCheckState: alert only for unread links, verified only for human checks', () => {
+test('linkNeedsCheck: asks only for unread links, never after a human check', () => {
   const link = 'https://example.org/x';
-  assert.equal(linkCheckState(blankRow({ link, link_checked: 'failed' })), 'alert');
-  assert.equal(linkCheckState(blankRow({ link, link_checked: 'human' })), 'verified');
-  assert.equal(linkCheckState(blankRow({ link, link_checked: 'ok' })), 'quiet');
-  // Legacy rows (no value) stay quiet — the alert only fires on a recorded failure.
-  assert.equal(linkCheckState(blankRow({ link, link_checked: '' })), 'quiet');
+  assert.equal(linkNeedsCheck(blankRow({ link, link_checked: 'failed' })), true);
+  assert.equal(linkNeedsCheck(blankRow({ link, link_checked: 'human' })), false);
+  assert.equal(linkNeedsCheck(blankRow({ link, link_checked: 'ok' })), false);
+  // Legacy rows (no value) stay quiet: the ask only fires on a recorded failure.
+  assert.equal(linkNeedsCheck(blankRow({ link, link_checked: '' })), false);
   // No link: nothing to check, even if a stale 'failed' value is present.
-  assert.equal(linkCheckState(blankRow({ link: '', link_checked: 'failed' })), 'quiet');
+  assert.equal(linkNeedsCheck(blankRow({ link: '', link_checked: 'failed' })), false);
 });
 
 test('newsletterOnly holds spotlight events except webinars', () => {
@@ -200,8 +170,8 @@ test('clearNewsletterIssue is the un-send: the row rejoins the pool', () => {
 test('mergeArchiveIndex replaces a re-saved issue and keeps newest first', async () => {
   const { mergeArchiveIndex, archiveLabel } = await import('../api/_lib/archive.js');
   const list = [
-    { date: '2026-08-25', file: '2026-08-25.html', label: 'August 25, 2026' },
-    { date: '2026-06-16', file: '2026-06-16.html', label: 'June 16, 2026' },
+    { date: '2026-08-25', label: 'August 25, 2026' },
+    { date: '2026-06-16', label: 'June 16, 2026' },
   ];
   const merged = mergeArchiveIndex(list, '2026-09-01');
   assert.deepEqual(merged.map(e => e.date), ['2026-09-01', '2026-08-25', '2026-06-16']);
@@ -219,11 +189,6 @@ test('an ERC Event publishes to the Exchange like any event (Kate, Sep 10, after
 
 test('ERC Events get the ERC voice, like every other event', () => {
   assert.equal(needsErcVoice({ type: 'erc_event', blurb: 'anything' }), true);
-});
-
-test('a past-dated ERC Event is flagged stale like any other parked event', () => {
-  const rows = [{ id: 1, status: 'circleback', type: 'erc_event', date: '2026-01-01' }];
-  assert.deepEqual(staleCirclebacks(rows, '2026-09-09').map(r => r.id), [1]);
 });
 
 test('a Report always gets rewritten, abstract or not (Kate, Sep 9)', () => {
@@ -251,7 +216,7 @@ test('missingFields says nothing about a row with no type yet', () => {
 });
 
 test('a link the reader says opens a different item is an alert, like a failed read (F20)', () => {
-  assert.equal(linkCheckState(blankRow({ link: 'https://a.org', link_checked: 'mismatch' })), 'alert');
+  assert.equal(linkNeedsCheck(blankRow({ link: 'https://a.org', link_checked: 'mismatch' })), true);
 });
 
 test('canRewrite: needs the ERC voice AND has text to draft from; a link-only event needs a description instead (F2)', async () => {

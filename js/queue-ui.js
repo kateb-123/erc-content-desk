@@ -1,7 +1,8 @@
 /**
- * The queue, as one slim read-only table at the bottom of Home: every pending
- * row plus the circle-backs, newest-first — title with its source underneath,
- * type, and submission date. Sort is view state only; nothing here is a link.
+ * The queue, as one slim table in Home's fold: every pending row plus the
+ * skipped ones, newest first, with the title and its source, the type and the
+ * submission date. Refresh re-reads; a row's trash can deletes it and leaves
+ * an Undo. The column sort is view state only; nothing here is a link.
  */
 import { dotsLoader, faIcon } from './icons.js';
 import { typeDisplay } from './schema.js';
@@ -11,10 +12,10 @@ import { focusKeyIn, restoreFocus } from './ui-aids.js';
 // View state only — resets on reload, never persisted.
 let sortState = { column: 'submitted', dir: 'desc' };
 // Deleted from this table since the page opened, id -> the row as it was.
-// They stay listed, greyed, with an Undo — the trash can is one click and the
-// rows are dense (Kate, Sep 9). The whole row matters, not just its status:
-// Undo puts back a circle-back as a circle-back and a quick-added item with
-// its newsletter stamp (audit round two, e21).
+// They stay listed, greyed, with an Undo: the trash can is one click and the
+// rows are dense. The whole row matters, not just its status, so Undo puts
+// back a circle-back as a circle-back and a quick-added item with its
+// newsletter stamp.
 const justDeleted = new Map();
 
 function el(tag, className, text) {
@@ -27,8 +28,8 @@ function el(tag, className, text) {
 /**
  * The mark an in-flight row action leaves in its button's place: the mini
  * dots with a word for assistive tech, carrying the button's focus key so the
- * redraw that follows can land on the row's partner control (audit round two,
- * e17). Takes focus only when the button had it.
+ * redraw that follows can land on the row's partner control. Takes focus
+ * only when the button had it.
  */
 export function inFlight(button, key, word) {
   const wait = el('span', 'queue-wait');
@@ -45,7 +46,7 @@ export function inFlight(button, key, word) {
 function titleCell(row) {
   const cell = el('td');
   cell.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
-  // A parked row says so (Sep 15); it waits under Sort's Skipped pill.
+  // A parked row says so; it waits under Sort's Skipped tab.
   if (row.status === 'circleback') cell.append(' ', el('span', 'badge', 'Skipped'));
   if (row.source) cell.append(el('span', 'item-source', row.source));
   return cell;
@@ -61,7 +62,7 @@ function bodyRow(row, { onDelete, today }) {
   tr.append(titleCell(row));
   // A row the reader has not filed yet says so; its type is not settled.
   if (row.pending_read === 'yes') tr.append(el('td', 'missing', 'Reading…'));
-  // "No type" in words, muted: a red dash read as an error and said nothing (Sep 15).
+  // "No type" in words, muted: a red dash read as an error and said nothing.
   else tr.append(el('td', row.type ? '' : 'missing', row.type ? typeDisplay(row.type) : 'No type'));
   tr.append(el('td', '', submittedDate(row, today)));
 
@@ -94,14 +95,13 @@ function bodyRow(row, { onDelete, today }) {
   return tr;
 }
 
-export function renderQueueTable(container, { rows, today, onRefresh, onDelete, bare = false }) {
-  const rerender = () => renderQueueTable(container, { rows, today, onRefresh, onDelete, bare });
-  const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place (audit round two, e17)
+export function renderQueueTable(container, { rows, today, onRefresh, onDelete }) {
+  const rerender = () => renderQueueTable(container, { rows, today, onRefresh, onDelete });
+  const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place
   container.replaceChildren();
 
-  // bare: the caller owns the heading (Home's fold, Sep 15); only Refresh stays.
-  const head = el('div', bare ? 'queue-head is-bare' : 'queue-head');
-  if (!bare) head.append(el('h2', '', 'In the queue'));
+  // The fold's summary is the heading; the head holds Refresh alone.
+  const head = el('div', 'queue-head');
   const refresh = el('button', '', 'Refresh');
   refresh.type = 'button';
   refresh.dataset.focus = 'refresh';

@@ -1,5 +1,5 @@
 /**
- * The screen-header info door (Kate's pick A, Sep 1): "View info" sits beside
+ * The screen-header info door: "View info" sits beside
  * the title and opens a tinted instruction panel. Open/closed is remembered
  * per screen for the visit — re-renders keep whatever state the reader chose.
  */

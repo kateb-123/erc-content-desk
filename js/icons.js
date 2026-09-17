@@ -27,7 +27,7 @@ export function faIcon(name) {
   return i;
 }
 
-/** Forward arrow for the header door buttons. */
+/** Forward arrow for the door buttons in a screen head. */
 export function forwardIcon() {
   return faIcon('arrow-right');
 }

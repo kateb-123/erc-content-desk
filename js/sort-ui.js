@@ -1,14 +1,13 @@
 /**
- * Sort: one section at a time (Kate, Sep 15), drawn as a list and a card
- * (Claude Design round two, Kate's pick C, Sep 16). The sections sit as
- * pills on top; the screen lands on the first one that holds anything, Needs
+ * Sort: one section at a time, drawn as a list and a card. The sections sit as
+ * tabs on top; the screen lands on the first one that holds anything, Needs
  * a fix first. Down the left, the section's rows (title, source and date);
  * on the right, one card for the chosen row: its badges, a fix panel (the
  * type as radios, subtypes under the picked type; the link check), the
  * description, and Edit · Delete · Skip · Keep. A decision moves the card to
  * the next row; decided rows grey at the bottom of the list with Undo.
  */
-import { linkCheckState, reshareFlags, missingFields } from './workflow.js';
+import { linkNeedsCheck, reshareFlags, missingFields } from './workflow.js';
 import { TYPE_ORDER, typeDisplay, subtypesFor, typeIsFlat } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { safeHref } from './links.js';
@@ -24,17 +23,17 @@ import { focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
 let selectedId = null;
 let lastIndex = 0;
 let listPanel = null;   // 'edit' | 'type' | null
-let openForm = null;    // the card's open edit form, so every way out can hold its typing (audit round two, e4)
-let landOnTitle = false; // a decision was made: the next card's title takes focus and is read (audit round two, e9)
+let openForm = null;    // the card's open edit form, so every way out can hold its typing
+let landOnTitle = false; // a decision was made: the next card's title takes focus and is read
 
 const FILTER_LABELS = [
-  // 'Needs a fix' (Kate, Sep 15): the one amber thing on the screen. It gathers
+  // 'Needs a fix': the one amber thing on the screen. It gathers
   // every row that cannot be kept yet (no type, link not opened) and possible
   // duplicates, so the rows themselves carry no amber marks.
   ['fix', 'Needs a fix'], ['erc', 'ERC'], ['erc_event', 'ERC events'],
   ['research', 'Research'],
   ['event', 'Events'], ['opportunity', 'Opportunities'], ['headline', 'Headlines'],
-  // Skipped (Kate, Sep 15, option B): every parked row, any type, with Keep and
+  // Skipped: every parked row, any type, with Keep and
   // Delete, so a Skip is never the end of the road. Last on the menu.
   ['skipped', 'Skipped'],
 ];
@@ -43,7 +42,7 @@ const FILTER_KEYS = FILTER_LABELS.map(([k]) => k);
 let lastFilter = null;  // detects a section jump so the list slides like the screens do
 let liveOrder = [];     // the section's live row ids in list order, for the arrow keys
 
-// A decision moves no pixels (Kate, Sep 9): the decided row greys in place at
+// A decision moves no pixels: the decided row greys in place at
 // the bottom of its section, with Undo. On a 95-item session even a 260ms
 // animation is half a minute of watching.
 
@@ -54,9 +53,9 @@ function el(tag, className, text) {
   return node;
 }
 
-/** The type as radios, the picked type's subtypes as indented radios under it
- *  (Claude Design round two, Sep 16). Picking the subtype IS the save (Kate,
- *  Sep 1); a flat type (ERC Event) saves on the type pick (Sep 10). */
+/** The type as radios, the picked type's subtypes as indented radios under
+ *  it. Picking the subtype IS the save; a flat type (ERC Event) saves on the
+ *  type pick. */
 function buildTypeRadios(row, onCommit) {
   const box = el('fieldset', 'type-radios');
   const legend = el('legend', 'sr-only', 'Type');
@@ -67,7 +66,7 @@ function buildTypeRadios(row, onCommit) {
     const input = el('input');
     input.type = 'radio';
     input.name = group;
-    input.dataset.focus = key;   // a pick redraws the card; the keyboard keeps its place (audit round two, d3)
+    input.dataset.focus = key;   // a pick redraws the card; the keyboard keeps its place
     input.checked = checked;
     input.addEventListener('change', onChange);
     line.append(input, ` ${label}`);
@@ -95,19 +94,16 @@ function buildTypeRadios(row, onCommit) {
   return box;
 }
 
-/** The amber Verify-link ask: open the source, then Confirm or Change. Shared by
- *  the card and the section list. onVerify(newLink?) records the outcome. */
+/** The card's Verify-link ask, inside the fix panel: open the source, then
+ *  Confirm or Change. onVerify(newLink?) records the outcome. */
 function buildLinkAlert(row, href, onVerify) {
-    // One amber line. "check it" opens the source; only after she's been
-  // there does "it works" appear — opening IS the verification (Kate, Sep 1).
+  // Opening the source IS the verification, so Confirm and Change only appear
+  // once she has been there. The panel head above carries the warning triangle.
   const alert = el('div', 'link-alert');
   const line = el('p', 'alert-line');
-  const mark = el('i', 'fa-solid fa-triangle-exclamation alert-mark');
-  mark.setAttribute('aria-hidden', 'true');
-  line.append(mark);
-  // Say why: the warning used to mean only "the desk couldn't read this",
-  // and the one truly wrong link in the data carried none (F12, F20).
-  line.append(' ', row.link_checked === 'mismatch' ? 'This link may open a different item.' : "The desk couldn't open this page.");
+  // Say why: the warning used to mean only "the desk couldn't read this", and
+  // a link that opens a different item carried no warning at all.
+  line.append(row.link_checked === 'mismatch' ? 'This link may open a different item.' : "The desk couldn't open this page.");
   const works = el('button', 'linkish alert-word', 'Confirm');
   works.type = 'button';
   works.dataset.focus = 'link-confirm';
@@ -120,7 +116,7 @@ function buildLinkAlert(row, href, onVerify) {
   input.type = 'url';
   input.id = `new-link-${row.id}`;
   input.placeholder = 'https://';
-  const fieldLabel = el('label', 'alert-field-label', 'New link');   // a visible name, not a placeholder (audit round two, f4)
+  const fieldLabel = el('label', 'alert-field-label', 'New link');   // a visible name, not a placeholder
   fieldLabel.htmlFor = input.id;
   const bad = el('p', 'field-error', 'Paste a full http(s) link');
   bad.id = `link-error-${row.id}`;
@@ -143,15 +139,13 @@ function buildLinkAlert(row, href, onVerify) {
   saveLink.addEventListener('click', saveFixed);
   input.addEventListener('keydown', e => { if (e.key === 'Enter') saveFixed(); });
   input.addEventListener('input', () => { input.classList.remove('is-invalid'); input.removeAttribute('aria-invalid'); bad.hidden = true; });
-  // One ask: "Verify link" opens the source. The two outcomes — It works /
-  // Change — only appear once she's been there (Kate, Sep 1).
   const after = el('span', '');
   after.append(' · ', works, ' · ', change);
   if (href) {
     after.hidden = true;
     const a = el('a', 'alert-word', 'Verify link ↗');
     a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
-    a.append(el('span', 'sr-only', ' (opens in a new tab)'));   // as the sidebar says it (audit round two, f13)
+    a.append(el('span', 'sr-only', ' (opens in a new tab)'));   // as the sidebar says it
     a.addEventListener('click', () => { after.hidden = false; });
     line.append(' ', a);
   } else {
@@ -165,7 +159,7 @@ function buildLinkAlert(row, href, onVerify) {
   alert.append(line, changeRow);
   if (href) {
     // The whole amber box is the ask, not only the two words in it — the
-    // boss clicked the box twice and nothing happened (usability run F5).
+    // boss clicked the box twice and nothing happened.
     alert.classList.add('is-clickable');
     alert.addEventListener('click', e => {
       if (e.target.closest('a, button, input')) return;
@@ -178,21 +172,19 @@ function buildLinkAlert(row, href, onVerify) {
 
 const sectionLabel = section => FILTER_LABELS.find(([k]) => k === section)?.[1] ?? section;
 
-// Out of Keep the rest for the reasons the card used to lock Keep: an
+// Out of Keep the rest for the same two reasons the card locks Keep: an
 // unchecked link, or no real type yet. Their rows say so.
-const keepableIn = live => live.filter(r => linkCheckState(r) !== 'alert' && !needsType(r));
+const keepableIn = live => live.filter(r => !linkNeedsCheck(r) && !needsType(r));
 
-function sectionHead(props, section, keepable, main, withUndo) {
+function sectionHead(props, section, keepable, main) {
   const head = el('div', 'list-head');
   head.append(el('p', 'sort-group', sectionLabel(section)));
-  if (withUndo) {
-    const undo = el('button', 'undo-link', 'Undo last');
-    undo.type = 'button';
-    undo.dataset.focus = 'undo';
-    undo.disabled = !props.lastDecision;
-    undo.addEventListener('click', () => props.onUndo());
-    head.append(undo);
-  }
+  const undo = el('button', 'undo-link', 'Undo last');
+  undo.type = 'button';
+  undo.dataset.focus = 'undo';
+  undo.disabled = !props.lastDecision;
+  undo.addEventListener('click', () => props.onUndo());
+  head.append(undo);
   if (keepable.length) {
     const keepBtn = el('button', 'primary list-keep', ` Keep the rest (${keepable.length})`);
     keepBtn.type = 'button';
@@ -233,20 +225,20 @@ function emptyPane(props, section, words = 'Nothing left in this section. ') {
   return pane;
 }
 
-/** One section on its own, from its pill: the head, the hint, then the list
+/** One section on its own, from its tab: the head, the hint, then the list
  *  and the card side by side. */
 function renderSectionList(main, props, section) {
   const rerender = () => renderSectionList(main, props, section);
-  const focusKey = focusKeyIn(main);   // a redraw keeps the keyboard's place (design audit a1)
+  const focusKey = focusKeyIn(main);   // a redraw keeps the keyboard's place
   main.replaceChildren();
   openForm = null;
   const ctx = fixContext(props.rows, props.today);
   const group = sectionRows(props.rows, section, props.sessionDecided ?? new Set(), ctx, props.decidedFrom ?? new Map());
   const keepable = keepableIn(group.live);
-  main.append(sectionHead(props, section, keepable, main, true));
+  main.append(sectionHead(props, section, keepable, main));
   liveOrder = group.live.map(r => r.id);
   if (!group.live.length && !group.done.length) {
-    // An empty pill points at the work that is left; only an empty queue
+    // An empty tab points at the work that is left; only an empty queue
     // says why it is empty.
     main.append(nextSectionWithRows(sortCounts(props.rows), section)
       ? emptyPane(props, section, 'Nothing in this section. ') : emptyLine(props));
@@ -314,7 +306,7 @@ function sortRowItem(row, { props, rerender, ctx, section, index }) {
   if (meta) text.append(el('span', 'sort-row-meta', meta));
   item.append(text);
   item.addEventListener('click', () => {
-    // Unsaved typing in the card is not thrown away by a row click (design audit b1).
+    // Unsaved typing in the card is not thrown away by a row click.
     if (row.id !== selectedId && holdIfDirty(openForm, item.closest('.sort-main')?.querySelector('.sort-card'))) return;
     selectedId = row.id; lastIndex = index; listPanel = null; rerender();
   });
@@ -362,7 +354,7 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
   // The fix panel (amber) holds every reason the row sits under Needs a fix:
   // no type, an unchecked link, a possible duplicate. Change on the type line
   // opens the same radios in a plain panel.
-  const linkAlert = linkCheckState(row) === 'alert';
+  const linkAlert = linkNeedsCheck(row);
   const dupe = fixReasons(row, ctx).find(r => r !== 'No type' && r !== 'Link not opened');
   const href = safeHref(row.link);
   const panelHead = (words, alert) => {
@@ -380,7 +372,7 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
       panel.append(panelHead('Type', false), buildTypeRadios(row, commitType));
       const cancel = el('button', 'linkish quiet-link', 'Cancel');
       cancel.type = 'button';
-      cancel.dataset.focus = 'change';   // back on Change, where the panel was opened (audit round two, d3)
+      cancel.dataset.focus = 'change';   // back on Change, where the panel was opened
       cancel.addEventListener('click', () => { listPanel = null; rerender(); });
       panel.append(cancel);
     }
@@ -475,21 +467,19 @@ function doneRowItem(row, onUndoRow, today) {
 }
 
 /** Two quiet notes, only when the reader came up short: missing fields, and the
- *  not-sure flag. Neither blocks Keep (Kate, Sep 9). */
+ * not-sure flag. Neither blocks Keep. */
 function buildCardNotes(row) {
   const notes = [];
-  // Two quiet notes, only when the reader came up short. Neither blocks Keep —
-  // Kate decides whether to go find the detail or bin the item (Sep 9).
   const FIELD_WORDS = { date: 'date', time: 'time', location: 'location', deadline: 'deadline', authors: 'authors', medium: 'outlet' };
   const missing = missingFields(row);
   if (missing.length) {
     const note = el('p', 'card-note');
     note.append(faIcon('circle-question'));
-    // Says what to do and, when the page could not be read, why (F7).
+    // Says what to do and, when the page could not be read, why.
     const words = missing.map(f => FIELD_WORDS[f] ?? f).join(', ');
     const them = missing.length === 1 && missing[0] !== 'authors' ? 'it' : 'them';
     const why = row.link_checked === 'failed' ? ". The desk couldn't read the page" : '';
-    note.append(` No ${words} yet${why}. Add ${them} with Edit.`);   // Edit is one form on both cards now (audit round two, e11)
+    note.append(` No ${words} yet${why}. Add ${them} with Edit.`);   // Edit is one form on both cards now
     notes.push(note);
   }
   if (String(row.needs_review ?? '').trim()) {
@@ -510,7 +500,7 @@ export function renderSort(container, props) {
   container.replaceChildren();
   const { rows, onFilter, onGoTo } = props;
   const counts = sortCounts(rows);
-  // No pill picked yet (or a key from before a rename): land where the work is.
+  // No tab picked yet (or a key from before a rename): land where the work is.
   const filter = FILTER_KEYS.includes(props.filter) ? props.filter : landingSection(counts);
 
 
@@ -524,7 +514,7 @@ export function renderSort(container, props) {
   head.append(door);
   container.append(head, info.panel);
 
-  // Carbon's tabs, read as tabs: one tab stop, Left and Right between them (audit round two, e14).
+  // Carbon's tabs, read as tabs: one tab stop, Left and Right between them.
   const nav = el('nav', 'sort-nav');
   nav.setAttribute('role', 'tablist');
   nav.setAttribute('aria-label', 'Sections');
@@ -579,7 +569,7 @@ export function renderSort(container, props) {
   bindShortcuts(container);
 }
 
-/** The keys (design audit b13): arrows move through the list, K keeps, S
+/** The keys: arrows move through the list, K keeps, S
  *  skips, D deletes, U undoes. Each one presses the button it names, so the
  *  rules (a locked Keep, no Skip under Skipped) hold. Not while typing. */
 function bindShortcuts(container) {

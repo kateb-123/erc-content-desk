@@ -1,6 +1,6 @@
 /**
  * Sort's catch-up: reads every row still waiting for the reader before any
- * card is shown (Kate, Sep 10). /api/read takes a batch per call, so this
+ * card is shown. /api/read takes a batch per call, so this
  * loops until nothing is left, and stops the moment a call reads nothing, so
  * a row that keeps failing cannot hold Sort forever.
  */

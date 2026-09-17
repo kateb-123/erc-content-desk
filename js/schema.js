@@ -24,8 +24,6 @@ export const SHEET_COLUMNS = [...CSV_COLUMNS, ...WORKFLOW_COLUMNS];
 
 export const BOOLEAN_COLUMNS = ['spotlight_request'];
 
-export const STATUSES = ['new', 'kept', 'circleback', 'trashed'];
-
 /**
  * Type vocabulary. Every type is hub-eligible in v2 — all keeps publish to
  * the Exchange. ERC Spotlight is a per-row flag (spotlight_request), not a type.
@@ -47,7 +45,7 @@ export const TYPES = {
     subtypes: ['A&M', 'Off-Campus', 'Webinar-Online'],
     extraFields: ['time', 'location'],
   },
-  // Events the ERC itself runs. Deliberately FLAT (Kate, Sep 9): every other
+  // Events the ERC itself runs. Deliberately FLAT: every other
   // type has subtypes because it spans different things; these are all just ours.
   erc_event: {
     subtypes: [],
@@ -55,8 +53,8 @@ export const TYPES = {
   },
 };
 
-/** Display order Kate approved in the mockup — not Object.keys(TYPES) order.
- *  ERC Event leads it, at her ask (Sep 9). */
+/** The order the type radios and pills are shown in, not Object.keys(TYPES)
+ *  order. ERC Event leads it. */
 export const TYPE_ORDER = ['erc_event', 'research', 'event', 'opportunity', 'headline'];
 
 export const TYPE_LABELS = {
@@ -65,7 +63,7 @@ export const TYPE_LABELS = {
   opportunity: 'Opportunity', headline: 'Headline',
 };
 
-/** What a type is called on screen (audit round two, f7): sentence case, as
+/** What a type is called on screen: sentence case, as
  *  DESIGN.md asks. TYPE_LABELS above is what the sheet and the bulk parser
  *  know and stays as it is; only the words shown change. */
 export const TYPE_DISPLAY = {
@@ -79,7 +77,7 @@ export function typeDisplay(type) {
   return Object.prototype.hasOwnProperty.call(TYPE_DISPLAY, key) ? TYPE_DISPLAY[key] : key;
 }
 
-/** `${type}|${subtype}` -> [newsletter section key, group key] (see js/model.js). */
+/** `${type}|${subtype}` -> [newsletter section key, group key] (see builder/js/model.js). */
 export const NEWSLETTER_MAP = {
   'opportunity|Funding & Grants': ['opportunities', 'funding'],
   'opportunity|Fellowships & Programs': ['opportunities', 'fellowships'],
@@ -142,8 +140,4 @@ export function isValidSubtype(type, subtype) {
   const list = subtypesFor(type);
   if (isValidType(type) && list.length === 0) return !String(subtype ?? '').trim();
   return list.includes(subtype);
-}
-
-export function isHubEligible(type) {
-  return isValidType(type);
 }

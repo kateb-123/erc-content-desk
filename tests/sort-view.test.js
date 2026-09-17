@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { keptUntyped, sortCounts, sectionOf, allSections, sectionRows, fixReasons, landingSection, pendingRowCount, keepBlock, nextSelected, nextSectionWithRows, undoWords, withoutRow, adjacentTab } from '../js/sort-view.js';
+import { keptUntyped, sortCounts, sectionOf, allSections, sectionRows, fixReasons, landingSection, keepBlock, nextSelected, nextSectionWithRows, undoWords, withoutRow, adjacentTab } from '../js/sort-view.js';
+import { pendingRows } from '../js/workflow.js';
+
+// The oracle for "every pending row lands in exactly one section": what the
+// queue still has for Sort, counted independently of the grouping under test.
+const pendingRowCount = rs => pendingRows(rs).filter(r => r.pending_read !== 'yes').length + keptUntyped(rs).length;
 
 // Shuffled on purpose: statuses mixed in, groups interleaved, dates unordered.
 // Every typed row carries a real subtype: without one it would sit under Needs a fix.
@@ -270,12 +275,6 @@ test('landingSection is the first pill with anything in it, Needs a fix first, e
   assert.equal(landingSection({ fix: 2, erc: 1, erc_event: 0, research: 3, event: 0, opportunity: 0, headline: 0 }), 'fix');
   assert.equal(landingSection({ fix: 0, erc: 0, erc_event: 0, research: 3, event: 0, opportunity: 0, headline: 1 }), 'research');
   assert.equal(landingSection({ fix: 0, erc: 0, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 }), 'fix');
-});
-
-test('pendingRowCount is what the queue still has for Sort: pending rows the reader has filed, plus kept fix-ups', () => {
-  assert.equal(pendingRowCount(rows), 10);
-  assert.equal(pendingRowCount([{ id: 1, status: 'kept', type: '' }]), 1);
-  assert.equal(pendingRowCount([{ id: 2, status: 'new', type: 'event', subtype: 'A&M', pending_read: 'yes' }]), 0);
 });
 
 // Skipped (Kate, Sep 15, option B): a parked row waits under its own pill, any

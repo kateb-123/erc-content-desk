@@ -1,12 +1,13 @@
 /**
- * Finalize (Claude Design round two, Kate's pick Sep 16): a progress bar,
- * the kept rows as a list down the left in groups (Needs a rewrite or To
- * check, Done, No rewrite needed folded), and one card on the right for the
- * chosen row. A rewrite shows Before and After side by side with the changed
+ * Finalize: a progress bar, the kept rows as a list down the left in groups
+ * (Needs a rewrite or To check, Done, No rewrite needed folded), and one card
+ * on the right for the chosen row. A rewrite shows Before and After side by side with the changed
  * words marked; Keep or Use original moves to the next one; Keep all
  * remaining clears the rest. ERC leads the standing order. Nothing publishes
  * from this screen.
  */
+// canRewrite lives in workflow.js so this screen and /api/rewrite can never
+// disagree about what needs rewriting.
 import { readyToPublish, canRewrite, needsDescription } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, typeDisplay } from './schema.js';
@@ -20,11 +21,11 @@ import { focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
 
 // View state only — resets on reload, never persisted.
 let editingId = null;
-let openForm = null;        // the open edit form, so every way out can hold its typing (audit round two, e4)
+let openForm = null;        // the open edit form, so every way out can hold its typing
 let selectedId = null;      // the row the card shows
 let noneOpen = false;       // the No rewrite needed group, folded by default
 // Deleted from this screen since it opened, id -> the row as it was. They stay
-// listed, greyed, with an Undo (design audit a3): a mis-click on the red word
+// listed, greyed, with an Undo: a mis-click on the red word
 // beside Edit is one click from repair, as on Sort and the queue.
 const justDeleted = new Map();
 
@@ -37,10 +38,6 @@ function el(tag, className, text) {
   if (text !== undefined) node.textContent = text;
   return node;
 }
-
-/** The shared predicate lives in workflow.js so the /api/rewrite endpoint
- *  can never disagree with this screen about what needs rewriting. */
-export const needsRewrite = canRewrite;
 
 const oldestFirst = (a, b) => String(a.submitted_at).localeCompare(String(b.submitted_at));
 
@@ -98,7 +95,7 @@ function diffPara(toks, baseClass, changeClass) {
   return p;
 }
 
-/** The facts that lead the expanded detail — events and opportunities only;
+/** The facts that lead the detail body, events and opportunities only:
  *  research reads title/authors/source in the row and Abstract below. */
 function factsFor(row, today) {
   const per = {
@@ -108,10 +105,9 @@ function factsFor(row, today) {
   return (per[row.type] ?? []).filter(([, v]) => v);
 }
 
-/** Exchange layout: facts panel in a left column, blurb beside it. `extra`
- *  (the Edit fields action) rides under the blurb in the main column.
- *  Shared with Publish, which uses it read-only. */
-export function detailBody(row, extra, today) {
+/** Exchange layout: facts panel in a left column, blurb beside it. Shared
+ *  with Publish, which uses it read-only. */
+export function detailBody(row, today) {
   const facts = factsFor(row, today);
   const wrap = el('div', facts.length ? 'f-detail-cols' : '');
   if (facts.length) {
@@ -128,12 +124,11 @@ export function detailBody(row, extra, today) {
   if (row.blurb) {
     main.append(el('h3', 'f-detail-label', row.type === 'research' ? 'Abstract' : 'Description'));   // h3 under the screen's h2, no skipped level
     main.append(el('p', 'f-blurb-text', row.blurb));
-  } else if (needsRewrite(row)) {
+  } else if (canRewrite(row)) {
     main.append(el('p', 'rewrite-note', 'No description yet. Rewrite drafts one from the original text.'));
   } else if (needsDescription(row)) {
-    main.append(el('p', 'rewrite-note', 'Needs a description. Add one in Edit fields.'));
+    main.append(el('p', 'rewrite-note', 'Needs a description. Add one with Edit.'));
   }
-  if (extra) main.append(extra);
   wrap.append(main);
   return wrap;
 }
@@ -165,7 +160,7 @@ function toolLinks(actions, row, { rerender, onTrash, lock }) {
 function editCard(row, { onSave, rerender }) {
   const card = el('div', 'card f-card');
   cardHead(card, row);
-  // The one edit form, the same as Sort's (audit round two, e11).
+  // The one edit form, the same as Sort's.
   openForm = buildEditForm(row, {
     onSave: changes => {
       editingId = null;
@@ -222,7 +217,7 @@ function checkCard(row, { old, nextId, onVerify, onRevert, onCheckEdit, onTrash,
   return card;
 }
 
-/** A row still waiting for its rewrite: the original text in the amber box. */
+/** A row still waiting for its rewrite: the original text in its own box. */
 function rewriteCard(row, { rerender, onEditRow, onTrash }) {
   if (editingId === row.id) return editCard(row, { onSave: onEditRow, rerender });
   const card = el('div', 'card f-card');
@@ -243,7 +238,7 @@ function plainCard(row, { rerender, onEditRow, onTrash, today }) {
   if (editingId === row.id) return editCard(row, { onSave: onEditRow, rerender });
   const card = el('div', 'card f-card');
   cardHead(card, row);
-  card.append(detailBody(row, null, today));
+  card.append(detailBody(row, today));
   const actions = el('div', 'f-verify-actions');
   toolLinks(actions, row, { rerender, onTrash, lock: () => { for (const b of card.querySelectorAll('button')) b.disabled = true; } });
   card.append(actions);
@@ -253,13 +248,13 @@ function plainCard(row, { rerender, onEditRow, onTrash, today }) {
 export function renderFinalize(container, props) {
   const { rows, today, review, verified, reviewTotal, busy, rewroteNote, lastKeepAll, onEditRow, onCheckEdit, onRewrite, onVerifyRewrite, onVerifyAll, onUndoKeepAll, onRevertRewrite, onTrash, onRestore, onGoTo } = props;
   const rerender = () => renderFinalize(container, props);
-  const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place (design audit a1)
+  const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place
   const held = () => holdIfDirty(openForm, container.querySelector('.f-card'));
   container.replaceChildren();
   openForm = null;
   const keeps = standingOrder(readyToPublish(rows));
   const handled = id => review?.has(id) || verified?.has(id);
-  const pending = keeps.filter(r => needsRewrite(r) && !handled(r.id));
+  const pending = keeps.filter(r => canRewrite(r) && !handled(r.id));
   const checks = review?.size ?? 0;
   const stage = finalizeStage({ pending: pending.length, checks });
   const groups = finalizeGroups(keeps, {
@@ -280,7 +275,7 @@ export function renderFinalize(container, props) {
     : finalizeProgress(stage, { pending: pending.length, keeps: keeps.length });
   const lede = el('p', 'lede');
   if (lastKeepAll?.length && onUndoKeepAll) {
-    // Keep the rest is one click; its way back sits where the count was (design audit b5).
+    // Keep the rest is one click; its way back sits where the count was.
     lede.append(`Kept ${lastKeepAll.length} rewrite${lastKeepAll.length === 1 ? '' : 's'}. `);
     const undo = el('button', 'linkish', 'Undo');
     undo.type = 'button';
@@ -288,7 +283,7 @@ export function renderFinalize(container, props) {
     undo.addEventListener('click', () => { undo.disabled = true; onUndoKeepAll(); });
     lede.append(undo);
   } else if (!keeps.length) lede.textContent = 'No unpublished keeps right now.';
-  else if (stage !== 'checking' && rewroteNote && !busy) lede.textContent = rewroteNote;   // an empty rewrite's answer, next to the button (F11)
+  else if (stage !== 'checking' && rewroteNote && !busy) lede.textContent = rewroteNote;   // an empty rewrite's answer, next to the button
   else lede.textContent = progress.text;
   lead.append(lede);
   head.append(lead);
@@ -299,7 +294,7 @@ export function renderFinalize(container, props) {
     btn.addEventListener('click', () => { if (held()) return; btn.disabled = true; onRewrite(); });
     head.append(btn);
   } else if (!busy && stage === 'checking' && onVerifyAll) {
-    // The bulk keep, named and drawn as on Sort (audit round two, f3).
+    // The bulk keep, named and drawn as on Sort.
     if (toCheck.length > 1) {
       const all = el('button', 'primary', ` Keep the rest (${toCheck.length})`);
       all.type = 'button';
@@ -317,7 +312,7 @@ export function renderFinalize(container, props) {
   }
   container.append(head);
   if (busy) {
-    // The wait says what it is (design audit b2): the dots, and words a screen reader hears.
+    // The wait says what it is: the dots, and words a screen reader hears.
     container.append(dotsLoader());
     const line = el('p', 'load-line');
     line.setAttribute('role', 'status');
@@ -368,7 +363,7 @@ export function renderFinalize(container, props) {
       item.dataset.focus = `row:${row.id}`;
       if (row.id === selectedId) item.setAttribute('aria-current', 'true');
       if (group.key === 'rewrite') {
-        // Colour is never the only signal: the triangle, as on Sort's rows (audit round two, f14).
+        // Colour is never the only signal: the triangle, as on Sort's rows.
         const mark = faIcon('triangle-exclamation');
         mark.classList.add('fix-mark');
         item.append(mark);

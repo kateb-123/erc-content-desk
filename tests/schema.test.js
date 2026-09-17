@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CSV_COLUMNS, WORKFLOW_COLUMNS, SHEET_COLUMNS, BOOLEAN_COLUMNS, STATUSES, TYPES, NEWSLETTER_MAP,
+  CSV_COLUMNS, WORKFLOW_COLUMNS, SHEET_COLUMNS, BOOLEAN_COLUMNS, TYPES, NEWSLETTER_MAP,
   TYPE_ORDER, TYPE_LABELS,
   blankRow, rowToValues, valuesToRow, subtypesFor, isValidType, isValidSubtype,
 } from '../js/schema.js';
@@ -59,10 +59,6 @@ test('valuesToRow pads short rows from the sheet', () => {
   assert.equal(row.headline, 'Short row');
   assert.equal(row.blurb, '');
   assert.equal(row.spotlight_request, false);
-});
-
-test('statuses are the v2 set — processed is gone', () => {
-  assert.deepEqual(STATUSES, ['new', 'kept', 'circleback', 'trashed']);
 });
 
 test('the submission types carry the v2 subtype vocabulary', () => {

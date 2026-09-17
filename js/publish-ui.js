@@ -1,8 +1,8 @@
 /**
- * Publish (the Final List): checked against the LIVE news.csv on arrival —
- * the report is the page. Queue-style rows grouped by fate (adding / already
- * live / newsletter-only / needs a type), each expandable for one last look.
- * One deliberate click: Publish. Append-only. After publishing, Go to Build.
+ * Publish to Exchange: checked against the LIVE news.csv on arrival, and the
+ * report is the page. One fate bar over one table, every row expandable for a
+ * last look, the legend filtering it. Publish asks once, then appends to the
+ * site; the receipt carries the Send to Newsletter door.
  */
 import { readyToPublish } from './workflow.js';
 import { PUBLISH_PAUSED } from './flags.js';
@@ -39,7 +39,7 @@ let celebrated = ''; // which publish already played its confirmation — revisi
 // endpoint, so nothing reaches the live Exchange. Per-page-load state.
 let trialPosting = false; // showing the "posting…" shadow alert
 let trialDone = 0;        // count on the mocked receipt (0 = not yet)
-let confirming = false;   // the one ask before the append-only write (design audit b6)
+let confirming = false;   // the one ask before the append-only write
 
 /** Arriving at Publish never lands on a standing ask. */
 export function resetPublishAsk() { confirming = false; }
@@ -49,6 +49,14 @@ function el(tag, className, text) {
   if (className) node.className = className;
   if (text !== undefined) node.textContent = text;
   return node;
+}
+
+/** The onward door, right of the screen head. */
+function newsletterDoor(onGoTo) {
+  const btn = el('button', 'door head-action', 'Send to Newsletter');
+  btn.append(forwardIcon());
+  btn.addEventListener('click', () => onGoTo('build'));
+  return btn;
 }
 
 const FATE_CLASS = { adding: 'p-adding', held: 'p-held', fix: 'p-notready', live: 'p-skip' };
@@ -65,10 +73,10 @@ function itemRows({ row, fate }, { rerender, onGoTo, today }) {
   caret.dataset.focus = `chev:${row.id}`;
   caret.setAttribute('aria-expanded', String(isOpen));
   const name = row.headline || row.link || 'this item';
-  caret.setAttribute('aria-label', `${isOpen ? 'Hide' : 'Show'} details for ${name}`);   // five carets, five names (audit round two, e15)
+  caret.setAttribute('aria-label', `${isOpen ? 'Hide' : 'Show'} details for ${name}`);   // five carets, five names
   caret.append(faIcon(isOpen ? 'chevron-up' : 'chevron-down'));
   caretTd.append(caret);
-  tr.append(caretTd);   // left, one glyph, like Sort (Kate, Sep 15, option A)
+  tr.append(caretTd);   // left, one glyph
 
   const titleTd = el('td');
   titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
@@ -103,7 +111,7 @@ function itemRows({ row, fate }, { rerender, onGoTo, today }) {
   const detailTr = el('tr', `f-detail-row ${rowClass}`);
   const td = el('td');
   td.colSpan = 5;
-  td.append(detailBody(row, null, today));
+  td.append(detailBody(row, today));
   detailTr.append(td);
   return [tr, detailTr];
 }
@@ -135,10 +143,11 @@ function fateBar(container, list, rerender) {
 export function renderPublish(container, props) {
   const { rows, today, preview, busy, justPublished, onPublish, onGoTo, onRecheck, publishedCsv } = props;
   const rerender = () => renderPublish(container, props);
-  const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place (design audit a1)
-  // The mocked receipt stands in for a real one during the trial.
-  const showReceipt = justPublished || (PUBLISH_PAUSED && trialDone);
-  const isTrial = !justPublished && PUBLISH_PAUSED && Boolean(trialDone);
+  const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place
+  // The mocked receipt stands in for a real one during the trial; trialDone and
+  // trialPosting are only ever set inside the PUBLISH_PAUSED arm of the ask.
+  const showReceipt = justPublished || trialDone;
+  const isTrial = !justPublished && Boolean(trialDone);
   const receiptCount = justPublished || trialDone;
   container.replaceChildren();
 
@@ -175,40 +184,23 @@ export function renderPublish(container, props) {
   if (showReceipt) {
     // receipt below carries the onward door — head stays bare
   } else if (!candidates.length && !busy) {
-    const btn = el('button', 'door head-action', 'Send to Newsletter');
-    btn.append(forwardIcon());
-    btn.addEventListener('click', () => onGoTo('build'));
-    head.append(btn);
+    head.append(newsletterDoor(onGoTo));
   } else if (preview && !busy && !trialPosting && adding.length) {
-    // The button disappears while publishing — the status loader takes over.
+    // The button only asks (the Send early shape); the ask below replaces it
+    // and its Confirm does the work. It disappears while publishing, and the
+    // status loader takes over.
     const btn = el('button', 'primary', `Publish ${adding.length} to the Exchange`);
     btn.dataset.focus = 'publish';
-    btn.addEventListener('click', () => {
-      // First click asks; the ask's Confirm does the work (the Send early shape).
-      if (!confirming) { confirming = true; rerender(); return; }
-      btn.disabled = true;
-      if (PUBLISH_PAUSED) {
-        // Trial: no real publish — show the "forthcoming" alert, then mock success.
-        const n = adding.length;
-        trialPosting = true;
-        rerender();
-        setTimeout(() => { trialPosting = false; trialDone = n; rerender(); }, 1100);
-      } else {
-        onPublish();
-      }
-    });
+    btn.addEventListener('click', () => { confirming = true; rerender(); });
     head.append(btn);
   } else if (preview && !busy && !trialPosting) {
-    // Nothing to add — the only move left is the newsletter door.
-    const btn = el('button', 'door head-action', 'Send to Newsletter');
-    btn.append(forwardIcon());
-    btn.addEventListener('click', () => onGoTo('build'));
-    head.append(btn);
+    // Nothing to add: the only move left is the newsletter door.
+    head.append(newsletterDoor(onGoTo));
   }
   if (confirming && adding.length && !busy && !showReceipt) {
     head.querySelector('[data-focus="publish"]')?.remove();
     const ask = el('div', 'nl-ask p-ask');
-    // Body text, the count and "live" in 600: the one ask before the public write reads as a question (audit round two, e10).
+    // Body text, the count and "live" in 600: the one ask before the public write reads as a question.
     ask.append(faIcon('triangle-exclamation'), ' Publish ', el('strong', '', String(adding.length)), ' to the ', el('strong', '', 'live'), ' Exchange? ');
     const ok = el('button', 'linkish alert-word', 'Confirm');
     ok.type = 'button';
@@ -217,6 +209,7 @@ export function renderPublish(container, props) {
       confirming = false;
       ok.disabled = true;
       if (PUBLISH_PAUSED) {
+        // Trial: no real publish. Show the "forthcoming" alert, then mock success.
         const n = adding.length;
         trialPosting = true;
         rerender();
@@ -227,7 +220,7 @@ export function renderPublish(container, props) {
     });
     const no = el('button', 'linkish alert-word nl-cancel', 'Cancel');
     no.type = 'button';
-    no.dataset.focus = 'publish';   // back on the Publish button the ask replaced (audit round two, d3)
+    no.dataset.focus = 'publish';   // back on the Publish button the ask replaced
     no.addEventListener('click', () => { confirming = false; rerender(); });
     ask.append(ok, ' \u00b7 ', no);
     head.append(ask);
@@ -236,7 +229,7 @@ export function renderPublish(container, props) {
   container.append(head);
 
   // Trial: the "forthcoming" shadow alert during the mocked posting beat.
-  if (PUBLISH_PAUSED && trialPosting) {
+  if (trialPosting) {
     const shade = el('div', 'p-shade');
     shade.append(el('p', 'p-shade-line', 'Publishing paused. Continue in trial mode.'));
     shade.append(dotsLoader());
@@ -283,11 +276,9 @@ export function renderPublish(container, props) {
     container.append(dotsLoader());
     return;
   }
-  // Silent dupe skip stays silent — the info panel says already-live items are skipped.
-
-  // One bar, one table (Claude Design round two, Kate's pick Sep 16): every
-  // row the check returned, in fate order, the legend filtering it. Already
-  // live carries no number anywhere (Kate, Sep 1).
+  // One bar, one table: every row the check returned, in fate order, the
+  // legend filtering it. An already-live row is listed with its fate and left
+  // out of the write; it carries no number anywhere.
   if (!preview) return;
   const list = publishRows(preview, rows);
   if (!list.length) return;

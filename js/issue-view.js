@@ -1,7 +1,6 @@
 /**
- * The Next issue page's view model (Kate, Sep 15: the newsletter's current
- * state "should pretty much show a list like a table"). Pure, so node --test
- * can hold it.
+ * The Next newsletter page's view model: the issue's current state as a table.
+ * Pure, so node --test can hold it.
  */
 
 /** Newest submission first; a row with no timestamp sorts last, never first. */

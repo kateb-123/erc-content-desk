@@ -1,9 +1,9 @@
 /**
- * Newsletter: the hand-off to the standalone newsletter builder. After the
- * Exchange is live, pick which items go to the issue — everything published
- * since the last issue plus the newsletter-only holds, all selected by
- * default. Send stamps them with the issue date; they drain from the desk
- * and the builder pulls them from here. No .md, no export.
+ * Send to Newsletter: the hand-off to the builder in this project. After the
+ * Exchange is live, pick which items go to the issue, from everything
+ * published since the last issue plus the newsletter-only holds. Nothing goes
+ * unless she picks it. Send stamps them with the issue date; they drain from
+ * the desk and the builder pulls them from here.
  */
 import { titleWithInfo } from './screen-info.js';
 import { faIcon } from './icons.js';
@@ -24,13 +24,13 @@ const GROUP_LABELS = {
 };
 
 // View state: lives while the page is open. The ticks clear after a Send and
-// when the issue changes, not on a hop to another screen (Kate, Sep 15: tick
-// five, check something in Finalize, come back, still ticked).
+// when the issue changes, not on a hop to another screen: tick five, check
+// something in Finalize, come back, and they are still ticked.
 let picked = new Set(); // nothing goes unless she picks it
 let issuePick = '';     // '' = the next issue on the schedule
 let confirmedEarly = new Set(); // later-event ids okayed via "Send early?" this visit
 let askOpenId = null;           // later-event row currently asking
-const justDeleted = new Map();  // past items deleted this visit, id -> the row as it was (design audit a3)
+const justDeleted = new Map();  // past items deleted this visit, id -> the row as it was
 
 // Folded categories survive re-renders (every checkbox click re-renders).
 const collapsedGroups = new Set();
@@ -45,7 +45,7 @@ function el(tag, className, text) {
   return node;
 }
 
-/** '2026-09-01' -> 'September 1' (how the desk header names issues). */
+/** '2026-09-01' -> 'September 1', the way the desk names an issue on screen. */
 function issueLabel(iso) {
   const m = String(iso ?? '').match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (!m) return iso;
@@ -53,7 +53,7 @@ function issueLabel(iso) {
     .toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 }
 
-/** A fold's summary: the chevron on the left, as on every opener (audit round two, f1). */
+/** A fold's summary: the chevron on the left, as on every opener. */
 function foldSummary(text, className = '') {
   const summary = el('summary', className);
   summary.append(faIcon('chevron-right'), el('span', '', text));
@@ -146,7 +146,7 @@ export function renderNewsletter(container, props) {
   const rerender = () => renderNewsletter(container, props);
   // Each group scrolls in its own box; every click rebuilds the screen, so the
   // positions ride across or an opened ask lands out of view below the fold.
-  const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place (design audit a1)
+  const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place
   const scrollTops = new Map();
   for (const fold of container.querySelectorAll('[data-group]')) {
     const box = fold.querySelector('.nl-group-scroll');
@@ -214,7 +214,7 @@ export function renderNewsletter(container, props) {
 
   if (justSent) {
     const open = el('p', '');
-    // The onward door, then a way back to the pool (design audit b12).
+    // The onward door, then a way back to the pool.
     const a = el('a', 'door slim-door', 'Open the newsletter builder ↗');
     a.href = BUILDER_URL; a.target = '_blank'; a.rel = 'noreferrer';
     a.append(el('span', 'sr-only', ' (opens in a new tab)'));
@@ -279,7 +279,7 @@ export function renderNewsletter(container, props) {
     fold.append(summary);
     fold.dataset.group = label;
     const table = el('table', 'queue-table nl-table');
-    // Every table names its columns (Sep 15): the date here is when it went live.
+    // Every table names its columns: the date here is when it went live.
     const hr = el('tr');
     hr.append(el('th', 'nl-check'), el('th', '', 'Title'), el('th', '', 'Type'), el('th', '', 'Published'));
     const thead = el('thead');
@@ -331,13 +331,13 @@ export function renderNewsletter(container, props) {
         titleTd.append(el('span', 'item-source nl-when', `For the ${issueLabel(timing.issue)} issue`));
         if (askOpenId === row.id) {
           askRow = tr;
-          // The card language's amber bubble, same as Sort's verify loop: the
-          // icon sits on the bubble, the two outcomes stay bare words.
+          // The same shape as Sort's verify ask: the icon sits on the
+          // bubble, the two outcomes stay bare words.
           const ask = el('div', 'nl-ask');
           ask.append(faIcon('clock'), ' Send early? ');
           const ok = el('button', 'linkish alert-word', 'Confirm');
           ok.type = 'button';
-          ok.dataset.focus = `pick:${row.id}`;   // back on the row's box after the ask (audit round two, d3)
+          ok.dataset.focus = `pick:${row.id}`;   // back on the row's box after the ask
           ok.addEventListener('click', e => {
             e.stopPropagation();
             confirmedEarly.add(row.id);
@@ -378,7 +378,7 @@ export function renderNewsletter(container, props) {
     container.append(fold);
   }
 
-  // Send and the count ride at the foot of the window while the groups scroll (audit round two, e13).
+  // Send and the count ride at the foot of the window while the groups scroll.
   if (!justSent && live.length && !busy) {
     const foot = el('div', 'nl-foot');
     foot.append(el('span', 'nl-picked', `${selected.length} picked`));

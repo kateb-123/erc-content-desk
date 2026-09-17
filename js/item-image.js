@@ -53,7 +53,7 @@ async function uploadItemImage(file, onStatus) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: file.name, type: ext, file: b64 }),
   });
-  // A server page instead of JSON (a 502, a timeout) becomes a sentence, not parser noise (design audit b7).
+  // A server page instead of JSON (a 502, a timeout) becomes a sentence, not parser noise.
   if (!res.ok) throw new Error(`The desk couldn't upload that file (server error ${res.status}). Try again.`);
   const data = await res.json().catch(() => ({}));
   if (!data.ok) throw new Error(data.error || "The desk couldn't upload that file. Try again.");
@@ -79,7 +79,7 @@ export function buildImageControl(initial, onChange) {
   const status = document.createElement('span');
   status.className = 'img-status';
   status.setAttribute('role', 'status');
-  // What is attached, in view: a small thumbnail beside the words (design audit b8).
+  // What is attached, in view: a small thumbnail beside the words.
   const thumb = document.createElement('img');
   thumb.className = 'img-thumb';
   thumb.alt = '';

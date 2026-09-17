@@ -1,7 +1,6 @@
 /**
- * Publish as one table (Claude Design round two, Kate's pick Sep 16): every
- * row the check returned, in one list, each wearing its fate. Pure, so
- * node --test can hold it. The check's own grouping stays the truth: rows are
+ * Publish as one table: every row the check returned, in one list, each
+ * wearing its fate. Pure, so node --test can hold it. The check's own grouping stays the truth: rows are
  * looked up by the ids the endpoint returns, never re-derived client-side.
  */
 
@@ -27,8 +26,8 @@ export function publishRows(preview, rows) {
 }
 
 /** The legend under the bar: a count for every fate that holds rows, except
- *  Already live, which never carries a number (Kate, Sep 1: no counts, no
- *  skipped talk). */
+ *  Already live, which never carries a number: no counts and no skipped
+ *  talk for the rows the write leaves out. */
 export function legendItems(list) {
   return FATES.map(fate => {
     const count = list.filter(r => r.fate === fate.key).length;

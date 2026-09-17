@@ -4,9 +4,8 @@
  * place, or open the pipeline in its own window from the front door; outside
  * pages open in a new tab; the three hand-outs carry a copy icon that puts
  * one sentence with the link on the clipboard. Desk work folds, and the desk
- * remembers it shut (Kate, Sep 16, Claude Design round two). On a Desk work
- * screen the sidebar tucks behind a thin grey strip with a menu button and
- * comes back in place when opened (Kate, Sep 16, from four clickable options).
+ * remembers it shut. On a Desk work screen the sidebar tucks behind a thin
+ * grey strip with a menu button and comes back in place when opened.
  */
 import { NAV, currentKey, foldOpen, menuLayout, itemLink } from './sidebar-view.js';
 import { faIcon } from './icons.js';
@@ -117,7 +116,7 @@ function build(nav, { isSectionWindow, onGo, screenRef }) {
       if (link.newTab) {
         a.target = '_blank';
         a.rel = 'noreferrer';
-        // Outside pages carry a small glyph; every new tab is named for assistive tech (design audit b16).
+        // Outside pages carry a small glyph; every new tab is named for assistive tech.
         if (item.href && !item.href.startsWith('/')) { const out = faIcon('arrow-up-right-from-square'); out.classList.add('side-out'); a.append(out); }
         a.append(el('span', 'sr-only', ' (opens in a new tab)'));
       }

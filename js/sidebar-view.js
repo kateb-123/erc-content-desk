@@ -1,8 +1,6 @@
 /**
- * The sidebar's contents (Kate, Sep 16, from the Claude Design docs: "I like
- * the sidebar the most. but then I think keep our stuff"; reordered the same
- * day from round two): the desk itself, the Policy Exchange, the newsletter,
- * then Desk work (the pipeline) as a fold.
+ * The sidebar's contents: the desk itself, the Policy Exchange, the
+ * newsletter, then Desk work (the pipeline) as a fold.
  * Pure data and two small rules, so node --test can hold them.
  *
  * Each item is one of three kinds:
@@ -15,25 +13,24 @@ import { shareLine, signupLine } from './home-panel.js';
 export const EXCHANGE_URL = 'https://erc-policy-exchange.vercel.app/';
 // The public share and sign-up pages live in the Policy Exchange hub, a
 // separate origin from the desk on purpose: nothing on them can lead back here.
-export const SHARE_PATH = 'https://erc-policy-exchange.vercel.app/share/';
-export const SIGNUP_PATH = 'https://erc-policy-exchange.vercel.app/newsletter/';
-export const BUILDER_PATH = '/builder/';
+const SHARE_PATH = 'https://erc-policy-exchange.vercel.app/share/';
+const SIGNUP_PATH = 'https://erc-policy-exchange.vercel.app/newsletter/';
+const BUILDER_PATH = '/builder/';
 export const ARCHIVE_PATH = '/builder/archive.html';
 
-/** The pipeline's screens: from the front door they open in their own window
- *  (Kate, Sep 15: "a new section and a new set of activities"). */
-export const SECTION_SCREENS = ['sort', 'finalize', 'publish', 'build'];
+/** The pipeline's screens: from the front door each opens in its own window,
+ *  because a new section of the work is a new set of activities. */
+const SECTION_SCREENS = ['sort', 'finalize', 'publish', 'build'];
 
-/** The builder's pages carry the desk's sidebar too (Kate, Sep 16): the
+/** The builder's pages carry the desk's sidebar too: the
  *  builder itself and Past newsletters, named by the items they light. */
-export const BUILDER_SCREENS = ['builder', 'past'];
+const BUILDER_SCREENS = ['builder', 'past'];
 
 // Where the menu tucks behind the thin strip: Desk work, and the builder.
 const TUCKED_SCREENS = [...SECTION_SCREENS, 'builder'];
 
-// Claude Design round two, Kate's pick (Sep 16): the team's links first, the
-// pipeline last as a "Desk work" fold; icons on the group headings, none on
-// the items under them; Sort shows the queue count.
+// The team's links first, the pipeline last as a "Desk work" fold; icons on
+// the group headings, none on the items under them; Sort shows the queue count.
 export const NAV = [
   { label: '', items: [
     { key: 'home', label: 'ERC Content Desk', icon: 'house', screen: 'home' },
@@ -63,12 +60,10 @@ export function foldOpen(stored, screen) {
   return stored !== 'closed' || SECTION_SCREENS.includes(screen);
 }
 
-/** Desk work tucks the sidebar away (Kate, Sep 16: "b when it's expanded and
- *  the button. but also the thin grey bar to the left like C"), and so does
- *  the builder ("make the newsletter builder behave like the sort does with
- *  the menu"). There a thin grey strip holds the menu button until it is
- *  opened; open, the sidebar is back in place with a close button. The front
- *  door and Past newsletters always keep their sidebar. */
+/** Desk work tucks the sidebar away, and so does the builder: a thin grey
+ *  strip holds the menu button until it is opened, and open, the sidebar is
+ *  back in place with a close button. The front door and Past newsletters
+ *  always keep their sidebar. */
 export function menuLayout(screen, open) {
   const tucks = TUCKED_SCREENS.includes(screen);
   return { strip: tucks && !open, sidebar: !tucks || open, close: tucks && open };
@@ -99,8 +94,8 @@ export function itemLink(item, screen, isSectionWindow) {
 }
 
 /** The address a screen keeps: the pipeline's screens and Next newsletter
- *  carry a hash so a reload or a bookmark lands back on them (design audit
- *  b21); the front door has none. */
+ *  carry a hash so a reload or a bookmark lands back on them; the front door
+ *  has none. */
 export function screenHash(screen) {
   if (SECTION_SCREENS.includes(screen) || screen === 'issue') return `#${screen}`;
   return '';

@@ -63,7 +63,7 @@ export function queueMatch(link, rows, todayIso) {
 
 /**
  * After a row action the pressed control is gone from the rebuilt table; this
- * is the key of the control now in its place (audit round two, e17): Delete's
+ * is the key of the control now in its place: Delete's
  * Undo, and Undo's trash can (Remove's, on Next newsletter). '' when the key
  * has no partner, so the caller falls back.
  */

@@ -1,32 +1,17 @@
-/** Pure text helpers for the Home links panel. */
-import { pendingRows, circlebackRows, buildPool } from './workflow.js';
+/** Pure text helpers for Home's stat cards and the sidebar's hand-out lines. */
+import { pendingRows, circlebackRows } from './workflow.js';
 
-/** The number in Queue's alert circle: everything still waiting on a decision. */
+/** The queue count, shown on Home's tile, the fold's badge and Sort's sidebar
+ *  row: everything still waiting on a decision. */
 export function queueBadgeCount(rows) {
   return pendingRows(rows).length + circlebackRows(rows).length;
 }
 
 /**
- * Pending rows in table order: newest submission first. Rows with no
- * submitted_at sort last rather than first, so a missing timestamp never
- * jumps the queue.
- */
-export function queueOrder(rows) {
-  return pendingRows(rows).slice().sort((a, b) => {
-    const left = String(a.submitted_at ?? '');
-    const right = String(b.submitted_at ?? '');
-    if (!left && !right) return 0;
-    if (!left) return 1;
-    if (!right) return -1;
-    return right.localeCompare(left);
-  });
-}
-
-/**
  * The newest issue in the builder's archive index (builder/newsletters/
  * index.json, a list of { date, file, label }). The list is newest-first by
- * convention, but the strip should not depend on that: take the max. A
- * missing or malformed index gives '' and the strip shows a dash.
+ * convention, but the tile should not depend on that: take the max. A
+ * missing or malformed index gives '' and the tile says None yet.
  */
 export function latestIssue(index) {
   if (!Array.isArray(index)) return '';
@@ -37,7 +22,7 @@ export function latestIssue(index) {
     .at(-1) ?? '';
 }
 
-/** The line the Share something link copies: one sentence, the link last so
+/** The line the Share an item link copies: one sentence, the link last so
  *  it survives being pasted into an email as-is. */
 export function shareLine(url) {
   return `Have something for the ERC newsletter or the Policy Exchange? Send it here: ${url}`;
@@ -48,13 +33,11 @@ export function signupLine(url) {
   return `Want the ERC newsletter in your inbox? Sign up here: ${url}`;
 }
 
-// ── The next-issue card (Kate's Sep 15 rail; quick add is her pick A) ──
+// ── The next-issue card ──
 
-/** What the card counts: rows stamped for this issue, and the kept rows still
- *  waiting for one (the same pool Send to Newsletter offers). */
+/** What the card counts: the rows stamped for this issue. */
 export function issueSummary(rows, issue) {
-  const inIssue = rows.filter(r => String(r.newsletter_issue ?? '') === issue).length;
-  return { inIssue, waiting: buildPool(rows).length };
+  return { inIssue: rows.filter(r => String(r.newsletter_issue ?? '') === issue).length };
 }
 
 /** How many are in the next newsletter, in words. */
@@ -62,7 +45,3 @@ export function issueTally(count) {
   return count === 0 ? 'nothing in yet' : `${count} item${count === 1 ? '' : 's'} so far`;
 }
 
-/** The date, then the tally, as one quiet line. */
-export function issueLine(count, when) {
-  return `${when} · ${issueTally(count)}`;
-}

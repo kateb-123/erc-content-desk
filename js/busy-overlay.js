@@ -1,8 +1,8 @@
 /**
  * The blocking progress popup: a dimmed page you can't click through, a count,
- * and a bar. Bulk upload's "Add all to the queue" is the one caller — Kate,
- * Sep 10: the wait is long enough that people were clicking around mid-upload
- * and double-submitting.
+ * and a bar. Bulk upload's "Add all to the queue" is the one caller: the wait
+ * is long enough that people were clicking around mid-upload and
+ * double-submitting.
  *
  * Deliberately not a <dialog>: this is not dismissible. There is no close
  * button and Escape does nothing, because leaving mid-add is exactly the thing
@@ -38,7 +38,7 @@ export function openBusyOverlay({ title, total, note = '' }) {
   heading.id = 'busy-title';
   card.setAttribute('aria-labelledby', heading.id);
   const count = el('div', 'busy-count');
-  // The count line is read whole, "3 of 40", not the bare number (audit round two, f5).
+  // The count line is read whole, "3 of 40", not the bare number.
   count.setAttribute('aria-live', 'polite');
   count.setAttribute('aria-atomic', 'true');
   const doneEl = el('strong', '', '0');
@@ -60,7 +60,7 @@ export function openBusyOverlay({ title, total, note = '' }) {
   document.body.style.overflow = 'hidden';
   document.body.append(dim);
 
-  // Keys stay in the popup too (design audit 16, Sep 15): the card takes
+  // Keys stay in the popup too: the card takes
   // focus, Tab goes nowhere, and focus goes back where it was afterwards.
   const wasFocused = document.activeElement;
   card.focus({ preventScroll: true });

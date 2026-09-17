@@ -13,7 +13,7 @@ import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
 import { renderPublish, downloadCsv, resetPublishAsk } from './publish-ui.js';
 import { renderNewsletter, resetNewsletterEntry } from './newsletter-ui.js';
-import { keep, trash, circleback, undecide, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToPublish, canRewrite } from './workflow.js';
+import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToPublish, canRewrite } from './workflow.js';
 
 
 const state = {
@@ -21,7 +21,7 @@ const state = {
   schedule: [],
   screen: 'home',
   loaded: false,
-  loadFailed: false,         // the first read failed: Home and Next newsletter offer Try again (design audit a5)
+  loadFailed: false,         // the first read failed: Home and Next newsletter offer Try again
   busy: false,
   sortFilter: '',           // '' = not picked yet (Sort lands where the work is); 'fix', 'erc', or a type key
   sortedThisVisit: 0,       // decisions made since page load (view state)
@@ -39,7 +39,7 @@ const state = {
   hubUpdated: null,
   lastIssue: null,          // newest archived issue date, for Home's strip
   rewroteNote: null,
-  lastKeepAll: null,        // [{ id, old }] from the last Keep all remaining, until undone or left (design audit b5)
+  lastKeepAll: null,        // [{ id, old }] from the last Keep all remaining, until undone or left
 };
 
 const screens = Object.fromEntries(['home', 'issue', 'sort', 'finalize', 'publish', 'build']
@@ -48,14 +48,14 @@ const statusEl = document.querySelector('#desk-status');
 
 /** The status line. An error is an alert, so it is read at once (design
  *  audit b3); an action ({ label, onClick }) puts a quiet button after the words. */
-export function setStatus(message, kind = 'busy', action = null) {
+function setStatus(message, kind = 'busy', action = null) {
   statusEl.className = `status status-${kind}`;
   statusEl.setAttribute('role', kind === 'error' ? 'alert' : 'status');
-  // Anything in flight shows the dots loader beside its words (Kate, Sep 1); with
+  // Anything in flight shows the dots loader beside its words; with
   // a retry button, the sentence does not also say to try again.
   if (action) message = message.replace(/ Try again in a minute\.$/, '');
   if (kind === 'busy' && message) {
-    // Inline, one line tall: a message never moves the page (audit round two, e7).
+    // Inline, one line tall: a message never moves the page.
     statusEl.replaceChildren(dotsLoader(true), loadingLabel(message));
   } else {
     statusEl.textContent = message;
@@ -70,7 +70,7 @@ export function setStatus(message, kind = 'busy', action = null) {
   }
 }
 
-export async function reload() {
+async function reload() {
   // Home shows its own loader while empty — no second row in the bar.
   setStatus(state.screen === 'home' ? '' : 'Loading…');
   try {
@@ -82,7 +82,7 @@ export async function reload() {
     setStatus('', 'ok');
   } catch (err) {
     state.loadFailed = !state.loaded;
-    // The way to try again sits on the line that says why, not inside a closed fold (audit round two, d5).
+    // The way to try again sits on the line that says why, not inside a closed fold.
     setStatus(plainError(err), 'error', { label: 'Try again', onClick: reload });
   }
   render();
@@ -91,7 +91,7 @@ export async function reload() {
 /** Persist changed rows, then merge the saved copies back in by _rowNumber.
  *  Returns true on success so callers can gate their confirmations — a
  *  failed write must never be reported as done. */
-export async function persist(changed) {
+async function persist(changed) {
   if (!changed.length) return true;
   try {
     await saveRows(changed);
@@ -150,7 +150,7 @@ async function drainWrites() {
       flushing = false;
       writeErrored = true;
       writeFailures += 1;
-      // The first miss is a quiet note; from the second on it is an alert with a way to act (design audit b3).
+      // The first miss is a quiet note; from the second on it is an alert with a way to act.
       if (writeFailures < 2) setStatus('Reconnecting to save your changes…', 'note');
       else setStatus(`${pendingWrites.size} change${pendingWrites.size === 1 ? '' : 's'} not saved yet. Still trying.`, 'error', { label: 'Retry now', onClick: () => { clearTimeout(retryTimer); drainWrites(); } });
       retryTimer = setTimeout(drainWrites, 4000);
@@ -201,7 +201,7 @@ function change(rows, { decision = false, kind = 'edit' } = {}) {
 
 const DECIDED_WORDS = { keep: 'Kept', trash: 'Deleted', circleback: 'Skipped' };
 
-function decide(row, action, note = '') {
+function decide(row, action) {
   // A decided row holds its place, greyed at the bottom of its section, so a
   // mistake stays in reach. Deciding never moves you.
   state.decidedFrom.set(row.id, row.status);
@@ -211,13 +211,13 @@ function decide(row, action, note = '') {
   }
   const next = action === 'keep' ? keep(row)
     : action === 'trash' ? trash(row)
-    : circleback(row, note);
+    : circleback(row);
   change([next], { decision: true, kind: action });   // the list updates now; the write drains behind it
-  // The decision in words, for everyone and for a screen reader (audit round two, e9).
+  // The decision in words, for everyone and for a screen reader.
   setStatus(`${DECIDED_WORDS[action] ?? 'Done'}: ${row.headline || row.link || 'this item'}`, 'ok');
 }
 
-/** The headline list's one button: keep every row still standing, as one
+/** Keep the rest: keep every row still standing in the section, as one
  *  decision Undo last walks back as one. */
 function keepAll(rows) {
   if (!rows.length) return;
@@ -231,18 +231,18 @@ function keepAll(rows) {
   setStatus(`Kept ${rows.length}`, 'ok');
 }
 
-/** Undo on one greyed row of the headline list: back to the queue, in place. */
+/** Undo on one greyed row of a section's list: back to the queue, in place. */
 function undoRow(row) {
   // Back to what it was: a row kept from Skipped returns to Skipped, not to new.
   const back = state.decidedFrom.get(row.id) ?? 'new';
   state.sortedIds.delete(row.id);
   state.decidedFrom.delete(row.id);
   state.sortedThisVisit = Math.max(0, state.sortedThisVisit - 1);
-  // The row's own Undo leaves the stack, so Undo last cannot re-apply it (audit round two, e3).
+  // The row's own Undo leaves the stack, so Undo last cannot re-apply it.
   state.undoStack = withoutRow(state.undoStack, row.id);
   state.lastDecision = state.undoStack[state.undoStack.length - 1] ?? null;
   setStatus(undoWords({ kind: { kept: 'keep', trashed: 'trash', circleback: 'circleback' }[row.status], rows: [row] }), 'ok');
-  noteChange([{ ...undecide(row), status: back }]);
+  noteChange([{ ...row, status: back }]);
 }
 
 // Rows still waiting for the reader are read before Sort shows a card: the
@@ -255,14 +255,14 @@ async function readBeforeSort() {
   try {
     const { failed } = await readAllWaiting(ids, readNewRows);
     await reload();
-    // A failed read offers its own retry; a reload would drop the greyed rows and Undo (audit round two, e12).
+    // A failed read offers its own retry; a reload would drop the greyed rows and Undo.
     if (failed) setStatus(`${failed} new item${failed === 1 ? '' : 's'} couldn't be read yet.`, 'error', { label: 'Try again', onClick: readBeforeSort });
   } catch (err) {
     setStatus(plainError(err), 'error', { label: 'Try again', onClick: readBeforeSort });
   }
 }
 
-/** Quick add on the Next issue page (Kate, Sep 15): the form has just put a
+/** Quick add on the Next issue page: the form has just put a
  *  new item in the queue; read it, then stamp it for the next issue, so it
  *  sits in the issue and in Sort at once ("everything is talking to each
  *  other"). The table marks it Not sorted yet until Sort has had it. */
@@ -282,7 +282,7 @@ async function stampSubmitted(data) {
   await whenSaved();
   // The outcome goes back to the panel that asked, which resolves to "In the
   // Sep 22 newsletter" or shows the error with Try again; nothing lands at the
-  // top of the page (audit round two, e20). A failed stamp leaves the row
+  // top of the page. A failed stamp leaves the row
   // unstamped in memory and in the sheet alike, so there is nothing to resync.
   const stamped = markNewsletterIssue(row, issue);
   try {
@@ -297,10 +297,10 @@ async function stampSubmitted(data) {
 
 function goTo(key, filter) {
   if (key !== state.screen) setStatus('');   // last screen's message doesn't follow
-  if (key === 'sort' && filter) { state.sortFilter = filter; saveSortSpot(); }   // Publish's "fix in Sort" lands on the pill it names
+  if (key === 'sort' && filter) { state.sortFilter = filter; saveSortSpot(); }   // Publish's "fix in Sort" lands on the tab it names
   if (key === 'sort' && state.screen !== 'sort') readBeforeSort();
   if (key === 'finalize' && state.screen !== 'finalize') { resetFinalizeEntry(); state.lastKeepAll = null; }
-  // The ticks survive a hop to another screen (Kate, Sep 15); only the receipt resets.
+  // The ticks survive a hop to another screen; only the receipt resets.
   if (key === 'build' && state.screen !== 'build') state.justSent = null;
   if (key === 'publish' && state.screen !== 'publish') {
     // The check is read-only and CACHED: it runs on first arrival and again
@@ -323,7 +323,7 @@ async function undoLast() {
     state.sortedThisVisit = Math.max(0, state.sortedThisVisit - last.rows.length);
     for (const r of last.rows) { state.sortedIds.delete(r.id); state.decidedFrom.delete(r.id); }
   }
-  setStatus(undoWords(last), 'ok');   // says what came back, so the effect is never a guess (audit round two, e3)
+  setStatus(undoWords(last), 'ok');   // says what came back, so the effect is never a guess
   noteChange(last.rows);   // restore the rows exactly as they were
 }
 
@@ -353,7 +353,7 @@ async function runRewrite() {
     state.reviewTotal = state.rewriteReview.size;
     state.rows = state.rows.map(r => byId.has(r.id) ? { ...r, blurb: byId.get(r.id) } : r);
     // One message, one place: a warning ("Nothing to rewrite") shows in
-    // Finalize's lede beside the button, not the page header (F11).
+    // Finalize's lede beside the button, not the page header.
     // A rewrite that came back is carried by Finalize's progress line
     // ("0 of 2 rewrites checked"); only an empty answer needs words here.
     state.rewroteNote = byId.size ? null : (data.warnings?.join(' ') || 'Nothing to rewrite.');
@@ -392,8 +392,8 @@ async function publishNow() {
     state.justPublished = data.published;
     state.publishedCsv = data.csv ?? '';
     state.busy = false;
-    // The spare copy saves itself — Kate, Sep 9: "when we publish, we need to
-    // download that csv". Her browser drops it straight into Drive.
+    // The spare copy saves itself on publish: her browser drops it straight
+    // into Drive, so there is no Drive API and nothing to redeploy.
     if (state.publishedCsv) downloadCsv(state.publishedCsv);
     // reload() writes its own 'Loading…'/'' status; the confirmation message
     // has to be set after it finishes, or reload() overwrites it.
@@ -449,9 +449,9 @@ try {
 
 const SCREEN_ORDER = ['home', 'issue', 'sort', 'finalize', 'publish', 'build'];
 // The pipeline's screens can be opened straight from a hash (/#sort). The
-// sidebar's Pipeline items open one in a NEW window from the front door (Kate,
-// Sep 15: "a new section and a new set of activities is about to be done");
-// that window keeps its hash in step so a reload stays put.
+// sidebar's Desk work items open one in a NEW window from the front door: a
+// new section of the work is a new set of activities. That window keeps its
+// hash in step so a reload stays put.
 const openedAt = location.hash.slice(1);
 // A pipeline hash makes this the pipeline's window; #issue (the builder's menu
 // links there) lands on Next newsletter in an ordinary front-door window.
@@ -462,7 +462,7 @@ const SCREEN_NAMES = { issue: 'Next newsletter', sort: 'Sort', finalize: 'Finali
 let shownScreen = null;
 
 /** A screen switch tells assistive tech where it landed: the incoming title
- *  takes focus (design audit 14, Sep 15). Nothing on the first paint. */
+ * takes focus. Nothing on the first paint. */
 function focusHeading(section) {
   const h2 = section?.querySelector('h2');
   if (!h2) return;
@@ -470,18 +470,18 @@ function focusHeading(section) {
   h2.focus({ preventScroll: true });
 }
 
-export function render() {
+function render() {
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
   renderSidebar(document.querySelector('.side'), {
     screen: state.screen, isSectionWindow, onGo: goTo,
     queueCount: state.loaded ? queueBadgeCount(state.rows) : null,
   });
   document.title = state.screen === 'home' ? 'ERC Content Desk' : `${SCREEN_NAMES[state.screen]} · ERC Content Desk`;
-  // One sidebar on every page (Kate, Sep 16). In the pipeline's own window
+  // One sidebar on every page. In the pipeline's own window
   // its items switch in place; from the front door they open that window.
   // Every screen but the front door keeps an address, as a history entry, so
-  // Back and a reload land where the reader was (design audit b21). The skip
-  // link moves focus without touching the address (audit round two, e2).
+  // Back and a reload land where the reader was. The skip
+  // link moves focus without touching the address.
   const hash = screenHash(state.screen);
   if (location.hash !== hash) {
     if (shownScreen === null) history.replaceState(null, '', hash || location.pathname);
@@ -514,7 +514,7 @@ export function render() {
       // The queue's trash can, through the same queued write as Sort. Undo hands
       // back the row as it was before the delete, status and newsletter stamp
       // included, so a deleted circle-back comes back a circle-back and a
-      // quick-added item keeps its issue (audit round two, e21).
+      // quick-added item keeps its issue.
       onDeleteFromQueue: (row, action) => change([action === 'trash' ? trash(row) : row]),
     });
   } else if (state.screen === 'issue') {
@@ -523,7 +523,7 @@ export function render() {
       onQuickAdd: stampSubmitted,
       onRefresh: reload,
       onRemove: row => unsendFromNewsletter([row.id]),
-      onRestore: row => persist([row]),   // Undo on Remove: the row as it was, stamp included (design audit c6)
+      onRestore: row => persist([row]),   // Undo on Remove: the row as it was, stamp included
     });
   } else if (state.screen === 'sort') {
     renderSort(screens.sort, {
@@ -559,7 +559,7 @@ export function render() {
         if (row) persist([{ ...row, rewrite_checked: new Date().toISOString() }]);
         else render();
       },
-      // Keep all remaining (Claude Design round two, Sep 16): every rewrite
+      // Keep all remaining: every rewrite
       // still waiting is kept, stamped in one write.
       onVerifyAll: ids => {
         const stamp = new Date().toISOString();
@@ -575,7 +575,7 @@ export function render() {
         state.lastKeepAll = before;
         if (changed.length) persist(changed); else render();
       },
-      // The way back from Keep all remaining: the originals return and the checks reopen (design audit b5).
+      // The way back from Keep all remaining: the originals return and the checks reopen.
       onUndoKeepAll: () => {
         const back = state.lastKeepAll ?? [];
         state.lastKeepAll = null;
@@ -592,7 +592,7 @@ export function render() {
       },
       onTrash: row => {
         // Junk spotted mid-finalize goes out at once, its open check dropped so
-        // the count stays honest; the screen keeps it listed with Undo (design audit a3).
+        // the count stays honest; the screen keeps it listed with Undo.
         state.rewriteReview.delete(row.id);
         state.verifiedIds.delete(row.id);
         persist([trash(row)]);
@@ -625,7 +625,7 @@ export function render() {
       onUnsend: unsendFromNewsletter,
       onTrash: row => persist([trash(row)]),
       onRestore: row => persist([row]),
-      onPickMore: () => { state.justSent = null; render(); },   // back to the pool after a send (design audit b12)
+      onPickMore: () => { state.justSent = null; render(); },   // back to the pool after a send
     });
   }
   if (switched) focusHeading(screens[state.screen]);
@@ -634,7 +634,7 @@ export function render() {
 // Home's "Exchange updated" fact: when news.csv last changed, not the date
 // column (item dates can sit in the future). The Exchange repo is private,
 // so the desk asks its own endpoint, which reads the live file's header.
-// Fetched once per visit; a miss leaves the dash.
+// Fetched once per visit; a miss leaves the tile's quiet word.
 (async () => {
   try {
     const res = await fetch('/api/hub-updated');
@@ -646,8 +646,8 @@ export function render() {
   render();
 })();
 
-// Home's "Last issue" fact: the newest date in the builder's archive index.
-// Fetched once per visit; a miss leaves the dash.
+// Home's "Last newsletter" fact: the newest date in the builder's archive
+// index. Fetched once per visit; a miss leaves the tile's quiet word.
 (async () => {
   try {
     const res = await fetch('/builder/newsletters/index.json');
@@ -663,7 +663,7 @@ window.addEventListener('hashchange', () => {
 });
 
 // The skip link focuses the page's main without a #main in the address, so
-// the per-screen addresses and Back keep working after it (audit round two, e2).
+// the per-screen addresses and Back keep working after it.
 document.querySelector('.skip-to-main')?.addEventListener('click', event => {
   event.preventDefault();
   const main = document.querySelector('#main');
@@ -671,7 +671,7 @@ document.querySelector('.skip-to-main')?.addEventListener('click', event => {
   main.focus();
 });
 
-render();   // the shell paints before the first fetch, not after it (usability run F19)
+render();   // the shell paints before the first fetch, not after it
 reload().then(() => {
   // A window opened at a section runs that screen's arrival step once the
   // rows are in, the way goTo would have.
