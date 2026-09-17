@@ -30,7 +30,10 @@ uniformity pass: `--bp-ink`, `--bp-card-border`, and `--bp-input-border` all
 resolve to the desk values now). Since Sep 16 the builder also carries the desk's
 sidebar (`css/sidebar.css`, shared), so its `:root` mirrors the desk names that
 stylesheet reads (`--side-bg`, `--ink`, `--muted`, `--line`, `--accent`, `--tint`,
-`--accent-deep`, `--ok`, `--hover`). `#19608f` is the accent's HOVER shade only,
+`--accent-deep`, `--ok`, `--hover`). It names its own alert colors too (`--bp-amber-bg`, `--bp-amber`,
+`--bp-amber-line`, `--bp-tint-ink`, `--bp-destructive-tint`, `--bp-destructive-line`,
+`--bp-citron-line`), and its finished steps sit on `--side-bg` like every other quiet
+surface (style audit, Sep 16). `#19608f` is the accent's HOVER shade only,
 never a resting color.
 
 Maroon `#500000` is FORBIDDEN in-app — it lives only in the newsletter email

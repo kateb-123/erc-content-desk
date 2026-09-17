@@ -112,7 +112,7 @@ button:disabled { opacity: .5; cursor: default; }
 
 /* Newsletter — the hand-off to the standalone builder (mock) */
 .nl-issue { font-size: .9rem; color: var(--muted); margin: 0 0 .6rem; }
-.nl-issue select { width: auto; min-width: 12rem; font: inherit; padding: .25rem .4rem; border: 1px solid var(--line); border-radius: 4px; }
+.nl-issue select { width: auto; min-width: 12rem; font: inherit; padding: .25rem .4rem; border: 1px solid var(--line); border-radius: 8px; }
 .nl-row { cursor: pointer; }
 .nl-row:hover td { background: var(--hover); }
 .nl-check { width: 2rem; }
@@ -221,7 +221,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .link-alert a { color: var(--amber); font-weight: 600; }
 .link-alert .alert-change { display: none; }
 .link-alert .alert-change.is-open { display: block; margin: .45rem 0 0; }
-.link-alert input[type="url"] { font-size: .8rem; padding: .25rem .5rem; width: 16rem; max-width: 100%; border-color: var(--amber-line); border-radius: 6px; }
+.link-alert input[type="url"] { font-size: .8rem; padding: .25rem .5rem; width: 16rem; max-width: 100%; border-color: var(--amber-line); border-radius: 8px; }
 .link-alert.is-clickable { cursor: pointer; }
 .alert-word { color: var(--accent); font-weight: 600; font-size: .85rem; text-decoration: none; }
 .alert-word:hover { text-decoration: underline; }
@@ -257,7 +257,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
    a fresh stack doesn't start the card higher and drop it on the first decision. */
 .undo-link {
   display: block; border: none; background: none; padding: 0;
-  margin: .15rem 0 .5rem; font-size: .85rem; line-height: 1.4;
+  margin: .15rem 0 .5rem; font-size: .85rem; font-weight: 600; line-height: 1.4;   /* the quiet links' weight (style audit, Sep 16) */
   color: var(--accent); cursor: pointer;
 }
 .undo-link:hover:not(:disabled) { border: none; text-decoration: underline; }
@@ -327,7 +327,7 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .finalize-table th.f-caret, .finalize-table td.f-caret { width: 2rem; padding-right: 0; }
 .finalize-table .chevron-btn { font-size: .8rem; }
 .finalize-table tr.f-detail-row td { border-top: none; padding: .2rem 2.4rem 1rem; }
-.chevron-btn { appearance: none; border: 0; background: transparent; cursor: pointer; padding: 2px; border-radius: 6px; display: inline-flex; color: var(--accent); }
+.chevron-btn { appearance: none; border: 0; background: transparent; cursor: pointer; padding: 2px; border-radius: 8px; display: inline-flex; color: var(--accent); }
 .chevron-btn:hover { background: rgba(29, 110, 165, 0.08); }
 .f-detail-cols {
   display: grid; grid-template-columns: minmax(160px, 220px) 1fr; gap: 1.6rem; align-items: start;

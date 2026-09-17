@@ -51,6 +51,15 @@
   --bp-heading-font: 'Outfit', 'Segoe UI', sans-serif;
   --bp-body-font: 'Karla', 'Segoe UI', sans-serif;
   --bp-focus-ring: 0 0 0 3px var(--bp-primary-tint);
+  /* Named since the style audit (Sep 16), where they were typed out: the desk's
+     amber alert and tint ink, and the builder's own error and success lines. */
+  --bp-tint-ink: #2b4a61;
+  --bp-amber-bg: #fdf3d7;
+  --bp-amber: #6b4e00;
+  --bp-amber-line: #f2e3ae;
+  --bp-destructive-tint: #fdf1f1;
+  --bp-destructive-line: #ecc8c8;
+  --bp-citron-line: #b9d9c8;
 
   /* The desk's names, which the shared sidebar (/css/sidebar.css) reads. */
   --side-bg: #f3f5f8;
@@ -136,11 +145,11 @@ body.builder-shell { flex-direction: row; }
 }
 
 .step-indicator:not(.active):hover {
-  background: #e5edf4;
+  background: var(--bp-primary-tint);
   color: var(--bp-primary-hover);
 }
 .step-indicator:not(.active):hover::before {
-  background: #c9d9e6;
+  background: var(--bp-line);
   color: var(--bp-primary-hover);
 }
 
@@ -157,7 +166,7 @@ body.builder-shell { flex-direction: row; }
   font-size: 11px;
   font-weight: 700;
   font-family: var(--bp-heading-font);
-  background: #dde5ec;
+  background: var(--bp-line);
   color: var(--bp-faint);
   flex-shrink: 0;
   transition: background 0.18s, color 0.18s;
@@ -177,7 +186,7 @@ body.builder-shell { flex-direction: row; }
 
 /* Completed steps — add class="completed" in app.js to unlock */
 .step-indicator.completed {
-  background: #ECECEC;
+  background: var(--side-bg);
   color: var(--bp-citron-deep);
 }
 .step-indicator.completed::before {
@@ -189,7 +198,7 @@ body.builder-shell { flex-direction: row; }
   color: var(--bp-citron-deep);
 }
 .step-indicator.completed:not(.active):hover {
-  background: #E2E2E2;
+  background: var(--bp-primary-tint);
   color: var(--bp-citron-deep);
 }
 .step-indicator.completed:not(.active):hover::before {
@@ -235,7 +244,7 @@ body.builder-shell { flex-direction: row; }
 .title-row { display: flex; align-items: baseline; gap: .9rem; margin: 0 0 10px; }
 .info-toggle { border: none; background: none; padding: 0; font: inherit; font-weight: 600; font-size: .85rem; color: var(--bp-primary); cursor: pointer; }
 .info-toggle:hover { text-decoration: underline; }
-.info-panel { background: var(--bp-primary-tint, #eaf2f8); border-radius: 8px; padding: .7rem 1rem; margin: 0 0 .9rem; font-size: .9rem; color: #2b4a61; max-width: 46rem; }
+.info-panel { background: var(--bp-primary-tint); border-radius: 8px; padding: .7rem 1rem; margin: 0 0 .9rem; font-size: .9rem; color: var(--bp-tint-ink); max-width: 46rem; }
 .btn .fa-arrow-right, .linknav .fa-arrow-right { margin-left: .35rem; font-size: .85em; }
 .btn .fa-arrow-left, .linknav .fa-arrow-left { margin-right: .35rem; font-size: .85em; }
 
@@ -323,7 +332,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 }
 
 .btn-secondary:not(:disabled):active {
-  background: #e5edf4;
+  background: var(--bp-primary-tint);
 }
 
 /* --- Upload / drop zone ----------------------------------- */
@@ -353,7 +362,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 
 .drop-zone:hover {
   background: var(--bp-row-hover);
-  border-color: #A9B4F5;
+  border-color: var(--bp-primary);
 }
 
 .drop-zone:focus-visible {
@@ -423,20 +432,20 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 }
 
 .upload-status--error {
-  background: #fdf1f1;
-  border: 1px solid #ecc8c8;
+  background: var(--bp-destructive-tint);
+  border: 1px solid var(--bp-destructive-line);
   color: var(--bp-destructive);
 }
 
 .upload-status--warning {
-  background: #fdf3d7;
-  border: 1px solid #f2e3ae;
-  color: #6b4e00;
+  background: var(--bp-amber-bg);
+  border: 1px solid var(--bp-amber-line);
+  color: var(--bp-amber);
 }
 
 .upload-status--success {
   background: var(--bp-citron-tint);
-  border: 1px solid #b9d9c8;
+  border: 1px solid var(--bp-citron-line);
   color: var(--bp-citron);
 }
 
@@ -786,7 +795,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   flex: 0 0 auto;
   min-width: 0;
   overflow: hidden;
-  background: #f3f5f8;
+  background: var(--side-bg);
   padding: 24px; /* = STAGE_PAD */
   border-radius: 12px;
 }
@@ -934,7 +943,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   font-family: var(--bp-body-font);
 }
 .rich-btn:hover {
-  background: #e5edf4;
+  background: var(--bp-primary-tint);
 }
 .rich-editable {
   min-height: 160px;
@@ -1022,7 +1031,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: #1c2229;
+  background: var(--bp-ink);
   color: #fff;
   padding: 10px 16px;
   border-radius: 12px;
@@ -1091,13 +1100,13 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 
 .export-toast--success {
   background: var(--bp-citron-tint);
-  border: 1px solid #b9d9c8;
+  border: 1px solid var(--bp-citron-line);
   color: var(--bp-citron);
 }
 
 .export-toast--error {
-  background: #fdf1f1;
-  border: 1px solid #ecc8c8;
+  background: var(--bp-destructive-tint);
+  border: 1px solid var(--bp-destructive-line);
   color: var(--bp-destructive);
 }
 
@@ -1108,8 +1117,8 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   gap: 16px;
   padding: 12px 16px;
   margin-bottom: 16px;
-  background: #fdf3d7;
-  border: 1px solid #f2e3ae;
+  background: var(--bp-amber-bg);
+  border: 1px solid var(--bp-amber-line);
   border-radius: 12px;
   font-family: var(--bp-body-font);
   font-size: 14px;
@@ -1118,7 +1127,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .restore-banner__msg {
   margin: 0;
   flex: 1;
-  color: #6b4e00;
+  color: var(--bp-amber);
   font-weight: 600;
 }
 
@@ -1233,7 +1242,7 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   align-items: center;
   gap: 7px;
   padding: 4px 6px;
-  border-radius: 7px;
+  border-radius: 8px;
   font-size: 12.5px;
   color: var(--bp-body);
   background: #fff;
@@ -1296,7 +1305,6 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
   border: 1px solid var(--bp-card-border);
   border-radius: 12px;
   padding: 18px 20px;
-  box-shadow: 0 12px 32px rgba(23, 26, 43, 0.22);
   font-family: var(--bp-body-font);
   animation: tut-tip-in 0.22s ease;
 }

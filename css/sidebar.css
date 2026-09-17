@@ -27,7 +27,7 @@
 .side-row { display: flex; align-items: center; gap: .15rem; }
 .side-item {
   flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: .6rem;
-  padding: .45rem .5rem; border-radius: 6px; color: var(--ink); text-decoration: none; font-size: .95rem;
+  padding: .45rem .5rem; border-radius: 8px; color: var(--ink); text-decoration: none; font-size: .95rem;
 }
 .side-item .fa-solid { width: 1rem; text-align: center; font-size: .75rem; color: var(--muted); flex: none; }
 .side-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 auto; }
@@ -38,7 +38,7 @@
 .side-item.is-current .fa-solid { color: var(--accent); }
 .side-item.is-brand { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: 1rem; }
 .side-copy {
-  flex: none; border: 0; background: none; padding: .4rem .45rem; border-radius: 6px;
+  flex: none; border: 0; background: none; padding: .4rem .45rem; border-radius: 8px;
   color: var(--muted); font-size: .8rem; cursor: pointer; line-height: 1; margin: 0;
 }
 .side-copy:hover { color: var(--accent); background: var(--tint); }
