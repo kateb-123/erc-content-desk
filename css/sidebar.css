@@ -3,9 +3,9 @@
    the builder's pages, drawn as Carbon's side nav since Sep 17: 256px on the
    page ground, 32px rows, the lit row on the selected layer with a 3px bar.
    It reads the desk's token names (--side-bg, --ink, --muted, --line,
-   --line-in, --accent, --selected, --hover); a page without the desk
-   stylesheet mirrors them in its own :root, as the builder does. Its buttons
-   are styled here in full, since the builder has no base button rule. */
+   --accent, --selected, --hover); a page without the desk stylesheet mirrors
+   them in its own :root, as the builder does. Its buttons are styled here in
+   full, since the builder has no base button rule. */
 /* Two rules every page needs, so they live with the one stylesheet every page loads (audit round two, d2 and e27):
    sr-only for the cues the sidebar emits, and the skip link, off screen until it takes focus. */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

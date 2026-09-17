@@ -3,23 +3,20 @@
    Every page loads this first; the desk, the builder and Past newsletters then
    name what they use in their own :root, in Carbon's names or as aliases of
    them. Values are Carbon's own (tokens.json in the ibm-carbon-template
-   export), so nothing here is a design decision of ours. */
+   export), so nothing here is a design decision of ours. It holds the subset
+   the two apps read: a Carbon token comes back in when a screen first needs
+   it. */
 :root {
   /* Surfaces: the page, then layers stacked on it. */
   --background: #ffffff;
   --background-hover: #8d8d8d1f;
-  --background-active: #8d8d8d80;
-  --background-selected: #8d8d8d33;
   --background-inverse: #393939;
   --layer-01: #f4f4f4;
   --layer-02: #ffffff;
   --layer-accent-01: #e0e0e0;
   --layer-hover-01: #e8e8e8;
-  --layer-active-01: #c6c6c6;
-  --layer-selected-01: #e0e0e0;
   --field-01: #f4f4f4;
   --field-02: #ffffff;
-  --field-hover-01: #e8e8e8;
   --overlay: #16161680;
 
   /* Lines: subtle ones divide, strong ones bound a control. */
@@ -38,7 +35,6 @@
   --text-on-color: #ffffff;
   --text-on-color-disabled: #8d8d8d;
   --text-inverse: #ffffff;
-  --text-error: #da1e28;
   --link-primary: #0f62fe;
   --link-primary-hover: #0043ce;
   --link-inverse: #78a9ff;
@@ -53,23 +49,16 @@
   --button-secondary: #393939;
   --button-secondary-hover: #474747;
   --button-secondary-active: #6f6f6f;
-  --button-tertiary: #0f62fe;
-  --button-tertiary-hover: #0050e6;
-  --button-tertiary-active: #002d9c;
-  --button-danger-primary: #da1e28;
   --button-danger-secondary: #da1e28;
   --button-danger-hover: #b81922;
-  --button-danger-active: #750e13;
   --button-disabled: #c6c6c6;
 
-  /* Focus, selection, loading. */
+  /* Focus and selection. */
   --focus: #0f62fe;
   --focus-inset: #ffffff;
   --highlight: #d0e2ff;
   --interactive: #0f62fe;
   --toggle-off: #8d8d8d;
-  --skeleton-background: #e8e8e8;
-  --skeleton-element: #c6c6c6;
 
   /* Status: each colour ships with its icon; the word beside it is text-primary. */
   --support-error: #da1e28;
@@ -90,14 +79,8 @@
   --tag-color-blue: #0043ce;
   --tag-background-gray: #e0e0e0;
   --tag-color-gray: #161616;
-  --tag-background-green: #a7f0ba;
-  --tag-color-green: #0e6027;
   --tag-background-yellow: #fddc69;
   --tag-color-yellow: #684e00;
-  --tag-background-red: #ffd7d9;
-  --tag-color-red: #a2191f;
-  --tag-border-outline: #161616;
-  --tag-color-outline: #161616;
 
   /* Palette steps we read directly: the text shades of green and yellow
      (support-success and support-warning are icon colours and do not clear
@@ -143,21 +126,17 @@
   --spacing-10: 64px;
 
   /* Shape: Carbon is square. The only round things are tags, the toggle and icons. */
-  --radius-none: 0;
   --radius-round: 9999px;
-  --radius-tag-sm: 9px;
   --radius-tag-md: 12px;
   --radius-tag-lg: 16px;
 
   /* Type: one family, three weights (300, 400, 600). */
   --font-sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "IBM Plex Mono", "Courier New", monospace;
 
   /* Motion: 70ms for a colour, 110ms for a move, nothing over 240ms. */
   --ease-standard: cubic-bezier(0.2, 0, 0.38, 0.9);
   --ease-productive: cubic-bezier(0, 0, 0.38, 0.9);
   --duration-fast-01: 70ms;
   --duration-fast-02: 110ms;
-  --duration-moderate-01: 150ms;
   --duration-moderate-02: 240ms;
 }

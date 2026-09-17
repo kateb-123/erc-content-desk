@@ -10,7 +10,6 @@
   --accent-50: var(--desk-blue-50); --accent-60: var(--desk-blue-60); --accent-70: var(--desk-blue-70); --accent-80: var(--desk-blue-80);
   --accent-alpha: var(--desk-blue-alpha);
   --button-primary: var(--accent-60); --button-primary-hover: var(--accent-70); --button-primary-active: var(--accent-80);
-  --button-tertiary: var(--accent-60); --button-tertiary-hover: var(--accent-70); --button-tertiary-active: var(--accent-80);
   --link-primary: var(--accent-60); --link-primary-hover: var(--accent-70);
   --focus: var(--accent-60); --border-interactive: var(--accent-60); --interactive: var(--accent-60);
   --highlight: var(--accent-20); --notification-info-background: var(--accent-10); --notification-info-border: var(--accent-20); --support-info: var(--accent-70);
@@ -40,7 +39,6 @@
   --amber: var(--yellow-70);           /* warning as text */
   --amber-mark: var(--support-warning); /* warning as an icon: the triangle */
   --amber-line: var(--notification-warning-border);
-  --radius: var(--radius-none);
 }
 
 * { box-sizing: border-box; }
@@ -55,7 +53,7 @@ body {
   background: var(--bg);
 }
 
-h1, h2, h3 { font-family: var(--font-sans); letter-spacing: 0; }
+h2, h3 { font-family: var(--font-sans); letter-spacing: 0; }
 
 /* A card: a white box with a hairline, square (Kate, Sep 17, pick C; Carbon's grey tile before). */
 .card {
@@ -65,9 +63,6 @@ h1, h2, h3 { font-family: var(--font-sans); letter-spacing: 0; }
   padding: var(--spacing-05);
 }
 
-.submit-page .card { width: 100%; max-width: 34rem; }
-
-h1 { font-size: 28px; line-height: 36px; font-weight: 400; margin: 0 0 var(--spacing-02); }   /* heading-04 */
 .lede { color: var(--muted); margin: 0 0 var(--spacing-06); }
 
 /* label-01: 12px with .32px tracking, quiet, over the field. */
@@ -86,7 +81,6 @@ input:not([type]), input[type="text"], input[type="url"], input[type="search"], 
 }
 input::placeholder, textarea::placeholder { color: var(--text-placeholder); opacity: 1; }
 textarea { resize: vertical; height: auto; min-height: 80px; padding: 11px var(--spacing-05); }
-select { padding-right: var(--spacing-07); }
 
 /* Chrome buttons are Carbon's tertiary: an accent outline that fills on hover.
    Text-styled buttons (.linkish and friends) opt out below. */
@@ -142,7 +136,6 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .bulk-templates a { color: var(--link-primary); text-decoration: none; }
 .bulk-templates a:hover { color: var(--link-primary-hover); text-decoration: underline; }
 .bulk-table { margin: var(--spacing-02) 0 var(--spacing-04); }
-.bulk-peek td { border-top: none; padding-top: 0; }
 .bulk-remove { width: 6.5rem; text-align: right; }
 
 /* Newsletter: the hand-off to the standalone builder */
@@ -160,7 +153,6 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
    "Send early?" ask is a warning note (Sort's verify loop), so a question
    about timing looks the same everywhere it appears. */
 .nl-row.nl-later .item-title { color: var(--muted); font-weight: 400; }   /* sunk to the bottom with its note, not dimmed (design audit b11) */
-.nl-row .badge { margin-top: var(--spacing-01); }
 .nl-ask {
   display: block; width: fit-content; margin: var(--spacing-02) 0 0;
   font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--ink); background: var(--amber-bg);
@@ -180,7 +172,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 /* Send and the pick count ride at the foot of the window while the groups scroll (audit round two, e13). */
 .nl-foot { position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center; justify-content: flex-end; gap: var(--spacing-05); padding: var(--spacing-04) 0; margin-top: var(--spacing-05); background: var(--bg); border-top: 1px solid var(--line); }
 .nl-foot .nl-picked { color: var(--muted); }
-.bulk-door .bulk-status { min-height: 0; margin: 0; }   /* takes room only with words in it (audit round two, e22); see the block at the end */
+.bulk-door .bulk-status { min-height: 0; margin: 0; }   /* takes no room until it has words */
 
 .status { min-height: 20px; margin: 0; font-size: 14px; position: sticky; top: 0; z-index: 2; background: var(--bg); }   /* stays in view down a long list (design audit b3) */
 .status-ok { color: var(--ok); }
@@ -233,19 +225,10 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .head-action .fa-arrow-right { font-size: .85em; }
 .screen-head .lede { margin: 0; flex: 1; }
 
-/* Tables: Carbon's data table on the first layer. The header row sits on the
-   accent layer, rows divide with the in-layer hairline, hover lifts a row. */
-.grid { width: 100%; border-collapse: collapse; background: var(--layer); border: 1px solid var(--layer-line); border-radius: 0; }
-.grid th { text-align: left; font-weight: 600; color: var(--ink); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--line-in); }
-.grid td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--line-in); vertical-align: top; color: var(--muted); }
-.grid td.blank { color: var(--line-in); }
-.grid td.wrap { max-width: 22rem; }
-
 .empty { color: var(--muted); padding: var(--spacing-07); text-align: center; }
 
 .source-link { color: var(--link-primary); }
 
-.flag { display: flex; align-items: center; gap: var(--spacing-02); margin: 0; color: var(--ink); }
 button.trash-link, .trash-link { color: var(--button-danger-secondary); }
 
 /* The primary: Carbon's filled button, the label left and the icon in its
@@ -262,9 +245,7 @@ button.primary:active:not(:disabled) { background: var(--accent-deep); }
 button.primary:disabled { background: var(--button-disabled); border-color: transparent; color: var(--text-on-color-disabled); }
 /* Door grammar off the screen head: the receipt's door and the post-send door are .door too. */
 .slim-door .fa-arrow-right { font-size: .85em; }
-.warn { background: var(--tint); border: 1px solid var(--notification-info-border); border-left: 3px solid var(--support-info); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); margin-bottom: var(--spacing-05); }
 
-/* v2 screens */
 /* Tags (Carbon's 24px pill, label-01 type), one colour per meaning: bare
    .badge = a grey fact ("Already live", "In a past issue", "Spotlight
    requested"); .badge-new = blue; .badge-dupe = yellow caution (the builder's
@@ -282,14 +263,8 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .badge-new { background: var(--tag-background-blue); color: var(--tag-color-blue); }
 .edit-link { color: var(--link-primary); }
 .edit-link .fa-solid { margin-right: var(--spacing-02); font-size: .9em; }
-/* The link ask: a warning note. */
-.link-alert {
-  margin: var(--spacing-03) 0 var(--spacing-01); color: var(--ink); background: var(--amber-bg);
-  border: 1px solid var(--amber-line); border-left: 3px solid var(--amber-mark); border-radius: 0; padding: var(--spacing-03) var(--spacing-04);
-}
+/* The link ask, inside the fix panel: the panel draws the warning box. */
 .link-alert .alert-line { margin: 0; }
-.link-alert .alert-mark { color: var(--amber-mark); margin-right: var(--spacing-01); font-size: .9em; }
-.link-alert a { color: var(--link-primary); }
 .link-alert .alert-change { display: none; }
 .link-alert .alert-change.is-open { display: block; margin: var(--spacing-03) 0 0; }
 .link-alert .alert-field-label { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: 0 0 var(--spacing-02); }   /* a name over the field, not a placeholder (audit round two, f4) */
@@ -316,7 +291,6 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .type-word.is-picked { background: var(--tag-background-blue); border-color: var(--tag-background-blue); color: var(--tag-color-blue); }
 .type-word.is-picked:hover:not(:disabled) { background: var(--tag-background-blue); border-color: var(--tag-background-blue); color: var(--tag-color-blue); }
 .type-word.is-picked::before { content: "\f00c"; font-family: "Font Awesome 7 Free"; font-weight: 900; font-size: 11px; margin-right: var(--spacing-02); }
-.sort-delete { margin-right: auto; }
 .img-upload { display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; }
 .img-upload .media-add { margin-left: 0; }   /* the small Add media word (Kate, Sep 17), a ghost button */
 .img-thumb { width: 48px; height: 48px; object-fit: cover; border: 1px solid var(--line-in); flex: none; }   /* the attached picture, in view (design audit b8) */
@@ -327,7 +301,6 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .sort-body { margin-top: var(--spacing-03); }
 .sort-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 0; margin: 0 0 var(--spacing-05); border-bottom: 1px solid var(--line); }
 .sort-nav .sort-filter { flex: none; }
-.sort-main { min-width: 0; }
 .sort-group { font-weight: 600; margin: var(--spacing-01) 0 0; }
 /* Undo sits under the section label. The row keeps its height when disabled so
    a fresh stack doesn't start the card higher and drop it on the first decision. */
@@ -409,11 +382,8 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .p-shade-line { font-weight: 600; font-size: 16px; line-height: 22px; color: var(--muted); margin: 0; }
 .p-shade .dots-loader { margin-top: var(--spacing-05); }
 .finalize-table tr.f-item { cursor: pointer; }
-/* Hover layers on top of a status tint (ERC blue, rewrite yellow) instead of replacing it. */
+/* Hover layers on top of a status tint instead of replacing it. */
 .finalize-table tr.f-item:not(.is-open):hover td { background-image: linear-gradient(var(--hover), var(--hover)); }
-.finalize-table tr.f-erc td { background: var(--tint); }
-.finalize-table tr.needs-rewrite td { background: var(--amber-bg); }
-.finalize-table tr.rewriting td { background: var(--tint); }
 /* The chevron sits left on every table, one Font Awesome glyph (Kate, Sep 15, option A). */
 .finalize-table th.f-caret, .finalize-table td.f-caret { width: 2rem; padding-right: 0; }
 .finalize-table .chevron-btn { font-size: .8rem; }
@@ -432,8 +402,6 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .f-fact-value { margin: 0; color: var(--ink); }
 .f-detail-label { margin: 0 0 var(--spacing-02); font: inherit; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
 .f-blurb-text { margin: 0 0 var(--spacing-03); color: var(--ink); max-width: 60rem; }
-.f-check-card { max-width: 680px; margin-top: var(--spacing-02); }
-.f-check-card .type-line { margin: 0 0 var(--spacing-02); }
 .f-check-title { margin: 0 0 var(--spacing-01); font-size: 16px; line-height: 22px; font-weight: 600; }
 .f-check-source { margin: 0 0 var(--spacing-04); color: var(--muted); }
 .f-diff-label { margin: 0 0 var(--spacing-01); font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
@@ -451,7 +419,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .f-edit-grid label { margin: 0; }
 .f-edit-card { background: var(--layer-01); border: 0; border-radius: 0; padding: var(--spacing-05); margin: var(--spacing-01) 0 var(--spacing-02); }
 .sort-card .f-edit-card { margin: 0; }
-.f-edit-grid input, .f-edit-grid textarea { margin-top: var(--spacing-02); background: var(--field-01); }
+.f-edit-grid input, .f-edit-grid textarea { margin-top: var(--spacing-02); }
 .f-edit-wide { grid-column: 1 / -1; }   /* the title, the description and the link read across the box (audit round two, e8) */
 .f-edit-media { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
 .f-edit-media .img-upload { margin-top: var(--spacing-02); }
@@ -459,7 +427,6 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 
 /* Publish: queue-style fate groups */
 .p-group { font-size: 16px; line-height: 22px; font-weight: 600; margin: var(--spacing-06) 0 var(--spacing-02); }
-.p-group-hint { margin: 0 0 var(--spacing-02); }
 .publish-table tr.p-held td { background: var(--tint); }
 .publish-table tr.p-notready td { background: var(--amber-bg); }
 .publish-table tr.p-skip .item-title { color: var(--muted); font-weight: 400; }
@@ -484,7 +451,6 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .publish-table tr.p-skip td { color: var(--muted); }
 .publish-table tr.p-skip td.p-fate { font-weight: 400; }
 .publish-table .p-fate-fix { color: var(--amber); font-weight: 600; text-decoration: underline; }
-.p-fix { display: block; margin-top: var(--spacing-02); }
 .table-scroll { overflow-x: auto; }
 
 /* Home screen */
@@ -517,17 +483,8 @@ a.stat:hover, button.stat:hover:not(:disabled) { background: var(--highlight); b
   font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600;
 }
 
-/* A small tertiary. */
-.mini-btn {
-  display: inline-flex; align-items: center; height: 32px; padding: 0 var(--spacing-04);
-  font: inherit; letter-spacing: .16px;
-  color: var(--accent); border: 1px solid var(--accent); border-radius: 0;
-  background: transparent; cursor: pointer; text-decoration: none; white-space: nowrap;
-}
-.mini-btn:hover { background: var(--accent); color: var(--text-on-color); }
-
-/* Helper text under a control (the Next issue page's quick add). */
-.quick-note { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); margin: 0; }
+/* A small tertiary: the base button at 32px. */
+.mini-btn { height: 32px; padding: 0 var(--spacing-04); white-space: nowrap; }
 
 /* Next issue: a front-door page (Sep 15). The way back sits above the title;
    Quick add on the lede's right opens the dashed panel with the submit form. */
@@ -556,10 +513,8 @@ a.stat:hover, button.stat:hover:not(:disabled) { background: var(--highlight); b
 .queue-fold[open] summary .fa-solid { transform: rotate(180deg); }
 .queue-fold summary:hover .fa-solid { color: var(--icon-primary); }
 .queue-body { margin-top: var(--spacing-04); }
-.queue-head.is-bare { justify-content: flex-end; }
 
-.queue-head { display: flex; align-items: baseline; gap: var(--spacing-05); flex-wrap: wrap; margin: 0 0 var(--spacing-04); }
-.queue-head h2 { font-size: 20px; line-height: 28px; font-weight: 600; margin: 0; flex: 1; }
+.queue-head { display: flex; align-items: baseline; justify-content: flex-end; gap: var(--spacing-05); flex-wrap: wrap; margin: 0 0 var(--spacing-04); }
 .queue-table { width: 100%; border-collapse: collapse; background: var(--layer); border: 1px solid var(--layer-line); }
 .queue-table th { text-align: left; font-weight: 600; color: var(--ink); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--line-in); white-space: nowrap; }
 .queue-table th .sort-btn { display: inline-flex; align-items: center; gap: var(--spacing-02); border: none; background: none; padding: 0 var(--spacing-02); margin: 0 calc(-1 * var(--spacing-02)); height: 24px; font: inherit; font-weight: 600; color: var(--ink); cursor: pointer; white-space: nowrap; }
@@ -576,7 +531,6 @@ a.stat:hover, button.stat:hover:not(:disabled) { background: var(--highlight); b
 .nl-table th:nth-child(2) { width: auto; }
 .nl-table th:nth-child(3) { width: 22%; }
 .nl-table th:nth-child(4) { width: 13%; }
-.finalize-table .list-badges { margin-top: var(--spacing-02); }
 .queue-table .item-source { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin-top: var(--spacing-01); }
 .queue-table td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--line-in); vertical-align: top; color: var(--muted); }
 .queue-table tbody tr:hover td { background-image: linear-gradient(var(--hover), var(--hover)); }
@@ -723,7 +677,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .sort-card-source { margin: 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
 .sort-card-acts { display: flex; align-items: center; gap: var(--spacing-05); border-top: 1px solid var(--line-in); padding-top: var(--spacing-05); margin-top: var(--spacing-03); }
 .sort-card-right { margin-left: auto; display: flex; align-items: center; gap: var(--spacing-05); }
-.sort-card input, .sort-card textarea, .f-card input, .f-card textarea { background: var(--field-01); }   /* a field on a white card is grey (Carbon's layer model) */
+.sort-card input { background: var(--field-01); }   /* a field on a white card is grey (Carbon's layer model) */
 .f-edit-card input, .f-edit-card textarea { background: var(--field-02); }   /* a field on the grey edit box is white (Carbon's layer model) */
 /* The fix panel: Carbon's inline notification, a warning while the row needs
    a fix, informational while a type changes. */
@@ -741,8 +695,6 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .sub-radios { margin: var(--spacing-01) 0 var(--spacing-02) var(--spacing-06); padding: 0 0 0 var(--spacing-04); border: 0; border-left: 1px solid var(--line-in); min-width: 0; }
 .sub-radios .radio-line { font-size: 12px; line-height: 16px; letter-spacing: .32px; margin: var(--spacing-02) 0; }
 .fix-panel .link-alert { margin: 0; padding: 0; border: 0; background: none; }
-.fix-panel .link-alert .alert-mark { display: none; }
-.fix-panel > .skip-link { margin-top: var(--spacing-02); }
 .fix-panel .linkish { margin-left: 0; }
 @media (max-width: 900px) {
   .sort-split { grid-template-columns: minmax(0, 1fr); }
@@ -796,7 +748,6 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .bulk-door.is-drag summary { color: var(--accent); }
 .bulk-door.is-drag .bulk-drop { border-color: var(--accent); background: var(--tint); }
 .bulk-drop.is-busy { cursor: default; color: var(--text-helper); }
-.bulk-door .bulk-status:not(:empty) { min-height: 20px; margin-top: var(--spacing-05); }
 .bulk-table .field-error { margin-top: var(--spacing-01); }
 /* The one ask before a link already in the queue goes in again (e19): the warning note where the primary was. */
 .submit-form .sf-ask { margin: var(--spacing-05) 0 0; font-size: 14px; line-height: 20px; letter-spacing: .16px; padding: var(--spacing-04) var(--spacing-05); }
