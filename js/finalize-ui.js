@@ -12,7 +12,8 @@ import { isErc } from './sort-view.js';
 import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { dotsLoader, faIcon, forwardIcon } from './icons.js';
-import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection } from './finalize-view.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges } from './finalize-view.js';
+import { buildImageControl } from './item-image.js';
 import { titleWithInfo } from './screen-info.js';
 
 const EDITABLE = ['headline', 'date', 'source', 'topic', 'blurb', 'deadline', 'authors', 'time', 'location'];
@@ -151,17 +152,19 @@ function editBody(row, { onSave, onCancel }) {
     label.append(input);
     grid.append(label);
   }
+  // Media on every item (Kate, Sep 17): a small Add media under the fields;
+  // the picture rides the row's infographic column into the hub and the newsletter.
+  const media = el('div', 'f-edit-media', 'Media');
+  const imgCtl = buildImageControl(row.infographic, () => {});
+  media.append(imgCtl.el);
+  grid.append(media);
   wrap.append(grid);
   const actions = el('div', 'f-edit-actions');
   const save = el('button', 'primary', 'Save');
   save.type = 'button';
   save.addEventListener('click', () => {
-    const changes = {};
-    for (const field of EDITABLE) {
-      const value = inputs[field].value.trim();
-      if (value !== (row[field] ?? '')) changes[field] = value;
-    }
-    onSave(row, changes);
+    const values = Object.fromEntries(EDITABLE.map(field => [field, inputs[field].value]));
+    onSave(row, editChanges(row, { ...values, infographic: imgCtl.get() }));
   });
   const cancel = el('button', 'btn-outline', 'Cancel');
   cancel.type = 'button';

@@ -78,7 +78,7 @@ template and the public Exchange site.
   builder's export trio), 16px side padding, the label left. A primary is the
   blue fill with its icon in a 64px right slot (48px on the small size); with no
   icon the slot goes. Everything beside a primary is Carbon's tertiary: the blue
-  outline that fills on hover (Cancel, Upload media, the doors, Quick add). The
+  outline that fills on hover (Cancel, the doors, Quick add). The
   builder's Back and archive buttons are Carbon's secondary, the dark grey fill.
   Quiet words (Edit, Delete, Skip, Undo, Cancel in a panel) are ghost buttons:
   32px, a `--background-hover` fill on hover, no underline. No press scale.
@@ -147,7 +147,7 @@ look, everywhere it appears.
 | **Verify link ↗ → Confirm / Change** | `fa-triangle-exclamation` | warning note, one ask | open the source, then stamp it good or paste a new link |
 | **View info / Hide info** | none | blue word beside every screen/step title | opens the tinted instruction panel |
 | **Re-check** | none | a link in Publish's lede | force a fresh hub check |
-| **Upload media** → Replace / Remove media | none | tertiary button + muted Remove word | attach a picture or PDF flyer to an item (ERC cards in Sort; newsletter items in the builder), the URL rides the row’s infographic column into the email |
+| **Add media** → Replace / Remove media | none | a small ghost word under the edit form's fields, then Replace and the muted Remove word | attach a picture or PDF flyer to any item (every item's Edit on Sort and Finalize since Sep 17, ERC only before; newsletter items in the builder), the URL rides the row’s infographic column into the email |
 | **Send early? → Confirm / Cancel** | fa-clock on the note | warning note, one ask (same as Verify link) | picking an event that belongs to a later issue, the words stay bare, the bubble carries the icon |
 | Door buttons (Go to Finalize/Publish, Send to Newsletter, the receipt's door) | → `fa-arrow-right` | Carbon's tertiary button with the arrow in its right slot (Sep 15, option A; square since Sep 17), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
 | **Sidebar items** (ERC Content Desk; Policy Exchange: Policy Exchange, Share an item, Listserv sign-up; Newsletter: Next newsletter, Newsletter builder, Past newsletters; Desk work: Sort, Finalize, Publish to Exchange, Send to Newsletter) | one FA glyph per group heading (`fa-globe`, `fa-envelope-open-text`, `fa-layer-group`), none on the items; the Desk work heading adds a chevron | 32px indented rows in the sidebar, the lit one on the selected layer with a 3px blue bar; the three hand-outs carry a small `fa-copy` icon on the right; Sort carries the queue count | every way around the desk (Kate, Sep 16). Pipeline items open the pipeline in its own window from the front door (`/#sort`, Sep 15) and switch in place inside it; outside pages open a new tab; on the builder's pages every desk page is a plain link (the pipeline still opens its window; the desk, Next newsletter at `/#issue` and the builder's own pages open in place); the copy icon hands over one sentence with the link and turns into a check for a moment |

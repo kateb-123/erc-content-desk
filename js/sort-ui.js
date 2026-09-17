@@ -12,7 +12,7 @@ import { linkCheckState, reshareFlags, missingFields } from './workflow.js';
 import { TYPE_ORDER, TYPE_LABELS, subtypesFor, typeIsFlat } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { safeHref, withScheme } from './links.js';
-import { sortCounts, isErc, readerQueue, isNewToday, sectionRows, landingSection, needsType, fixReasons, fixContext, keepBlock, nextSelected, nextSectionWithRows } from './sort-view.js';
+import { sortCounts, readerQueue, isNewToday, sectionRows, landingSection, needsType, fixReasons, fixContext, keepBlock, nextSelected, nextSectionWithRows } from './sort-view.js';
 import { buildImageControl } from './item-image.js';
 import { titleWithInfo } from './screen-info.js';
 import { faIcon, forwardIcon } from './icons.js';
@@ -67,19 +67,17 @@ function buildEditForm(row, { onSave, onCancel }) {
   const titleIn = mkField('Title', row.headline);
   const blurbIn = mkField('Description', row.blurb, 4);
   const linkIn = mkField('Link', row.link);
-  // ERC items can carry a picture (flyer, cover) — it rides the row's
-  // infographic column into the newsletter. A div, not a label: a label
-  // would forward stray clicks to the upload button.
-  let imgCtl = null;
-  if (isErc(row)) {
-    const wrap = el('div', 'sort-edit-field', 'Media');
-    imgCtl = buildImageControl(row.infographic, () => {});
-    wrap.append(imgCtl.el);
-    form.append(wrap);
-  }
+  // Any item can carry a picture (flyer, cover); it rides the row's
+  // infographic column into the hub and the newsletter (every item since
+  // Kate's Sep 17 ask; ERC only before). A div, not a label: a label would
+  // forward stray clicks to the upload button.
+  const mediaWrap = el('div', 'sort-edit-field', 'Media');
+  const imgCtl = buildImageControl(row.infographic, () => {});
+  mediaWrap.append(imgCtl.el);
+  form.append(mediaWrap);
   const read = () => ({
     headline: titleIn.value.trim(), blurb: blurbIn.value, link: withScheme(linkIn.value.trim()),
-    ...(imgCtl ? { infographic: imgCtl.get() } : {}),
+    infographic: imgCtl.get(),
   });
   const rowBtns = el('div', 'sort-edit-actions');
   const save = el('button', 'primary', 'Save');

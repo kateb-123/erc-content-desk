@@ -901,6 +901,8 @@ body:has([data-step="edit"]:not([hidden])) .step-list {
 .intro-save-btn { margin-top: var(--spacing-03); }
 .img-upload { display: flex; align-items: center; gap: var(--spacing-03); flex-wrap: wrap; }
 .img-upload .pull-status { margin-left: 0; }
+.img-upload .media-add { height: 32px; padding: 0 var(--spacing-03); margin-left: calc(-1 * var(--spacing-03)); display: inline-flex; align-items: center; }
+.img-upload .media-add:hover { background: var(--background-hover); text-decoration: none; }
 /* Card footer, desk grammar: Delete far left; Use original · Save on the
    right, with gap and wrap so nothing ever clips. */
 .edit-card-actions {

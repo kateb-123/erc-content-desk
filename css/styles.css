@@ -290,7 +290,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .sort-edit-field { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
 .sort-edit-field input, .sort-edit-field textarea { margin-top: var(--spacing-03); }
 .img-upload { display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; }
-.img-upload .btn-outline { height: 32px; padding: 0 var(--spacing-04); }
+.img-upload .media-add { margin-left: 0; }   /* the small Add media word (Kate, Sep 17), a ghost button */
 .img-status { color: var(--muted); display: inline-flex; align-items: center; gap: var(--spacing-03); }
 .sort-edit-actions { display: flex; gap: var(--spacing-03); }
 /* Section menu: the sections as Carbon tabs, one row on top (Claude Design round two, Kate's pick C, Sep 16). */
@@ -420,6 +420,8 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .f-edit-card { background: var(--layer-02); border: 1px solid var(--line-in); border-radius: 0; padding: var(--spacing-05); margin: var(--spacing-01) 0 var(--spacing-02); }
 .f-edit-grid input, .f-edit-grid textarea { margin-top: var(--spacing-02); background: var(--field-01); }
 .f-edit-blurb { grid-column: 1 / -1; }
+.f-edit-media { grid-column: 1 / -1; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.f-edit-media .img-upload { margin-top: var(--spacing-02); }
 .f-edit-actions { display: flex; gap: var(--spacing-03); margin-top: var(--spacing-03); }
 
 /* Publish: queue-style fate groups */

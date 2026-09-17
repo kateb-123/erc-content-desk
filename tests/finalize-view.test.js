@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection } from '../js/finalize-view.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges } from '../js/finalize-view.js';
 
 const keeps = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }];
 
@@ -47,4 +47,14 @@ test('pickSelection keeps a row that is still listed, else takes the first row t
   assert.equal(pickSelection(groups, null), 'a');
   const plain = finalizeGroups(keeps, { pending: new Set(), review: new Set(), verified: new Set() });
   assert.equal(pickSelection(plain, null), null);
+});
+
+test('editChanges: only the fields that changed, trimmed, the media URL among them', () => {
+  const row = { headline: 'Old', blurb: 'Same', infographic: '' };
+  assert.deepEqual(
+    editChanges(row, { headline: ' New ', blurb: 'Same', infographic: 'https://x.org/a.png' }),
+    { headline: 'New', infographic: 'https://x.org/a.png' },
+  );
+  assert.deepEqual(editChanges(row, { headline: 'Old', blurb: 'Same', infographic: '' }), {});
+  assert.deepEqual(editChanges({ headline: 'Old', infographic: 'https://x.org/a.png' }, { headline: 'Old', infographic: '' }), { infographic: '' });
 });

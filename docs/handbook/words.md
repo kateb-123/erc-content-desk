@@ -171,7 +171,7 @@
 "Undo send"
 "Refresh"
 "Copy"
-"Upload media"
+"Add media" (was "Upload media" until Sep 17)
 "Replace media"
 "Remove media"
 "Back"

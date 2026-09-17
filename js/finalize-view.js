@@ -47,3 +47,15 @@ export function pickSelection(groups, selectedId) {
   const lead = groups.find(g => g.key === 'check' || g.key === 'rewrite');
   return lead ? lead.rows[0].id : null;
 }
+
+/** What an edit form changed: each value trimmed, kept only where it differs
+ *  from the row. The media URL rides along like any field (Kate, Sep 17:
+ *  "a small thing that says add media when you click edit"). */
+export function editChanges(row, values) {
+  const changes = {};
+  for (const [field, raw] of Object.entries(values)) {
+    const value = String(raw ?? '').trim();
+    if (value !== (row[field] ?? '')) changes[field] = value;
+  }
+  return changes;
+}

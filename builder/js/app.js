@@ -1092,7 +1092,7 @@ async function uploadItemImage(file, onStatus) {
   return data.url;
 }
 
-/** The picture control: Upload (or Replace) + Remove; the value is a URL the
+/** The picture control: Add (or Replace) + Remove; the value is a URL the
  *  templates render. The button hides while a file is in flight. */
 function buildImageControl(initial, onChange) {
   const wrap = document.createElement('div');
@@ -1103,7 +1103,7 @@ function buildImageControl(initial, onChange) {
   fileInput.hidden = true;
   const pick = document.createElement('button');
   pick.type = 'button';
-  pick.className = 'btn btn-secondary';
+  pick.className = 'edit-saveall-btn media-add';
   const removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'edit-card-revert';
@@ -1112,7 +1112,7 @@ function buildImageControl(initial, onChange) {
   status.className = 'pull-status';
   let value = initial || '';
   const sync = () => {
-    pick.textContent = value ? 'Replace media' : 'Upload media';
+    pick.textContent = value ? 'Replace media' : 'Add media';
     removeBtn.hidden = !value;
   };
   const setStatus = (msg, busy = false) => {

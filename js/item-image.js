@@ -58,7 +58,7 @@ async function uploadItemImage(file, onStatus) {
   return data.url;
 }
 
-/** The picture control: Upload (or Replace) + Remove picture; the value is a
+/** The picture control: Add (or Replace) + Remove media; the value is a
  *  URL. The button hides while a file is in flight — no double uploads. */
 export function buildImageControl(initial, onChange) {
   const wrap = document.createElement('div');
@@ -69,7 +69,7 @@ export function buildImageControl(initial, onChange) {
   fileInput.hidden = true;
   const pick = document.createElement('button');
   pick.type = 'button';
-  pick.className = 'btn-outline';
+  pick.className = 'linkish media-add';
   const removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'linkish skip-link';
@@ -78,7 +78,7 @@ export function buildImageControl(initial, onChange) {
   status.className = 'img-status';
   let value = initial || '';
   const sync = () => {
-    pick.textContent = value ? 'Replace media' : 'Upload media';
+    pick.textContent = value ? 'Replace media' : 'Add media';
     removeBtn.hidden = !value;
   };
   const setStatus = (msg, busy = false) => {
