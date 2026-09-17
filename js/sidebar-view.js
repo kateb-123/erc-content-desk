@@ -1,7 +1,8 @@
 /**
  * The sidebar's contents (Kate, Sep 16, from the Claude Design docs: "I like
- * the sidebar the most. but then I think keep our stuff"). Four groups in her
- * order: the desk itself, the pipeline, the newsletter, the Policy Exchange.
+ * the sidebar the most. but then I think keep our stuff"; reordered the same
+ * day from round two): the desk itself, the Policy Exchange, the newsletter,
+ * then Desk work (the pipeline) as a fold.
  * Pure data and two small rules, so node --test can hold them.
  *
  * Each item is one of three kinds:
@@ -23,27 +24,37 @@ export const ARCHIVE_PATH = '/builder/archive.html';
  *  (Kate, Sep 15: "a new section and a new set of activities"). */
 export const SECTION_SCREENS = ['sort', 'finalize', 'publish', 'build'];
 
+// Claude Design round two, Kate's pick (Sep 16): the team's links first, the
+// pipeline last as a "Desk work" fold; icons on the group headings, none on
+// the items under them; Sort shows the queue count.
 export const NAV = [
   { label: '', items: [
     { key: 'home', label: 'ERC Content Desk', icon: 'house', screen: 'home' },
   ] },
-  { label: 'Pipeline', items: [
-    { key: 'sort', label: 'Sort', icon: 'layer-group', screen: 'sort' },
-    { key: 'finalize', label: 'Finalize', icon: 'pen', screen: 'finalize' },
-    { key: 'publish', label: 'Publish to Exchange', icon: 'globe', screen: 'publish' },
-    { key: 'build', label: 'Send to Newsletter', icon: 'paper-plane', screen: 'build' },
+  { label: 'Policy Exchange', icon: 'globe', items: [
+    { key: 'exchange', label: 'Policy Exchange', href: EXCHANGE_URL, copy: EXCHANGE_URL },
+    { key: 'share', label: 'Share an item', href: SHARE_PATH, copy: shareLine(SHARE_PATH) },
+    { key: 'listserv', label: 'Listserv sign-up', href: SIGNUP_PATH, copy: signupLine(SIGNUP_PATH) },
   ] },
-  { label: 'Newsletter', items: [
-    { key: 'issue', label: 'Next newsletter', icon: 'envelope-open-text', screen: 'issue' },
-    { key: 'builder', label: 'Newsletter builder', icon: 'wrench', href: BUILDER_PATH },
-    { key: 'past', label: 'Past newsletters', icon: 'box-archive', href: ARCHIVE_PATH },
+  { label: 'Newsletter', icon: 'envelope-open-text', items: [
+    { key: 'issue', label: 'Next newsletter', screen: 'issue' },
+    { key: 'builder', label: 'Newsletter builder', href: BUILDER_PATH },
+    { key: 'past', label: 'Past newsletters', href: ARCHIVE_PATH },
   ] },
-  { label: 'Policy Exchange', items: [
-    { key: 'exchange', label: 'Policy Exchange', icon: 'arrow-up-right-from-square', href: EXCHANGE_URL, copy: EXCHANGE_URL },
-    { key: 'share', label: 'Share an item', icon: 'share-nodes', href: SHARE_PATH, copy: shareLine(SHARE_PATH) },
-    { key: 'listserv', label: 'Listserv sign-up', icon: 'user-plus', href: SIGNUP_PATH, copy: signupLine(SIGNUP_PATH) },
+  { label: 'Desk work', icon: 'layer-group', fold: true, items: [
+    { key: 'sort', label: 'Sort', screen: 'sort', count: true },
+    { key: 'finalize', label: 'Finalize', screen: 'finalize' },
+    { key: 'publish', label: 'Publish to Exchange', screen: 'publish' },
+    { key: 'build', label: 'Send to Newsletter', screen: 'build' },
   ] },
 ];
+
+/** Whether Desk work shows its items: open unless it was shut (the stored
+ *  value is 'closed'), and always open on a pipeline screen so the lit item
+ *  is never hidden. */
+export function foldOpen(stored, screen) {
+  return stored !== 'closed' || SECTION_SCREENS.includes(screen);
+}
 
 /** Which item is lit for a screen; '' when none is. */
 export function currentKey(screen) {

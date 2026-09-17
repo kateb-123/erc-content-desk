@@ -1,22 +1,42 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { NAV, currentKey, opensNewWindow } from '../js/sidebar-view.js';
+import { NAV, currentKey, opensNewWindow, foldOpen } from '../js/sidebar-view.js';
 
-test('the sidebar is four groups in the order Kate set, with the desk itself first', () => {
-  assert.deepEqual(NAV.map(g => g.label), ['', 'Pipeline', 'Newsletter', 'Policy Exchange']);
+test('the sidebar puts the team\'s links first and the pipeline last as Desk work (Claude Design round two, Kate\'s pick Sep 16)', () => {
+  assert.deepEqual(NAV.map(g => g.label), ['', 'Policy Exchange', 'Newsletter', 'Desk work']);
   assert.deepEqual(NAV.map(g => g.items.map(i => i.label)), [
     ['ERC Content Desk'],
-    ['Sort', 'Finalize', 'Publish to Exchange', 'Send to Newsletter'],
-    ['Next newsletter', 'Newsletter builder', 'Past newsletters'],
     ['Policy Exchange', 'Share an item', 'Listserv sign-up'],
+    ['Next newsletter', 'Newsletter builder', 'Past newsletters'],
+    ['Sort', 'Finalize', 'Publish to Exchange', 'Send to Newsletter'],
   ]);
+});
+
+test('icons sit on the group headings; the items under them carry none, the brand keeps its house', () => {
+  assert.deepEqual(NAV.map(g => g.icon ?? ''), ['', 'globe', 'envelope-open-text', 'layer-group']);
+  const items = NAV.flatMap(g => g.items);
+  assert.deepEqual(items.filter(i => i.icon).map(i => i.key), ['home']);
+});
+
+test('only Desk work folds, and only Sort carries a count', () => {
+  assert.deepEqual(NAV.filter(g => g.fold).map(g => g.label), ['Desk work']);
+  assert.deepEqual(NAV.flatMap(g => g.items).filter(i => i.count).map(i => i.key), ['sort']);
 });
 
 test('the three hand-out links carry a copy line; nothing else does', () => {
   const withCopy = NAV.flatMap(g => g.items).filter(i => i.copy).map(i => i.label);
   assert.deepEqual(withCopy, ['Policy Exchange', 'Share an item', 'Listserv sign-up']);
-  const share = NAV[3].items[1];
+  const share = NAV[1].items[1];
   assert.ok(share.copy.endsWith(share.href));
+});
+
+test('Desk work stays open unless it was shut, and always opens on a pipeline screen', () => {
+  assert.equal(foldOpen(null, 'home'), true);
+  assert.equal(foldOpen('open', 'home'), true);
+  assert.equal(foldOpen('closed', 'home'), false);
+  assert.equal(foldOpen('closed', 'issue'), false);
+  assert.equal(foldOpen('closed', 'sort'), true);
+  assert.equal(foldOpen('closed', 'build'), true);
 });
 
 test('currentKey maps the screen to the lit item', () => {

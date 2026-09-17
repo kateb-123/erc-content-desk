@@ -45,9 +45,13 @@ template and the public Exchange site.
 - Active nav pill shadow: `0 2px 10px rgba(29,110,165,.35)`.
 - The desk's nav is a sidebar down the left of every page (Kate, Sep 16, from the
   Claude Design docs: "I like the sidebar the most. but then I think keep our
-  stuff"): 248px, `--side-bg`, four groups (the desk, Pipeline, Newsletter, Policy
-  Exchange), Outfit uppercase group labels, Karla items, the lit item on the tint in
-  the deep accent. The builder keeps its bubble wizard pills with numbered circles.
+  stuff"): 248px, `--side-bg`, four groups in the order of Claude Design's second
+  round (Kate's pick, Sep 16): the desk, Policy Exchange, Newsletter, then **Desk
+  work** (the pipeline) as a fold that remembers being shut and always opens on a
+  pipeline screen. Outfit uppercase group labels carry the group's icon in the
+  accent; the Karla items under them carry none and sit indented; Sort shows the
+  queue count; the lit item sits on the tint in the deep accent. The builder keeps
+  its bubble wizard pills with numbered circles.
 
 ## Icons
 
@@ -74,7 +78,7 @@ look, everywhere it appears.
 | **Upload media** → Replace / Remove media | — | quiet outline button + muted Remove word | attach a picture or PDF flyer to an item (ERC cards in Sort; newsletter items in the builder) — the URL rides the row’s infographic column into the email |
 | **Send early? → Confirm / Cancel** | fa-clock on the bubble | amber bubble, one ask (same as Verify link) | picking an event that belongs to a later issue — the words stay bare, the bubble carries the icon |
 | Door buttons (Go to Finalize/Publish, Send to Newsletter, the receipt's door) | → `fa-arrow-right` | outlined accent pill, the header's Build newsletter look (Sep 15, option A), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
-| **Sidebar items** (ERC Content Desk; Pipeline: Sort, Finalize, Publish to Exchange, Send to Newsletter; Newsletter: Next newsletter, Newsletter builder, Past newsletters; Policy Exchange: Policy Exchange, Share an item, Listserv sign-up) | one FA glyph each, muted, accent when lit | plain rows in the sidebar, the lit one on the tint; the three hand-outs carry a small `fa-copy` icon on the right | every way around the desk (Kate, Sep 16). Pipeline items open the pipeline in its own window from the front door (`/#sort`, Sep 15) and switch in place inside it; outside pages open a new tab; the copy icon hands over one sentence with the link and turns into a check for a moment |
+| **Sidebar items** (ERC Content Desk; Policy Exchange: Policy Exchange, Share an item, Listserv sign-up; Newsletter: Next newsletter, Newsletter builder, Past newsletters; Desk work: Sort, Finalize, Publish to Exchange, Send to Newsletter) | one FA glyph per group heading (`fa-globe`, `fa-envelope-open-text`, `fa-layer-group`), none on the items; the Desk work heading adds a chevron | plain indented rows in the sidebar, the lit one on the tint; the three hand-outs carry a small `fa-copy` icon on the right; Sort carries the queue count | every way around the desk (Kate, Sep 16). Pipeline items open the pipeline in its own window from the front door (`/#sort`, Sep 15) and switch in place inside it; outside pages open a new tab; the copy icon hands over one sentence with the link and turns into a check for a moment |
 | **Keep the rest (N)** | ✓ `fa-check` | the ONE filled button on a Sort section list, right of the list head | keep every listed row that has a real type and a checked link; Skip and Delete on each row are the only other actions there (Sep 11) |
 
 Sort is one table at a time (Sep 11 option A; Sep 15 the card stream went,

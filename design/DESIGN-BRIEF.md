@@ -55,12 +55,14 @@ Report, ERC Research), Event (A&M, Off-Campus, Webinar-Online), Opportunity
 ## 3. The screens, and what every control does
 
 A sidebar down the left of every page (Kate, Sep 16, from the Claude Design
-docs; the tabs and the header pill are gone): **ERC Content Desk**; under
-**Pipeline**, Sort, Finalize, Publish to Exchange, Send to Newsletter; under
-**Newsletter**, Next newsletter, Newsletter builder, Past newsletters; under
-**Policy Exchange**, Policy Exchange, Share an item, Listserv sign-up, each of
-those three with a copy icon that puts one sentence with the link on the
-clipboard. From the front door the Pipeline items open the pipeline in its own
+docs; the tabs and the header pill are gone; reordered the same day from the
+second round): **ERC Content Desk**; under **Policy Exchange**, Policy Exchange,
+Share an item, Listserv sign-up, each with a copy icon that puts one sentence
+with the link on the clipboard; under **Newsletter**, Next newsletter,
+Newsletter builder, Past newsletters; under **Desk work**, Sort (with the queue
+count), Finalize, Publish to Exchange, Send to Newsletter. Desk work folds: its
+heading has a chevron, the desk remembers it shut, and it always opens on a
+pipeline screen. The group headings carry the icons; the items carry none. From the front door the Pipeline items open the pipeline in its own
 window, which has the same sidebar and switches in place; the builder and the
 public pages open a new tab. Above the content sits one status line that carries
 loading and error messages for the whole app.

@@ -159,13 +159,21 @@ label.radio { display: block; margin: .15rem 0; font-size: .95rem; color: var(--
   padding: 0 .5rem .35rem; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600;
   font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
 }
+.side-label { display: flex; align-items: center; gap: .5rem; }
+.side-label .fa-solid { width: .9rem; text-align: center; font-size: .7rem; color: var(--accent); flex: none; }
+.side-fold { border: 0; background: none; cursor: pointer; text-align: left; width: 100%; }
+.side-fold .side-chevron { width: auto; font-size: .55rem; color: var(--muted); margin-left: .1rem; }
+.side-fold:hover { color: var(--accent); }
+.side-group.is-folded .side-row { display: none; }
 .side-row { display: flex; align-items: center; gap: .15rem; }
 .side-item {
   flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: .6rem;
   padding: .45rem .5rem; border-radius: 6px; color: var(--ink); text-decoration: none; font-size: .95rem;
 }
 .side-item .fa-solid { width: 1rem; text-align: center; font-size: .75rem; color: var(--muted); flex: none; }
-.side-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.side-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 auto; }
+.side-item:not(.is-brand) { padding-left: .875rem; }   /* no icon on the items: an indent under their heading */
+.side-count { flex: none; font-size: .75rem; color: var(--muted); font-weight: 400; }
 .side-item:hover { background: var(--hover); color: var(--accent); }
 .side-item.is-current { background: var(--tint); color: var(--accent-deep); font-weight: 600; }
 .side-item.is-current .fa-solid { color: var(--accent); }

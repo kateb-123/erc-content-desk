@@ -6,7 +6,7 @@ import { dotsLoader, loadingLabel } from './icons.js';
 import { renderHome } from './home-ui.js';
 import { renderSidebar } from './sidebar-ui.js';
 import { renderIssue } from './issue-ui.js';
-import { latestIssue } from './home-panel.js';
+import { latestIssue, queueBadgeCount } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
 import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
@@ -420,7 +420,10 @@ function focusHeading(section) {
 
 export function render() {
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
-  renderSidebar(document.querySelector('.side'), { screen: state.screen, isSectionWindow, onGo: goTo });
+  renderSidebar(document.querySelector('.side'), {
+    screen: state.screen, isSectionWindow, onGo: goTo,
+    queueCount: state.loaded ? queueBadgeCount(state.rows) : null,
+  });
   document.title = state.screen === 'home' ? 'ERC Content Desk' : `${SCREEN_NAMES[state.screen]} · ERC Content Desk`;
   // One sidebar on every page (Kate, Sep 16). In the pipeline's own window
   // its items switch in place; from the front door they open that window.
