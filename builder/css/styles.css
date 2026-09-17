@@ -53,6 +53,9 @@
   --hover: var(--background-hover);
 }
 
+/* The hidden attribute wins over every display rule below (the buttons are inline-flex). */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   font-family: var(--font-sans);
