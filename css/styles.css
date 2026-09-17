@@ -325,9 +325,50 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 /* Finalize — rows as they will look on the Policy Exchange (mock v2) */
 .finalize-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
 .finalize-head .lede { margin-bottom: .5rem; }
-.f-check-carousel { justify-content: center; margin: 0 auto; }
-.f-check-card { position: relative; }
-.f-see-all { margin: .6rem 0 0; }
+/* Finalize as a list and a card (Claude Design round two, Kate's pick Sep 16). */
+.f-progress { height: 6px; border-radius: 999px; background: var(--tint); overflow: hidden; margin: -.25rem 0 1.25rem; }
+.f-progress i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.f-split { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr); gap: 1.25rem; align-items: start; }
+@media (max-width: 900px) { .f-split { grid-template-columns: minmax(0, 1fr); } }
+.f-list { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.f-group-head {
+  display: flex; align-items: center; gap: .5rem; width: 100%; box-sizing: border-box; margin: 0;
+  padding: .6rem .85rem .4rem; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none;
+  font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); text-align: left;
+}
+.f-list > .f-group-head:first-child { border-top: 0; }
+.f-group-head.is-fold { cursor: pointer; }
+.f-group-head.is-fold:hover:not(:disabled) { border-color: var(--line); color: var(--accent); }
+.f-group-count { margin-left: auto; font-weight: 600; letter-spacing: 0; }
+.f-group-head .fa-solid { font-size: .6rem; }
+.f-list-row {
+  display: flex; align-items: center; gap: .5rem; width: 100%; box-sizing: border-box; text-align: left;
+  padding: .55rem .85rem; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: #fff;
+  font-family: Karla, "Segoe UI", sans-serif; font-weight: 400; color: var(--ink); cursor: pointer;
+}
+.f-list-row:hover:not(:disabled) { border-color: var(--line); background-image: linear-gradient(var(--hover), var(--hover)); }
+.f-list-row.is-rewrite { background-color: var(--amber-bg); }
+.f-list-row.is-selected { background-color: var(--tint); }
+.f-row-text { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
+.f-row-title { font-size: .85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.f-row-type { font-size: .75rem; color: var(--muted); }
+.f-list-row .fa-check { color: var(--ok); flex: none; }
+.f-keep-all { margin: .7rem 0 0 .2rem; }
+.f-keep-all .fa-solid { margin-right: .3rem; }
+.f-card { padding: 1.25rem 1.4rem; }
+.f-card .type-line { margin: 0 0 .35rem; }
+.f-card .f-verify-actions { border-top: 1px solid var(--line); padding-top: .85rem; margin-top: 1rem; }
+.f-card .f-verify-actions .skip-link { margin-left: auto; }
+.f-card .f-verify-actions .trash-link + .primary { margin-left: auto; }
+.f-diff-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .75rem; margin: .6rem 0 0; }
+.f-diff-box { border: 1px solid var(--line); border-radius: 8px; padding: .7rem .85rem; background: #fff; }
+.f-diff-box.is-after { background: var(--tint); border-color: var(--tint); }
+.f-diff-box .f-old, .f-diff-box .f-blurb-text { margin: 0; }
+.f-diff-box .f-old { color: var(--ink); }
+.f-original { border: 1px solid var(--amber-line); background: var(--amber-bg); border-radius: 8px; padding: .7rem .85rem; margin-top: .5rem; }
+.f-original .f-diff-label { color: var(--amber); }
+.f-original .f-blurb-text { margin: 0; }
+.f-pane-empty { border: 1px dashed var(--line); border-radius: 12px; padding: 2.5rem 1rem; text-align: center; color: var(--muted); }
 /* Team trial: clicking Publish runs a mock — a ghosted "forthcoming" shadow
    alert during the posting beat, then the normal success receipt. */
 .p-shade { text-align: center; padding: 2rem 1rem 1rem; opacity: .7; }

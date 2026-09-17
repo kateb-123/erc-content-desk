@@ -53,9 +53,9 @@
 "[Type] — now the subtype:"
 "paste the right link"
 "Filed by the desk from the link/description — check it."
-"Rewrite pending descriptions into ERC voice, then check each one — Keep saves the rewrite, Use original leaves the Sheet untouched. After the checks, look over the table (click a row for details) and go to Publish."
-"Rewrite these descriptions into ERC voice."
-"Check the rewrites — flip through and decide each one."
+"Rewrite the descriptions that need an ERC voice, then check each one: Keep saves the rewrite, Use original leaves the text as it was. Click any row on the left to see it, edit it, or delete it. Then go to Publish." (Finalize's info panel, Sep 16)
+"[N] of [M] kept items need an ERC-voice description" / "[D] of [M] rewrites checked" (Finalize's progress line, Sep 16)
+"Needs a rewrite" / "To check" / "Done" / "No rewrite needed" (Finalize's list groups)
 "Abstract"
 "No description yet — Rewrite drafts one from the original text."
 "Source"
@@ -64,9 +64,9 @@
 "Authors"
 "Time"
 "Location"
-"Before"
-"After"
-"New description — written from the original text"
+"Original" / "Before" / "After · ERC voice" / "New description, written from the original text" (Finalize's card)
+"Keep all remaining ([N])" (under Finalize's list)
+"Every rewrite is checked." / "Nothing needs a rewrite." (Finalize's empty card, with "Go to Publish")
 "Everything here was checked against the live Exchange on arrival. Publish sends the Adding group to the site; newsletter-only items stay held for the issue, and anything already live is skipped."
 "[N] adding" / "[N] held for the newsletter" / "[N] needs a fix" or "[N] need a fix" / "Already live" (Publish's legend, Sep 16; Already live never carries a number)
 "Adding" / "Held for newsletter" / "Needs a fix" / "Already live" (Publish's Fate column; Needs a fix is a link to Sort's Needs a fix)
@@ -162,7 +162,6 @@
 "Undo last"
 "Go to Finalize"
 "Go to Publish"
-"See all items"
 "Rewrite [N] descriptions"
 "Re-check"
 "Fix in Finalize"
@@ -215,7 +214,6 @@
 "Sent [N] to the newsletter builder."
 "Pulled [N] back from the newsletter."
 "Publishing to the Exchange…"
-"Rewrote [N] descriptions — check them one by one."
 "Checking the live Exchange…"
 "Checked against the live Exchange · "
 "Published [N] to the Exchange"

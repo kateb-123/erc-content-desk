@@ -151,15 +151,22 @@ of the road.
   corrected link. Keep stays locked until the link is settled; Skip always works.
 
 ### Finalize
-Arrives showing only the keeps that still need an ERC-voice description, tinted,
-with **Rewrite N descriptions**. That button makes one batched model call; while it
-runs the rows hide and a dots loader shows. The results come back as a **carousel
-of check cards**, one at a time with arrows and an i/j counter: **Edit** and
-**Delete** left, **Use original** (with a back arrow) and **Keep** (filled) right.
-Nothing is saved until each card is decided. Then the screen is a sortable table of
-every unpublished keep; a chevron expands a row into a white detail card with the
-facts, the description, and Edit fields (which include date, time, location,
-authors, deadline). **Go to Publish** appears only when nothing is pending.
+A list and a card (Claude Design round two, Kate's pick Sep 16). Under the title a
+progress line ("2 of 5 kept items need an ERC-voice description", then "1 of 2
+rewrites checked") and a 6px bar in the accent on the tint. Down the left, every
+unpublished keep in the standing order (ERC first), grouped: **Needs a rewrite**
+(on the amber) or **To check**, then **Done** (a green check), then **No rewrite
+needed**, folded with its count. The card on the right shows the chosen row. A row
+waiting for its rewrite shows its **Original** text in the amber box, with Edit and
+Delete. **Rewrite N descriptions** (filled, in the head) makes one batched model
+call; while it runs a dots loader shows. A rewrite to check shows **Before** and
+**After · ERC voice** side by side, the removed words struck in amber, the added ones
+on the green: **Edit** and **Delete** left, **Use original** and **Keep** (filled)
+right; either decision stamps the row and moves to the next. **Keep all remaining
+(N)**, a quiet link under the list, keeps every rewrite still waiting in one write.
+Any other row shows its facts and description with Edit and Delete. When nothing is
+left to check, the card reads "Every rewrite is checked. Go to Publish" and the head
+carries the **Go to Publish** door.
 
 ### Publish to Exchange
 On arrival it checks the live public file and shows a dots loader. Then (Claude

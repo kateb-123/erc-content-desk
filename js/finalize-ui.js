@@ -1,29 +1,29 @@
 /**
- * Finalize: every unpublished keep in the queue's own slim table — Title,
- * Type, Date submitted, sortable — but rows expand in place like the
- * Exchange: facts above the blurb (Abstract for research), and Edit fields
- * with an explicit Save. ERC leads; rows still needing an ERC-voice blurb
- * are tinted, one button rewrites them all and the results land back in
- * the rows. Nothing publishes from this screen.
+ * Finalize (Claude Design round two, Kate's pick Sep 16): a progress bar,
+ * the kept rows as a list down the left in groups (Needs a rewrite or To
+ * check, Done, No rewrite needed folded), and one card on the right for the
+ * chosen row. A rewrite shows Before and After side by side with the changed
+ * words marked; Keep or Use original moves to the next one; Keep all
+ * remaining clears the rest. ERC leads the standing order. Nothing publishes
+ * from this screen.
  */
 import { readyToPublish, canRewrite, needsDescription } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { dotsLoader, faIcon, forwardIcon } from './icons.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection } from './finalize-view.js';
 import { titleWithInfo } from './screen-info.js';
 
 const EDITABLE = ['headline', 'date', 'source', 'topic', 'blurb', 'deadline', 'authors', 'time', 'location'];
 
 // View state only — resets on reload, never persisted.
-let sortState = { column: '', dir: 'asc' }; // '' = standing order (ERC first)
-let expanded = new Set();
 let editingId = null;
-let showAll = false; // stage 1 (just the rewrites) until Rewrite runs or she skips ahead
-let checkIdx = 0;    // which pending check card is in view (carousel)
+let selectedId = null;      // the row the card shows
+let noneOpen = false;       // the No rewrite needed group, folded by default
 
-/** Arriving at Finalize always starts at stage 1 — "Show all" is a one-visit peek. */
-export function resetFinalizeEntry() { showAll = false; checkIdx = 0; }
+/** Arriving at Finalize starts fresh: the first row that needs doing, the fold shut. */
+export function resetFinalizeEntry() { selectedId = null; noneOpen = false; editingId = null; }
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -46,26 +46,6 @@ function standingOrder(keeps) {
   const grouped = [...TYPE_ORDER, ''].flatMap(type =>
     rest.filter(r => (r.type || '') === type).sort(oldestFirst));
   return [...erc, ...grouped, ...rest.filter(r => !known.has(r.type || '')).sort(oldestFirst)];
-}
-
-const SORT_KEYS = {
-  title: r => r.headline,
-  type: r => TYPE_LABELS[r.type] ?? r.type ?? '',
-  submitted: r => r.submitted_at,
-};
-
-function sorted(keeps) {
-  if (!sortState.column) return standingOrder(keeps);
-  const key = SORT_KEYS[sortState.column];
-  const flip = sortState.dir === 'desc' ? -1 : 1;
-  return keeps.slice().sort((a, b) => {
-    const left = String(key(a) ?? '').toLowerCase();
-    const right = String(key(b) ?? '').toLowerCase();
-    if (!left && !right) return 0;
-    if (!left) return 1;
-    if (!right) return -1;
-    return flip * left.localeCompare(right);
-  });
 }
 
 /** Word-level LCS diff so a rewrite check highlights only what changed. */
@@ -191,179 +171,143 @@ function editBody(row, { onSave, onCancel }) {
   return wrap;
 }
 
-function itemRows(row, { tint, busy, rerender, onEditRow, onTrash, today }) {
-  const isOpen = expanded.has(row.id);
-  const rowClass = ['f-item', isErc(row) && 'f-erc', tint && 'needs-rewrite',
-    tint && busy && 'rewriting', isOpen && 'is-open'].filter(Boolean).join(' ');
+const typeText = row => [row.type ? (TYPE_LABELS[row.type] ?? row.type) : '', row.subtype].filter(Boolean).join(' · ');
 
-  const tr = el('tr', rowClass);
-  const titleTd = el('td');
-  titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
-  if (row.type === 'research' && row.authors) titleTd.append(el('span', 'item-source', row.authors));
-  if (row.source) titleTd.append(el('span', 'item-source', row.source));
-  tr.append(titleTd);
-  const typeTd = el('td');
-  typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
-  if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
-  // Words for the tints (Kate, Sep 15, option A): the grey badges Sort uses for
-  // facts, so blue and amber never carry the meaning alone.
-  const marks = el('div', 'list-badges');
-  if (isErc(row)) marks.append(el('span', 'badge', 'ERC'));
-  if (tint) marks.append(el('span', 'badge', 'Needs rewrite'));
-  if (marks.childElementCount) typeTd.append(marks);
-  tr.append(typeTd);
-  tr.append(el('td', '', isoToShort(row.submitted_at, today) || '—'));
-  const caretTd = el('td', 'f-caret');
-  const caret = el('button', 'chevron-btn');
-  caret.type = 'button';
-  caret.setAttribute('aria-expanded', String(isOpen));
-  caret.setAttribute('aria-label', isOpen ? 'Hide details' : 'Show details');
-  caret.append(faIcon(isOpen ? 'chevron-up' : 'chevron-down'));
-  caretTd.append(caret);
-  tr.prepend(caretTd);   // left, one glyph, like Sort (Kate, Sep 15, option A)
-  tr.addEventListener('click', () => {
-    if (expanded.has(row.id)) { expanded.delete(row.id); if (editingId === row.id) editingId = null; }
-    else expanded.add(row.id);
-    rerender();
-  });
-
-  if (!isOpen) return [tr];
-
-  const detailTr = el('tr', `f-detail-row ${rowClass}`);
-  const td = el('td');
-  td.colSpan = 4;
-  if (editingId === row.id) {
-    td.append(editBody(row, {
-      onSave: (r, changes) => {
-        editingId = null;
-        if (Object.keys(changes).length) onEditRow(r, changes);
-        else rerender();
-      },
-      onCancel: () => { editingId = null; rerender(); },
-    }));
-  } else {
-    const edit = el('button', 'linkish', ' Edit fields');
-    edit.type = 'button';
-    edit.prepend(faIcon('pen'));
-    edit.addEventListener('click', () => { editingId = row.id; rerender(); });
-    const bin = el('button', 'linkish trash-link', ' Delete');
-    bin.type = 'button';
-    bin.prepend(faIcon('trash-can'));
-    bin.addEventListener('click', () => { bin.disabled = true; onTrash(row); });
-    const acts = el('span', 'f-detail-actions');
-    acts.append(edit, ' · ', bin);
-    td.append(detailBody(row, acts, today));
-  }
-  detailTr.append(td);
-  return [tr, detailTr];
-}
-
-/** One rewrite at a time: the item, the change, approve or keep the original.
- *  Saving an edit here counts as the decision (onCheckEdit stamps the row). */
-function checkCard(row, { old, onVerify, onRevert, onCheckEdit, onTrash, rerender }) {
-  const card = el('div', 'card f-check-card');
-  const typeLine = el('p', 'type-line');
-  typeLine.append(el('span', 'type-label', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
-  if (row.subtype) typeLine.append(` — ${row.subtype}`);
-  card.append(typeLine);
+/** The head of every card: type line, title, source. */
+function cardHead(card, row) {
+  if (row.type) card.append(el('p', 'type-line', typeText(row)));
   card.append(el('h3', 'f-check-title', row.headline || row.link || '(untitled)'));
   if (row.source) card.append(el('p', 'f-check-source', row.source));
+}
 
-  if (editingId === row.id) {
-    card.append(editBody(row, {
-      onSave: (r, changes) => {
-        editingId = null;
-        if (Object.keys(changes).length) onCheckEdit(r, changes);
-        else rerender();
-      },
-      onCancel: () => { editingId = null; rerender(); },
-    }));
-    return card;
-  }
-
-  if (old) {
-    const { oldToks, newToks } = diffWords(old, row.blurb);
-    card.append(el('p', 'f-diff-label', 'Before'));
-    card.append(diffPara(oldToks, 'f-old', 'diff-del'));
-    card.append(el('p', 'f-diff-label', 'After'));
-    card.append(diffPara(newToks, 'f-blurb-text', 'diff-add'));
-  } else {
-    card.append(el('p', 'f-diff-label', 'New description — written from the original text'));
-    card.append(el('p', 'f-blurb-text', row.blurb));
-  }
-
-  // Same convention as Sort: Delete far left, the decision pair on the right.
-  // (The pen lives top-right, added by the caller next to the counter.)
-  const actions = el('div', 'f-verify-actions');
-  const lock = () => { for (const b of card.querySelectorAll('button')) b.disabled = true; };
+/** Edit and Delete, far left of the actions row. */
+function toolLinks(actions, row, { rerender, onTrash, lock }) {
   const edit = el('button', 'linkish edit-link', ' Edit');
   edit.type = 'button';
   edit.prepend(faIcon('pen'));
   edit.addEventListener('click', () => { editingId = row.id; rerender(); });
-  actions.append(edit);
   const bin = el('button', 'linkish trash-link sort-delete', ' Delete');
   bin.type = 'button';
   bin.prepend(faIcon('trash-can'));
   bin.addEventListener('click', () => { lock(); onTrash(row); });
-  actions.append(bin);
+  actions.append(edit, bin);
+}
+
+function editCard(row, { onSave, rerender }) {
+  const card = el('div', 'card f-card');
+  cardHead(card, row);
+  card.append(editBody(row, {
+    onSave: (r, changes) => {
+      editingId = null;
+      if (Object.keys(changes).length) onSave(r, changes);
+      else rerender();
+    },
+    onCancel: () => { editingId = null; rerender(); },
+  }));
+  return card;
+}
+
+/** A rewrite to check: Before and After side by side, the changed words marked.
+ *  Saving an edit here counts as the decision (onCheckEdit stamps the row). */
+function checkCard(row, { old, nextId, onVerify, onRevert, onCheckEdit, onTrash, rerender }) {
+  if (editingId === row.id) {
+    return editCard(row, { onSave: (r, changes) => { selectedId = nextId; onCheckEdit(r, changes); }, rerender });
+  }
+  const card = el('div', 'card f-card');
+  cardHead(card, row);
+  const pair = el('div', 'f-diff-pair');
+  if (old) {
+    const { oldToks, newToks } = diffWords(old, row.blurb);
+    const before = el('div', 'f-diff-box');
+    before.append(el('p', 'f-diff-label', 'Before'), diffPara(oldToks, 'f-old', 'diff-del'));
+    const after = el('div', 'f-diff-box is-after');
+    after.append(el('p', 'f-diff-label', 'After · ERC voice'), diffPara(newToks, 'f-blurb-text', 'diff-add'));
+    pair.append(before, after);
+  } else {
+    const after = el('div', 'f-diff-box is-after');
+    after.append(el('p', 'f-diff-label', 'New description, written from the original text'), el('p', 'f-blurb-text', row.blurb));
+    pair.append(after);
+  }
+  card.append(pair);
+
+  const actions = el('div', 'f-verify-actions');
+  const lock = () => { for (const b of card.querySelectorAll('button')) b.disabled = true; };
+  toolLinks(actions, row, { rerender, onTrash, lock });
   if (old) {
     const revert = el('button', 'linkish skip-link', ' Use original');
     revert.type = 'button';
     revert.prepend(faIcon('rotate-left'));
-    revert.addEventListener('click', () => { lock(); onRevert(row); });
+    revert.addEventListener('click', () => { lock(); selectedId = nextId; onRevert(row); });
     actions.append(revert);
   }
   const ok = el('button', 'primary', ' Keep');
   ok.type = 'button';
   ok.prepend(faIcon('check'));
-  ok.addEventListener('click', () => { lock(); onVerify(row.id); });
+  ok.addEventListener('click', () => { lock(); selectedId = nextId; onVerify(row.id); });
   actions.append(ok);
   card.append(actions);
   return card;
 }
 
+/** A row still waiting for its rewrite: the original text in the amber box. */
+function rewriteCard(row, { rerender, onEditRow, onTrash }) {
+  if (editingId === row.id) return editCard(row, { onSave: onEditRow, rerender });
+  const card = el('div', 'card f-card');
+  cardHead(card, row);
+  const box = el('div', 'f-original');
+  box.append(el('p', 'f-diff-label', 'Original'));
+  const text = row.blurb || row.original_text || '';
+  box.append(el('p', 'f-blurb-text', text || 'No description yet. Rewrite drafts one from the original text.'));
+  card.append(box);
+  const actions = el('div', 'f-verify-actions');
+  toolLinks(actions, row, { rerender, onTrash, lock: () => { for (const b of card.querySelectorAll('button')) b.disabled = true; } });
+  card.append(actions);
+  return card;
+}
+
+/** Any other kept row: its facts and description, with Edit and Delete. */
+function plainCard(row, { rerender, onEditRow, onTrash, today }) {
+  if (editingId === row.id) return editCard(row, { onSave: onEditRow, rerender });
+  const card = el('div', 'card f-card');
+  cardHead(card, row);
+  card.append(detailBody(row, null, today));
+  const actions = el('div', 'f-verify-actions');
+  toolLinks(actions, row, { rerender, onTrash, lock: () => { for (const b of card.querySelectorAll('button')) b.disabled = true; } });
+  card.append(actions);
+  return card;
+}
+
 export function renderFinalize(container, props) {
-  const { rows, today, review, verified, reviewTotal, busy, rewroteNote, onEditRow, onCheckEdit, onRewrite, onVerifyRewrite, onRevertRewrite, onTrash, onGoTo } = props;
+  const { rows, today, review, verified, reviewTotal, busy, rewroteNote, onEditRow, onCheckEdit, onRewrite, onVerifyRewrite, onVerifyAll, onRevertRewrite, onTrash, onGoTo } = props;
   const rerender = () => renderFinalize(container, props);
   container.replaceChildren();
-  const keeps = readyToPublish(rows);
+  const keeps = standingOrder(readyToPublish(rows));
   const handled = id => review?.has(id) || verified?.has(id);
   const pending = keeps.filter(r => needsRewrite(r) && !handled(r.id));
   const checks = review?.size ?? 0;
+  const stage = finalizeStage({ pending: pending.length, checks });
 
-  // Stage 1: just the rows waiting on a description. Rewrite (or Show all) moves on.
-  const stage1 = pending.length > 0 && !showAll;
-
+  // ── The head: title, one line of progress, one action on the right. ──
   const head = el('div', 'screen-head finalize-head');
   const lead = el('div');
   const info = titleWithInfo('Finalize', 'finalize',
-    'Rewrite pending descriptions into ERC voice, then check each one — Keep saves the rewrite, Use original leaves the Sheet untouched. After the checks, look over the table (click a row for details) and go to Publish.');
+    'Rewrite the descriptions that need an ERC voice, then check each one: Keep saves the rewrite, Use original leaves the text as it was. Click any row on the left to see it, edit it, or delete it. Then go to Publish.');
   lead.append(info.row, info.panel);
+  const progress = stage === 'checking'
+    ? finalizeProgress('checking', { total: Math.max(reviewTotal || 0, checks), left: checks })
+    : finalizeProgress(stage, { pending: pending.length, keeps: keeps.length });
   const lede = el('p', 'lede');
-  if (!keeps.length) {
-    lede.textContent = 'No unpublished keeps right now.';
-  } else if (stage1) {
-    lede.textContent = 'Rewrite these descriptions into ERC voice.';
-  } else if (checks && !busy) {
-    // Same spot as stage 1's lede — one message, one place (Kate, Sep 1).
-    lede.textContent = rewroteNote ?? 'Check the rewrites — flip through and decide each one.';
-  } else if (rewroteNote && !busy) {
-    // The server's answer when it had nothing to rewrite lands here, next to
-    // the button, not in the page header (usability run F11).
-    lede.textContent = rewroteNote;
-  }
-  // (No standing lede for the plain table — the info panel explains it.)
+  if (!keeps.length) lede.textContent = 'No unpublished keeps right now.';
+  else if (stage !== 'checking' && rewroteNote && !busy) lede.textContent = rewroteNote;   // an empty rewrite's answer, next to the button (F11)
+  else lede.textContent = progress.text;
   lead.append(lede);
   head.append(lead);
-  // While rewriting the button is gone entirely — the dots loader below is the signal,
-  // and nothing here can be clicked twice (Kate, Sep 1).
-  if (!busy && pending.length && !checks) {
-    // While a check queue is open, the queue is the only action — a second
-    // Rewrite here would re-run rows mid-review.
+  // While rewriting the button is gone entirely: the dots below are the signal.
+  if (!busy && stage === 'before') {
     const btn = el('button', 'primary', `Rewrite ${pending.length} description${pending.length === 1 ? '' : 's'}`);
     btn.addEventListener('click', () => { btn.disabled = true; onRewrite(); });
     head.append(btn);
-  } else if (!busy && keeps.length && !checks) {
+  } else if (!busy && stage === 'plain' && keeps.length) {
     const btn = el('button', 'door head-action', 'Go to Publish');
     btn.append(forwardIcon());
     btn.addEventListener('click', () => onGoTo('publish'));
@@ -371,84 +315,92 @@ export function renderFinalize(container, props) {
   }
   container.append(head);
   if (busy) {
-    // The rows being rewritten step out of view — the dots say enough.
     container.append(dotsLoader());
     return;
   }
-
   if (!keeps.length) return;
 
-  // The check queue is a carousel — flip through the cards freely; deciding
-  // one removes it and the view clamps to the next.
-  if (checks && !busy) {
-    const queue = sorted(keeps).filter(r => review.has(r.id));
-    if (queue.length) {
-      checkIdx = Math.max(0, Math.min(checkIdx, queue.length - 1));
-      const current = queue[checkIdx];
-      const card = checkCard(current, {
-        onTrash,
-        old: review.get(current.id),
-        onVerify: onVerifyRewrite, onRevert: onRevertRewrite, onCheckEdit, rerender,
-      });
-      card.append(el('span', 'card-pos', `${checkIdx + 1}/${queue.length}`));
-      const wrap = el('div', 'sort-carousel f-check-carousel');
-      const prev = el('button', 'carousel-arrow', '‹');
-      prev.type = 'button';
-      prev.disabled = checkIdx === 0;
-      prev.setAttribute('aria-label', 'Previous rewrite');
-      prev.addEventListener('click', () => { checkIdx -= 1; rerender(); });
-      const next = el('button', 'carousel-arrow', '›');
-      next.type = 'button';
-      next.disabled = checkIdx >= queue.length - 1;
-      next.setAttribute('aria-label', 'Next rewrite');
-      next.addEventListener('click', () => { checkIdx += 1; rerender(); });
-      wrap.append(prev, card, next);
-      container.append(wrap);
-      return;
+  if (stage !== 'plain') {
+    const bar = el('div', 'f-progress');
+    bar.setAttribute('role', 'progressbar');
+    bar.setAttribute('aria-valuenow', String(progress.pct));
+    bar.setAttribute('aria-valuemin', '0');
+    bar.setAttribute('aria-valuemax', '100');
+    const fill = el('i');
+    fill.style.width = `${progress.pct}%`;
+    bar.append(fill);
+    container.append(bar);
+  }
+
+  // ── The list on the left. ──
+  const groups = finalizeGroups(keeps, {
+    pending: new Set(pending.map(r => r.id)),
+    review: new Set(review?.keys?.() ?? []),
+    verified: verified ?? new Set(),
+  });
+  selectedId = pickSelection(groups, selectedId);
+  const onlyNone = groups.length === 1 && groups[0].key === 'none';
+
+  const split = el('div', 'f-split');
+  const side = el('div', 'f-side');
+  const list = el('div', 'f-list');
+  for (const group of groups) {
+    const open = !group.fold || noneOpen || onlyNone || group.rows.some(r => r.id === selectedId);
+    if (group.fold) {
+      const toggle = el('button', 'f-group-head is-fold');
+      toggle.type = 'button';
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.append(el('span', '', group.label), el('span', 'f-group-count', String(group.rows.length)), faIcon(open ? 'chevron-up' : 'chevron-right'));
+      toggle.addEventListener('click', () => { noneOpen = !open; rerender(); });
+      list.append(toggle);
+    } else {
+      list.append(el('p', 'f-group-head', group.label));
+    }
+    if (!open) continue;
+    for (const row of group.rows) {
+      const item = el('button', `f-list-row${group.key === 'rewrite' ? ' is-rewrite' : ''}${row.id === selectedId ? ' is-selected' : ''}`);
+      item.type = 'button';
+      if (row.id === selectedId) item.setAttribute('aria-current', 'true');
+      const text = el('span', 'f-row-text');
+      text.append(el('span', 'f-row-title', row.headline || row.link || '(untitled)'));
+      if (row.type) text.append(el('span', 'f-row-type', typeText(row)));
+      item.append(text);
+      if (group.key === 'done') item.append(faIcon('check'));
+      item.addEventListener('click', () => { selectedId = row.id; editingId = null; rerender(); });
+      list.append(item);
     }
   }
-
-  const table = el('table', 'queue-table finalize-table');
-  const headRow = el('tr');
-  for (const col of [
-    { key: 'title', label: 'Title' },
-    { key: 'type', label: 'Type' },
-    { key: 'submitted', label: 'Submitted' },
-  ]) {
-    const th = el('th');
-    const active = sortState.column === col.key;
-    if (active) th.setAttribute('aria-sort', sortState.dir === 'desc' ? 'descending' : 'ascending');
-    const btn = el('button', 'sort-btn', `${col.label} ${active ? (sortState.dir === 'desc' ? '↓' : '↑') : '↕'}`);
-    btn.type = 'button';
-    btn.addEventListener('click', () => {
-      if (sortState.column === col.key) sortState.dir = sortState.dir === 'desc' ? 'asc' : 'desc';
-      else sortState = { column: col.key, dir: 'asc' };
-      rerender();
-    });
-    th.append(btn);
-    headRow.append(th);
-  }
-  headRow.prepend(el('th', 'f-caret'));
-  const thead = el('thead');
-  thead.append(headRow);
-  table.append(thead);
-
-  const tbody = el('tbody');
-  const listed = stage1 ? sorted(keeps).filter(r => pending.includes(r)) : sorted(keeps);
-  for (const row of listed) {
-    const tint = pending.includes(row);
-    tbody.append(...itemRows(row, { tint, busy, rerender, onEditRow, onTrash, today }));
-  }
-  table.append(tbody);
-
-  const scroll = el('div', 'table-scroll');
-  scroll.append(table);
-  container.append(scroll);
-
-  if (stage1) {
-    const all = el('button', 'linkish f-see-all', 'See all items');
+  side.append(list);
+  const toCheck = groups.find(g => g.key === 'check')?.rows ?? [];
+  if (toCheck.length > 1 && onVerifyAll) {
+    const all = el('button', 'linkish f-keep-all', ` Keep all remaining (${toCheck.length})`);
     all.type = 'button';
-    all.addEventListener('click', () => { showAll = true; rerender(); });
-    container.append(all);
+    all.prepend(faIcon('check'));
+    all.addEventListener('click', () => { all.disabled = true; selectedId = null; onVerifyAll(toCheck.map(r => r.id)); });
+    side.append(all);
   }
+  split.append(side);
+
+  // ── The card on the right. ──
+  const row = keeps.find(r => r.id === selectedId);
+  const group = row && groups.find(g => g.rows.includes(row));
+  if (!row) {
+    const empty = el('div', 'f-pane-empty');
+    empty.append(verified?.size ? 'Every rewrite is checked. ' : 'Nothing needs a rewrite. ');
+    const go = el('button', 'linkish', 'Go to Publish');
+    go.type = 'button';
+    go.append(' ', forwardIcon());
+    go.addEventListener('click', () => onGoTo('publish'));
+    empty.append(go);
+    split.append(empty);
+  } else if (group.key === 'check') {
+    const at = toCheck.indexOf(row);
+    const nextId = toCheck[at + 1]?.id ?? toCheck[at - 1]?.id ?? null;
+    split.append(checkCard(row, { old: review.get(row.id), nextId, onVerify: onVerifyRewrite, onRevert: onRevertRewrite, onCheckEdit, onTrash, rerender }));
+  } else if (group.key === 'rewrite') {
+    split.append(rewriteCard(row, { rerender, onEditRow, onTrash }));
+  } else {
+    split.append(plainCard(row, { rerender, onEditRow, onTrash, today }));
+  }
+  container.append(split);
 }

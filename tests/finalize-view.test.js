@@ -1,26 +1,50 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { blankRow } from '../js/schema.js';
-import { needsRewrite } from '../js/finalize-ui.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection } from '../js/finalize-view.js';
 
-const kept = o => blankRow({ status: 'kept', ...o });
+const keeps = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }];
 
-test('events, opportunities, and description-less research need the ERC voice, when there is text to draft from', () => {
-  assert.equal(needsRewrite(kept({ type: 'event', blurb: 'x' })), true);
-  assert.equal(needsRewrite(kept({ type: 'event', blurb: '', original_text: 'Please join us.' })), true);
-  // No text at all: nothing to rewrite from; Finalize asks for a description instead (F2).
-  assert.equal(needsRewrite(kept({ type: 'event', blurb: '', original_text: '' })), false);
-  assert.equal(needsRewrite(kept({ type: 'opportunity', blurb: 'x' })), true);
-  assert.equal(needsRewrite(kept({ type: 'research', blurb: '', original_text: 'From the page.' })), true);
-  assert.equal(needsRewrite(kept({ type: 'research', blurb: 'an abstract' })), false);
-  assert.equal(needsRewrite(kept({ type: 'headline', blurb: 'x' })), false);
-  assert.equal(needsRewrite(kept({ type: '', blurb: '' })), false);
+test('finalizeStage: before while rewrites wait, checking while checks are open, plain otherwise', () => {
+  assert.equal(finalizeStage({ pending: 2, checks: 0 }), 'before');
+  assert.equal(finalizeStage({ pending: 0, checks: 2 }), 'checking');
+  assert.equal(finalizeStage({ pending: 1, checks: 2 }), 'checking');
+  assert.equal(finalizeStage({ pending: 0, checks: 0 }), 'plain');
 });
 
-test('a checked rewrite never needs rewriting again — the state survives reload', () => {
-  assert.equal(needsRewrite(kept({ type: 'event', blurb: 'x', rewrite_checked: '2026-08-31T00:00:00.000Z' })), false);
-  assert.equal(needsRewrite(kept({ type: 'opportunity', blurb: 'x', rewrite_checked: 'TRUE' })), false);
-  assert.equal(needsRewrite(kept({ type: 'research', blurb: '', rewrite_checked: '2026-08-31T00:00:00.000Z' })), false);
-  // blank and whitespace stamps don't count
-  assert.equal(needsRewrite(kept({ type: 'event', blurb: 'x', rewrite_checked: '  ' })), true);
+test('before the rewrite: Needs a rewrite, then No rewrite needed (folded)', () => {
+  const groups = finalizeGroups(keeps, { pending: new Set(['a', 'b']), review: new Set(), verified: new Set() });
+  assert.deepEqual(groups.map(g => [g.key, g.label, g.rows.map(r => r.id), g.fold]), [
+    ['rewrite', 'Needs a rewrite', ['a', 'b'], false],
+    ['none', 'No rewrite needed', ['c', 'd', 'e'], true],
+  ]);
+});
+
+test('while checking: To check, Done, No rewrite needed; a row left unrewritten keeps its own group', () => {
+  const groups = finalizeGroups(keeps, { pending: new Set(['e']), review: new Set(['a', 'b']), verified: new Set(['c']) });
+  assert.deepEqual(groups.map(g => [g.key, g.rows.map(r => r.id)]), [
+    ['check', ['a', 'b']],
+    ['rewrite', ['e']],
+    ['done', ['c']],
+    ['none', ['d']],
+  ]);
+});
+
+test('empty groups drop out', () => {
+  const groups = finalizeGroups([{ id: 'x' }], { pending: new Set(), review: new Set(), verified: new Set() });
+  assert.deepEqual(groups.map(g => g.key), ['none']);
+});
+
+test('finalizeProgress reads as the proposal wrote it, with the bar share', () => {
+  assert.deepEqual(finalizeProgress('before', { pending: 2, keeps: 5 }), { text: '2 of 5 kept items need an ERC-voice description', pct: 0 });
+  assert.deepEqual(finalizeProgress('checking', { total: 4, left: 1 }), { text: '3 of 4 rewrites checked', pct: 75 });
+  assert.deepEqual(finalizeProgress('plain', { keeps: 5 }), { text: '', pct: 100 });
+});
+
+test('pickSelection keeps a row that is still listed, else takes the first row to check or rewrite, else none', () => {
+  const groups = finalizeGroups(keeps, { pending: new Set(['e']), review: new Set(['a', 'b']), verified: new Set(['c']) });
+  assert.equal(pickSelection(groups, 'd'), 'd');
+  assert.equal(pickSelection(groups, 'gone'), 'a');
+  assert.equal(pickSelection(groups, null), 'a');
+  const plain = finalizeGroups(keeps, { pending: new Set(), review: new Set(), verified: new Set() });
+  assert.equal(pickSelection(plain, null), null);
 });

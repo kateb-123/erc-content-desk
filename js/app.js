@@ -304,9 +304,9 @@ async function runRewrite() {
     state.rows = state.rows.map(r => byId.has(r.id) ? { ...r, blurb: byId.get(r.id) } : r);
     // One message, one place: a warning ("Nothing to rewrite") shows in
     // Finalize's lede beside the button, not the page header (F11).
-    state.rewroteNote = byId.size
-      ? `Rewrote ${byId.size} description${byId.size === 1 ? '' : 's'} — check them one by one.`
-      : (data.warnings?.join(' ') || 'Nothing to rewrite.');
+    // A rewrite that came back is carried by Finalize's progress line
+    // ("0 of 2 rewrites checked"); only an empty answer needs words here.
+    state.rewroteNote = byId.size ? null : (data.warnings?.join(' ') || 'Nothing to rewrite.');
     setStatus('');
   } catch (err) {
     setStatus(plainError(err), 'error');
@@ -499,6 +499,19 @@ export function render() {
         state.verifiedIds.add(id);
         if (row) persist([{ ...row, rewrite_checked: new Date().toISOString() }]);
         else render();
+      },
+      // Keep all remaining (Claude Design round two, Sep 16): every rewrite
+      // still waiting is kept, stamped in one write.
+      onVerifyAll: ids => {
+        const stamp = new Date().toISOString();
+        const changed = [];
+        for (const id of ids) {
+          const row = state.rows.find(r => r.id === id);
+          state.rewriteReview.delete(id);
+          state.verifiedIds.add(id);
+          if (row) changed.push({ ...row, rewrite_checked: stamp });
+        }
+        if (changed.length) persist(changed); else render();
       },
       onTrash: row => {
         // Junk spotted mid-finalize goes straight out (Kate, Sep 1) — and any
