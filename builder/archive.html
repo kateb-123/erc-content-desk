@@ -4,42 +4,47 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Past newsletters · ERC Content Desk</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karla:wght@400;600;700&family=Outfit:wght@600;700&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&display=swap" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="/css/sidebar.css?v=3" />
+  <link rel="stylesheet" href="/css/tokens.css?v=1" />
+  <link rel="stylesheet" href="/css/sidebar.css?v=4" />
   <style>
-    /* The desk's names, which the shared sidebar reads. */
-    :root { --side-bg: #f3f5f8; --ink: #1c2229; --muted: #55606c; --line: #dbdfe5; --accent: #1d6ea5;
-      --tint: #eaf2f8; --accent-deep: #14507a; --ok: #1d6f4f; --hover: rgba(29, 110, 165, 0.05); }
+    /* The desk's names, which the shared sidebar reads; every value a Carbon token. */
+    :root { --side-bg: var(--background); --ink: var(--text-primary); --muted: var(--text-secondary); --line: var(--border-subtle-00);
+      --line-in: var(--border-subtle-01); --accent: var(--button-primary); --tint: var(--notification-info-background);
+      --accent-deep: var(--button-primary-active); --selected: var(--layer-selected-01); --ok: var(--green-60); --hover: var(--background-hover); }
     /* The desk's sidebar stays open here, like Home (Kate, Sep 16). */
-    body { margin: 0; background: #fbfbfd; color: #1c2229; line-height: 1.5; display: flex; min-height: 100vh;
-      font-family: Karla, "Segoe UI", Helvetica, Arial, sans-serif; }
+    body { margin: 0; background: var(--background); color: var(--text-primary); display: flex; min-height: 100vh;
+      font-family: var(--font-sans); font-size: 14px; line-height: 20px; letter-spacing: .16px; }
     .page-main { flex: 1 1 auto; min-width: 0; }
-    .wrap { max-width: 42rem; margin: 0 auto; padding: 44px 1rem 4rem; }
-    h1 { font-family: Outfit, "Segoe UI", sans-serif; font-size: 1.35rem; margin: 0 0 .25rem; }
-    .lede { color: #55606c; margin: 0 0 1.5rem; }
-    ul { list-style: none; margin: 1.5rem 0 0; padding: 0; background: #fff; border: 1px solid #dbdfe5; border-radius: 12px; }
-    li { border-top: 1px solid #eef0f3; }
+    .wrap { max-width: 42rem; margin: 0 auto; padding: 44px var(--spacing-05) var(--spacing-10); }
+    h1 { font-size: 28px; line-height: 36px; font-weight: 400; letter-spacing: 0; margin: 0 0 var(--spacing-02); }
+    .lede { color: var(--text-secondary); margin: 0 0 var(--spacing-06); }
+    /* The issues as Carbon's structured list on the first layer. */
+    ul { list-style: none; margin: var(--spacing-06) 0 0; padding: 0; background: var(--layer-01); }
+    li { border-top: 1px solid var(--border-subtle-01); }
     li:first-child { border-top: none; }
-    li a { display: block; padding: .7rem 1rem; color: #1c2229; text-decoration: none; font-weight: 600; }
-    li a:hover { background: #f4f8fb; }
-    .empty { color: #55606c; padding: 2rem; text-align: center; }
-    /* Sliding-dots loader — same as the builder/desk, desk blues. */
-    .dots-loader { position: relative; height: 20px; width: 250px; margin: 2.5rem auto; }
-    .dots-loader .dot { position: absolute; height: 20px; width: 20px; border-radius: 100%;
-      border: 2px solid #fff; box-sizing: border-box; animation: dots-slide 3s ease-in-out infinite; }
-    .dots-loader .dot:nth-child(1) { background: #9ec9e8; animation-delay: .5s; }
-    .dots-loader .dot:nth-child(2) { background: #63a3cd; animation-delay: .4s; }
-    .dots-loader .dot:nth-child(3) { background: #4a8cbf; animation-delay: .3s; }
-    .dots-loader .dot:nth-child(4) { background: #1d6ea5; animation-delay: .2s; }
-    .dots-loader .dot:nth-child(5) { background: #19608f; animation-delay: .1s; }
-    .dots-loader .dot:nth-child(6) { background: #14507a; animation-delay: 0s; }
+    li a { display: flex; align-items: center; min-height: 48px; padding: var(--spacing-03) var(--spacing-05); color: var(--text-primary); text-decoration: none;
+      transition: background-color var(--duration-fast-01) var(--ease-productive); }
+    li a:hover { background: var(--layer-hover-01); }
+    li a:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+    .empty { display: block; color: var(--text-secondary); padding: var(--spacing-07); text-align: center; }
+    /* Sliding-dots loader, the same as the builder and the desk, on Carbon's blue ramp. */
+    .dots-loader { position: relative; height: 20px; width: 250px; margin: var(--spacing-08) auto; }
+    .dots-loader .dot { position: absolute; height: 20px; width: 20px; border-radius: var(--radius-round);
+      border: 2px solid var(--background); box-sizing: border-box; animation: dots-slide 3s ease-in-out infinite; }
+    .dots-loader .dot:nth-child(1) { background: var(--blue-30); animation-delay: .5s; }
+    .dots-loader .dot:nth-child(2) { background: var(--blue-40); animation-delay: .4s; }
+    .dots-loader .dot:nth-child(3) { background: var(--blue-50); animation-delay: .3s; }
+    .dots-loader .dot:nth-child(4) { background: var(--blue-60); animation-delay: .2s; }
+    .dots-loader .dot:nth-child(5) { background: var(--blue-70); animation-delay: .1s; }
+    .dots-loader .dot:nth-child(6) { background: var(--blue-80); animation-delay: 0s; }
     @keyframes dots-slide {
       15% { transform: translateX(0); }
       45%, 65% { transform: translateX(230px); }
       95% { transform: translateX(0); }
     }
-    .dots-caption { text-align: center; color: #55606c; padding-bottom: 2rem; }
+    .dots-caption { text-align: center; color: var(--text-secondary); padding-bottom: var(--spacing-07); }
     .dots-caption::after { content: ""; animation: dots-text 3s infinite; }
     @keyframes dots-text { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }
     @media (prefers-reduced-motion: reduce) {
