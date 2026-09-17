@@ -11,13 +11,12 @@ import { readyToPublish, canRewrite, needsDescription } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, TYPE_LABELS } from './schema.js';
 import { isoToShort } from './queue-view.js';
-import { dotsLoader, faIcon, forwardIcon } from './icons.js';
-import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges } from './finalize-view.js';
+import { dotsLoader, faIcon, forwardIcon, loadingLabel } from './icons.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges, fieldsForType, dateField } from './finalize-view.js';
 import { buildImageControl } from './item-image.js';
 import { titleWithInfo } from './screen-info.js';
 import { focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
 
-const EDITABLE = ['headline', 'date', 'source', 'topic', 'blurb', 'deadline', 'authors', 'time', 'location'];
 
 // View state only — resets on reload, never persisted.
 let editingId = null;
@@ -148,10 +147,13 @@ function editBody(row, { onSave, onCancel }) {
   const wrap = el('div', 'f-edit-card');
   const grid = el('div', 'f-edit-grid');
   const inputs = {};
-  for (const field of EDITABLE) {
+  // Only the fields this type uses, dates as date inputs (design audit b4).
+  const fields = fieldsForType(row.type);
+  for (const field of fields) {
     const label = el('label', field === 'blurb' ? 'f-edit-blurb' : '', FIELD_TITLES[field] ?? field);
     const input = field === 'blurb' ? el('textarea') : el('input');
     if (field === 'blurb') input.rows = 3;
+    else input.type = dateField(field) ? 'date' : 'text';
     input.value = row[field] ?? '';
     inputs[field] = input;
     label.append(input);
@@ -168,7 +170,7 @@ function editBody(row, { onSave, onCancel }) {
   const save = el('button', 'primary', 'Save');
   save.type = 'button';
   save.addEventListener('click', () => {
-    const values = Object.fromEntries(EDITABLE.map(field => [field, inputs[field].value]));
+    const values = Object.fromEntries(fields.map(field => [field, inputs[field].value]));
     onSave(row, editChanges(row, { ...values, infographic: imgCtl.get() }));
   });
   const cancel = el('button', 'btn-outline', 'Cancel');
@@ -338,7 +340,12 @@ export function renderFinalize(container, props) {
   }
   container.append(head);
   if (busy) {
+    // The wait says what it is (design audit b2): the dots, and words a screen reader hears.
     container.append(dotsLoader());
+    const line = el('p', 'load-line');
+    line.setAttribute('role', 'status');
+    line.append(loadingLabel(`Rewriting ${pending.length} description${pending.length === 1 ? '' : 's'}`));
+    container.append(line);
     return;
   }
   // Rows deleted this visit are gone from the keeps; they stay listed under the groups with Undo.

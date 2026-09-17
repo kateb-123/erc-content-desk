@@ -39,7 +39,7 @@ async function uploadItemImage(file, onStatus) {
     blob = await pdfFirstPageToPng(file);
     ext = 'png';
   }
-  if (!ext) throw new Error("Use a PNG, JPG, or PDF.");
+  if (!ext) throw new Error('Use a PNG, JPG, GIF, WebP or PDF.');
   if (blob.size > 2.5 * 1024 * 1024) throw new Error('Too big. Keep it under 2.5 MB.');
   onStatus('Uploading…');
   const b64 = await new Promise((resolve, reject) => {
@@ -53,8 +53,10 @@ async function uploadItemImage(file, onStatus) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: file.name, type: ext, file: b64 }),
   });
-  const data = await res.json();
-  if (!data.ok) throw new Error(data.error || 'upload failed');
+  // A server page instead of JSON (a 502, a timeout) becomes a sentence, not parser noise (design audit b7).
+  if (!res.ok) throw new Error(`The desk couldn't upload that file (server error ${res.status}). Try again.`);
+  const data = await res.json().catch(() => ({}));
+  if (!data.ok) throw new Error(data.error || "The desk couldn't upload that file. Try again.");
   return data.url;
 }
 
@@ -76,10 +78,17 @@ export function buildImageControl(initial, onChange) {
   removeBtn.textContent = 'Remove media';
   const status = document.createElement('span');
   status.className = 'img-status';
+  status.setAttribute('role', 'status');
+  // What is attached, in view: a small thumbnail beside the words (design audit b8).
+  const thumb = document.createElement('img');
+  thumb.className = 'img-thumb';
+  thumb.alt = '';
   let value = initial || '';
   const sync = () => {
     pick.textContent = value ? 'Replace media' : 'Add media';
     removeBtn.hidden = !value;
+    thumb.hidden = !value;
+    if (value) thumb.src = value;
   };
   const setStatus = (msg, busy = false) => {
     if (busy && msg) status.replaceChildren(dotsLoader(true), loadingLabel(msg));
@@ -109,7 +118,7 @@ export function buildImageControl(initial, onChange) {
     sync();
   });
   sync();
-  wrap.append(pick, removeBtn, status, fileInput);
+  wrap.append(thumb, pick, removeBtn, status, fileInput);
   return {
     el: wrap,
     get: () => value,

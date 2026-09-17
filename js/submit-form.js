@@ -133,21 +133,31 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
   // names turns red, says so to assistive tech, and the first one takes focus.
   // The status line under the button still lists them all.
   const FIELD_EL = { link: '#sf-link', submitter: '#sf-submitter', type: '.type-picker' };
-  const clearOne = node => { node.classList.remove('is-invalid'); node.removeAttribute('aria-invalid'); };
+  const clearOne = node => { node.classList.remove('is-invalid'); node.removeAttribute('aria-invalid'); node.removeAttribute('aria-describedby'); };
   function clearInvalid() {
     for (const sel of Object.values(FIELD_EL)) clearOne(form.querySelector(sel));
+    for (const line of form.querySelectorAll('.field-error')) line.remove();
   }
+  // Each message sits under its own field, tied to it for assistive tech (design audit b14);
+  // the status line keeps only what the server says.
   function markInvalid(errors) {
     let first = null;
+    const spare = [];
     for (const message of errors) {
-      const sel = FIELD_EL[fieldFor(message)];
+      const field = fieldFor(message);
+      const sel = FIELD_EL[field];
       const node = sel && form.querySelector(sel);
-      if (!node) continue;
+      if (!node) { spare.push(message); continue; }
       node.classList.add('is-invalid');
       node.setAttribute('aria-invalid', 'true');
+      const line = el('p', 'field-error', message);
+      line.id = `sf-error-${field}`;
+      node.setAttribute('aria-describedby', line.id);
+      (node.matches('input') ? node.parentElement : node).append(line);
       first ??= node;
     }
     (first?.matches('input') ? first : first?.querySelector('input'))?.focus();
+    return spare;
   }
   for (const kind of ['input', 'change']) {
     form.addEventListener(kind, event => {
@@ -205,7 +215,9 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
     // "ERC Event" next to "Event" needs a word of difference (usability run F13).
     if (hint) typeBox.append(el('p', 'hint type-hint', hint));
     if (subtypes.length) {
-      typeBox.append(el('span', 'subtype-label', 'Subtype'));   // the reveal gets a name (F14)
+      const sub = el('span', 'subtype-label', 'Subtype ');   // the reveal gets a name (F14), and says it is required (design audit b14)
+      sub.append(el('span', 'hint', '(required)'));
+      typeBox.append(sub);
       const subRow = el('div', 'pill-row');
       for (const s of subtypes) {
         subRow.append(pill(s.label, s.picked, () => { selection = { ...selection, subtype: s.value }; renderTypePicker(); }, true));
@@ -233,8 +245,8 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
     const errors = validateSubmission(body);
     clearInvalid();
     if (errors.length) {
-      markInvalid(errors);
-      return show(statusEl, errors.join(' '), 'error');
+      const spare = markInvalid(errors);
+      return show(statusEl, spare.join(' '), spare.length ? 'error' : 'busy');
     }
     const btn = form.querySelector('.submit-btn');
     btn.disabled = true;

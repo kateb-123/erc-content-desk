@@ -309,6 +309,9 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .sort-edit-field input, .sort-edit-field textarea { margin-top: var(--spacing-03); }
 .img-upload { display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; }
 .img-upload .media-add { margin-left: 0; }   /* the small Add media word (Kate, Sep 17), a ghost button */
+.img-thumb { width: 48px; height: 48px; object-fit: cover; border: 1px solid var(--line-in); flex: none; }   /* the attached picture, in view (design audit b8) */
+.load-line { margin: var(--spacing-02) 0 0; text-align: center; color: var(--muted); }
+.status .linkish { height: 24px; vertical-align: middle; }
 .img-status { color: var(--muted); display: inline-flex; align-items: center; gap: var(--spacing-03); }
 .sort-edit-actions { display: flex; gap: var(--spacing-03); }
 /* Section menu: the sections as Carbon tabs, one row on top (Claude Design round two, Kate's pick C, Sep 16). */

@@ -5,7 +5,7 @@ import { readerQueue } from './sort-view.js';
 import { dotsLoader, loadingLabel } from './icons.js';
 import { renderHome } from './home-ui.js';
 import { renderSidebar } from './sidebar-ui.js';
-import { openedScreen } from './sidebar-view.js';
+import { openedScreen, screenHash } from './sidebar-view.js';
 import { renderIssue } from './issue-ui.js';
 import { latestIssue, queueBadgeCount } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
@@ -46,13 +46,24 @@ const screens = Object.fromEntries(['home', 'issue', 'sort', 'finalize', 'publis
   .map(name => [name, document.querySelector(`#screen-${name}`)]));
 const statusEl = document.querySelector('#desk-status');
 
-export function setStatus(message, kind = 'busy') {
+/** The status line. An error is an alert, so it is read at once (design
+ *  audit b3); an action ({ label, onClick }) puts a quiet button after the words. */
+export function setStatus(message, kind = 'busy', action = null) {
   statusEl.className = `status status-${kind}`;
+  statusEl.setAttribute('role', kind === 'error' ? 'alert' : 'status');
   // Anything in flight shows the dots loader, text underneath (Kate, Sep 1).
   if (kind === 'busy' && message) {
     statusEl.replaceChildren(dotsLoader(), loadingLabel(message));
   } else {
     statusEl.textContent = message;
+  }
+  if (action) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'linkish';
+    btn.textContent = action.label;
+    btn.addEventListener('click', () => { btn.disabled = true; action.onClick(); });
+    statusEl.append(' ', btn);
   }
 }
 
@@ -107,6 +118,8 @@ export async function persist(changed) {
 const pendingWrites = new Map();   // _rowNumber -> latest row awaiting write
 let flushing = false;
 let writeErrored = false;
+let writeFailures = 0;             // failed drains in a row: the second one turns the note into an alert with Retry now
+let retryTimer = null;
 
 /** Apply changes to memory + re-render now; queue the Sheet write behind it. */
 function noteChange(rows) {
@@ -132,12 +145,16 @@ async function drainWrites() {
       for (const [rn, row] of batch) if (!pendingWrites.has(rn)) pendingWrites.set(rn, row);
       flushing = false;
       writeErrored = true;
-      setStatus('Reconnecting to save your changes…', 'note');
-      setTimeout(drainWrites, 4000);
+      writeFailures += 1;
+      // The first miss is a quiet note; from the second on it is an alert with a way to act (design audit b3).
+      if (writeFailures < 2) setStatus('Reconnecting to save your changes…', 'note');
+      else setStatus(`${pendingWrites.size} change${pendingWrites.size === 1 ? '' : 's'} not saved yet. Still trying.`, 'error', { label: 'Retry now', onClick: () => { clearTimeout(retryTimer); drainWrites(); } });
+      retryTimer = setTimeout(drainWrites, 4000);
       return;
     }
   }
   flushing = false;
+  writeFailures = 0;
   if (writeErrored) { writeErrored = false; setStatus('', 'ok'); }  // caught up
 }
 
@@ -407,7 +424,6 @@ const SCREEN_ORDER = ['home', 'issue', 'sort', 'finalize', 'publish', 'build'];
 // sidebar's Pipeline items open one in a NEW window from the front door (Kate,
 // Sep 15: "a new section and a new set of activities is about to be done");
 // that window keeps its hash in step so a reload stays put.
-const SECTION_KEYS = ['sort', 'finalize', 'publish', 'build'];
 const openedAt = location.hash.slice(1);
 // A pipeline hash makes this the pipeline's window; #issue (the builder's menu
 // links there) lands on Next newsletter in an ordinary front-door window.
@@ -435,8 +451,14 @@ export function render() {
   document.title = state.screen === 'home' ? 'ERC Content Desk' : `${SCREEN_NAMES[state.screen]} · ERC Content Desk`;
   // One sidebar on every page (Kate, Sep 16). In the pipeline's own window
   // its items switch in place; from the front door they open that window.
-  const hash = SECTION_KEYS.includes(state.screen) ? `#${state.screen}` : '';
-  if (location.hash !== hash) history.replaceState(null, '', hash || location.pathname);
+  // Every screen but the front door keeps an address, as a history entry, so
+  // Back and a reload land where the reader was (design audit b21); the skip
+  // link's #main is left alone.
+  const hash = screenHash(state.screen);
+  if (location.hash !== hash && location.hash !== '#main') {
+    if (shownScreen === null) history.replaceState(null, '', hash || location.pathname);
+    else history.pushState(null, '', hash || location.pathname);
+  }
   const switched = shownScreen !== null && shownScreen !== state.screen;
   if (shownScreen !== state.screen) {
     const from = SCREEN_ORDER.indexOf(shownScreen);
@@ -606,6 +628,13 @@ export function render() {
   } catch { state.lastIssue = ''; }
   render();
 })();
+
+// Back, Forward and a typed address switch screens like a menu pick would.
+window.addEventListener('hashchange', () => {
+  if (location.hash === '#main') return;
+  const target = openedScreen(location.hash).screen ?? 'home';
+  if (target !== state.screen) goTo(target);
+});
 
 render();   // the shell paints before the first fetch, not after it (usability run F19)
 reload().then(() => {
