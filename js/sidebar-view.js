@@ -56,6 +56,16 @@ export function foldOpen(stored, screen) {
   return stored !== 'closed' || SECTION_SCREENS.includes(screen);
 }
 
+/** Desk work tucks the sidebar away (Kate, Sep 16: "b when it's expanded and
+ *  the button. but also the thin grey bar to the left like C"). On a pipeline
+ *  screen a thin grey strip holds the menu button until it is opened; open,
+ *  the sidebar is back in place with a close button. The front door always
+ *  keeps its sidebar. */
+export function menuLayout(screen, open) {
+  const tucks = SECTION_SCREENS.includes(screen);
+  return { strip: tucks && !open, sidebar: !tucks || open, close: tucks && open };
+}
+
 /** Which item is lit for a screen; '' when none is. */
 export function currentKey(screen) {
   const item = NAV.flatMap(g => g.items).find(i => i.screen === screen);

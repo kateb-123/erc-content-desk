@@ -64,7 +64,10 @@ count), Finalize, Publish to Exchange, Send to Newsletter. Desk work folds: its
 heading has a chevron, the desk remembers it shut, and it always opens on a
 pipeline screen. The group headings carry the icons; the items carry none. From the front door the Pipeline items open the pipeline in its own
 window, which has the same sidebar and switches in place; the builder and the
-public pages open a new tab. Above the content sits one status line that carries
+public pages open a new tab. On a Desk work screen the sidebar tucks behind a
+thin grey strip with one menu button (Kate, Sep 16, after clicking through four
+options); open, it is back in place and pushes the page over, and a pick, the
+close button on the same spot, or Escape tucks it away again. Above the content sits one status line that carries
 loading and error messages for the whole app.
 
 Every screen head is a bare title plus a **View info** toggle that opens a tinted

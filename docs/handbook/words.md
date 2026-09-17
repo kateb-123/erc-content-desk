@@ -192,6 +192,7 @@
 "Policy Exchange ↗"
 "ERC Content Desk" / "Policy Exchange" / "Newsletter" / "Desk work" (the sidebar's groups, in that order since Sep 16; Desk work folds)
 "Sort" / "Finalize" / "Publish to Exchange" / "Send to Newsletter" (the sidebar's Desk work items; open the pipeline in a new window from the front door; Sort carries the queue count)
+"Show the menu" / "Hide the menu" (the menu button on Desk work's thin strip and the close button in the sidebar, read by screen readers, Sep 16)
 "Next newsletter" / "Newsletter builder" / "Past newsletters" (the sidebar's Newsletter items)
 "Policy Exchange" / "Share an item" / "Listserv sign-up" (the sidebar's Policy Exchange items, each with a copy icon, "Copy the link for [item]", then "Copied")
 "In the queue" / "Next newsletter" / "Exchange updated" / "Last newsletter" (the four stat cards on Home, Sep 16; the first says "[N] waiting", the second "[Mon D]" with "[N] items so far" or "nothing in yet" beside it)

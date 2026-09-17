@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { NAV, currentKey, opensNewWindow, foldOpen } from '../js/sidebar-view.js';
+import { NAV, currentKey, opensNewWindow, foldOpen, menuLayout } from '../js/sidebar-view.js';
 
 test('the sidebar puts the team\'s links first and the pipeline last as Desk work (Claude Design round two, Kate\'s pick Sep 16)', () => {
   assert.deepEqual(NAV.map(g => g.label), ['', 'Policy Exchange', 'Newsletter', 'Desk work']);
@@ -52,4 +52,19 @@ test('from the front door the pipeline opens in a new window; inside that window
   assert.equal(opensNewWindow({ screen: 'sort' }, true), false);
   assert.equal(opensNewWindow({ screen: 'home' }, false), false);
   assert.equal(opensNewWindow({ href: 'https://example.org/' }, false), true);
+});
+
+test('on a Desk work screen the sidebar tucks behind the thin strip until opened (Kate, Sep 16: B expanded, C\'s strip)', () => {
+  for (const screen of ['sort', 'finalize', 'publish', 'build']) {
+    assert.deepEqual(menuLayout(screen, false), { strip: true, sidebar: false, close: false }, screen);
+    assert.deepEqual(menuLayout(screen, true), { strip: false, sidebar: true, close: true }, screen);
+  }
+});
+
+test('the front door keeps its sidebar, with no strip and no close button, whatever the open flag says', () => {
+  for (const screen of ['home', 'issue']) {
+    for (const open of [false, true]) {
+      assert.deepEqual(menuLayout(screen, open), { strip: false, sidebar: true, close: false }, `${screen} ${open}`);
+    }
+  }
 });

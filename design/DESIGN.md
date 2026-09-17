@@ -50,8 +50,14 @@ template and the public Exchange site.
   work** (the pipeline) as a fold that remembers being shut and always opens on a
   pipeline screen. Outfit uppercase group labels carry the group's icon in the
   accent; the Karla items under them carry none and sit indented; Sort shows the
-  queue count; the lit item sits on the tint in the deep accent. The builder keeps
-  its bubble wizard pills with numbered circles.
+  queue count; the lit item sits on the tint in the deep accent. On a Desk work
+  screen the sidebar tucks away (Kate, Sep 16, from four clickable options: "b
+  when it's expanded and the button. but also the thin grey bar to the left like
+  C"): a 3.5rem strip in `--side-bg` holds one outlined 36px menu button; open,
+  the sidebar is back in place and pushes the page over, with a quiet close
+  button on the menu button's own spot. A pick, the close button or Escape tucks
+  it away; every screen starts tucked. The front door keeps its sidebar. The
+  builder keeps its bubble wizard pills with numbered circles.
 
 ## Icons
 
@@ -79,6 +85,7 @@ look, everywhere it appears.
 | **Send early? → Confirm / Cancel** | fa-clock on the bubble | amber bubble, one ask (same as Verify link) | picking an event that belongs to a later issue — the words stay bare, the bubble carries the icon |
 | Door buttons (Go to Finalize/Publish, Send to Newsletter, the receipt's door) | → `fa-arrow-right` | outlined accent pill, the header's Build newsletter look (Sep 15, option A), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
 | **Sidebar items** (ERC Content Desk; Policy Exchange: Policy Exchange, Share an item, Listserv sign-up; Newsletter: Next newsletter, Newsletter builder, Past newsletters; Desk work: Sort, Finalize, Publish to Exchange, Send to Newsletter) | one FA glyph per group heading (`fa-globe`, `fa-envelope-open-text`, `fa-layer-group`), none on the items; the Desk work heading adds a chevron | plain indented rows in the sidebar, the lit one on the tint; the three hand-outs carry a small `fa-copy` icon on the right; Sort carries the queue count | every way around the desk (Kate, Sep 16). Pipeline items open the pipeline in its own window from the front door (`/#sort`, Sep 15) and switch in place inside it; outside pages open a new tab; the copy icon hands over one sentence with the link and turns into a check for a moment |
+| **Show the menu / Hide the menu** | `fa-bars` / `fa-xmark` | outlined 8px square on the thin grey strip / quiet icon on the same spot in the sidebar's top row | Desk work screens only: bring the sidebar back in place, tuck it away again (Sep 16) |
 | **Keep the rest (N)** | ✓ `fa-check` | filled accent button, right of a Sort section's head | keep every listed row that has a real type and a checked link (Sep 11); one row at a time is Keep on its card (Sep 16) |
 
 Sort is one section at a time (Sep 11 option A; Sep 15 the card stream and the
