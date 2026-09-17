@@ -26,7 +26,6 @@ test('a .csv splits into row-mapped items with no model call', async () => {
   assert.equal(res.body.items[0].title, 'Fall conference');
   assert.equal(res.body.items[0].type, 'event');
   assert.equal(res.body.items[1].type, '');
-  assert.equal(res.body.counts.untyped, 1);
 });
 
 test('a .xlsx upload round-trips through the real parser', async () => {

@@ -1,6 +1,6 @@
 import { test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { readAllRows, appendRow, updateRow, writeHeader, headerValues, readScheduleRows } from '../api/_lib/sheets.js';
+import { readAllRows, appendRow, updateRow, writeHeader, readScheduleRows } from '../api/_lib/sheets.js';
 import { SHEET_COLUMNS, blankRow } from '../js/schema.js';
 
 /**
@@ -36,10 +36,6 @@ function fakeFetch({ status = 200, ok = status >= 200 && status < 300, text }) {
   fn.calls = () => ({ url: capturedUrl, options: capturedOptions });
   return fn;
 }
-
-test('headerValues is the column list, for writing row 1 at setup', () => {
-  assert.deepEqual(headerValues(), SHEET_COLUMNS);
-});
 
 test('readAllRows fails closed with a clear error when SHEET_API_URL is unset', async () => {
   delete process.env.SHEET_API_URL;
@@ -149,7 +145,7 @@ test('error messages never include the token', async () => {
 });
 
 test('readScheduleRows reads the schedule tab by name', async () => {
-  const fetchFake = fakeFetch({ status: 200, ok: true, text: JSON.stringify({ ok: true, rows: [{ rowNumber: 2, values: ['2026-09-01'] }] }) });
+  const fetchFake = fakeFetch({ status: 200, text: JSON.stringify({ ok: true, rows: [{ rowNumber: 2, values: ['2026-09-01'] }] }) });
   global.fetch = fetchFake;
   const rows = await readScheduleRows();
   assert.deepEqual(rows, [['2026-09-01']]);

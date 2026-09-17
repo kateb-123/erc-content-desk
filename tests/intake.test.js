@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateSubmission, buildSubmission } from '../js/intake.js';
+import { validateSubmission, buildSubmission, fieldFor } from '../js/intake.js';
 
 const good = {
   title: 'Study on tutoring', blurb: 'A 40-word summary.', link: 'https://x.org/p',
@@ -149,8 +149,7 @@ test('buildSubmission keeps a separate original_text when one is given, so sprea
 
 // Errors land on their fields (design audit finding 13, Sep 15): the status
 // line still lists them, and the field each one names turns red and takes focus.
-test('fieldFor names the form field a validation message is about', async () => {
-  const { fieldFor } = await import('../js/intake.js');
+test('fieldFor names the form field a validation message is about', () => {
   assert.equal(fieldFor('Add a link.'), 'link');
   assert.equal(fieldFor('That link needs to be a normal web link (http or https).'), 'link');
   assert.equal(fieldFor('Add your name or initials.'), 'submitter');

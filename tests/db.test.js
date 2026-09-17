@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SHEET_COLUMNS } from '../js/schema.js';
+import { SHEET_COLUMNS, blankRow } from '../js/schema.js';
 import { createDb, diffRows } from '../api/_lib/db.js';
 
 /** A query function that records every call and answers from a script. */
@@ -14,21 +14,22 @@ function fakeQuery(answers = []) {
   return query;
 }
 
-const sample = {
+const sample = blankRow({
   date: '2026-09-01', headline: 'A', link: 'https://x', type: 'research', subtype: 'Report',
-  source: 'S', topic: '', blurb: 'B', deadline: '', medium: '', authors: '', time: '', location: '',
-  infographic: '', id: 'id-1', status: 'kept', submitter: 'KB', submitted_at: '2026-09-01T00:00:00Z',
-  spotlight_request: true, note: '', original_text: '', published_at: '', newsletter_issue: '',
-  auto_filled: '', link_checked: '', rewrite_checked: '', submitter_email: '', needs_review: '',
-};
+  source: 'S', blurb: 'B', id: 'id-1', status: 'kept', submitter: 'KB',
+  submitted_at: '2026-09-01T00:00:00Z', spotlight_request: true,
+});
 
-test('ensureSchema makes an items table with every sheet column, quoted, plus schedule', async () => {
+test('ensureSchema makes items with every sheet column quoted, schedule and meta, and adds the columns a live table predates', async () => {
   const q = fakeQuery();
   await createDb(q).ensureSchema();
   const all = q.calls.map(c => c.text).join('\n');
   assert.match(all, /CREATE TABLE IF NOT EXISTS items/);
   for (const col of SHEET_COLUMNS) assert.match(all, new RegExp(`"${col}" text`));
   assert.match(all, /CREATE TABLE IF NOT EXISTS schedule/);
+  assert.match(all, /CREATE TABLE IF NOT EXISTS meta/);
+  assert.ok(q.calls.some(c => /ALTER TABLE items[\s\S]*ADD COLUMN IF NOT EXISTS "pending_read" text NOT NULL DEFAULT ''/.test(c.text)),
+    'expected an ALTER TABLE that adds pending_read when missing');
 });
 
 test('upsertRows sends one insert per chunk with ON CONFLICT (id)', async () => {
@@ -43,7 +44,7 @@ test('upsertRows sends one insert per chunk with ON CONFLICT (id)', async () => 
   assert.equal(params.length, rows.length * (SHEET_COLUMNS.length + 1));
   assert.equal(params[0], null);            // sample has no _rowNumber
   assert.equal(params[SHEET_COLUMNS.length + 1], 3);
-  assert.equal(params[params.length - 1], '');   // needs_review, last sheet column
+  assert.equal(params[params.length - 1], '');   // pending_read, last sheet column
 });
 
 test('upsertRows refuses a row with no id rather than inventing one', async () => {
@@ -104,19 +105,4 @@ test('meta: get reads one key, set upserts it', async () => {
   assert.match(q.calls[1].text, /ON CONFLICT \(key\) DO UPDATE/);
   assert.deepEqual(q.calls[1].params, ['schedule_synced_at', 'later']);
   assert.equal(await createDb(fakeQuery([[]])).getMeta('nothing'), null);
-});
-
-test('ensureSchema also makes the meta table', async () => {
-  const q = fakeQuery();
-  await createDb(q).ensureSchema();
-  assert.match(q.calls.map(c => c.text).join('\n'), /CREATE TABLE IF NOT EXISTS meta/);
-});
-
-test('ensureSchema adds columns the live items table predates, starting with pending_read', async () => {
-  const { createDb } = await import('../api/_lib/db.js');
-  const sql = [];
-  const store = createDb(async text => { sql.push(text); return []; });
-  await store.ensureSchema();
-  assert.ok(sql.some(t => /ALTER TABLE items[\s\S]*ADD COLUMN IF NOT EXISTS "pending_read" text NOT NULL DEFAULT ''/.test(t)),
-    'expected an ALTER TABLE that adds pending_read when missing');
 });

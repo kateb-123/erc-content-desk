@@ -3,8 +3,10 @@ import assert from 'node:assert/strict';
 import { blankRow } from '../js/schema.js';
 import {
   REWRITE_MODEL, REWRITE_SCHEMA, rewriteCandidates,
-  buildRewritePrompt, parseRewrites, normalizeRewrites,
+  buildRewritePrompt, normalizeRewrites,
 } from '../api/_lib/rewrite.js';
+import { parseModelJson } from '../api/_lib/reply-json.js';
+import { ERC_VOICE } from '../api/_lib/voice.js';
 import { VOICE_EXAMPLES } from '../api/_lib/voice-examples.js';
 
 const kept = o => blankRow({ status: 'kept', ...o });
@@ -85,12 +87,11 @@ test('normalizeRewrites drops unknown ids and empty blurbs', () => {
   assert.equal(warnings.length, 1);
 });
 
-test('parseRewrites rejects prose', () => {
-  assert.throws(() => parseRewrites('nope'), /valid JSON/);
+test('the rewrite reply must be JSON, not prose', () => {
+  assert.throws(() => parseModelJson('nope', 'rewrite'), /valid JSON/);
 });
 
-test('the voice caps a blurb at 70 words with no floor, and bans the who-would-find-this-useful tail (F21)', async () => {
-  const { ERC_VOICE } = await import('../api/_lib/voice.js');
+test('the voice caps a blurb at 70 words with no floor, and bans the who-would-find-this-useful tail (F21)', () => {
   assert.doesNotMatch(ERC_VOICE, /40 to 70 words/);
   assert.match(ERC_VOICE, /at most 70 words/);
   assert.match(ERC_VOICE, /short original stays short/i);

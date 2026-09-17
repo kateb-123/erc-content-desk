@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { NAV, EXCHANGE_URL, currentKey, opensNewWindow, foldOpen, menuLayout, itemLink, openedScreen, screenHash } from '../js/sidebar-view.js';
+import { NAV, EXCHANGE_URL, currentKey, foldOpen, menuLayout, itemLink, openedScreen, screenHash } from '../js/sidebar-view.js';
 
 test('the sidebar puts the team\'s links first and the pipeline last as Desk work (Claude Design round two, Kate\'s pick Sep 16)', () => {
   assert.deepEqual(NAV.map(g => g.label), ['', 'Policy Exchange', 'Newsletter', 'Desk work']);
@@ -44,25 +44,20 @@ test('currentKey maps the screen to the lit item', () => {
   assert.equal(currentKey('issue'), 'issue');
   assert.equal(currentKey('sort'), 'sort');
   assert.equal(currentKey('build'), 'build');
+  assert.equal(currentKey('builder'), 'builder');
+  assert.equal(currentKey('past'), 'past');
   assert.equal(currentKey('nowhere'), '');
 });
 
-test('from the front door the pipeline opens in a new window; inside that window it switches in place', () => {
-  assert.equal(opensNewWindow({ screen: 'sort' }, false), true);
-  assert.equal(opensNewWindow({ screen: 'sort' }, true), false);
-  assert.equal(opensNewWindow({ screen: 'home' }, false), false);
-  assert.equal(opensNewWindow({ href: 'https://example.org/' }, false), true);
-});
-
-test('on a Desk work screen the sidebar tucks behind the thin strip until opened (Kate, Sep 16: B expanded, C\'s strip)', () => {
-  for (const screen of ['sort', 'finalize', 'publish', 'build']) {
+test('screens that tuck the menu behind the thin strip until opened: sort, finalize, publish, build, builder (Kate, Sep 16: B expanded, C\'s strip)', () => {
+  for (const screen of ['sort', 'finalize', 'publish', 'build', 'builder']) {
     assert.deepEqual(menuLayout(screen, false), { strip: true, sidebar: false, close: false }, screen);
     assert.deepEqual(menuLayout(screen, true), { strip: false, sidebar: true, close: true }, screen);
   }
 });
 
-test('the front door keeps its sidebar, with no strip and no close button, whatever the open flag says', () => {
-  for (const screen of ['home', 'issue']) {
+test('screens that keep the sidebar whatever the open flag says, with no strip and no close button: home, issue, past', () => {
+  for (const screen of ['home', 'issue', 'past']) {
     for (const open of [false, true]) {
       assert.deepEqual(menuLayout(screen, open), { strip: false, sidebar: true, close: false }, `${screen} ${open}`);
     }
@@ -70,18 +65,6 @@ test('the front door keeps its sidebar, with no strip and no close button, whate
 });
 
 const item = key => NAV.flatMap(g => g.items).find(i => i.key === key);
-
-test('the builder\'s pages light their own items: Newsletter builder, Past newsletters', () => {
-  assert.equal(currentKey('builder'), 'builder');
-  assert.equal(currentKey('past'), 'past');
-});
-
-test('the builder tucks its menu like Desk work; Past newsletters keeps it open like Home (Kate, Sep 16)', () => {
-  assert.deepEqual(menuLayout('builder', false), { strip: true, sidebar: false, close: false });
-  assert.deepEqual(menuLayout('builder', true), { strip: false, sidebar: true, close: true });
-  assert.deepEqual(menuLayout('past', false), { strip: false, sidebar: true, close: false });
-  assert.deepEqual(menuLayout('past', true), { strip: false, sidebar: true, close: false });
-});
 
 test('inside the desk, items keep their links: screens switch in place, the pipeline opens its window from the front door, outside pages open a new tab', () => {
   assert.deepEqual(itemLink(item('home'), 'home', false), { href: '/', newTab: false, inPlace: true });

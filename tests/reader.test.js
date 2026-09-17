@@ -115,7 +115,7 @@ test('a journal page the desk cannot open is read through its DOI instead, and t
   const row = submitted({ headline: 'Identifying Structural Inequity During COVID-19', type: 'research', subtype: 'Peer-Reviewed', link: 'https://journals.sagepub.com/doi/full/10.3102/0013189X261457389' });
   let sawPage, sawDoi;
   const read = await readRow(row, {
-    fetchPage: async () => '',
+    fetchPage: pageDown,
     lookupDoi: async doi => { sawDoi = doi; return 'Title: Identifying Structural Inequity During COVID-19\nAuthors: Motoko Akiba, Xiaonan Jiang\nPublished: 2026-06-23\nJournal: Educational Researcher'; },
     extract: async (_row, page) => { sawPage = page; return { authors: 'Motoko Akiba, Xiaonan Jiang', date: '2026-06-23', source: 'Educational Researcher', link_matches: true }; },
   });
@@ -129,10 +129,10 @@ test('a journal page the desk cannot open is read through its DOI instead, and t
 test('no DOI, or a DOI Crossref does not know, leaves the failed read as it was', async () => {
   const noDoi = submitted({ headline: 'Zoom', type: 'event', subtype: 'Webinar-Online', link: 'https://brown.zoom.us/meeting/register/x' });
   let looked = 0;
-  const a = await readRow(noDoi, { fetchPage: async () => '', lookupDoi: async () => { looked++; return 'X'; }, extract: async () => ({}) });
+  const a = await readRow(noDoi, { fetchPage: pageDown, lookupDoi: async () => { looked++; return 'X'; }, extract: async () => ({}) });
   assert.equal(looked, 0);
   assert.equal(a.link_checked, 'failed');
   const unknown = submitted({ headline: 'P', type: 'research', link: 'https://doi.org/10.3102/unknown' });
-  const b = await readRow(unknown, { fetchPage: async () => '', lookupDoi: async () => '', extract: async () => ({}) });
+  const b = await readRow(unknown, { fetchPage: pageDown, lookupDoi: async () => '', extract: async () => ({}) });
   assert.equal(b.link_checked, 'failed');
 });

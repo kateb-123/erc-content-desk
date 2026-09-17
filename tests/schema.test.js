@@ -2,9 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   CSV_COLUMNS, WORKFLOW_COLUMNS, SHEET_COLUMNS, BOOLEAN_COLUMNS, TYPES, NEWSLETTER_MAP,
-  TYPE_ORDER, TYPE_LABELS,
+  TYPE_ORDER, TYPE_LABELS, TYPE_DISPLAY, typeDisplay, typeIsFlat,
   blankRow, rowToValues, valuesToRow, subtypesFor, isValidType, isValidSubtype,
 } from '../js/schema.js';
+import { GROUP_LABELS } from '../js/newsletter-view.js';
 
 test('the CSV columns match the hub news.csv header exactly, in order', () => {
   assert.deepEqual(CSV_COLUMNS, [
@@ -20,7 +21,7 @@ test('sheet columns are the 14 hub columns plus the 15 workflow columns', () => 
     'link_checked', 'rewrite_checked', 'submitter_email', 'needs_review',
     'pending_read',
   ]);
-  assert.equal(SHEET_COLUMNS.length, 29);
+  assert.deepEqual(SHEET_COLUMNS, [...CSV_COLUMNS, ...WORKFLOW_COLUMNS]);
   // needs_review, then pending_read, were APPENDED, never inserted: the sheet is
   // written by position, so an insert would shift every existing row's data right.
   assert.equal(WORKFLOW_COLUMNS.at(-2), 'needs_review');
@@ -30,9 +31,7 @@ test('sheet columns are the 14 hub columns plus the 15 workflow columns', () => 
 
 test('blankRow has every sheet column, strings empty and flags false', () => {
   const row = blankRow();
-  for (const col of SHEET_COLUMNS) assert.ok(col in row, `missing ${col}`);
-  assert.equal(row.headline, '');
-  assert.equal(row.spotlight_request, false);
+  for (const col of SHEET_COLUMNS) assert.equal(row[col], BOOLEAN_COLUMNS.includes(col) ? false : '', col);
 });
 
 test('blankRow applies overrides', () => {
@@ -52,6 +51,7 @@ test('rowToValues writes booleans as TRUE or empty, in column order', () => {
 test('valuesToRow round-trips rowToValues', () => {
   const original = blankRow({ headline: 'Test', type: 'headline', spotlight_request: true });
   assert.deepEqual(valuesToRow(rowToValues(original)), original);
+  assert.deepEqual(valuesToRow(rowToValues(blankRow())), blankRow());   // a false flag survives the trip too
 });
 
 test('valuesToRow pads short rows from the sheet', () => {
@@ -83,27 +83,14 @@ test('every type/subtype pair maps to a newsletter section and group', () => {
   assert.deepEqual(NEWSLETTER_MAP['research|ERC Research'], ['research', 'brief']);
 });
 
-test('spotlight_request round-trips as a boolean', () => {
-  const row = blankRow({ spotlight_request: true });
-  const back = valuesToRow(rowToValues(row));
-  assert.equal(back.spotlight_request, true);
-  assert.equal(valuesToRow(rowToValues(blankRow())).spotlight_request, false);
-});
+const PROTO_KEYS = ['__proto__', 'constructor', 'toString', 'valueOf', 'hasOwnProperty'];
 
 test('subtypesFor guards against Object.prototype keys and returns empty array', () => {
-  assert.deepEqual(subtypesFor('__proto__'), []);
-  assert.deepEqual(subtypesFor('constructor'), []);
-  assert.deepEqual(subtypesFor('toString'), []);
-  assert.deepEqual(subtypesFor('valueOf'), []);
-  assert.deepEqual(subtypesFor('hasOwnProperty'), []);
+  for (const key of PROTO_KEYS) assert.deepEqual(subtypesFor(key), [], key);
 });
 
 test('isValidSubtype guards against Object.prototype keys and returns false', () => {
-  assert.equal(isValidSubtype('constructor', 'anything'), false);
-  assert.equal(isValidSubtype('__proto__', 'anything'), false);
-  assert.equal(isValidSubtype('toString', 'anything'), false);
-  assert.equal(isValidSubtype('valueOf', 'anything'), false);
-  assert.equal(isValidSubtype('hasOwnProperty', 'anything'), false);
+  for (const key of PROTO_KEYS) assert.equal(isValidSubtype(key, 'anything'), false, key);
 });
 
 test('TYPE_ORDER covers every schema type exactly once, and each one is labelled', () => {
@@ -130,15 +117,7 @@ test('ERC Event maps into the newsletter\'s existing ERC Spotlight > Events grou
   assert.deepEqual(NEWSLETTER_MAP['erc_event|'], ['spotlight', 'events']);
 });
 
-test('pending_read is the last column, so the Sheet mirror gains a column instead of shifting one', async () => {
-  const { SHEET_COLUMNS, WORKFLOW_COLUMNS, blankRow } = await import('../js/schema.js');
-  assert.equal(SHEET_COLUMNS.at(-1), 'pending_read');
-  assert.equal(WORKFLOW_COLUMNS.at(-1), 'pending_read');
-  assert.equal(blankRow().pending_read, '');
-});
-
-test('a flat type (ERC Event) has no subtype step: picking the type is the whole pick', async () => {
-  const { typeIsFlat } = await import('../js/schema.js');
+test('a flat type (ERC Event) has no subtype step: picking the type is the whole pick', () => {
   assert.equal(typeIsFlat('erc_event'), true);
   assert.equal(typeIsFlat('event'), false);
   assert.equal(typeIsFlat(''), false);
@@ -147,8 +126,7 @@ test('a flat type (ERC Event) has no subtype step: picking the type is the whole
 
 // ── In-app type names (audit round two, f7): sentence case on screen, the sheet keys untouched ──
 
-test('typeDisplay gives the in-app name for every type, in sentence case, and leaves the sheet keys alone', async () => {
-  const { TYPE_DISPLAY, typeDisplay, TYPE_LABELS, TYPE_ORDER } = await import('../js/schema.js');
+test('typeDisplay gives the in-app name for every type, in sentence case, and leaves the sheet keys alone', () => {
   assert.deepEqual(TYPE_DISPLAY, {
     erc_event: 'ERC event', research: 'New research', event: 'Event', opportunity: 'Opportunity', headline: 'Headline',
   });
@@ -156,4 +134,10 @@ test('typeDisplay gives the in-app name for every type, in sentence case, and le
   assert.equal(typeDisplay('banana'), 'banana');   // an unknown key shows as itself, never blank
   assert.equal(typeDisplay(''), '');
   assert.equal(TYPE_LABELS.research, 'New Ed Policy Research');   // what the sheet and the bulk parser know is unchanged
+});
+
+// Send to Newsletter folds the pool by type, so every type the desk knows needs
+// a heading: an ERC event with no spotlight request used to land under "undefined".
+test('every type has a newsletter section heading', () => {
+  for (const type of TYPE_ORDER) assert.equal(typeof GROUP_LABELS[type], 'string', type);
 });

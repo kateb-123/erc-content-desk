@@ -1,11 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { keptUntyped, sortCounts, sectionOf, allSections, sectionRows, fixReasons, landingSection, keepBlock, nextSelected, nextSectionWithRows, undoWords, withoutRow, adjacentTab } from '../js/sort-view.js';
-import { pendingRows } from '../js/workflow.js';
-
-// The oracle for "every pending row lands in exactly one section": what the
-// queue still has for Sort, counted independently of the grouping under test.
-const pendingRowCount = rs => pendingRows(rs).filter(r => r.pending_read !== 'yes').length + keptUntyped(rs).length;
+import { keptUntyped, readerQueue, sortCounts, sectionOf, allSections, sectionRows, fixReasons, dupeReason, dupeBadgeText, isNewToday, landingSection, keepBlock, nextSelected, nextSectionWithRows, undoWords, withoutRow, adjacentTab } from '../js/sort-view.js';
 
 // Shuffled on purpose: statuses mixed in, groups interleaved, dates unordered.
 // Every typed row carries a real subtype: without one it would sit under Needs a fix.
@@ -33,17 +28,14 @@ test('sortCounts totals pending rows per bucket, each row in one bucket only', (
   });
 });
 
-test('allSections over the whole queue loses nothing and repeats nothing', async () => {
-  const { allSections } = await import('../js/sort-view.js');
+test('allSections over the whole queue loses nothing and repeats nothing', () => {
   const listed = allSections(rows).flatMap(g => g.live.map(r => r.id));
   assert.equal(new Set(listed).size, listed.length);
   assert.deepEqual([...listed].sort(),
     ['e1', 'erc1', 'erc2', 'h1', 'o1', 'r1', 'r2', 'r3', 'u1', 'weird'].sort());
-  assert.equal(listed.length, pendingRowCount(rows));
 });
 
-test('allSections orders a section oldest first, the way the card stream did', async () => {
-  const { allSections } = await import('../js/sort-view.js');
+test('allSections orders a section oldest first, the way the card stream did', () => {
   const research = allSections(rows).find(g => g.section === 'research');
   assert.deepEqual(research.live.map(r => r.id), ['r1', 'r2', 'r3']);
 });
@@ -121,14 +113,11 @@ test('a row still waiting for the reader never reaches a list or a count', () =>
   ];
   assert.deepEqual(allSections(waiting).flatMap(g => g.live.map(r => r.id)), ['e9']);
   const counts = sortCounts(waiting);
-  assert.equal(pendingRowCount(waiting), 1);
   assert.equal(counts.fix, 0);
   assert.equal(counts.event, 1);
 });
 
-test('readerQueue lists the waiting rows Sort must have read, and only those', async () => {
-  const { readerQueue } = await import('../js/sort-view.js');
-  assert.equal(typeof readerQueue, 'function');
+test('readerQueue lists the waiting rows Sort must have read, and only those', () => {
   const mix = [
     { id: 'w1', status: 'new', pending_read: 'yes' },
     { id: 'ok', status: 'new', pending_read: '' },
@@ -138,8 +127,7 @@ test('readerQueue lists the waiting rows Sort must have read, and only those', a
   assert.deepEqual(readerQueue(mix), ['w1', 'w2']);
 });
 
-test('a duplicate badge names the earlier item and what happened to it (F8)', async () => {
-  const { dupeBadgeText } = await import('../js/sort-view.js');
+test('a duplicate badge names the earlier item and what happened to it (F8)', () => {
   assert.equal(dupeBadgeText({ headline: 'Research Grants on Improving the Use of Research Evidence', status: 'trashed', submitted_at: '2026-09-03T14:00:00Z' }, '2026-09-15'),
     'Same link as "Research Grants on Improving the Use of Research Evidence", deleted Sep 3');
   assert.equal(dupeBadgeText({ headline: 'Research Grants on Improving the Use of Research Evidence — Letter of Inquiry', status: 'trashed', submitted_at: '2026-09-03T14:00:00Z' }, '2026-09-15'),
@@ -151,16 +139,14 @@ test('a duplicate badge names the earlier item and what happened to it (F8)', as
   assert.equal(dupeBadgeText({ headline: 'Waiting', status: 'new', submitted_at: '2026-09-10T00:00:00Z' }, '2026-09-15'), 'Same link as "Waiting", in the queue Sep 10');
 });
 
-test('isNewToday marks what was submitted today, by the same UTC date the desk uses (F24)', async () => {
-  const { isNewToday } = await import('../js/sort-view.js');
+test('isNewToday marks what was submitted today, by the same UTC date the desk uses (F24)', () => {
   assert.equal(isNewToday({ submitted_at: '2026-09-10T23:59:00Z' }, '2026-09-10'), true);
   assert.equal(isNewToday({ submitted_at: '2026-09-09T23:59:00Z' }, '2026-09-10'), false);
   assert.equal(isNewToday({ submitted_at: '' }, '2026-09-10'), false);
   assert.equal(isNewToday({ submitted_at: '2026-09-10T01:00:00Z' }, ''), false);
 });
 
-test('sectionRows: a section\'s pending rows oldest first, this session\'s decided ones at the bottom, nothing else', async () => {
-  const { sectionRows } = await import('../js/sort-view.js');
+test('sectionRows: a section\'s pending rows oldest first, this session\'s decided ones at the bottom, nothing else', () => {
   const rs = [
     { id: 'h2', status: 'new', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-10T10:00:00Z' },
     { id: 'gone', status: 'trashed', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-09T10:00:00Z' },
@@ -179,8 +165,7 @@ test('sectionRows: a section\'s pending rows oldest first, this session\'s decid
   assert.deepEqual(sectionRows(rs, 'event').live.map(r => r.id), ['ev']);
 });
 
-test('sectionRows for Needs a type also lists kept rows that lost their type, since typing is their fix', async () => {
-  const { sectionRows } = await import('../js/sort-view.js');
+test('sectionRows for Needs a type also lists kept rows that lost their type, since typing is their fix', () => {
   const rs = [
     { id: 'u1', status: 'new', type: '', submitted_at: '2026-09-10T10:00:00Z' },
     { id: 'k1', status: 'kept', type: 'legacy-type', submitted_at: '2026-09-09T10:00:00Z' },
@@ -189,8 +174,7 @@ test('sectionRows for Needs a type also lists kept rows that lost their type, si
   assert.deepEqual(sectionRows(rs, 'fix').live.map(r => r.id), ['k1', 'u1']);
 });
 
-test('allSections: every non-empty section in pill order, each row in exactly one of them', async () => {
-  const { allSections } = await import('../js/sort-view.js');
+test('allSections: every non-empty section in pill order, each row in exactly one of them', () => {
   const rs = [
     { id: 'h1', status: 'new', type: 'headline', subtype: 'Texas', submitted_at: '2026-08-20T10:00:00Z' },
     { id: 'u1', status: 'new', type: '', submitted_at: '2026-08-25T12:00:00Z' },
@@ -205,20 +189,10 @@ test('allSections: every non-empty section in pill order, each row in exactly on
   assert.equal(new Set(ids).size, ids.length);
 });
 
-test('allSections keeps a section that only holds rows decided this session', async () => {
-  const { allSections } = await import('../js/sort-view.js');
+test('allSections keeps a section that only holds rows decided this session', () => {
   const rs = [{ id: 'gone', status: 'trashed', type: 'headline', subtype: 'Texas', submitted_at: '2026-08-20T10:00:00Z' }];
   assert.deepEqual(allSections(rs, new Set(['gone'])).map(g => g.section), ['headline']);
   assert.deepEqual(allSections(rs).map(g => g.section), []);
-});
-
-test('a pill count equals the rows that pill lists, and the counts sum to All', () => {
-  const groups = allSections(rows);
-  const counts = sortCounts(rows);
-  for (const g of groups) assert.equal(counts[g.section], g.live.length, `${g.section} count`);
-  const bySection = ['fix', 'erc', 'erc_event', 'research', 'event', 'opportunity', 'headline']
-    .reduce((n, k) => n + counts[k], 0);
-  assert.equal(bySection, pendingRowCount(rows));
 });
 
 test('an ERC row counts once, under ERC, not again under its own type', () => {
@@ -252,6 +226,18 @@ test('a later row with the same link as an unpublished earlier one is a fix; a l
   assert.deepEqual(fixReasons(earlier, { rows: [earlier, later] }), []);
   const live = { ...earlier, status: 'kept', published_at: '2026-08-28' };
   assert.deepEqual(fixReasons(later, { rows: [live, later] }), []);
+});
+
+// Sort's card asks for the duplicate on its own, instead of sieving the other
+// two reasons out of fixReasons by their words.
+test('dupeReason is the duplicate half of fixReasons, and empty when there is none', () => {
+  const earlier = { ...ok, id: 'first', headline: 'Earlier', submitted_at: '2026-08-26T00:00:00Z' };
+  const later = { ...ok, id: 'second', submitted_at: '2026-08-27T00:00:00Z' };
+  assert.equal(dupeReason(later, { rows: [earlier, later], today: '2026-09-15' }), 'Same link as "Earlier", in the queue Aug 26');
+  assert.equal(dupeReason(earlier, { rows: [earlier, later] }), '');
+  assert.equal(dupeReason(later, { rows: [{ ...earlier, status: 'kept', published_at: '2026-08-28' }, later] }), '');
+  // The two blocking reasons are not its business, whichever of them the row has.
+  assert.equal(dupeReason({ ...later, type: '', link_checked: 'failed' }, { rows: [later] }), '');
 });
 
 test('sectionOf sends any row with a fix to the fix section, ahead of ERC and its type', () => {

@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import { blankRow, TYPE_ORDER } from '../js/schema.js';
 import {
   EXTRACT_MODEL, EXTRACTION_SCHEMA, buildExtractionPrompt,
-  parseExtraction, normalizeExtraction,
+  normalizeExtraction,
 } from '../api/_lib/extract.js';
+import { parseModelJson } from '../api/_lib/reply-json.js';
 
 test('extraction runs on Haiku and can also guess title, blurb, and typing', () => {
   assert.equal(EXTRACT_MODEL, 'claude-haiku-4-5');
@@ -32,8 +33,8 @@ test('the prompt carries the typed fields and the raw text, and forbids inventio
   assert.ok(prompt.includes('Central'));
 });
 
-test('parseExtraction rejects non-JSON', () => {
-  assert.throws(() => parseExtraction('sorry, here is prose'), /valid JSON/);
+test('the extraction reply must be JSON, not prose', () => {
+  assert.throws(() => parseModelJson('sorry, here is prose', 'extraction'), /valid JSON/);
 });
 
 test('normalizeExtraction keeps known fields, drops unknown keys, surfaces needs_review', () => {

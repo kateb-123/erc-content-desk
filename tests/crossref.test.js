@@ -22,7 +22,7 @@ const reply = {
     abstract: '<jats:p>The COVID-19 pandemic has <jats:italic>disproportionately</jats:italic> affected students.</jats:p>',
   },
 };
-const fakeFetch = (status, body) => async (url, opts) => ({ ok: status === 200, status, json: async () => body, _url: url, _opts: opts });
+const fakeFetch = (status, body) => async () => ({ ok: status === 200, status, json: async () => body });
 
 test('crossrefText turns a Crossref record into the plain text the reader files from', async () => {
   const calls = [];

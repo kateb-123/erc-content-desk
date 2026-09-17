@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { pickType, typeChoices } from '../js/submit-form.js';
+import { pickType, typeChoices, bulkSubmissionBody, typeRowFor, bulkRowProblem, bulkConfirmLabel } from '../js/submit-form.js';
 import { TYPE_ORDER, subtypesFor } from '../js/schema.js';
 
 test('pickType clears the subtype when the type changes', () => {
@@ -22,8 +22,7 @@ test('pickType starts a fresh selection from blank', () => {
   );
 });
 
-test('a bulk item posts its description and its extra columns as separate fields', async () => {
-  const { bulkSubmissionBody } = await import('../js/submit-form.js');
+test('a bulk item posts its description and its extra columns as separate fields', () => {
   const body = bulkSubmissionBody({
     title: 'Symposium', blurb: '', link: 'x.org/s', type: 'event', subtype: 'A&M',
     original_text: 'When: Sept 12, 2 PM\nWhere: Harrington 108',
@@ -59,8 +58,7 @@ test('ERC Event is flat: no subtype pills, and the hint that tells it apart from
 
 // ── The type error lands on the row it names (audit round two, d6) ──
 
-test('typeRowFor says which pill row a type message is about', async () => {
-  const { typeRowFor } = await import('../js/submit-form.js');
+test('typeRowFor says which pill row a type message is about', () => {
   assert.equal(typeRowFor('Pick a subtype.'), 'subtype');
   assert.equal(typeRowFor('Pick a real type.'), 'type');
   assert.equal(typeRowFor('Pick a type before a subtype.'), 'type');
@@ -69,8 +67,7 @@ test('typeRowFor says which pill row a type message is about', async () => {
 
 // ── Failed bulk rows keep their reason (audit round two, e16) ──
 
-test('bulkRowProblem: no link says so before any attempt; a failed attempt keeps its message', async () => {
-  const { bulkRowProblem } = await import('../js/submit-form.js');
+test('bulkRowProblem: no link says so before any attempt; a failed attempt keeps its message', () => {
   assert.equal(bulkRowProblem({ title: 'A', link: '' }), 'No link');
   assert.equal(bulkRowProblem({ title: 'A', link: 'https://x.org' }), '');
   assert.equal(bulkRowProblem({ title: 'A', link: 'https://x.org', error: "Couldn't save that." }), "Couldn't save that.");
@@ -79,8 +76,7 @@ test('bulkRowProblem: no link says so before any attempt; a failed attempt keeps
 
 // ── The bulk button's word survives a redraw (audit round two, f10) ──
 
-test('bulkConfirmLabel: Add N, Retry N after a failed run, and a disabled word when nothing is left', async () => {
-  const { bulkConfirmLabel } = await import('../js/submit-form.js');
+test('bulkConfirmLabel: Add N, Retry N after a failed run, and a disabled word when nothing is left', () => {
   assert.equal(bulkConfirmLabel(3, false), 'Add 3 to the queue');
   assert.equal(bulkConfirmLabel(2, true), 'Retry 2');
   assert.equal(bulkConfirmLabel(0, false), 'Nothing left to add');

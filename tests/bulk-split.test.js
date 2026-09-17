@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  BULK_MODEL, BULK_SCHEMA, buildBulkPrompt, parseBulk, normalizeBulkItems,
+  BULK_MODEL, BULK_SCHEMA, buildBulkPrompt, normalizeBulkItems,
 } from '../api/_lib/bulk-split.js';
+import { parseModelJson } from '../api/_lib/reply-json.js';
 
 test('bulk split runs on Haiku with a strict items schema', () => {
   assert.equal(BULK_MODEL, 'claude-haiku-4-5');
@@ -21,8 +22,8 @@ test('the prompt embeds the document and explains the vocabulary', () => {
   assert.ok(prompt.includes('verbatim'));
 });
 
-test('parseBulk rejects prose', () => {
-  assert.throws(() => parseBulk('here are your items!'), /valid JSON/);
+test('the bulk split reply must be JSON, not prose', () => {
+  assert.throws(() => parseModelJson('here are your items!', 'bulk split'), /valid JSON/);
 });
 
 test('normalizeBulkItems validates vocabulary and drops empty shells', () => {

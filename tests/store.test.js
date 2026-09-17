@@ -4,8 +4,8 @@ import { createStore, pickMode, SCHEDULE_SHEET_TIMEOUT_MS, SCHEDULE_REFRESH_MS }
 
 const row = (id, extra = {}) => ({ id, headline: `H ${id}`, status: 'kept', ...extra });
 
-/** A backend that records calls and can be told to fail a verb. */
-function fake(rows = [], { fail = {} } = {}) {
+/** A backend that records calls, can be told to fail a verb, and holds a stored sync time. */
+function fake(rows = [], { fail = {}, syncedAt = null } = {}) {
   const calls = [];
   const maybe = verb => { if (fail[verb]) throw new Error(`${verb} down`); };
   return {
@@ -18,8 +18,7 @@ function fake(rows = [], { fail = {} } = {}) {
     },
     readScheduleRows: async (opts) => { calls.push(['readScheduleRows', opts?.timeoutMs]); maybe('readScheduleRows'); return [['2026-09-22']]; },
     replaceSchedule: async d => { calls.push(['replaceSchedule', d.join(',')]); },
-    meta: {},
-    getMeta: async k => { calls.push(['getMeta', k]); return fail.meta ?? null; },
+    getMeta: async k => { calls.push(['getMeta', k]); return syncedAt; },
     setMeta: async (k, v) => { calls.push(['setMeta', k, v]); },
   };
 }
@@ -66,7 +65,7 @@ test('db mode: updateRows writes each row by id, counts the unmatched, and mirro
 });
 
 test('db mode: a fresh copy of the schedule is served from the database, no sheet call', async () => {
-  const db = fake([], { fail: { meta: '2026-09-10T18:00:00.000Z' } });
+  const db = fake([], { syncedAt: '2026-09-10T18:00:00.000Z' });
   const sheet = fake();
   const now = () => Date.parse('2026-09-10T18:05:00.000Z');   // 5 min later, inside the window
   const rows = await createStore({ mode: 'db', db, sheet, log: quiet, now }).readScheduleRows();
@@ -76,7 +75,7 @@ test('db mode: a fresh copy of the schedule is served from the database, no shee
 });
 
 test('db mode: a stale copy is refreshed from the sheet (Kate edits it there), with a deadline, and stamped', async () => {
-  const db = fake([], { fail: { meta: '2026-09-10T17:00:00.000Z' } });
+  const db = fake([], { syncedAt: '2026-09-10T17:00:00.000Z' });
   db.readScheduleRows = async () => { db.calls.push(['readScheduleRows']); return [['2026-09-08']]; };   // old
   const sheet = fake();
   const now = () => Date.parse('2026-09-10T18:00:00.000Z');

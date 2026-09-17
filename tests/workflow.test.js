@@ -9,8 +9,9 @@ import {
   markPublished, markNewsletterIssue,
   duplicateFlags,
   newsletterOnly, linkCheckedFromFetch, linkNeedsCheck, reshareFlags, clearNewsletterIssue,
-  needsErcVoice, missingFields,
+  needsErcVoice, missingFields, canRewrite, needsDescription,
 } from '../js/workflow.js';
+import { mergeArchiveIndex, archiveLabel } from '../api/_lib/archive.js';
 
 const row = o => blankRow({ id: 'r1', status: 'new', ...o });
 
@@ -167,8 +168,7 @@ test('clearNewsletterIssue is the un-send: the row rejoins the pool', () => {
   assert.deepEqual(buildPool([back]).map(r => r.id), ['a']);
 });
 
-test('mergeArchiveIndex replaces a re-saved issue and keeps newest first', async () => {
-  const { mergeArchiveIndex, archiveLabel } = await import('../api/_lib/archive.js');
+test('mergeArchiveIndex replaces a re-saved issue and keeps newest first', () => {
   const list = [
     { date: '2026-08-25', label: 'August 25, 2026' },
     { date: '2026-06-16', label: 'June 16, 2026' },
@@ -219,8 +219,7 @@ test('a link the reader says opens a different item is an alert, like a failed r
   assert.equal(linkNeedsCheck(blankRow({ link: 'https://a.org', link_checked: 'mismatch' })), true);
 });
 
-test('canRewrite: needs the ERC voice AND has text to draft from; a link-only event needs a description instead (F2)', async () => {
-  const { canRewrite, needsDescription } = await import('../js/workflow.js');
+test('canRewrite: needs the ERC voice AND has text to draft from; a link-only event needs a description instead (F2)', () => {
   const withText = { type: 'event', blurb: '', original_text: 'Please join us.' };
   const linkOnly = { type: 'event', blurb: '', original_text: '' };
   const research = { type: 'research', subtype: 'Working Paper', blurb: 'An abstract.' };

@@ -45,24 +45,21 @@ test('fetchPageText returns empty on any failure path', async () => {
   assert.equal(await fetchPageText('javascript:alert(1)', async () => new Response('hi'), publicLookup), '');
 });
 
-test('resolvesPublic accepts a public address and rejects private/loopback/link-local ones', async () => {
+// The family is spelled out, never derived from the address: resolvesPublic
+// branches on family === 6 for the IPv6 rules.
+const PRIVATE = [
+  ['10.0.0.5', 4], ['169.254.169.254', 4], ['240.0.0.1', 4], ['255.255.255.255', 4],
+  ['198.18.0.5', 4], ['198.19.0.5', 4], ['192.0.0.10', 4],
+  ['::1', 6], ['fe80::1', 6], ['::ffff:10.0.0.1', 6], ['fd12::1', 6],
+];
+
+test('resolvesPublic takes a public address and refuses every private, loopback, link-local, ULA and reserved one', async () => {
   assert.equal(await resolvesPublic('example.org', publicLookup), true);
-  assert.equal(await resolvesPublic('x', async () => [{ address: '10.0.0.5', family: 4 }]), false);
-  assert.equal(await resolvesPublic('x', async () => [{ address: '169.254.169.254', family: 4 }]), false);
-  assert.equal(await resolvesPublic('x', async () => [{ address: '::1', family: 6 }]), false);
-  assert.equal(await resolvesPublic('x', async () => [{ address: 'fe80::1', family: 6 }]), false);
-  assert.equal(await resolvesPublic('x', async () => [{ address: '::ffff:10.0.0.1', family: 6 }]), false);
+  for (const [address, family] of PRIVATE) {
+    assert.equal(await resolvesPublic('x', async () => [{ address, family }]), false, address);
+  }
   assert.equal(await resolvesPublic('x', async () => { throw new Error('nxdomain'); }), false);
   assert.equal(await resolvesPublic('x', async () => []), false);
-});
-
-test('resolvesPublic rejects the widened IPv4 blocklist and an fc00::/7 ULA address', async () => {
-  assert.equal(await resolvesPublic('x', async () => [{ address: '240.0.0.1', family: 4 }]), false);
-  assert.equal(await resolvesPublic('x', async () => [{ address: '255.255.255.255', family: 4 }]), false);
-  assert.equal(await resolvesPublic('x', async () => [{ address: '198.18.0.5', family: 4 }]), false);
-  assert.equal(await resolvesPublic('x', async () => [{ address: '198.19.0.5', family: 4 }]), false);
-  assert.equal(await resolvesPublic('x', async () => [{ address: '192.0.0.10', family: 4 }]), false);
-  assert.equal(await resolvesPublic('x', async () => [{ address: 'fd12::1', family: 6 }]), false);
 });
 
 test('fetchPageText follows one redirect to a fetchable public URL and returns its text', async () => {

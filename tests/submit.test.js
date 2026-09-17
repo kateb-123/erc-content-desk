@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 // The endpoint builds an Anthropic client at import; these tests hand in fakes.
 process.env.ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || 'test-key';
-const mod = await import('../api/submit.js');
+const { createSubmitHandler } = await import('../api/submit.js');
 
 function fakeRes() {
   return {
@@ -33,10 +33,9 @@ function harness({ read } = {}) {
 }
 
 test('submit saves the row as waiting for the reader and answers without waiting for it', async () => {
-  assert.equal(typeof mod.createSubmitHandler, 'function');
   const { calls, deps } = harness();
   const res = fakeRes();
-  await mod.createSubmitHandler(deps)({ method: 'POST', headers: {}, body }, res);
+  await createSubmitHandler(deps)({ method: 'POST', headers: {}, body }, res);
   assert.equal(res.code, 200);
   assert.equal(res.body.ok, true);
   assert.deepEqual(res.body.warnings, []);
@@ -50,9 +49,8 @@ test('submit saves the row as waiting for the reader and answers without waiting
 });
 
 test('when the background reading finishes, the read row is saved over the waiting one', async () => {
-  assert.equal(typeof mod.createSubmitHandler, 'function');
   const { calls, deps, release } = harness();
-  await mod.createSubmitHandler(deps)({ method: 'POST', headers: {}, body }, fakeRes());
+  await createSubmitHandler(deps)({ method: 'POST', headers: {}, body }, fakeRes());
   release();
   await calls.deferred[0];
   assert.equal(calls.updated.length, 1);
@@ -62,13 +60,12 @@ test('when the background reading finishes, the read row is saved over the waiti
 });
 
 test('a failed reading leaves the row waiting, for Sort to retry', async () => {
-  assert.equal(typeof mod.createSubmitHandler, 'function');
   const { calls, deps } = harness({ read: async () => { throw new Error('model timeout'); } });
   const errors = [];
   const original = console.error;
   console.error = (...args) => errors.push(args.map(String).join(' '));
   try {
-    await mod.createSubmitHandler(deps)({ method: 'POST', headers: {}, body }, fakeRes());
+    await createSubmitHandler(deps)({ method: 'POST', headers: {}, body }, fakeRes());
     await calls.deferred[0];
   } finally {
     console.error = original;
@@ -78,19 +75,17 @@ test('a failed reading leaves the row waiting, for Sort to retry', async () => {
 });
 
 test('a submission that fails validation is refused before anything is saved', async () => {
-  assert.equal(typeof mod.createSubmitHandler, 'function');
   const { calls, deps } = harness();
   const res = fakeRes();
-  await mod.createSubmitHandler(deps)({ method: 'POST', headers: {}, body: { title: '', blurb: '', link: '' } }, res);
+  await createSubmitHandler(deps)({ method: 'POST', headers: {}, body: { title: '', blurb: '', link: '' } }, res);
   assert.equal(res.code, 400);
   assert.equal(calls.appended.length, 0);
 });
 
 test('a row deleted from the queue while it was being read is not brought back', async () => {
-  assert.equal(typeof mod.createSubmitHandler, 'function');
   const { calls, deps, release } = harness();
   deps.currentRow = async () => ({ ...calls.appended[0], status: 'trashed' });
-  await mod.createSubmitHandler(deps)({ method: 'POST', headers: {}, body }, fakeRes());
+  await createSubmitHandler(deps)({ method: 'POST', headers: {}, body }, fakeRes());
   release();
   await calls.deferred[0];
   assert.equal(calls.updated.length, 0);
@@ -98,7 +93,7 @@ test('a row deleted from the queue while it was being read is not brought back',
 
 test('a spreadsheet item arrives with its extra columns in original_text and a blank description', async () => {
   const { calls, deps } = harness();
-  await mod.createSubmitHandler(deps)({ method: 'POST', headers: {}, body: {
+  await createSubmitHandler(deps)({ method: 'POST', headers: {}, body: {
     title: 'TEFA Voucher Program Surpasses 100,000 Awards', blurb: '', original_text: 'date: 2026-07\nsource: Texas Education Freedom Accounts\nmedium: online',
     link: 'https://example.org/tefa', type: 'headline', subtype: 'Texas', submitter: 'bulk upload',
   } }, fakeRes());

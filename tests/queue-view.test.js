@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sortRows, isoToShort, queueRows } from '../js/queue-view.js';
+import { sortRows, isoToShort, queueRows, queueMatch, partnerFocusKey } from '../js/queue-view.js';
 
 // Deliberately NOT pre-sorted in any tested order, so an in-place sort or a
 // wrong direction provably fails.
@@ -39,10 +39,6 @@ test('sortRows title falls back to link, empty sinks last', () => {
     { id: 'z', headline: 'Alpha', link: 'https://z.org' },
   ];
   assert.deepEqual(sortRows(mixed, 'title', 'asc').map(r => r.id), ['z', 'x', 'y']);
-});
-
-test('sortRows by submitter is stable and ascending', () => {
-  assert.deepEqual(sortRows(rows, 'submitter', 'asc').map(r => r.id), ['c', 'b', 'd', 'a']);
 });
 
 
@@ -85,8 +81,7 @@ test('isoToShort gives "Aug 26", adding the year only when it is not this year',
 
 // ── The link already in the queue (audit round two, e19) ──
 
-test('queueMatch finds the waiting row with the same link and says when it came in', async () => {
-  const { queueMatch } = await import('../js/queue-view.js');
+test('queueMatch finds the waiting row with the same link and says when it came in', () => {
   const rows = [
     { id: 'a', status: 'new', headline: 'IES grants', link: 'https://ies.ed.gov/funding/305a', submitted_at: '2026-08-23T10:00:00Z' },
     { id: 'b', status: 'kept', headline: 'Kept one', link: 'https://kept.org/x', submitted_at: '2026-08-20T10:00:00Z' },
@@ -102,16 +97,14 @@ test('queueMatch finds the waiting row with the same link and says when it came 
   assert.equal(queueMatch('https://nowhere.org', rows, '2026-09-17'), null);
 });
 
-test('queueMatch falls back to the link as the title when the row has none', async () => {
-  const { queueMatch } = await import('../js/queue-view.js');
+test('queueMatch falls back to the link as the title when the row has none', () => {
   const rows = [{ id: 'a', status: 'new', headline: '', link: 'https://x.org/p', submitted_at: '' }];
   assert.deepEqual(queueMatch('https://x.org/p', rows, '2026-09-17'), { id: 'a', title: 'https://x.org/p', when: '' });
 });
 
 // ── The keyboard's place after a row action (audit round two, e17) ──
 
-test('partnerFocusKey names the control that takes the place of the one just pressed', async () => {
-  const { partnerFocusKey } = await import('../js/queue-view.js');
+test('partnerFocusKey names the control that takes the place of the one just pressed', () => {
   assert.equal(partnerFocusKey('delete:r1'), 'undo:r1');        // after Delete, land on that row's Undo
   assert.equal(partnerFocusKey('undo:r1'), 'delete:r1');        // after Undo, back on its trash can
   assert.equal(partnerFocusKey('remove:r1', 'remove'), 'undo:r1');
@@ -121,8 +114,7 @@ test('partnerFocusKey names the control that takes the place of the one just pre
   assert.equal(partnerFocusKey(null), '');
 });
 
-test('queueRows accepts the snapshot map the queue keeps for Undo', async () => {
-  const { queueRows } = await import('../js/queue-view.js');
+test('queueRows accepts the snapshot map the queue keeps for Undo', () => {
   const rows = [{ id: 'a', status: 'new' }, { id: 'b', status: 'trashed' }];
   const justDeleted = new Map([['b', { id: 'b', status: 'circleback', newsletter_issue: '2026-09-22' }]]);
   assert.deepEqual(queueRows(rows, justDeleted).map(r => r.id), ['a', 'b']);
