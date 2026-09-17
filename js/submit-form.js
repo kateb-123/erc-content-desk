@@ -93,7 +93,7 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
         <div><label for="sf-link">Link <span class="hint">(required)</span></label>
           <input id="sf-link" type="url" autocomplete="off" placeholder="https://"></div>
       </div>
-      <label for="sf-blurb">Description <span class="hint">(paste whatever you have — dates, abstract, the whole announcement; headlines can skip this)</span></label>
+      <label for="sf-blurb">Description <span class="hint">(paste whatever you have: dates, abstract, the whole announcement; headlines can skip this)</span></label>
       <textarea id="sf-blurb" rows="4"></textarea>
       <fieldset class="type-picker"></fieldset>
       <div class="sf-foot">
@@ -106,10 +106,10 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
       <p class="status" role="status" aria-live="polite"></p>
     </form>
     <details class="bulk-door">
-      <summary>Have a whole doc or spreadsheet? Add it here — it gets split into items you review first.</summary>
+      <summary>Have a whole doc or spreadsheet? Add it here. It gets split into items you review first.</summary>
       <label class="bulk-drop">
         <strong>Drop a file here</strong> or click to choose one
-        <span class="hint">.docx, .md, .txt, .xlsx, .csv — items are shown for review before anything is saved</span>
+        <span class="hint">.docx, .md, .txt, .xlsx or .csv. Items are shown for review before anything is saved.</span>
         <input class="bulk-file" type="file" accept=".docx,.md,.txt,.xlsx,.csv" hidden>
       </label>
       <p class="bulk-templates">Need a starting point? <a href="/templates/erc-upload-template.docx" download>Word template</a> · <a href="/templates/erc-upload-template.xlsx" download>Spreadsheet template</a></p>
@@ -166,7 +166,7 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
     const line = el('p', 'done-line');
     const icon = checkSvg();
     icon.classList.add('draw-check');
-    line.append(icon, 'Got it — in the queue.');
+    line.append(icon, 'Got it. It\'s in the queue.');
     doneBox.replaceChildren(line);
     if (note) doneBox.append(el('p', 'hint', note));
     const again = el('button', '', 'Submit another');
@@ -336,9 +336,9 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
   async function splitFile(file) {
     if (!file) return;
     if (!/\.(docx|md|txt|xlsx|csv)$/i.test(file.name)) {
-      return show(bulkStatus, 'Not a supported file — .docx, .md, .txt, .xlsx, or .csv.', 'error');
+      return show(bulkStatus, 'Not a supported file. Use .docx, .md, .txt, .xlsx or .csv.', 'error');
     }
-    show(bulkStatus, `Reading ${file.name} — this can take a minute…`, 'busy');
+    show(bulkStatus, `Reading ${file.name}. This can take a minute…`, 'busy');
     try {
       const isText = /\.(md|txt|csv)$/i.test(file.name);
       const res = await fetch('/api/bulk', {

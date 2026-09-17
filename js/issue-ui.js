@@ -82,7 +82,7 @@ export function renderIssue(container, props) {
       const tr = el('tr');
       tr.append(titleCell(row));
       tr.append(el('td', row.type ? '' : 'missing', typeText(row)));
-      tr.append(el('td', '', isoToShort(row.submitted_at, today) || '—'));
+      tr.append(el('td', '', isoToShort(row.submitted_at, today) || ''));
       const td = el('td', 'bulk-remove');
       const remove = el('button', 'linkish trash-link', ' Remove');
       remove.type = 'button';

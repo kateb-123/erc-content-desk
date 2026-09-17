@@ -67,7 +67,7 @@ async function callSheetApi(action, payload, { timeoutMs } = {}) {
   } catch {
     throw new Error(
       "Sheet API returned something that wasn't JSON (likely an HTML page). This usually means the Apps "
-      + 'Script deployment\'s "Who has access" setting isn\'t "Anyone" — check Deploy > Manage deployments '
+      + 'Script deployment\'s "Who has access" setting isn\'t "Anyone". Check Deploy > Manage deployments '
       + 'in the Apps Script editor.',
     );
   }

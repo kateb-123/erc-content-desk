@@ -68,10 +68,10 @@ function itemRows({ row, fate }, { rerender, onGoTo, today }) {
   if (row.source) titleTd.append(el('span', 'item-source', row.source));
   tr.append(titleTd);
   const typeTd = el('td');
-  typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
+  typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : ''));
   if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
   tr.append(typeTd);
-  tr.append(el('td', '', isoToShort(row.submitted_at, today) || '—'));
+  tr.append(el('td', '', isoToShort(row.submitted_at, today) || ''));
 
   // The fate, in words. A row that needs a fix is the way to its fix.
   const fateTd = el('td', 'p-fate');
@@ -218,7 +218,7 @@ export function renderPublish(container, props) {
     receipt.append(ring);
     receipt.append(el('h3', '', `Published ${receiptCount} to the Exchange`));
     receipt.append(el('p', '', isTrial
-      ? 'Trial run — nothing went to the live Exchange.'
+      ? 'Trial run. Nothing went to the live Exchange.'
       : 'The site updates in about a minute.'));
     const door = el('button', 'door slim-door', 'Send to Newsletter ');
     door.append(forwardIcon());

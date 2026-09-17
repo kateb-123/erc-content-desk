@@ -68,7 +68,7 @@ export function normalizeBulkItems(parsed) {
   const s = v => String(v ?? '').trim();
   let raw = Array.isArray(parsed?.items) ? parsed.items : [];
   if (raw.length > MAX_ITEMS) {
-    warnings.push(`Found ${raw.length} items — keeping the first ${MAX_ITEMS}.`);
+    warnings.push(`Found ${raw.length} items. Keeping the first ${MAX_ITEMS}.`);
     raw = raw.slice(0, MAX_ITEMS);
   }
   const items = [];
@@ -80,7 +80,7 @@ export function normalizeBulkItems(parsed) {
     if (!item.title && !item.link) continue;
     const label = item.title || item.link;
     if (item.type && !isValidType(item.type)) {
-      warnings.push(`${label}: unknown type "${item.type}" — pick one during sort.`);
+      warnings.push(`${label}: unknown type "${item.type}". Pick one during Sort.`);
       item.type = '';
       item.subtype = '';
     } else if (item.type && item.subtype && !isValidSubtype(item.type, item.subtype)) {

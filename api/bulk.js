@@ -41,12 +41,12 @@ export default async function handler(req, res) {
   if (fileB64) {
     buffer = Buffer.from(fileB64, 'base64');
     if (buffer.length > MAX_FILE_BYTES) {
-      return res.status(400).json({ ok: false, error: 'That file is too big — split it in half and try again.' });
+      return res.status(400).json({ ok: false, error: 'That file is too big. Split it in half and try again.' });
     }
   }
 
   if (text.length > MAX_TEXT_LENGTH) {
-    return res.status(400).json({ ok: false, error: 'That document is too big — split it in half and try again.' });
+    return res.status(400).json({ ok: false, error: 'That document is too big. Split it in half and try again.' });
   }
 
   try {
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
       if (/\.csv$/i.test(name)) {
         matrix = parseCsv(text);
       } else {
-        if (!buffer) return res.status(400).json({ ok: false, error: 'The spreadsheet upload came through empty — try again.' });
+        if (!buffer) return res.status(400).json({ ok: false, error: 'The spreadsheet upload came through empty. Try again.' });
         const XLSX = await import('xlsx');
         const book = XLSX.read(buffer, { type: 'buffer' });
         const sheet = book.Sheets[book.SheetNames[0]];
@@ -68,14 +68,14 @@ export default async function handler(req, res) {
 
     // Documents: .docx extracts to text first, then the Claude split.
     if (/\.docx$/i.test(name)) {
-      if (!buffer) return res.status(400).json({ ok: false, error: 'The document upload came through empty — try again.' });
+      if (!buffer) return res.status(400).json({ ok: false, error: 'The document upload came through empty. Try again.' });
       const mammoth = await import('mammoth');
       text = String((await mammoth.extractRawText({ buffer })).value ?? '').trim();
     }
     if (!text) return res.status(400).json({ ok: false, error: 'Nothing readable in that file.' });
     if (text.length > MAX_TEXT_LENGTH) {
       // A small .docx can still extract to a huge text body.
-      return res.status(400).json({ ok: false, error: 'That document is too big — split it in half and try again.' });
+      return res.status(400).json({ ok: false, error: 'That document is too big. Split it in half and try again.' });
     }
     const stream = anthropic.messages.stream({
       model: BULK_MODEL,
@@ -85,7 +85,7 @@ export default async function handler(req, res) {
     });
     const response = await stream.finalMessage();
     if (response.stop_reason === 'max_tokens') {
-      return res.status(502).json({ ok: false, error: 'That document is too big to split in one go — split it in half and try again.' });
+      return res.status(502).json({ ok: false, error: 'That document is too big to split in one go. Split it in half and try again.' });
     }
     const out = response.content.find(b => b.type === 'text')?.text ?? '';
     const { items, warnings } = normalizeBulkItems(parseBulk(out));

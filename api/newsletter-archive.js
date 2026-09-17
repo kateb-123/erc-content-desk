@@ -27,7 +27,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ ok: false, error: 'Pass issueDate as YYYY-MM-DD.' });
   }
   if (!html.trim()) {
-    return res.status(400).json({ ok: false, error: 'Nothing to save — the issue came through empty.' });
+    return res.status(400).json({ ok: false, error: 'Nothing to save. The issue came through empty.' });
   }
   if (Buffer.byteLength(html, 'utf8') > MAX_HTML_BYTES) {
     return res.status(400).json({ ok: false, error: 'That issue is too big to archive.' });

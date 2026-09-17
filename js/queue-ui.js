@@ -33,7 +33,7 @@ function titleCell(row) {
 }
 
 function submittedDate(row, today) {
-  return isoToShort(row.submitted_at, today) || '—';
+  return isoToShort(row.submitted_at, today) || '';
 }
 
 function bodyRow(row, { onDelete, rerender, today }) {

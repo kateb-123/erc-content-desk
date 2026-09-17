@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     const ids = Array.isArray(req.body?.ids) ? new Set(req.body.ids) : null;
     const candidates = rewriteCandidates(all).filter(r => !ids || ids.has(r.id));
     if (!candidates.length) {
-      return res.status(200).json({ ok: true, rewrites: [], warnings: ['Nothing to rewrite — kept events, opportunities, and research without a description are the only candidates.'] });
+      return res.status(200).json({ ok: true, rewrites: [], warnings: ['Nothing to rewrite. Only kept events, opportunities, and research without a description are candidates.'] });
     }
     const stream = anthropic.beta.messages.stream({
       model: REWRITE_MODEL,
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
       return res.status(502).json({ ok: false, error: 'Claude declined the rewrite. Edit the blurbs by hand this time.' });
     }
     if (response.stop_reason === 'max_tokens') {
-      return res.status(502).json({ ok: false, error: 'Too many items to rewrite in one go — publish what you have and rewrite the next batch separately.' });
+      return res.status(502).json({ ok: false, error: 'Too many items to rewrite in one go. Publish what you have and rewrite the next batch separately.' });
     }
     const text = response.content.find(b => b.type === 'text')?.text ?? '';
     const { rewrites, warnings } = normalizeRewrites(parseRewrites(text), candidates);

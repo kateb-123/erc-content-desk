@@ -123,9 +123,9 @@ export function detailBody(row, extra, today) {
     main.append(el('h3', 'f-detail-label', row.type === 'research' ? 'Abstract' : 'Description'));   // h3 under the screen's h2, no skipped level
     main.append(el('p', 'f-blurb-text', row.blurb));
   } else if (needsRewrite(row)) {
-    main.append(el('p', 'rewrite-note', 'No description yet — Rewrite drafts one from the original text.'));
+    main.append(el('p', 'rewrite-note', 'No description yet. Rewrite drafts one from the original text.'));
   } else if (needsDescription(row)) {
-    main.append(el('p', 'rewrite-note', 'Needs a description — add one in Edit fields.'));
+    main.append(el('p', 'rewrite-note', 'Needs a description. Add one in Edit fields.'));
   }
   if (extra) main.append(extra);
   wrap.append(main);

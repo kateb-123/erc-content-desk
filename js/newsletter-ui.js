@@ -164,11 +164,11 @@ export function renderNewsletter(container, props) {
   const head = el('div', 'screen-head finalize-head');
   const lead = el('div');
   const info = titleWithInfo('Send to Newsletter', 'build',
-    'Pick items for the issue and send them — they leave the desk and wait in the newsletter builder. Change your mind later with Remove under "Already sent". A "was in a past issue" note is just a heads-up, never a block.');
+    'Pick items for the issue and send them. They leave the desk and wait in the newsletter builder. Change your mind later with Remove under "Already sent". A "was in a past issue" note is just a heads-up, never a block.');
   lead.append(info.row, info.panel);
   const lede = el('p', 'lede');
   if (justSent) {
-    lede.append(`Sent ${justSent.count} to the ${issueLabel(justSent.issue)} issue — the builder pulls them from here. `);
+    lede.append(`Sent ${justSent.count} to the ${issueLabel(justSent.issue)} issue. The builder pulls them from here. `);
     if (justSent.ids?.length && onUnsend) {
       const undo = el('button', 'linkish', 'Undo send');
       undo.type = 'button';
@@ -328,11 +328,11 @@ export function renderNewsletter(container, props) {
       }
       tr.append(titleTd);
       const typeTd = el('td');
-      typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
+      typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : ''));
       if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
       if (newsletterOnly(row)) typeTd.append(el('span', 'badge', 'Newsletter only'));
       tr.append(typeTd);
-      tr.append(el('td', '', isoToShort(row.published_at, today) || '—'));
+      tr.append(el('td', '', isoToShort(row.published_at, today) || ''));
       tr.addEventListener('click', () => pickGesture(row));
       tbody.append(tr);
     }

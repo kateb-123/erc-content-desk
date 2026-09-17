@@ -40,7 +40,7 @@ async function uploadItemImage(file, onStatus) {
     ext = 'png';
   }
   if (!ext) throw new Error("Use a PNG, JPG, or PDF.");
-  if (blob.size > 2.5 * 1024 * 1024) throw new Error('Too big — keep it under 2.5 MB.');
+  if (blob.size > 2.5 * 1024 * 1024) throw new Error('Too big. Keep it under 2.5 MB.');
   onStatus('Uploading…');
   const b64 = await new Promise((resolve, reject) => {
     const r = new FileReader();

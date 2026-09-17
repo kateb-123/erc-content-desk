@@ -128,7 +128,7 @@ async function drainWrites() {
       for (const [rn, row] of batch) if (!pendingWrites.has(rn)) pendingWrites.set(rn, row);
       flushing = false;
       writeErrored = true;
-      setStatus('Saving your changes — reconnecting…', 'note');
+      setStatus('Reconnecting to save your changes…', 'note');
       setTimeout(drainWrites, 4000);
       return;
     }

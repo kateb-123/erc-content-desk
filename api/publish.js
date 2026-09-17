@@ -89,7 +89,7 @@ export default async function handler(req, res) {
       console.error('publish stamping failed', err);
       return res.status(200).json({
         ok: true, published: published.length, skipped: skipped.length, csv: finalCsv,
-        warning: 'Published, but the bookkeeping stamps failed for some rows — publish again to finish stamping (already-published rows are skipped safely).',
+        warning: 'Published, but the bookkeeping stamps failed for some rows. Publish again to finish stamping; rows already published are skipped safely.',
       });
     }
     return res.status(200).json({
@@ -98,7 +98,7 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('publish failed', err);
     if (err.conflict) {
-      return res.status(502).json({ ok: false, error: 'The Exchange changed while this publish was running — run the check again and publish once more.' });
+      return res.status(502).json({ ok: false, error: 'The Exchange changed while this publish was running. Run the check again and publish once more.' });
     }
     const message = /GITHUB_TOKEN|GitHub/.test(err.message)
       ? "Couldn't reach the Exchange on GitHub. Check the GITHUB_TOKEN setup."

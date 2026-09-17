@@ -49,7 +49,7 @@ export default async function handler(req, res) {
   }
   if (!bytes.length) return res.status(400).json({ ok: false, error: 'The file came through empty.' });
   if (bytes.length > MAX_BYTES) {
-    return res.status(400).json({ ok: false, error: 'That picture is too big — keep it under 2.5 MB.' });
+    return res.status(400).json({ ok: false, error: 'That picture is too big. Keep it under 2.5 MB.' });
   }
   if (!MAGIC[type](bytes)) {
     return res.status(400).json({ ok: false, error: "That file doesn't look like the image type it claims to be." });

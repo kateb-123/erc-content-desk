@@ -219,7 +219,7 @@ function renderReview() {
   if (h2) {
     container.appendChild(h2);
     attachStepInfo(container, h2, 'review',
-      'Set the issue date, pull what the desk staged, and look it over. Pull again any time — only new items are added.');
+      'Set the issue date, pull what the desk staged, and look it over. Pull again any time. Only new items are added.');
   }
 
   // ── Issue date: a dropdown of the desk's scheduled issues, with staged
@@ -313,7 +313,7 @@ function renderReview() {
       if (!countIssueItems(data.issue)) {
         const staged = Object.entries(data.staged ?? {}).sort(([a], [b]) => a.localeCompare(b));
         setPull(staged.length
-          ? `Nothing staged for ${isoToDisplayDate(iso)} — the desk has ${staged[0][1]} staged for ${isoToDisplayDate(staged[0][0])}.`
+          ? `Nothing staged for ${isoToDisplayDate(iso)}. The desk has ${staged[0][1]} staged for ${isoToDisplayDate(staged[0][0])}.`
           : `Nothing staged for ${isoToDisplayDate(iso)}.`);
         return;
       }
@@ -329,7 +329,7 @@ function renderReview() {
       setPull(already ? `Pulled ${fresh} new · ${already} already here.` : `Pulled ${fresh} from the desk.`);
       if (fresh) renderReview();
     } catch {
-      setPull("Couldn't reach the desk — try again.");
+      setPull("Couldn't reach the desk. Try again.");
     } finally {
       pullBtn.disabled = false;
       pullBtn.hidden = false;
@@ -475,7 +475,7 @@ function renderTriage() {
   if (h2) {
     container.appendChild(h2);
     attachStepInfo(container, h2, 'triage',
-      'Drag sections into order and switch them on or off — the issue builds in this order. Featured marks the lead item.');
+      'Drag sections into order and switch them on or off. The issue builds in this order. Featured marks the lead item.');
   }
 
   const issue = state.issue;
@@ -610,7 +610,7 @@ function renderTriage() {
             if (reg.key === 'events') {
               const featLabel = document.createElement('label');
               featLabel.className = 'triage-featured-label';
-              featLabel.title = 'Pins this event to the top under a Featured heading — choose one.';
+              featLabel.title = 'Pins this event to the top under a Featured heading. Choose one.';
 
               const featCb = document.createElement('input');
               featCb.type = 'checkbox';
@@ -1074,7 +1074,7 @@ async function uploadItemImage(file, onStatus) {
     ext = 'png';
   }
   if (!ext) throw new Error("Use a PNG, JPG, or PDF.");
-  if (blob.size > 2.5 * 1024 * 1024) throw new Error('Too big — keep it under 2.5 MB.');
+  if (blob.size > 2.5 * 1024 * 1024) throw new Error('Too big. Keep it under 2.5 MB.');
   onStatus('Uploading…');
   const b64 = await new Promise((resolve, reject) => {
     const r = new FileReader();
@@ -1623,7 +1623,7 @@ function renderEdit() {
   if (!state.issue) {
     const msg = document.createElement('p');
     msg.className = 'edit-empty-msg';
-    msg.textContent = 'No issue loaded — pull from the desk on the Review step first.';
+    msg.textContent = 'No issue loaded. Pull from the desk on the Review step first.';
     container.appendChild(msg);
     return;
   }
@@ -1642,7 +1642,7 @@ function renderEdit() {
 
   const iframe = document.createElement('iframe');
   iframe.className = 'edit-preview-iframe';
-  iframe.setAttribute('title', 'Newsletter preview — click fields to edit');
+  iframe.setAttribute('title', 'Newsletter preview: click fields to edit');
   // No inner scrollbar — the iframe is sized to the full content height and the
   // PAGE owns scrolling, so the only scrollbar is the browser's (outside the
   // sheet). Suppresses the faint phantom scrollbar the `zoom` transform would
@@ -1718,7 +1718,7 @@ function renderEdit() {
 
   const emptyHint = document.createElement('div');
   emptyHint.className = 'edit-column-empty';
-  emptyHint.textContent = 'Click any text in the preview on the left — it opens here to edit.';
+  emptyHint.textContent = 'Click any text in the preview on the left. It opens here to edit.';
 
   column.appendChild(colHeader);
   column.appendChild(cardList);
@@ -1787,7 +1787,7 @@ function showExportToast(container, message, type = 'success', duration = 2800) 
 function copyHtml() {
   const container = document.querySelector('[data-step="export"]');
   if (!state.issue) {
-    if (container) showExportToast(container, 'No issue loaded — nothing to copy.', 'error');
+    if (container) showExportToast(container, 'No issue loaded. Nothing to copy.', 'error');
     return;
   }
 
@@ -1798,7 +1798,7 @@ function copyHtml() {
   };
   const onError = (err) => {
     console.error('[export] copyHtml failed:', err);
-    if (container) showExportToast(container, 'Copy failed — check browser permissions.', 'error');
+    if (container) showExportToast(container, 'Copy failed. Check browser permissions.', 'error');
   };
 
   if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {

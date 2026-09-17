@@ -57,7 +57,7 @@ export default async function handler(req, res) {
       if (unmatchedCount) {
         res.status(409).json({
           ok: false,
-          error: `${unmatchedCount} row${unmatchedCount === 1 ? '' : 's'} couldn't be matched to the sheet — reload and try again.`,
+          error: `${unmatchedCount} row${unmatchedCount === 1 ? '' : 's'} couldn't be matched to the sheet. Reload and try again.`,
         });
         return;
       }

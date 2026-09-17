@@ -69,7 +69,8 @@ export function renderHome(container, props) {
   }
 
   // ── The stats: four cards on the tint (Kate's pick J of four, Sep 16). ──
-  const dash = v => (!loaded ? '…' : (v || '—'));
+  // A card with nothing to show says so in a word (the style audit, Sep 16: no dashes on screen).
+  const dash = (v, empty) => (!loaded ? '…' : (v || empty));
   const issue = nextIssueDate(schedule, today);
   const count = loaded ? String(queueBadgeCount(rows)) : '·';   // the queue card and the fold's heading share it
   strip.replaceChildren(
@@ -85,11 +86,11 @@ export function renderHome(container, props) {
     }),
     stat({
       icon: 'paper-plane', label: 'Next newsletter',
-      value: dash(isoToShort(issue, today)), unit: loaded && issue ? issueTally(issueSummary(rows, issue).inIssue) : '',
+      value: dash(isoToShort(issue, today), 'Not set'), unit: loaded && issue ? issueTally(issueSummary(rows, issue).inIssue) : '',
       onClick: () => onGoTo('issue'),
     }),
-    stat({ icon: 'globe', label: 'Exchange updated', value: dash(isoToShort(hubUpdated, today)), href: EXCHANGE_URL }),
-    stat({ icon: 'envelope-open-text', label: 'Last newsletter', value: dash(isoToShort(lastIssue, today)), href: ARCHIVE_PATH }),
+    stat({ icon: 'globe', label: 'Exchange updated', value: dash(isoToShort(hubUpdated, today), 'Unknown'), href: EXCHANGE_URL }),
+    stat({ icon: 'envelope-open-text', label: 'Last newsletter', value: dash(isoToShort(lastIssue, today), 'None yet'), href: ARCHIVE_PATH }),
   );
 
   // ── The queue, folded at the bottom. The summary is the heading. ──
