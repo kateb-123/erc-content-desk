@@ -9,6 +9,7 @@
  */
 import { NAV, currentKey, foldOpen, menuLayout, itemLink } from './sidebar-view.js';
 import { faIcon } from './icons.js';
+import { el } from './ui-aids.js';
 
 const FOLD_KEY = 'desk.deskWorkFold';
 
@@ -31,13 +32,6 @@ function setMenu(open, focusTo) {
   menuOpen = open;
   paintMenu();
   focusTo?.focus();
-}
-
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
 }
 
 function readFold() {

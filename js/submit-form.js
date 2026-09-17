@@ -51,19 +51,12 @@ import { runPool } from './pool.js';
 import { openBusyOverlay } from './busy-overlay.js';
 import { readReply, plainError } from './sheet-client.js';
 import { queueMatch } from './queue-view.js';
-import { focusKeyIn, restoreFocus } from './ui-aids.js';
+import { el, button, focusKeyIn, restoreFocus } from './ui-aids.js';
 
 /** How many bulk items are in flight at once. Each one is a page fetch plus a
  *  Claude read plus a sheet write, so serial was minutes; six is fast without
  *  stacking up writes on the Apps Script lock. */
 const BULK_CONCURRENCY = 6;
-
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
 
 function show(target, message, kind) {
   target.className = `status status-${kind}`;
@@ -240,20 +233,18 @@ export function renderSubmitForm(container, {
       promise.then(settled, err => {
         line.className = 'done-line is-error';
         line.setAttribute('role', 'alert');
-        const retry = el('button', 'linkish', 'Try again');
-        retry.type = 'button';
-        retry.addEventListener('click', () => { retry.disabled = true; wait(Promise.resolve().then(run)); });
+        const retry = button('Try again', 'linkish', { onClick: () => { retry.disabled = true; wait(Promise.resolve().then(run)); } });
         line.replaceChildren(plainError(err), ' ', retry);
       });
     };
     doneBox.replaceChildren(line);
     if (note) doneBox.append(el('p', 'hint', note));
-    const again = el('button', '', 'Add another');
-    again.type = 'button';
-    again.addEventListener('click', () => {
-      doneBox.hidden = true;
-      form.hidden = false;
-      form.querySelector('#sf-title').focus();
+    const again = button('Add another', '', {
+      onClick: () => {
+        doneBox.hidden = true;
+        form.hidden = false;
+        form.querySelector('#sf-title').focus();
+      },
     });
     doneBox.append(again);
     // The spreadsheet door stays: a second item often follows the first.
@@ -326,12 +317,8 @@ export function renderSubmitForm(container, {
     ask = el('div', 'nl-ask sf-ask');
     ask.tabIndex = -1;
     ask.append(faIcon('triangle-exclamation'), ` Already in the queue: ${match.title}${match.when ? `, ${match.when}` : ''}. `);
-    const yes = el('button', 'linkish alert-word', 'Add anyway');
-    yes.type = 'button';
-    yes.addEventListener('click', () => { addAnyway = true; closeAsk(); form.requestSubmit(); });
-    const no = el('button', 'linkish alert-word nl-cancel', 'Cancel');
-    no.type = 'button';
-    no.addEventListener('click', () => { closeAsk(); form.querySelector('#sf-link').focus(); });
+    const yes = button('Add anyway', 'linkish alert-word', { onClick: () => { addAnyway = true; closeAsk(); form.requestSubmit(); } });
+    const no = button('Cancel', 'linkish alert-word nl-cancel', { onClick: () => { closeAsk(); form.querySelector('#sf-link').focus(); } });
     ask.append(yes, ' · ', no);
     statusEl.before(ask);
     ask.focus({ preventScroll: true });
@@ -387,8 +374,14 @@ export function renderSubmitForm(container, {
   const bulkCancel = container.querySelector('.bulk-cancel-btn');
   let bulkItems = [];
   const bulkOpen = new Set(); // rows peeked open (index into bulkItems)
-  let splitting = false;      // one split at a time: a second file mid-split is ignored
-  let retrying = false;       // the listed rows are the ones that failed; the button says Retry
+
+  /** The rows the review lists, from a fresh split or from what failed: one
+   *  owner, so the peeks and the button's word can never lag behind them. */
+  function showBulkRows(items, settle = false) {
+    bulkItems = items;
+    bulkOpen.clear();
+    renderBulkReview(settle);
+  }
 
   /** The split as a queue-style table: title/link, type, Remove; click a row
    *  with text to peek at it. The count lives on the button. A redraw keeps
@@ -431,15 +424,8 @@ export function renderSubmitForm(container, {
       if (item.subtype) typeTd.append(el('span', 'item-source', item.subtype));
       tr.append(typeTd);
       const rmTd = el('td', 'bulk-remove');
-      const rm = el('button', 'linkish', 'Remove');
-      rm.type = 'button';
-      rm.dataset.focus = `remove:${i}`;
-      rm.addEventListener('click', () => {
-        bulkItems.splice(i, 1);
-        bulkOpen.clear();
-        renderBulkReview();
-      });
-      rmTd.append(rm);
+      rmTd.append(button('Remove', 'linkish',
+        { focus: `remove:${i}`, onClick: () => showBulkRows(bulkItems.filter((_, n) => n !== i)) }));
       tr.append(rmTd);
       tbody.append(tr);
       if (text && bulkOpen.has(i)) {
@@ -455,7 +441,7 @@ export function renderSubmitForm(container, {
     const scroll = el('div', 'table-scroll');
     scroll.append(table);
     bulkItemsBox.replaceChildren(scroll);
-    bulkConfirm.textContent = bulkConfirmLabel(bulkItems.length, retrying);
+    bulkConfirm.textContent = bulkConfirmLabel(bulkItems.length, bulkItems.some(item => item.error));
     bulkConfirm.disabled = !bulkItems.length;
     // The removed row's place: the Remove now in it, else the last one, else the buttons.
     const removes = bulkItemsBox.querySelectorAll('[data-focus^="remove:"]');
@@ -473,12 +459,12 @@ export function renderSubmitForm(container, {
   // Choosing a file starts the split — read-only until "Add all to the queue".
   // Text formats go up as text; .docx/.xlsx go up as files for server parsing.
   async function splitFile(file) {
-    if (!file || splitting) return;
+    // One split at a time: a second file mid-split is ignored.
+    if (!file || bulkFile.disabled) return;
     if (!/\.(docx|md|txt|xlsx|csv)$/i.test(file.name)) {
       return show(bulkStatus, 'Not a supported file. Use .docx, .md, .txt, .xlsx or .csv.', 'error');
     }
     // While one file is being read the zone says which, takes no other, and the chooser is off.
-    splitting = true;
     bulkFile.disabled = true;
     bulkDrop.classList.add('is-busy');
     dropWord.textContent = `Reading ${file.name}`;
@@ -495,16 +481,12 @@ export function renderSubmitForm(container, {
         }),
       });
       const data = await readReply(res, 'split that file');
-      bulkItems = data.items;
-      bulkOpen.clear();
-      retrying = false;
-      renderBulkReview(true);
+      showBulkRows(data.items, true);
       bulkReview.hidden = false;
       show(bulkStatus, (data.warnings ?? []).join(' '), 'note');
     } catch (err) {
       show(bulkStatus, plainError(err), 'error');
     } finally {
-      splitting = false;
       bulkFile.disabled = false;
       bulkDrop.classList.remove('is-busy');
       dropWord.textContent = 'Drop a file here';
@@ -545,7 +527,6 @@ export function renderSubmitForm(container, {
 
   bulkCancel.addEventListener('click', () => {
     bulkItems = [];
-    retrying = false;
     bulkFile.value = '';
     bulkReview.hidden = true;
     show(bulkStatus, '', 'busy');
@@ -578,11 +559,8 @@ export function renderSubmitForm(container, {
       failed.push({ ...item, error: plainError(results[i]?.error ?? new Error('Did not go through.')) });
     });
     const saved = items.length - failed.length;
-    bulkItems = failed;
-    bulkOpen.clear();
-    retrying = failed.length > 0;
-    if (failed.length) renderBulkReview();
-    else { bulkReview.hidden = true; bulkFile.value = ''; }
+    showBulkRows(failed);
+    if (!failed.length) { bulkReview.hidden = true; bulkFile.value = ''; }
     show(bulkStatus, failed.length
       ? `Added ${saved}. ${failed.length} did not go through; they are listed above. Retry, or remove them.`
       : `Added all ${saved} to the queue`, failed.length ? 'error' : 'ok');

@@ -5,32 +5,22 @@
  * so Sort sees it too, and the table marks it Not sorted yet until Sort has.
  * Remove takes an item out of the issue; it stays in the queue.
  */
-import { faIcon, dotsLoader } from './icons.js';
+import { dotsLoader } from './icons.js';
 import { isoToShort, partnerFocusKey } from './queue-view.js';
 import { nextIssueDate } from './schedule.js';
 import { issueRows } from './issue-view.js';
 import { typeDisplay } from './schema.js';
 import { renderSubmitForm } from './submit-form.js';
-import { tryAgain } from './home-ui.js';
-import { inFlight } from './queue-ui.js';
 import { titleWithInfo } from './screen-info.js';
-import { focusKeyIn, restoreFocus } from './ui-aids.js';
+import { el, button, focusKeyIn, restoreFocus, tryAgain, inFlight } from './ui-aids.js';
 
 let quickOpen = false;   // view state: the form stays open across re-renders
 let quickJustOpened = false;   // the panel takes focus once, on the click that opened it
 // Removed, id -> the row as it was: it stays listed, greyed, with Undo, and
 // keeps standing across screen switches until a reload.
 const justRemoved = new Map();
-let currentRows = [];   // the rows as of the last render, for the form's "already in the queue" check
 
 const INFO = 'Quick add puts an item in this issue and in the queue for Sort at once. Remove takes an item out of this issue; it stays in the queue. Not sorted yet marks an item Sort has not had yet.';
-
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
 
 function titleCell(row) {
   const cell = el('td');
@@ -47,8 +37,7 @@ function typeText(row) {
 }
 
 export function renderIssue(container, props) {
-  const { rows, schedule, today, loaded, loadFailed, onQuickAdd, onRemove, onRestore, onRefresh } = props;
-  currentRows = rows;
+  const { rows, schedule, today, loaded, loadFailed, onQuickAdd, onRemove, onRestore, onRefresh, knownLinks } = props;
   const issue = nextIssueDate(schedule, today);
   const when = isoToShort(issue, today);
   const title = issue ? `Next newsletter, ${when}` : 'Next newsletter';
@@ -65,9 +54,7 @@ export function renderIssue(container, props) {
   if (!issue) {
     // A dead end said so and nothing else: where the date lives, and a way to look again.
     const empty = el('p', 'empty', 'No issue date is scheduled yet. Add a date to the Schedule sheet, then refresh. ');
-    const again = el('button', '', 'Refresh');
-    again.type = 'button';
-    again.addEventListener('click', () => { again.disabled = true; onRefresh?.(); });
+    const again = button('Refresh', '', { onClick: () => { again.disabled = true; onRefresh?.(); } });
     empty.append(again);
     container.replaceChildren(...parts, empty);
     return;
@@ -103,7 +90,7 @@ export function renderIssue(container, props) {
       renderSubmitForm(mount, {
         bulk: false,
         onSubmitted: data => onQuickAdd(data),
-        knownLinks: () => currentRows,
+        knownLinks,
         pendingLine: `Adding it to the ${when} newsletter`,
         doneLine: `In the ${when} newsletter, and in the queue for Sort.`,
       });
@@ -128,11 +115,11 @@ export function renderIssue(container, props) {
       tr.append(el('td', row.type ? '' : 'missing', typeText(row)));
       tr.append(el('td', '', isoToShort(row.submitted_at, today) || ''));
       const td = el('td', 'bulk-remove');
-      const remove = el('button', 'linkish trash-link', ' Remove');
-      remove.type = 'button';
-      remove.dataset.focus = `remove:${row.id}`;
-      remove.prepend(faIcon('trash-can'));
-      remove.addEventListener('click', () => { inFlight(remove, `remove:${row.id}`, 'Removing'); justRemoved.set(row.id, row); onRemove(row); });
+      const remove = button(' Remove', 'linkish trash-link', {
+        focus: `remove:${row.id}`,
+        icon: 'trash-can',
+        onClick: () => { inFlight(remove, `remove:${row.id}`, 'Removing'); justRemoved.set(row.id, row); onRemove(row); },
+      });
       td.append(remove);
       tr.append(td);
       tbody.append(tr);
@@ -144,10 +131,10 @@ export function renderIssue(container, props) {
       tr.append(el('td', '', isoToShort(row.submitted_at, today) || ''));
       const td = el('td', 'bulk-remove queue-actions');
       td.append(el('span', 'queue-gone', 'Removed'));
-      const undo = el('button', 'linkish', 'Undo');
-      undo.type = 'button';
-      undo.dataset.focus = `undo:${row.id}`;
-      undo.addEventListener('click', () => { inFlight(undo, `undo:${row.id}`, 'Putting it back'); justRemoved.delete(row.id); onRestore?.(row); });
+      const undo = button('Undo', 'linkish', {
+        focus: `undo:${row.id}`,
+        onClick: () => { inFlight(undo, `undo:${row.id}`, 'Putting it back'); justRemoved.delete(row.id); onRestore?.(row); },
+      });
       td.append(undo);
       tr.append(td);
       tbody.append(tr);

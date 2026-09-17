@@ -8,18 +8,12 @@
  * button and Escape does nothing, because leaving mid-add is exactly the thing
  * it exists to prevent.
  */
+import { el } from './ui-aids.js';
 
 /** Bar width. A zero total is finished, not a divide by zero. */
 export function progressPercent(done, total) {
   if (!total) return 100;
   return Math.min(100, Math.max(0, Math.round((done / total) * 100)));
-}
-
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
 }
 
 /**

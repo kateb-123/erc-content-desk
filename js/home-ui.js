@@ -13,13 +13,7 @@ import { queueBadgeCount, issueSummary, issueTally } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
 import { isoToShort } from './queue-view.js';
 import { EXCHANGE_URL, ARCHIVE_PATH } from './sidebar-view.js';
-
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
+import { el, tryAgain } from './ui-aids.js';
 
 /**
  * What a stat tile shows for a value: a real value is
@@ -31,20 +25,6 @@ export function statWords({ waiting, failed, value, empty }) {
   if (waiting) return { text: '…', quiet: true };
   return value ? { text: value, quiet: false } : { text: empty, quiet: true };
 }
-
-/** When the first load failed: the reason is in the status line; this is the way to try again. */
-export function tryAgain(onRefresh) {
-  const box = el('p', 'load-failed');
-  const btn = el('button', '', 'Try again');
-  btn.type = 'button';
-  btn.addEventListener('click', () => { btn.disabled = true; onRefresh(); });
-  box.append("The desk couldn't load. ", btn);
-  return box;
-}
-
-// The rows as of the last render, for the form's "already in the queue" check:
-// the form is mounted once, so it asks for them instead of holding a stale copy.
-let currentRows = [];
 
 /**
  * One stat card: an icon, a label, the value in the
@@ -72,9 +52,8 @@ function stat({ icon, label, words, unit, href, onClick, controls, expanded, cue
 export function renderHome(container, props) {
   const {
     rows, schedule, today, loaded, loadFailed, hubUpdated, lastIssue,
-    onGoTo, onSubmitted, onRefresh, onDeleteFromQueue,
+    onGoTo, onSubmitted, onRefresh, onDeleteFromQueue, knownLinks,
   } = props;
-  currentRows = rows;
   // The shell (form, links, headings) paints immediately — only the
   // data-backed parts wait on the ~4s Sheet read, so the page is usable at once.
   let strip = container.querySelector('.stats-strip');
@@ -88,7 +67,7 @@ export function renderHome(container, props) {
     formSide.append(el('p', 'lede', 'Share whatever details you have.'));
     const mount = el('div');
     formSide.append(mount);
-    renderSubmitForm(mount, { onSubmitted, knownLinks: () => currentRows });
+    renderSubmitForm(mount, { onSubmitted, knownLinks });
     grid.append(formSide);
     // The fold: a native details, closed on arrival, whose open state lives in
     // the DOM (the element is never rebuilt, so a data re-render keeps it).

@@ -20,23 +20,30 @@ export function queueRows(rows, justDeleted = new Set()) {
 const KEYS = {
   title: r => r.headline || r.link || '',
   type: r => (r.type ? typeDisplay(r.type) : ''),
-  submitter: r => r.submitter || '',
   submitted: r => String(r.submitted_at ?? ''),
 };
 
-/** Non-mutating sort; empty keys sink to the end in either direction. */
-export function sortRows(rows, column, direction) {
-  const key = KEYS[column];
+/** One column's comparator: its values as text, an empty one last whichever
+ *  way the column is sorted. */
+function compareBy(key, direction) {
   const flip = direction === 'desc' ? -1 : 1;
-  return rows.slice().sort((a, b) => {
+  return (a, b) => {
     const left = key(a).toLowerCase();
     const right = key(b).toLowerCase();
     if (!left && !right) return 0;
     if (!left) return 1;
     if (!right) return -1;
     return flip * left.localeCompare(right);
-  });
+  };
 }
+
+/** Non-mutating sort; empty keys sink to the end in either direction. */
+export function sortRows(rows, column, direction) {
+  return rows.slice().sort(compareBy(KEYS[column], direction));
+}
+
+/** By when it was submitted, for every list that stands in date order. */
+export const bySubmitted = direction => compareBy(KEYS.submitted, direction);
 
 
 /** One link, whichever way it was typed: scheme, www and a trailing slash do

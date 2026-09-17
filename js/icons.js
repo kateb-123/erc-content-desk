@@ -27,11 +27,6 @@ export function faIcon(name) {
   return i;
 }
 
-/** Forward arrow for the door buttons in a screen head. */
-export function forwardIcon() {
-  return faIcon('arrow-right');
-}
-
 export function dotsLoader(mini = false) {
   const wrap = document.createElement('div');
   wrap.className = mini ? 'dots-loader dots-mini' : 'dots-loader';

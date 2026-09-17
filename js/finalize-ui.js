@@ -12,11 +12,11 @@ import { readyToPublish, canRewrite, needsDescription } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
-import { dotsLoader, faIcon, forwardIcon, loadingLabel } from './icons.js';
+import { dotsLoader, faIcon, loadingLabel } from './icons.js';
 import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection } from './finalize-view.js';
 import { buildEditForm, holdIfDirty } from './edit-form.js';
-import { titleWithInfo } from './screen-info.js';
-import { focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
+import { screenHead } from './screen-info.js';
+import { el, button, focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
 
 
 // View state only — resets on reload, never persisted.
@@ -32,23 +32,17 @@ const justDeleted = new Map();
 /** Arriving at Finalize starts fresh: the first row that needs doing, the fold shut. */
 export function resetFinalizeEntry() { selectedId = null; noneOpen = false; editingId = null; justDeleted.clear(); }
 
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
-
 const oldestFirst = (a, b) => String(a.submitted_at).localeCompare(String(b.submitted_at));
 
-/** ERC spotlight leads, then type order, stragglers last — same standing as Sort. */
+/** ERC spotlight leads, then type order, the untyped, then a type the schema
+ *  does not know: the same standing as Sort. The sort is stable, so rows that
+ *  rank the same keep the order they came in. */
+const standing = row => (isErc(row) ? 0
+  : TYPE_ORDER.includes(row.type || '') ? 1 + TYPE_ORDER.indexOf(row.type)
+  : row.type ? TYPE_ORDER.length + 2 : TYPE_ORDER.length + 1);
+
 function standingOrder(keeps) {
-  const erc = keeps.filter(isErc).sort(oldestFirst);
-  const rest = keeps.filter(r => !isErc(r));
-  const known = new Set([...TYPE_ORDER, '']);
-  const grouped = [...TYPE_ORDER, ''].flatMap(type =>
-    rest.filter(r => (r.type || '') === type).sort(oldestFirst));
-  return [...erc, ...grouped, ...rest.filter(r => !known.has(r.type || '')).sort(oldestFirst)];
+  return [...keeps].sort((a, b) => standing(a) - standing(b) || oldestFirst(a, b));
 }
 
 /** Word-level LCS diff so a rewrite check highlights only what changed. */
@@ -135,6 +129,14 @@ export function detailBody(row, today) {
 
 const typeText = row => [row.type ? typeDisplay(row.type) : '', row.subtype].filter(Boolean).join(' · ');
 
+/** A list row's words: the title, with its type under it. */
+function rowText(row) {
+  const text = el('span', 'f-row-text');
+  text.append(el('span', 'f-row-title', row.headline || row.link || '(untitled)'));
+  if (row.type) text.append(el('span', 'f-row-type', typeText(row)));
+  return text;
+}
+
 /** The head of every card: type line, title, source. */
 function cardHead(card, row) {
   if (row.type) card.append(el('p', 'type-line', typeText(row)));
@@ -142,18 +144,13 @@ function cardHead(card, row) {
   if (row.source) card.append(el('p', 'f-check-source', row.source));
 }
 
+/** A press locks every button in the card: nothing is re-pushable. */
+const lockButtons = card => () => { for (const b of card.querySelectorAll('button')) b.disabled = true; };
+
 /** Edit and Delete, far left of the actions row. */
 function toolLinks(actions, row, { rerender, onTrash, lock }) {
-  const edit = el('button', 'linkish edit-link', ' Edit');
-  edit.type = 'button';
-  edit.dataset.focus = 'edit';
-  edit.prepend(faIcon('pen'));
-  edit.addEventListener('click', () => { editingId = row.id; rerender(); });
-  const bin = el('button', 'linkish trash-link sort-delete', ' Delete');
-  bin.type = 'button';
-  bin.dataset.focus = 'delete';
-  bin.prepend(faIcon('trash-can'));
-  bin.addEventListener('click', () => { lock(); justDeleted.set(row.id, row); onTrash(row); });
+  const edit = button(' Edit', 'linkish edit-link', { focus: 'edit', icon: 'pen', onClick: () => { editingId = row.id; rerender(); } });
+  const bin = button(' Delete', 'linkish trash-link sort-delete', { focus: 'delete', icon: 'trash-can', onClick: () => { lock(); justDeleted.set(row.id, row); onTrash(row); } });
   actions.append(edit, bin);
 }
 
@@ -197,50 +194,37 @@ function checkCard(row, { old, nextId, onVerify, onRevert, onCheckEdit, onTrash,
   card.append(pair);
 
   const actions = el('div', 'f-verify-actions');
-  const lock = () => { for (const b of card.querySelectorAll('button')) b.disabled = true; };
+  const lock = lockButtons(card);
   toolLinks(actions, row, { rerender, onTrash, lock });
   if (old) {
-    const revert = el('button', 'linkish quiet-link', ' Use original');
-    revert.type = 'button';
-    revert.dataset.focus = 'revert';
-    revert.prepend(faIcon('rotate-left'));
-    revert.addEventListener('click', () => { lock(); selectedId = nextId; onRevert(row); });
-    actions.append(revert);
+    actions.append(button(' Use original', 'linkish quiet-link',
+      { focus: 'revert', icon: 'rotate-left', onClick: () => { lock(); selectedId = nextId; onRevert(row); } }));
   }
-  const ok = el('button', 'primary', ' Keep');
-  ok.type = 'button';
-  ok.dataset.focus = 'keep';
-  ok.prepend(faIcon('check'));
-  ok.addEventListener('click', () => { lock(); selectedId = nextId; onVerify(row.id); });
-  actions.append(ok);
+  actions.append(button(' Keep', 'primary',
+    { focus: 'keep', icon: 'check', onClick: () => { lock(); selectedId = nextId; onVerify(row.id); } }));
   card.append(actions);
   return card;
 }
 
-/** A row still waiting for its rewrite: the original text in its own box. */
-function rewriteCard(row, { rerender, onEditRow, onTrash }) {
-  if (editingId === row.id) return editCard(row, { onSave: onEditRow, rerender });
-  const card = el('div', 'card f-card');
-  cardHead(card, row);
+/** A row still waiting for its rewrite: the original text in its own box. It
+ *  always has text, since a row with none cannot be rewritten at all. */
+function originalBox(row) {
   const box = el('div', 'f-original');
   box.append(el('p', 'f-diff-label', 'Original'));
-  const text = row.blurb || row.original_text || '';
-  box.append(el('p', 'f-blurb-text', text || 'No description yet. Rewrite drafts one from the original text.'));
-  card.append(box);
-  const actions = el('div', 'f-verify-actions');
-  toolLinks(actions, row, { rerender, onTrash, lock: () => { for (const b of card.querySelectorAll('button')) b.disabled = true; } });
-  card.append(actions);
-  return card;
+  box.append(el('p', 'f-blurb-text', row.blurb || row.original_text));
+  return box;
 }
 
-/** Any other kept row: its facts and description, with Edit and Delete. */
-function plainCard(row, { rerender, onEditRow, onTrash, today }) {
+/** A kept row with nothing to check: its body between the head and Edit ·
+ *  Delete. The rewrite group shows its original text, everyone else the
+ *  facts and the description. */
+function simpleCard(row, body, { rerender, onEditRow, onTrash }) {
   if (editingId === row.id) return editCard(row, { onSave: onEditRow, rerender });
   const card = el('div', 'card f-card');
   cardHead(card, row);
-  card.append(detailBody(row, today));
+  card.append(body);
   const actions = el('div', 'f-verify-actions');
-  toolLinks(actions, row, { rerender, onTrash, lock: () => { for (const b of card.querySelectorAll('button')) b.disabled = true; } });
+  toolLinks(actions, row, { rerender, onTrash, lock: lockButtons(card) });
   card.append(actions);
   return card;
 }
@@ -253,60 +237,49 @@ export function renderFinalize(container, props) {
   container.replaceChildren();
   openForm = null;
   const keeps = standingOrder(readyToPublish(rows));
-  const handled = id => review?.has(id) || verified?.has(id);
+  const handled = id => review.has(id) || verified.has(id);
   const pending = keeps.filter(r => canRewrite(r) && !handled(r.id));
-  const checks = review?.size ?? 0;
+  const checks = review.size;
   const stage = finalizeStage({ pending: pending.length, checks });
   const groups = finalizeGroups(keeps, {
     pending: new Set(pending.map(r => r.id)),
-    review: new Set(review?.keys?.() ?? []),
-    verified: verified ?? new Set(),
+    review,
+    verified,
   });
   const toCheck = groups.find(g => g.key === 'check')?.rows ?? [];
 
   // ── The head: title, one line of progress, one action on the right. ──
-  const head = el('div', 'screen-head finalize-head');
-  const lead = el('div');
-  const info = titleWithInfo('Finalize', 'finalize',
+  const { head, lede } = screenHead('Finalize', 'finalize',
     'Rewrite the descriptions that need an ERC voice, then check each one: Keep saves the rewrite, Use original leaves the text as it was. Click any row on the left to see it, edit it, or delete it. Then go to Publish.');
-  lead.append(info.row, info.panel);
   const progress = stage === 'checking'
     ? finalizeProgress('checking', { total: Math.max(reviewTotal || 0, checks), left: checks })
     : finalizeProgress(stage, { pending: pending.length, keeps: keeps.length });
-  const lede = el('p', 'lede');
-  if (lastKeepAll?.length && onUndoKeepAll) {
+  if (lastKeepAll?.length) {
     // Keep the rest is one click; its way back sits where the count was.
     lede.append(`Kept ${lastKeepAll.length} rewrite${lastKeepAll.length === 1 ? '' : 's'}. `);
-    const undo = el('button', 'linkish', 'Undo');
-    undo.type = 'button';
-    undo.dataset.focus = 'undo-keep-all';
-    undo.addEventListener('click', () => { undo.disabled = true; onUndoKeepAll(); });
+    const undo = button('Undo', 'linkish', { focus: 'undo-keep-all', onClick: () => { undo.disabled = true; onUndoKeepAll(); } });
     lede.append(undo);
   } else if (!keeps.length) lede.textContent = 'No unpublished keeps right now.';
   else if (stage !== 'checking' && rewroteNote && !busy) lede.textContent = rewroteNote;   // an empty rewrite's answer, next to the button
   else lede.textContent = progress.text;
-  lead.append(lede);
-  head.append(lead);
   // While rewriting the button is gone entirely: the dots below are the signal.
   if (!busy && stage === 'before') {
     const btn = el('button', 'primary', `Rewrite ${pending.length} description${pending.length === 1 ? '' : 's'}`);
     btn.dataset.focus = 'rewrite';
     btn.addEventListener('click', () => { if (held()) return; btn.disabled = true; onRewrite(); });
     head.append(btn);
-  } else if (!busy && stage === 'checking' && onVerifyAll) {
+  } else if (!busy && stage === 'checking' && toCheck.length > 1) {
     // The bulk keep, named and drawn as on Sort.
-    if (toCheck.length > 1) {
-      const all = el('button', 'primary', ` Keep the rest (${toCheck.length})`);
-      all.type = 'button';
-      all.dataset.focus = 'keep-all';
-      all.prepend(faIcon('check'));
-      all.addEventListener('click', () => { if (held()) return; all.disabled = true; selectedId = null; onVerifyAll(toCheck.map(r => r.id)); });
-      head.append(all);
-    }
+    const all = button(` Keep the rest (${toCheck.length})`, 'primary', {
+      focus: 'keep-all',
+      icon: 'check',
+      onClick: () => { if (held()) return; all.disabled = true; selectedId = null; onVerifyAll(toCheck.map(r => r.id)); },
+    });
+    head.append(all);
   } else if (!busy && stage === 'plain' && keeps.length) {
-    const btn = el('button', 'door head-action', 'Go to Publish');
+    const btn = el('button', 'door', 'Go to Publish');
     btn.dataset.focus = 'door';
-    btn.append(forwardIcon());
+    btn.append(faIcon('arrow-right'));
     btn.addEventListener('click', () => { if (!held()) onGoTo('publish'); });
     head.append(btn);
   }
@@ -368,10 +341,7 @@ export function renderFinalize(container, props) {
         mark.classList.add('fix-mark');
         item.append(mark);
       }
-      const text = el('span', 'f-row-text');
-      text.append(el('span', 'f-row-title', row.headline || row.link || '(untitled)'));
-      if (row.type) text.append(el('span', 'f-row-type', typeText(row)));
-      item.append(text);
+      item.append(rowText(row));
       if (group.key === 'done') item.append(faIcon('check'));
       item.addEventListener('click', () => { if (row.id !== selectedId && held()) return; selectedId = row.id; editingId = null; rerender(); });
       list.append(item);
@@ -381,14 +351,8 @@ export function renderFinalize(container, props) {
     list.append(el('p', 'f-group-head', 'Deleted'));
     for (const row of deleted) {
       const item = el('div', 'f-list-row is-deleted');
-      const text = el('span', 'f-row-text');
-      text.append(el('span', 'f-row-title', row.headline || row.link || '(untitled)'));
-      if (row.type) text.append(el('span', 'f-row-type', typeText(row)));
-      item.append(text);
-      const undo = el('button', 'linkish', 'Undo');
-      undo.type = 'button';
-      undo.dataset.focus = `undo:${row.id}`;
-      undo.addEventListener('click', () => { undo.disabled = true; justDeleted.delete(row.id); onRestore?.(row); });
+      item.append(rowText(row));
+      const undo = button('Undo', 'linkish', { focus: `undo:${row.id}`, onClick: () => { undo.disabled = true; justDeleted.delete(row.id); onRestore(row); } });
       item.append(undo);
       list.append(item);
     }
@@ -403,12 +367,9 @@ export function renderFinalize(container, props) {
     split.append(el('div', 'f-pane-empty', 'Nothing left here.'));
   } else if (!row) {
     const empty = el('div', 'f-pane-empty');
-    empty.append(verified?.size ? 'Every rewrite is checked. ' : 'Nothing needs a rewrite. ');
-    const go = el('button', 'linkish', 'Go to Publish');
-    go.type = 'button';
-    go.dataset.focus = 'door-empty';
-    go.append(' ', forwardIcon());
-    go.addEventListener('click', () => onGoTo('publish'));
+    empty.append(verified.size ? 'Every rewrite is checked. ' : 'Nothing needs a rewrite. ');
+    const go = button('Go to Publish', 'linkish', { focus: 'door-empty', onClick: () => onGoTo('publish') });
+    go.append(' ', faIcon('arrow-right'));
     empty.append(go);
     split.append(empty);
   } else if (group.key === 'check') {
@@ -416,9 +377,9 @@ export function renderFinalize(container, props) {
     const nextId = toCheck[at + 1]?.id ?? toCheck[at - 1]?.id ?? null;
     split.append(checkCard(row, { old: review.get(row.id), nextId, onVerify: onVerifyRewrite, onRevert: onRevertRewrite, onCheckEdit, onTrash, rerender }));
   } else if (group.key === 'rewrite') {
-    split.append(rewriteCard(row, { rerender, onEditRow, onTrash }));
+    split.append(simpleCard(row, originalBox(row), { rerender, onEditRow, onTrash }));
   } else {
-    split.append(plainCard(row, { rerender, onEditRow, onTrash, today }));
+    split.append(simpleCard(row, detailBody(row, today), { rerender, onEditRow, onTrash }));
   }
   container.append(split);
   const card = split.querySelector('.f-card');

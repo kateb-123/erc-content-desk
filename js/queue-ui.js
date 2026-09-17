@@ -4,10 +4,10 @@
  * submission date. Refresh re-reads; a row's trash can deletes it and leaves
  * an Undo. The column sort is view state only; nothing here is a link.
  */
-import { dotsLoader, faIcon } from './icons.js';
+import { faIcon } from './icons.js';
 import { typeDisplay } from './schema.js';
 import { sortRows, isoToShort, queueRows, partnerFocusKey } from './queue-view.js';
-import { focusKeyIn, restoreFocus } from './ui-aids.js';
+import { el, button, focusKeyIn, restoreFocus, inFlight } from './ui-aids.js';
 
 // View state only — resets on reload, never persisted.
 let sortState = { column: 'submitted', dir: 'desc' };
@@ -17,30 +17,6 @@ let sortState = { column: 'submitted', dir: 'desc' };
 // back a circle-back as a circle-back and a quick-added item with its
 // newsletter stamp.
 const justDeleted = new Map();
-
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
-
-/**
- * The mark an in-flight row action leaves in its button's place: the mini
- * dots with a word for assistive tech, carrying the button's focus key so the
- * redraw that follows can land on the row's partner control. Takes focus
- * only when the button had it.
- */
-export function inFlight(button, key, word) {
-  const wait = el('span', 'queue-wait');
-  wait.tabIndex = -1;
-  wait.dataset.focus = key;
-  wait.append(dotsLoader(true), el('span', 'sr-only', word));
-  const had = document.activeElement === button;
-  button.replaceWith(wait);
-  if (had) wait.focus({ preventScroll: true });
-  return wait;
-}
 
 /** Title with the source in small muted text underneath (when there is one). */
 function titleCell(row) {
@@ -70,15 +46,14 @@ function bodyRow(row, { onDelete, today }) {
   const actions = el('td', 'queue-actions');
   if (gone) {
     actions.append(el('span', 'queue-gone', 'Deleted'));
-    const undo = el('button', 'linkish', 'Undo');
-    undo.type = 'button';
-    undo.dataset.focus = `undo:${row.id}`;
-    undo.addEventListener('click', () => {
-      const snapshot = justDeleted.get(row.id) ?? row;
-      justDeleted.delete(row.id);
-      onDelete?.(snapshot, 'restore');
-    });
-    actions.append(undo);
+    actions.append(button('Undo', 'linkish', {
+      focus: `undo:${row.id}`,
+      onClick: () => {
+        const snapshot = justDeleted.get(row.id) ?? row;
+        justDeleted.delete(row.id);
+        onDelete?.(snapshot, 'restore');
+      },
+    }));
   } else {
     const del = el('button', 'linkish trash-link', '');
     del.type = 'button';
@@ -102,12 +77,12 @@ export function renderQueueTable(container, { rows, today, onRefresh, onDelete }
 
   // The fold's summary is the heading; the head holds Refresh alone.
   const head = el('div', 'queue-head');
-  const refresh = el('button', '', 'Refresh');
-  refresh.type = 'button';
-  refresh.dataset.focus = 'refresh';
-  refresh.addEventListener('click', () => {
-    inFlight(refresh, 'refresh', 'Refreshing');   // gone while refreshing; the dots take its place
-    onRefresh();
+  const refresh = button('Refresh', '', {
+    focus: 'refresh',
+    onClick: () => {
+      inFlight(refresh, 'refresh', 'Refreshing');   // gone while refreshing; the dots take its place
+      onRefresh();
+    },
   });
   head.append(refresh);
   container.append(head);

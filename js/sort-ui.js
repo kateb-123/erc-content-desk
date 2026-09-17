@@ -11,11 +11,11 @@ import { linkNeedsCheck, reshareFlags, missingFields } from './workflow.js';
 import { TYPE_ORDER, typeDisplay, subtypesFor, typeIsFlat } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { safeHref } from './links.js';
-import { sortCounts, readerQueue, isNewToday, sectionRows, landingSection, needsType, fixReasons, fixContext, keepBlock, nextSelected, nextSectionWithRows, adjacentTab } from './sort-view.js';
+import { SECTION_ORDER, SECTION_LABELS, sortCounts, readerQueue, isNewToday, sectionRows, landingSection, needsType, fixReasons, dupeReason, fixContext, keepBlock, nextSelected, nextSectionWithRows, adjacentTab } from './sort-view.js';
 import { buildEditForm, holdIfDirty } from './edit-form.js';
 import { titleWithInfo } from './screen-info.js';
-import { faIcon, forwardIcon } from './icons.js';
-import { focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
+import { faIcon } from './icons.js';
+import { el, button, focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
 
 // The section's view state: which row the card shows, where it stood (so a
 // decision moves to the row now in its place), and which of the card's
@@ -26,32 +26,12 @@ let listPanel = null;   // 'edit' | 'type' | null
 let openForm = null;    // the card's open edit form, so every way out can hold its typing
 let landOnTitle = false; // a decision was made: the next card's title takes focus and is read
 
-const FILTER_LABELS = [
-  // 'Needs a fix': the one amber thing on the screen. It gathers
-  // every row that cannot be kept yet (no type, link not opened) and possible
-  // duplicates, so the rows themselves carry no amber marks.
-  ['fix', 'Needs a fix'], ['erc', 'ERC'], ['erc_event', 'ERC events'],
-  ['research', 'Research'],
-  ['event', 'Events'], ['opportunity', 'Opportunities'], ['headline', 'Headlines'],
-  // Skipped: every parked row, any type, with Keep and
-  // Delete, so a Skip is never the end of the road. Last on the menu.
-  ['skipped', 'Skipped'],
-];
-const FILTER_KEYS = FILTER_LABELS.map(([k]) => k);
-
 let lastFilter = null;  // detects a section jump so the list slides like the screens do
 let liveOrder = [];     // the section's live row ids in list order, for the arrow keys
 
 // A decision moves no pixels: the decided row greys in place at
 // the bottom of its section, with Undo. On a 95-item session even a 260ms
 // animation is half a minute of watching.
-
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
 
 /** The type as radios, the picked type's subtypes as indented radios under
  *  it. Picking the subtype IS the save; a flat type (ERC Event) saves on the
@@ -104,13 +84,8 @@ function buildLinkAlert(row, href, onVerify) {
   // Say why: the warning used to mean only "the desk couldn't read this", and
   // a link that opens a different item carried no warning at all.
   line.append(row.link_checked === 'mismatch' ? 'This link may open a different item.' : "The desk couldn't open this page.");
-  const works = el('button', 'linkish alert-word', 'Confirm');
-  works.type = 'button';
-  works.dataset.focus = 'link-confirm';
-  works.addEventListener('click', () => onVerify());
-  const change = el('button', 'linkish alert-word', 'Change');
-  change.type = 'button';
-  change.dataset.focus = 'link-change';
+  const works = button('Confirm', 'linkish alert-word', { focus: 'link-confirm', onClick: () => onVerify() });
+  const change = button('Change', 'linkish alert-word', { focus: 'link-change' });
   const changeRow = el('div', 'alert-change');
   const input = document.createElement('input');
   input.type = 'url';
@@ -121,9 +96,7 @@ function buildLinkAlert(row, href, onVerify) {
   const bad = el('p', 'field-error', 'Paste a full http(s) link');
   bad.id = `link-error-${row.id}`;
   bad.hidden = true;
-  const saveLink = el('button', 'linkish alert-word', 'Save');
-  saveLink.type = 'button';
-  saveLink.dataset.focus = 'link-save';
+  const saveLink = button('Save', 'linkish alert-word', { focus: 'link-save' });
   change.addEventListener('click', () => { changeRow.classList.add('is-open'); input.focus(); });
   const saveFixed = () => {
     const fixed = input.value.trim();
@@ -170,30 +143,30 @@ function buildLinkAlert(row, href, onVerify) {
   return alert;
 }
 
-const sectionLabel = section => FILTER_LABELS.find(([k]) => k === section)?.[1] ?? section;
+const sectionLabel = section => SECTION_LABELS[section] ?? section;
 
-// Out of Keep the rest for the same two reasons the card locks Keep: an
-// unchecked link, or no real type yet. Their rows say so.
-const keepableIn = live => live.filter(r => !linkNeedsCheck(r) && !needsType(r));
+// Out of Keep the rest for the reasons the card locks Keep on. Their rows say so.
+const keepableIn = live => live.filter(r => !keepBlock(r));
+
+/** Any way out of the card holds while its edit form has unsaved typing.
+ *  The card is found from whatever the caller has to hand. */
+const held = root => holdIfDirty(openForm, root?.querySelector('.sort-card'));
 
 function sectionHead(props, section, keepable, main) {
   const head = el('div', 'list-head');
   head.append(el('p', 'sort-group', sectionLabel(section)));
-  const undo = el('button', 'undo-link', 'Undo last');
-  undo.type = 'button';
-  undo.dataset.focus = 'undo';
+  const undo = button('Undo last', 'undo-link', { focus: 'undo', onClick: () => props.onUndo() });
   undo.disabled = !props.lastDecision;
-  undo.addEventListener('click', () => props.onUndo());
   head.append(undo);
   if (keepable.length) {
-    const keepBtn = el('button', 'primary list-keep', ` Keep the rest (${keepable.length})`);
-    keepBtn.type = 'button';
-    keepBtn.dataset.focus = 'keep-rest';
-    keepBtn.prepend(faIcon('check'));
-    keepBtn.addEventListener('click', () => {
-      if (holdIfDirty(openForm, main.querySelector('.sort-card'))) return;
-      for (const x of main.querySelectorAll('button')) x.disabled = true;
-      props.onKeepAll?.(keepable);
+    const keepBtn = button(` Keep the rest (${keepable.length})`, 'primary list-keep', {
+      focus: 'keep-rest',
+      icon: 'check',
+      onClick: () => {
+        if (held(main)) return;
+        for (const x of main.querySelectorAll('button')) x.disabled = true;
+        props.onKeepAll(keepable);
+      },
     });
     head.append(keepBtn);
   }
@@ -212,47 +185,44 @@ function emptyLine(props) {
 
 /** The card's stand-in when the section has nothing live: say so, and point
  *  at the next section that holds anything, or on to Finalize. */
-function emptyPane(props, section, words = 'Nothing left in this section. ') {
+function emptyPane(props, section, counts, words = 'Nothing left in this section. ') {
   const pane = el('div', 'sort-pane-empty');
   pane.append(words);
-  const next = nextSectionWithRows(sortCounts(props.rows), section);
-  const go = el('button', 'linkish', next ? `Next: ${sectionLabel(next)}` : 'Go to Finalize');
-  go.type = 'button';
-  go.dataset.focus = 'next';
-  go.append(' ', forwardIcon());
-  go.addEventListener('click', () => (next ? props.onFilter(next) : props.onGoTo?.('finalize')));
+  const next = nextSectionWithRows(counts, section);
+  const go = button(next ? `Next: ${sectionLabel(next)}` : 'Go to Finalize', 'linkish',
+    { focus: 'next', onClick: () => (next ? props.onFilter(next) : props.onGoTo('finalize')) });
+  go.append(' ', faIcon('arrow-right'));
   pane.append(go);
   return pane;
 }
 
 /** One section on its own, from its tab: the head, the hint, then the list
  *  and the card side by side. */
-function renderSectionList(main, props, section) {
-  const rerender = () => renderSectionList(main, props, section);
+function renderSectionList(main, props, section, counts) {
+  const rerender = () => renderSectionList(main, props, section, counts);
   const focusKey = focusKeyIn(main);   // a redraw keeps the keyboard's place
   main.replaceChildren();
   openForm = null;
   const ctx = fixContext(props.rows, props.today);
-  const group = sectionRows(props.rows, section, props.sessionDecided ?? new Set(), ctx, props.decidedFrom ?? new Map());
+  const group = sectionRows(props.rows, section, props.sessionDecided, ctx, props.decidedFrom);
   const keepable = keepableIn(group.live);
   main.append(sectionHead(props, section, keepable, main));
   liveOrder = group.live.map(r => r.id);
   if (!group.live.length && !group.done.length) {
     // An empty tab points at the work that is left; only an empty queue
     // says why it is empty.
-    main.append(nextSectionWithRows(sortCounts(props.rows), section)
-      ? emptyPane(props, section, 'Nothing in this section. ') : emptyLine(props));
+    main.append(nextSectionWithRows(counts, section)
+      ? emptyPane(props, section, counts, 'Nothing in this section. ') : emptyLine(props));
     return;
   }
   if (group.live.length) {
     main.append(el('p', 'hint list-hint', section === 'fix' ? FIX_HINT : section === 'skipped' ? SKIPPED_HINT : KEEP_HINT));
   }
 
-  const liveIds = group.live.map(r => r.id);
   const before = selectedId;
-  selectedId = nextSelected(liveIds, selectedId, lastIndex);
+  selectedId = nextSelected(liveOrder, selectedId, lastIndex);
   if (selectedId !== before) listPanel = null;
-  if (selectedId) lastIndex = liveIds.indexOf(selectedId);
+  if (selectedId) lastIndex = liveOrder.indexOf(selectedId);
 
   const reshare = reshareFlags(props.rows, props.today ?? '');
   const split = el('div', 'sort-split');
@@ -261,7 +231,7 @@ function renderSectionList(main, props, section) {
   for (const row of group.done) list.append(doneRowItem(row, props.onUndoRow, props.today));
   split.append(list);
   const row = group.live.find(r => r.id === selectedId);
-  const card = row ? sortCard(row, { props, rerender, ctx, reshare, section }) : emptyPane(props, section);
+  const card = row ? sortCard(row, { props, rerender, ctx, reshare, section }) : emptyPane(props, section, counts);
   split.append(card);
   main.append(split);
   if (row) markOverflow(card);
@@ -307,7 +277,7 @@ function sortRowItem(row, { props, rerender, ctx, section, index }) {
   item.append(text);
   item.addEventListener('click', () => {
     // Unsaved typing in the card is not thrown away by a row click.
-    if (row.id !== selectedId && holdIfDirty(openForm, item.closest('.sort-main')?.querySelector('.sort-card'))) return;
+    if (row.id !== selectedId && held(item.closest('.sort-main'))) return;
     selectedId = row.id; lastIndex = index; listPanel = null; rerender();
   });
   return item;
@@ -324,7 +294,7 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
         listPanel = null;
         if (!Object.keys(changes).length) { rerender(); return; }
         lock();
-        props.onEditRow?.(row, changes);
+        props.onEditRow(row, changes);
       },
       onCancel: () => { listPanel = null; rerender(); },
     });
@@ -338,10 +308,7 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
   if (!typeMissing && listPanel !== 'type') {
     const line = el('p', 'type-line');
     line.append(el('span', 'type-label', [typeDisplay(row.type), row.subtype].filter(Boolean).join(' · ')), ' · ');
-    const change = el('button', 'linkish', 'Change');
-    change.type = 'button';
-    change.dataset.focus = 'change';
-    change.addEventListener('click', () => { listPanel = 'type'; rerender(); });
+    const change = button('Change', 'linkish', { focus: 'change', onClick: () => { listPanel = 'type'; rerender(); } });
     line.append(change);
     top.append(line);
   }
@@ -355,7 +322,7 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
   // no type, an unchecked link, a possible duplicate. Change on the type line
   // opens the same radios in a plain panel.
   const linkAlert = linkNeedsCheck(row);
-  const dupe = fixReasons(row, ctx).find(r => r !== 'No type' && r !== 'Link not opened');
+  const dupe = dupeReason(row, ctx);
   const href = safeHref(row.link);
   const panelHead = (words, alert) => {
     const h = el('p', `fix-head${alert ? ' is-alert' : ''}`);
@@ -363,22 +330,20 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
     h.append(words);
     return h;
   };
-  const commitType = (type, subtype) => { lock(); listPanel = null; props.onEditType?.(row, type, subtype); };
+  const commitType = (type, subtype) => { lock(); listPanel = null; props.onEditType(row, type, subtype); };
   if (typeMissing || linkAlert || dupe || listPanel === 'type') {
     const panel = el('div', `fix-panel${typeMissing || linkAlert || dupe ? ' is-alert' : ''}`);
     if (typeMissing) {
       panel.append(panelHead('Needs a type', true), buildTypeRadios(row, commitType));
     } else if (listPanel === 'type') {
       panel.append(panelHead('Type', false), buildTypeRadios(row, commitType));
-      const cancel = el('button', 'linkish quiet-link', 'Cancel');
-      cancel.type = 'button';
-      cancel.dataset.focus = 'change';   // back on Change, where the panel was opened
-      cancel.addEventListener('click', () => { listPanel = null; rerender(); });
+      // Back on Change, where the panel was opened.
+      const cancel = button('Cancel', 'linkish quiet-link', { focus: 'change', onClick: () => { listPanel = null; rerender(); } });
       panel.append(cancel);
     }
     if (linkAlert) {
       panel.append(panelHead('Check the link', true));
-      panel.append(buildLinkAlert(row, href, newLink => { lock(); props.onVerifyLink?.(row, newLink); }));
+      panel.append(buildLinkAlert(row, href, newLink => { lock(); props.onVerifyLink(row, newLink); }));
     }
     if (dupe) panel.append(panelHead('Possible duplicate', true), el('p', 'fix-line', dupe));
     card.append(panel);
@@ -404,32 +369,16 @@ function sortCard(row, { props, rerender, ctx, reshare, section }) {
 
   // Edit and Delete far left; Skip and the one filled Keep on the right.
   const acts = el('div', 'sort-card-acts');
-  const edit = el('button', 'linkish edit-link', ' Edit');
-  edit.type = 'button';
-  edit.dataset.focus = 'edit';
-  edit.prepend(faIcon('pen'));
-  edit.addEventListener('click', () => { listPanel = 'edit'; rerender(); });
-  const del = el('button', 'linkish trash-link', ' Delete');
-  del.type = 'button';
-  del.dataset.focus = 'delete';
-  del.prepend(faIcon('trash-can'));
-  del.addEventListener('click', () => { lock(); landOnTitle = true; props.onDecide?.(row, 'trash'); });
+  const edit = button(' Edit', 'linkish edit-link', { focus: 'edit', icon: 'pen', onClick: () => { listPanel = 'edit'; rerender(); } });
+  const del = button(' Delete', 'linkish trash-link', { focus: 'delete', icon: 'trash-can', onClick: () => { lock(); landOnTitle = true; props.onDecide(row, 'trash'); } });
   acts.append(edit, del);
   const right = el('span', 'sort-card-right');
   if (section !== 'skipped') {
-    const skip = el('button', 'linkish quiet-link', 'Skip');
-    skip.type = 'button';
-    skip.dataset.focus = 'skip';
-    skip.addEventListener('click', () => { lock(); landOnTitle = true; props.onDecide?.(row, 'circleback'); });
-    right.append(skip);
+    right.append(button('Skip', 'linkish quiet-link', { focus: 'skip', onClick: () => { lock(); landOnTitle = true; props.onDecide(row, 'circleback'); } }));
   }
-  const keep = el('button', 'primary', ' Keep');
-  keep.type = 'button';
-  keep.dataset.focus = 'keep';
-  keep.prepend(faIcon('check'));
+  const keep = button(' Keep', 'primary', { focus: 'keep', icon: 'check', onClick: () => { lock(); landOnTitle = true; props.onDecide(row, 'keep'); } });
   const blocked = keepBlock(row);
   if (blocked) { keep.disabled = true; keep.title = blocked; }
-  keep.addEventListener('click', () => { lock(); landOnTitle = true; props.onDecide?.(row, 'keep'); });
   right.append(keep);
   acts.append(right);
   card.append(acts);
@@ -457,20 +406,20 @@ function doneRowItem(row, onUndoRow, today) {
   if (meta) text.append(el('span', 'sort-row-meta', meta));
   const acts = el('span', 'sort-done-acts');
   acts.append(el('span', 'queue-gone', DONE_WORDS[row.status] ?? row.status));
-  const undo = el('button', 'linkish', 'Undo');
-  undo.type = 'button';
-  undo.dataset.focus = `undo:${row.id}`;
-  undo.addEventListener('click', () => { undo.disabled = true; onUndoRow?.(row); });
+  const undo = button('Undo', 'linkish', { focus: `undo:${row.id}`, onClick: () => { undo.disabled = true; onUndoRow(row); } });
   acts.append(undo);
   item.append(text, acts);
   return item;
 }
 
+// The one field whose column name is not what the card calls it; the rest
+// read as themselves.
+const FIELD_WORDS = { medium: 'outlet' };
+
 /** Two quiet notes, only when the reader came up short: missing fields, and the
  * not-sure flag. Neither blocks Keep. */
 function buildCardNotes(row) {
   const notes = [];
-  const FIELD_WORDS = { date: 'date', time: 'time', location: 'location', deadline: 'deadline', authors: 'authors', medium: 'outlet' };
   const missing = missingFields(row);
   if (missing.length) {
     const note = el('p', 'card-note');
@@ -501,16 +450,16 @@ export function renderSort(container, props) {
   const { rows, onFilter, onGoTo } = props;
   const counts = sortCounts(rows);
   // No tab picked yet (or a key from before a rename): land where the work is.
-  const filter = FILTER_KEYS.includes(props.filter) ? props.filter : landingSection(counts);
+  const filter = SECTION_ORDER.includes(props.filter) ? props.filter : landingSection(counts);
 
 
   const head = el('div', 'screen-head');
   const info = titleWithInfo('Sort', 'sort',
     'Each section is a list. Click a row to see it in the card: set its type, check its link, edit it, then Keep, Skip or Delete it (Skip waits under Skipped). Keep the rest keeps a whole section in one press. A row with no type or an unchecked link cannot be kept until you fix it; Delete works any time. Keys: up and down move through the list, K keeps, S skips, D deletes, U undoes the last decision.');
   head.append(info.row);
-  const door = el('button', 'door head-action', 'Go to Finalize');
-  door.append(forwardIcon());
-  door.addEventListener('click', () => { if (!holdIfDirty(openForm, container.querySelector('.sort-card'))) onGoTo?.('finalize'); });
+  const door = el('button', 'door', 'Go to Finalize');
+  door.append(faIcon('arrow-right'));
+  door.addEventListener('click', () => { if (!held(container)) onGoTo('finalize'); });
   head.append(door);
   container.append(head, info.panel);
 
@@ -518,13 +467,13 @@ export function renderSort(container, props) {
   const nav = el('nav', 'sort-nav');
   nav.setAttribute('role', 'tablist');
   nav.setAttribute('aria-label', 'Sections');
-  const leave = key => { if (!holdIfDirty(openForm, container.querySelector('.sort-card'))) onFilter(key); };
-  for (const [key, label] of FILTER_LABELS) {
+  const leave = key => { if (!held(container)) onFilter(key); };
+  for (const key of SECTION_ORDER) {
     const count = counts[key];
     let cls = 'sort-filter';
     if (filter === key) cls += ' is-active';
     if (key === 'fix' && count > 0) cls += ' is-alert';   // the one notification on the screen
-    const btn = el('button', cls, `${label} (${count})`);
+    const btn = el('button', cls, `${sectionLabel(key)} (${count})`);
     btn.type = 'button';
     btn.id = `sort-tab-${key}`;
     btn.dataset.focus = `tab:${key}`;
@@ -536,7 +485,7 @@ export function renderSort(container, props) {
     nav.append(btn);
   }
   nav.addEventListener('keydown', event => {
-    const next = adjacentTab(FILTER_KEYS, filter, event.key);
+    const next = adjacentTab(SECTION_ORDER, filter, event.key);
     if (!next) return;
     event.preventDefault();
     nav.querySelector(`[data-focus="tab:${next}"]`)?.focus();
@@ -551,12 +500,12 @@ export function renderSort(container, props) {
   container.append(body);
   if (lastFilter !== filter) { selectedId = null; lastIndex = 0; listPanel = null; }
   if (lastFilter !== null && lastFilter !== filter) {
-    main.classList.add(FILTER_KEYS.indexOf(filter) > FILTER_KEYS.indexOf(lastFilter)
+    main.classList.add(SECTION_ORDER.indexOf(filter) > SECTION_ORDER.indexOf(lastFilter)
       ? 'slide-in-right' : 'slide-in-left');
   }
   lastFilter = filter;
 
-  renderSectionList(main, props, filter);
+  renderSectionList(main, props, filter, counts);
   const title = container.querySelector('.sort-card h3');
   if (landOnTitle && title) {
     // After Keep, Skip or Delete the next item's title is read, and the keys still work from it.

@@ -9,6 +9,7 @@
 import { editFields, editBase, editChanges, dateField } from './finalize-view.js';
 import { buildImageControl } from './item-image.js';
 import { withScheme } from './links.js';
+import { el, button } from './ui-aids.js';
 
 const FIELD_TITLES = {
   headline: 'Title', date: 'Date', source: 'Source', topic: 'Topic',
@@ -17,13 +18,6 @@ const FIELD_TITLES = {
 };
 // A title, a source, the authors, a description or a link needs the whole row to be read.
 const WIDE = new Set(['headline', 'source', 'authors', 'blurb', 'link']);
-
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
 
 /** The form for one row. onSave gets only the fields that changed. */
 export function buildEditForm(row, { onSave, onCancel }) {
@@ -53,19 +47,16 @@ export function buildEditForm(row, { onSave, onCancel }) {
   wrap.addEventListener('input', () => { dirty = true; });
 
   const actions = el('div', 'f-edit-actions');
-  const save = el('button', 'primary', 'Save');
-  save.type = 'button';
-  save.dataset.focus = 'edit-save';
-  save.addEventListener('click', () => {
-    const values = Object.fromEntries(fields.map(field => [field, inputs[field].value]));
-    if ('link' in values) values.link = withScheme(values.link);
-    dirty = false;
-    onSave(editChanges(row, { ...values, infographic: imgCtl.get() }, base));
+  const save = button('Save', 'primary', {
+    focus: 'edit-save',
+    onClick: () => {
+      const values = Object.fromEntries(fields.map(field => [field, inputs[field].value]));
+      if ('link' in values) values.link = withScheme(values.link);
+      dirty = false;
+      onSave(editChanges(row, { ...values, infographic: imgCtl.get() }, base));
+    },
   });
-  const cancel = el('button', 'btn-outline', 'Cancel');
-  cancel.type = 'button';
-  cancel.dataset.focus = 'edit-cancel';
-  cancel.addEventListener('click', () => { dirty = false; onCancel(); });
+  const cancel = button('Cancel', 'btn-outline', { focus: 'edit-cancel', onClick: () => { dirty = false; onCancel(); } });
   actions.append(save, cancel);
   wrap.append(actions);
   return { el: wrap, isDirty: () => dirty };

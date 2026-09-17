@@ -2,18 +2,12 @@
  * Pure ordering, counting, and grouping for Sort's tables. View logic only —
  * nothing here writes anywhere.
  */
-import { isoToShort } from './queue-view.js';
+import { isoToShort, bySubmitted } from './queue-view.js';
 import { TYPE_ORDER, isValidSubtype } from './schema.js';
 import { duplicateFlags, linkNeedsCheck } from './workflow.js';
 
-function oldestFirst(a, b) {
-  const left = String(a.submitted_at ?? '');
-  const right = String(b.submitted_at ?? '');
-  if (!left && !right) return 0;
-  if (!left) return 1;
-  if (!right) return -1;
-  return left.localeCompare(right);
-}
+// Oldest first, a row with no date last: the queue table's own comparator.
+const oldestFirst = bySubmitted('asc');
 
 /**
  * ERC first: a spotlight request of any type, or ERC Research. Broader than
@@ -81,16 +75,22 @@ export function fixContext(rows, today) {
  * yet. One section gathers them, so the rows themselves carry no amber marks.
  */
 export function fixReasons(row, ctx) {
-  const rows = ctx?.rows ?? [];
-  const dupes = ctx?.dupes ?? duplicateFlags(rows);
   const out = [];
   if (needsType(row)) out.push('No type');
   if (linkNeedsCheck(row)) out.push('Link not opened');
-  if (dupes.has(row.id)) {
-    const prior = rows.find(r => r.id === dupes.get(row.id));
-    if (prior && !String(prior.published_at ?? '').trim()) out.push(dupeBadgeText(prior, ctx?.today));
-  }
+  const dupe = dupeReason(row, ctx);
+  if (dupe) out.push(dupe);
   return out;
+}
+
+/** The earlier item this row repeats, in the words the card shows; '' when
+ *  there is none, or when the earlier one is already live. */
+export function dupeReason(row, ctx) {
+  const rows = ctx?.rows ?? [];
+  const dupes = ctx?.dupes ?? duplicateFlags(rows);
+  if (!dupes.has(row.id)) return '';
+  const prior = rows.find(r => r.id === dupes.get(row.id));
+  return prior && !String(prior.published_at ?? '').trim() ? dupeBadgeText(prior, ctx?.today) : '';
 }
 
 /** Which section a row belongs to: 'fix', 'erc', or a TYPE_ORDER type. */
@@ -102,7 +102,15 @@ export function sectionOf(row, ctx) {
 
 // Skipped last: every parked row, any type, waits there
 // with Keep and Delete, so a Skip is never the end of the road.
-const SECTION_ORDER = ['fix', 'erc', ...TYPE_ORDER, 'skipped'];
+export const SECTION_ORDER = ['fix', 'erc', ...TYPE_ORDER, 'skipped'];
+
+// 'Needs a fix': the one amber thing on the screen. It gathers every row that
+// cannot be kept yet (no type, link not opened) and possible duplicates, so
+// the rows themselves carry no amber marks.
+export const SECTION_LABELS = {
+  fix: 'Needs a fix', erc: 'ERC', erc_event: 'ERC events', research: 'Research',
+  event: 'Events', opportunity: 'Opportunities', headline: 'Headlines', skipped: 'Skipped',
+};
 
 const PRIOR_WORDS = { trashed: 'deleted', kept: 'kept', circleback: 'parked', new: 'in the queue' };
 

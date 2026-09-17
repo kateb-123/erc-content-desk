@@ -24,16 +24,14 @@ const state = {
   loadFailed: false,         // the first read failed: Home and Next newsletter offer Try again
   busy: false,
   sortFilter: '',           // '' = not picked yet (Sort lands where the work is); 'fix', 'erc', or a type key
-  sortedThisVisit: 0,       // decisions made since page load (view state)
-  undoStack: [],            // [{ rows, decision, kind }]: every Sort change, newest last
+  undoStack: [],            // [{ rows, decision, kind }]: every Sort change, newest last; its top is what Undo last would restore
   sortedIds: new Set(),     // decided since this page opened — they stay listed, greyed (view state)
   decidedFrom: new Map(),   // id -> status before this session's decision: where Undo takes it back, and a row kept from Skipped greys under Skipped (view state)
-  lastDecision: null,       // the top of undoStack (what Undo would restore)
   rewriteReview: new Map(), // id -> the pre-rewrite description, until she checks it (view state)
   verifiedIds: new Set(),   // rewrites she has checked this visit (view state)
   reviewTotal: 0,           // size of the current check batch, for "2 of 4" (view state)
   justPublished: 0,         // count from the last publish, until she leaves the screen (view state)
-  justSent: null,           // { count, issue, ids } from the last newsletter send (view state)
+  justSent: null,           // { issue, ids } from the last newsletter send (view state)
   publishPreview: null,
   publishedCsv: '',       // the CSV from the last publish, for the receipt's re-download
   hubUpdated: null,
@@ -120,8 +118,8 @@ async function persist(changed) {
  * Confirmation-critical writes (send / un-send) still go through persist().
  */
 const pendingWrites = new Map();   // _rowNumber -> latest row awaiting write
+const saveWaiters = [];            // resolve() for everyone awaiting an empty queue
 let flushing = false;
-let writeErrored = false;
 let writeFailures = 0;             // failed drains in a row: the second one turns the note into an alert with Retry now
 let retryTimer = null;
 
@@ -139,8 +137,8 @@ async function drainWrites() {
   if (flushing) return;
   flushing = true;
   while (pendingWrites.size) {
-    const batch = new Map(pendingWrites);                    // snapshot
-    for (const rn of batch.keys()) pendingWrites.delete(rn); // claim them
+    const batch = new Map(pendingWrites);                    // snapshot, then claim
+    pendingWrites.clear();
     try {
       await saveRows([...batch.values()]);                   // one PATCH; server serializes
     } catch {
@@ -148,7 +146,6 @@ async function drainWrites() {
       // queue and retry after a pause; the UI stays exactly as-is.
       for (const [rn, row] of batch) if (!pendingWrites.has(rn)) pendingWrites.set(rn, row);
       flushing = false;
-      writeErrored = true;
       writeFailures += 1;
       // The first miss is a quiet note; from the second on it is an alert with a way to act.
       if (writeFailures < 2) setStatus('Reconnecting to save your changes…', 'note');
@@ -158,8 +155,9 @@ async function drainWrites() {
     }
   }
   flushing = false;
+  if (writeFailures) setStatus('', 'ok');   // caught up
   writeFailures = 0;
-  if (writeErrored) { writeErrored = false; setStatus('', 'ok'); }  // caught up
+  for (const resolve of saveWaiters.splice(0)) resolve();
 }
 
 /** True while any decision is still on its way to the Sheet. */
@@ -179,10 +177,7 @@ window.addEventListener('beforeunload', event => {
 /** Resolves once the queue has fully drained — awaited before consequential,
  *  server-read actions (publish / send) so the Sheet reflects every decision. */
 function whenSaved() {
-  return new Promise(resolve => {
-    const check = () => (!saveOutstanding()) ? resolve() : setTimeout(check, 150);
-    check();
-  });
+  return saveOutstanding() ? new Promise(resolve => saveWaiters.push(resolve)) : Promise.resolve();
 }
 
 /** Every Sort mutation goes through here: snapshot the rows as they are (for
@@ -192,10 +187,7 @@ function change(rows, { decision = false, kind = 'edit' } = {}) {
   const before = rows
     .map(r => state.rows.find(x => x._rowNumber === r._rowNumber))
     .filter(Boolean);
-  if (before.length) {
-    state.undoStack.push({ rows: before, decision, kind });
-    state.lastDecision = state.undoStack[state.undoStack.length - 1];
-  }
+  if (before.length) state.undoStack.push({ rows: before, decision, kind });
   noteChange(rows);
 }
 
@@ -205,10 +197,7 @@ function decide(row, action) {
   // A decided row holds its place, greyed at the bottom of its section, so a
   // mistake stays in reach. Deciding never moves you.
   state.decidedFrom.set(row.id, row.status);
-  if (!state.sortedIds.has(row.id)) {
-    state.sortedThisVisit += 1;
-    state.sortedIds.add(row.id);
-  }
+  state.sortedIds.add(row.id);
   const next = action === 'keep' ? keep(row)
     : action === 'trash' ? trash(row)
     : circleback(row);
@@ -223,8 +212,6 @@ function keepAll(rows) {
   if (!rows.length) return;
   for (const r of rows) {
     state.decidedFrom.set(r.id, r.status);
-    if (state.sortedIds.has(r.id)) continue;
-    state.sortedThisVisit += 1;
     state.sortedIds.add(r.id);
   }
   change(rows.map(keep), { decision: true, kind: 'keep-all' });
@@ -237,10 +224,8 @@ function undoRow(row) {
   const back = state.decidedFrom.get(row.id) ?? 'new';
   state.sortedIds.delete(row.id);
   state.decidedFrom.delete(row.id);
-  state.sortedThisVisit = Math.max(0, state.sortedThisVisit - 1);
   // The row's own Undo leaves the stack, so Undo last cannot re-apply it.
   state.undoStack = withoutRow(state.undoStack, row.id);
-  state.lastDecision = state.undoStack[state.undoStack.length - 1] ?? null;
   setStatus(undoWords({ kind: { kept: 'keep', trashed: 'trash', circleback: 'circleback' }[row.status], rows: [row] }), 'ok');
   noteChange([{ ...row, status: back }]);
 }
@@ -318,9 +303,7 @@ function goTo(key, filter) {
 async function undoLast() {
   const last = state.undoStack.pop();
   if (!last) return;
-  state.lastDecision = state.undoStack[state.undoStack.length - 1] ?? null;
   if (last.decision) {
-    state.sortedThisVisit = Math.max(0, state.sortedThisVisit - last.rows.length);
     for (const r of last.rows) { state.sortedIds.delete(r.id); state.decidedFrom.delete(r.id); }
   }
   setStatus(undoWords(last), 'ok');   // says what came back, so the effect is never a guess
@@ -415,7 +398,7 @@ async function sendToNewsletter(selectedRows, issue) {
   const ok = await persist(selectedRows.map(r => markNewsletterIssue(r, issue)));
   state.busy = false;
   if (!ok) { render(); return; } // persist already showed the error
-  state.justSent = { count: selectedRows.length, issue, ids: selectedRows.map(r => r.id) };
+  state.justSent = { issue, ids: selectedRows.map(r => r.id) };
   resetNewsletterEntry();   // sent: the next pick starts clean
   setStatus(`Sent ${selectedRows.length} to the newsletter builder.`, 'ok');
   render();
@@ -489,13 +472,12 @@ function render() {
   }
   const switched = shownScreen !== null && shownScreen !== state.screen;
   if (shownScreen !== state.screen) {
-    const from = SCREEN_ORDER.indexOf(shownScreen);
-    const to = SCREEN_ORDER.indexOf(state.screen);
     const incoming = screens[state.screen];
-    if (from !== -1 && incoming) {
+    if (switched) {
       incoming.classList.remove('slide-in-left', 'slide-in-right');
       void incoming.offsetWidth;
-      incoming.classList.add(to > from ? 'slide-in-right' : 'slide-in-left');
+      incoming.classList.add(SCREEN_ORDER.indexOf(state.screen) > SCREEN_ORDER.indexOf(shownScreen)
+        ? 'slide-in-right' : 'slide-in-left');
       incoming.addEventListener('animationend',
         () => incoming.classList.remove('slide-in-left', 'slide-in-right'), { once: true });
     }
@@ -511,6 +493,7 @@ function render() {
       onGoTo: goTo,
       onSubmitted: reload,
       onRefresh: reload,
+      knownLinks: () => state.rows,   // the form is mounted once: it asks for the rows instead of holding a copy
       // The queue's trash can, through the same queued write as Sort. Undo hands
       // back the row as it was before the delete, status and newsletter stamp
       // included, so a deleted circle-back comes back a circle-back and a
@@ -522,14 +505,15 @@ function render() {
       ...common, loaded: state.loaded, loadFailed: state.loadFailed,
       onQuickAdd: stampSubmitted,
       onRefresh: reload,
+      knownLinks: () => state.rows,
       onRemove: row => unsendFromNewsletter([row.id]),
       onRestore: row => persist([row]),   // Undo on Remove: the row as it was, stamp included
     });
   } else if (state.screen === 'sort') {
     renderSort(screens.sort, {
-      ...common, filter: state.sortFilter, sortedCount: state.sortedThisVisit,
+      ...common, filter: state.sortFilter, sortedCount: state.sortedIds.size,
       onGoTo: goTo,
-      lastDecision: state.lastDecision,
+      lastDecision: state.undoStack.at(-1) ?? null,
       sessionDecided: state.sortedIds,
       decidedFrom: state.decidedFrom,
       onFilter: key => { state.sortFilter = key; saveSortSpot(); render(); },

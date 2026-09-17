@@ -5,23 +5,18 @@
  * unless she picks it. Send stamps them with the issue date; they drain from
  * the desk and the builder pulls them from here.
  */
-import { titleWithInfo } from './screen-info.js';
+import { screenHead } from './screen-info.js';
 import { faIcon } from './icons.js';
 import { buildPool, newsletterOnly, reshareFlags } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, typeDisplay } from './schema.js';
+import { GROUP_LABELS } from './newsletter-view.js';   // the issue's shape: spotlight leads, then the newsletter's sections
 import { isoToShort } from './queue-view.js';
 import { eventTiming, deadlineState } from './schedule.js';
-import { focusKeyIn, restoreFocus } from './ui-aids.js';
+import { el, button, focusKeyIn, restoreFocus } from './ui-aids.js';
 
 // The builder lives inside this project — same origin, one deploy.
 const BUILDER_URL = '/builder/';
-
-// The issue's shape: spotlight leads, then the newsletter's sections.
-const GROUP_LABELS = {
-  research: 'New Ed Policy Research', event: 'Events',
-  opportunity: 'Opportunities', headline: 'Headlines',
-};
 
 // View state: lives while the page is open. The ticks clear after a Send and
 // when the issue changes, not on a hop to another screen: tick five, check
@@ -37,13 +32,6 @@ const collapsedGroups = new Set();
 
 /** After a Send: nothing carries over to the next pick. */
 export function resetNewsletterEntry() { picked = new Set(); issuePick = ''; confirmedEarly = new Set(); askOpenId = null; justDeleted.clear(); }
-
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
 
 /** '2026-09-01' -> 'September 1', the way the desk names an issue on screen. */
 function issueLabel(iso) {
@@ -62,7 +50,7 @@ function foldSummary(text, className = '') {
 
 /** Mistakes found later: what's already stamped for this issue, with a way back. */
 function sentSection(container, { rows, issue, onUnsend }) {
-  if (!issue || !onUnsend) return;
+  if (!issue) return;
   const sent = rows.filter(r => String(r.newsletter_issue ?? '') === issue);
   if (!sent.length) return;
   const box = el('details', 'nl-sent');
@@ -76,10 +64,7 @@ function sentSection(container, { rows, issue, onUnsend }) {
     if (row.source) titleTd.append(el('span', 'item-source', row.source));
     tr.append(titleTd);
     const backTd = el('td', 'bulk-remove');
-    const back = el('button', 'linkish trash-link', ' Remove');
-    back.prepend(faIcon('trash-can'));
-    back.type = 'button';
-    back.addEventListener('click', () => { back.disabled = true; onUnsend([row.id]); });
+    const back = button(' Remove', 'linkish trash-link', { icon: 'trash-can', onClick: () => { back.disabled = true; onUnsend([row.id]); } });
     backTd.append(back);
     tr.append(backTd);
     tbody.append(tr);
@@ -110,14 +95,9 @@ function pastSection(container, { past, onTrash, onRestore, rows }) {
     titleTd.append(el('span', 'badge badge-dupe', why));
     tr.append(titleTd);
     const actTd = el('td', 'nl-past-act');
-    if (onTrash) {
-      const del = el('button', 'linkish trash-link', ' Delete');
-      del.type = 'button';
-      del.dataset.focus = `delete:${row.id}`;
-      del.prepend(faIcon('trash-can'));
-      del.addEventListener('click', () => { del.disabled = true; justDeleted.set(row.id, row); onTrash(row); });
-      actTd.append(del);
-    }
+    const del = button(' Delete', 'linkish trash-link',
+      { focus: `delete:${row.id}`, icon: 'trash-can', onClick: () => { del.disabled = true; justDeleted.set(row.id, row); onTrash(row); } });
+    actTd.append(del);
     tr.append(actTd);
     tbody.append(tr);
   }
@@ -128,10 +108,7 @@ function pastSection(container, { past, onTrash, onRestore, rows }) {
     tr.append(titleTd);
     const actTd = el('td', 'nl-past-act');
     actTd.append(el('span', 'queue-gone', 'Deleted'));
-    const undo = el('button', 'linkish', 'Undo');
-    undo.type = 'button';
-    undo.dataset.focus = `undo:${row.id}`;
-    undo.addEventListener('click', () => { undo.disabled = true; justDeleted.delete(row.id); onRestore?.(row); });
+    const undo = button('Undo', 'linkish', { focus: `undo:${row.id}`, onClick: () => { undo.disabled = true; justDeleted.delete(row.id); onRestore(row); } });
     actTd.append(undo);
     tr.append(actTd);
     tbody.append(tr);
@@ -189,18 +166,12 @@ export function renderNewsletter(container, props) {
   let askRow = null;   // the row asking "Send early?", brought into view after the rebuild
   let askConfirm = null;
 
-  const head = el('div', 'screen-head finalize-head');
-  const lead = el('div');
-  const info = titleWithInfo('Send to Newsletter', 'build',
+  const { head, lede } = screenHead('Send to Newsletter', 'build',
     'Pick items for the issue and send them. They leave the desk and wait in the newsletter builder. Change your mind later with Remove under "Already sent". A "was in a past issue" note is just a heads-up, never a block.');
-  lead.append(info.row, info.panel);
-  const lede = el('p', 'lede');
   if (justSent) {
-    lede.append(`Sent ${justSent.count} to the ${issueLabel(justSent.issue)} issue. The builder pulls them from here. `);
-    if (justSent.ids?.length && onUnsend) {
-      const undo = el('button', 'linkish', 'Undo send');
-      undo.type = 'button';
-      undo.addEventListener('click', () => { undo.disabled = true; onUnsend(justSent.ids); });
+    lede.append(`Sent ${justSent.ids.length} to the ${issueLabel(justSent.issue)} issue. The builder pulls them from here. `);
+    if (justSent.ids.length) {
+      const undo = button('Undo send', 'linkish', { onClick: () => { undo.disabled = true; onUnsend(justSent.ids); } });
       lede.append(undo);
     }
   } else if (!live.length) {
@@ -208,23 +179,16 @@ export function renderNewsletter(container, props) {
   } else {
     lede.textContent = 'Pick items to send to newsletter';
   }
-  lead.append(lede);
-  head.append(lead);
   container.append(head);
 
   if (justSent) {
     const open = el('p', '');
     // The onward door, then a way back to the pool.
-    const a = el('a', 'door slim-door', 'Open the newsletter builder ↗');
+    const a = el('a', 'door', 'Open the newsletter builder ↗');
     a.href = BUILDER_URL; a.target = '_blank'; a.rel = 'noreferrer';
     a.append(el('span', 'sr-only', ' (opens in a new tab)'));
     open.append(a);
-    if (onPickMore) {
-      const more = el('button', 'linkish', 'Pick more');
-      more.type = 'button';
-      more.addEventListener('click', () => onPickMore());
-      open.append(' ', more);
-    }
+    open.append(' ', button('Pick more', 'linkish', { onClick: () => onPickMore() }));
     container.append(open);
     return;
   }
@@ -265,6 +229,16 @@ export function renderNewsletter(container, props) {
       [GROUP_LABELS[type], live.filter(r => !isErc(r) && (r.type || '') === type)]),
     ['Untyped', live.filter(r => !isErc(r) && !TYPE_ORDER.includes(r.type || ''))],
   ];
+  // Both gestures mean one thing, so they share one door: a later event opens
+  // the ask instead of picking; any other pick answers a standing ask by
+  // leaving it — so it closes rather than lingering over unrelated work.
+  const pickGesture = row => {
+    if (!picked.has(row.id) && needsAsk(row)) { askOpenId = row.id; rerender(); return; }
+    askOpenId = null;
+    if (picked.has(row.id)) picked.delete(row.id);
+    else picked.add(row.id);
+    rerender();
+  };
   for (const [label, group] of groups) {
     if (!group.length) continue;
     const pickedHere = group.filter(r => picked.has(r.id)).length;
@@ -291,16 +265,6 @@ export function renderNewsletter(container, props) {
       ...group.filter(r => !isLater(r)),
       ...group.filter(isLater).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)),
     ];
-    // Both gestures mean one thing, so they share one door: a later event opens
-    // the ask instead of picking; any other pick answers a standing ask by
-    // leaving it — so it closes rather than lingering over unrelated work.
-    const pickGesture = row => {
-      if (!picked.has(row.id) && needsAsk(row)) { askOpenId = row.id; rerender(); return; }
-      askOpenId = null;
-      if (picked.has(row.id)) picked.delete(row.id);
-      else picked.add(row.id);
-      rerender();
-    };
     for (const row of ordered) {
       const tr = el('tr', 'nl-row');
       const checkTd = el('td', 'nl-check');
@@ -335,24 +299,21 @@ export function renderNewsletter(container, props) {
           // bubble, the two outcomes stay bare words.
           const ask = el('div', 'nl-ask');
           ask.append(faIcon('clock'), ' Send early? ');
-          const ok = el('button', 'linkish alert-word', 'Confirm');
-          ok.type = 'button';
-          ok.dataset.focus = `pick:${row.id}`;   // back on the row's box after the ask
-          ok.addEventListener('click', e => {
-            e.stopPropagation();
-            confirmedEarly.add(row.id);
-            picked.add(row.id);
-            askOpenId = null;
-            rerender();
+          // Both words go back on the row's own box after the ask.
+          const ok = button('Confirm', 'linkish alert-word', {
+            focus: `pick:${row.id}`,
+            onClick: e => {
+              e.stopPropagation();
+              confirmedEarly.add(row.id);
+              picked.add(row.id);
+              askOpenId = null;
+              rerender();
+            },
           });
           askConfirm = ok;
-          const no = el('button', 'linkish alert-word nl-cancel', 'Cancel');
-          no.type = 'button';
-          no.dataset.focus = `pick:${row.id}`;
-          no.addEventListener('click', e => {
-            e.stopPropagation();
-            askOpenId = null;
-            rerender();
+          const no = button('Cancel', 'linkish alert-word nl-cancel', {
+            focus: `pick:${row.id}`,
+            onClick: e => { e.stopPropagation(); askOpenId = null; rerender(); },
           });
           ask.append(ok, ' \u00b7 ', no);
           titleTd.append(ask);
@@ -379,7 +340,7 @@ export function renderNewsletter(container, props) {
   }
 
   // Send and the count ride at the foot of the window while the groups scroll.
-  if (!justSent && live.length && !busy) {
+  if (live.length && !busy) {
     const foot = el('div', 'nl-foot');
     foot.append(el('span', 'nl-picked', `${selected.length} picked`));
     const btn = el('button', 'primary', selected.length

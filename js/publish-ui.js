@@ -10,10 +10,10 @@ import { hubCsvFilename } from './hub-csv.js';
 import { typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { detailBody } from './finalize-ui.js';
-import { checkSvg, dotsLoader, faIcon, forwardIcon } from './icons.js';
-import { titleWithInfo } from './screen-info.js';
+import { checkSvg, dotsLoader, faIcon } from './icons.js';
+import { screenHead } from './screen-info.js';
 import { FATES, publishRows, legendItems, filterByFate, fateShares } from './publish-view.js';
-import { focusKeyIn, restoreFocus } from './ui-aids.js';
+import { el, button, focusKeyIn, restoreFocus } from './ui-aids.js';
 
 /** Hand the browser a file. Kate's Chrome puts downloads straight in her Drive,
  *  which is the whole point: publishing leaves a spare copy without a Drive API,
@@ -44,17 +44,10 @@ let confirming = false;   // the one ask before the append-only write
 /** Arriving at Publish never lands on a standing ask. */
 export function resetPublishAsk() { confirming = false; }
 
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
-
 /** The onward door, right of the screen head. */
 function newsletterDoor(onGoTo) {
-  const btn = el('button', 'door head-action', 'Send to Newsletter');
-  btn.append(forwardIcon());
+  const btn = el('button', 'door', 'Send to Newsletter');
+  btn.append(faIcon('arrow-right'));
   btn.addEventListener('click', () => onGoTo('build'));
   return btn;
 }
@@ -91,10 +84,9 @@ function itemRows({ row, fate }, { rerender, onGoTo, today }) {
   // The fate, in words. A row that needs a fix is the way to its fix.
   const fateTd = el('td', 'p-fate');
   if (fate === 'fix') {
-    const jump = el('button', 'linkish p-fate-fix', 'Needs a fix');
-    jump.type = 'button';
+    const jump = button('Needs a fix', 'linkish p-fate-fix',
+      { onClick: event => { event.stopPropagation(); onGoTo('sort', 'fix'); } });
     jump.title = "Opens Sort's Needs a fix";
-    jump.addEventListener('click', event => { event.stopPropagation(); onGoTo('sort', 'fix'); });
     fateTd.append(jump);
   } else {
     fateTd.textContent = FATE_LABEL[fate];
@@ -157,12 +149,8 @@ export function renderPublish(container, props) {
   const byId = new Map(rows.map(r => [r.id, r]));
   const adding = (preview?.adding ?? []).map(item => byId.get(item.id)).filter(Boolean);
 
-  const head = el('div', 'screen-head finalize-head');
-  const lead = el('div');
-  const info = titleWithInfo('Publish to Exchange', 'publish',
+  const { head, lede } = screenHead('Publish to Exchange', 'publish',
     'Everything here was checked against the live Exchange on arrival. Publish sends the Adding rows to the site. Spotlight events stay held for the newsletter (webinars excepted); a row that needs a fix waits in Sort; anything already live is left out. Click a colour under the bar to see only those rows.');
-  lead.append(info.row, info.panel);
-  const lede = el('p', 'lede');
   if (showReceipt) {
     // The receipt card below is the confirmation — the head stays bare.
   } else if (busy && !preview) {
@@ -172,14 +160,9 @@ export function renderPublish(container, props) {
   } else {
     // A failed check says so (the status bar carries the reason); Re-check stays.
     lede.append(preview ? 'Checked against the live Exchange · ' : 'The check did not go through · ');
-    const again = el('button', 'linkish', 'Re-check');
-    again.type = 'button';
-    again.dataset.focus = 'recheck';
-    again.addEventListener('click', () => { again.disabled = true; onRecheck?.(); });
+    const again = button('Re-check', 'linkish', { focus: 'recheck', onClick: () => { again.disabled = true; onRecheck(); } });
     lede.append(again);
   }
-  lead.append(lede);
-  head.append(lead);
 
   if (showReceipt) {
     // receipt below carries the onward door — head stays bare
@@ -202,26 +185,24 @@ export function renderPublish(container, props) {
     const ask = el('div', 'nl-ask p-ask');
     // Body text, the count and "live" in 600: the one ask before the public write reads as a question.
     ask.append(faIcon('triangle-exclamation'), ' Publish ', el('strong', '', String(adding.length)), ' to the ', el('strong', '', 'live'), ' Exchange? ');
-    const ok = el('button', 'linkish alert-word', 'Confirm');
-    ok.type = 'button';
-    ok.dataset.focus = 'publish';
-    ok.addEventListener('click', () => {
-      confirming = false;
-      ok.disabled = true;
-      if (PUBLISH_PAUSED) {
-        // Trial: no real publish. Show the "forthcoming" alert, then mock success.
-        const n = adding.length;
-        trialPosting = true;
-        rerender();
-        setTimeout(() => { trialPosting = false; trialDone = n; rerender(); }, 1100);
-      } else {
-        onPublish();
-      }
+    const ok = button('Confirm', 'linkish alert-word', {
+      focus: 'publish',
+      onClick: () => {
+        confirming = false;
+        ok.disabled = true;
+        if (PUBLISH_PAUSED) {
+          // Trial: no real publish. Show the "forthcoming" alert, then mock success.
+          const n = adding.length;
+          trialPosting = true;
+          rerender();
+          setTimeout(() => { trialPosting = false; trialDone = n; rerender(); }, 1100);
+        } else {
+          onPublish();
+        }
+      },
     });
-    const no = el('button', 'linkish alert-word nl-cancel', 'Cancel');
-    no.type = 'button';
-    no.dataset.focus = 'publish';   // back on the Publish button the ask replaced
-    no.addEventListener('click', () => { confirming = false; rerender(); });
+    // Cancel goes back on the Publish button the ask replaced.
+    const no = button('Cancel', 'linkish alert-word nl-cancel', { focus: 'publish', onClick: () => { confirming = false; rerender(); } });
     ask.append(ok, ' \u00b7 ', no);
     head.append(ask);
     queueMicrotask(() => ok.focus({ preventScroll: true }));
@@ -256,17 +237,14 @@ export function renderPublish(container, props) {
     receipt.append(el('p', '', isTrial
       ? 'Nothing went to the live Exchange.'
       : 'The site updates in about a minute.'));
-    const door = el('button', 'door slim-door', 'Send to Newsletter ');
-    door.append(forwardIcon());
+    const door = el('button', 'door', 'Send to Newsletter ');
+    door.append(faIcon('arrow-right'));
     door.addEventListener('click', () => { trialDone = 0; onGoTo('build'); });
     receipt.append(door);
     // The saved copy downloads itself on publish; this is here to get it again
     // without republishing (a second click of a download is harmless).
     if (publishedCsv) {
-      const again = el('button', 'linkish receipt-download', 'Download the CSV again');
-      again.type = 'button';
-      again.addEventListener('click', () => downloadCsv(publishedCsv));
-      receipt.append(again);
+      receipt.append(button('Download the CSV again', 'linkish receipt-download', { onClick: () => downloadCsv(publishedCsv) }));
     }
     container.append(receipt);
     return;

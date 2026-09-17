@@ -1,6 +1,32 @@
 /**
- * Small DOM aids the screens share.
- *
+ * Small DOM aids every screen shares: building an element, keeping the
+ * keyboard's place across a redraw, the load-failed line and the mark an
+ * in-flight row action leaves behind.
+ */
+import { dotsLoader, faIcon } from './icons.js';
+
+/** The desk's one way to make an element: a tag, a class, its words. */
+export function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+/** An action: its words, its class, and the four things every button repeats:
+ *  the type, its focus key, a leading icon, the click. Anything else (a
+ *  title, an aria attribute, disabled, a trailing icon) goes on the node the
+ *  caller gets back. */
+export function button(label, className, { focus, icon, onClick } = {}) {
+  const btn = el('button', className, label);
+  btn.type = 'button';
+  if (focus) btn.dataset.focus = focus;
+  if (icon) btn.prepend(faIcon(icon));
+  if (onClick) btn.addEventListener('click', onClick);
+  return btn;
+}
+
+/*
  * Every pipeline screen redraws itself with replaceChildren(), which throws
  * the keyboard's place away: the focused row or button is destroyed and focus
  * lands on the page. A control that should survive a redraw carries a
@@ -34,4 +60,29 @@ export function markOverflow(pane) {
   const check = () => pane.classList.toggle('is-more', pane.scrollHeight - pane.scrollTop - pane.clientHeight > 4);
   requestAnimationFrame(check);
   pane.addEventListener('scroll', check, { passive: true });
+}
+
+/** When the first load failed: the reason is in the status line; this is the way to try again. */
+export function tryAgain(onRefresh) {
+  const box = el('p', 'load-failed');
+  const btn = button('Try again', '', { onClick: () => { btn.disabled = true; onRefresh(); } });
+  box.append("The desk couldn't load. ", btn);
+  return box;
+}
+
+/**
+ * The mark an in-flight row action leaves in its button's place: the mini
+ * dots with a word for assistive tech, carrying the button's focus key so the
+ * redraw that follows can land on the row's partner control. Takes focus
+ * only when the button had it.
+ */
+export function inFlight(button, key, word) {
+  const wait = el('span', 'queue-wait');
+  wait.tabIndex = -1;
+  wait.dataset.focus = key;
+  wait.append(dotsLoader(true), el('span', 'sr-only', word));
+  const had = document.activeElement === button;
+  button.replaceWith(wait);
+  if (had) wait.focus({ preventScroll: true });
+  return wait;
 }

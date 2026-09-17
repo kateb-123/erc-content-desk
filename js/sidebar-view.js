@@ -72,9 +72,8 @@ export function menuLayout(screen, open) {
 /** Which item is lit for a screen; '' when none is. The builder's pages are
  *  named by their items' keys. */
 export function currentKey(screen) {
-  const items = NAV.flatMap(g => g.items);
-  const item = items.find(i => i.screen === screen) ?? items.find(i => i.key === screen);
-  return item ? item.key : '';
+  // Every screen item is keyed by its own screen, the builder's pages included.
+  return NAV.some(g => g.items.some(i => i.key === screen)) ? screen : '';
 }
 
 /** Where an item leads, and how, from the screen the sidebar is drawn on.
@@ -84,13 +83,14 @@ export function currentKey(screen) {
  *  its window; the desk, Next newsletter and the builder's own pages open in
  *  place; outside sites open a new tab. */
 export function itemLink(item, screen, isSectionWindow) {
-  const pipeline = SECTION_SCREENS.includes(item.screen);
+  const href = item.href ?? `/${screenHash(item.screen)}`;
   if (BUILDER_SCREENS.includes(screen)) {
-    if (item.screen) return { href: item.screen === 'home' ? '/' : `/#${item.screen}`, newTab: pipeline, inPlace: false };
-    return { href: item.href, newTab: !item.href.startsWith('/'), inPlace: false };
+    // Nothing switches in place here: the pipeline opens its own window and an
+    // outside site a new tab, but the builder's own pages load where they are.
+    return { href, newTab: item.screen ? SECTION_SCREENS.includes(item.screen) : !item.href.startsWith('/'), inPlace: false };
   }
   const newTab = opensNewWindow(item, isSectionWindow);
-  return { href: item.href ?? (screenHash(item.screen) ? `/${screenHash(item.screen)}` : '/'), newTab, inPlace: !newTab && Boolean(item.screen) };
+  return { href, newTab, inPlace: !newTab && Boolean(item.screen) };
 }
 
 /** The address a screen keeps: the pipeline's screens and Next newsletter
@@ -114,7 +114,7 @@ export function openedScreen(hash) {
 /** Whether a click on the item leaves this window: every outside page does;
  *  a pipeline screen does from the front door, but not from inside the
  *  pipeline's own window, where it just switches. */
-export function opensNewWindow(item, isSectionWindow) {
+function opensNewWindow(item, isSectionWindow) {
   if (item.href) return true;
   if (item.screen && SECTION_SCREENS.includes(item.screen)) return !isSectionWindow;
   return false;
