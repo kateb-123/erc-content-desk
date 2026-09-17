@@ -682,6 +682,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .sort-card-right { margin-left: auto; display: flex; align-items: center; gap: var(--spacing-05); }
 .sort-card .sort-edit { margin: 0; }
 .sort-card input, .sort-card textarea, .f-card input, .f-card textarea { background: var(--field-02); }
+.f-edit-card input, .f-edit-card textarea { background: var(--field-01); }   /* a field on a white box is grey again (Carbon's layer model) */
 /* The fix panel: Carbon's inline notification, a warning while the row needs
    a fix, informational while a type changes. */
 .fix-panel { border: 1px solid var(--line-in); border-left: 3px solid var(--support-info); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); background: var(--layer-02); }
