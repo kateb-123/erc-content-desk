@@ -1,24 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createEmptyIssue, mergeIssues, issueLinks, issueItemIds, partitionPulled, countIssueItems } from '../js/model.js';
+import { createEmptyIssue, mergeIssues, partitionPulled, countIssueItems } from '../js/model.js';
 
-function issueWith(items) {
+function issueWith(items, prefix = 't') {
   const issue = createEmptyIssue();
+  let n = 0;
   for (const [section, fields] of items) {
-    issue.sections[section].items.push({ id: `t_${issue.sections[section].items.length}`, group: '', fields });
+    issue.sections[section].items.push({ id: `${prefix}_${n++}`, group: '', fields });
     issue.sections[section].enabled = true;
   }
   return issue;
 }
-
-test('issueLinks collects every url already in the outline', () => {
-  const issue = issueWith([
-    ['events', { title: 'A', url: 'https://x.org/a' }],
-    ['headlines', { title: 'B', url: 'https://x.org/b' }],
-    ['headlines', { title: 'No link' }],
-  ]);
-  assert.deepEqual([...issueLinks(issue)].sort(), ['https://x.org/a', 'https://x.org/b']);
-});
 
 test('partitionPulled keeps only what the outline does not have yet', () => {
   const pulled = issueWith([
@@ -26,15 +18,20 @@ test('partitionPulled keeps only what the outline does not have yet', () => {
     ['events', { title: 'New', url: 'https://x.org/new' }],
     ['research', { title: 'Also known', url: 'https://x.org/b' }],
   ]);
-  const { pulled: kept, already } = partitionPulled(pulled, new Set(['https://x.org/a', 'https://x.org/b']));
+  // the outline it is measured against: two of those urls, and a row with no link
+  const base = issueWith([
+    ['events', { title: 'Known', url: 'https://x.org/a' }],
+    ['headlines', { title: 'Also known', url: 'https://x.org/b' }],
+    ['headlines', { title: 'No link' }],
+  ], 'b');
+  const { pulled: kept, already } = partitionPulled(pulled, base);
   assert.equal(already, 2);
   assert.equal(countIssueItems(kept), 1);
   assert.deepEqual(kept.sections.events.items.map(i => i.fields.title), ['New']);
   assert.equal(kept.sections.research.enabled, false);
   // re-pull is add-only: merging the kept remainder duplicates nothing
-  const base = issueWith([['events', { title: 'Known', url: 'https://x.org/a' }]]);
   mergeIssues(base, kept);
-  assert.equal(countIssueItems(base), 2);
+  assert.equal(countIssueItems(base), 4);
 });
 
 test('countIssueItems sums across sections', () => {
@@ -59,7 +56,7 @@ test('partitionPulled also dedupes by stable id, so url-less items never duplica
   pulled.sections.headlines.enabled = true;
   const base = createEmptyIssue();
   base.sections.headlines.items.push({ id: 'desk_r9', group: 'texas', fields: { title: 'No link here' } });
-  const { pulled: kept, already } = partitionPulled(pulled, issueLinks(base), issueItemIds(base));
+  const { pulled: kept, already } = partitionPulled(pulled, base);
   assert.equal(already, 1);
   assert.equal(countIssueItems(kept), 0);
 });

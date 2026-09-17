@@ -6,15 +6,15 @@
   <title>Newsletter builder · ERC Content Desk</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&display=swap" />
-  <link rel="stylesheet" href="/css/tokens.css?v=2" />
-  <link rel="stylesheet" href="/css/sidebar.css?v=8" />
-  <link rel="stylesheet" href="css/styles.css?v=46" />
+  <link rel="stylesheet" href="/css/tokens.css?v=3" />
+  <link rel="stylesheet" href="/css/sidebar.css?v=9" />
+  <link rel="stylesheet" href="css/styles.css?v=47" />
 </head>
 <body class="builder-shell">
   <a class="skip-to-main" href="#main">Skip to content</a>
-  <!-- The desk's sidebar, tucked behind a thin strip like Desk work (Kate, Sep 16):
-       built by /js/sidebar-ui.js. Past newsletters, the Policy Exchange and the
-       desk live in it; the header that carried them is gone. -->
+  <!-- The desk's sidebar, tucked behind a thin strip like Desk work, built by
+       /js/sidebar-ui.js. Past newsletters, the Policy Exchange and the desk all
+       live in it; the builder's pages carry no header bar of their own. -->
   <nav class="side" aria-label="Desk"></nav>
 
   <div class="builder-main">
@@ -22,17 +22,17 @@
 
   <nav class="step-nav" aria-label="Wizard steps">
     <ol class="step-list">
-      <!-- The li draws the circle and the line; the button inside is the control (b22). -->
+      <!-- The li draws the circle and the line; the button inside is the control. -->
       <li class="step-indicator" data-nav-step="review"><button type="button" class="step-btn">Review</button></li>
       <li class="step-indicator" data-nav-step="triage"><button type="button" class="step-btn">Outline</button></li>
       <li class="step-indicator" data-nav-step="edit"><button type="button" class="step-btn">Preview &amp; Edit</button></li>
       <li class="step-indicator" data-nav-step="export"><button type="button" class="step-btn">Save &amp; Export</button></li>
     </ol>
   </nav>
-  <!-- The one-line status slot under the step row: what a locked step or Next says before anything is pulled (b23, e29). -->
+  <!-- The one-line status slot under the step row: what a locked step or Next says before anything is pulled. -->
   <p id="wizard-status" class="wizard-status" role="status" aria-live="polite"></p>
 
-  <!-- Each step's heading is for a screen reader; the step row names it on screen and the card opens with a lede (e35). -->
+  <!-- Each step's heading is for a screen reader; the step row names it on screen and the card opens with a lede. -->
   <main id="main" class="wizard-body">
     <section data-step="review" class="wizard-step">
       <h2 class="sr-only">Review</h2>
@@ -51,7 +51,7 @@
     </section>
   </main>
 
-  <!-- Back is Carbon's secondary; Next is the tertiary door, like Go to Finalize (e32). -->
+  <!-- Back is Carbon's secondary; Next is the tertiary door, like Go to Finalize. -->
   <footer class="wizard-footer">
     <button id="btn-back" class="btn btn-secondary" disabled><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back</button>
     <button id="btn-next" class="btn btn-tertiary">Next <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
@@ -59,6 +59,6 @@
   </div>
 
   <!-- Bump ?v when you change the JS so browsers load the new code (cache-busting). -->
-  <script type="module" src="js/app.js?v=35"></script>
+  <script type="module" src="js/app.js?v=36"></script>
 </body>
 </html>

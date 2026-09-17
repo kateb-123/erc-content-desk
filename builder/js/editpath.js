@@ -1,11 +1,17 @@
 /**
- * editpath.js — Field accessor/mutator for newsletter issue objects.
+ * editpath.js: field accessor/mutator for newsletter issue objects.
  * Supports click-to-edit without leaking into exported HTML.
  *
  * ref = { section, item, field }
- *   - If section === 'intro' (or field === 'intro'), read/write issue.intro
+ *   - If field === 'intro', read/write issue.intro (the template's one
+ *     item-less hook: section 'intro', no item, field 'intro')
  *   - Otherwise: issue.sections[section].items.find(i => i.id === item).fields[field]
  */
+
+/** The item a ref points at, or undefined if the section or item is gone. */
+function itemOf(issue, ref) {
+  return issue.sections?.[ref.section]?.items?.find(i => i.id === ref.item);
+}
 
 /**
  * @param {object} issue
@@ -14,14 +20,8 @@
  */
 export function getField(issue, ref) {
   if (!issue || !ref) return undefined;
-  if (ref.section === 'intro' || ref.field === 'intro') {
-    return issue.intro;
-  }
-  const sec = issue.sections?.[ref.section];
-  if (!sec) return undefined;
-  const item = sec.items?.find(i => i.id === ref.item);
-  if (!item) return undefined;
-  return item.fields?.[ref.field];
+  if (ref.field === 'intro') return issue.intro;
+  return itemOf(issue, ref)?.fields?.[ref.field];
 }
 
 /**
@@ -31,13 +31,11 @@ export function getField(issue, ref) {
  */
 export function setField(issue, ref, value) {
   if (!issue || !ref) return;
-  if (ref.section === 'intro' || ref.field === 'intro') {
+  if (ref.field === 'intro') {
     issue.intro = value;
     return;
   }
-  const sec = issue.sections?.[ref.section];
-  if (!sec) return;
-  const item = sec.items?.find(i => i.id === ref.item);
+  const item = itemOf(issue, ref);
   if (!item) return;
   if (!item.fields) item.fields = {};
   item.fields[ref.field] = value;

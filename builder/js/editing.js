@@ -37,7 +37,7 @@ function spokenTitle(title) {
 
 /**
  * A reorder row's accessible name: the title and its place in the bucket,
- * "Title, 2 of 5" (e34).
+ * "Title, 2 of 5".
  * @param {string} title
  * @param {number} idx - the row's index in its bucket
  * @param {number} len - the bucket's length
@@ -48,7 +48,7 @@ export function reorderRowName(title, idx, len) {
 }
 
 /**
- * What the live region says after a move: "Moved Title to 3 of 5" (e34).
+ * What the live region says after a move: "Moved Title to 3 of 5".
  * @param {string} title
  * @param {number} idx - where the row landed
  * @param {number} len

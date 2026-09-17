@@ -1,56 +1,47 @@
-const norm = s => (s || '').toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
-
 /** Where the digests' "See more on the ERC website" tail links go by default. */
 export const POLICY_EXCHANGE_URL = 'https://erc-policy-exchange.vercel.app/';
 
 export const SECTION_REGISTRY = [
   { key: 'research', label: 'Featured Research', navLabel: 'ERC Research', kind: 'briefs',
-    aliases: ['featured research', 'featured erc research', 'research briefs', 'erc research'],
     groups: [
-      { key: 'brief',  label: 'Research Brief', aliases: ['research brief', 'research briefs', 'brief', 'briefs'] },
-      { key: 'report', label: 'Report', aliases: ['report', 'reports'] },
+      { key: 'brief',  label: 'Research Brief' },
+      { key: 'report', label: 'Report' },
     ] },
   { key: 'spotlight', label: 'ERC Spotlight', navLabel: 'Spotlight', kind: 'spotlight',
-    aliases: ['erc spotlight', 'spotlight'],
     groups: [
-      { key: 'programs', label: 'Programs & Opportunities', aliases: ['programs and opportunities', 'programs', 'programs and ops'] },
-      { key: 'events', label: 'Events', aliases: ['events', 'erc events'] },
-      { key: 'thisandthat', label: 'This & That', aliases: ['this and that', 'this that', 'misc', 'miscellaneous', 'other', 'erc happy hour', 'erc happy hours', 'happy hour', 'happy hours'] },
+      { key: 'programs', label: 'Programs & Opportunities' },
+      { key: 'events', label: 'Events' },
+      { key: 'thisandthat', label: 'This & That' },
     ] },
   { key: 'events', label: 'Upcoming Events', navLabel: 'Events', kind: 'grouped-list',
-    aliases: ['upcoming events', 'events', 'events and webinars', 'am events'],
     groups: [
-      { key: 'featured', label: 'Featured Events', aliases: ['featured', 'featured events'] },
-      { key: 'tamu', label: 'Texas A&M', aliases: ['texas am', 'tamu', 'am', 'texas a and m', 'texas a&m'] },
-      { key: 'offcampus', label: 'Online & Off-Campus', aliases: ['online and offcampus', 'offcampus and online', 'offcampus', 'webinars and offcampus', 'online'] },
+      { key: 'featured', label: 'Featured Events' },
+      { key: 'tamu', label: 'Texas A&M' },
+      { key: 'offcampus', label: 'Online & Off-Campus' },
     ] },
   { key: 'opportunities', seeMoreUrl: POLICY_EXCHANGE_URL, label: 'Opportunities', navLabel: 'Opportunities', kind: 'grouped-list',
-    aliases: ['opportunities'],
     groups: [
-      { key: 'funding', label: 'Funding & Grants', aliases: ['funding and grants', 'funding', 'grants'] },
-      { key: 'fellowships', label: 'Fellowships & Training', aliases: ['fellowships and training', 'fellowships', 'training'] },
-      { key: 'calls', label: 'Calls for Proposals', aliases: ['calls for proposals', 'calls', 'cfp'] },
-      { key: 'misc', label: 'Miscellaneous', aliases: ['miscellaneous', 'misc', 'other'] },
+      { key: 'funding', label: 'Funding & Grants' },
+      { key: 'fellowships', label: 'Fellowships & Training' },
+      { key: 'calls', label: 'Calls for Proposals' },
+      { key: 'misc', label: 'Miscellaneous' },
     ] },
   { key: 'policy', seeMoreUrl: POLICY_EXCHANGE_URL, label: 'New Education Policy Research', navLabel: 'Policy Research', kind: 'grouped-digest',
-    aliases: ['new education policy research', 'policy research', 'education policy research', 'policy'],
     groups: [
-      { key: 'working', label: 'Working Papers', aliases: ['working papers', 'working'] },
-      { key: 'peer', label: 'Peer-Reviewed', aliases: ['peerreviewed', 'peer reviewed', 'peer'] },
-      { key: 'misc', label: 'Miscellaneous', aliases: ['miscellaneous', 'misc', 'other'] },
+      { key: 'working', label: 'Working Papers' },
+      { key: 'peer', label: 'Peer-Reviewed' },
+      { key: 'misc', label: 'Miscellaneous' },
     ] },
   { key: 'headlines', seeMoreUrl: POLICY_EXCHANGE_URL, label: 'Education Headlines', navLabel: 'Headlines', kind: 'grouped-digest',
-    aliases: ['education headlines', 'headlines', 'education in the news', 'in the news'],
     groups: [
-      { key: 'federal', label: 'Federal', aliases: ['federal'] },
-      { key: 'texas', label: 'Texas', aliases: ['texas', 'state'] },
+      { key: 'federal', label: 'Federal' },
+      { key: 'texas', label: 'Texas' },
     ] },
-  // One-off items that fit nowhere else — a single unlabeled group, so the
+  // One-off items that fit nowhere else: a single unlabeled group, so the
   // section band is the only heading.
   { key: 'misc', label: 'Miscellaneous', navLabel: 'Miscellaneous', kind: 'grouped-digest',
-    aliases: ['miscellaneous', 'misc'],
     groups: [
-      { key: 'misc', label: '', aliases: ['miscellaneous', 'misc', 'other'] },
+      { key: 'misc', label: '' },
     ] },
 ];
 
@@ -58,19 +49,6 @@ export function createEmptyIssue() {
   const sections = {};
   for (const s of SECTION_REGISTRY) sections[s.key] = { enabled: false, items: [] };
   return { date: '', headerImageUrl: '', intro: '', sections };
-}
-
-export function sectionByAlias(headerText) {
-  const n = norm(headerText);
-  return SECTION_REGISTRY.find(s => s.aliases.some(a => norm(a) === n)) || null;
-}
-
-export function groupByAlias(sectionKey, groupText) {
-  const sec = SECTION_REGISTRY.find(s => s.key === sectionKey);
-  if (!sec) return '';
-  const n = norm(groupText);
-  const g = sec.groups.find(g => g.aliases.some(a => norm(a) === n));
-  return g ? g.key : '';
 }
 
 /** Append review-sourced items to an issue. Ids continue the rvw_ sequence. */
@@ -118,33 +96,19 @@ export function insertItem(issue, sectionKey, index, item) {
   return issue;
 }
 
-/** Every url already in the outline — the pull door's dedupe key. */
-export function issueLinks(issue) {
-  const links = new Set();
-  for (const key of Object.keys(issue?.sections ?? {})) {
-    for (const item of issue.sections[key].items ?? []) {
-      const url = String(item?.fields?.url ?? '').trim();
-      if (url) links.add(url);
-    }
-  }
-  return links;
-}
-
-/** Every item id already in the outline — the pull door's second dedupe key. */
-export function issueItemIds(issue) {
-  const ids = new Set();
-  for (const key of Object.keys(issue?.sections ?? {})) {
-    for (const item of issue.sections[key].items ?? []) {
-      if (item?.id) ids.add(item.id);
-    }
-  }
-  return ids;
-}
-
-/** Split a pulled issue against what's already present (by link, and by the
- *  stable desk_* id so even url-less items never duplicate): keep the new,
+/** Split a pulled issue against what the outline already holds (by link, and by
+ *  the stable desk_* id so even url-less items never duplicate): keep the new,
  *  count the known. */
-export function partitionPulled(pulled, existingLinks, existingIds = new Set()) {
+export function partitionPulled(pulled, existing) {
+  const existingLinks = new Set();
+  const existingIds = new Set();
+  for (const key of Object.keys(existing?.sections ?? {})) {
+    for (const item of existing.sections[key].items ?? []) {
+      const url = String(item?.fields?.url ?? '').trim();
+      if (url) existingLinks.add(url);
+      if (item?.id) existingIds.add(item.id);
+    }
+  }
   let already = 0;
   const kept = structuredClone(pulled);
   for (const key of Object.keys(kept?.sections ?? {})) {
@@ -182,7 +146,7 @@ export function mergeIssues(base, extra) {
 }
 
 /**
- * The Outline's two lists (f15): the registry sections that hold items, in
+ * The Outline's two lists: the registry sections that hold items, in
  * registry order, and the labels of the ones that do not.
  * @param {object} issue
  * @returns {{ populated: Array<object>, missing: Array<string> }}
@@ -196,4 +160,49 @@ export function splitSections(issue) {
     else missing.push(reg.label);
   }
   return { populated, missing };
+}
+
+/**
+ * Bucket a section's items for display: one bucket per non-empty group
+ * (labeled), then a trailing unlabeled bucket for items that matched no
+ * group, so nothing is silently dropped. Flat sections are one bucket.
+ * @param {object} reg - SECTION_REGISTRY entry
+ * @param {Array<object>} secItems
+ * @returns {Array<{label: string|null, items: Array<object>}>}
+ */
+export function bucketSectionItems(reg, secItems) {
+  const hasGroups = reg.groups && reg.groups.length > 0;
+  const buckets = [];
+  if (hasGroups) {
+    const claimed = new Set();
+    for (const grp of reg.groups) {
+      const grpItems = secItems.filter((it) => it.group === grp.key);
+      if (grpItems.length === 0) continue;
+      grpItems.forEach((it) => claimed.add(it));
+      buckets.push({ label: grp.label, items: grpItems });
+    }
+    const leftover = secItems.filter((it) => !claimed.has(it));
+    if (leftover.length > 0) buckets.push({ label: null, items: leftover });
+  } else {
+    buckets.push({ label: null, items: secItems.slice() });
+  }
+  return buckets;
+}
+
+/**
+ * Move one item within its display bucket and write the new order back into
+ * the section's full item array (bucket members keep their original slots,
+ * so items in other groups are untouched).
+ * @param {Array<object>} allItems - the section's full items array (mutated)
+ * @param {Array<object>} bucketItems - the bucket's items, display order
+ * @param {number} fromIdx - index within the bucket being dragged
+ * @param {number} toIdx - index within the bucket to land on
+ */
+export function moveWithinBucket(allItems, bucketItems, fromIdx, toIdx) {
+  if (fromIdx === toIdx) return;
+  const positions = bucketItems.map((it) => allItems.indexOf(it));
+  const newBucket = bucketItems.slice();
+  const [moved] = newBucket.splice(fromIdx, 1);
+  newBucket.splice(toIdx, 0, moved);
+  positions.forEach((pos, i) => { allItems[pos] = newBucket[i]; });
 }

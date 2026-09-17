@@ -1,0 +1,220 @@
+{
+  "date": "June 16, 2026",
+  "headerImageUrl": "",
+  "intro": "Welcome to the June 16, 2026 issue of the ERC Newsletter. This issue features new research, upcoming events, and funding opportunities.",
+  "sections": {
+    "research": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "itm_1",
+          "group": "brief",
+          "fields": {
+            "title": "Teacher Retention and Salary in Texas Rural Districts",
+            "authors": "Jane Smith & John Doe",
+            "summary": "How do salary incentives affect rural teacher retention? This study examines three years of district-level data and finds that a 10% salary increase correlates with a 15% reduction in first-year attrition. These findings suggest targeted compensation reforms could meaningfully stabilize rural district staffing.",
+            "url": "https://erc.tamu.edu/briefs/teacher-retention"
+          }
+        },
+        {
+          "id": "itm_2",
+          "group": "brief",
+          "fields": {
+            "title": "Math Achievement Gaps in Early Childhood Programs",
+            "authors": "Maria Lopez, Chris Park, Dana Wu",
+            "summary": "Can high-dosage tutoring close early math gaps? A randomized trial across 20 Texas elementary schools shows a 0.4 SD gain for students receiving three weekly sessions. Policymakers should consider scaling this model through existing after-school funding streams.",
+            "url": "https://erc.tamu.edu/briefs/math-achievement"
+          }
+        },
+        {
+          "id": "itm_3",
+          "group": "report",
+          "fields": {
+            "title": "Annual State of Texas Education Research Report",
+            "authors": "ERC Staff",
+            "summary": "This annual report synthesizes a year of ERC findings across teacher workforce, early childhood, and higher education access. It highlights three cross-cutting themes and offers a policy agenda for the coming legislative session.",
+            "url": "https://erc.tamu.edu/reports/annual-2026"
+          }
+        }
+      ]
+    },
+    "spotlight": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "itm_4",
+          "group": "programs",
+          "fields": {
+            "title": "ERC Graduate Student Ambassadors",
+            "meta": "Applications open through July 1, 2026 | Graduate students",
+            "summary": "Ambassador cohort members represent ERC at campus events and support research dissemination. Apply to join the 2026-27 cohort.",
+            "url": "https://erc.tamu.edu/spotlight/ambassadors"
+          }
+        },
+        {
+          "id": "itm_5",
+          "group": "events",
+          "fields": {
+            "title": "ERC In the Works: Maria Lopez",
+            "date": "June 24, 2026",
+            "time": "12:00 PM CT",
+            "location": "EDCT 318",
+            "url": "https://erc.tamu.edu/events/in-the-works-lopez"
+          }
+        },
+        {
+          "id": "itm_6",
+          "group": "thisandthat",
+          "fields": {
+            "title": "ERC Happy Hour",
+            "date": "Wed, June 25",
+            "time": "5:00 PM",
+            "location": "Ice's Red House"
+          }
+        }
+      ]
+    },
+    "events": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "itm_7",
+          "group": "tamu",
+          "fields": {
+            "title": "ERC Brown Bag Lunch",
+            "date": "June 25, 2026",
+            "time": "12:00 PM",
+            "location": "EDCT 301",
+            "url": "https://erc.tamu.edu/events/brown-bag"
+          }
+        },
+        {
+          "id": "itm_8",
+          "group": "offcampus",
+          "fields": {
+            "title": "AERA Webinar: Equity in Assessment",
+            "date": "June 20, 2026",
+            "time": "2:00 PM",
+            "location": "Online",
+            "url": "https://aera.net/webinar-equity-assessment"
+          }
+        }
+      ]
+    },
+    "opportunities": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "itm_9",
+          "group": "funding",
+          "fields": {
+            "title": "CEHD Strategic Research Awards",
+            "meta": "Deadline: July 15, 2026",
+            "url": "https://erc.tamu.edu/opportunities/cehd-awards"
+          }
+        },
+        {
+          "id": "itm_10",
+          "group": "fellowships",
+          "fields": {
+            "title": "Emerging Scholars Summer Fellowship",
+            "meta": "Deadline: July 5, 2026 | Doctoral students",
+            "url": "https://erc.tamu.edu/opportunities/emerging-scholars"
+          }
+        },
+        {
+          "id": "itm_11",
+          "group": "calls",
+          "fields": {
+            "title": "AERA 2027 Annual Meeting Call for Submissions",
+            "meta": "Deadline: August 1, 2026",
+            "url": "https://aera.net/cfp-2027"
+          }
+        },
+        {
+          "id": "itm_12",
+          "group": "misc",
+          "fields": {
+            "title": "Connect with Policymakers — Stipend Available",
+            "meta": "Deadline: June 30, 2026 | Graduate students",
+            "url": "https://erc.tamu.edu/opportunities/policymakers"
+          }
+        }
+      ]
+    },
+    "policy": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "itm_13",
+          "group": "working",
+          "fields": {
+            "title": "Fiscal Equity in State Education Finance Systems",
+            "source": "NBER",
+            "meta": "May 2026",
+            "url": "https://nber.org/papers/fiscal-equity"
+          }
+        },
+        {
+          "id": "itm_14",
+          "group": "peer",
+          "fields": {
+            "title": "Instructional Coaching Effects on Teacher Practice",
+            "source": "American Educational Research Journal",
+            "meta": "June 2026",
+            "url": "https://journals.sagepub.com/coaching-effects"
+          }
+        },
+        {
+          "id": "itm_15",
+          "group": "misc",
+          "fields": {
+            "title": "Principal Turnover and School Climate",
+            "source": "Education Finance and Policy",
+            "meta": "April 2026",
+            "url": "https://mitpress.mit.edu/efp-principal-turnover"
+          }
+        }
+      ]
+    },
+    "headlines": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "itm_16",
+          "group": "federal",
+          "fields": {
+            "title": "Department of Education Releases Updated Title I Guidance",
+            "source": "Ed Week",
+            "date": "June 14, 2026",
+            "url": "https://edweek.org/title-i-guidance"
+          }
+        },
+        {
+          "id": "itm_17",
+          "group": "federal",
+          "fields": {
+            "title": "Congress Debates ESSER Spending Accountability Rules",
+            "source": "The 74",
+            "date": "June 12, 2026",
+            "url": "https://the74million.org/esser-accountability"
+          }
+        },
+        {
+          "id": "itm_18",
+          "group": "texas",
+          "fields": {
+            "title": "TEA Announces New Literacy Curriculum Pilot",
+            "source": "Texas Tribune",
+            "date": "June 10, 2026",
+            "url": "https://texastribune.org/tea-literacy-pilot"
+          }
+        }
+      ]
+    },
+    "misc": {
+      "enabled": false,
+      "items": []
+    }
+  }
+}

@@ -1,20 +1,18 @@
 /* ============================================================
-   ERC Newsletter Builder in IBM Carbon (Kate, Sep 17, 2026: "adopt Carbon's
-   look", picture A of four; one look across both apps).
+   ERC Newsletter Builder in IBM Carbon: one look across both apps.
    ------------------------------------------------------------
-   Same class names as before, zero markup changes. Every value is a Carbon
-   token from /css/tokens.css, loaded before this file; the --bp-* names are
-   aliases so the rules keep the builder's vocabulary. The newsletter EMAIL
-   template keeps its own design (maroon lives there and nowhere in-app).
+   Every value is a Carbon token from /css/tokens.css, loaded before this
+   file; the --bp-* names are aliases so the rules keep the builder's
+   vocabulary. The newsletter EMAIL template keeps its own design (maroon
+   lives there and nowhere in-app).
    ============================================================ */
 
 :root {
-  /* The accent: teal (Kate, Sep 17, pick G). Carbon's blue tokens are remapped here; nothing else moves. */
+  /* The accent: teal. Carbon's blue tokens are remapped here; nothing else moves. */
   --accent-10: var(--teal-10); --accent-20: var(--teal-20); --accent-30: var(--teal-30); --accent-40: var(--teal-40);
   --accent-50: var(--teal-50); --accent-60: var(--teal-60); --accent-70: var(--teal-70); --accent-80: var(--teal-80);
   --accent-alpha: var(--teal-alpha);
   --button-primary: var(--accent-60); --button-primary-hover: var(--accent-70); --button-primary-active: var(--accent-80);
-  --button-tertiary: var(--accent-60); --button-tertiary-hover: var(--accent-70); --button-tertiary-active: var(--accent-80);
   --link-primary: var(--accent-60); --link-primary-hover: var(--accent-70);
   --focus: var(--accent-60); --border-interactive: var(--accent-60); --interactive: var(--accent-60);
   --highlight: var(--accent-20); --notification-info-background: var(--accent-10); --notification-info-border: var(--accent-20); --support-info: var(--accent-70);
@@ -23,8 +21,6 @@
   --bp-primary-hover: var(--button-primary-hover);
   --bp-primary-active: var(--button-primary-active);
   --bp-primary-tint: var(--notification-info-background);
-  --bp-citron: var(--green-60);              /* success as text */
-  --bp-citron-deep: var(--green-60);
   --bp-citron-mark: var(--support-success);  /* success as an icon */
   --bp-citron-tint: var(--notification-success-background);
   --bp-citron-line: var(--notification-success-border);
@@ -35,17 +31,12 @@
   --bp-body: var(--text-primary);
   --bp-muted: var(--text-secondary);
   --bp-faint: var(--text-helper);
-  --bp-ghost: var(--text-placeholder);
   --bp-page: var(--background);
-  --bp-layer: var(--layer-01);
-  --bp-line: var(--border-subtle-00);
   --bp-line-in: var(--border-subtle-01);
-  --bp-hairline: var(--border-subtle-00);
   --bp-input-border: var(--border-strong-01);
   --bp-row-hover: var(--accent-10);
   --bp-tint-ink: var(--text-primary);
   --bp-amber-bg: var(--notification-warning-background);
-  --bp-amber: var(--yellow-70);
   --bp-amber-mark: var(--support-warning);
   --bp-amber-line: var(--notification-warning-border);
 
@@ -54,14 +45,10 @@
   --ink: var(--text-primary);
   --muted: var(--text-secondary);
   --line: var(--border-subtle-00);
-  --line-in: var(--border-subtle-01);
   --accent: var(--button-primary);
-  --tint: var(--notification-info-background);
   --accent-deep: var(--button-primary-active);
   --selected: var(--highlight);
-  --ok: var(--green-60);
   --hover: var(--accent-alpha);
-  --accent-deep: var(--button-primary-active);
 }
 
 /* The hidden attribute wins over every display rule below (the buttons are inline-flex). */
@@ -79,8 +66,8 @@ body {
 }
 
 /* --- Shell and page head ---------------------------------- */
-/* Like Sort (Kate, Sep 16, option B): the desk's sidebar tucked behind a thin
-   strip on the left, the title on the page ground, the steps under it. */
+/* Like Sort: the desk's sidebar tucked behind a thin strip on the left, the
+   title on the page ground, the steps under it. */
 body.builder-shell { flex-direction: row; }
 .builder-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 
@@ -89,7 +76,7 @@ body.builder-shell { flex-direction: row; }
   margin: 0 auto;
   max-width: 820px;
   width: 100%;
-  padding: 44px var(--spacing-07) var(--spacing-05);   /* the desk's 44px first line (style audit, Sep 16) */
+  padding: 44px var(--spacing-07) var(--spacing-05);   /* the desk's 44px first line */
 }
 .builder-head h1 {
   font-size: 28px; line-height: 36px; font-weight: 400; letter-spacing: 0;   /* heading-04 */
@@ -98,8 +85,8 @@ body.builder-shell { flex-direction: row; }
 }
 
 /* --- Step indicator nav ----------------------------------- */
-/* Carbon's progress indicator: each step under a hairline that turns blue
-   once reached, a circle at its left, the current step's label semibold. */
+/* Carbon's progress indicator: each step under a hairline that takes the
+   accent once reached, a circle at its left, the current step's label semibold. */
 .step-nav { padding: 0 0 var(--spacing-01); }
 
 .step-list {
@@ -109,11 +96,10 @@ body.builder-shell { flex-direction: row; }
   width: 100%;
   padding: 0 var(--spacing-07);
   display: flex;
-  gap: 0;
   counter-reset: step-counter;
 }
 
-/* The li keeps only the top hairline; the button inside fills it (e26). */
+/* The li keeps only the top hairline; the button inside fills it. */
 .step-indicator {
   flex: 1 1 0; min-width: 0;
   display: flex;
@@ -122,7 +108,7 @@ body.builder-shell { flex-direction: row; }
   position: relative;
 }
 
-/* The step's button (b22): the whole segment, circle included, is the target (e26). */
+/* The step's button: the whole segment, circle included, is the target. */
 .step-btn {
   flex: 1 1 auto; min-width: 0; min-height: 40px;
   display: flex; align-items: center; gap: var(--spacing-03);
@@ -148,7 +134,6 @@ body.builder-shell { flex-direction: row; }
   border: 1px solid var(--border-strong-01);
   font-size: 11px; line-height: 1; letter-spacing: 0;
   font-weight: 600;
-  background: transparent;
   color: var(--bp-muted);
   flex-shrink: 0;
   transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive), border-color var(--duration-fast-01) var(--ease-productive);
@@ -157,11 +142,11 @@ body.builder-shell { flex-direction: row; }
 .step-indicator:not(.active) .step-btn:not([aria-disabled="true"]):hover { color: var(--bp-ink); }
 .step-indicator:not(.active) .step-btn:not([aria-disabled="true"]):hover::before { border-color: var(--bp-ink); color: var(--bp-ink); }
 
-/* A locked step (b23, e29): disabled ink and a disabled circle, no pointer, no hover lift. */
+/* A locked step: disabled ink and a disabled circle, no pointer, no hover lift. */
 .step-btn[aria-disabled="true"] { cursor: default; color: var(--text-disabled); }
 .step-btn[aria-disabled="true"]::before { border-color: var(--border-disabled); color: var(--text-disabled); }
 
-/* Active step: the line and the circle in the interactive blue, the label semibold. */
+/* Active step: the line and the circle in the accent, the label semibold. */
 .step-indicator.active { border-top-color: var(--border-interactive); }
 .step-indicator.active .step-btn {
   color: var(--bp-ink);
@@ -173,7 +158,7 @@ body.builder-shell { flex-direction: row; }
   color: var(--text-on-color);
 }
 
-/* Completed steps: the line blue, a check in the circle. */
+/* Completed steps: the line in the accent, a check in the circle. */
 .step-indicator.completed { border-top-color: var(--border-interactive); }
 .step-indicator.completed .step-btn { color: var(--bp-ink); }
 .step-indicator.completed .step-btn::before {
@@ -181,13 +166,12 @@ body.builder-shell { flex-direction: row; }
   font-family: "Font Awesome 7 Free";
   font-size: 9px;
   font-weight: 900;
-  background: transparent;
   border-color: var(--border-interactive);
   color: var(--border-interactive);
 }
 .step-indicator.completed:not(.active) .step-btn:hover::before { border-color: var(--bp-primary-active); color: var(--bp-primary-active); }
 
-/* The status line under the step row (e29): what a locked step says, at the
+/* The status line under the step row: what a locked step says, at the
    click's own height. Always one line tall, so a message never moves the page. */
 .wizard-status {
   max-width: 820px;
@@ -218,24 +202,18 @@ body.builder-shell { flex-direction: row; }
   padding-right: var(--spacing-05);
 }
 
-/* The step's card: a white box with a hairline, square (Kate, Sep 17, pick C). */
+/* The step's card: a white box with a hairline, square. */
 .wizard-step {
   background: var(--background);
   border: 1px solid var(--bp-line-in);
-  border-radius: 0;
   padding: var(--spacing-07);
 }
 
-.wizard-step h2 {
-  font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: 0;   /* heading-03, one size under the page title */
-  color: var(--bp-ink);
-  margin: 0;
-}
-/* The desk's header info pattern, shared verbatim; the card opens with one
-   lede line where its title was, since the step row already names it (e35). */
+/* The View info toggle beside each step's lede. The builder draws it as a
+   32px ghost button, not the desk's padless link; the card opens with one
+   lede line where its title was, since the step row already names it. */
 .title-row { display: flex; align-items: baseline; gap: var(--spacing-04); margin: 0 0 var(--spacing-03); }
-.wizard-step .step-lede { margin: 0; color: var(--bp-muted); }
-/* A ghost button's size (c9), pulled left by its own padding so the word sits where it did. */
+/* A ghost button's size, pulled left by its own padding so the word sits where it did. */
 .info-toggle {
   display: inline-flex; align-items: center; height: 32px; padding: 0 var(--spacing-03); margin-left: calc(-1 * var(--spacing-03));
   border: none; background: none; font: inherit; letter-spacing: .16px; color: var(--link-primary); cursor: pointer;
@@ -243,17 +221,17 @@ body.builder-shell { flex-direction: row; }
 .info-toggle:hover { color: var(--link-primary-hover); text-decoration: underline; }
 .info-panel {
   background: var(--bp-primary-tint); border: 1px solid var(--notification-info-border); border-left: 3px solid var(--support-info);
-  border-radius: 0; padding: var(--spacing-04) var(--spacing-05); margin: 0 0 var(--spacing-05); color: var(--bp-tint-ink); max-width: 46rem;
+  padding: var(--spacing-04) var(--spacing-05); margin: 0 0 var(--spacing-05); max-width: 46rem;
 }
 .info-panel .note-icon { color: var(--support-info); }
 
-/* Every note that speaks (e30, e31, e33, d10): Carbon's inline notification,
+/* Every note that speaks: Carbon's inline notification,
    the tint, the bar, the icon in its --support-* colour, then the words. */
 .note {
   display: flex; align-items: center; flex-wrap: wrap; gap: var(--spacing-03);
   width: fit-content; max-width: 100%; box-sizing: border-box;
   padding: var(--spacing-03) var(--spacing-05);
-  border: 1px solid transparent; border-left-width: 3px; border-radius: 0;
+  border: 1px solid transparent; border-left-width: 3px;
   color: var(--bp-ink);
 }
 .note--error { background: var(--bp-destructive-tint); border-color: var(--bp-destructive-line); border-left-color: var(--support-error); }
@@ -278,18 +256,17 @@ body.builder-shell { flex-direction: row; }
   transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
 }
 .ghost-btn:hover, .edit-saveall-btn:hover { color: var(--link-primary-hover); background: var(--background-hover); text-decoration: none; }
-.btn .fa-arrow-right, .linknav .fa-arrow-right { margin-left: var(--spacing-03); font-size: .85em; }
-.btn .fa-arrow-left, .linknav .fa-arrow-left { margin-right: var(--spacing-03); font-size: .85em; }
+.btn .fa-arrow-right { margin-left: var(--spacing-03); font-size: .85em; }
+.btn .fa-arrow-left { margin-right: var(--spacing-03); font-size: .85em; }
 
 .wizard-step p {
   color: var(--bp-muted);
   margin: 0;
 }
-.wizard-step .edit-empty-msg { margin-top: var(--spacing-05); }   /* the empty line stands clear of what is above it (e35) */
+.wizard-step .edit-empty-msg { margin-top: var(--spacing-05); }   /* the empty line stands clear of what is above it */
 
 /* --- Footer nav ------------------------------------------- */
 .wizard-footer {
-  background: transparent;
   padding: var(--spacing-05) var(--spacing-07);
   display: flex;
   justify-content: space-between;
@@ -313,8 +290,8 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 
 /* --- Buttons ---------------------------------------------- */
 /* Carbon's buttons: 40px, square, the label left and an icon in the right
-   slot. Primary is the blue fill; secondary is the dark grey fill (Back beside
-   Next, Carbon's classic pair). */
+   slot. Primary is the accent fill; secondary is the dark grey fill (Back
+   beside Next, Carbon's classic pair). */
 .btn {
   display: inline-flex; align-items: center; justify-content: space-between; gap: var(--spacing-06);
   font: inherit; letter-spacing: .16px;
@@ -326,9 +303,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 }
 
 .btn:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: -2px;
-  box-shadow: inset 0 0 0 1px var(--focus-inset);
+  box-shadow: inset 0 0 0 1px var(--focus-inset);   /* the ring itself comes from the global focus rule */
 }
 
 .btn:disabled {
@@ -351,7 +326,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 .btn-secondary:not(:disabled):hover { background: var(--button-secondary-hover); }
 .btn-secondary:not(:disabled):active { background: var(--button-secondary-active); }
 
-/* Carbon's tertiary, the desk's door (e32): the accent's outline, filled on
+/* Carbon's tertiary, the desk's door: the accent's outline, filled on
    hover, the arrow in its right slot. Next, and Start the next issue. */
 .btn-tertiary {
   background: transparent;
@@ -366,9 +341,8 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-05);
-  margin-bottom: 0;
 }
-/* Pull and its status on one row under the field (e35). */
+/* Pull and its status on one row under the field. */
 .pull-row { display: flex; align-items: center; flex-wrap: wrap; gap: var(--spacing-03); margin-top: var(--spacing-05); }
 .pull-row .pull-status { margin-left: 0; }
 
@@ -381,7 +355,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   color: var(--bp-muted);
 }
 
-/* Fields: Carbon's underlined field. On the tile the field surface is white. */
+/* Fields: Carbon's underlined field, grey on the white card. */
 .triage-field-input {
   height: 40px;
   padding: 0 var(--spacing-05);
@@ -395,26 +369,21 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 }
 .triage-field-input::placeholder { color: var(--text-placeholder); opacity: 1; }
 
-.triage-field-input--wide {
-  width: 100%;
-  max-width: 560px;
-}
 
 .triage-field-input:focus {
   outline: 2px solid var(--focus);
   outline-offset: -2px;
   border-bottom-color: transparent;
 }
-/* Locked while the restore banner asks (d8): Carbon's disabled field. */
+/* Locked while the restore banner asks: Carbon's disabled field. */
 .triage-field-input:disabled { color: var(--text-disabled); border-bottom-color: transparent; cursor: not-allowed; }
 
-/* The sections that hold nothing, named once under the list (f15). */
-.wizard-step .triage-missing { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--bp-muted); margin-top: var(--spacing-05); }
+/* The sections that hold nothing, named once under the list. */
+.wizard-step .triage-missing { font-size: 12px; line-height: 16px; letter-spacing: .32px; margin-top: var(--spacing-05); }
 
 .triage-sections-list {
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .triage-section-row {
@@ -422,7 +391,6 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   align-items: center;
   gap: var(--spacing-03);
   padding: var(--spacing-03) var(--spacing-03);
-  border-radius: 0;
   transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
 
@@ -434,7 +402,6 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   gap: var(--spacing-03);
   background: var(--field-02);
   border: 1px solid var(--bp-line-in);
-  border-radius: 0;
   padding: var(--spacing-03) var(--spacing-04);
   margin: var(--spacing-03) 0 var(--spacing-05) var(--spacing-07);
 }
@@ -446,10 +413,6 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   order: -1; /* toggle before the label text */
 }
 
-.triage-switch-label {
-  font-weight: 600;
-  color: var(--bp-body);
-}
 
 /* Carbon's toggle: a 48 by 24 track, an 18px handle, green when on. */
 .triage-switch {
@@ -502,7 +465,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   outline-offset: 1px;
 }
 
-/* The toggle's word, On or Off, beside the track as Carbon draws it (e33). */
+/* The toggle's word, On or Off, beside the track as Carbon draws it. */
 .triage-switch-state {
   font-size: 12px; line-height: 16px; letter-spacing: .32px;
   color: var(--bp-muted);
@@ -524,7 +487,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   font-size: 12px; line-height: 16px; letter-spacing: .32px;
   color: var(--bp-faint);
 }
-/* The Featured rule, once under the Events name, in line with the group labels (b30). */
+/* The Featured rule, once under the Events name, in line with the group labels. */
 .triage-grouped-section > .triage-section-note {
   display: block;
   padding-left: var(--spacing-02);
@@ -535,7 +498,6 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   margin: var(--spacing-02) 0 var(--spacing-03) var(--spacing-07);
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .triage-group-label {
@@ -570,7 +532,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 .triage-featured-label {
   display: flex;
   align-items: center;
-  min-height: 24px;   /* the box stays 16px; the target is the label (c9) */
+  min-height: 24px;   /* the box stays 16px; the target is the label */
   gap: var(--spacing-03);
   font-size: 12px; line-height: 16px; letter-spacing: .32px;
   color: var(--bp-muted);
@@ -596,7 +558,6 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 /* Reorder arrows: ghost icon buttons. */
 .triage-reorder-group {
   display: flex;
-  gap: 0;
   flex-shrink: 0;
 }
 
@@ -624,19 +585,14 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 }
 
 /* --- Edit step ("Preview & Edit") ------------------------- */
-.edit-empty-msg {
-  color: var(--bp-faint);
-  margin-top: var(--spacing-05);
-}
 
-/* One label-01 line above the stage says what the sheet is (f18). */
-.wizard-step .preview-note { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--bp-muted); margin-top: var(--spacing-05); }
+/* One label-01 line above the stage says what the sheet is. */
+.wizard-step .preview-note { font-size: 12px; line-height: 16px; letter-spacing: .32px; margin-top: var(--spacing-05); }
 
 .edit-layout {
   display: flex;
   align-items: flex-start;
-  justify-content: flex-start;
-  gap: var(--spacing-06); /* = EDIT_GAP */
+  gap: var(--spacing-06);
   margin-top: var(--spacing-03);
 }
 
@@ -646,15 +602,13 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   overflow: hidden;
   background: var(--layer-accent-01);
   padding: var(--spacing-06); /* = STAGE_PAD */
-  border-radius: 0;
 }
 
-/* The column is sticky (d11): it rides beside the page-long sheet, scrolling
+/* The column is sticky: it rides beside the page-long sheet, scrolling
    inside itself when its cards run past the window. */
 .edit-column {
   flex: 0 0 340px; /* = COLUMN_W */
   min-width: 0; /* defeat the min-content floor so wide nowrap children (reorder rows) can't stretch the column */
-  align-self: flex-start;
   position: sticky;
   top: var(--spacing-05);
   max-height: calc(100vh - var(--spacing-07));
@@ -687,7 +641,6 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   color: var(--bp-muted);
   padding: var(--spacing-04);
   border: 1px dashed var(--border-strong-01);
-  border-radius: 0;
   background: var(--field-02);
 }
 
@@ -698,10 +651,9 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   transform-origin: top left;
 }
 
-/* --- Edit cards: second-layer tiles on the first layer ------ */
+/* --- Edit cards ------------------------------------------- */
 .edit-card {
   border: 1px solid var(--bp-line-in);
-  border-radius: 0;
   background: var(--layer-02);
   padding: var(--spacing-04);
 }
@@ -712,7 +664,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   margin-bottom: var(--spacing-01);
 }
 .edit-card-close {
-  display: inline-flex; align-items: center; height: 32px;   /* a ghost button's size (c9) */
+  display: inline-flex; align-items: center; height: 32px;   /* a ghost button's size */
   background: none;
   border: 0;
   color: var(--icon-secondary);
@@ -731,8 +683,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   color: var(--bp-muted);
   margin-bottom: var(--spacing-03);
 }
-.edit-card-input,
-.edit-card-textarea {
+.edit-card-input {
   width: 100%;
   box-sizing: border-box;
   font: inherit; letter-spacing: .16px;
@@ -744,31 +695,22 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   border-radius: 0;
   background: var(--field-01);
 }
-.edit-card-input:focus,
-.edit-card-textarea:focus {
+.edit-card-input:focus {
   outline: 2px solid var(--focus);
   outline-offset: -2px;
   border-bottom-color: transparent;
 }
 
-.edit-card-textarea {
-  height: auto;
-  min-height: 320px;
-  padding: 11px var(--spacing-05);
-  resize: vertical;
-}
 
 /* --- Rich (WYSIWYG) prose editor --------------------------- */
 .rich-editor {
   border: 0;
   border-bottom: 1px solid var(--bp-input-border);
-  border-radius: 0;
   background: var(--field-01);
   overflow: hidden;
 }
 .rich-toolbar {
   display: flex;
-  gap: 0;
   padding: var(--spacing-02) var(--spacing-02);
   background: var(--layer-accent-01);
 }
@@ -786,7 +728,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 .rich-btn:hover {
   background: var(--background-hover);
 }
-/* The link ask under the toolbar (c10): a field, Apply and Cancel in one row. */
+/* The link ask under the toolbar: a field, Apply and Cancel in one row. */
 .rich-link-row {
   display: flex;
   align-items: center;
@@ -838,7 +780,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   white-space: nowrap;
 }
 .edit-card-revert:hover { color: var(--bp-body); background: var(--background-hover); }
-.edit-card-save { margin-right: calc(-1 * var(--spacing-03)); }   /* the quiet Save sits flush right (e32) */
+.edit-card-save { margin-right: calc(-1 * var(--spacing-03)); }   /* the quiet Save sits flush right */
 .edit-card-delete {
   display: inline-flex; align-items: center; height: 32px;
   background: none;
@@ -886,7 +828,6 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   color: var(--text-inverse);
   padding: var(--spacing-04) var(--spacing-05);
   border-left: 3px solid var(--link-inverse);
-  border-radius: 0;
   opacity: 0;
   transition: opacity var(--duration-fast-02) var(--ease-standard), transform var(--duration-fast-02) var(--ease-standard);
   z-index: 1000;
@@ -912,13 +853,13 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   margin: var(--spacing-05) 0 var(--spacing-06);
 }
 
-.export-action-btn { height: 48px; padding: 0 var(--spacing-05); }   /* Carbon's large button for the step's decisions */
-.export-action-btn.btn-primary { gap: var(--spacing-07); }   /* the icon in its right slot (e32) */
+.export-action-btn { height: 48px; }   /* Carbon's large button for the step's decisions */
+.export-action-btn.btn-primary { gap: var(--spacing-07); }   /* the icon in its right slot */
 .archive-slot { display: inline-flex; align-items: center; }
 /* The ask takes a row of its own under the buttons, so Copy HTML and Download keep their places. */
 .archive-slot:has(.archive-ask) { flex-basis: 100%; order: 3; }
 
-/* After Save to the archive (e31): the note that stays, and the way on. */
+/* After Save to the archive: the note that stays, and the way on. */
 .export-after { display: flex; align-items: center; flex-wrap: wrap; gap: var(--spacing-05); }
 .export-after:empty { display: none; }
 
@@ -929,7 +870,6 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   padding: var(--spacing-04) var(--spacing-05);
   border: 1px solid transparent;
   border-left-width: 3px;
-  border-radius: 0;
   color: var(--bp-ink);
   opacity: 0;
   transform: translateY(4px);
@@ -964,7 +904,6 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   background: var(--bp-amber-bg);
   border: 1px solid var(--bp-amber-line);
   border-left: 3px solid var(--bp-amber-mark);
-  border-radius: 0;
 }
 
 .restore-banner__msg {
@@ -984,7 +923,6 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 /* --- Drag-to-reorder panel (edit column) ------------------- */
 .reorder-panel {
   border: 1px solid var(--bp-line-in);
-  border-radius: 0;
   background: var(--layer-02);
 }
 
@@ -1034,7 +972,6 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 .reorder-list {
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .reorder-row {
@@ -1042,10 +979,8 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   align-items: center;
   gap: var(--spacing-03);
   padding: var(--spacing-02) var(--spacing-03);
-  border-radius: 0;
   font-size: 12px; line-height: 16px; letter-spacing: .32px;
   color: var(--bp-body);
-  background: transparent;
   border: 1px solid transparent;
 }
 .reorder-row[draggable="true"] { cursor: grab; }
@@ -1078,7 +1013,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   white-space: nowrap;
 }
 
-/* One focus ring for every control in the builder (f16): Carbon's 2px ring, drawn inside. */
+/* One focus ring for every control in the builder: Carbon's 2px ring, drawn inside. */
 button:focus-visible, a:focus-visible, summary:focus-visible, [tabindex]:focus-visible,
 input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--focus);
@@ -1091,23 +1026,23 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 
 /* Review / Bucket / Glance */
-/* Pull from the desk: the Outline door's quiet status line. */
+/* Pull from the desk, on Review: the button's quiet status line. */
 .pull-status { margin-left: var(--spacing-03); color: var(--bp-muted); display: inline-block; }
 
-/* Review step: what's in the issue, as Carbon's data table on the tile. */
+/* Review step: what's in the issue, as Carbon's data table in a white box. */
 .review-table { width: 100%; border-collapse: collapse; margin-top: var(--spacing-05); background: var(--layer-02); border: 1px solid var(--bp-line-in); }
 .review-table th { text-align: left; font-weight: 600; color: var(--bp-ink); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--bp-line-in); }
-.review-table td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--bp-line-in); vertical-align: top; color: var(--text-primary); }   /* titles in the ink, the sub-line stays secondary (e35) */
+.review-table td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--bp-line-in); vertical-align: top; }   /* titles in the ink; the sub-line stays secondary */
 .review-table-sub { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--bp-muted); margin-top: var(--spacing-01); font-weight: 400; }
 
 /* Edit-column add-on panels (Introduction, Add an item). */
-.addon-hint { margin: 0 0 var(--spacing-03); font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--bp-muted); }
+.addon-hint { font-size: 12px; line-height: 16px; letter-spacing: .32px; }
 .addon-field { display: block; margin-bottom: var(--spacing-03); }
 .addon-field > span { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--bp-muted); margin-bottom: var(--spacing-03); }
-.addon-field .triage-field-input { width: 100%; box-sizing: border-box; background: var(--field-01); }
+.addon-field .triage-field-input { width: 100%; box-sizing: border-box; }
 
-/* Sliding-dots loader (Kate's pick, Sep 1): six dots slide across a track
-   with staggered delays, on Carbon's blue ramp. Mini = inline size for status rows. */
+/* Sliding-dots loader: six dots slide across a track with staggered delays,
+   on the accent's ramp. Mini = inline size for status rows. */
 .dots-loader { position: relative; height: var(--dl-s, 20px); width: var(--dl-w, 250px); margin: var(--spacing-06) auto; }
 .dots-loader .dot {
   position: absolute; height: var(--dl-s, 20px); width: var(--dl-s, 20px);

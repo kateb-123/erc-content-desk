@@ -66,8 +66,8 @@ test('the restore banner says when the saved issue already went out (e31)', () =
 
 test('the archive index says whether a date is already archived, and the ask names it (d10)', () => {
   const index = [
-    { date: '2026-08-25', file: '2026-08-25.html', label: 'August 25, 2026' },
-    { date: '2026-06-16', file: '2026-06-16.html', label: 'June 16, 2026' },
+    { date: '2026-08-25', label: 'August 25, 2026' },
+    { date: '2026-06-16', label: 'June 16, 2026' },
   ];
   assert.deepEqual(archivedEntry(index, '2026-08-25'), index[0]);
   assert.equal(archivedEntry(index, '2026-09-08'), null);

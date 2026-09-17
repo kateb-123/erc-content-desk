@@ -1,9 +1,13 @@
 // editpath.test.js
 import { test } from 'node:test'; import assert from 'node:assert/strict';
 import { getField, setField } from '../js/editpath.js';
-import { parseMarkdown, _resetIds } from '../js/parser.js';
-import { readFileSync } from 'node:fs';
-const issue = () => { _resetIds(); return parseMarkdown(readFileSync(new URL('../fixtures/full-issue.md', import.meta.url),'utf8')).issue; };
+import { createEmptyIssue } from '../js/model.js';
+const issue = () => {
+  const i = createEmptyIssue();
+  i.sections.events.items.push({ id: 'itm_1', group: 'tamu', fields: { title: 'An event', url: 'https://x.org/e' } });
+  i.sections.events.enabled = true;
+  return i;
+};
 test('get/set a field by section+item+field', () => {
   const i = issue(); const item = i.sections.events.items[0];
   setField(i, {section:'events', item:item.id, field:'title'}, 'NEW T');

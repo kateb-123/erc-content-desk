@@ -1,18 +1,17 @@
 /**
  * app.js: ERC Newsletter Builder wizard shell
  *
- * Holds wizard state and step navigation. Later tasks import the
- * pure-logic modules (parser/serialize/template/model) as they wire up
- * each step.
+ * Holds wizard state and step navigation, and renders the four steps. The
+ * pure logic lives in model.js, template.js, editpath.js and preview.js.
  */
 
-import { SECTION_REGISTRY, mergeIssueItems, createEmptyIssue, mergeIssues, deleteItem, insertItem, issueLinks, issueItemIds, partitionPulled, countIssueItems, splitSections } from './model.js';
+import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, deleteItem, insertItem, partitionPulled, countIssueItems, splitSections, bucketSectionItems, moveWithinBucket } from './model.js';
 
 // The builder lives INSIDE the desk's project (/builder/), so the desk's API
 // is same-origin: relative fetches, no CORS. ?desk= still overrides for
 // unusual dev setups.
 const DESK_URL = new URLSearchParams(window.location.search).get('desk') || '';
-let pullMessage = ''; // survives the Outline re-render after a pull
+let pullMessage = ''; // survives the Review re-render after a pull
 import { renderNewsletter, renderProse } from './template.js';
 import { saveState, loadState, clearState } from './state.js';
 import { getField, setField } from './editpath.js';
@@ -26,30 +25,23 @@ import { arrowKeyTarget, normalizeLinkUrl, reorderRowName, movedAnnouncement } f
 // ---------------------------------------------------------------------------
 
 const state = {
-  /** @type {object|null} Parsed newsletter issue model */
+  /** @type {object|null} The newsletter issue model */
   issue: null,
-  /** @type {object|null} Deep-clone of issue at parse/restore time, used by "Revert to original" */
+  /** @type {object|null} Deep clone of issue as pulled or restored, the text "Use original" puts back */
   baseline: null,
   /** @type {string} Current wizard step key */
   step: 'review',
-  /** @type {number} The furthest step index visited, so checks survive going back (e29) */
+  /** @type {number} The furthest step index visited, so checks survive going back */
   reached: 0,
 };
 
-/** True while the restore banner is asking; nothing writes storage or the issue until it is answered (d8). */
+/** True while the restore banner is asking; nothing writes storage or the issue until it is answered. */
 let restorePending = false;
 
 // ---------------------------------------------------------------------------
 // Autosave helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Tiny debounce: returns a function that delays `fn` by `wait` ms,
- * cancelling any pending call if invoked again before the delay fires.
- * @param {Function} fn
- * @param {number} wait - milliseconds
- * @returns {Function}
- */
 /** The desk's sliding-dots loader; mini = inline-sized for status rows. */
 function dotsLoader(mini = false) {
   const wrap = document.createElement('div');
@@ -72,6 +64,13 @@ function loadingLabel(message) {
   return frag;
 }
 
+/**
+ * Tiny debounce: returns a function that delays `fn` by `wait` ms,
+ * cancelling any pending call if invoked again before the delay fires.
+ * @param {Function} fn
+ * @param {number} wait - milliseconds
+ * @returns {Function}
+ */
 function debounce(fn, wait) {
   let timer;
   return (...args) => {
@@ -91,7 +90,8 @@ const scheduleSave = debounce(() => {
 
 const btnBack = document.getElementById('btn-back');
 const btnNext = document.getElementById('btn-next');
-/** The footer's one-line status slot: what a locked step says (b23). */
+/** The one-line status slot under the step row: what a locked step says.
+    Always one line tall, so a message never moves the page. */
 const wizardStatus = document.getElementById('wizard-status');
 function setWizardStatus(msg) {
   if (wizardStatus) wizardStatus.textContent = msg;
@@ -105,7 +105,7 @@ function faIcon(name) {
   return i;
 }
 
-/** A note's icon (e33): the glyph that goes with its --support-* colour, ahead of the words. */
+/** A note's icon: the glyph that goes with its --support-* colour, ahead of the words. */
 function noteIcon(name) {
   const i = faIcon(name);
   i.classList.add('note-icon');
@@ -122,7 +122,7 @@ function ghostButton(label) {
 }
 
 /**
- * Carbon's inline notification (e30): the tint, the bar, the icon, the words,
+ * Carbon's inline notification: the tint, the bar, the icon, the words,
  * and a ghost Retry when there is something to try again. An error is an
  * alert; anything else is a polite status.
  * @param {'error'|'success'|'warning'} kind
@@ -157,7 +157,7 @@ const stepIndicators = document.querySelectorAll('[data-nav-step]');
  * The step buttons' state: the lit one, the finished ones (a check once an
  * issue is loaded and the step sits before the current one), and which are
  * reachable. The button inside each step carries aria-current and
- * aria-disabled for a screen reader (b22). Runs on every goTo and again when
+ * aria-disabled for a screen reader. Runs on every goTo and again when
  * an issue arrives on Review.
  */
 function syncStepNav() {
@@ -171,7 +171,7 @@ function syncStepNav() {
     if (!btn) return;
     if (shows === 'current') btn.setAttribute('aria-current', 'step');
     else btn.removeAttribute('aria-current');
-    // A locked step is greyed, and its title says why (e29).
+    // A locked step is greyed, and its title says why.
     if (shows === 'locked') { btn.setAttribute('aria-disabled', 'true'); btn.title = LOCKED_STEP_MESSAGE; }
     else { btn.removeAttribute('aria-disabled'); btn.removeAttribute('title'); }
   });
@@ -210,7 +210,7 @@ function goTo(step) {
   setWizardStatus('');
 
   // The footer pair: Back sleeps on the first step; Next has nowhere to go on
-  // the last, so it goes rather than greys (e31).
+  // the last, so it goes rather than greys.
   btnBack.disabled = idx === 0;
   btnNext.hidden = idx === STEPS.length - 1;
 
@@ -233,7 +233,7 @@ function goNext() {
   const idx = STEPS.indexOf(state.step);
   if (idx >= STEPS.length - 1) return;
   const next = STEPS[idx + 1];
-  // The same gate as the step buttons (b23, d9): with nothing pulled, Next says why and stays.
+  // The same gate as the step buttons: with nothing pulled, Next says why and stays.
   if (!canEnterStep(next, countIssueItems(state.issue))) { setWizardStatus(LOCKED_STEP_MESSAGE); return; }
   goTo(next);
 }
@@ -241,7 +241,7 @@ btnBack.addEventListener('click', goBack);
 btnNext.addEventListener('click', goNext);
 
 // The step buttons jump straight to any step. Review is always reachable; the
-// later steps need a loaded issue, and say so on the status line (b22, b23).
+// later steps need a loaded issue, and say so on the status line.
 stepIndicators.forEach((ind) => {
   const btn = ind.querySelector('button');
   if (!btn) return;
@@ -257,11 +257,9 @@ stepIndicators.forEach((ind) => {
   });
 });
 
-// __renderTriage exposed after function definition below
-
 
 /** The desk's header pattern, mirrored: one lede line in the card title's
- *  place (the step row already names the step, e35) + "View info" toggle
+ *  place (the step row already names the step) + "View info" toggle
  *  with a tinted instruction note. Open state survives re-renders per step. */
 const openStepInfo = new Set();
 function attachStepInfo(container, key, lede, text) {
@@ -314,7 +312,7 @@ function renderReview() {
   placeholder.textContent = currentIso ? isoToDisplayDate(currentIso) : 'Loading issues…';
   if (currentIso) placeholder.value = currentIso;
   dateSelect.appendChild(placeholder);
-  // While the restore banner asks, the issue cannot be changed under it (d8).
+  // While the restore banner asks, the issue cannot be changed under it.
   dateSelect.disabled = restorePending;
   dateSelect.addEventListener('change', () => {
     if (!dateSelect.value) return;
@@ -326,7 +324,7 @@ function renderReview() {
   });
   dateLabel.appendChild(dateSelect);
   metaSection.appendChild(dateLabel);
-  // Where a failed schedule load speaks (e30): an error note under the field, with Retry.
+  // Where a failed schedule load speaks: an error note under the field, with Retry.
   const scheduleNote = document.createElement('div');
   scheduleNote.className = 'note-slot';
   metaSection.appendChild(scheduleNote);
@@ -371,10 +369,10 @@ function renderReview() {
   }
   loadSchedule();
 
-  // ── Pull from the desk: the Content Desk's Newsletter screen stamps items
-  //    for an issue; this button fetches them, already builder-shaped.
-  //    Re-pull adds only what's new (matched by link). The button and its
-  //    status share one row under the field (e35). ────────────────────────
+  // Pull from the desk: the Content Desk's Newsletter screen stamps items for
+  // an issue; this button fetches them, already builder-shaped. Re-pull adds
+  // only what is new (matched by link, and by the stable desk id). The button
+  // and its status share one row under the field.
   const pullRow = document.createElement('div');
   pullRow.className = 'pull-row';
   const pullBtn = document.createElement('button');
@@ -382,13 +380,13 @@ function renderReview() {
   // The step's one real action: a filled primary, like the desk's Rewrite/Publish.
   pullBtn.className = 'btn btn-primary md-sidedoor-btn';
   pullBtn.textContent = 'Pull from the desk';
-  pullBtn.disabled = restorePending;   // locked while the restore banner asks (d8)
+  pullBtn.disabled = restorePending;   // locked while the restore banner asks
   const pullStatus = document.createElement('span');
   pullStatus.className = 'pull-status';
-  pullStatus.setAttribute('role', 'status');    // read aloud as it changes (a7)
+  pullStatus.setAttribute('role', 'status');    // read aloud as it changes
   pullStatus.setAttribute('aria-live', 'polite');
   pullStatus.textContent = pullMessage;
-  // A failed pull is an error note under the row, with Retry (e30).
+  // A failed pull is an error note under the row, with Retry.
   const pullNote = document.createElement('div');
   pullNote.className = 'note-slot';
   const setPull = (msg, busy = false) => {
@@ -415,7 +413,7 @@ function renderReview() {
         return;
       }
       if (!state.issue) state.issue = createEmptyIssue();
-      const { pulled, already } = partitionPulled(data.issue, issueLinks(state.issue), issueItemIds(state.issue));
+      const { pulled, already } = partitionPulled(data.issue, state.issue);
       const fresh = countIssueItems(pulled);
       if (fresh) {
         pulled.date = ''; // never clobber the issue's own date field
@@ -494,7 +492,7 @@ function renderReview() {
  * Delete one item from the issue, with a transient Undo toast. Shared by the
  * Outline row's Remove and the Preview & Edit card's Remove. `rerender` rebuilds
  * whichever step is showing so the removal (and any undo) is reflected at once.
- * `fromKeyboard` (a click with detail 0) hands focus to the toast's Undo (b31).
+ * `fromKeyboard` (a click with detail 0) hands focus to the toast's Undo.
  */
 let _undoToastTimer = null;
 function deleteItemWithUndo(itemId, rerender, fromKeyboard = false) {
@@ -515,7 +513,7 @@ function deleteItemWithUndo(itemId, rerender, fromKeyboard = false) {
  * live region, and it sits in the DOM right after the edit column (or the
  * wizard body) so it reads in place rather than at the end of the page; with
  * `focusUndo` the Undo button takes focus, for a removal made from the
- * keyboard (a7, b31).
+ * keyboard.
  */
 function showUndoToast(message, onUndo, { focusUndo = false } = {}) {
   clearTimeout(_undoToastTimer);
@@ -567,7 +565,7 @@ function renderTriage() {
 
   const issue = state.issue;
 
-  // Nothing pulled yet: one line, and no empty section list to puzzle over (b24).
+  // Nothing pulled yet: one line, and no empty section list to puzzle over.
   if (!issue || !countIssueItems(issue)) {
     const msg = document.createElement('p');
     msg.className = 'edit-empty-msg';
@@ -577,7 +575,7 @@ function renderTriage() {
   }
 
   // ── Sections: only the populated ones are listed; the rest are named once
-  //    at the foot (f15). No toggle: a populated section is always included,
+  //    at the foot. No toggle: a populated section is always included,
   //    an empty one auto-hides. ───────────────────────────────────────────
   const { populated, missing } = splitSections(issue);
   for (const reg of SECTION_REGISTRY) {
@@ -610,15 +608,14 @@ function renderTriage() {
       sectionContainer.className = 'triage-grouped-section';
 
       const renderSectionItems = () => {
-        // Remember which arrow had focus, so the rebuild can hand it back (b27).
+        // Remember which arrow had focus, so the rebuild can hand it back.
         const focused = document.activeElement;
         const memo = focused && sectionContainer.contains(focused) && focused.dataset.moveItem
           ? { item: focused.dataset.moveItem, dir: focused.dataset.moveDir } : null;
         sectionContainer.innerHTML = '';
         const secItems = (issue && issue.sections && issue.sections[reg.key] && issue.sections[reg.key].items) || [];
-        const hasGroups = reg.groups && reg.groups.length > 0;
 
-        // The one rule for Featured, printed once under the section's name (b30).
+        // The one rule for Featured, printed once under the section's name.
         if (reg.key === 'events') {
           const rule = document.createElement('div');
           rule.className = 'triage-section-note';
@@ -626,23 +623,7 @@ function renderTriage() {
           sectionContainer.appendChild(rule);
         }
 
-        // Bucket items for display: one bucket per non-empty group (labeled),
-        // then a trailing unlabeled bucket for any items that didn't match a
-        // group so nothing is silently dropped. Flat sections = one bucket.
-        const buckets = [];
-        if (hasGroups) {
-          const claimed = new Set();
-          for (const grp of reg.groups) {
-            const grpItems = secItems.filter((it) => it.group === grp.key);
-            if (grpItems.length === 0) continue;
-            grpItems.forEach((it) => claimed.add(it));
-            buckets.push({ label: grp.label, items: grpItems });
-          }
-          const leftover = secItems.filter((it) => !claimed.has(it));
-          if (leftover.length > 0) buckets.push({ label: null, items: leftover });
-        } else {
-          buckets.push({ label: null, items: secItems.slice() });
-        }
+        const buckets = bucketSectionItems(reg, secItems);
 
         for (const bucket of buckets) {
           if (bucket.label) {
@@ -707,7 +688,7 @@ function renderTriage() {
             evRow.appendChild(titleSpan);
 
             // Featured toggle, events section only. The rule sits once under
-            // the section's name, not on every row (b30).
+            // the section's name, not on every row.
             if (reg.key === 'events') {
               const featLabel = document.createElement('label');
               featLabel.className = 'triage-featured-label';
@@ -732,7 +713,7 @@ function renderTriage() {
               evRow.appendChild(featLabel);
             }
 
-            // Reorder arrows, grouped so they can reveal on row hover/focus.
+            // Reorder arrows, grouped so the pair stays together at the row's right.
             const reorderGroup = document.createElement('div');
             reorderGroup.className = 'triage-reorder-group';
             reorderGroup.appendChild(upBtn);
@@ -771,7 +752,7 @@ function renderTriage() {
         const subRow = document.createElement('div');
         subRow.className = 'triage-switch-row';
 
-        // The visible words are the switch's label, so a screen reader names it (a8).
+        // The visible words are the switch's label, so a screen reader names it.
         const subName = document.createElement('label');
         subName.className = 'triage-switch-label';
         subName.htmlFor = 'submit-callout-switch';
@@ -832,17 +813,16 @@ function renderTriage() {
 /**
  * CSS injected into the editable iframe to show hover affordance. Built when
  * the iframe loads so the colours come from the builder's own tokens: the
- * hover wash (--accent-alpha) while the pointer is over an item, the chosen
- * tint (--highlight) for the flash on click (c11).
+ * hover wash (--accent-10) while the pointer is over an item, the chosen
+ * tint (--highlight) for the flash on click.
  */
 function editHoverCss() {
   const tokens = getComputedStyle(document.documentElement);
-  const wash = tokens.getPropertyValue('--accent-10').trim();   // the editable cue, plain enough to see (f18)
+  const wash = tokens.getPropertyValue('--accent-10').trim();   // the editable cue, plain enough to see
   const chosen = tokens.getPropertyValue('--highlight').trim();
   return `
 [data-edit-field] {
   cursor: pointer;
-  transition: outline 0.1s;
 }
 /* Hovering any field highlights every field of that whole item (applied by JS),
    since clicking edits the whole item at once. A translucent fill, not a hard
@@ -862,17 +842,12 @@ function editHoverCss() {
 /**
  * Open editor cards, keyed by item ref ("section::item"). Lets several items
  * be edited at once; re-clicking an open item focuses its card instead of
- * duplicating. @type {Map<string, { card: HTMLElement, refs: Array }>}
+ * duplicating. @type {Map<string, HTMLElement>}
  */
 const openCards = new Map();
 
-/** Counter behind the edit cards' field ids, so each label points at its own field (a9). */
+/** Counter behind the edit cards' field ids, so each label points at its own field. */
 let editFieldSeq = 0;
-
-/** Stable key for an item ref group. */
-function refKey(section, item) {
-  return `${section}::${item || ''}`;
-}
 
 /** A card's first field that can take focus: never the hidden link row's input or a file input. */
 function firstField(card) {
@@ -888,13 +863,6 @@ function firstField(card) {
  */
 let previewResizeHandler = null;
 
-/**
- * Re-fit the preview to the current pane width. Set by renderEdit so the field
- * editor (which changes the layout when it opens/closes) can trigger a refit.
- * @type {(() => void)|null}
- */
-let refitPreview = null;
-
 /** True newsletter width (px). The preview is scaled down to fit narrower panes. */
 const PREVIEW_WIDTH = 705;
 
@@ -904,7 +872,7 @@ const PREVIEW_MAX_SCALE = 0.95;
 
 /** Persistent edit-column width (px), matches .edit-column in styles.css. */
 const COLUMN_W = 340;
-/** Flex gap between preview and edit column, matches .edit-layout gap. */
+/** Flex gap between preview and edit column, for the scale sum. */
 const EDIT_GAP = 20;
 /** Horizontal padding on ONE side of the gray stage, matches .edit-preview-wrap. */
 const STAGE_PAD = 24;
@@ -944,7 +912,7 @@ function buildIntroPanel(iframe) {
     refresh();
   });
   body.appendChild(editor.el);
-  // Edits are live, so Save is a quiet word, not a second primary (e32).
+  // Edits are live, so Save is a quiet word, not a second primary.
   const save = document.createElement('button');
   save.type = 'button';
   save.className = 'ghost-btn intro-save-btn';
@@ -1070,12 +1038,9 @@ function buildAddItemPanel(iframe) {
     const item = { id: `misc_${Date.now().toString(36)}_${miscItemSeq}`, group: groupSelect.value, fields };
     section.items.push(item);
     section.enabled = true;
-    // The as-added values are this item's "original" for Revert.
-    if (!state.baseline) state.baseline = structuredClone(state.issue);
-    else {
-      const base = state.baseline.sections[sectionSelect.value];
-      if (base) { base.items.push(structuredClone(item)); base.enabled = true; }
-    }
+    // The as-added values are this item's "original" for Use original.
+    const base = state.baseline.sections[sectionSelect.value];
+    if (base) { base.items.push(structuredClone(item)); base.enabled = true; }
     scheduleSave();
     refreshEditIframe(iframe);
     for (const input of [titleInput, linkInput, summaryInput, dateInput, timeInput, locationInput, deadlineInput]) input.value = '';
@@ -1101,9 +1066,8 @@ function buildAddItemPanel(iframe) {
  * Wire up the click-to-edit listener and hover CSS in the iframe's contentDocument.
  * Called on every iframe 'load' event (re-fires on each srcdoc set).
  * @param {HTMLIFrameElement} iframe
- * @param {HTMLElement} editStepContainer
  */
-function wireIframeEditing(iframe, editStepContainer) {
+function wireIframeEditing(iframe) {
   const doc = iframe.contentDocument;
   if (!doc) return;
 
@@ -1162,12 +1126,12 @@ function wireIframeEditing(iframe, editStepContainer) {
 }
 
 /**
- * Gather every editable field belonging to one item (or one section-level
- * field group, when there is no item), in document order, de-duplicated.
+ * Every editable node belonging to one item (or to one section-level field
+ * group, when there is no item), in document order.
  * @param {Document} doc - the preview iframe's document
  * @param {string} section
  * @param {string|undefined} item
- * @returns {Array<{ section: string, item?: string, field: string }>}
+ * @returns {Array<HTMLElement>}
  */
 function collectItemNodes(doc, section, item) {
   return item
@@ -1253,7 +1217,7 @@ function buildImageControl(initial, onChange) {
   removeBtn.textContent = 'Remove media';
   const status = document.createElement('span');
   status.className = 'pull-status';
-  status.setAttribute('role', 'status');    // read aloud as it changes (a7)
+  status.setAttribute('role', 'status');    // read aloud as it changes
   status.setAttribute('aria-live', 'polite');
   let value = initial || '';
   const sync = () => {
@@ -1300,6 +1264,14 @@ function buildImageControl(initial, onChange) {
 /** Sections whose templates render an item picture (bullet lists don't). */
 const IMAGE_SECTIONS = new Set(['research', 'spotlight', 'events', 'opportunities']);
 
+/**
+ * Gather every editable field belonging to one item (or one section-level
+ * field group, when there is no item), in document order, de-duplicated.
+ * @param {Document} doc - the preview iframe's document
+ * @param {string} section
+ * @param {string|undefined} item
+ * @returns {Array<{ section: string, item?: string, field: string }>}
+ */
 function collectItemFields(doc, section, item) {
   const nodes = collectItemNodes(doc, section, item);
 
@@ -1383,7 +1355,7 @@ function htmlToMarkdown(html) {
  * A small WYSIWYG editor for prose fields: a Bold / Italic / Link toolbar over a
  * contentEditable region. Renders stored markdown via renderProse and reports
  * changes back as markdown (via htmlToMarkdown). Returns a uniform field handle.
- * `labelledBy` names the sublabel that is the editor's accessible name (a9).
+ * `labelledBy` names the sublabel that is the editor's accessible name.
  */
 function buildRichEditor(initialMd, onChange, { labelledBy = '' } = {}) {
   const wrap = document.createElement('div');
@@ -1416,7 +1388,7 @@ function buildRichEditor(initialMd, onChange, { labelledBy = '' } = {}) {
   toolbar.appendChild(mkBtn('B', 'Bold', () => document.execCommand('bold')));
   toolbar.appendChild(mkBtn('I', 'Italic', () => document.execCommand('italic'), true));
 
-  // The link ask is a row under the toolbar, not window.prompt (c10): it keeps
+  // The link ask is a row under the toolbar, not window.prompt: it keeps
   // the selection, pre-fills from a link the caret sits in, adds https:// when
   // the scheme is missing, and Escape or Cancel puts it away.
   const linkRow = document.createElement('div');
@@ -1532,13 +1504,13 @@ function openItemEditor(refs, iframe) {
   const list = document.querySelector('.edit-card-list');
   if (!list) return;
 
-  const key = refKey(refs[0].section, refs[0].item);
+  const key = `${refs[0].section}::${refs[0].item || ''}`;
 
   // Already open → focus + scroll to the existing card, don't duplicate.
   const existing = openCards.get(key);
   if (existing) {
-    existing.card.scrollIntoView({ block: 'nearest' });
-    const first = firstField(existing.card);
+    existing.scrollIntoView({ block: 'nearest' });
+    const first = firstField(existing);
     if (first) first.focus();
     return;
   }
@@ -1546,7 +1518,7 @@ function openItemEditor(refs, iframe) {
   const card = document.createElement('div');
   card.className = 'edit-card';
   card.setAttribute('role', 'group');
-  // The card's name for a screen reader: the item's title, else the field's (a9).
+  // The card's name for a screen reader: the item's title, else the field's.
   const cardTitle = refs[0].item ? getField(state.issue, { ...refs[0], field: 'title' }) : '';
   card.setAttribute('aria-label', cardTitle || FIELD_LABELS[refs[0].field] || humanize(refs[0].section));
 
@@ -1571,7 +1543,7 @@ function openItemEditor(refs, iframe) {
     const group = document.createElement('div');
     group.className = 'edit-card-group';
     const isLong = ref.field === 'summary' || ref.field === 'intro' || ref.field === 'description';
-    // Every field's sublabel names it for a screen reader (a9): a <label for>
+    // Every field's sublabel names it for a screen reader: a <label for>
     // on a text field, an id the editor or the media group points at otherwise.
     editFieldSeq += 1;
     const fieldId = `edit-field-${editFieldSeq}`;
@@ -1620,7 +1592,7 @@ function openItemEditor(refs, iframe) {
     }
   }
 
-  // What the fields held when the card opened, for Cancel (b29).
+  // What the fields held when the card opened, for Cancel.
   const opened = fieldInputs.map((f) => ({ ref: f.ref, value: getField(state.issue, f.ref) ?? '' }));
 
   // Footer: quiet Use original and Cancel, then Save (commit & close this one card).
@@ -1664,14 +1636,14 @@ function openItemEditor(refs, iframe) {
     scheduleSave();
     refreshEditIframe(iframe);
   });
-  // Edits are live, so Save is a quiet word that closes the card (e32).
+  // Edits are live, so Save is a quiet word that closes the card.
   const saveBtn = document.createElement('button');
   saveBtn.type = 'button';
   saveBtn.className = 'ghost-btn edit-card-save';
   saveBtn.textContent = 'Save';
   saveBtn.addEventListener('click', () => closeCard(key));
   // Remove this whole item from the issue (with Undo), only for real items,
-  // not the intro. The desk's word for taking an item out of an issue (b26).
+  // not the intro. The desk's word for taking an item out of an issue.
   const itemId = refs[0] && refs[0].item;
   if (itemId) {
     const delBtn = document.createElement('button');
@@ -1690,7 +1662,7 @@ function openItemEditor(refs, iframe) {
   card.appendChild(actions);
 
   list.appendChild(card);
-  openCards.set(key, { card, refs });
+  openCards.set(key, card);
   updateColumnChrome();
 
   card.scrollIntoView({ block: 'nearest' });
@@ -1700,13 +1672,13 @@ function openItemEditor(refs, iframe) {
 /**
  * Close one card (commit is implicit; edits are already live). Focus moves to
  * the next card's first field (the previous card's, failing that), else to the
- * column's title, so it never falls off the page (b31).
+ * column's title, so it never falls off the page.
  */
 function closeCard(key) {
-  const entry = openCards.get(key);
-  if (!entry) return;
-  const neighbour = entry.card.nextElementSibling || entry.card.previousElementSibling;
-  entry.card.remove();
+  const card = openCards.get(key);
+  if (!card) return;
+  const neighbour = card.nextElementSibling || card.previousElementSibling;
+  card.remove();
   openCards.delete(key);
   updateColumnChrome();
   const field = neighbour && firstField(neighbour);
@@ -1717,7 +1689,7 @@ function closeCard(key) {
 
 /** Save all: close every open card. Does NOT navigate. */
 function closeAllCards() {
-  for (const { card } of openCards.values()) card.remove();
+  for (const card of openCards.values()) card.remove();
   openCards.clear();
   updateColumnChrome();
 }
@@ -1729,56 +1701,6 @@ function updateColumnChrome() {
   const has = openCards.size > 0;
   if (empty) empty.hidden = has;
   if (saveAll) saveAll.hidden = !has;
-}
-
-/**
- * Render the edit step: large full-width editable-mode preview iframe.
- * The editable HTML has data-edit-* hooks for click-to-edit.
- * Called each time the wizard navigates to 'edit'.
- */
-/**
- * Bucket a section's items for display: one bucket per non-empty group
- * (labeled), then a trailing unlabeled bucket for items that matched no
- * group. Flat sections = one bucket. (Same shape the Outline step renders.)
- * @param {object} reg - SECTION_REGISTRY entry
- * @param {Array<object>} secItems
- * @returns {Array<{label: string|null, items: Array<object>}>}
- */
-function bucketSectionItems(reg, secItems) {
-  const hasGroups = reg.groups && reg.groups.length > 0;
-  const buckets = [];
-  if (hasGroups) {
-    const claimed = new Set();
-    for (const grp of reg.groups) {
-      const grpItems = secItems.filter((it) => it.group === grp.key);
-      if (grpItems.length === 0) continue;
-      grpItems.forEach((it) => claimed.add(it));
-      buckets.push({ label: grp.label, items: grpItems });
-    }
-    const leftover = secItems.filter((it) => !claimed.has(it));
-    if (leftover.length > 0) buckets.push({ label: null, items: leftover });
-  } else {
-    buckets.push({ label: null, items: secItems.slice() });
-  }
-  return buckets;
-}
-
-/**
- * Move one item within its display bucket and write the new order back into
- * the section's full item array (bucket members keep their original slots,
- * so items in other groups are untouched).
- * @param {Array<object>} allItems - the section's full items array (mutated)
- * @param {Array<object>} bucketItems - the bucket's items, display order
- * @param {number} fromIdx - index within the bucket being dragged
- * @param {number} toIdx - index within the bucket to land on
- */
-function moveWithinBucket(allItems, bucketItems, fromIdx, toIdx) {
-  if (fromIdx === toIdx) return;
-  const positions = bucketItems.map((it) => allItems.indexOf(it));
-  const newBucket = bucketItems.slice();
-  const [moved] = newBucket.splice(fromIdx, 1);
-  newBucket.splice(toIdx, 0, moved);
-  positions.forEach((pos, i) => { allItems[pos] = newBucket[i]; });
 }
 
 /**
@@ -1801,7 +1723,7 @@ function buildReorderPanel(iframe) {
   body.className = 'reorder-panel-body';
   details.appendChild(body);
 
-  // One polite region, outside the rebuilt body, says where a row landed (e34).
+  // One polite region, outside the rebuilt body, says where a row landed.
   const live = document.createElement('div');
   live.className = 'sr-only';
   live.setAttribute('role', 'status');
@@ -1833,14 +1755,14 @@ function buildReorderPanel(iframe) {
           body.appendChild(grpLabel);
         }
 
-        // Each bucket is a listbox of named options (e34).
+        // Each bucket is a listbox of named options.
         const listEl = document.createElement('div');
         listEl.className = 'reorder-list';
         listEl.setAttribute('role', 'listbox');
         listEl.setAttribute('aria-label', bucket.label ? `${reg.label}: ${bucket.label}` : reg.label);
 
         // One move for the drop and the arrow keys alike; the moved row keeps
-        // focus across the rebuild (b27) and the live region says where it went.
+        // focus across the rebuild and the live region says where it went.
         const move = (fromIdx, toIdx, focusId) => {
           const moved = bucket.items[fromIdx];
           moveWithinBucket(state.issue.sections[reg.key].items, bucket.items, fromIdx, toIdx);
@@ -1924,6 +1846,11 @@ function buildReorderPanel(iframe) {
   return details;
 }
 
+/**
+ * Render the edit step: large full-width editable-mode preview iframe.
+ * The editable HTML has data-edit-* hooks for click-to-edit.
+ * Called each time the wizard navigates to 'edit'.
+ */
 function renderEdit() {
   const container = document.querySelector('[data-step="edit"]');
   if (!container) return;
@@ -1951,7 +1878,7 @@ function renderEdit() {
     previewResizeHandler = null;
   }
 
-  // What the sheet is (f18): its scale, and that it is the editable one.
+  // What the sheet is: its scale, and that it is the editable one.
   const previewNote = document.createElement('p');
   previewNote.className = 'preview-note';
   const sayScale = (scale) => {
@@ -1994,15 +1921,13 @@ function renderEdit() {
     iframe.style.zoom = String(scale);
     sayScale(scale);
   }
-  refitPreview = fitPreview;
-
   // Wire click-to-edit and re-fit on every load (fires on each srcdoc set).
   // The rAF refit covers the case where the pane width isn't measurable at the
   // instant load fires (layout not yet flushed); the image listeners re-fit
   // once the (externally hosted) header banner finishes loading, so the iframe
   // height matches the final content height and no inner scrollbar appears.
   iframe.addEventListener('load', () => {
-    wireIframeEditing(iframe, container);
+    wireIframeEditing(iframe);
     fitPreview();
     requestAnimationFrame(fitPreview);
     const doc = iframe.contentDocument;
@@ -2030,7 +1955,7 @@ function renderEdit() {
   colHeader.className = 'edit-column-header';
   const colTitle = document.createElement('span');
   colTitle.className = 'edit-column-title';
-  colTitle.tabIndex = -1;   // where focus lands when the last card closes (b31)
+  colTitle.tabIndex = -1;   // where focus lands when the last card closes
   colTitle.textContent = 'Editing';
   const saveAllBtn = document.createElement('button');
   saveAllBtn.type = 'button';
@@ -2082,7 +2007,7 @@ function slugify(date) {
 /**
  * Show a toast message in `container`. A success is a polite status that
  * fades after `duration` ms; an error is an alert that stays until the next
- * click on the export row or the next toast (a7).
+ * click on the export row or the next toast.
  * @param {HTMLElement} container
  * @param {string} message
  * @param {'success'|'error'} [type='success']
@@ -2116,15 +2041,9 @@ function showExportToast(container, message, type = 'success', duration = 2800) 
 /**
  * Copy the rendered newsletter HTML to the clipboard.
  * Falls back to a hidden textarea + execCommand if the Clipboard API is unavailable.
- * Exposed as `window.__copyHtml` for testability.
  */
 function copyHtml() {
   const container = document.querySelector('[data-step="export"]');
-  if (!state.issue) {
-    if (container) showExportToast(container, 'No issue loaded. Nothing to copy.', 'error');
-    return;
-  }
-
   const html = renderNewsletter(state.issue);
 
   const onSuccess = () => {
@@ -2174,10 +2093,8 @@ function fallbackCopy(text) {
 
 /**
  * Download the rendered newsletter as an .html file.
- * Exposed as `window.__downloadHtml` for testability.
  */
 function downloadHtml() {
-  if (!state.issue) return;
   const html = renderNewsletter(state.issue);
   const slug = slugify(state.issue.date);
   triggerDownload(
@@ -2220,7 +2137,7 @@ function renderExport() {
   attachStepInfo(container, 'export', 'Copy the issue into Outlook, then archive it.',
     'Copy the finished HTML for Outlook, save the issue to the archive, or download the file. Copy HTML is the one Outlook needs.');
 
-  // Nothing to export yet (d9): one plain sentence, no buttons.
+  // Nothing to export yet: one plain sentence, no buttons.
   if (!state.issue || !countIssueItems(state.issue)) {
     const msg = document.createElement('p');
     msg.className = 'edit-empty-msg';
@@ -2238,7 +2155,7 @@ function renderExport() {
     if (err) err.remove();
   }, true);
 
-  // Copy HTML: the step's one primary, with its icon in the slot (e32).
+  // Copy HTML: the step's one primary, with its icon in the slot.
   const copyBtn = document.createElement('button');
   copyBtn.type = 'button';
   copyBtn.className = 'btn btn-primary export-action-btn';
@@ -2254,7 +2171,7 @@ function renderExport() {
 
   // Save to the archive: commits the issue's HTML through the desk, so it
   // shows up under Past newsletters for good. The archive write replaces an
-  // earlier save, so the index is read on entry (d10): a date already there
+  // earlier save, so the index is read on entry: a date already there
   // gets one ask in the button's place before anything is written; a new
   // date saves on the click. An unreadable index falls back to the plain
   // button.
@@ -2270,7 +2187,7 @@ function renderExport() {
     .catch(() => null);
   let savedThisVisit = null;   // a save on this visit puts the date in the archive; the next click asks
 
-  // After the save: a note that stays, with the way to the archive and the way on (e31).
+  // After the save: a note that stays, with the way to the archive and the way on.
   const after = document.createElement('div');
   after.className = 'export-after';
 
@@ -2288,7 +2205,7 @@ function renderExport() {
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'save failed');
-      // The issue went out: stamped, so a later visit's banner says so (e31).
+      // The issue went out: stamped, so a later visit's banner says so.
       state.issue.sentAt = new Date().toISOString();
       saveState(state.issue);
       savedThisVisit = { date: iso, label: isoToDisplayDate(iso) };
@@ -2336,11 +2253,9 @@ function renderExport() {
 
   container.appendChild(btnRow);
   container.appendChild(after);
-
-  // Toast target: toasts are appended here
 }
 
-/** The way on after an issue is archived (e31): storage cleared, back to Review for the next one. */
+/** The way on after an issue is archived: storage cleared, back to Review for the next one. */
 function startNextIssue() {
   clearState();
   state.issue = null;
@@ -2357,7 +2272,7 @@ function startNextIssue() {
 /**
  * The restore banner: shown when a saved issue exists in localStorage. It
  * sits above the step sections, not inside one, so a redraw of Review never
- * removes it (d8); while it asks, nothing writes storage and the Issue select
+ * removes it; while it asks, nothing writes storage and the Issue select
  * and Pull are locked. Restore sets state.issue and moves on; Discard clears
  * storage with an Undo.
  * @param {object} saved - the issue loaded from storage
@@ -2376,7 +2291,7 @@ function showRestoreBanner(saved) {
 
   const msg = document.createElement('p');
   msg.className = 'restore-banner__msg';
-  msg.append(noteIcon('triangle-exclamation'), restoreBannerMessage(saved));   // names the date and the count (a10)
+  msg.append(noteIcon('triangle-exclamation'), restoreBannerMessage(saved));   // names the date and the count
 
   const btnRow = document.createElement('div');
   btnRow.className = 'restore-banner__btns';
@@ -2394,7 +2309,7 @@ function showRestoreBanner(saved) {
     settle();
     state.issue = saved;
     state.baseline = structuredClone(saved);
-    // An issue with items goes on to the Outline; one without stays on Review (d9).
+    // An issue with items goes on to the Outline; one without stays on Review.
     goTo(countIssueItems(saved) ? 'triage' : 'review');
   });
 
@@ -2406,7 +2321,7 @@ function showRestoreBanner(saved) {
     settle();
     clearState();
     if (state.step === 'review') renderReview();   // unlocks the Issue select and Pull
-    // Gone from storage, not from memory: Undo writes it back and asks again (a10).
+    // Gone from storage, not from memory: Undo writes it back and asks again.
     showUndoToast('Discarded the saved issue', () => {
       saveState(saved);
       showRestoreBanner(saved);
@@ -2421,19 +2336,9 @@ function showRestoreBanner(saved) {
   home.insertBefore(banner, home.firstChild);
 }
 
-window.__state = state;
-window.__renderTriage = renderTriage;
-window.__renderEdit = renderEdit;
-window.__renderExport = renderExport;
-window.__copyHtml = copyHtml;
-window.__downloadHtml = downloadHtml;
-window.__slugify = slugify;
-window.__saveState = saveState;
-window.__loadState = loadState;
-window.__clearState = clearState;
-// The desk's sidebar, tucked behind the thin strip like Desk work (Kate, Sep 16).
+// The desk's sidebar, tucked behind the thin strip like Desk work.
 renderSidebar(document.querySelector('.side'), { screen: 'builder', isSectionWindow: false, onGo: () => {}, queueCount: null });
-// A saved issue locks Review before it is drawn, so the first render already knows (d8).
+// A saved issue locks Review before it is drawn, so the first render already knows.
 const savedIssue = loadState();
 restorePending = Boolean(savedIssue);
 goTo('review');

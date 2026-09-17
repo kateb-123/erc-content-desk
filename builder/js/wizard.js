@@ -15,7 +15,7 @@ export const LOCKED_STEP_MESSAGE = 'Pick an issue and pull from the desk first.'
 
 /**
  * Review is always open; Outline, Preview & Edit and Save & Export need an
- * issue with at least one item (d9: a date alone opens nothing). The step
+ * issue with at least one item: a date alone opens nothing. The step
  * buttons and Next both ask this, so they agree.
  * @param {string} step
  * @param {number} itemCount
@@ -27,7 +27,7 @@ export function canEnterStep(step, itemCount) {
 }
 
 /**
- * What a step's indicator shows (e29). `reached` is the furthest step index
+ * What a step's indicator shows. `reached` is the furthest step index
  * visited with items in hand, so a check survives going back; the step being
  * stood on is never checked, and neither is the furthest one reached.
  * @param {string} step
@@ -44,7 +44,7 @@ export function stepState(step, { current, reached, itemCount }) {
 /**
  * The restore banner's question, naming the saved issue's date and how many
  * items it holds, so Discard is an informed choice. An issue stamped sentAt
- * already went out, and the banner says so (e31).
+ * already went out, and the banner says so.
  * @param {object} saved - the issue loaded from storage
  * @returns {string}
  */
@@ -60,8 +60,8 @@ export function restoreBannerMessage(saved) {
 
 /**
  * The archive index's entry for an ISO date, or null when the date is new
- * or the index could not be read (d10).
- * @param {Array<{date: string, file: string, label: string}>|null} index
+ * or the index could not be read.
+ * @param {Array<{date: string, label: string}>|null} index
  * @param {string} iso
  */
 export function archivedEntry(index, iso) {
@@ -69,7 +69,7 @@ export function archivedEntry(index, iso) {
   return index.find((e) => e && e.date === iso) ?? null;
 }
 
-/** The one ask before an archived issue is written over (d10). */
+/** The one ask before an archived issue is written over. */
 export function archiveAskMessage(entry) {
   const label = entry?.label || isoToDisplayDate(entry?.date ?? '');
   return `Replace the archived ${label} issue?`;
@@ -80,7 +80,7 @@ const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
 
 /**
  * "2026-07-01" to "July 1, 2026", spelled as the archive index spells it
- * (f17: no zero padding). Component-wise, so no timezone drift.
+ * (no zero padding). Component-wise, so no timezone drift.
  * @param {string} value
  * @returns {string}
  */

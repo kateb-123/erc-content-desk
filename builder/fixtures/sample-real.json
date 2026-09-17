@@ -1,0 +1,456 @@
+{
+  "date": "July 01, 2026",
+  "headerImageUrl": "",
+  "intro": "Howdy! We hope everyone is enjoying their summer. This sample issue shows everything the newsletter can hold — research briefs, upcoming events, funding opportunities, a roundup of recent education research, and the policy stories we follow. Poke around: nothing here is real, and nothing you do to it is permanent.",
+  "sections": {
+    "research": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "itm_1",
+          "group": "brief",
+          "fields": {
+            "title": "The Nudge Files: Can One Postcard Boost FAFSA Completion?",
+            "authors": "Maya Chen & Jordan Ellis",
+            "summary": "Can a single postcard change a student’s college plans? Among 8,000 seniors across 40 fictional districts, students who received a plain-language FAFSA reminder were 9 percentage points more likely to complete the form — with the largest gains for first-generation students. A low-cost nudge with real equity potential.",
+            "url": "https://example.com/briefs/nudge-files"
+          }
+        },
+        {
+          "id": "itm_2",
+          "group": "brief",
+          "fields": {
+            "title": "Miles to Go: How Bus-Route Cuts Shape School Attendance",
+            "authors": "Priya Natarajan, Sam Okafor & Lee Whitfield",
+            "summary": "When the fictional town of Riverbend cut four bus routes, attendance fell 6% among students living farthest from school — and stayed down for two years. Using (made-up) administrative data on 120,000 students, this brief shows the burden fell hardest on lower-income families, driven by distance, not motivation.",
+            "url": "https://example.com/briefs/miles-to-go"
+          }
+        },
+        {
+          "id": "itm_3",
+          "group": "brief",
+          "fields": {
+            "title": "Small Rooms, Big Gains: Class-Size Reductions in Riverbend ISD",
+            "authors": "Daniela Osei & Marcus Whitfield",
+            "summary": "A fictional class-size pilot trimmed early-grade rosters from 24 to 17 students across 30 Riverbend ISD campuses. Reading scores rose modestly for all students but jumped for English learners — a reminder that “more attention per student” isn’t just a slogan. Costs ran about $1,400 per pupil per year.",
+            "url": "https://example.com/briefs/small-rooms-big-gains"
+          }
+        },
+        {
+          "id": "itm_4",
+          "group": "report",
+          "fields": {
+            "title": "Teacher Pipelines in the Prairie: An Evaluation of the Riverbend Residency",
+            "authors": "Alex Romero",
+            "summary": "A two-year evaluation of a fictional teacher-residency program finds residents stayed in the classroom at higher rates than traditionally certified peers — 88% versus 71% after three years — and rated their preparation markedly higher. Costs per retained teacher were roughly half those of emergency certification pathways.",
+            "url": "https://example.com/reports/prairie-pipelines"
+          }
+        },
+        {
+          "id": "itm_5",
+          "group": "report",
+          "fields": {
+            "title": "Counting Chairs: A Statewide Audit of Pre-K Seat Availability",
+            "authors": "Farrah Nkemelu & Owen Bradshaw",
+            "summary": "This fictional statewide audit finds pre-K seats fall short of demand in 60% of sampled counties, with rural counties facing waitlists twice as long as urban ones. The report models three expansion scenarios and estimates the price tag for closing the gap by 2030.",
+            "url": "https://example.com/reports/counting-chairs"
+          }
+        }
+      ]
+    },
+    "spotlight": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "itm_6",
+          "group": "programs",
+          "fields": {
+            "title": "ERC Graduate Research Program — Fall 2026",
+            "meta": "Faculty & students apply separately — deadline August 15, 2026",
+            "summary": "The ERC pairs doctoral students with faculty for a flexible research collaboration focused on data collection, analysis, and scholarly dissemination. Designed to supplement, not replace, existing assistantships. (Sample text — links go nowhere.)",
+            "url": "https://example.com/apply/grp-fall-2026"
+          }
+        },
+        {
+          "id": "itm_7",
+          "group": "programs",
+          "fields": {
+            "title": "ERC Data Fellows — Fall 2026 Cohort",
+            "meta": "Open to master’s and doctoral students — deadline August 22, 2026",
+            "summary": "A fictional cohort program pairing students with ERC-affiliated researchers for hands-on training in cleaning, linking, and analyzing large administrative datasets. Fellows receive a modest stipend and present findings at a spring showcase. (Sample text — links go nowhere.)",
+            "url": "https://example.com/apply/data-fellows-fall-2026"
+          }
+        },
+        {
+          "id": "itm_8",
+          "group": "events",
+          "fields": {
+            "title": "ERC EdTalk: Dr. Rowan Vale on Classroom AI",
+            "date": "July 15, 2026",
+            "time": "11:30 AM",
+            "location": "Harrington Hall 707",
+            "url": "https://example.com/events/edtalk-vale"
+          }
+        },
+        {
+          "id": "itm_9",
+          "group": "events",
+          "fields": {
+            "title": "In the Works: Faculty Research Talks",
+            "date": "July 29, 2026",
+            "time": "2:00 PM",
+            "location": "Harrington Hall 720",
+            "url": "https://example.com/events/in-the-works"
+          }
+        },
+        {
+          "id": "itm_10",
+          "group": "events",
+          "fields": {
+            "title": "ERC Methods Workshop: Difference-in-Differences, Demystified",
+            "date": "August 6, 2026",
+            "time": "10:00 AM",
+            "location": "Harrington Hall 512",
+            "url": "https://example.com/events/methods-workshop-did"
+          }
+        },
+        {
+          "id": "itm_11",
+          "group": "thisandthat",
+          "fields": {
+            "title": "ERC Happy Hour",
+            "date": "July 23, 2026",
+            "time": "4:30–6:30 PM CT",
+            "location": "The Blue Heron Patio"
+          }
+        }
+      ]
+    },
+    "events": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "itm_12",
+          "group": "tamu",
+          "fields": {
+            "title": "Civil Discourse Symposium",
+            "date": "July 20, 2026",
+            "time": "2:00 PM",
+            "location": "Sample Student Center 4231",
+            "url": "https://example.com/events/civil-discourse"
+          }
+        },
+        {
+          "id": "itm_13",
+          "group": "tamu",
+          "fields": {
+            "title": "Economics Speaker Series — Dr. Imani Cole",
+            "date": "July 30, 2026",
+            "time": "3:00 PM",
+            "location": "Sample Hall 2190",
+            "url": "https://example.com/events/econ-speaker-cole"
+          }
+        },
+        {
+          "id": "itm_14",
+          "group": "tamu",
+          "fields": {
+            "title": "Summer Data Science Bootcamp Showcase",
+            "date": "August 12, 2026",
+            "time": "1:00 PM",
+            "location": "Sample Engineering Building 118",
+            "url": "https://example.com/events/data-science-showcase"
+          }
+        },
+        {
+          "id": "itm_15",
+          "group": "offcampus",
+          "fields": {
+            "title": "Education Research and AI: A Community Conversation",
+            "date": "July 21, 2026",
+            "time": "2:00–3:00 PM ET",
+            "location": "Webinar (fictional)",
+            "url": "https://example.com/webinars/ai-community"
+          }
+        },
+        {
+          "id": "itm_16",
+          "group": "offcampus",
+          "fields": {
+            "title": "Homeroom with Education Leaders | Workforce Pathways",
+            "date": "July 23, 2026",
+            "time": "1:00 PM CT",
+            "location": "Webinar (fictional)",
+            "url": "https://example.com/webinars/homeroom-pathways"
+          }
+        },
+        {
+          "id": "itm_17",
+          "group": "offcampus",
+          "fields": {
+            "title": "Improving Student Attendance: What the Evidence Says",
+            "date": "July 17, 2026",
+            "time": "12:00 PM CT",
+            "location": "Webinar (fictional)",
+            "url": "https://example.com/webinars/attendance-evidence"
+          }
+        },
+        {
+          "id": "itm_18",
+          "group": "offcampus",
+          "fields": {
+            "title": "Rethinking Summer Learning Loss: A Panel Discussion",
+            "date": "August 4, 2026",
+            "time": "11:00 AM CT",
+            "location": "Webinar (fictional)",
+            "url": "https://example.com/webinars/summer-learning-loss"
+          }
+        }
+      ]
+    },
+    "opportunities": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "itm_19",
+          "group": "funding",
+          "fields": {
+            "title": "Sample College Strategic Research Awards",
+            "meta": "Deadline: August 1, 2026",
+            "url": "https://example.com/funding/strategic-awards"
+          }
+        },
+        {
+          "id": "itm_20",
+          "group": "funding",
+          "fields": {
+            "title": "Frontiers in Education Research Grant",
+            "meta": "LOI: August 1, 2026 | Full proposals: September 12, 2026",
+            "url": "https://example.com/funding/frontiers-grant"
+          }
+        },
+        {
+          "id": "itm_21",
+          "group": "funding",
+          "fields": {
+            "title": "Rural Schools Innovation Fund",
+            "meta": "Deadline: September 5, 2026",
+            "url": "https://example.com/funding/rural-innovation-fund"
+          }
+        },
+        {
+          "id": "itm_22",
+          "group": "fellowships",
+          "fields": {
+            "title": "Summer Education Policy Institute 2026",
+            "meta": "Deadline: August 1, 2026 | Doctoral students & postdocs",
+            "url": "https://example.com/fellowships/policy-institute"
+          }
+        },
+        {
+          "id": "itm_23",
+          "group": "fellowships",
+          "fields": {
+            "title": "Emerging Scholars Training Program in Education Data Science",
+            "meta": "Deadline: August 28, 2026 | Postdocs & early-career faculty",
+            "url": "https://example.com/fellowships/emerging-scholars-datasci"
+          }
+        },
+        {
+          "id": "itm_24",
+          "group": "calls",
+          "fields": {
+            "title": "Special Issue: Sustainability in Higher Education (fictional journal)",
+            "meta": "Manuscript deadline: May 1, 2027",
+            "url": "https://example.com/calls/sustainability"
+          }
+        },
+        {
+          "id": "itm_25",
+          "group": "calls",
+          "fields": {
+            "title": "2027 Education Research Conference — Call for Papers",
+            "meta": "Deadline: July 24, 2026",
+            "url": "https://example.com/calls/conference-2027"
+          }
+        },
+        {
+          "id": "itm_26",
+          "group": "calls",
+          "fields": {
+            "title": "Special Issue: AI and Assessment in K-12 Schools (fictional journal)",
+            "meta": "Abstract deadline: September 15, 2026",
+            "url": "https://example.com/calls/ai-assessment-k12"
+          }
+        }
+      ]
+    },
+    "policy": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "itm_27",
+          "group": "working",
+          "fields": {
+            "title": "Property Taxes and Playgrounds: School Bond Elections in Sample County",
+            "source": "Fictional Working Paper Series",
+            "url": "https://example.com/wp/bonds-playgrounds"
+          }
+        },
+        {
+          "id": "itm_28",
+          "group": "working",
+          "fields": {
+            "title": "Empty Desks: Measuring Attendance Shocks After Policy Changes",
+            "source": "Fictional Working Paper Series",
+            "url": "https://example.com/wp/empty-desks"
+          }
+        },
+        {
+          "id": "itm_29",
+          "group": "working",
+          "fields": {
+            "title": "Who Applies? Trends in Teacher Job Applications Since 2020",
+            "source": "Fictional Working Paper Series",
+            "url": "https://example.com/wp/who-applies"
+          }
+        },
+        {
+          "id": "itm_30",
+          "group": "working",
+          "fields": {
+            "title": "Grading on a Curve: Do Districts Inflate Scores Before Elections?",
+            "source": "Fictional Working Paper Series",
+            "url": "https://example.com/wp/grading-on-a-curve"
+          }
+        },
+        {
+          "id": "itm_31",
+          "group": "peer",
+          "fields": {
+            "title": "High-Impact Tutoring and Student Attendance: Evidence from a Sample State",
+            "source": "Journal of Made-Up Findings",
+            "url": "https://example.com/pr/tutoring-attendance"
+          }
+        },
+        {
+          "id": "itm_32",
+          "group": "peer",
+          "fields": {
+            "title": "Principal Turnover and School Climate: A Longitudinal Study",
+            "source": "Journal of Fictional Education Research",
+            "url": "https://example.com/pr/principal-turnover-climate"
+          }
+        },
+        {
+          "id": "itm_33",
+          "group": "misc",
+          "fields": {
+            "title": "AI in PK-12 Classrooms: A Practitioner’s Field Guide",
+            "source": "Sample Research & Policy Review",
+            "url": "https://example.com/misc/ai-field-guide"
+          }
+        },
+        {
+          "id": "itm_34",
+          "group": "misc",
+          "fields": {
+            "title": "Identifying Effective Attendance Strategies: A District Toolkit",
+            "source": "Riverbend Partnership for Education Research",
+            "url": "https://example.com/misc/attendance-toolkit"
+          }
+        },
+        {
+          "id": "itm_35",
+          "group": "misc",
+          "fields": {
+            "title": "Building Better Onboarding for First-Year Teachers: A Field Notebook",
+            "source": "Sample Research & Policy Review",
+            "url": "https://example.com/misc/first-year-onboarding"
+          }
+        }
+      ]
+    },
+    "headlines": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "itm_36",
+          "group": "federal",
+          "fields": {
+            "title": "National test scores hold steady in latest results",
+            "source": "The Sample Gazette",
+            "url": "https://example.com/news/test-scores-steady"
+          }
+        },
+        {
+          "id": "itm_37",
+          "group": "federal",
+          "fields": {
+            "title": "Federal student-aid changes take effect this month",
+            "source": "The Fictional Times",
+            "url": "https://example.com/news/student-aid-changes"
+          }
+        },
+        {
+          "id": "itm_38",
+          "group": "federal",
+          "fields": {
+            "title": "As classroom AI grows, districts scramble for guardrails",
+            "source": "Education Daily (fictional)",
+            "url": "https://example.com/news/ai-guardrails"
+          }
+        },
+        {
+          "id": "itm_39",
+          "group": "federal",
+          "fields": {
+            "title": "Lawmakers debate renewal of after-school funding program",
+            "source": "The Fictional Times",
+            "url": "https://example.com/news/afterschool-funding-renewal"
+          }
+        },
+        {
+          "id": "itm_40",
+          "group": "texas",
+          "fields": {
+            "title": "State launches new school-choice program — year one",
+            "source": "The Sample Tribune",
+            "url": "https://example.com/news/school-choice-year-one"
+          }
+        },
+        {
+          "id": "itm_41",
+          "group": "texas",
+          "fields": {
+            "title": "District budgets tighten as enrollment shifts",
+            "source": "The Sample Tribune",
+            "url": "https://example.com/news/district-budgets"
+          }
+        },
+        {
+          "id": "itm_42",
+          "group": "texas",
+          "fields": {
+            "title": "Statewide test results and accountability, explained",
+            "source": "The Sample Tribune",
+            "url": "https://example.com/news/results-explained"
+          }
+        },
+        {
+          "id": "itm_43",
+          "group": "texas",
+          "fields": {
+            "title": "Rural districts pilot four-day school week amid staffing crunch",
+            "source": "The Sample Tribune",
+            "url": "https://example.com/news/four-day-week-pilot"
+          }
+        }
+      ]
+    },
+    "misc": {
+      "enabled": false,
+      "items": []
+    }
+  }
+}

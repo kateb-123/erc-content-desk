@@ -3,28 +3,40 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { renderNewsletter, renderProse } from '../js/template.js';
-import { parseMarkdown, _resetIds } from '../js/parser.js';
 import { createEmptyIssue, SECTION_REGISTRY, POLICY_EXCHANGE_URL } from '../js/model.js';
 
-const issueOf = file => { _resetIds();
-  return parseMarkdown(readFileSync(new URL(`../fixtures/${file}`, import.meta.url), 'utf8')).issue; };
+// Parsed once from the hand-written issues the builder used to import; parsed
+// again on every call because these tests edit the issue they get back.
+const issueOf = file =>
+  JSON.parse(readFileSync(new URL(`../fixtures/${file}`, import.meta.url), 'utf8'));
+
+// One tamu event and nothing else: the smallest issue that renders a section.
+const sparseIssue = () => {
+  const issue = createEmptyIssue();
+  issue.date = 'June 16, 2026';
+  issue.intro = 'Welcome to the June 16, 2026 issue of the ERC Newsletter.';
+  issue.sections.events.items.push({ id: 'itm_1', group: 'tamu', fields: {
+    title: 'ERC EdTalk: Steven Woltering', date: 'June 18, 2026', time: '12:00 PM',
+    location: 'WCSS 218', url: 'https://erc.tamu.edu/events/edtalk' } });
+  issue.sections.events.enabled = true;
+  return issue;
+};
 
 test('render includes date, fonts, and a file-tab section header', () => {
-  const html = renderNewsletter(issueOf('full-issue.md'));
+  const html = renderNewsletter(issueOf('full-issue.json'));
   assert.match(html, /June 16, 2026/);
   assert.match(html, /Trebuchet MS/);
   assert.match(html, /border-radius:\s*8px 8px 0 0/); // file-tab corner
 });
 
 test('disabled/empty section is omitted from output', () => {
-  const issue = issueOf('sparse-issue.md');
-  const html = renderNewsletter(issue);
-  assert.ok(!/This &amp; That/i.test(html)); // no spotlight/This & That group in sparse fixture
+  const html = renderNewsletter(sparseIssue());
+  assert.ok(!/This &amp; That/i.test(html)); // no spotlight/This & That group in the sparse issue
 });
 
 test('Submit callout shows by default and is omitted when showSubmit is false', () => {
   const marker = 'Submit Your Research for an ERC Research Brief';
-  const issue = issueOf('full-issue.md');
+  const issue = issueOf('full-issue.json');
   assert.ok(renderNewsletter(issue).includes(marker), 'callout should show by default');
   issue.sections.research.showSubmit = false;
   assert.ok(!renderNewsletter(issue).includes(marker), 'callout should be omitted when toggled off');
@@ -61,8 +73,7 @@ test('renderProse only emits an anchor for safe URL schemes; unsafe schemes rend
 });
 
 test('featured event renders under a FEATURED eyebrow', () => {
-  // New grammar has no featured marker in the doc — featured is chosen in the app.
-  const issue = issueOf('full-issue.md');
+  const issue = issueOf('full-issue.json');
   const ev = issue.sections.events.items.find(Boolean);
   ev.group = 'featured';
   ev.featured = true;
@@ -71,7 +82,7 @@ test('featured event renders under a FEATURED eyebrow', () => {
 });
 
 test('all user text is escaped (no raw angle brackets injected)', () => {
-  const issue = issueOf('full-issue.md');
+  const issue = issueOf('full-issue.json');
   issue.sections.headlines.items[0].fields.title = 'A < B & C';
   const html = renderNewsletter(issue);
   assert.match(html, /A &lt; B &amp; C/);
@@ -80,7 +91,7 @@ test('all user text is escaped (no raw angle brackets injected)', () => {
 // ─── Regression tests (Fix 1 + Fix 2) ────────────────────────────────────────
 
 test('footer contains ERC horizontal lockup image URL', () => {
-  const html = renderNewsletter(issueOf('full-issue.md'));
+  const html = renderNewsletter(issueOf('full-issue.json'));
   assert.ok(
     html.includes('https://i.ibb.co/JjQWyZq3/ERC-Horizontal-White-Text-narrow.png'),
     'Expected footer ERC lockup image URL to appear in output'
@@ -88,7 +99,7 @@ test('footer contains ERC horizontal lockup image URL', () => {
 });
 
 test('eyebrow group label uses maroon color #913B3B', () => {
-  const html = renderNewsletter(issueOf('full-issue.md'));
+  const html = renderNewsletter(issueOf('full-issue.json'));
   assert.ok(
     html.includes('#913B3B'),
     'Expected eyebrow group label to use maroon #913B3B'
@@ -96,13 +107,13 @@ test('eyebrow group label uses maroon color #913B3B', () => {
 });
 
 test('headlines render source in parenthesized format', () => {
-  const html = renderNewsletter(issueOf('full-issue.md'));
+  const html = renderNewsletter(issueOf('full-issue.json'));
   // full-issue.md has a Federal headline with source "Ed Week"
   assert.match(html, /\(Ed Week\)/, 'Expected headline source to appear wrapped in parentheses');
 });
 
 test('"See more" tail link text appears in output', () => {
-  const html = renderNewsletter(issueOf('full-issue.md'));
+  const html = renderNewsletter(issueOf('full-issue.json'));
   assert.ok(
     html.includes('See more on the ERC website'),
     'Expected "See more on the ERC website" tail link to appear in output'
@@ -110,7 +121,7 @@ test('"See more" tail link text appears in output', () => {
 });
 
 test('spotlight renders between research and events with all three groups', () => {
-  const html = renderNewsletter(issueOf('full-issue.md'));
+  const html = renderNewsletter(issueOf('full-issue.json'));
   const iSpot = html.indexOf('ERC Spotlight');
   const iResearch = html.indexOf('ERC Research');
   const iEvents = html.indexOf('Upcoming Events');
@@ -120,12 +131,12 @@ test('spotlight renders between research and events with all three groups', () =
 });
 
 test('spotlight is a jump-nav target', () => {
-  const html = renderNewsletter(issueOf('full-issue.md'));
+  const html = renderNewsletter(issueOf('full-issue.json'));
   assert.match(html, /#spotlight/);
 });
 
 test('jump-nav contains anchor for the events section', () => {
-  const html = renderNewsletter(issueOf('full-issue.md'));
+  const html = renderNewsletter(issueOf('full-issue.json'));
   assert.ok(
     html.includes('href="#events"'),
     'Jump-nav must contain href="#events" for the enabled events section'
@@ -133,7 +144,7 @@ test('jump-nav contains anchor for the events section', () => {
 });
 
 test('export output has no edit hooks; editable output does', () => {
-  const i = issueOf('full-issue.md');
+  const i = issueOf('full-issue.json');
   assert.ok(!/data-edit-/.test(renderNewsletter(i)));            // default = clean export
   assert.match(renderNewsletter(i, { editable: true }), /data-edit-field="title"/);
 });
@@ -280,7 +291,7 @@ test('editable render tags the stamp for click-to-edit; export carries no hooks'
 // Read from the source, not retyped: the address moved once already (GitHub
 // Pages -> Vercel) and a hardcoded copy here just goes stale silently.
 const POLICY_EXCHANGE = POLICY_EXCHANGE_URL;
-const fullIssue = () => issueOf('full-issue.md');
+const fullIssue = () => issueOf('full-issue.json');
 const count = (html, needle) => html.split(needle).length - 1;
 
 test('"See more" tail links point at the Policy Exchange by default and never at "#"', () => {
@@ -437,7 +448,7 @@ test('a URL typed without a scheme is linked as https', () => {
 
 // ─── Spacing and measure (Kate, 2026-09-03: items 1 and 2 of the open list) ──
 test('items in a group sit closer together than the next group label', () => {
-  const html = renderNewsletter(issueOf('sample-real.md')); // several items per group
+  const html = renderNewsletter(issueOf('sample-real.json')); // several items per group
   assert.ok(!/padding: 24px 24px 0 24px;/.test(html), 'old 24px eyebrow gap gone');
   assert.ok((html.match(/padding: 32px 24px 0 24px;/g) || []).length >= 2, 'later group labels sit 32px below the last item');
   assert.match(html, /padding: 18px 24px 0 24px;/, 'first label under a tab keeps 18px');

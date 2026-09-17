@@ -1,5 +1,5 @@
 /**
- * state.js — localStorage persistence helpers for the ERC Newsletter Builder.
+ * state.js: localStorage persistence helpers for the ERC Newsletter Builder.
  *
  * All three functions guard localStorage access in try/catch: storage can
  * throw in private/incognito mode or when the quota is exceeded.
@@ -15,7 +15,7 @@ export function saveState(issue) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(issue));
   } catch (_) {
-    // Private mode / quota exceeded — silently ignore
+    // Private mode or quota exceeded: silently ignore
   }
 }
 

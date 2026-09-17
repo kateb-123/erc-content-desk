@@ -1,12 +1,13 @@
 /**
- * template.js — HTML renderer for the ERC Newsletter
- * Ports markup verbatim from newsletters/next-issue/ERC_Newsletter_next.html
+ * template.js: HTML renderer for the ERC Newsletter.
+ * Table-and-inline-style email markup, so it survives Outlook. The maroon
+ * lives here and nowhere in-app.
  */
 
 import { SECTION_REGISTRY } from './model.js';
 
 // ─── Escape helper ─────────────────────────────────────────────────────────────
-export function esc(s) {
+function esc(s) {
   return String(s || '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -16,14 +17,14 @@ export function esc(s) {
 
 // ─── Prose helper ──────────────────────────────────────────────────────────────
 
-/**
- * Escapes all text, converting [label](href) markdown links into a maroon
- * underlined <a target="_blank" rel="noopener">. No data-edit-* attributes.
- */
 const SAFE_HREF_SCHEME = /^(https?:|mailto:|#|\/)/i;
 
-/** An item url only becomes an href when its scheme is safe — same rule
- *  renderProse applies to markdown links. Unsafe links render as plain text. */
+/** A markdown link: [label](href), the href allowing one level of nesting so
+ *  a trailing ")" in a Wikipedia URL stays inside the href. */
+const MD_LINK = /\[([^\]]+)\]\(((?:[^()]|\([^()]*\))*)\)/g;
+
+/** A url only becomes an href when its scheme is safe. Unsafe links render
+ *  as plain text. Shared by item links and renderProse's markdown links. */
 function safeItemHref(url) {
   const trimmed = normalizeHref(url);
   return SAFE_HREF_SCHEME.test(trimmed) ? trimmed : '';
@@ -47,18 +48,22 @@ function applyEmphasis(escaped) {
     .replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
 }
 
+/**
+ * Escapes all text, converting [label](href) markdown links into a maroon
+ * underlined <a target="_blank" rel="noopener">. No data-edit-* attributes.
+ */
 export function renderProse(text) {
   if (!text) return '';
-  // Swap links out for tokens, style the whole run, then put the anchors back —
+  // Swap links out for tokens, style the whole run, then put the anchors back,
   // so **bold [across](url) a link** stays one bold run.
-  const re = /\[([^\]]+)\]\(((?:[^()]|\([^()]*\))*)\)/g;
   const links = [];
-  const tokenized = String(text).replace(re, (m, label, href) => { links.push({ label, href: normalizeHref(href) }); return `\u0000${links.length - 1}\u0000`; });
+  const tokenized = String(text).replace(MD_LINK, (m, label, href) => { links.push({ label, href }); return `\u0000${links.length - 1}\u0000`; });
   return applyEmphasis(esc(tokenized)).replace(/\u0000(\d+)\u0000/g, (m, i) => {
     const { label, href } = links[Number(i)];
     const inner = applyEmphasis(esc(label));
-    return SAFE_HREF_SCHEME.test(href)
-      ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color: #500000; text-decoration: underline;">${inner}</a>`
+    const safe = safeItemHref(href);
+    return safe
+      ? `<a href="${esc(safe)}" target="_blank" rel="noopener" style="color: #500000; text-decoration: underline;">${inner}</a>`
       : inner;
   });
 }
@@ -90,8 +95,8 @@ function editAttrs(section, itemId, field, editable) {
 /** The stamp: at most 96px wide, never taller than the text beside it. Pictures
  *  are photos, so a portrait headshot (4:5, 1.25× taller than wide) is the
  *  tallest shape assumed; wider photos come out shorter. Dropped below 40px.
- *  EdTalk headshots (Kate, 2026-09-08) sit beside the title too and may reach
- *  160px. No border on any stamp. */
+ *  EdTalk headshots sit beside the title too and may reach 160px. No border
+ *  on any stamp. */
 const STAMP = { max: 96, edtalkMax: 160, min: 40, gutter: 14, ratio: 1.25 };
 /** EdTalk items are recognised by their title ("ERC EdTalk with …"). */
 const isEdTalk = title => /\bEdTalks?\b/i.test(title || '');
@@ -156,7 +161,7 @@ function sectionHeader(id, label) {
 </td></tr>`;
 }
 
-/** Eyebrow group label — first group top padding 18px, subsequent 24px */
+/** Eyebrow group label: the first group's top padding is 18px, the rest 32px. */
 function eyebrow(label, first = false) {
   const topPad = first ? '18px' : '32px';
   return `<tr><td style="padding: ${topPad} 24px 0 24px;">
@@ -223,7 +228,7 @@ ${withStamp(title, rest, fields, 'research', item.id, editable, !!fields.summary
     });
   }
 
-  // Submit callout — optional, toggled per issue in Triage (default on).
+  // Submit callout: optional, toggled per issue on the Outline step (renderTriage), default on.
   if (sec.showSubmit !== false) {
     rows += `
 <tr><td style="padding: 20px 24px 22px 24px;">
@@ -308,7 +313,7 @@ function buildGroupedList(secReg, sec, editable = false) {
         ? `<p style="margin:0; line-height: 1.4; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs(sectionKey, item.id, 'meta', editable)}>${esc(fields.meta)}</p>`
         : '';
 
-      // Divider between items within same group (not after featured group — uses section divider)
+      // Divider between items within same group (the featured group uses the section divider)
       const needsItemDivider = isEvents && i < items.length - 1;
 
       if (isEvents) {
@@ -348,7 +353,7 @@ ${withStamp(title, rest, fields, sectionKey, item.id, editable, false)}
 }
 
 /**
- * Builds digest sections (policy, headlines) — grouped bullet lists.
+ * Builds digest sections (policy, headlines): grouped bullet lists.
  * Policy: title link only. Headlines: title + (Source) inline.
  */
 function buildGroupedDigest(secReg, sec, editable = false) {
@@ -422,7 +427,7 @@ ${groupHeading}<table role="presentation" cellspacing="0" cellpadding="0" border
 
 /**
  * Builds the ERC Spotlight section (kind: spotlight).
- * Groups: programs, events, thisandthat — in registry order, only groups present in items.
+ * Groups: programs, events, thisandthat, in registry order; only groups present in items.
  * All groups: bold title link + meta (or date | time | location) + optional summary.
  */
 function buildSpotlight(secReg, sec, editable = false) {
@@ -545,10 +550,10 @@ function anchorIdForSection(sectionKey) {
 
 function buildHeader(issue, editable = false) {
   const imgSrc = issue.headerImageUrl || 'https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/newsletter-masthead.png';
-  const date = issue.date || '';
+  const date = issue.date;
 
   // Build jump-nav dynamically from enabled sections in SECTION_REGISTRY order.
-  // Only sections that are enabled AND have items appear — same guard the builders use.
+  // Only sections that are enabled AND have items appear: the same guard the builders use.
   const navLinks = SECTION_REGISTRY
     .filter(secReg => {
       const sec = issue.sections[secReg.key];
@@ -558,7 +563,7 @@ function buildHeader(issue, editable = false) {
       const anchor = anchorIdForSection(secReg.key);
       const navText = secReg.navLabel ?? secReg.label;
       // In the editable preview the jump links go nowhere, so they are drawn
-      // as plain words rather than links that look clickable (f18).
+      // as plain words rather than links that look clickable.
       if (editable) return `<span style="color: rgb(83, 83, 83); font-weight: 700;">${esc(navText)}</span>`;
       return `<a href="#${anchor}" style="color: rgb(83, 83, 83); text-decoration: none; font-weight: 700;">${esc(navText)}</a>`;
     });
@@ -594,7 +599,6 @@ ${buildIntro(issue.intro, editable)}
 function buildIntro(introText, editable = false) {
   if (!introText) return '';
   const paras = introText.split(/\n\n+/).filter(Boolean);
-  if (paras.length === 0) return '';
   const styled = paras.map((p, i) => {
     const margin = i < paras.length - 1 ? 'margin: 0px 0px 12px;' : 'margin: 0px;';
     return `<p style="text-align: left; line-height: 1.5; ${margin} font-family: ${FONT_BODY}; font-size: 14px; color: #202020;"${editAttrs('intro', null, 'intro', editable)}>${renderProse(p.trim())}</p>`;
@@ -631,7 +635,7 @@ function preheader(issue) {
   let text = String(issue.preheader ?? '').trim();
   if (!text) {
     const plain = String(issue.intro ?? '')
-      .replace(/\[([^\]]+)\]\((?:[^()]|\([^()]*\))*\)/g, '$1')
+      .replace(MD_LINK, '$1')
       .replace(/\*\*?([^*]+)\*\*?/g, '$1')
       .replace(/\s+/g, ' ').trim();
     // Take whole sentences until there is enough to preview on (a lone "Howdy!" is not a preview).
