@@ -1,6 +1,5 @@
 // Usage: node scripts/visual-diff.mjs <mockup.png> <screenshot.png> [diff.png]
 // Prints a match percentage and writes a diff image (magenta = different).
-// From docs/CLAUDE-FRONTEND-PLAYBOOK.md §5.5.
 import fs from 'node:fs';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';

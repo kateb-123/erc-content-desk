@@ -6,106 +6,20 @@ Distilled from two r/ClaudeAI threads ("beautiful mockup, botched build" and "ho
 
 ---
 
-## How to use this file (for the human)
-
-1. Save it in your project as `docs/CLAUDE-FRONTEND-PLAYBOOK.md`.
-2. In Claude Code, type:
-   `Read docs/CLAUDE-FRONTEND-PLAYBOOK.md and do Section 1 (SETUP) now. Confirm each install with me before running it. Then wait for my first UI task.`
-3. To make Claude Code follow it every session, add this line to your `CLAUDE.md`:
-   `@docs/CLAUDE-FRONTEND-PLAYBOOK.md`
-   (or paste just the short block in Section 5.2 into `CLAUDE.md` to keep it lean).
-4. A few commands are slash commands that only you can type into the Claude Code prompt (`/reload-plugins`, `/mcp`, `/plugin`, `/frontend-design-audit`). Claude Code will tell you when to type one.
-
----
-
 ## 0. Instructions to Claude Code (read first)
 
 Unless the user says otherwise, assume they would rather describe what they want, judge a screenshot, answer multiple-choice questions, and type a command you give them than review code. Do not rely on them to catch mistakes in code. Plan and verify accordingly.
 
 This file has two parts:
 
-- **Section 1, SETUP.** The first time you read this file in a project, run the inventory in 1.1, tell the user what is missing from the Required tier, ask once for permission, then install it. Do not skip this. Do not install Optional items unless the user asks or a specific problem calls for it.
+- **Section 1, setup.** Setup done Sep 2: playwright-cli skill in `.claude/skills`, pixelmatch and pngjs, `scripts/visual-diff.mjs`. What is left in Section 1 is optional, on request only.
 - **Sections 2 to 6, WORKFLOW.** Apply on every UI task. The short version: get the design into the repo, break the work into one component at a time, build primitives first, and never call anything done without a screenshot and a pixel diff.
 
 ---
 
-## 1. SETUP (run once per machine and project)
+## 1. Setup
 
-### 1.1 Inventory before installing anything
-
-Run these and report the results to the user in plain language:
-
-```bash
-node --version                 # need Node 20 or newer
-claude --version
-claude plugin list
-claude mcp list
-which playwright-cli || echo "playwright-cli: not installed"
-ls .claude/skills 2>/dev/null || echo "no project skills dir"
-ls ~/.claude/skills 2>/dev/null || echo "no user skills dir"
-```
-
-Then say which Required items are missing and ask: "OK to install these now?" Wait for a yes.
-
-### 1.2 Required tier
-
-**A. Playwright CLI + its agent skill** (screenshots and snapshots of the real app; more token-efficient than Playwright MCP)
-
-```bash
-npm install -g @playwright/cli@latest
-cd <project root>
-playwright-cli install --skills      # initializes the workspace, writes .claude/skills/playwright-cli (Claude Code picks it up), and detects an installed Chrome
-playwright-cli install-browser       # only if the previous step did not find a browser
-playwright-cli --help                # command reference; the skill file also documents everything
-```
-
-Add `--global` to `install --skills` to put the skill in the home directory instead of the project. Smoke test with the dev server running (use the real port):
-
-```bash
-playwright-cli open http://localhost:3000
-playwright-cli resize 1440 900
-playwright-cli screenshot --filename=.screens/smoke.png --full-page
-playwright-cli close
-```
-
-Confirm `.screens/smoke.png` exists and looks like the app. Add `--headed` to `open` if the user wants to watch. Workspace config lives in `.playwright/cli.config.json` if launch options ever need changing.
-
-**B. `frontend-design` plugin (Anthropic, official marketplace)** - polished, non-generic UI code
-
-```bash
-claude plugin install frontend-design@claude-plugins-official
-```
-
-If it says the marketplace is not found: `claude plugin marketplace add anthropics/claude-plugins-official`, then retry.
-
-**C. `frontend-design-audit` plugin** - heuristic audit with severity-rated findings and fixes
-
-```bash
-claude plugin marketplace add mistyhx/frontend-design-audit
-claude plugin install frontend-design-audit@frontend-design-audit
-```
-
-Usage once loaded (the user types these): `/frontend-design-audit` (full audit of the project), `/frontend-design-audit:evaluate <path>` (report only), `/frontend-design-audit:improve` (apply fixes), `/frontend-design-audit:quick`, `/frontend-design-audit http://localhost:3000/page` (audit a live page).
-
-**D. `superpowers`** (brainstorm, write-plan, execute-plan, TDD, verification-before-completion)
-
-The user may already have this. Check `claude plugin list`. If missing:
-
-```bash
-claude plugin install superpowers@claude-plugins-official
-# or: claude plugin marketplace add obra/superpowers-marketplace && claude plugin install superpowers@superpowers-marketplace
-```
-
-**E. Pixel-diff script** (turns "looks close" into a number and a magenta diff image)
-
-```bash
-npm install -D pixelmatch pngjs
-mkdir -p scripts design/mockups .screens
-```
-
-Create `scripts/visual-diff.mjs` with the contents in Section 5.5. Add `.screens/` to `.gitignore`.
-
-### 1.3 Optional tier (only on request, or when a problem calls for it)
+### 1.1 Optional tier (only on request, or when a problem calls for it)
 
 | Tool | When it earns its place | Install |
 |---|---|---|
@@ -115,15 +29,15 @@ Create `scripts/visual-diff.mjs` with the contents in Section 5.5. Add `.screens
 | gstack | The user wants `/design-review`, `/design-shotgun` (4-6 mockup variants), `/qa` (real browser testing), `/review`. Large (23+ skills). Needs Bun and Chrome. | `git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack && cd ~/.claude/skills/gstack && ./setup` |
 | Vercel React best practices | React or Next.js projects only. | `npx skills add vercel-labs/agent-skills` |
 
-### 1.4 Activate and verify
+### 1.2 Activate and verify
 
 1. Ask the user to type `/reload-plugins` (if it warns about re-reading the conversation, `/reload-plugins --force`). Restarting Claude Code also works.
 2. Run `claude plugin list` and `playwright-cli --help` and show the user a short table: tool, installed yes/no, how to invoke.
 3. Confirm `/frontend-design-audit` appears under `/help` (user checks).
 
-### 1.5 Keep the stack lean
+### 1.3 Keep the stack lean
 
-One commenter's advice that proved useful: if output gets worse after adding skills, the skills may have competing objectives. If that happens, disable Optional plugins (`/plugin disable name@marketplace`) and retest with the Required tier only. Add things back one at a time.
+One commenter's advice that proved useful: if output gets worse after adding skills, the skills may have competing objectives. If that happens, disable the Optional plugins (`/plugin disable name@marketplace`) and retest with the installed set only. Add things back one at a time.
 
 ---
 
@@ -146,19 +60,19 @@ Also worth knowing: the default output is a grid of cards because that is what t
 ### Step 0. Intake and interrogation (before any code)
 
 1. Get the design into the repo. If it came from Stitch, Claude Design, or an HTML mockup: save the HTML/CSS to `design/mockups/<page>.html`. Always also save a PNG at a known viewport width to `design/mockups/<page>.png`. If the user only has a screenshot, that is enough; save it.
-2. Write a **component inventory** to `design/INVENTORY.md`: every visual element top to bottom, with name, purpose, data shown (source and shape), states (loading, empty, error, hover, active), interactions, and which mockup region it maps to.
-3. Run a **question round**. Read the mockup and the inventory, then ask the user the questions that remain, in priority order, in batches of five to eight. Give options with a recommended default rather than open-ended questions. Keep going until the inventory has no unknowns. Summarize decisions back into `design/INVENTORY.md`.
+2. Write a **component inventory** to `design/INVENTORY.md`, if the project keeps one: every visual element top to bottom, with name, purpose, data shown (source and shape), states (loading, empty, error, hover, active), interactions, and which mockup region it maps to.
+3. Run a **question round**. Read the mockup and the inventory, then ask the user the questions that remain, in priority order, in batches of five to eight. Give options with a recommended default rather than open-ended questions. Keep going until nothing is unknown. Summarize the decisions back into the inventory, or into `design/DESIGN.md` where the project keeps no inventory.
 
 ### Step 1. Lock the design into the repo
 
-1. Extract **design tokens** from the mockup into `design/DESIGN.md` (template in 5.1): colors, type scale and font families (and how fonts load), spacing scale, radii, shadows, borders, breakpoints, chart palette if any.
+1. Extract **design tokens** from the mockup into `design/DESIGN.md`: colors, type scale and font families (and how fonts load), spacing scale, radii, shadows, borders, breakpoints, chart palette if any.
 2. Put the same tokens **into code** where the framework reads them: `tailwind.config.*` theme, CSS variables in the global stylesheet, or the UI library's theme file. DESIGN.md is for humans and for you; the code file is the source of truth at build time. Keep them identical.
-3. Add `@design/DESIGN.md` to `CLAUDE.md` along with the rules in 5.2, so every session starts with the design loaded.
+3. Add `@design/DESIGN.md` to `CLAUDE.md` along with the rules in Section 4, so every session starts with the design loaded.
 4. **Prove the styling pipeline works** before building anything: render one element that uses a token (a colored box with the primary color and the heading font), screenshot it, confirm the color and font are right. If this fails, fix the pipeline first; nothing else matters until it passes.
 
 ### Step 2. Plan in small slices
 
-1. Use `superpowers` brainstorm and write-plan (or `/plan`). The plan is an ordered list of tasks, one component or one small feature each, with acceptance criteria in the format of 5.3.
+1. Use `superpowers` brainstorm and write-plan (or `/plan`). The plan is an ordered list of tasks, one component or one small feature each, with acceptance criteria in the format of 5.1.
 2. Order: tokens and theme, then primitives (Button, Section/Card, Table, Chart wrapper, Nav, Form controls), then composite components, then page assembly, then responsive pass, then polish.
 3. Prefer vertical slices with a concrete deliverable: "add the KPI tile component with loading and empty states, render it with sample data on /dev/kpi, screenshot it" rather than "build the dashboard".
 4. Ask the user to confirm the plan before executing. Then one task per session where possible.
@@ -197,7 +111,7 @@ For every task:
 ### Step 6. Session and repo hygiene
 
 1. Commit after every verified task with a small, descriptive message. This is the undo button for the day the build confidently rewrites three files the user liked.
-2. One session per task. When context gets long, write a handoff prompt (5.4) so the next session picks up cleanly.
+2. One session per task. When context gets long, write a handoff prompt (5.2) so the next session picks up cleanly.
 3. Keep `CLAUDE.md` lean: stack, conventions, test and lint commands, a short "do not do X" list, and the pointer to DESIGN.md.
 
 ---
@@ -206,7 +120,7 @@ For every task:
 
 Do:
 
-- Read `design/DESIGN.md` and `design/INVENTORY.md` at the start of every UI task.
+- Read `design/DESIGN.md` at the start of every UI task, and `design/INVENTORY.md` if the project keeps one.
 - Use tokens from the theme file. If a value is not in the tokens, add it to the tokens, do not hardcode it.
 - Build one component per task, screenshot it, diff it, then move on.
 - Show the screenshot path and the match percentage in every completion message.
@@ -225,51 +139,7 @@ Do not:
 
 ## 5. Templates
 
-### 5.1 `design/DESIGN.md`
-
-```markdown
-# Design spec: <project>
-
-## Source
-- Mockups: design/mockups/<page>.png (viewport 1440 wide), design/mockups/<page>.html
-- Origin: Stitch / Claude Design / hand-drawn (pick one), approved by <user> on <date>
-
-## Tokens (mirrored in <tailwind.config.ts | src/styles/tokens.css | theme file>)
-- Colors: background, surface, border, text-primary, text-muted, brand, brand-hover, accent, success, warning, danger (hex for each)
-- Chart palette (ordered): c1..c6 (hex), plus sequential and diverging ramps if charts are present
-- Typography: heading font (source and load method), body font, mono font; type scale (xs..3xl with px and line-height); weights in use
-- Spacing scale: 4, 8, 12, 16, 24, 32, 48, 64
-- Radii: sm, md, lg, full
-- Shadows: sm, md (only if the mockup uses them)
-- Borders: width, default color
-- Breakpoints: sm 640, md 768, lg 1024, xl 1280
-
-## Layout
-- Page shell: nav placement, max content width, gutters
-- Section separation style: whitespace / soft borders / cards (choose one default)
-- Grid: columns and gaps per breakpoint
-
-## Components (one block each, from INVENTORY.md)
-- <Name>: purpose, props/data, states, mockup region, notes
-
-## Do not
-- No new fonts, icon sets, or UI libraries without approval
-- No hardcoded colors or sizes outside the token file
-```
-
-### 5.2 Block for `CLAUDE.md`
-
-```markdown
-## Frontend
-- Design source of truth: @design/DESIGN.md and design/INVENTORY.md. Read both before UI work.
-- Full process: @docs/CLAUDE-FRONTEND-PLAYBOOK.md
-- Tokens live in <path>. Never hardcode colors, spacing, or fonts.
-- One component per task. Screenshot with playwright-cli, then `node scripts/visual-diff.mjs`. Report the match % every time.
-- Nothing is done without a screenshot from the running app.
-- Dev server: `<command>` on port <port>. Lint: `<command>`. Tests: `<command>`.
-```
-
-### 5.3 Task and acceptance template
+### 5.1 Task and acceptance template
 
 ```markdown
 Task: <component or slice name>
@@ -284,10 +154,10 @@ Acceptance:
 - Committed as "<message>"
 ```
 
-### 5.4 Handoff prompt (write this when a session gets long)
+### 5.2 Handoff prompt (write this when a session gets long)
 
 ```markdown
-Continue the <project> UI build. Read CLAUDE.md, design/DESIGN.md, design/INVENTORY.md, and docs/CLAUDE-FRONTEND-PLAYBOOK.md.
+Continue the <project> UI build. Read CLAUDE.md, design/DESIGN.md, design/INVENTORY.md (if the project keeps one), and docs/CLAUDE-FRONTEND-PLAYBOOK.md.
 Done and verified (committed): <list with match %>
 In progress: <task>, current match <N>%, last diff at .screens/<name>-diff.png, remaining differences: <list>
 Next tasks in order: <list>
@@ -295,54 +165,9 @@ Decisions made this session that are not yet in DESIGN.md: <list, then add them>
 Do not restyle anything in the "done" list.
 ```
 
-### 5.5 `scripts/visual-diff.mjs`
+### 5.3 `scripts/visual-diff.mjs`
 
-```js
-// Usage: node scripts/visual-diff.mjs <mockup.png> <screenshot.png> [diff.png]
-// Prints a match percentage and writes a diff image (magenta = different).
-import fs from 'node:fs';
-import { PNG } from 'pngjs';
-import pixelmatch from 'pixelmatch';
-
-const [, , aPath, bPath, outPath = '.screens/diff.png'] = process.argv;
-if (!aPath || !bPath) {
-  console.error('usage: node scripts/visual-diff.mjs <mockup.png> <screenshot.png> [diff.png]');
-  process.exit(2);
-}
-
-const a = PNG.sync.read(fs.readFileSync(aPath));
-const b = PNG.sync.read(fs.readFileSync(bPath));
-
-if (a.width !== b.width || a.height !== b.height) {
-  console.warn(`size mismatch: mockup ${a.width}x${a.height} vs screenshot ${b.width}x${b.height}. ` +
-    'Match the viewport to the mockup width before trusting the number.');
-}
-
-const width = Math.max(a.width, b.width);
-const height = Math.max(a.height, b.height);
-
-function pad(img) {
-  if (img.width === width && img.height === height) return img;
-  const p = new PNG({ width, height });
-  p.data.fill(255);
-  PNG.bitblt(img, p, 0, 0, img.width, img.height, 0, 0);
-  return p;
-}
-
-const A = pad(a);
-const B = pad(b);
-const diff = new PNG({ width, height });
-const mismatched = pixelmatch(A.data, B.data, diff.data, width, height, {
-  threshold: 0.1,
-  diffColor: [255, 0, 255],
-  alpha: 0.4,
-});
-
-fs.mkdirSync(outPath.includes('/') ? outPath.slice(0, outPath.lastIndexOf('/')) : '.', { recursive: true });
-fs.writeFileSync(outPath, PNG.sync.write(diff));
-const pct = (100 * (1 - mismatched / (width * height))).toFixed(2);
-console.log(`match: ${pct}%  (${mismatched} of ${width * height} pixels differ)  diff -> ${outPath}`);
-```
+The script lives at `scripts/visual-diff.mjs`. Usage: `node scripts/visual-diff.mjs <mockup.png> <shot.png> [diff.png]`.
 
 ---
 

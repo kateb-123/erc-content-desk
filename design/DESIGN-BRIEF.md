@@ -1,13 +1,9 @@
 # ERC Content Desk: brief for a designer
 
 Everything a designer needs to work on this app without reading the code first.
-Written Sep 11, 2026. The rules in `design/DESIGN.md` are the source of truth for
-style; this file explains what the thing is, what every control does, and how it
-runs. Where the two disagree, DESIGN.md wins.
-
-Heads up: `README.md` is stale. It describes the old v2 app (a `/submit` page that
-no longer exists, keyboard shortcuts that were removed, a Google Sheet as the source
-of truth). Read this file and DESIGN.md instead.
+Written Sep 11, 2026, corrected Sep 17. The rules in `design/DESIGN.md` are the
+source of truth for style; this file explains what the thing is, what every
+control does, and how it runs. Where the two disagree, DESIGN.md wins.
 
 ## 1. What it is and who uses it
 
@@ -54,84 +50,79 @@ Report, ERC Research), Event (A&M, Off-Campus, Webinar-Online), Opportunity
 
 ## 3. The screens, and what every control does
 
-A sidebar down the left of every page (Kate, Sep 16, from the Claude Design
-docs; the tabs and the header pill are gone; reordered the same day from the
-second round): **ERC Content Desk**; under **Policy Exchange**, Policy Exchange,
-Share an item, Listserv sign-up, each with a copy icon that puts one sentence
-with the link on the clipboard; under **Newsletter**, Next newsletter,
-Newsletter builder, Past newsletters; under **Desk work**, Sort (with the queue
-count), Finalize, Publish to Exchange, Send to Newsletter. Desk work folds: its
-heading has a chevron, the desk remembers it shut, and it always opens on a
-pipeline screen. The group headings carry the icons; the items carry none. From the front door the Pipeline items open the pipeline in its own
-window, which has the same sidebar and switches in place; the builder and the
-public pages open a new tab. On a Desk work screen the sidebar tucks behind a
-thin grey strip with one menu button (Kate, Sep 16, after clicking through four
-options); open, it is back in place and pushes the page over, and a pick, the
-close button on the same spot, or Escape tucks it away again. The builder's pages
-carry the same sidebar: the builder tucked like Desk work, Past newsletters open
-like Home. Above the content sits one status line that carries
+A sidebar down the left of every page: **ERC Content Desk**; under **Policy
+Exchange**, Policy Exchange, Share an item, Listserv sign-up, each with a copy
+icon that puts one sentence with the link on the clipboard; under **Newsletter**,
+Next newsletter, Newsletter builder, Past newsletters; under **Desk work**, Sort
+(with the queue count), Finalize, Publish to Exchange, Send to Newsletter. Desk
+work folds: its heading has a chevron, the desk remembers it shut, and it always
+opens on a pipeline screen. The group headings carry the icons; the items carry
+none. From the front door the pipeline items open the pipeline in its own window,
+which has the same sidebar and switches in place; the builder and the public
+pages open a new tab. On a Desk work screen the sidebar tucks behind a 48px strip
+with one menu button; open, it is back in place and pushes the page over, and a
+pick, the close button on the same spot, or Escape tucks it away again. The
+builder's pages carry the same sidebar: the builder tucked like Desk work, Past
+newsletters open like Home. Above the content sits one status line that carries
 loading and error messages for the whole app.
 
 Every screen head is a bare title plus a **View info** toggle that opens a tinted
-instruction panel, and (where the pipeline continues) one outlined door pill (the header's Build newsletter look, Sep 15)
-on the right with a right arrow: Go to Finalize, Go to Publish, Send to newsletter.
+instruction panel, and (where the pipeline continues) one tertiary door button on
+the right with a right arrow: Go to Finalize, Go to Publish, Send to Newsletter.
 
 ### Home
-- **Four stat cards** on the tint (Kate's pick J of four card variations, Sep 16,
-  after the one-line strip wrapped into a mess at her window width), each an icon,
-  a label and the value in the deep accent: *In the queue* ("14 waiting"; clicking
-  opens the queue fold and goes there), *Next newsletter* ("Sep 22", "1 item so far"
-  small beside it; clicking opens the Next newsletter page), *Exchange updated* (the
-  link to the Exchange), *Last newsletter* (the newest date in the builder's archive
-  index; the link to Past newsletters). A grid, so a narrow window gets two rows.
-- **Add to the queue** form (Claude Design round two, Kate's pick Sep 16): Title and
-  Link side by side, Description ("paste whatever you have"), the Type as pills
-  (picking one reveals its subtypes as smaller pills under a Subtype label; ERC
-  Event has none and shows "an event the ERC runs"), then one row at the foot:
-  "Your initials", the Spotlight checkbox, and Submit on the right. The same form
-  is the Next newsletter page's Quick add. Submit saves
-  at once and swaps the form for a drawn-check confirmation, "Got it, in the
-  queue.", and a **Submit another** button. A link with no other field is valid.
+- **Four stat tiles** on the tint, each an icon, a label and the value in the
+  deep accent: *In the queue* ("14 waiting"; clicking opens the queue fold and
+  goes there), *Next newsletter* ("Sep 22", "1 item so far" small beside it;
+  clicking opens the Next newsletter page), *Exchange updated* (the link to the
+  Exchange), *Last newsletter* (the newest date in the builder's archive index;
+  the link to Past newsletters). A grid, so a narrow window gets two rows.
+- **Add to the queue** form: Title and Link side by side, Description ("paste
+  whatever you have"), the Type as pills (picking one reveals its subtypes as
+  smaller pills under a Subtype label; ERC Event has none and shows "an event the
+  ERC runs"), then one row at the foot:
+  "Your initials", the Spotlight checkbox, and **Add to the queue** on the right.
+  The same form is the Next newsletter page's Quick add. It saves at once and
+  swaps the form for a drawn-check confirmation, "Got it, in the queue.", and an
+  **Add another** button. A link with no other field is valid.
 - **The spreadsheet door** under the form: drop or choose a .docx, .md, .txt,
   .xlsx or .csv. Spreadsheets map one row to one item; documents are split by
   Claude. The items appear in a review table (each with Remove, click a row to
   peek) and nothing saves until **Add all to the queue**, which opens a blocking
   progress popup.
-- **No rail** since Sep 16: the six quick links became the sidebar, so the form runs
-  the full column width.
+- **No rail**: the six quick links live in the sidebar, so the form runs the full
+  column width.
 - **The queue**, folded at the bottom: a closed section headed *In the queue*
   with the count badge and a chevron on the left; click the heading and the table
-  opens under it, and it stays the way you left it for the visit (Kate, Sep 15:
-  "just queue on the bottom and you can expand it out"). Every waiting and parked item, newest first,
-  sortable, with a red trash can per row. Deleting greys the row in place with an
-  Undo for the rest of the session. A row still being read says "Reading...".
+  opens under it, and it stays the way you left it for the visit. Every waiting
+  and parked item, newest first, sortable, with a red trash can per row. Deleting
+  greys the row in place with an Undo for the rest of the session. A row still
+  being read says "Reading...".
 
-### Next newsletter (Kate, Sep 15: "a list like a table. you can quick add to that", "a new page", "quick add is a whole thing for the newsletter ... it will get added to the queue for sort so everything is talking to each other")
-Reached from the sidebar or the strip's Next newsletter fact; the sidebar is the
-way back. The title is "Next newsletter, Sep 22" with the count badge and
-**Quick add** on its right; no lede (Kate, Sep 15: the panel's
-first title "was slop", so the words went). The table is the queue's shape:
-Title with the source under it, Type, Submitted, and a red **Remove** per row
+### Next newsletter
+Reached from the sidebar or Home's Next newsletter tile; the sidebar is the way
+back. The title is "Next newsletter, Sep 22" with the count badge and **Quick
+add** on its right, and no lede. The table is the queue's shape: Title with the
+source under it, Type, Submitted, and a red **Remove** per row
 that takes the item out of the issue (it stays in the queue). Quick add opens a
-dashed panel under the table headed "Add to the Sep 22 newsletter", holding the
-submit form (no whole-doc door): what
-it saves lands in this issue AND in the queue at once, and the table shows it
+dashed panel right under the head, where the click was, headed "Add to the Sep 22
+newsletter", holding the submit form (no whole-doc door): what it saves lands in
+this issue AND in the queue at once, and the table shows it
 with a grey **Not sorted yet** badge until Sort has had it (Skipped if Sort
 parked it). The status line says "In the next newsletter, and in the queue for
 Sort." A row Sort deletes leaves the issue with it. Send to Newsletter stays as
 the way to pick from what is already kept.
 
 ### Sort (the screen that matters most)
-A list and a card (Claude Design round two, Kate's pick C, Sep 16). The section
-pills sit in one row on top, each with a count: Needs a fix, ERC, ERC events,
-Research, Events, Opportunities, Headlines, Skipped. One section shows at a time;
-the screen lands on the first pill that holds anything. Needs a fix glows amber
-while it holds anything; it is the one notification on the screen (Sep 15). It
-gathers every row that cannot be kept yet (no type, a link the desk could not
-open) and every possible duplicate, one amber triangle before each title. Rows
-elsewhere carry no amber marks; a fixed row moves to its section. Skipped, last on
-the menu, holds every parked row of any type (option B, Sep 15): a Skip is never
-the end of the road.
+A list and a card. The sections sit as Carbon tabs in one row on top, each with a
+count: Needs a fix, ERC, ERC events, Research, Events, Opportunities, Headlines,
+Skipped. One section shows at a time; the screen lands on the first tab that holds
+anything. Needs a fix is the one warning tab and the one notification on the
+screen. It gathers every row that cannot be kept yet (no type, a link the desk
+could not open) and every possible duplicate, one amber triangle before each
+title. Rows elsewhere carry no amber marks; a fixed row moves to its section.
+Skipped, last in the row, holds every parked row of any type: a Skip is never the
+end of the road.
 
 - **The list and the card.** Under the section's name, Undo last and one filled
   **Keep the rest (N)**, the rows run down the left: the title with authors or
@@ -146,10 +137,11 @@ the end of the road.
 - **The fix panel** (amber, on the card of a row under Needs a fix) says each
   reason in words: Needs a type, Check the link, Possible duplicate. Keep stays
   locked until the type and the link are settled; Skip and Delete always work.
-- A pill's count is exactly the rows it lists. There is no All view (Sep 15,
-  Kate: one table per section, the menu pulls up the next).
-- **Edit** opens Title, Description, Link (and a picture control on ERC items) in
-  the card, with Save and Cancel.
+- A tab's count is exactly the rows it lists. There is no All view.
+- **Edit** opens the fields the row's type uses, then the Link and **Add media**
+  (any item can carry a picture or a flyer), in the card, with Save and Cancel.
+- **Keys**: up and down move through the list, K keeps, S skips, D deletes, U
+  undoes.
 - **The type picker**: the types as radios, the picked type's subtypes indented
   under it. Picking the subtype is the save; there is no Save button. A flat type
   (ERC Event) saves on the type pick. Change opens the same radios, with Cancel.
@@ -158,10 +150,10 @@ the end of the road.
   link.
 
 ### Finalize
-A list and a card (Claude Design round two, Kate's pick Sep 16). Under the title a
-progress line ("2 of 5 kept items need an ERC-voice description", then "1 of 2
-rewrites checked") and a 6px bar in the accent on the tint. Down the left, every
-unpublished keep in the standing order (ERC first), grouped: **Needs a rewrite**
+A list and a card. Under the title a progress line ("2 of 5 kept items need an
+ERC-voice description", then "1 of 2 rewrites checked") and an 8px bar in the
+accent on the tint. Down the left, every unpublished keep in the standing order
+(ERC first), grouped: **Needs a rewrite**
 (on the amber) or **To check**, then **Done** (a green check), then **No rewrite
 needed**, folded with its count. The card on the right shows the chosen row. A row
 waiting for its rewrite shows its **Original** text in the amber box, with Edit and
@@ -170,22 +162,24 @@ call; while it runs a dots loader shows. A rewrite to check shows **Before** and
 **After · ERC voice** side by side, the removed words struck in amber, the added ones
 on the green: **Edit** and **Delete** left, **Use original** and **Keep** (filled)
 right; either decision stamps the row and moves to the next. **Keep all remaining
-(N)**, a quiet link under the list, keeps every rewrite still waiting in one write.
-Any other row shows its facts and description with Edit and Delete. When nothing is
+(N)**, a quiet link under the list, keeps every rewrite still waiting in one
+write and says so, "Kept N rewrites. Undo", with no ask first. Any other row
+shows its facts and description with Edit and Delete. When nothing is
 left to check, the card reads "Every rewrite is checked. Go to Publish" and the head
 carries the **Go to Publish** door.
 
 ### Publish to Exchange
-On arrival it checks the live public file and shows a dots loader. Then (Claude
-Design round two, Kate's pick Sep 16) one **fate bar**: a 10px pill split by share
-of rows, adding in the accent, held for the newsletter in the loader's light blue,
-needs a fix in the amber line, already live in the line grey. Under it a legend
+On arrival it checks the live public file and shows a dots loader. Then one
+**fate bar**: an 8px square bar split by share of rows, adding in the accent,
+held for the newsletter in the loader's light blue, needs a fix in the amber
+line, already live in the line grey. Under it a legend
 ("2 adding", "1 held for the newsletter", "1 needs a fix", "Already live" with no
 number, ever); clicking an item shows only those rows, clicking again shows all.
 Then **one table** of every row: chevron, Title, Type, Submitted, **Fate**. Rows run
 adding, held (on the tint), needs a fix (on the amber, its Fate is a link that
 opens Sort's Needs a fix), already live (muted). The chips, the folds and the
-alert are gone. One deliberate button: **Publish N to the Exchange**, which disappears while
+alert are gone. One deliberate button: **Publish N to the Exchange**, which is
+replaced in place by one warning ask, Confirm or Cancel, and then disappears while
 it runs. After it, the page becomes a centred receipt card with a drawn check, and
 a single **Send to Newsletter** door.
 
@@ -202,13 +196,14 @@ door to the builder. A fold at the bottom lists what was already sent, each with
 **Remove** (which returns it to the pool, and is not the same as Delete).
 
 ### The builder (`/builder/`, its own page)
-Like Sort since Sep 16 (Kate's pick B): the desk's sidebar tucked behind the thin
-strip, no header bar (its links live in the menu), a **Newsletter builder** title
-on the page with the steps under it. A four-step wizard with numbered pills: **Review** (pick the issue, Pull from the
-desk, see what is staged) -> **Outline** (reorder, enable sections, Featured toggle)
--> **Preview & Edit** (a live email preview; click any text to edit it in a rail
-card, add an item, upload a picture) -> **Save & Export** (Copy HTML for Outlook,
-Save to the archive, Download .html). It shares the desk's look through its own
+Like a Desk work screen: the desk's sidebar tucked behind the thin strip, no
+header bar (its links live in the menu), a **Newsletter builder** title on the
+page with the steps under it. Four steps drawn as Carbon's progress indicator:
+**Review** (pick the issue, Pull from the desk, see what is staged) -> **Outline**
+(reorder the items, mark one event Featured, switch the research callout on or
+off) -> **Preview & Edit** (a live email preview; click any text to edit it in a
+rail card, add an item, upload a picture) -> **Save & Export** (Copy HTML for
+Outlook, Save to the archive, Download .html). It shares the desk's look through its own
 `--bp-*` tokens, which resolve to the same values.
 
 The email template itself is **not** part of this look: it keeps the ERC's outward
@@ -233,18 +228,6 @@ changes.
   `rewrite.js` (the ERC-voice rewrite), `publish.js` (check and publish to the
   public site), `newsletter-pull.js`, `newsletter-archive.js`, `newsletter-image.js`,
   `hub-updated.js`, `listserv.js`. Shared code is in `api/_lib/`.
-- **Data**: Vercel Postgres (Neon) is the truth, with a Google Sheet mirrored behind
-  it as a human-readable backup, written through an Apps Script web app
-  (`apps-script/Code.gs`). The Sheet's column order is positional, so a new column
-  can only be appended.
-- **Models**: Claude Haiku reads a submission (fills blank fields, cleans a pasted
-  announcement); Claude Opus does the ERC-voice rewrite. Crossref fills in journal
-  articles whose publisher blocks the reader.
-- **Environment**: `DATABASE_URL`, `SHEET_API_URL`, `SHEET_API_TOKEN`,
-  `GITHUB_TOKEN`, `HUB_REPO`/`HUB_BRANCH`/`HUB_CSV_PATH`/`HUB_CSV_URL`,
-  `ARCHIVE_REPO`/`ARCHIVE_BRANCH`, `TURNSTILE_SECRET_KEY`, `LISTSERV_URL`, plus the
-  Anthropic key. None of this affects design work, but it explains why some actions
-  are slow enough to need a loader.
 - **The public site is a different project** (`erc-policy-exchange`, its own repo).
   Publishing writes a row into that site's data file. It is out of scope here.
 - **The public submission form is also elsewhere** (a small GitHub Pages site). The
@@ -256,114 +239,40 @@ and shows a loader; publishing takes a moment and then shows a receipt.
 
 ## 5. The look
 
-All of this is specified with exact values in `design/DESIGN.md`. The short form:
-
-- **The system**: IBM Carbon v11, White theme, since Sep 17 (Kate: "A: full
-  Carbon"). The tokens are in `css/tokens.css`; the paragraphs below are the
-  short form.
-- **Colour**: IBM blue `#0f62fe` for filled buttons, tertiary outlines, links
-  and the lit tab or step; a white page with `#f4f4f4` layers for cards, lists
-  and tables; ink `#161616`, quiet text `#525252`, hairlines `#e0e0e0` on the
-  page and `#c6c6c6` inside a layer; success, warning, error and info each as a
-  Carbon `support-*` icon colour with a pale notification surface, and a darker
-  shade (`#198038`, `#684e00`, `#da1e28`) when the meaning is carried by words.
-  **Maroon `#500000` is forbidden in the app**: it belongs to the outward
-  newsletter and public site only.
-- **Type**: IBM Plex Sans for everything, 300, 400 and 600, on Carbon's
-  productive scale (14/20 body with .16px tracking, 12/16 labels with .32px,
-  28/36 regular page titles). From Google Fonts. No other faces without approval.
-- **Shape**: square. Radius 0 on buttons, fields, cards, tables and notes; only
-  tags, the queue count, the toggle and the loader's dots are round. Fields are
-  underlined, not boxed. Focus is a 2px blue ring inside the control. No shadows.
-- **Icons**: Font Awesome 7.3.1 Free, as small glyph accents only, always
-  `aria-hidden`. Two hand-drawn inline SVGs stay: the check that draws itself and
-  the sliding-dots loader.
-
-### The action vocabulary (the contract)
-The same word, icon and look for the same action everywhere: **Keep** (check,
-filled, the one per card), **Skip** (quiet bare word), **Delete** (trash, red quiet
-link, always available), **Edit** (pen, accent quiet link), **Use original** (back
-arrow), **Remove** (trash, red, takes an item out of a newsletter issue),
-**Verify link** (warning triangle on an amber bubble, then Confirm or Change),
-**Send early?** (clock on an amber bubble, then Confirm or Cancel), **View info**,
-**Re-check**, **Keep the rest (N)** (check, filled, the one per list), and door
-buttons with a right arrow.
-
-**Placement grammar**: tools (Edit) pair with Delete far left of a card footer; the
-decision pair sits right, secondary then primary; the position counter sits alone
-top right; **one filled button per card**; everything else quiet. Any in-flight
-button disappears rather than spinning, so nothing can be pushed twice.
-
-### Motion
-All CSS and vanilla JS; `prefers-reduced-motion` kills everything.
-
-- **A decision has no motion.** The slide and the shrink were both tried and
-  rejected. The decided row greys in place at the bottom of its section, with
-  Undo; that is what records the decision.
-- **Tab and section switches**: a 16px directional slide, 180ms,
-  `cubic-bezier(0.33, 1, 0.68, 1)`.
-- **Confirmations**: the check mark draws itself over 350ms.
-- **Loading**: a sliding-dots track (a blue ramp from `#9ec9e8` to `#14507a`) with
-  the label underneath and typed trailing dots; a mini variant sits inline in
-  control rows.
-- **Blocking progress**: bulk upload dims the page, shows a white card with the
-  count at body size, an 8px accent bar on a tint track, and one muted line. No
-  close button and no Escape: it exists to stop clicking around mid-upload.
-- **Buttons**: 150ms hover, 0.98 press.
-
-### Copy
-Sentence case. Terse. No emoji in the interface (icons are the sanctioned
-decoration). The same term for the same thing everywhere. No filler. Every string
-the app shows is collected in `docs/handbook/words.md`, so a rewrite can be read in
-one place, and a new string should earn its way in there.
+Specified with exact values in `design/DESIGN.md`: the tokens, the type, the
+shape, the icons, the action vocabulary, the motion and the copy rules. Read it
+there, not here.
 
 ## 6. Rules that must not be broken
 
-1. Maroon stays out of the app.
-2. One filled button per card or list; everything else is quiet.
-3. Decisions have no motion.
-4. No new fonts, icon sets or UI libraries without asking.
-5. No hardcoded colours or radii where a token exists.
-6. Delete is never locked; Keep waits for a type and a checked link.
-7. The submitter is never asked to type more. Work moves to the reader or to Sort.
-8. Nothing is "done" without a screenshot from the running sandbox.
+The style rules live in `design/DESIGN.md`. Two are about the work, not the look:
+
+1. Delete is never locked; Keep waits for a type and a checked link.
+2. The submitter is never asked to type more. Work moves to the reader or to Sort.
 
 ## 7. Where design help is actually wanted
 
 These are open, and a good answer would be taken:
 
-- **Sort is the screen Kate lives in.** The stream and the lists now coexist: All is
-  cards, every section pill is a list. Is that split right, or should one win?
-- **Density and rhythm of the lists.** Each row carries a title, a meta line, two
-  lines of description, a subtype and two actions. It works but it has not been
-  designed, only assembled from existing parts.
+- **Sort is the screen Kate lives in**, one section at a time as a list on the
+  left and a card on the right. Each row carries a title, a meta line, two lines
+  of description, a subtype and two actions. It works, but the density and rhythm
+  of that pair were assembled from existing parts, not designed.
 - **The amber one-ask pattern** (verify a link, send an event early) is used for
   anything that needs a decision before an item can move. It is the loudest thing
   on a card. Is it too loud, or not clear enough?
 - **Quiet action words vs icons.** The table says Skip is bare and Use original has
   an arrow; a first-time tester read that as random. Kate kept the table. A better
   rule would be welcome.
-- **The queue table on Home** is dense and read-only, and shares nothing with the
-  new lists on Sort. They could be one thing.
+- **The queue table on Home** is dense and shares nothing with Sort's lists. They
+  could be one thing.
 - **Empty and error states** were added as needed rather than designed.
 - **Mobile.** Nothing is designed for small screens. Submitting from a phone is
   plausible; sorting is not.
 
-## 8. How to see it running
+## 8. The two references README does not list
 
-- `node .superpowers/sandbox/sandbox-server.mjs` serves the real front end on fake
-  data at `localhost:4173` (it also serves `/builder/`). Nothing it does touches the
-  live data, the public site, or the models. This is where every visual change is
-  reviewed.
-- `npm test` runs the whole suite (381 tests, plain `node --test`, no framework).
-- More context in the repo: `design/DESIGN.md` (the style contract),
-  `docs/handbook/words.md` (every string), `docs/handbook/connections.md` (every
-  outside service), `docs/handbook/code-book.md` and `docs/CLAUDE-FRONTEND-PLAYBOOK.md`.
-- Bump the `?v=` numbers in `index.html` when JS or CSS changes.
-
-## 9. State of the repo, Sep 11, 2026
-
-Live on `main`: the section lists are **not** deployed yet; the live desk has the
-one-card Sort for every pill. The branch `feat/headline-list` holds the lists
-(5 commits), and the current checkout sits on it. Publish is in trial mode until
-the team finishes testing.
+`docs/handbook/code-book.md` (what each file holds) and
+`docs/CLAUDE-FRONTEND-PLAYBOOK.md` (the frontend process). `README.md` carries
+the rest: the sandbox command, the test command, `docs/handbook/words.md`,
+`docs/handbook/connections.md` and the `?v=` rule.

@@ -160,7 +160,6 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Skip"
 "Keep"
 "Use original"
-"Edit fields"
 "Undo last"
 "Go to Finalize"
 "Go to Publish"

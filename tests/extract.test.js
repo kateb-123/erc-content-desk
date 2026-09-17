@@ -37,13 +37,13 @@ test('parseExtraction rejects non-JSON', () => {
 });
 
 test('normalizeExtraction keeps known fields, drops unknown keys, surfaces needs_review', () => {
-  const { fields, warnings } = normalizeExtraction({
+  const { fields, needsReview } = normalizeExtraction({
     date: '2026-09-02', time: 305, headline: 'A usable title', needs_review: true, bogus: 'x',
   }, blankRow());
   assert.deepEqual(Object.keys(fields).sort(), ['date', 'headline', 'time']);
   assert.equal(fields.time, '305');
   assert.equal('bogus' in fields, false);
-  assert.equal(warnings.length, 1);
+  assert.equal(needsReview, true);
 });
 
 test('the prompt does not duplicate raw text when both blurb and original_text are present', () => {
@@ -176,10 +176,4 @@ test('the reader says whether the page behind the link is about this item (F20)'
   assert.equal(normalizeExtraction({ link_matches: false }, row).linkMismatch, true);
   assert.equal(normalizeExtraction({ link_matches: true }, row).linkMismatch, false);
   assert.equal(normalizeExtraction({}, row).linkMismatch, false);
-});
-
-test('the not-sure warning never names Claude to the team (F6)', () => {
-  const { warnings } = normalizeExtraction({ needs_review: true }, blankRow());
-  assert.doesNotMatch(warnings.join(' '), /Claude/);
-  assert.match(warnings.join(' '), /The reader wasn't sure/);
 });

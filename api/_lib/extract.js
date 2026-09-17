@@ -1,8 +1,9 @@
 /**
  * Submit-time metadata extraction. The submitter already chose title, type,
  * subtype, blurb, and link — this call only files the metadata columns from
- * the typed text. Offline-testable: no network calls here; api/submit.js owns
- * the Claude call. Runs on Haiku — a fraction of a cent per submission.
+ * the typed text. Offline-testable: no network calls here; extractWithClaude in
+ * api/_lib/reader.js owns the Claude call. Runs on Haiku, a fraction of a cent
+ * per submission.
  */
 import { TYPES, TYPE_ORDER, isValidType, isValidSubtype } from '../../js/schema.js';
 
@@ -102,7 +103,6 @@ export function parseExtraction(text) {
 
 export function normalizeExtraction(extracted, row) {
   const fields = {};
-  const warnings = [];
   for (const key of [...FIELD_KEYS, ...GUESS_KEYS]) {
     const value = extracted?.[key];
     if (value === undefined || value === null || String(value) === '') continue;
@@ -116,10 +116,7 @@ export function normalizeExtraction(extracted, row) {
   // The flag is RETURNED, not just warned about: it used to die here, so Sort
   // never learned the reader was unsure (Kate, Sep 9).
   const needsReview = extracted?.needs_review === true;
-  if (needsReview) {
-    warnings.push("The reader wasn't sure about this one. Double-check its fields.");
-  }
   const cleanBlurb = String(extracted?.clean_blurb ?? '').trim();
   const linkMismatch = extracted?.link_matches === false;
-  return { fields, warnings, needsReview, cleanBlurb, linkMismatch };
+  return { fields, needsReview, cleanBlurb, linkMismatch };
 }

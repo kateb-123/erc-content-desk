@@ -94,7 +94,7 @@ the live table predates. Run it before deploying code that reads a new column.
 ## Working on it
 
 ```bash
-npm test                                   # 381 tests, plain node --test
+npm test                                   # the whole suite, plain node --test
 node .superpowers/sandbox/sandbox-server.mjs   # the real front end on fake data, localhost:4173
 ```
 
