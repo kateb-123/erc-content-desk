@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { SECTION_REGISTRY, createEmptyIssue, sectionByAlias, groupByAlias, mergeIssueItems, mergeIssues, deleteItem, insertItem } from '../js/model.js';
+import { SECTION_REGISTRY, createEmptyIssue, sectionByAlias, groupByAlias, mergeIssueItems, mergeIssues, deleteItem, insertItem, splitSections } from '../js/model.js';
 
 test('registry order includes spotlight between research and events; no standalone happyhour', () => {
   const keys = SECTION_REGISTRY.map(s => s.key);
@@ -132,4 +132,16 @@ test('insertItem re-enables an emptied section', () => {
   insertItem(issue, removed.sectionKey, removed.index, removed.item);
   assert.equal(issue.sections.events.enabled, true);
   assert.equal(issue.sections.events.items.length, 1);
+});
+
+test('splitSections keeps the populated sections in registry order and names the rest (f15)', () => {
+  const issue = createEmptyIssue();
+  issue.sections.headlines.items.push({ id: 'b', group: 'texas', fields: { title: 'B' } });
+  issue.sections.events.items.push({ id: 'a', group: 'tamu', fields: { title: 'A' } });
+  const { populated, missing } = splitSections(issue);
+  assert.deepEqual(populated.map((s) => s.key), ['events', 'headlines']);
+  assert.deepEqual(missing, ['Featured Research', 'ERC Spotlight', 'Opportunities', 'New Education Policy Research', 'Miscellaneous']);
+  const none = splitSections(createEmptyIssue());
+  assert.equal(none.populated.length, 0);
+  assert.equal(none.missing.length, 7);
 });

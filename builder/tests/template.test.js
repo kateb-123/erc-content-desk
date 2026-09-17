@@ -509,3 +509,13 @@ test('an editable EdTalk render keeps the title and picture hooks inside the row
   assert.match(rowOf(html), /<img [^>]*data-edit-field="image"/);
   assert.match(rowOf(html), /data-edit-field="title"/);
 });
+
+test('the editable preview draws the jump links without an href, so nothing looks clickable that goes nowhere (f18)', () => {
+  const issue = createEmptyIssue();
+  issue.sections.events.items.push({ id: 'e1', group: 'tamu', fields: { title: 'A', url: 'https://x.org/a' } });
+  issue.sections.events.enabled = true;
+  const editable = renderNewsletter(issue, { editable: true });
+  assert.ok(!/href="#events"/.test(editable), 'no jump href in the editable preview');
+  assert.match(editable, />Events<\/span>/, 'the nav word still shows');
+  assert.match(renderNewsletter(issue), /href="#events"/, 'the export keeps its jump links');
+});

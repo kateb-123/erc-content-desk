@@ -180,3 +180,20 @@ export function mergeIssues(base, extra) {
   }
   return base;
 }
+
+/**
+ * The Outline's two lists (f15): the registry sections that hold items, in
+ * registry order, and the labels of the ones that do not.
+ * @param {object} issue
+ * @returns {{ populated: Array<object>, missing: Array<string> }}
+ */
+export function splitSections(issue) {
+  const populated = [];
+  const missing = [];
+  for (const reg of SECTION_REGISTRY) {
+    const items = issue?.sections?.[reg.key]?.items ?? [];
+    if (items.length) populated.push(reg);
+    else missing.push(reg.label);
+  }
+  return { populated, missing };
+}

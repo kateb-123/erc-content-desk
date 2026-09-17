@@ -6,7 +6,7 @@
  * each step.
  */
 
-import { SECTION_REGISTRY, mergeIssueItems, createEmptyIssue, mergeIssues, deleteItem, insertItem, issueLinks, issueItemIds, partitionPulled, countIssueItems } from './model.js';
+import { SECTION_REGISTRY, mergeIssueItems, createEmptyIssue, mergeIssues, deleteItem, insertItem, issueLinks, issueItemIds, partitionPulled, countIssueItems, splitSections } from './model.js';
 
 // The builder lives INSIDE the desk's project (/builder/), so the desk's API
 // is same-origin: relative fetches, no CORS. ?desk= still overrides for
@@ -18,8 +18,8 @@ import { saveState, loadState, clearState } from './state.js';
 import { getField, setField } from './editpath.js';
 import { computePreviewScale } from './preview.js';
 import { renderSidebar } from '../../js/sidebar-ui.js';
-import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage } from './wizard.js';
-import { arrowKeyTarget, normalizeLinkUrl } from './editing.js';
+import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO } from './wizard.js';
+import { arrowKeyTarget, normalizeLinkUrl, reorderRowName, movedAnnouncement } from './editing.js';
 
 // ---------------------------------------------------------------------------
 // State
@@ -32,7 +32,12 @@ const state = {
   baseline: null,
   /** @type {string} Current wizard step key */
   step: 'review',
+  /** @type {number} The furthest step index visited, so checks survive going back (e29) */
+  reached: 0,
 };
+
+/** True while the restore banner is asking; nothing writes storage or the issue until it is answered (d8). */
+let restorePending = false;
 
 // ---------------------------------------------------------------------------
 // Autosave helpers
@@ -77,7 +82,7 @@ function debounce(fn, wait) {
 
 /** Schedule a debounced save of the current issue to localStorage. */
 const scheduleSave = debounce(() => {
-  if (state.issue) saveState(state.issue);
+  if (state.issue && !restorePending) saveState(state.issue);
 }, 400);
 
 // ---------------------------------------------------------------------------
@@ -100,6 +105,48 @@ function faIcon(name) {
   return i;
 }
 
+/** A note's icon (e33): the glyph that goes with its --support-* colour, ahead of the words. */
+function noteIcon(name) {
+  const i = faIcon(name);
+  i.classList.add('note-icon');
+  return i;
+}
+
+/** A quiet word in the link colour: the builder's ghost button. */
+function ghostButton(label) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'ghost-btn';
+  b.textContent = label;
+  return b;
+}
+
+/**
+ * Carbon's inline notification (e30): the tint, the bar, the icon, the words,
+ * and a ghost Retry when there is something to try again. An error is an
+ * alert; anything else is a polite status.
+ * @param {'error'|'success'|'warning'} kind
+ * @param {string} message
+ * @param {(() => void)|null} [onRetry]
+ */
+function inlineNote(kind, message, onRetry = null) {
+  const icons = { error: 'circle-exclamation', success: 'circle-check', warning: 'triangle-exclamation' };
+  const note = document.createElement('div');
+  note.className = `note note--${kind}`;
+  if (kind === 'error') note.setAttribute('role', 'alert');
+  else { note.setAttribute('role', 'status'); note.setAttribute('aria-live', 'polite'); }
+  const words = document.createElement('span');
+  words.className = 'note-words';
+  words.textContent = message;
+  note.append(noteIcon(icons[kind]), words);
+  if (onRetry) {
+    const retry = ghostButton('Retry');
+    retry.addEventListener('click', onRetry);
+    note.append(retry);
+  }
+  return note;
+}
+
 /** @type {NodeListOf<HTMLElement>} */
 const stepSections = document.querySelectorAll('[data-step]');
 
@@ -114,20 +161,19 @@ const stepIndicators = document.querySelectorAll('[data-nav-step]');
  * an issue arrives on Review.
  */
 function syncStepNav() {
-  const idx = STEPS.indexOf(state.step);
-  const hasIssue = Boolean(state.issue);
+  const at = { current: state.step, reached: state.reached, itemCount: countIssueItems(state.issue) };
   stepIndicators.forEach((indicator) => {
     const navStep = indicator.dataset.navStep;
-    const isActive = navStep === state.step;
-    const navIdx = STEPS.indexOf(navStep);
-    indicator.classList.toggle('active', isActive);
-    indicator.classList.toggle('completed', hasIssue && !isActive && navIdx > -1 && navIdx < idx);
+    const shows = stepState(navStep, at);
+    indicator.classList.toggle('active', shows === 'current');
+    indicator.classList.toggle('completed', shows === 'complete');
     const btn = indicator.querySelector('button');
     if (!btn) return;
-    if (isActive) btn.setAttribute('aria-current', 'step');
+    if (shows === 'current') btn.setAttribute('aria-current', 'step');
     else btn.removeAttribute('aria-current');
-    if (canEnterStep(navStep, hasIssue)) btn.removeAttribute('aria-disabled');
-    else btn.setAttribute('aria-disabled', 'true');
+    // A locked step is greyed, and its title says why (e29).
+    if (shows === 'locked') { btn.setAttribute('aria-disabled', 'true'); btn.title = LOCKED_STEP_MESSAGE; }
+    else { btn.removeAttribute('aria-disabled'); btn.removeAttribute('title'); }
   });
 }
 
@@ -149,6 +195,7 @@ function goTo(step) {
   }
 
   state.step = step;
+  state.reached = Math.max(state.reached, idx);
 
   // Show/hide step containers
   stepSections.forEach((section) => {
@@ -162,9 +209,10 @@ function goTo(step) {
   syncStepNav();
   setWizardStatus('');
 
-  // Enable/disable the footer nav pair (the one Back/Next on the page)
+  // The footer pair: Back sleeps on the first step; Next has nowhere to go on
+  // the last, so it goes rather than greys (e31).
   btnBack.disabled = idx === 0;
-  btnNext.disabled = idx === STEPS.length - 1;
+  btnNext.hidden = idx === STEPS.length - 1;
 
   // Step-specific render hooks
   if (step === 'review') renderReview();
@@ -185,8 +233,8 @@ function goNext() {
   const idx = STEPS.indexOf(state.step);
   if (idx >= STEPS.length - 1) return;
   const next = STEPS[idx + 1];
-  // The same gate as the step buttons (b23): with no issue, Next says why and stays.
-  if (!canEnterStep(next, Boolean(state.issue))) { setWizardStatus(LOCKED_STEP_MESSAGE); return; }
+  // The same gate as the step buttons (b23, d9): with nothing pulled, Next says why and stays.
+  if (!canEnterStep(next, countIssueItems(state.issue))) { setWizardStatus(LOCKED_STEP_MESSAGE); return; }
   goTo(next);
 }
 btnBack.addEventListener('click', goBack);
@@ -200,7 +248,7 @@ stepIndicators.forEach((ind) => {
   btn.addEventListener('click', () => {
     const target = ind.dataset.navStep;
     if (!target || target === state.step) return;
-    if (!canEnterStep(target, Boolean(state.issue))) { setWizardStatus(LOCKED_STEP_MESSAGE); return; }
+    if (!canEnterStep(target, countIssueItems(state.issue))) { setWizardStatus(LOCKED_STEP_MESSAGE); return; }
     goTo(target);
   });
   // The whole step stays a click surface (its number circle included); the button is the control.
@@ -212,18 +260,22 @@ stepIndicators.forEach((ind) => {
 // __renderTriage exposed after function definition below
 
 
-/** The desk's header pattern, mirrored: bare title + "View info" toggle with
- *  a tinted instruction panel. Open state survives re-renders per step. */
+/** The desk's header pattern, mirrored: one lede line in the card title's
+ *  place (the step row already names the step, e35) + "View info" toggle
+ *  with a tinted instruction note. Open state survives re-renders per step. */
 const openStepInfo = new Set();
-function attachStepInfo(container, h2, key, text) {
+function attachStepInfo(container, key, lede, text) {
   const row = document.createElement('div');
   row.className = 'title-row';
+  const ledeEl = document.createElement('p');
+  ledeEl.className = 'step-lede';
+  ledeEl.textContent = lede;
   const toggle = document.createElement('button');
   toggle.type = 'button';
   toggle.className = 'info-toggle';
   const panel = document.createElement('div');
   panel.className = 'info-panel';
-  panel.textContent = text;
+  panel.append(noteIcon('circle-info'), document.createTextNode(text));
   const sync = () => {
     panel.hidden = !openStepInfo.has(key);
     toggle.textContent = openStepInfo.has(key) ? 'Hide info' : 'View info';
@@ -234,8 +286,7 @@ function attachStepInfo(container, h2, key, text) {
     sync();
   });
   sync();
-  h2.replaceWith(row);
-  row.append(h2, toggle);
+  row.append(ledeEl, toggle);
   container.append(row, panel);
 }
 
@@ -244,11 +295,9 @@ function renderReview() {
   if (!container) return;
   const h2 = container.querySelector('h2');
   container.innerHTML = '';
-  if (h2) {
-    container.appendChild(h2);
-    attachStepInfo(container, h2, 'review',
-      'Set the issue date, pull what the desk staged, and look it over. Pull again any time. Only new items are added.');
-  }
+  if (h2) container.appendChild(h2);
+  attachStepInfo(container, 'review', 'Pick the issue and pull what the desk staged.',
+    'Pick the issue, pull what the desk staged, and look it over. Pull again any time. Only new items are added.');
 
   // ── Issue date: a dropdown of the desk's scheduled issues, with staged
   //    counts. The desk owns the schedule; the builder just picks from it. ──
@@ -265,20 +314,28 @@ function renderReview() {
   placeholder.textContent = currentIso ? isoToDisplayDate(currentIso) : 'Loading issues…';
   if (currentIso) placeholder.value = currentIso;
   dateSelect.appendChild(placeholder);
+  // While the restore banner asks, the issue cannot be changed under it (d8).
+  dateSelect.disabled = restorePending;
   dateSelect.addEventListener('change', () => {
     if (!dateSelect.value) return;
     if (!state.issue) state.issue = createEmptyIssue();
-    // The issue keeps the display string the header renders ("July 01, 2026").
+    // The issue keeps the display string the header renders ("July 1, 2026").
     state.issue.date = isoToDisplayDate(dateSelect.value);
     scheduleSave();
     syncStepNav();
   });
   dateLabel.appendChild(dateSelect);
   metaSection.appendChild(dateLabel);
+  // Where a failed schedule load speaks (e30): an error note under the field, with Retry.
+  const scheduleNote = document.createElement('div');
+  scheduleNote.className = 'note-slot';
+  metaSection.appendChild(scheduleNote);
   container.appendChild(metaSection);
 
   // Fill the dropdown from the desk: scheduled dates plus anything staged.
-  (async () => {
+  async function loadSchedule() {
+    scheduleNote.replaceChildren();
+    if (!currentIso) placeholder.textContent = 'Loading issues…';
     try {
       const res = await fetch(`${DESK_URL}/api/newsletter-pull`);
       const data = await res.json();
@@ -307,33 +364,42 @@ function renderReview() {
         dateSelect.appendChild(opt);
       }
     } catch {
-      placeholder.textContent = currentIso ? isoToDisplayDate(currentIso) : "Couldn't reach the desk";
+      // The select keeps a real first option; the error speaks beside it, with a way to try again.
+      if (!currentIso) placeholder.textContent = 'Pick an issue…';
+      scheduleNote.replaceChildren(inlineNote('error', "Couldn't load the desk's issues.", loadSchedule));
     }
-  })();
+  }
+  loadSchedule();
 
   // ── Pull from the desk: the Content Desk's Newsletter screen stamps items
   //    for an issue; this button fetches them, already builder-shaped.
-  //    Re-pull adds only what's new (matched by link). ────────────────────
-  const sideDoor = document.createElement('div');
-  sideDoor.className = 'template-help';
+  //    Re-pull adds only what's new (matched by link). The button and its
+  //    status share one row under the field (e35). ────────────────────────
+  const pullRow = document.createElement('div');
+  pullRow.className = 'pull-row';
   const pullBtn = document.createElement('button');
   pullBtn.type = 'button';
   // The step's one real action: a filled primary, like the desk's Rewrite/Publish.
   pullBtn.className = 'btn btn-primary md-sidedoor-btn';
   pullBtn.textContent = 'Pull from the desk';
+  pullBtn.disabled = restorePending;   // locked while the restore banner asks (d8)
   const pullStatus = document.createElement('span');
   pullStatus.className = 'pull-status';
   pullStatus.setAttribute('role', 'status');    // read aloud as it changes (a7)
   pullStatus.setAttribute('aria-live', 'polite');
   pullStatus.textContent = pullMessage;
+  // A failed pull is an error note under the row, with Retry (e30).
+  const pullNote = document.createElement('div');
+  pullNote.className = 'note-slot';
   const setPull = (msg, busy = false) => {
     pullMessage = msg;
+    pullNote.replaceChildren();
     if (busy && msg) pullStatus.replaceChildren(dotsLoader(true), loadingLabel(msg));
     else pullStatus.textContent = msg;
   };
   pullBtn.addEventListener('click', async () => {
     const iso = displayDateToISO(state.issue?.date || '');
-    if (!iso) return setPull('Set the issue date first.');
+    if (!iso) return setPull('Pick the issue first.');
     pullBtn.disabled = true;
     pullBtn.hidden = true;   // gone while pulling; no double-clicks
     setPull('Pulling…', true);
@@ -360,16 +426,15 @@ function renderReview() {
       setPull(already ? `Pulled ${fresh} new · ${already} already here.` : `Pulled ${fresh} from the desk.`);
       if (fresh) { renderReview(); syncStepNav(); }
     } catch {
-      setPull("Couldn't reach the desk. Try again.");
+      setPull('');
+      pullNote.replaceChildren(inlineNote('error', "Couldn't reach the desk.", () => pullBtn.click()));
     } finally {
       pullBtn.disabled = false;
       pullBtn.hidden = false;
     }
   });
-  sideDoor.appendChild(pullBtn);
-  sideDoor.appendChild(document.createTextNode(' '));
-  sideDoor.appendChild(pullStatus);
-  container.appendChild(sideDoor);
+  pullRow.append(pullBtn, pullStatus);
+  container.append(pullRow, pullNote);
 
   // ── What's in the issue ──────────────────────────────────────────────────
   const items = [];
@@ -423,24 +488,6 @@ function renderReview() {
   }
   table.appendChild(tbody);
   container.appendChild(table);
-}
-
-const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'];
-
-/** "July 01, 2026" → "2026-07-01" for a date input ('' when unparseable). */
-function displayDateToISO(str) {
-  const t = Date.parse(str);
-  if (Number.isNaN(t)) return '';
-  const d = new Date(t);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-/** "2026-07-01" → "July 01, 2026" (component-wise, no timezone drift). */
-function isoToDisplayDate(value) {
-  const [y, m, d] = value.split('-').map(Number);
-  if (!y || !m || !d) return '';
-  return `${MONTH_NAMES[m - 1]} ${String(d).padStart(2, '0')}, ${y}`;
 }
 
 /**
@@ -514,11 +561,9 @@ function renderTriage() {
   // Clear existing content, keeping the h2
   const h2 = container.querySelector('h2');
   container.innerHTML = '';
-  if (h2) {
-    container.appendChild(h2);
-    attachStepInfo(container, h2, 'triage',
-      'Put the items in order with the arrows, mark one event Featured, and switch the Submit your research callout on or off. The issue builds in this order.');
-  }
+  if (h2) container.appendChild(h2);
+  attachStepInfo(container, 'triage', 'Put the issue in order.',
+    'Put the items in order with the arrows, mark one event Featured, and switch the Submit your research callout on or off. The issue builds in this order.');
 
   const issue = state.issue;
 
@@ -531,40 +576,29 @@ function renderTriage() {
     return;
   }
 
-  // ── Sections ─────────────────────────────────────────────────────────────
-  const sectionsHeading = document.createElement('h3');
-  sectionsHeading.className = 'triage-sections-heading';
-  sectionsHeading.textContent = 'Sections';
-  container.appendChild(sectionsHeading);
+  // ── Sections: only the populated ones are listed; the rest are named once
+  //    at the foot (f15). No toggle: a populated section is always included,
+  //    an empty one auto-hides. ───────────────────────────────────────────
+  const { populated, missing } = splitSections(issue);
+  for (const reg of SECTION_REGISTRY) {
+    const sec = issue.sections?.[reg.key];
+    if (sec) sec.enabled = (sec.items?.length ?? 0) > 0;
+  }
 
   const sectionsList = document.createElement('div');
   sectionsList.className = 'triage-sections-list';
 
-  for (const reg of SECTION_REGISTRY) {
-    const secData = issue && issue.sections && issue.sections[reg.key];
-    const items = (secData && secData.items) || [];
-    const isEmpty = items.length === 0;
+  for (const reg of populated) {
+    const secData = issue.sections[reg.key];
+    const items = secData.items;
     const row = document.createElement('div');
     row.className = 'triage-section-row';
 
-    // No toggle: every populated section is always included; empty sections
-    // auto-hide (nothing to render).
-    if (secData) secData.enabled = !isEmpty;
-
-    // Section name, with item count (e.g. "ERC Spotlight (2)") when non-empty
+    // Section name, with item count (e.g. "ERC Spotlight (2)")
     const nameSpan = document.createElement('span');
     nameSpan.className = 'triage-section-name';
-    nameSpan.textContent = isEmpty ? reg.label : `${reg.label} (${items.length})`;
-    if (isEmpty) nameSpan.classList.add('triage-section-name--empty');
+    nameSpan.textContent = `${reg.label} (${items.length})`;
     row.appendChild(nameSpan);
-
-    // Note for empty sections
-    if (isEmpty) {
-      const note = document.createElement('span');
-      note.className = 'triage-section-note';
-      note.textContent = '(nothing pulled for this section)';
-      row.appendChild(note);
-    }
 
     sectionsList.appendChild(row);
 
@@ -782,6 +816,13 @@ function renderTriage() {
   }
 
   container.appendChild(sectionsList);
+
+  if (missing.length) {
+    const rest = document.createElement('p');
+    rest.className = 'triage-missing';
+    rest.textContent = `Not in this issue: ${missing.join(', ')}.`;
+    container.appendChild(rest);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -796,7 +837,7 @@ function renderTriage() {
  */
 function editHoverCss() {
   const tokens = getComputedStyle(document.documentElement);
-  const wash = tokens.getPropertyValue('--accent-alpha').trim();
+  const wash = tokens.getPropertyValue('--accent-10').trim();   // the editable cue, plain enough to see (f18)
   const chosen = tokens.getPropertyValue('--highlight').trim();
   return `
 [data-edit-field] {
@@ -903,9 +944,10 @@ function buildIntroPanel(iframe) {
     refresh();
   });
   body.appendChild(editor.el);
+  // Edits are live, so Save is a quiet word, not a second primary (e32).
   const save = document.createElement('button');
   save.type = 'button';
-  save.className = 'btn btn-primary intro-save-btn';
+  save.className = 'ghost-btn intro-save-btn';
   save.textContent = 'Save';
   save.addEventListener('click', () => {
     if (state.issue) saveState(state.issue);
@@ -1622,9 +1664,10 @@ function openItemEditor(refs, iframe) {
     scheduleSave();
     refreshEditIframe(iframe);
   });
+  // Edits are live, so Save is a quiet word that closes the card (e32).
   const saveBtn = document.createElement('button');
   saveBtn.type = 'button';
-  saveBtn.className = 'btn btn-primary edit-card-save';
+  saveBtn.className = 'ghost-btn edit-card-save';
   saveBtn.textContent = 'Save';
   saveBtn.addEventListener('click', () => closeCard(key));
   // Remove this whole item from the issue (with Undo), only for real items,
@@ -1758,10 +1801,18 @@ function buildReorderPanel(iframe) {
   body.className = 'reorder-panel-body';
   details.appendChild(body);
 
+  // One polite region, outside the rebuilt body, says where a row landed (e34).
+  const live = document.createElement('div');
+  live.className = 'sr-only';
+  live.setAttribute('role', 'status');
+  live.setAttribute('aria-live', 'polite');
+  details.appendChild(live);
+
   const render = () => {
     body.innerHTML = '';
     const hint = document.createElement('p');
     hint.className = 'addon-hint';
+    hint.id = 'reorder-hint';
     hint.textContent = 'Drag a row, or focus it and press the arrow keys.';
     body.appendChild(hint);
     for (const reg of SECTION_REGISTRY) {
@@ -1782,16 +1833,21 @@ function buildReorderPanel(iframe) {
           body.appendChild(grpLabel);
         }
 
+        // Each bucket is a listbox of named options (e34).
         const listEl = document.createElement('div');
         listEl.className = 'reorder-list';
+        listEl.setAttribute('role', 'listbox');
+        listEl.setAttribute('aria-label', bucket.label ? `${reg.label}: ${bucket.label}` : reg.label);
 
         // One move for the drop and the arrow keys alike; the moved row keeps
-        // focus across the rebuild (b27).
+        // focus across the rebuild (b27) and the live region says where it went.
         const move = (fromIdx, toIdx, focusId) => {
+          const moved = bucket.items[fromIdx];
           moveWithinBucket(state.issue.sections[reg.key].items, bucket.items, fromIdx, toIdx);
           render();
           refreshEditIframe(iframe);
           scheduleSave();
+          live.textContent = movedAnnouncement(moved?.fields?.title, toIdx, bucket.items.length);
           if (!focusId) return;
           const again = body.querySelector(`.reorder-row[data-item-id="${CSS.escape(focusId)}"]`);
           if (again) again.focus();
@@ -1802,8 +1858,11 @@ function buildReorderPanel(iframe) {
           rowEl.className = 'reorder-row';
           rowEl.draggable = bucket.items.length > 1;
           rowEl.dataset.itemId = item.id;
+          rowEl.setAttribute('role', 'option');
+          rowEl.setAttribute('aria-label', reorderRowName(item.fields?.title, idx, bucket.items.length));
+          rowEl.setAttribute('aria-describedby', hint.id);
+          rowEl.tabIndex = 0;
           if (rowEl.draggable) {
-            rowEl.tabIndex = 0;
             rowEl.addEventListener('keydown', (e) => {
               const to = arrowKeyTarget(e.key, idx, bucket.items.length);
               if (to === null) return;
@@ -1874,11 +1933,9 @@ function renderEdit() {
 
   const h2 = container.querySelector('h2');
   container.innerHTML = '';
-  if (h2) {
-    container.appendChild(h2);
-    attachStepInfo(container, h2, 'edit',
-      'Click any text in the preview to edit it in a card on the right. The rail also holds the introduction, a one-off Add an item door, and reordering.');
-  }
+  if (h2) container.appendChild(h2);
+  attachStepInfo(container, 'edit', 'Check the issue and change anything in place.',
+    'Click any text in the preview to edit it in a card on the right. The rail also holds the introduction, a one-off Add an item door, and reordering.');
 
   if (!state.issue) {
     const msg = document.createElement('p');
@@ -1893,6 +1950,15 @@ function renderEdit() {
     window.removeEventListener('resize', previewResizeHandler);
     previewResizeHandler = null;
   }
+
+  // What the sheet is (f18): its scale, and that it is the editable one.
+  const previewNote = document.createElement('p');
+  previewNote.className = 'preview-note';
+  const sayScale = (scale) => {
+    previewNote.textContent = `Preview at ${Math.round(scale * 100)} percent, as it lands in Outlook. Click any text to edit it.`;
+  };
+  sayScale(PREVIEW_MAX_SCALE);
+  container.appendChild(previewNote);
 
   const layout = document.createElement('div');
   layout.className = 'edit-layout';
@@ -1926,6 +1992,7 @@ function renderEdit() {
     });
     if (scale <= 0) return;
     iframe.style.zoom = String(scale);
+    sayScale(scale);
   }
   refitPreview = fitPreview;
 
@@ -2031,7 +2098,9 @@ function showExportToast(container, message, type = 'success', duration = 2800) 
   if (type === 'error') toast.setAttribute('role', 'alert');
   else { toast.setAttribute('role', 'status'); toast.setAttribute('aria-live', 'polite'); }
   // Use textContent, never innerHTML, for user-derived or code-derived messages
-  toast.textContent = message;
+  const words = document.createElement('span');
+  words.textContent = message;
+  toast.append(noteIcon(type === 'error' ? 'circle-exclamation' : 'circle-check'), words);
   container.appendChild(toast);
 
   // Fade in
@@ -2059,7 +2128,7 @@ function copyHtml() {
   const html = renderNewsletter(state.issue);
 
   const onSuccess = () => {
-    if (container) showExportToast(container, 'HTML copied to clipboard!', 'success');
+    if (container) showExportToast(container, 'Copied.', 'success');
   };
   const onError = (err) => {
     console.error('[export] copyHtml failed:', err);
@@ -2115,6 +2184,8 @@ function downloadHtml() {
     new Blob([html], { type: 'text/html' }),
     `ERC_Newsletter_${slug}.html`
   );
+  const container = document.querySelector('[data-step="export"]');
+  if (container) showExportToast(container, 'Downloaded.', 'success');
 }
 
 /**
@@ -2145,25 +2216,18 @@ function renderExport() {
 
   const h2 = container.querySelector('h2');
   container.innerHTML = '';
-  if (h2) {
-    container.appendChild(h2);
-    attachStepInfo(container, h2, 'export',
-      'Copy the finished HTML for Outlook, save the issue to the archive, or download the file. Copy HTML is the one Outlook needs.');
-  }
+  if (h2) container.appendChild(h2);
+  attachStepInfo(container, 'export', 'Copy the issue into Outlook, then archive it.',
+    'Copy the finished HTML for Outlook, save the issue to the archive, or download the file. Copy HTML is the one Outlook needs.');
 
-  if (!state.issue) {
+  // Nothing to export yet (d9): one plain sentence, no buttons.
+  if (!state.issue || !countIssueItems(state.issue)) {
     const msg = document.createElement('p');
     msg.className = 'edit-empty-msg';
-    msg.textContent = 'No issue loaded. Build one from Review.';
+    msg.textContent = 'Nothing to export yet. Pull from the desk on the Review step first.';
     container.appendChild(msg);
     return;
   }
-
-  // Description paragraph
-  const desc = document.createElement('p');
-  desc.className = 'export-desc';
-  desc.textContent = 'Your newsletter is ready. Copy the HTML to paste directly into Outlook Web App, or download the file.';
-  container.appendChild(desc);
 
   // Button row. An error toast has no timeout; the next click on the row
   // clears it (in the capture phase, so a button's own new toast survives).
@@ -2174,11 +2238,11 @@ function renderExport() {
     if (err) err.remove();
   }, true);
 
-  // Copy HTML
+  // Copy HTML: the step's one primary, with its icon in the slot (e32).
   const copyBtn = document.createElement('button');
   copyBtn.type = 'button';
   copyBtn.className = 'btn btn-primary export-action-btn';
-  copyBtn.textContent = 'Copy HTML';
+  copyBtn.append('Copy HTML', faIcon('copy'));
   copyBtn.addEventListener('click', copyHtml);
 
   // Download .html
@@ -2189,20 +2253,33 @@ function renderExport() {
   dlHtmlBtn.addEventListener('click', downloadHtml);
 
   // Save to the archive: commits the issue's HTML through the desk, so it
-  // shows up under "View past newsletters" for good.
+  // shows up under Past newsletters for good. The archive write replaces an
+  // earlier save, so the index is read on entry (d10): a date already there
+  // gets one ask in the button's place before anything is written; a new
+  // date saves on the click. An unreadable index falls back to the plain
+  // button.
+  const archiveSlot = document.createElement('span');
+  archiveSlot.className = 'archive-slot';
   const archiveBtn = document.createElement('button');
   archiveBtn.type = 'button';
   archiveBtn.className = 'btn btn-secondary export-action-btn';
   archiveBtn.textContent = 'Save to the archive';
-  archiveBtn.addEventListener('click', async () => {
-    const iso = displayDateToISO(state.issue?.date || '');
-    if (!iso) { showExportToast(container, 'Set the issue date on Review first.', 'error'); return; }
-    archiveBtn.disabled = true;
-    archiveBtn.hidden = true;   // gone while saving; no double-clicks
+  archiveSlot.appendChild(archiveBtn);
+  const indexReady = fetch(`${DESK_URL}/builder/newsletters/index.json`, { cache: 'no-store' })
+    .then((res) => (res.ok ? res.json() : null))
+    .catch(() => null);
+  let savedThisVisit = null;   // a save on this visit puts the date in the archive; the next click asks
+
+  // After the save: a note that stays, with the way to the archive and the way on (e31).
+  const after = document.createElement('div');
+  after.className = 'export-after';
+
+  const saveToArchive = async (iso) => {
+    archiveSlot.replaceChildren();   // the button (or the ask) is gone while saving; no double-clicks
     const saveStatus = document.createElement('span');
     saveStatus.className = 'pull-status';
     saveStatus.append(dotsLoader(true), loadingLabel('Saving…'));
-    archiveBtn.after(saveStatus);
+    archiveSlot.appendChild(saveStatus);
     try {
       const res = await fetch(`${DESK_URL}/api/newsletter-archive`, {
         method: 'POST',
@@ -2211,24 +2288,66 @@ function renderExport() {
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'save failed');
-      showExportToast(container, data.replaced
-        ? 'Saved to the archive (replaced the earlier save).' : 'Saved to the archive.', 'success');
+      // The issue went out: stamped, so a later visit's banner says so (e31).
+      state.issue.sentAt = new Date().toISOString();
+      saveState(state.issue);
+      savedThisVisit = { date: iso, label: isoToDisplayDate(iso) };
+      const note = inlineNote('success', data.replaced ? 'Saved to the archive, replacing the earlier save.' : 'Saved to the archive.');
+      note.classList.add('save-note');
+      const open = document.createElement('a');
+      open.href = 'archive.html';
+      open.textContent = 'Open Past newsletters';
+      note.append(open);
+      const next = document.createElement('button');
+      next.type = 'button';
+      next.className = 'btn btn-tertiary';
+      next.append('Start the next issue', faIcon('arrow-right'));
+      next.addEventListener('click', startNextIssue);
+      after.replaceChildren(note, next);
     } catch (err) {
       showExportToast(container, err.message || "Couldn't save to the archive.", 'error');
     } finally {
-      saveStatus.remove();
-      archiveBtn.disabled = false;
-      archiveBtn.hidden = false;
+      archiveSlot.replaceChildren(archiveBtn);
     }
+  };
+
+  archiveBtn.addEventListener('click', async () => {
+    const iso = displayDateToISO(state.issue?.date || '');
+    if (!iso) { showExportToast(container, 'Pick the issue on Review first.', 'error'); return; }
+    const entry = archivedEntry(await indexReady, iso) ?? (savedThisVisit?.date === iso ? savedThisVisit : null);
+    if (!entry) { saveToArchive(iso); return; }
+    // First click asks; the ask's Confirm does the work (the desk's Publish shape).
+    const ask = inlineNote('warning', archiveAskMessage(entry));
+    ask.classList.add('archive-ask');
+    ask.removeAttribute('aria-live');
+    const ok = ghostButton('Confirm');
+    ok.classList.add('ask-confirm');
+    ok.addEventListener('click', () => saveToArchive(iso));
+    const no = ghostButton('Cancel');
+    no.addEventListener('click', () => { archiveSlot.replaceChildren(archiveBtn); archiveBtn.focus(); });
+    ask.append(ok, ' · ', no);
+    archiveSlot.replaceChildren(ask);
+    queueMicrotask(() => ok.focus({ preventScroll: true }));
   });
 
   btnRow.appendChild(copyBtn);
-  btnRow.appendChild(archiveBtn);
+  btnRow.appendChild(archiveSlot);
   btnRow.appendChild(dlHtmlBtn);
 
   container.appendChild(btnRow);
+  container.appendChild(after);
 
   // Toast target: toasts are appended here
+}
+
+/** The way on after an issue is archived (e31): storage cleared, back to Review for the next one. */
+function startNextIssue() {
+  clearState();
+  state.issue = null;
+  state.baseline = null;
+  state.reached = 0;
+  pullMessage = '';
+  goTo('review');
 }
 
 // ---------------------------------------------------------------------------
@@ -2236,16 +2355,18 @@ function renderExport() {
 // ---------------------------------------------------------------------------
 
 /**
- * Show a restore-session banner inside the review step if a saved issue
- * exists in localStorage. Restore → set state.issue and advance to triage.
- * Discard → clear storage and hide the banner.
+ * The restore banner: shown when a saved issue exists in localStorage. It
+ * sits above the step sections, not inside one, so a redraw of Review never
+ * removes it (d8); while it asks, nothing writes storage and the Issue select
+ * and Pull are locked. Restore sets state.issue and moves on; Discard clears
+ * storage with an Undo.
+ * @param {object} saved - the issue loaded from storage
  */
-function maybeShowRestoreBanner() {
-  const saved = loadState();
-  if (!saved) return;
-
-  const activeSection = document.querySelector(`[data-step="${state.step}"]`);
-  if (!activeSection) return;
+function showRestoreBanner(saved) {
+  const home = document.querySelector('.wizard-body');
+  if (!home) return;
+  document.getElementById('restore-banner')?.remove();
+  restorePending = true;
 
   const banner = document.createElement('div');
   banner.id = 'restore-banner';
@@ -2255,20 +2376,26 @@ function maybeShowRestoreBanner() {
 
   const msg = document.createElement('p');
   msg.className = 'restore-banner__msg';
-  msg.textContent = restoreBannerMessage(saved);   // names the date and the count (a10)
+  msg.append(noteIcon('triangle-exclamation'), restoreBannerMessage(saved));   // names the date and the count (a10)
 
   const btnRow = document.createElement('div');
   btnRow.className = 'restore-banner__btns';
+
+  const settle = () => {
+    restorePending = false;
+    banner.remove();
+  };
 
   const restoreBtn = document.createElement('button');
   restoreBtn.type = 'button';
   restoreBtn.className = 'btn btn-primary restore-banner__btn';
   restoreBtn.textContent = 'Restore';
   restoreBtn.addEventListener('click', () => {
+    settle();
     state.issue = saved;
     state.baseline = structuredClone(saved);
-    banner.remove();
-    goTo('triage');
+    // An issue with items goes on to the Outline; one without stays on Review (d9).
+    goTo(countIssueItems(saved) ? 'triage' : 'review');
   });
 
   const discardBtn = document.createElement('button');
@@ -2276,12 +2403,14 @@ function maybeShowRestoreBanner() {
   discardBtn.className = 'btn btn-secondary restore-banner__btn';
   discardBtn.textContent = 'Discard';
   discardBtn.addEventListener('click', (e) => {
+    settle();
     clearState();
-    banner.remove();
+    if (state.step === 'review') renderReview();   // unlocks the Issue select and Pull
     // Gone from storage, not from memory: Undo writes it back and asks again (a10).
     showUndoToast('Discarded the saved issue', () => {
       saveState(saved);
-      maybeShowRestoreBanner();
+      showRestoreBanner(saved);
+      if (state.step === 'review') renderReview();   // locks them again while it asks
     }, { focusUndo: e.detail === 0 });
   });
 
@@ -2289,9 +2418,7 @@ function maybeShowRestoreBanner() {
   btnRow.appendChild(discardBtn);
   banner.appendChild(msg);
   banner.appendChild(btnRow);
-
-  // Insert at the top of the active step section
-  activeSection.insertBefore(banner, activeSection.firstChild);
+  home.insertBefore(banner, home.firstChild);
 }
 
 window.__state = state;
@@ -2306,5 +2433,8 @@ window.__loadState = loadState;
 window.__clearState = clearState;
 // The desk's sidebar, tucked behind the thin strip like Desk work (Kate, Sep 16).
 renderSidebar(document.querySelector('.side'), { screen: 'builder', isSectionWindow: false, onGo: () => {}, queueCount: null });
+// A saved issue locks Review before it is drawn, so the first render already knows (d8).
+const savedIssue = loadState();
+restorePending = Boolean(savedIssue);
 goTo('review');
-maybeShowRestoreBanner();
+if (savedIssue) showRestoreBanner(savedIssue);

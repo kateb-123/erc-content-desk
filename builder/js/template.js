@@ -557,6 +557,9 @@ function buildHeader(issue, editable = false) {
     .map(secReg => {
       const anchor = anchorIdForSection(secReg.key);
       const navText = secReg.navLabel ?? secReg.label;
+      // In the editable preview the jump links go nowhere, so they are drawn
+      // as plain words rather than links that look clickable (f18).
+      if (editable) return `<span style="color: rgb(83, 83, 83); font-weight: 700;">${esc(navText)}</span>`;
       return `<a href="#${anchor}" style="color: rgb(83, 83, 83); text-decoration: none; font-weight: 700;">${esc(navText)}</a>`;
     });
   const navHtml = navLinks.join(' &nbsp;|&nbsp; ');

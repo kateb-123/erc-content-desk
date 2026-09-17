@@ -29,3 +29,31 @@ export function normalizeLinkUrl(raw) {
   if (scheme) return s.length > scheme[0].length + (s.startsWith(`${scheme[0]}//`) ? 2 : 0) ? s : '';
   return `https://${s}`;
 }
+
+/** A row's title as spoken: the placeholder stands in for an empty one. */
+function spokenTitle(title) {
+  return String(title ?? '').trim() || '(untitled)';
+}
+
+/**
+ * A reorder row's accessible name: the title and its place in the bucket,
+ * "Title, 2 of 5" (e34).
+ * @param {string} title
+ * @param {number} idx - the row's index in its bucket
+ * @param {number} len - the bucket's length
+ * @returns {string}
+ */
+export function reorderRowName(title, idx, len) {
+  return `${spokenTitle(title)}, ${idx + 1} of ${len}`;
+}
+
+/**
+ * What the live region says after a move: "Moved Title to 3 of 5" (e34).
+ * @param {string} title
+ * @param {number} idx - where the row landed
+ * @param {number} len
+ * @returns {string}
+ */
+export function movedAnnouncement(title, idx, len) {
+  return `Moved ${spokenTitle(title)} to ${idx + 1} of ${len}`;
+}
