@@ -21,6 +21,7 @@ const state = {
   schedule: [],
   screen: 'home',
   loaded: false,
+  loadFailed: false,         // the first read failed: Home and Next newsletter offer Try again (design audit a5)
   busy: false,
   sortFilter: '',           // '' = not picked yet (Sort lands where the work is); 'fix', 'erc', or a type key
   sortedThisVisit: 0,       // decisions made since page load (view state)
@@ -62,8 +63,10 @@ export async function reload() {
     state.rows = rows;
     state.schedule = schedule;
     state.loaded = true;
+    state.loadFailed = false;
     setStatus('', 'ok');
   } catch (err) {
+    state.loadFailed = !state.loaded;
     setStatus(plainError(err), 'error');
   }
   render();
@@ -451,7 +454,7 @@ export function render() {
   const common = { rows: state.rows, schedule: state.schedule, today };
   if (state.screen === 'home') {
     renderHome(screens.home, {
-      ...common, loaded: state.loaded,
+      ...common, loaded: state.loaded, loadFailed: state.loadFailed,
       hubUpdated: state.hubUpdated,
       lastIssue: state.lastIssue,
       onGoTo: goTo,
@@ -466,8 +469,9 @@ export function render() {
     });
   } else if (state.screen === 'issue') {
     renderIssue(screens.issue, {
-      ...common, loaded: state.loaded,
+      ...common, loaded: state.loaded, loadFailed: state.loadFailed,
       onQuickAdd: stampSubmitted,
+      onRefresh: reload,
       onRemove: row => unsendFromNewsletter([row.id]),
     });
   } else if (state.screen === 'sort') {

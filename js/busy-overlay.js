@@ -36,6 +36,8 @@ export function openBusyOverlay({ title, total, note = '' }) {
   card.tabIndex = -1;
 
   const heading = el('h2', '', title);
+  heading.id = 'busy-title';
+  card.setAttribute('aria-labelledby', heading.id);
   const count = el('div', 'busy-count');
   const doneEl = el('strong', '', '0');
   count.append(doneEl, el('span', '', ` of ${total}`));

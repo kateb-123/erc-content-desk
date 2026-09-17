@@ -286,6 +286,8 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .alert-word { color: var(--link-primary); text-decoration: none; }
 .alert-word:hover { color: var(--link-primary-hover); text-decoration: underline; }
 .link-alert input.is-invalid { border-bottom-color: var(--err); outline: 2px solid var(--err); outline-offset: -2px; }
+.field-error { margin: var(--spacing-02) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--err); }
+.load-failed { margin: var(--spacing-05) 0; color: var(--muted); display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; }
 
 /* Needs a fix, the one warning tab: yellow-70 for its word, the triangle in support-warning. */
 .sort-nav .sort-filter.is-alert:not(.is-active) { color: var(--amber); }
@@ -535,6 +537,7 @@ a.stat:hover, button.stat:hover:not(:disabled) { background: var(--highlight); b
   font-size: 20px; line-height: 28px; font-weight: 600;
 }
 .queue-fold summary::-webkit-details-marker { display: none; }
+.queue-fold summary h2 { font: inherit; margin: 0; display: inline; }
 .queue-fold summary .fa-solid { font-size: .8rem; color: var(--icon-secondary); transition: transform var(--duration-fast-02) var(--ease-standard); }
 .queue-fold[open] summary .fa-solid { transform: rotate(180deg); }
 .queue-fold summary:hover .fa-solid { color: var(--icon-primary); }
@@ -719,7 +722,8 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .fix-line { margin: 0; color: var(--ink); }
 .radio-line { display: flex; align-items: center; gap: var(--spacing-03); margin: var(--spacing-01) 0; color: var(--ink); cursor: pointer; }
 .radio-line input { margin: 0; accent-color: var(--accent); }
-.sub-radios { margin: var(--spacing-01) 0 var(--spacing-02) var(--spacing-06); padding-left: var(--spacing-04); border-left: 1px solid var(--line-in); }
+.type-radios { border: 0; padding: 0; margin: 0; min-width: 0; }   /* a fieldset, reset to the panel's own spacing (design audit b10) */
+.sub-radios { margin: var(--spacing-01) 0 var(--spacing-02) var(--spacing-06); padding: 0 0 0 var(--spacing-04); border: 0; border-left: 1px solid var(--line-in); min-width: 0; }
 .sub-radios .radio-line { font-size: 12px; line-height: 16px; letter-spacing: .32px; margin: var(--spacing-02) 0; }
 .fix-panel .link-alert { margin: 0; padding: 0; border: 0; background: none; }
 .fix-panel .link-alert .alert-mark { display: none; }

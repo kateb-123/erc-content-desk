@@ -15,10 +15,13 @@ export function titleWithInfo(title, key, text) {
   toggle.className = 'info-toggle';
   const panel = document.createElement('div');
   panel.className = 'info-panel';
+  panel.id = `info-${key}`;
   panel.textContent = text;
+  toggle.setAttribute('aria-controls', panel.id);
   const sync = () => {
     panel.hidden = !openInfo.has(key);
     toggle.textContent = openInfo.has(key) ? 'Hide info' : 'View info';
+    toggle.setAttribute('aria-expanded', String(openInfo.has(key)));
   };
   toggle.addEventListener('click', () => {
     if (openInfo.has(key)) openInfo.delete(key);

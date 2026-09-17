@@ -205,8 +205,11 @@ export function renderNewsletter(container, props) {
 
   if (upcoming.length > 1) {
     const pickRow = el('p', 'nl-issue');
-    pickRow.append('Issue: ');
+    const label = el('label', '', 'Issue');
+    label.htmlFor = 'nl-issue';
+    pickRow.append(label, ' ');
     const select = el('select');
+    select.id = 'nl-issue';
     for (const date of upcoming) {
       const opt = el('option', '', issueLabel(date));
       opt.value = date;
@@ -275,6 +278,7 @@ export function renderNewsletter(container, props) {
       const checkTd = el('td', 'nl-check');
       const box = el('input');
       box.type = 'checkbox';
+      box.setAttribute('aria-label', `Pick ${row.headline || row.link || 'this item'}`);
       box.checked = picked.has(row.id);
       box.addEventListener('click', event => event.stopPropagation());
       box.addEventListener('change', () => pickGesture(row));

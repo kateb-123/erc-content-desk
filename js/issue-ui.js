@@ -15,6 +15,7 @@ import { nextIssueDate } from './schedule.js';
 import { issueRows } from './issue-view.js';
 import { TYPE_LABELS } from './schema.js';
 import { renderSubmitForm } from './submit-form.js';
+import { tryAgain } from './home-ui.js';
 
 let quickOpen = false;   // view state: the form stays open across re-renders
 
@@ -42,7 +43,7 @@ function typeText(row) {
 }
 
 export function renderIssue(container, props) {
-  const { rows, schedule, today, loaded, onQuickAdd, onRemove } = props;
+  const { rows, schedule, today, loaded, loadFailed, onQuickAdd, onRemove, onRefresh } = props;
   const issue = nextIssueDate(schedule, today);
   const when = isoToShort(issue, today);
   const title = issue ? `Next newsletter, ${when}` : 'Next newsletter';
@@ -53,11 +54,22 @@ export function renderIssue(container, props) {
   head.append(h2);
   parts.push(head);
 
-  if (!loaded) { container.replaceChildren(...parts, dotsLoader()); return; }
-  if (!issue) { container.replaceChildren(...parts, el('p', 'empty', 'No issue date is scheduled yet.')); return; }
+  if (!loaded) { container.replaceChildren(...parts, loadFailed ? tryAgain(onRefresh) : dotsLoader()); return; }
+  if (!issue) {
+    // A dead end said so and nothing else (design audit c7): where the date lives, and a way to look again.
+    const empty = el('p', 'empty', 'No issue date is scheduled yet. Add a date to the Schedule sheet, then refresh. ');
+    const again = el('button', '', 'Refresh');
+    again.type = 'button';
+    again.addEventListener('click', () => { again.disabled = true; onRefresh?.(); });
+    empty.append(again);
+    container.replaceChildren(...parts, empty);
+    return;
+  }
 
   const inIssue = issueRows(rows, issue);
-  h2.append(' ', el('span', 'queue-badge', String(inIssue.length)));
+  const badge = el('span', 'queue-badge', String(inIssue.length));
+  badge.append(el('span', 'sr-only', ' items'));
+  h2.append(' ', badge);
 
   // ── Quick add sits right of the title; no lede, the table says it all. ──
   const quick = el('button', 'mini-btn', quickOpen ? 'Close quick add' : 'Quick add');

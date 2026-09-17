@@ -22,6 +22,16 @@ function el(tag, className, text) {
   return node;
 }
 
+/** When the first load failed: the reason is in the status line; this is the way to try again (design audit a5). */
+export function tryAgain(onRefresh) {
+  const box = el('p', 'load-failed');
+  const btn = el('button', '', 'Try again');
+  btn.type = 'button';
+  btn.addEventListener('click', () => { btn.disabled = true; onRefresh(); });
+  box.append("The desk couldn't load. ", btn);
+  return box;
+}
+
 /**
  * One stat card (Kate's pick J, Sep 16): an icon, a label, the value in the
  * deep accent, on the tint. An href makes it a link out; an onClick makes
@@ -37,12 +47,13 @@ function stat({ icon, label, value, unit, href, onClick, controls }) {
   const v = el('span', 'stat-value', value);
   if (unit) v.append(' ', el('small', '', unit));
   node.append(v);
+  if (href) node.append(el('span', 'sr-only', ' (opens in a new tab)'));
   return node;
 }
 
 export function renderHome(container, props) {
   const {
-    rows, schedule, today, loaded, hubUpdated, lastIssue,
+    rows, schedule, today, loaded, loadFailed, hubUpdated, lastIssue,
     onGoTo, onSubmitted, onRefresh, onDeleteFromQueue,
   } = props;
   // The shell (form, links, headings) paints immediately — only the
@@ -95,8 +106,10 @@ export function renderHome(container, props) {
 
   // ── The queue, folded at the bottom. The summary is the heading. ──
   const summary = container.querySelector('.queue-fold summary');
-  summary.replaceChildren(faIcon('chevron-down'), el('span', '', 'In the queue'), el('span', 'queue-badge', count));
+  const badge = el('span', 'queue-badge', count);
+  if (loaded) badge.append(el('span', 'sr-only', ' waiting'));
+  summary.replaceChildren(faIcon('chevron-down'), el('h2', '', 'In the queue'), badge);
   const body = container.querySelector('.queue-body');
-  if (!loaded) body.replaceChildren(dotsLoader());
+  if (!loaded) body.replaceChildren(loadFailed ? tryAgain(onRefresh) : dotsLoader());
   else renderQueueTable(body, { rows, schedule, today, onRefresh, onDelete: onDeleteFromQueue, bare: true });
 }

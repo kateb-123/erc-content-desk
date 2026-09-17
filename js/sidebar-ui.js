@@ -117,6 +117,9 @@ function build(nav, { isSectionWindow, onGo, screenRef }) {
       if (link.newTab) {
         a.target = '_blank';
         a.rel = 'noreferrer';
+        // Outside pages carry a small glyph; every new tab is named for assistive tech (design audit b16).
+        if (item.href && !item.href.startsWith('/')) { const out = faIcon('arrow-up-right-from-square'); out.classList.add('side-out'); a.append(out); }
+        a.append(el('span', 'sr-only', ' (opens in a new tab)'));
       }
       if (link.inPlace) a.addEventListener('click', (event) => { event.preventDefault(); onGo(item.screen); });
       row.append(a);
@@ -164,7 +167,7 @@ export function renderSidebar(nav, { screen, isSectionWindow, onGo, queueCount }
     if (here) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   }
   const count = nav.querySelector('.side-count');
-  if (count) count.textContent = queueCount == null ? '' : String(queueCount);
+  if (count) count.replaceChildren(...(queueCount == null ? [] : [String(queueCount), el('span', 'sr-only', ' waiting')]));
   const foldBox = nav.querySelector('.side-group.is-fold');
   if (foldBox) paintFold(foldBox, foldBox.querySelector('.side-fold'), foldOpen(readFold(), screen));
   paintMenu();

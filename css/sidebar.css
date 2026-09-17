@@ -36,6 +36,7 @@
 .side-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 auto; }
 .side-item:not(.is-brand) { padding-left: var(--spacing-07); }   /* no icon on the items: an indent under their heading */
 .side-count { flex: none; font-size: 12px; letter-spacing: .32px; color: var(--muted); font-weight: 400; }
+.side-item .side-out { width: auto; font-size: 10px; color: var(--icon-secondary); }   /* leaves the desk: a small glyph (design audit b16) */
 .side-item:hover { background: var(--row-hover); color: var(--ink); }
 .side-item.is-current { background: var(--selected); color: var(--accent-deep); font-weight: 600; box-shadow: inset 3px 0 0 var(--border-interactive); }
 .side-item.is-current .fa-solid { color: var(--accent); }

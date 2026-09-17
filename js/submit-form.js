@@ -161,7 +161,9 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
   // another" brings the (already reset) form back with the name kept.
   const doneBox = el('div', 'submit-done');
   doneBox.hidden = true;
-  container.append(doneBox);
+  doneBox.setAttribute('role', 'status');
+  doneBox.tabIndex = -1;
+  form.after(doneBox);   // where the form was, above the bulk door (design audit a4)
   function showConfirm(note) {
     const line = el('p', 'done-line');
     const icon = checkSvg();
@@ -180,6 +182,7 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
     // The spreadsheet door stays: a second item often follows the first (F16).
     form.hidden = true;
     doneBox.hidden = false;
+    doneBox.focus({ preventScroll: true });
   }
 
   // The type as pills, the picked type's subtypes as a second row (Claude

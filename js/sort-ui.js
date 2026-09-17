@@ -97,7 +97,8 @@ function buildEditForm(row, { onSave, onCancel }) {
  *  (Claude Design round two, Sep 16). Picking the subtype IS the save (Kate,
  *  Sep 1); a flat type (ERC Event) saves on the type pick (Sep 10). */
 function buildTypeRadios(row, onCommit) {
-  const box = el('div', 'type-radios');
+  const box = el('fieldset', 'type-radios');
+  const legend = el('legend', 'sr-only', 'Type');
   const name = `sort-type-${row.id}`;
   let pickedType = row.type || '';
   const radioLine = (group, label, checked, onChange) => {
@@ -111,7 +112,7 @@ function buildTypeRadios(row, onCommit) {
     return line;
   };
   const render = () => {
-    box.replaceChildren();
+    box.replaceChildren(legend);
     for (const t of TYPE_ORDER) {
       box.append(radioLine(name, TYPE_LABELS[t] ?? t, t === pickedType, () => {
         pickedType = t;
@@ -120,7 +121,8 @@ function buildTypeRadios(row, onCommit) {
         box.querySelector(`input[name="${name}"]:checked`)?.focus();
       }));
       if (t !== pickedType || typeIsFlat(t)) continue;
-      const subs = el('div', 'sub-radios');
+      const subs = el('fieldset', 'sub-radios');
+      subs.append(el('legend', 'sr-only', 'Subtype'));
       for (const sub of subtypesFor(t)) {
         subs.append(radioLine(`${name}-sub`, sub, row.type === t && row.subtype === sub, () => onCommit(t, sub)));
       }
@@ -153,17 +155,27 @@ function buildLinkAlert(row, href, onVerify) {
   const input = document.createElement('input');
   input.type = 'url';
   input.placeholder = 'paste the right link';
+  input.setAttribute('aria-label', 'New link');
+  const bad = el('p', 'field-error', 'Paste a full http(s) link');
+  bad.id = `link-error-${row.id}`;
+  bad.hidden = true;
   const saveLink = el('button', 'linkish alert-word', 'Save');
   saveLink.type = 'button';
   change.addEventListener('click', () => { changeRow.classList.add('is-open'); input.focus(); });
   const saveFixed = () => {
     const fixed = input.value.trim();
-    if (!safeHref(fixed)) { input.classList.add('is-invalid'); return; }
+    if (!safeHref(fixed)) {
+      input.classList.add('is-invalid');
+      input.setAttribute('aria-invalid', 'true');
+      input.setAttribute('aria-describedby', bad.id);
+      bad.hidden = false;
+      return;
+    }
     onVerify(fixed);
   };
   saveLink.addEventListener('click', saveFixed);
   input.addEventListener('keydown', e => { if (e.key === 'Enter') saveFixed(); });
-  input.addEventListener('input', () => input.classList.remove('is-invalid'));
+  input.addEventListener('input', () => { input.classList.remove('is-invalid'); input.removeAttribute('aria-invalid'); bad.hidden = true; });
   // One ask: "Verify link" opens the source. The two outcomes — It works /
   // Change — only appear once she's been there (Kate, Sep 1).
   const after = el('span', '');
@@ -181,7 +193,7 @@ function buildLinkAlert(row, href, onVerify) {
     line.append(' Missing link');
   }
   line.append(after);
-  changeRow.append(input, ' ', saveLink);
+  changeRow.append(input, ' ', saveLink, bad);
   alert.append(line, changeRow);
   if (href) {
     // The whole amber box is the ask, not only the two words in it — the
@@ -516,6 +528,7 @@ export function renderSort(container, props) {
   container.append(head, info.panel);
 
   const nav = el('nav', 'sort-nav');
+  nav.setAttribute('aria-label', 'Sections');
   for (const [key, label] of FILTER_LABELS) {
     const count = counts[key];
     let cls = 'sort-filter';
