@@ -216,9 +216,11 @@ export function renderPublish(container, props) {
     if (receipt.classList.contains('pub-done-anim')) icon.classList.add('draw-check');
     ring.append(icon);
     receipt.append(ring);
-    receipt.append(el('h3', '', `Published ${receiptCount} to the Exchange`));
+    receipt.append(el('h3', '', isTrial
+      ? `Trial run: ${receiptCount} would have been published`
+      : `Published ${receiptCount} to the Exchange`));
     receipt.append(el('p', '', isTrial
-      ? 'Trial run. Nothing went to the live Exchange.'
+      ? 'Nothing went to the live Exchange.'
       : 'The site updates in about a minute.'));
     const door = el('button', 'door slim-door', 'Send to Newsletter ');
     door.append(forwardIcon());

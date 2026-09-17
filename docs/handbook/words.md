@@ -216,6 +216,8 @@
 "Checking the live Exchange…"
 "Checked against the live Exchange · "
 "Published [N] to the Exchange"
+"Trial run: [N] would have been published" (the receipt in trial mode, Sep 17; the body says "Nothing went to the live Exchange.")
+"Skip to content" (the keyboard skip link, Sep 17)
 "The site updates in about a minute."
 "Sent [N] to the [Month D] issue. The builder pulls them from here."
 "Was in the [Month D] issue"

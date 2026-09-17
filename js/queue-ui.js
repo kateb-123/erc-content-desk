@@ -108,9 +108,10 @@ export function renderQueueTable(container, { rows, today, onRefresh, onDelete, 
     const th = el('th');
     const active = sortState.column === col.key;
     if (active) th.setAttribute('aria-sort', sortState.dir === 'desc' ? 'descending' : 'ascending');
-    const glyph = active ? (sortState.dir === 'desc' ? '↓' : '↑') : '↕';
-    const btn = el('button', 'sort-btn', `${col.label} ${glyph}`);
+    const btn = el('button', 'sort-btn', col.label);
     btn.type = 'button';
+    btn.append(faIcon(active ? (sortState.dir === 'desc' ? 'arrow-down' : 'arrow-up') : 'sort'));
+    if (active) btn.append(el('span', 'sr-only', sortState.dir === 'desc' ? ', sorted descending' : ', sorted ascending'));
     btn.addEventListener('click', () => {
       if (sortState.column === col.key) sortState.dir = sortState.dir === 'desc' ? 'asc' : 'desc';
       else sortState = { column: col.key, dir: col.key === 'submitted' ? 'desc' : 'asc' };

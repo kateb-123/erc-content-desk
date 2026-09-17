@@ -110,7 +110,7 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
       <label class="bulk-drop">
         <strong>Drop a file here</strong> or click to choose one
         <span class="hint">.docx, .md, .txt, .xlsx or .csv. Items are shown for review before anything is saved.</span>
-        <input class="bulk-file" type="file" accept=".docx,.md,.txt,.xlsx,.csv" hidden>
+        <input class="bulk-file sr-only" type="file" accept=".docx,.md,.txt,.xlsx,.csv">
       </label>
       <p class="bulk-templates">Need a starting point? <a href="/templates/erc-upload-template.docx" download>Word template</a> · <a href="/templates/erc-upload-template.xlsx" download>Spreadsheet template</a></p>
       <div class="bulk-review" hidden>
@@ -408,7 +408,8 @@ export function renderSubmitForm(container, { onSubmitted, bulk = true } = {}) {
     bulkFile.value = '';
     show(bulkStatus, failures.length
       ? `Added ${saved}. Couldn't add: ${failures.join('; ')}`
-      : `Added all ${saved} to the queue ✓`, failures.length ? 'error' : 'ok');
+      : `Added all ${saved} to the queue`, failures.length ? 'error' : 'ok');
+    if (!failures.length) bulkStatus.prepend(checkSvg());
     if (saved) onSubmitted?.();
     event.target.disabled = false;
     event.target.hidden = false;

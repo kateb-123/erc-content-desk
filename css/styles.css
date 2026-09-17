@@ -132,6 +132,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .bulk-drop strong { color: var(--ink); font-weight: 600; }
 .bulk-drop .hint { display: block; margin-top: var(--spacing-02); font-size: 12px; letter-spacing: .32px; color: var(--text-helper); }
 .bulk-drop.is-drag { border-color: var(--accent); background: var(--tint); }
+.bulk-drop:focus-within { outline: 2px solid var(--focus); outline-offset: -2px; }   /* the hidden file input is in the tab order (design audit a6) */
 .bulk-templates { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: var(--spacing-03) 0 0; }
 .bulk-templates a { color: var(--link-primary); text-decoration: none; }
 .bulk-templates a:hover { color: var(--link-primary-hover); text-decoration: underline; }
@@ -155,8 +156,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 /* Timing on the newsletter pool: events for a later issue dim and sink; the
    "Send early?" ask is a warning note (Sort's verify loop), so a question
    about timing looks the same everywhere it appears. */
-.nl-row.nl-later { opacity: .55; }
-.nl-row.nl-later:hover { opacity: .85; }
+.nl-row.nl-later .item-title { color: var(--muted); font-weight: 400; }   /* sunk to the bottom with its note, not dimmed (design audit b11) */
 .nl-row .badge { margin-top: var(--spacing-01); }
 .nl-ask {
   display: block; width: fit-content; margin: var(--spacing-02) 0 0;
@@ -171,7 +171,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .nl-group-scroll { max-height: 340px; overflow-y: auto; }
 .bulk-door .bulk-status { min-height: 20px; margin: var(--spacing-05) 0 0; }
 
-.status { min-height: 20px; margin: 0; font-size: 14px; }
+.status { min-height: 20px; margin: 0; font-size: 14px; position: sticky; top: 0; z-index: 2; background: var(--bg); }   /* stays in view down a long list (design audit b3) */
 .status-ok { color: var(--ok); }
 .status-error { color: var(--err); }
 .status-busy { color: var(--muted); }
@@ -186,6 +186,9 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .desk-main { flex: 1 1 auto; min-width: 0; padding: var(--spacing-03) var(--spacing-07) var(--spacing-10); box-sizing: border-box; }
 .desk-main > * { max-width: 68rem; margin-left: auto; margin-right: auto; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* The skip link: off screen until it takes focus, then a small box at the top left (design audit b20). */
+.skip-link { position: absolute; left: var(--spacing-05); top: -100px; z-index: 100; height: 40px; padding: 0 var(--spacing-05); display: inline-flex; align-items: center; background: var(--background); color: var(--link-primary); text-decoration: none; border: 1px solid var(--line-in); }
+.skip-link:focus { top: var(--spacing-03); outline: 2px solid var(--focus); outline-offset: -2px; }
 
 /* The sidebar's own rules live in css/sidebar.css, shared with the builder's pages. */
 
@@ -298,7 +301,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .type-word:hover:not(:disabled) { background: var(--layer-hover-01); color: var(--ink); border-color: var(--border-strong-01); }
 .type-word.is-picked { background: var(--tag-background-blue); border-color: var(--tag-background-blue); color: var(--tag-color-blue); }
 .type-word.is-picked:hover:not(:disabled) { background: var(--tag-background-blue); border-color: var(--tag-background-blue); color: var(--tag-color-blue); }
-.type-word.is-picked::before { content: "\2713"; margin-right: var(--spacing-02); }
+.type-word.is-picked::before { content: "\f00c"; font-family: "Font Awesome 7 Free"; font-weight: 900; font-size: 11px; margin-right: var(--spacing-02); }
 .sort-delete { margin-right: auto; }
 .sort-edit { margin: var(--spacing-02) 0 var(--spacing-04); display: grid; gap: var(--spacing-03); }
 .sort-edit-field { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
@@ -340,7 +343,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
   border: none; border-radius: 0; background: none; color: var(--link-primary); cursor: pointer; white-space: nowrap;
   transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
 }
-.linkish:hover:not(:disabled) { background: var(--hover); border: none; color: var(--link-primary-hover); }
+.linkish:hover:not(:disabled) { background: var(--row-hover); border: none; color: var(--link-primary-hover); }
 .linkish .fa-solid { margin-right: var(--spacing-02); font-size: .9em; }
 .linkish.skip-link, button.skip-link { color: var(--muted); }
 .linkish.skip-link:hover:not(:disabled), button.skip-link:hover:not(:disabled) { color: var(--ink); }
@@ -400,7 +403,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .finalize-table .chevron-btn { font-size: .8rem; }
 .finalize-table tr.f-detail-row td { border-top: none; padding: var(--spacing-01) var(--spacing-08) var(--spacing-05); }
 .chevron-btn { appearance: none; border: 0; background: transparent; cursor: pointer; height: 32px; width: 32px; padding: 0; justify-content: center; border-radius: 0; display: inline-flex; color: var(--icon-primary); }
-.chevron-btn:hover:not(:disabled) { background: var(--hover); color: var(--icon-primary); border: 0; }
+.chevron-btn:hover:not(:disabled) { background: var(--row-hover); color: var(--icon-primary); border: 0; }
 .f-detail-cols {
   display: grid; grid-template-columns: minmax(160px, 220px) 1fr; gap: var(--spacing-06); align-items: start;
   background: var(--layer-02); border: 1px solid var(--line-in); border-radius: 0; padding: var(--spacing-05); margin: var(--spacing-01) 0 var(--spacing-02);
@@ -542,7 +545,9 @@ a.stat:hover, button.stat:hover:not(:disabled) { background: var(--highlight); b
 .queue-head h2 { font-size: 20px; line-height: 28px; font-weight: 600; margin: 0; flex: 1; }
 .queue-table { width: 100%; border-collapse: collapse; background: var(--layer); border: 1px solid var(--layer-line); }
 .queue-table th { text-align: left; font-weight: 600; color: var(--ink); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--line-in); white-space: nowrap; }
-.queue-table th .sort-btn { border: none; background: none; padding: 0; height: auto; font: inherit; font-weight: 600; color: var(--ink); cursor: pointer; white-space: nowrap; }
+.queue-table th .sort-btn { display: inline-flex; align-items: center; gap: var(--spacing-02); border: none; background: none; padding: 0 var(--spacing-02); margin: 0 calc(-1 * var(--spacing-02)); height: 24px; font: inherit; font-weight: 600; color: var(--ink); cursor: pointer; white-space: nowrap; }
+.queue-table th .sort-btn .fa-solid { font-size: 11px; color: var(--icon-secondary); }
+.queue-table th[aria-sort] .sort-btn .fa-solid { color: var(--icon-primary); }
 .queue-table th .sort-btn:hover:not(:disabled) { background: none; border: none; color: var(--link-primary); }
 .queue-table th:nth-child(2) { width: 22%; }
 .queue-table th:nth-child(3) { width: 13%; }
