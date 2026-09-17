@@ -68,8 +68,8 @@
 "After"
 "New description — written from the original text"
 "Everything here was checked against the live Exchange on arrival. Publish sends the Adding group to the site; newsletter-only items stay held for the issue, and anything already live is skipped."
-"Spotlight events stay off the Exchange — webinars excepted."
-"Held for the newsletter ([N])"
+"[N] adding" / "[N] held for the newsletter" / "[N] needs a fix" or "[N] need a fix" / "Already live" (Publish's legend, Sep 16; Already live never carries a number)
+"Adding" / "Held for newsletter" / "Needs a fix" / "Already live" (Publish's Fate column; Needs a fix is a link to Sort's Needs a fix)
 "Pick items for the issue and send them — they leave the desk and wait in the newsletter builder. Change your mind later with Remove under \"Already sent\". A \"was in a past issue\" note is just a heads-up, never a block."
 "Pick items to send to newsletter"
 "Issue: "
@@ -166,7 +166,6 @@
 "Rewrite [N] descriptions"
 "Re-check"
 "Fix in Finalize"
-"fix in Sort's Needs a fix"
 "Publish [N] to the Exchange"
 "Send [N] to the [Month D] issue"
 "Send to the [Month D] issue"
@@ -219,7 +218,6 @@
 "Rewrote [N] descriptions — check them one by one."
 "Checking the live Exchange…"
 "Checked against the live Exchange · "
-"[N] kept items still need a type —"
 "Published [N] to the Exchange"
 "The site updates in about a minute."
 "Sent [N] to the [Month D] issue — the builder pulls them from here."
@@ -359,7 +357,6 @@
 "Closes before this issue"
 "newsletter only"
 "Adding [N]"
-"Held for the newsletter [N]"
 
 # Email standing text
 

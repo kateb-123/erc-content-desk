@@ -1,4 +1,5 @@
 :root {
+  --accent-soft: #9ec9e8;      /* the loader ramp's light end; Publish's held segment */
   --side-bg: #f3f5f8;          /* the sidebar's ground, a shade under the page */
   --ink: #1c2229;
   --muted: #55606c;
@@ -227,7 +228,6 @@ button:disabled { opacity: .5; cursor: default; }
 
 .flag { display: flex; align-items: center; gap: .3rem; margin: 0; font-size: .85rem; color: var(--ink); }
 button.trash-link, .trash-link { color: var(--err); }
-.p-fix-alert .fa-triangle-exclamation { margin-right: .4rem; }
 .f-detail-actions { display: inline-flex; gap: .35rem; align-items: baseline; }
 
 
@@ -328,13 +328,11 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .f-check-carousel { justify-content: center; margin: 0 auto; }
 .f-check-card { position: relative; }
 .f-see-all { margin: .6rem 0 0; }
-.p-fix-alert { background: var(--amber-bg); color: var(--amber); border-radius: 8px; padding: .6rem 1rem; margin: .75rem 0; font-size: .9rem; }
 /* Team trial: clicking Publish runs a mock — a ghosted "forthcoming" shadow
    alert during the posting beat, then the normal success receipt. */
 .p-shade { text-align: center; padding: 2rem 1rem 1rem; opacity: .7; }
 .p-shade-line { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 600; font-size: 1rem; color: var(--muted); margin: 0; }
 .p-shade .dots-loader { margin-top: 1rem; }
-.p-fix-alert .linkish { color: var(--amber); font-weight: 600; text-decoration: underline; }
 .finalize-table tr.f-item { cursor: pointer; }
 /* Hover layers on top of a status tint (ERC blue, rewrite amber) instead of replacing it. */
 .finalize-table tr.f-item:not(.is-open):hover td { background-image: linear-gradient(var(--hover), var(--hover)); }
@@ -390,6 +388,27 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 .publish-table tr.p-held td { background: var(--tint); }
 .publish-table tr.p-notready td { background: var(--amber-bg); }
 .publish-table tr.p-skip .item-title { color: var(--muted); font-weight: 400; }
+/* Publish as one table (Claude Design round two, Kate's pick Sep 16): a bar
+   whose segments share the rows by fate, a legend that filters, a Fate column.
+   Token colours only: the held segment is the loader ramp's light blue. */
+.p-fate-box { margin: .25rem 0 1rem; }
+.p-fate-bar { display: flex; gap: 2px; height: 10px; border-radius: 999px; overflow: hidden; background: var(--page); }
+.p-seg { display: block; min-width: 6px; }
+.p-seg-adding { background: var(--accent); }
+.p-seg-held { background: var(--accent-soft); }
+.p-seg-fix { background: var(--amber-line); }
+.p-seg-live { background: var(--line); }
+.p-legend { display: flex; flex-wrap: wrap; gap: .25rem 1.1rem; margin-top: .45rem; }
+.p-legend-item { display: inline-flex; align-items: center; gap: .4rem; border: 0; background: none; padding: .1rem 0; font-family: inherit; font-weight: 400; font-size: .85rem; color: var(--muted); cursor: pointer; }
+.p-legend-item:hover:not(:disabled) { color: var(--accent); }
+.p-legend-item.is-active { color: var(--accent-deep); font-weight: 700; }
+.p-dot { width: 9px; height: 9px; border-radius: 999px; flex: none; }
+.publish-table th.p-fate, .publish-table td.p-fate { width: 9.5rem; font-weight: 600; }
+.publish-table tr.p-adding td.p-fate { color: var(--accent); }
+.publish-table tr.p-held td.p-fate { color: var(--muted); }
+.publish-table tr.p-skip td { color: var(--muted); }
+.publish-table tr.p-skip td.p-fate { font-weight: 400; }
+.publish-table .p-fate-fix { color: var(--amber); font-weight: 600; text-decoration: underline; }
 .p-fix { display: block; margin-top: .25rem; }
 .table-scroll { overflow-x: auto; }
 
@@ -515,15 +534,6 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 @keyframes check-draw { to { stroke-dashoffset: 0; } }
 .pub-done-anim .door { animation: rise-in 200ms cubic-bezier(0.33, 1, 0.68, 1) 250ms both; }
 /* Publish report chips + the post-publish receipt (Kate's Direction A). */
-.p-chips { display: flex; gap: .6rem; margin: .25rem 0 1rem; flex-wrap: wrap; }
-.p-chip { font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: .85rem; border-radius: 999px; padding: .3rem .9rem; background: var(--tint); color: var(--accent-deep); border: 0; cursor: pointer; }
-.p-live-list { margin: .2rem 0 .8rem 1.2rem; padding: 0 0 0 .2rem; color: var(--muted); font-size: .95rem; }
-.p-live-list li { margin: .15rem 0; }
-.p-chip-quiet { background: #fff; border: 1px solid var(--line); color: var(--muted); font-weight: 600; }
-.p-chip-ghost { background: none; border: 1px dashed var(--line); color: var(--muted); font-weight: 600; }
-.p-held-fold { margin-top: 1.25rem; }
-.p-held-fold summary { cursor: pointer; font-family: Outfit, "Segoe UI", sans-serif; font-weight: 700; font-size: .95rem; }
-.p-held-fold .p-group-hint { margin-top: .35rem; }
 .pub-receipt { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 2.5rem 1.5rem; text-align: center; margin-top: 1rem; }
 .pub-receipt .check-ring { width: 54px; height: 54px; border-radius: 999px; background: var(--tint); display: inline-flex; align-items: center; justify-content: center; margin-bottom: .8rem; }
 .pub-receipt .receipt-check { width: 26px; height: 26px; margin: 0; vertical-align: 0; }

@@ -12,6 +12,7 @@ import { isoToShort } from './queue-view.js';
 import { detailBody } from './finalize-ui.js';
 import { checkSvg, dotsLoader, faIcon, forwardIcon } from './icons.js';
 import { titleWithInfo } from './screen-info.js';
+import { FATES, publishRows, legendItems, filterByFate, fateShares } from './publish-view.js';
 
 /** Hand the browser a file. Kate's Chrome puts downloads straight in her Drive,
  *  which is the whole point: publishing leaves a spare copy without a Drive API,
@@ -30,6 +31,7 @@ export function downloadCsv(text, when = new Date()) {
 
 // View state only — resets on reload, never persisted.
 let expanded = new Set();
+let fateFilter = null;   // the legend's filter; null shows every row
 let celebrated = ''; // which publish already played its confirmation — revisits stay still
 // Team trial (PUBLISH_PAUSED): the Publish button runs a MOCK — a "forthcoming"
 // shadow alert, then a mimicked success receipt — and never calls the real
@@ -44,26 +46,14 @@ function el(tag, className, text) {
   return node;
 }
 
-function itemRows(row, { cls, fix, rerender, onGoTo, today }) {
+const FATE_CLASS = { adding: 'p-adding', held: 'p-held', fix: 'p-notready', live: 'p-skip' };
+const FATE_LABEL = Object.fromEntries(FATES.map(f => [f.key, f.label]));
+
+function itemRows({ row, fate }, { rerender, onGoTo, today }) {
   const isOpen = expanded.has(row.id);
-  const rowClass = ['f-item', cls, isOpen && 'is-open'].filter(Boolean).join(' ');
+  const rowClass = ['f-item', FATE_CLASS[fate], isOpen && 'is-open'].filter(Boolean).join(' ');
 
   const tr = el('tr', rowClass);
-  const titleTd = el('td');
-  titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
-  if (row.source) titleTd.append(el('span', 'item-source', row.source));
-  if (fix) {
-    const jump = el('button', 'linkish p-fix', 'Fix in Finalize');
-    jump.type = 'button';
-    jump.addEventListener('click', event => { event.stopPropagation(); onGoTo('finalize'); });
-    titleTd.append(jump);
-  }
-  tr.append(titleTd);
-  const typeTd = el('td');
-  typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
-  if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
-  tr.append(typeTd);
-  tr.append(el('td', '', isoToShort(row.submitted_at, today) || '—'));
   const caretTd = el('td', 'f-caret');
   const caret = el('button', 'chevron-btn');
   caret.type = 'button';
@@ -71,7 +61,31 @@ function itemRows(row, { cls, fix, rerender, onGoTo, today }) {
   caret.setAttribute('aria-label', isOpen ? 'Hide details' : 'Show details');
   caret.append(faIcon(isOpen ? 'chevron-up' : 'chevron-down'));
   caretTd.append(caret);
-  tr.prepend(caretTd);   // left, one glyph, like Sort (Kate, Sep 15, option A)
+  tr.append(caretTd);   // left, one glyph, like Sort (Kate, Sep 15, option A)
+
+  const titleTd = el('td');
+  titleTd.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
+  if (row.source) titleTd.append(el('span', 'item-source', row.source));
+  tr.append(titleTd);
+  const typeTd = el('td');
+  typeTd.append(el('span', '', row.type ? (TYPE_LABELS[row.type] ?? row.type) : '—'));
+  if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
+  tr.append(typeTd);
+  tr.append(el('td', '', isoToShort(row.submitted_at, today) || '—'));
+
+  // The fate, in words. A row that needs a fix is the way to its fix.
+  const fateTd = el('td', 'p-fate');
+  if (fate === 'fix') {
+    const jump = el('button', 'linkish p-fate-fix', 'Needs a fix');
+    jump.type = 'button';
+    jump.title = "Opens Sort's Needs a fix";
+    jump.addEventListener('click', event => { event.stopPropagation(); onGoTo('sort', 'fix'); });
+    fateTd.append(jump);
+  } else {
+    fateTd.textContent = FATE_LABEL[fate];
+  }
+  tr.append(fateTd);
+
   tr.addEventListener('click', () => {
     if (expanded.has(row.id)) expanded.delete(row.id);
     else expanded.add(row.id);
@@ -81,29 +95,33 @@ function itemRows(row, { cls, fix, rerender, onGoTo, today }) {
   if (!isOpen) return [tr];
   const detailTr = el('tr', `f-detail-row ${rowClass}`);
   const td = el('td');
-  td.colSpan = 4;
+  td.colSpan = 5;
   td.append(detailBody(row, null, today));
   detailTr.append(td);
   return [tr, detailTr];
 }
 
-function group(container, title, rows, { cls, fix, hint, rerender, onGoTo, today }) {
-  if (!rows.length) return;
-  if (title) container.append(el('h3', 'p-group', title));
-  if (hint) container.append(el('p', 'hint p-group-hint', hint));
-  const table = el('table', 'queue-table finalize-table publish-table');
-  // Every table names its columns (Sep 15): the date here is when it was submitted.
-  const hr = el('tr');
-  hr.append(el('th', 'f-caret'), el('th', '', 'Title'), el('th', '', 'Type'), el('th', '', 'Submitted'));
-  const thead = el('thead');
-  thead.append(hr);
-  table.append(thead);
-  const tbody = el('tbody');
-  for (const row of rows) tbody.append(...itemRows(row, { cls, fix, rerender, onGoTo, today }));
-  table.append(tbody);
-  const scroll = el('div', 'table-scroll');
-  scroll.append(table);
-  container.append(scroll);
+/** The fate bar and its legend; a legend item filters the table (toggle). */
+function fateBar(container, list, rerender) {
+  const box = el('div', 'p-fate-box');
+  const bar = el('div', 'p-fate-bar');
+  bar.setAttribute('aria-hidden', 'true');
+  for (const { key, share } of fateShares(list)) {
+    const seg = el('span', `p-seg p-seg-${key}`);
+    seg.style.flexGrow = String(share);
+    bar.append(seg);
+  }
+  const legend = el('div', 'p-legend');
+  for (const item of legendItems(list)) {
+    const b = el('button', `p-legend-item${fateFilter === item.key ? ' is-active' : ''}`);
+    b.type = 'button';
+    b.setAttribute('aria-pressed', String(fateFilter === item.key));
+    b.append(el('span', `p-dot p-seg-${item.key}`), item.text);
+    b.addEventListener('click', () => { fateFilter = fateFilter === item.key ? null : item.key; rerender(); });
+    legend.append(b);
+  }
+  box.append(bar, legend);
+  container.append(box);
 }
 
 export function renderPublish(container, props) {
@@ -119,15 +137,12 @@ export function renderPublish(container, props) {
   // endpoint returns, never re-derived (or headline-matched) client-side.
   const candidates = readyToPublish(rows);
   const byId = new Map(rows.map(r => [r.id, r]));
-  const pick = list => (list ?? []).map(item => byId.get(item.id)).filter(Boolean);
-  const adding = pick(preview?.adding);
-  const held = pick(preview?.newsletterOnly);
-  const notReady = pick(preview?.notReady);
+  const adding = (preview?.adding ?? []).map(item => byId.get(item.id)).filter(Boolean);
 
   const head = el('div', 'screen-head finalize-head');
   const lead = el('div');
   const info = titleWithInfo('Publish to Exchange', 'publish',
-    'Everything here was checked against the live Exchange on arrival. Publish sends the Adding group to the site; newsletter-only items stay held for the issue, and anything already live is skipped.');
+    'Everything here was checked against the live Exchange on arrival. Publish sends the Adding rows to the site. Spotlight events stay held for the newsletter (webinars excepted); a row that needs a fix waits in Sort; anything already live is left out. Click a colour under the bar to see only those rows.');
   lead.append(info.row, info.panel);
   const lede = el('p', 'lede');
   if (showReceipt) {
@@ -227,59 +242,25 @@ export function renderPublish(container, props) {
   }
   // Silent dupe skip stays silent — the info panel says already-live items are skipped.
 
-  if (notReady.length) {
-    // Typing happens in Sort (the pill picker lives there) — an alert points the way.
-    const alert = el('div', 'p-fix-alert');
-    const warn = el('i', 'fa-solid fa-triangle-exclamation');
-    warn.setAttribute('aria-hidden', 'true');
-    alert.append(warn, ' ');
-    alert.append(`${notReady.length} kept item${notReady.length === 1 ? '' : 's'} still need${notReady.length === 1 ? 's' : ''} a type — `);
-    const jump = el('button', 'linkish', "fix in Sort's Needs a fix");
-    jump.type = 'button';
-    jump.addEventListener('click', () => onGoTo('sort', 'fix'));
-    alert.append(jump);
-    container.append(alert);
-  }
+  // One bar, one table (Claude Design round two, Kate's pick Sep 16): every
+  // row the check returned, in fate order, the legend filtering it. Already
+  // live carries no number anywhere (Kate, Sep 1).
+  if (!preview) return;
+  const list = publishRows(preview, rows);
+  if (!list.length) return;
+  if (fateFilter && !list.some(r => r.fate === fateFilter)) fateFilter = null;
+  fateBar(container, list, rerender);
 
-  // The receipt-style report: chips summarize, one table lists what's going
-  // up, the held group folds. "Already live" is a quiet indicator — no
-  // counts, no "skipped" talk (Kate, Sep 1). The chips look like the nav
-  // pills, so they act like them: each opens its list (usability run F22).
-  let heldFold = null, liveFold = null;
-  const openFold = fold => { if (!fold) return; fold.open = true; fold.scrollIntoView({ block: 'start', behavior: 'smooth' }); };
-  const chip = (cls, text, onClick) => {
-    const b = el('button', `p-chip${cls ? ` ${cls}` : ''}`, text);
-    b.type = 'button';
-    b.addEventListener('click', onClick);
-    return b;
-  };
-  if (preview) {
-    const chips = el('div', 'p-chips');
-    if (adding.length) chips.append(chip('', `Adding (${adding.length})`, () => container.querySelector('table')?.scrollIntoView({ block: 'start', behavior: 'smooth' })));
-    if (held.length) chips.append(chip('p-chip-quiet', `Held for the newsletter (${held.length})`, () => openFold(heldFold)));
-    if (preview.skipped?.length) chips.append(chip('p-chip-ghost', 'Already live', () => openFold(liveFold)));
-    if (chips.childElementCount) container.append(chips);
-  }
-
-  group(container, '', adding, { rerender, onGoTo, today });
-
-  if (held.length) {
-    heldFold = el('details', 'p-held-fold');
-    const sum = el('summary', '', `Held for the newsletter (${held.length})`);
-    heldFold.append(sum);
-    heldFold.append(el('p', 'hint p-group-hint', 'Spotlight events stay off the Exchange — webinars excepted.'));
-    group(heldFold, '', held, { cls: 'p-held', rerender, onGoTo, today });
-    container.append(heldFold);
-  }
-  // Already-live items used to vanish without a word; they are named here,
-  // folded, so the silent skip is at least readable (usability run F10).
-  if (preview?.skipped?.length) {
-    liveFold = el('details', 'p-held-fold p-live-fold');
-    liveFold.append(el('summary', '', 'Already live'));
-    liveFold.append(el('p', 'hint p-group-hint', 'Already on the Exchange, so Publish leaves them out.'));
-    const list = el('ul', 'p-live-list');
-    for (const item of preview.skipped) list.append(el('li', '', item.headline || item.id));
-    liveFold.append(list);
-    container.append(liveFold);
-  }
+  const table = el('table', 'queue-table finalize-table publish-table');
+  const hr = el('tr');
+  hr.append(el('th', 'f-caret'), el('th', '', 'Title'), el('th', '', 'Type'), el('th', '', 'Submitted'), el('th', 'p-fate', 'Fate'));
+  const thead = el('thead');
+  thead.append(hr);
+  table.append(thead);
+  const tbody = el('tbody');
+  for (const item of filterByFate(list, fateFilter)) tbody.append(...itemRows(item, { rerender, onGoTo, today }));
+  table.append(tbody);
+  const scroll = el('div', 'table-scroll');
+  scroll.append(table);
+  container.append(scroll);
 }

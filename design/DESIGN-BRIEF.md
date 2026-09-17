@@ -162,11 +162,16 @@ facts, the description, and Edit fields (which include date, time, location,
 authors, deadline). **Go to Publish** appears only when nothing is pending.
 
 ### Publish to Exchange
-On arrival it checks the live public file and shows a dots loader. Then a receipt:
-three chips (**Adding N**, **Held for the newsletter N**, **Already live**), each of
-which opens its list, a table of what is going up, and folds for the held and
-already-live groups. If kept items still lack a type, an amber alert points back to
-Sort. One deliberate button: **Publish N to the Exchange**, which disappears while
+On arrival it checks the live public file and shows a dots loader. Then (Claude
+Design round two, Kate's pick Sep 16) one **fate bar**: a 10px pill split by share
+of rows, adding in the accent, held for the newsletter in the loader's light blue,
+needs a fix in the amber line, already live in the line grey. Under it a legend
+("2 adding", "1 held for the newsletter", "1 needs a fix", "Already live" with no
+number, ever); clicking an item shows only those rows, clicking again shows all.
+Then **one table** of every row: chevron, Title, Type, Submitted, **Fate**. Rows run
+adding, held (on the tint), needs a fix (on the amber, its Fate is a link that
+opens Sort's Needs a fix), already live (muted). The chips, the folds and the
+alert are gone. One deliberate button: **Publish N to the Exchange**, which disappears while
 it runs. After it, the page becomes a centred receipt card with a drawn check, and
 a single **Send to Newsletter** door.
 
