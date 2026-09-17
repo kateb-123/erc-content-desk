@@ -2,9 +2,9 @@
    ERC Newsletter Builder in IBM Carbon: one look across both apps.
    ------------------------------------------------------------
    Every value is a Carbon token from /css/tokens.css, loaded before this
-   file; the --bp-* names are aliases so the rules keep the builder's
-   vocabulary. The newsletter EMAIL template keeps its own design (maroon
-   lives there and nowhere in-app).
+   file; this :root only maps Carbon's blue tokens onto the builder's teal
+   ramp. The newsletter EMAIL template keeps its own design (maroon lives
+   there and nowhere in-app).
    ============================================================ */
 
 :root {
@@ -17,71 +17,40 @@
   --focus: var(--accent-60); --border-interactive: var(--accent-60); --interactive: var(--accent-60);
   --highlight: var(--accent-20); --notification-info-background: var(--accent-10); --notification-info-border: var(--accent-20); --support-info: var(--accent-70);
   --tag-background-blue: var(--accent-20); --tag-color-blue: var(--accent-80);
-  --bp-primary: var(--button-primary);
-  --bp-primary-hover: var(--button-primary-hover);
-  --bp-primary-active: var(--button-primary-active);
-  --bp-primary-tint: var(--notification-info-background);
-  --bp-citron-mark: var(--support-success);  /* success as an icon */
-  --bp-citron-tint: var(--notification-success-background);
-  --bp-citron-line: var(--notification-success-border);
-  --bp-destructive: var(--button-danger-secondary);
-  --bp-destructive-tint: var(--notification-error-background);
-  --bp-destructive-line: var(--notification-error-border);
-  --bp-ink: var(--text-primary);
-  --bp-body: var(--text-primary);
-  --bp-muted: var(--text-secondary);
-  --bp-faint: var(--text-helper);
-  --bp-page: var(--background);
-  --bp-line-in: var(--border-subtle-01);
-  --bp-input-border: var(--border-strong-01);
-  --bp-row-hover: var(--accent-10);
-  --bp-tint-ink: var(--text-primary);
-  --bp-amber-bg: var(--notification-warning-background);
-  --bp-amber-mark: var(--support-warning);
-  --bp-amber-line: var(--notification-warning-border);
-
-  /* The desk's names, which the shared sidebar (/css/sidebar.css) reads. */
-  --side-bg: var(--background);
-  --ink: var(--text-primary);
-  --muted: var(--text-secondary);
-  --line: var(--border-subtle-00);
-  --accent: var(--button-primary);
-  --accent-deep: var(--button-primary-active);
-  --selected: var(--highlight);
-  --hover: var(--accent-alpha);
 }
-
-/* The hidden attribute wins over every display rule below (the buttons are inline-flex). */
-[hidden] { display: none !important; }
 
 body {
   margin: 0;
   font-family: var(--font-sans);
   font-size: 14px; line-height: 20px; letter-spacing: .16px;   /* body-01 */
-  color: var(--bp-body);
-  background: var(--bp-page);
+  color: var(--text-primary);
+  background: var(--background);
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
 }
 
 /* --- Shell and page head ---------------------------------- */
 /* Like Sort: the desk's sidebar tucked behind a thin strip on the left, the
    title on the page ground, the steps under it. */
-body.builder-shell { flex-direction: row; }
 .builder-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 
-/* The same box as .step-list, so the title, the steps and the card line up. */
-.builder-head {
-  margin: 0 auto;
-  max-width: 820px;
+/* One column down the page: the title, the steps, the status line, the step's
+   card and the footer share the 820px box, so they line up, and they widen
+   together on Preview & Edit, where the two-pane stage needs the room. */
+.builder-head, .step-list, .wizard-status, .wizard-body, .wizard-footer {
   width: 100%;
-  padding: 44px var(--spacing-07) var(--spacing-05);   /* the desk's 44px first line */
+  max-width: 820px;
+  margin: 0 auto;
 }
+body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizard-status, .wizard-body, .wizard-footer) {
+  max-width: 1200px;
+}
+
+.builder-head { padding: 44px var(--spacing-07) var(--spacing-05); }   /* the desk's 44px first line */
 .builder-head h1 {
   font-size: 28px; line-height: 36px; font-weight: 400; letter-spacing: 0;   /* heading-04 */
   margin: 0;
-  color: var(--bp-ink);
+  color: var(--text-primary);
 }
 
 /* --- Step indicator nav ----------------------------------- */
@@ -91,9 +60,6 @@ body.builder-shell { flex-direction: row; }
 
 .step-list {
   list-style: none;
-  margin: 0 auto;
-  max-width: 820px;
-  width: 100%;
   padding: 0 var(--spacing-07);
   display: flex;
   counter-reset: step-counter;
@@ -103,7 +69,7 @@ body.builder-shell { flex-direction: row; }
 .step-indicator {
   flex: 1 1 0; min-width: 0;
   display: flex;
-  border-top: 1px solid var(--bp-line-in);
+  border-top: 1px solid var(--border-subtle-01);
   transition: border-color var(--duration-fast-01) var(--ease-productive);
   position: relative;
 }
@@ -115,7 +81,7 @@ body.builder-shell { flex-direction: row; }
   padding: var(--spacing-03) var(--spacing-05) 0 0;
   margin: 0; border: 0; background: none;
   font: inherit; font-size: 14px; line-height: 18px; letter-spacing: .16px; font-weight: 400;
-  color: var(--bp-muted);
+  color: var(--text-secondary);
   text-align: left; white-space: nowrap;
   cursor: pointer;
   transition: color var(--duration-fast-01) var(--ease-productive);
@@ -134,13 +100,13 @@ body.builder-shell { flex-direction: row; }
   border: 1px solid var(--border-strong-01);
   font-size: 11px; line-height: 1; letter-spacing: 0;
   font-weight: 600;
-  color: var(--bp-muted);
+  color: var(--text-secondary);
   flex-shrink: 0;
   transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive), border-color var(--duration-fast-01) var(--ease-productive);
 }
 
-.step-indicator:not(.active) .step-btn:not([aria-disabled="true"]):hover { color: var(--bp-ink); }
-.step-indicator:not(.active) .step-btn:not([aria-disabled="true"]):hover::before { border-color: var(--bp-ink); color: var(--bp-ink); }
+.step-indicator:not(.active) .step-btn:not([aria-disabled="true"]):hover { color: var(--text-primary); }
+.step-indicator:not(.active) .step-btn:not([aria-disabled="true"]):hover::before { border-color: var(--text-primary); color: var(--text-primary); }
 
 /* A locked step: disabled ink and a disabled circle, no pointer, no hover lift. */
 .step-btn[aria-disabled="true"] { cursor: default; color: var(--text-disabled); }
@@ -149,7 +115,7 @@ body.builder-shell { flex-direction: row; }
 /* Active step: the line and the circle in the accent, the label semibold. */
 .step-indicator.active { border-top-color: var(--border-interactive); }
 .step-indicator.active .step-btn {
-  color: var(--bp-ink);
+  color: var(--text-primary);
   font-weight: 600;
 }
 .step-indicator.active .step-btn::before {
@@ -160,7 +126,7 @@ body.builder-shell { flex-direction: row; }
 
 /* Completed steps: the line in the accent, a check in the circle. */
 .step-indicator.completed { border-top-color: var(--border-interactive); }
-.step-indicator.completed .step-btn { color: var(--bp-ink); }
+.step-indicator.completed .step-btn { color: var(--text-primary); }
 .step-indicator.completed .step-btn::before {
   content: "\f00c";
   font-family: "Font Awesome 7 Free";
@@ -169,30 +135,23 @@ body.builder-shell { flex-direction: row; }
   border-color: var(--border-interactive);
   color: var(--border-interactive);
 }
-.step-indicator.completed:not(.active) .step-btn:hover::before { border-color: var(--bp-primary-active); color: var(--bp-primary-active); }
+.step-indicator.completed:not(.active) .step-btn:hover::before { border-color: var(--button-primary-active); color: var(--button-primary-active); }
 
 /* The status line under the step row: what a locked step says, at the
    click's own height. Always one line tall, so a message never moves the page. */
 .wizard-status {
-  max-width: 820px;
-  width: 100%;
-  margin: 0 auto;
   padding: var(--spacing-02) var(--spacing-07) 0;
   min-height: 20px;
-  color: var(--bp-muted);
+  color: var(--text-secondary);
 }
 
 /* --- Wizard body ------------------------------------------ */
 .wizard-body {
   padding: var(--spacing-05) var(--spacing-07) var(--spacing-07);
-  max-width: 820px;
-  width: 100%;
-  margin: 0 auto;
 }
 
-/* Edit step needs extra width for the two-pane layout */
+/* The wider column reaches its edges, so the body's side padding shrinks. */
 .wizard-body:has([data-step="edit"]:not([hidden])) {
-  max-width: 1200px;
   padding-left: var(--spacing-05);
   padding-right: var(--spacing-05);
 }
@@ -205,7 +164,7 @@ body.builder-shell { flex-direction: row; }
 /* The step's card: a white box with a hairline, square. */
 .wizard-step {
   background: var(--background);
-  border: 1px solid var(--bp-line-in);
+  border: 1px solid var(--border-subtle-01);
   padding: var(--spacing-07);
 }
 
@@ -220,7 +179,7 @@ body.builder-shell { flex-direction: row; }
 }
 .info-toggle:hover { color: var(--link-primary-hover); text-decoration: underline; }
 .info-panel {
-  background: var(--bp-primary-tint); border: 1px solid var(--notification-info-border); border-left: 3px solid var(--support-info);
+  background: var(--notification-info-background); border: 1px solid var(--notification-info-border); border-left: 3px solid var(--support-info);
   padding: var(--spacing-04) var(--spacing-05); margin: 0 0 var(--spacing-05); max-width: 46rem;
 }
 .info-panel .note-icon { color: var(--support-info); }
@@ -232,15 +191,15 @@ body.builder-shell { flex-direction: row; }
   width: fit-content; max-width: 100%; box-sizing: border-box;
   padding: var(--spacing-03) var(--spacing-05);
   border: 1px solid transparent; border-left-width: 3px;
-  color: var(--bp-ink);
+  color: var(--text-primary);
 }
-.note--error { background: var(--bp-destructive-tint); border-color: var(--bp-destructive-line); border-left-color: var(--support-error); }
-.note--success { background: var(--bp-citron-tint); border-color: var(--bp-citron-line); border-left-color: var(--bp-citron-mark); }
-.note--warning { background: var(--bp-amber-bg); border-color: var(--bp-amber-line); border-left-color: var(--bp-amber-mark); }
+.note--error { background: var(--notification-error-background); border-color: var(--notification-error-border); border-left-color: var(--support-error); }
+.note--success { background: var(--notification-success-background); border-color: var(--notification-success-border); border-left-color: var(--support-success); }
+.note--warning { background: var(--notification-warning-background); border-color: var(--notification-warning-border); border-left-color: var(--support-warning); }
 .note-icon { flex-shrink: 0; margin-right: var(--spacing-02); }
 .note--error .note-icon, .export-toast--error .note-icon { color: var(--support-error); }
-.note--success .note-icon, .export-toast--success .note-icon { color: var(--bp-citron-mark); }
-.note--warning .note-icon, .restore-banner .note-icon { color: var(--bp-amber-mark); }
+.note--success .note-icon, .export-toast--success .note-icon { color: var(--support-success); }
+.note--warning .note-icon, .restore-banner .note-icon { color: var(--support-warning); }
 .note a { color: var(--link-primary); }
 .note a:hover { color: var(--link-primary-hover); }
 .note .ghost-btn { margin: 0 calc(-1 * var(--spacing-02)); height: 24px; padding: 0 var(--spacing-02); }   /* the words stay clear of the tint's edge */
@@ -249,18 +208,18 @@ body.builder-shell { flex-direction: row; }
 .note-slot { margin-top: var(--spacing-03); }
 
 /* Quiet words are ghost buttons: 32px, the link colour, a fill on hover, no underline. */
-.ghost-btn, .edit-saveall-btn {
+.ghost-btn {
   display: inline-flex; align-items: center; height: 32px; padding: 0 var(--spacing-03);
   border: 0; background: none; color: var(--link-primary);
   font: inherit; letter-spacing: .16px; cursor: pointer; white-space: nowrap;
   transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
 }
-.ghost-btn:hover, .edit-saveall-btn:hover { color: var(--link-primary-hover); background: var(--background-hover); text-decoration: none; }
+.ghost-btn:hover { color: var(--link-primary-hover); background: var(--background-hover); text-decoration: none; }
 .btn .fa-arrow-right { margin-left: var(--spacing-03); font-size: .85em; }
 .btn .fa-arrow-left { margin-right: var(--spacing-03); font-size: .85em; }
 
 .wizard-step p {
-  color: var(--bp-muted);
+  color: var(--text-secondary);
   margin: 0;
 }
 .wizard-step .edit-empty-msg { margin-top: var(--spacing-05); }   /* the empty line stands clear of what is above it */
@@ -271,21 +230,6 @@ body.builder-shell { flex-direction: row; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
-  max-width: 820px;
-  margin: 0 auto;
-}
-
-/* Match the footer to the wider column on the Preview & Edit step. */
-body:has([data-step="edit"]:not([hidden])) .wizard-footer {
-  max-width: 1200px;
-}
-
-/* The title, the steps and the status line follow the wider column on Preview & Edit too. */
-body:has([data-step="edit"]:not([hidden])) .builder-head,
-body:has([data-step="edit"]:not([hidden])) .step-list,
-body:has([data-step="edit"]:not([hidden])) .wizard-status {
-  max-width: 1200px;
 }
 
 /* --- Buttons ---------------------------------------------- */
@@ -313,11 +257,11 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 }
 
 .btn-primary {
-  background: var(--bp-primary);
+  background: var(--button-primary);
   color: var(--text-on-color);
 }
-.btn-primary:not(:disabled):hover { background: var(--bp-primary-hover); }
-.btn-primary:not(:disabled):active { background: var(--bp-primary-active); }
+.btn-primary:not(:disabled):hover { background: var(--button-primary-hover); }
+.btn-primary:not(:disabled):active { background: var(--button-primary-active); }
 
 .btn-secondary {
   background: var(--button-secondary);
@@ -330,11 +274,18 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
    hover, the arrow in its right slot. Next, and Start the next issue. */
 .btn-tertiary {
   background: transparent;
-  color: var(--bp-primary);
-  border-color: var(--bp-primary);
+  color: var(--button-primary);
+  border-color: var(--button-primary);
 }
-.btn-tertiary:not(:disabled):hover { background: var(--bp-primary); color: var(--text-on-color); }
-.btn-tertiary:not(:disabled):active { background: var(--bp-primary-active); border-color: var(--bp-primary-active); color: var(--text-on-color); }
+.btn-tertiary:not(:disabled):hover { background: var(--button-primary); color: var(--text-on-color); }
+.btn-tertiary:not(:disabled):active { background: var(--button-primary-active); border-color: var(--button-primary-active); color: var(--text-on-color); }
+
+/* --- Review step ------------------------------------------ */
+/* Review: what's in the issue, as Carbon's data table in a white box. */
+.review-table { width: 100%; border-collapse: collapse; margin-top: var(--spacing-05); background: var(--layer-02); border: 1px solid var(--border-subtle-01); }
+.review-table th { text-align: left; font-weight: 600; color: var(--text-primary); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--border-subtle-01); }
+.review-table td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--border-subtle-01); vertical-align: top; }   /* titles in the ink; the sub-line stays secondary */
+.review-table-sub { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-secondary); margin-top: var(--spacing-01); font-weight: 400; }
 
 /* --- Triage step ------------------------------------------ */
 .triage-meta {
@@ -342,8 +293,9 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   flex-direction: column;
   gap: var(--spacing-05);
 }
-/* Pull and its status on one row under the field. */
+/* Pull and its status on one row under the field: the button, then its quiet line. */
 .pull-row { display: flex; align-items: center; flex-wrap: wrap; gap: var(--spacing-03); margin-top: var(--spacing-05); }
+.pull-status { margin-left: var(--spacing-03); color: var(--text-secondary); display: inline-block; }
 .pull-row .pull-status { margin-left: 0; }
 
 .triage-field-label {
@@ -352,31 +304,32 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   gap: var(--spacing-03);
   font-size: 12px; line-height: 16px; letter-spacing: .32px;   /* label-01 */
   font-weight: 400;
-  color: var(--bp-muted);
+  color: var(--text-secondary);
 }
 
-/* Fields: Carbon's underlined field, grey on the white card. */
-.triage-field-input {
+/* Fields: Carbon's underlined field, grey on the white card. One rule for the
+   Outline step's fields and the edit cards'; only the width differs, and the
+   rich editor joins their focus ring. */
+.triage-field-input, .edit-card-input {
   height: 40px;
   padding: 0 var(--spacing-05);
   border: 0;
-  border-bottom: 1px solid var(--bp-input-border);
+  border-bottom: 1px solid var(--border-strong-01);
   border-radius: 0;
   font: inherit; letter-spacing: .16px;
-  color: var(--bp-body);
-  width: 260px;
+  color: var(--text-primary);
   background: var(--field-01);
 }
+.triage-field-input { width: 260px; }
+.edit-card-input { width: 100%; box-sizing: border-box; }
 .triage-field-input::placeholder { color: var(--text-placeholder); opacity: 1; }
-
-
-.triage-field-input:focus {
+/* Locked while the restore banner asks: Carbon's disabled field. */
+.triage-field-input:disabled { color: var(--text-disabled); border-bottom-color: transparent; cursor: not-allowed; }
+.triage-field-input:focus, .edit-card-input:focus, .rich-editor:focus-within {
   outline: 2px solid var(--focus);
   outline-offset: -2px;
   border-bottom-color: transparent;
 }
-/* Locked while the restore banner asks: Carbon's disabled field. */
-.triage-field-input:disabled { color: var(--text-disabled); border-bottom-color: transparent; cursor: not-allowed; }
 
 /* The sections that hold nothing, named once under the list. */
 .wizard-step .triage-missing { font-size: 12px; line-height: 16px; letter-spacing: .32px; margin-top: var(--spacing-05); }
@@ -401,7 +354,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   align-items: center;
   gap: var(--spacing-03);
   background: var(--field-02);
-  border: 1px solid var(--bp-line-in);
+  border: 1px solid var(--border-subtle-01);
   padding: var(--spacing-03) var(--spacing-04);
   margin: var(--spacing-03) 0 var(--spacing-05) var(--spacing-07);
 }
@@ -468,24 +421,24 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 /* The toggle's word, On or Off, beside the track as Carbon draws it. */
 .triage-switch-state {
   font-size: 12px; line-height: 16px; letter-spacing: .32px;
-  color: var(--bp-muted);
+  color: var(--text-secondary);
 }
 
 .triage-section-name {
   font-size: 16px; line-height: 22px; letter-spacing: 0;   /* heading-compact-02 */
   font-weight: 600;
-  color: var(--bp-ink);
+  color: var(--text-primary);
 }
 
 .triage-switch-label {
   font-size: 14px; line-height: 18px; letter-spacing: .16px;
   font-weight: 600;
-  color: var(--bp-body);
+  color: var(--text-primary);
 }
 
 .triage-section-note {
   font-size: 12px; line-height: 16px; letter-spacing: .32px;
-  color: var(--bp-faint);
+  color: var(--text-helper);
 }
 /* The Featured rule, once under the Events name, in line with the group labels. */
 .triage-grouped-section > .triage-section-note {
@@ -503,7 +456,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 .triage-group-label {
   font-size: 12px; line-height: 16px; letter-spacing: .32px;
   font-weight: 600;
-  color: var(--bp-muted);
+  color: var(--text-secondary);
   margin-top: var(--spacing-03);
   margin-bottom: var(--spacing-01);
   padding-left: var(--spacing-02);
@@ -523,7 +476,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 
 .triage-event-title {
   flex: 1;
-  color: var(--bp-body);
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -535,14 +488,14 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   min-height: 24px;   /* the box stays 16px; the target is the label */
   gap: var(--spacing-03);
   font-size: 12px; line-height: 16px; letter-spacing: .32px;
-  color: var(--bp-muted);
+  color: var(--text-secondary);
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .triage-featured-cb {
-  accent-color: var(--bp-primary);
+  accent-color: var(--button-primary);
   width: 16px;
   height: 16px;
   flex-shrink: 0;
@@ -551,7 +504,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 
 /* Checked featured rows read in the ink, semibold. */
 .triage-featured-label:has(.triage-featured-cb:checked) {
-  color: var(--bp-ink);
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -628,7 +581,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 .edit-column-title {
   font-size: 16px; line-height: 22px; letter-spacing: 0;   /* heading-compact-02 */
   font-weight: 600;
-  color: var(--bp-ink);
+  color: var(--text-primary);
 }
 
 .edit-card-list {
@@ -638,7 +591,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 }
 
 .edit-column-empty {
-  color: var(--bp-muted);
+  color: var(--text-secondary);
   padding: var(--spacing-04);
   border: 1px dashed var(--border-strong-01);
   background: var(--field-02);
@@ -653,7 +606,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 
 /* --- Edit cards ------------------------------------------- */
 .edit-card {
-  border: 1px solid var(--bp-line-in);
+  border: 1px solid var(--border-subtle-01);
   background: var(--layer-02);
   padding: var(--spacing-04);
 }
@@ -680,32 +633,13 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   display: block;
   font-size: 12px; line-height: 16px; letter-spacing: .32px;
   font-weight: 400;
-  color: var(--bp-muted);
+  color: var(--text-secondary);
   margin-bottom: var(--spacing-03);
 }
-.edit-card-input {
-  width: 100%;
-  box-sizing: border-box;
-  font: inherit; letter-spacing: .16px;
-  color: var(--bp-body);
-  height: 40px;
-  padding: 0 var(--spacing-05);
-  border: 0;
-  border-bottom: 1px solid var(--bp-input-border);
-  border-radius: 0;
-  background: var(--field-01);
-}
-.edit-card-input:focus {
-  outline: 2px solid var(--focus);
-  outline-offset: -2px;
-  border-bottom-color: transparent;
-}
-
-
 /* --- Rich (WYSIWYG) prose editor --------------------------- */
 .rich-editor {
   border: 0;
-  border-bottom: 1px solid var(--bp-input-border);
+  border-bottom: 1px solid var(--border-strong-01);
   background: var(--field-01);
   overflow: hidden;
 }
@@ -744,15 +678,10 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   padding: 11px var(--spacing-05);
   outline: none;
   overflow-y: auto;
-  color: var(--bp-body);
+  color: var(--text-primary);
 }
 .rich-editable a {
   color: var(--link-primary);
-}
-.rich-editor:focus-within {
-  outline: 2px solid var(--focus);
-  outline-offset: -2px;
-  border-bottom-color: transparent;
 }
 .intro-save-btn { margin-top: var(--spacing-03); }
 .img-upload { display: flex; align-items: center; gap: var(--spacing-03); flex-wrap: wrap; }
@@ -773,19 +702,19 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   display: inline-flex; align-items: center; height: 32px;
   background: none;
   border: 0;
-  color: var(--bp-muted);
+  color: var(--text-secondary);
   font: inherit; letter-spacing: .16px;
   cursor: pointer;
   padding: 0 var(--spacing-03);
   white-space: nowrap;
 }
-.edit-card-revert:hover { color: var(--bp-body); background: var(--background-hover); }
+.edit-card-revert:hover { color: var(--text-primary); background: var(--background-hover); }
 .edit-card-save { margin-right: calc(-1 * var(--spacing-03)); }   /* the quiet Save sits flush right */
 .edit-card-delete {
   display: inline-flex; align-items: center; height: 32px;
   background: none;
   border: 0;
-  color: var(--bp-destructive);
+  color: var(--button-danger-secondary);
   font: inherit; letter-spacing: .16px;
   cursor: pointer;
   padding: 0 var(--spacing-03);
@@ -806,7 +735,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   cursor: pointer;
   font: inherit; letter-spacing: .16px;
   padding: 0 var(--spacing-03);
-  color: var(--bp-destructive);
+  color: var(--button-danger-secondary);
   transition: background-color var(--duration-fast-01) var(--ease-productive);
   white-space: nowrap;
 }
@@ -870,7 +799,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   padding: var(--spacing-04) var(--spacing-05);
   border: 1px solid transparent;
   border-left-width: 3px;
-  color: var(--bp-ink);
+  color: var(--text-primary);
   opacity: 0;
   transform: translateY(4px);
   transition: opacity var(--duration-fast-02) var(--ease-standard), transform var(--duration-fast-02) var(--ease-standard);
@@ -883,14 +812,14 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 }
 
 .export-toast--success {
-  background: var(--bp-citron-tint);
-  border-color: var(--bp-citron-line);
-  border-left-color: var(--bp-citron-mark);
+  background: var(--notification-success-background);
+  border-color: var(--notification-success-border);
+  border-left-color: var(--support-success);
 }
 
 .export-toast--error {
-  background: var(--bp-destructive-tint);
-  border-color: var(--bp-destructive-line);
+  background: var(--notification-error-background);
+  border-color: var(--notification-error-border);
   border-left-color: var(--support-error);
 }
 
@@ -901,15 +830,15 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   gap: var(--spacing-05);
   padding: var(--spacing-04) var(--spacing-05);
   margin-bottom: var(--spacing-05);
-  background: var(--bp-amber-bg);
-  border: 1px solid var(--bp-amber-line);
-  border-left: 3px solid var(--bp-amber-mark);
+  background: var(--notification-warning-background);
+  border: 1px solid var(--notification-warning-border);
+  border-left: 3px solid var(--support-warning);
 }
 
 .restore-banner__msg {
   margin: 0;
   flex: 1;
-  color: var(--bp-ink);
+  color: var(--text-primary);
 }
 
 .restore-banner__btns {
@@ -922,7 +851,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 
 /* --- Drag-to-reorder panel (edit column) ------------------- */
 .reorder-panel {
-  border: 1px solid var(--bp-line-in);
+  border: 1px solid var(--border-subtle-01);
   background: var(--layer-02);
 }
 
@@ -931,7 +860,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   cursor: pointer;
   padding: var(--spacing-03) var(--spacing-04);
   font-weight: 600;
-  color: var(--bp-ink);
+  color: var(--text-primary);
   user-select: none;
 }
 .reorder-panel-summary::-webkit-details-marker { display: none; }
@@ -946,7 +875,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 .reorder-panel[open] .reorder-panel-summary::before {
   transform: rotate(90deg);
 }
-.reorder-panel-summary:hover { background: var(--bp-row-hover); }
+.reorder-panel-summary:hover { background: var(--accent-10); }
 
 .reorder-panel-body {
   padding: var(--spacing-01) var(--spacing-03) var(--spacing-04);
@@ -957,7 +886,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 .reorder-section-label {
   font-size: 12px; line-height: 16px; letter-spacing: .32px;
   font-weight: 600;
-  color: var(--bp-ink);
+  color: var(--text-primary);
   margin: var(--spacing-03) 0 var(--spacing-01);
 }
 .reorder-section-label:first-child { margin-top: var(--spacing-02); }
@@ -965,7 +894,7 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
 .reorder-group-label {
   font-size: 12px; line-height: 16px; letter-spacing: .32px;
   font-weight: 600;
-  color: var(--bp-muted);
+  color: var(--text-secondary);
   margin: var(--spacing-02) 0 0 var(--spacing-01);
 }
 
@@ -980,11 +909,11 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   gap: var(--spacing-03);
   padding: var(--spacing-02) var(--spacing-03);
   font-size: 12px; line-height: 16px; letter-spacing: .32px;
-  color: var(--bp-body);
+  color: var(--text-primary);
   border: 1px solid transparent;
 }
 .reorder-row[draggable="true"] { cursor: grab; }
-.reorder-row[draggable="true"]:hover { background: var(--bp-row-hover); }
+.reorder-row[draggable="true"]:hover { background: var(--accent-10); }
 .reorder-row[draggable="true"]:hover .reorder-grip { color: var(--icon-primary); }
 
 .reorder-row--dragging {
@@ -992,8 +921,8 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   cursor: grabbing;
 }
 .reorder-row--over {
-  border-color: var(--bp-primary);
-  background: var(--bp-primary-tint);
+  border-color: var(--button-primary);
+  background: var(--notification-info-background);
 }
 
 .reorder-grip {
@@ -1013,6 +942,12 @@ body:has([data-step="edit"]:not([hidden])) .wizard-status {
   white-space: nowrap;
 }
 
+/* Edit-column add-on panels (Introduction, Add an item). */
+.addon-hint { font-size: 12px; line-height: 16px; letter-spacing: .32px; }
+.addon-field { display: block; margin-bottom: var(--spacing-03); }
+.addon-field > span { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-secondary); margin-bottom: var(--spacing-03); }
+.addon-field .triage-field-input { width: 100%; box-sizing: border-box; }
+
 /* One focus ring for every control in the builder: Carbon's 2px ring, drawn inside. */
 button:focus-visible, a:focus-visible, summary:focus-visible, [tabindex]:focus-visible,
 input:focus-visible, select:focus-visible, textarea:focus-visible {
@@ -1021,45 +956,5 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dots-loader .dot, .dots-text::after { animation: none !important; }
   .undo-toast, .export-toast, .triage-switch-track, .triage-switch-track::before, .reorder-panel-summary::before { transition: none; }
 }
-
-/* Review / Bucket / Glance */
-/* Pull from the desk, on Review: the button's quiet status line. */
-.pull-status { margin-left: var(--spacing-03); color: var(--bp-muted); display: inline-block; }
-
-/* Review step: what's in the issue, as Carbon's data table in a white box. */
-.review-table { width: 100%; border-collapse: collapse; margin-top: var(--spacing-05); background: var(--layer-02); border: 1px solid var(--bp-line-in); }
-.review-table th { text-align: left; font-weight: 600; color: var(--bp-ink); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--bp-line-in); }
-.review-table td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--bp-line-in); vertical-align: top; }   /* titles in the ink; the sub-line stays secondary */
-.review-table-sub { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--bp-muted); margin-top: var(--spacing-01); font-weight: 400; }
-
-/* Edit-column add-on panels (Introduction, Add an item). */
-.addon-hint { font-size: 12px; line-height: 16px; letter-spacing: .32px; }
-.addon-field { display: block; margin-bottom: var(--spacing-03); }
-.addon-field > span { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--bp-muted); margin-bottom: var(--spacing-03); }
-.addon-field .triage-field-input { width: 100%; box-sizing: border-box; }
-
-/* Sliding-dots loader: six dots slide across a track with staggered delays,
-   on the accent's ramp. Mini = inline size for status rows. */
-.dots-loader { position: relative; height: var(--dl-s, 20px); width: var(--dl-w, 250px); margin: var(--spacing-06) auto; }
-.dots-loader .dot {
-  position: absolute; height: var(--dl-s, 20px); width: var(--dl-s, 20px);
-  border-radius: var(--radius-round); border: 2px solid var(--background); box-sizing: border-box;
-  animation: dots-slide 3s ease-in-out infinite;
-}
-.dots-loader .dot:nth-child(1) { background: var(--accent-30); animation-delay: .5s; }
-.dots-loader .dot:nth-child(2) { background: var(--accent-40); animation-delay: .4s; }
-.dots-loader .dot:nth-child(3) { background: var(--accent-50); animation-delay: .3s; }
-.dots-loader .dot:nth-child(4) { background: var(--accent-60); animation-delay: .2s; }
-.dots-loader .dot:nth-child(5) { background: var(--accent-70); animation-delay: .1s; }
-.dots-loader .dot:nth-child(6) { background: var(--accent-80); animation-delay: 0s; }
-@keyframes dots-slide {
-  15% { transform: translateX(0); }
-  45%, 65% { transform: translateX(calc(var(--dl-w, 250px) - var(--dl-s, 20px))); }
-  95% { transform: translateX(0); }
-}
-.dots-mini { --dl-w: 90px; --dl-s: 10px; display: inline-block; vertical-align: middle; margin: 0 var(--spacing-03) 0 0; }
-.dots-text::after { content: ""; animation: dots-text 3s infinite; }
-@keyframes dots-text { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }

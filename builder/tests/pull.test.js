@@ -39,17 +39,6 @@ test('countIssueItems sums across sections', () => {
   assert.equal(countIssueItems(issueWith([['events', { title: 'A' }], ['headlines', { title: 'B' }]])), 2);
 });
 
-test('the Miscellaneous section renders with only its section band, no group heading', async () => {
-  const { renderNewsletter } = await import('../js/template.js');
-  const issue = createEmptyIssue();
-  issue.sections.misc.items.push({ id: 'm1', group: 'misc', fields: { title: 'A one-off thing', url: 'https://x.org/misc' } });
-  issue.sections.misc.enabled = true;
-  const html = renderNewsletter(issue);
-  assert.ok(html.includes('Miscellaneous'));
-  assert.ok(html.includes('A one-off thing'));
-  assert.ok(!html.includes('letter-spacing: 1.1px;"></p>')); // no empty group label
-});
-
 test('partitionPulled also dedupes by stable id, so url-less items never duplicate', () => {
   const pulled = createEmptyIssue();
   pulled.sections.headlines.items.push({ id: 'desk_r9', group: 'texas', fields: { title: 'No link here' } });

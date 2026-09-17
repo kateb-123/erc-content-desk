@@ -177,6 +177,16 @@ test('research renders Brief and Report as separate labeled subgroups', () => {
   assert.ok(iReportLabel < iROne, 'Report label precedes its item');
 });
 
+test('the Miscellaneous section renders with only its section band, no group heading', () => {
+  const issue = createEmptyIssue();
+  issue.sections.misc.items.push({ id: 'm1', group: 'misc', fields: { title: 'A one-off thing', url: 'https://x.org/misc' } });
+  issue.sections.misc.enabled = true;
+  const html = renderNewsletter(issue);
+  assert.ok(html.includes('Miscellaneous'));
+  assert.ok(html.includes('A one-off thing'));
+  assert.ok(!html.includes('letter-spacing: 1.1px;"></p>')); // no empty group label
+});
+
 // ─── Item media: the stamp (spec 2026-09-02-newsletter-media-layout, Decision) ──
 
 const FLYER = 'https://raw.githubusercontent.com/erc/media/main/flyer.png';

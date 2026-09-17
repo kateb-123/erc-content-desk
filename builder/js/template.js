@@ -144,6 +144,14 @@ function withStamp(title, rest, fields, sectionKey, itemId, editable, hasBlurb, 
 /** Items that can render: a title is the one field every item needs. */
 const titled = items => (items || []).filter(i => String(i?.fields?.title ?? '').trim());
 
+/** A section renders when it is switched on and holds a titled item. The
+ *  jump-nav and the section loop read this one rule, so they cannot disagree. */
+const renders = sec => !!sec?.enabled && titled(sec.items).length > 0;
+
+/** The anchor a section header emits and the jump-nav links to. Headlines is the
+ *  one section whose anchor is not its key. */
+const anchorIdForSection = key => (key === 'headlines' ? 'news' : key);
+
 // ─── Common snippets ──────────────────────────────────────────────────────────
 
 const FONT_BODY = "'Trebuchet MS', 'Segoe UI', Tahoma, sans-serif";
@@ -183,6 +191,30 @@ function seeMore(href) {
 /** A section's tail-link URL: the issue may override the registry default; '' turns the row off. */
 const seeMoreUrl = (sec, secReg) => (sec.seeMoreUrl !== undefined ? sec.seeMoreUrl : secReg.seeMoreUrl);
 
+/** A section's items bucketed by group: the registry's order first, then any
+ *  group the registry does not name, so nothing is dropped. */
+function groupsInOrder(secReg, items) {
+  const order = secReg.groups.map(g => g.key);
+  const byGroup = {};
+  for (const item of items) {
+    const gk = item.group || '';
+    (byGroup[gk] = byGroup[gk] || []).push(item);
+  }
+  const keys = order.filter(gk => byGroup[gk]);
+  for (const gk of Object.keys(byGroup)) if (!order.includes(gk)) keys.push(gk);
+  return keys.map(key => ({ key, label: secReg.groups.find(g => g.key === key)?.label ?? key, items: byGroup[key] }));
+}
+
+/** An item's title: a link to its source, or a plain span when the url is
+ *  missing or unsafe. Either way it carries the edit hook. */
+function titleLink(sectionKey, item, editable) {
+  const hooks = editAttrs(sectionKey, item.id, 'title', editable);
+  const href = safeItemHref(item.fields.url);
+  return href
+    ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${hooks}>${esc(item.fields.title)}</a>`
+    : `<span${hooks}>${esc(item.fields.title)}</span>`;
+}
+
 // ─── Per-kind builders ────────────────────────────────────────────────────────
 
 /**
@@ -190,13 +222,12 @@ const seeMoreUrl = (sec, secReg) => (sec.seeMoreUrl !== undefined ? sec.seeMoreU
  * Groups items under their research group eyebrow (Research Brief, then Report);
  * followed by compact Submit callout.
  */
-function buildBriefs(sec, editable = false) {
+function buildBriefs(secReg, sec, editable = false) {
   const items = titled(sec.items);
-  if (!sec.enabled || !items.length) return '';
-  let rows = sectionHeader('research', 'ERC Research');
+  let rows = sectionHeader(anchorIdForSection(secReg.key), 'ERC Research');
 
-  const researchReg = SECTION_REGISTRY.find(s => s.key === 'research');
-  const groupOrder = researchReg.groups.map(g => g.key);
+  // Unlike the other kinds, a brief with an unknown group folds into Research Brief.
+  const groupOrder = secReg.groups.map(g => g.key);
   const byGroup = {};
   for (const item of items) {
     const gk = groupOrder.includes(item.group) ? item.group : 'brief';
@@ -206,18 +237,14 @@ function buildBriefs(sec, editable = false) {
 
   let firstGroup = true;
   for (const gk of present) {
-    const groupDef = researchReg.groups.find(g => g.key === gk);
+    const groupDef = secReg.groups.find(g => g.key === gk);
     rows += eyebrow(groupDef.label, firstGroup);
     firstGroup = false;
     const items = byGroup[gk];
     items.forEach((item, i) => {
       const { fields } = item;
-      const href = safeItemHref(fields.url);
-      const titleLink = href
-        ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs('research', item.id, 'title', editable)}>${esc(fields.title)}</a>`
-        : `<span${editAttrs('research', item.id, 'title', editable)}>${esc(fields.title)}</span>`;
       const topPad = i === 0 ? '13px' : '12px';
-      const title = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>`;
+      const title = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink(secReg.key, item, editable)}</p>`;
       const rest = `${fields.authors ? `<p style="margin:0 0 8px; line-height: 1.4; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs('research', item.id, 'authors', editable)}>${esc(fields.authors)}</p>` : ''}
 ${fields.summary ? proseParas(fields.summary, editAttrs('research', item.id, 'summary', editable)) : ''}`;
       rows += `
@@ -249,53 +276,23 @@ ${withStamp(title, rest, fields, 'research', item.id, editable, !!fields.summary
  */
 function buildGroupedList(secReg, sec, editable = false) {
   const items = titled(sec.items);
-  if (!sec.enabled || !items.length) return '';
 
   const isEvents = secReg.key === 'events';
-  const anchorId = secReg.key === 'events' ? 'events' : 'opportunities';
-  const label = secReg.label;
 
-  let rows = sectionHeader(anchorId, label);
-
-  // Collect groups present in items, in SECTION_REGISTRY group order
-  const groupOrder = secReg.groups.map(g => g.key);
-  const groupMap = {};
-  for (const item of items) {
-    const gk = item.group || '';
-    if (!groupMap[gk]) groupMap[gk] = [];
-    groupMap[gk].push(item);
-  }
-
-  // Sort groups by registry order; unknown groups appended at end
-  const presentGroups = [];
-  for (const gk of groupOrder) {
-    if (groupMap[gk]) presentGroups.push(gk);
-  }
-  for (const gk of Object.keys(groupMap)) {
-    if (!groupOrder.includes(gk)) presentGroups.push(gk);
-  }
+  let rows = sectionHeader(anchorIdForSection(secReg.key), secReg.label);
 
   let firstGroup = true;
-  let featuredDividerNeeded = false;
 
-  for (const gk of presentGroups) {
-    const items = groupMap[gk];
-    const groupDef = secReg.groups.find(g => g.key === gk);
-    const groupLabel = groupDef ? groupDef.label : gk;
-
-    rows += eyebrow(groupLabel, firstGroup);
+  for (const group of groupsInOrder(secReg, items)) {
+    rows += eyebrow(group.label, firstGroup);
     firstGroup = false;
 
-    const isFeaturedGroup = gk === 'featured';
+    const isFeaturedGroup = group.key === 'featured';
 
-    items.forEach((item, i) => {
+    group.items.forEach((item, i) => {
       const { fields, featured } = item;
       const topPad = i === 0 ? '7px' : '12px';
       const sectionKey = secReg.key;
-      const href = safeItemHref(fields.url);
-      const titleLink = href
-        ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs(sectionKey, item.id, 'title', editable)}>${esc(fields.title || '')}</a>`
-        : `<span${editAttrs(sectionKey, item.id, 'title', editable)}>${esc(fields.title || '')}</span>`;
 
       // Build meta line: date | time | location
       const metaParts = [fields.date, fields.time, fields.location].filter(Boolean);
@@ -314,23 +311,21 @@ function buildGroupedList(secReg, sec, editable = false) {
         : '';
 
       // Divider between items within same group (the featured group uses the section divider)
-      const needsItemDivider = isEvents && i < items.length - 1;
+      const needsItemDivider = isEvents && i < group.items.length - 1;
 
+      const title = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink(sectionKey, item, editable)}</p>`;
       if (isEvents) {
-        const title = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>`;
         const rest = `${metaLine}
 ${descLine}`;
         rows += `<tr><td style="padding: ${topPad} 48px 0 40px;">
 ${withStamp(title, rest, fields, sectionKey, item.id, editable, descLine !== '', { titleInline: isEdTalk(fields.title) })}
 </td></tr>`;
-        if (needsItemDivider) {
-          rows += `<tr><td style="padding: 12px 48px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
-        }
+        if (needsItemDivider) rows += DIVIDER;
       } else {
-        const title = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>`;
-        const rest = `${oppMeta}`;
+        // No stamp without a blurb, and an opportunity never carries one.
         rows += `<tr><td style="padding: ${topPad} 48px 0 40px;">
-${withStamp(title, rest, fields, sectionKey, item.id, editable, false)}
+${title}
+${oppMeta}
 </td></tr>`;
       }
     });
@@ -358,52 +353,22 @@ ${withStamp(title, rest, fields, sectionKey, item.id, editable, false)}
  */
 function buildGroupedDigest(secReg, sec, editable = false) {
   const items = titled(sec.items);
-  if (!sec.enabled || !items.length) return '';
 
   const isHeadlines = secReg.key === 'headlines';
-  const anchorId = anchorIdForSection(secReg.key);
-  const label = secReg.label;
 
-  let rows = sectionHeader(anchorId, label);
+  let rows = sectionHeader(anchorIdForSection(secReg.key), secReg.label);
 
-  // Group items by group key in registry order
-  const groupOrder = secReg.groups.map(g => g.key);
-  const groupMap = {};
-  for (const item of items) {
-    const gk = item.group || '';
-    if (!groupMap[gk]) groupMap[gk] = [];
-    groupMap[gk].push(item);
-  }
-
-  const presentGroups = [];
-  for (const gk of groupOrder) {
-    if (groupMap[gk]) presentGroups.push(gk);
-  }
-  for (const gk of Object.keys(groupMap)) {
-    if (!groupOrder.includes(gk)) presentGroups.push(gk);
-  }
-
-  for (const gk of presentGroups) {
-    const items = groupMap[gk];
-    const groupDef = secReg.groups.find(g => g.key === gk);
-    const groupLabel = groupDef ? groupDef.label : gk;
-
-    const groupHeading = groupLabel
-      ? `<h3 style="margin:0 0 9px; font-family: ${FONT_HEAD}; font-size: 13px; font-weight: 700; color: #913B3B; text-transform: uppercase; letter-spacing: 1.1px;">${esc(groupLabel)}</h3>\n`
+  for (const group of groupsInOrder(secReg, items)) {
+    const groupHeading = group.label
+      ? `<h3 style="margin:0 0 9px; font-family: ${FONT_HEAD}; font-size: 13px; font-weight: 700; color: #913B3B; text-transform: uppercase; letter-spacing: 1.1px;">${esc(group.label)}</h3>\n`
       : '';
     rows += `<tr><td style="padding: 18px 24px 0 24px;">
 ${groupHeading}<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width:100%;"><tbody>`;
 
-    items.forEach((item, i) => {
+    group.items.forEach((item, i) => {
       const { fields } = item;
-      const isLast = i === items.length - 1;
+      const isLast = i === group.items.length - 1;
       const bottomPad = isLast ? '0' : '7px';
-
-      const sectionKey = secReg.key;
-      const href = safeItemHref(fields.url);
-      const titleLink = href
-        ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs(sectionKey, item.id, 'title', editable)}>${esc(fields.title || '')}</a>`
-        : `<span${editAttrs(sectionKey, item.id, 'title', editable)}>${esc(fields.title || '')}</span>`;
 
       // Headlines: append (Source) after the title link
       const sourcePart = isHeadlines && fields.source
@@ -412,7 +377,7 @@ ${groupHeading}<table role="presentation" cellspacing="0" cellpadding="0" border
 
       rows += `<tr>
 <td style="vertical-align:top; width:14px; padding:0 8px ${bottomPad} 16px;"><span style="font-family:${FONT_BODY}; font-size:14px; line-height:1.4; color:#202020;">&#8226;</span></td>
-<td style="vertical-align:top; padding:0 0 ${bottomPad} 0;"><p style="margin:0; line-height:1.4; font-family:${FONT_BODY}; font-size:14px;">${titleLink}${sourcePart}</p></td>
+<td style="vertical-align:top; padding:0 0 ${bottomPad} 0;"><p style="margin:0; line-height:1.4; font-family:${FONT_BODY}; font-size:14px;">${titleLink(secReg.key, item, editable)}${sourcePart}</p></td>
 </tr>`;
     });
 
@@ -432,47 +397,20 @@ ${groupHeading}<table role="presentation" cellspacing="0" cellpadding="0" border
  */
 function buildSpotlight(secReg, sec, editable = false) {
   const items = titled(sec.items);
-  if (!sec.enabled || !items.length) return '';
 
-  let rows = sectionHeader('spotlight', 'ERC Spotlight');
-
-  // Build group map from items
-  const groupOrder = secReg.groups.map(g => g.key);
-  const groupMap = {};
-  for (const item of items) {
-    const gk = item.group || '';
-    if (!groupMap[gk]) groupMap[gk] = [];
-    groupMap[gk].push(item);
-  }
-
-  // Collect present groups in registry order, unknown groups appended
-  const presentGroups = [];
-  for (const gk of groupOrder) {
-    if (groupMap[gk]) presentGroups.push(gk);
-  }
-  for (const gk of Object.keys(groupMap)) {
-    if (!groupOrder.includes(gk)) presentGroups.push(gk);
-  }
+  let rows = sectionHeader(anchorIdForSection(secReg.key), 'ERC Spotlight');
 
   let firstGroup = true;
 
-  for (const gk of presentGroups) {
-    const items = groupMap[gk];
-    const groupDef = secReg.groups.find(g => g.key === gk);
-    const groupLabel = groupDef ? groupDef.label : gk;
-
-    rows += eyebrow(groupLabel, firstGroup);
+  for (const group of groupsInOrder(secReg, items)) {
+    rows += eyebrow(group.label, firstGroup);
     firstGroup = false;
 
     // All spotlight groups render the same: bold title link + meta (or
     // date | time | location) + optional summary.
-    items.forEach((item, i) => {
+    group.items.forEach((item, i) => {
         const { fields } = item;
         const topPad = i === 0 ? '7px' : '12px';
-        const href = safeItemHref(fields.url);
-      const titleLink = href
-          ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${editAttrs('spotlight', item.id, 'title', editable)}>${esc(fields.title || '')}</a>`
-          : `<span${editAttrs('spotlight', item.id, 'title', editable)}>${esc(fields.title || '')}</span>`;
 
         // Meta: use fields.meta if present (hook the meta field); otherwise
         // build from date | time | location and hook EACH sub-field so clicking
@@ -499,7 +437,7 @@ function buildSpotlight(secReg, sec, editable = false) {
           ? proseParas(fields.summary, editAttrs('spotlight', item.id, 'summary', editable))
           : '';
 
-        const title = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink}</p>`;
+        const title = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink(secReg.key, item, editable)}</p>`;
 
         const rest = `${metaLine}
 ${summaryLine}`;
@@ -507,9 +445,7 @@ ${summaryLine}`;
 ${withStamp(title, rest, fields, 'spotlight', item.id, editable, summaryLine !== '', { titleInline: isEdTalk(fields.title) })}
 </td></tr>`;
 
-        if (i < items.length - 1) {
-          rows += `<tr><td style="padding: 12px 48px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
-        }
+        if (i < group.items.length - 1) rows += DIVIDER;
       });
   }
 
@@ -528,23 +464,13 @@ ${rows}
 </table>`;
 }
 
-// ─── Anchor-id map (must match the ids emitted by each section builder) ───────
-
-/**
- * Returns the HTML anchor id that each section builder emits via sectionHeader().
- * Keep in sync with buildBriefs, buildGroupedList, buildGroupedDigest, buildSpotlight.
- */
-function anchorIdForSection(sectionKey) {
-  switch (sectionKey) {
-    case 'research':      return 'research';
-    case 'spotlight':     return 'spotlight';
-    case 'events':        return 'events';
-    case 'opportunities': return 'opportunities';
-    case 'policy':        return 'policy';
-    case 'headlines':     return 'news';
-    default:              return sectionKey;
-  }
-}
+/** Which builder draws each registry kind. */
+const BUILDERS = {
+  'briefs': buildBriefs,
+  'grouped-list': buildGroupedList,
+  'grouped-digest': buildGroupedDigest,
+  'spotlight': buildSpotlight,
+};
 
 // ─── Header / masthead / intro / footer ──────────────────────────────────────
 
@@ -555,10 +481,7 @@ function buildHeader(issue, editable = false) {
   // Build jump-nav dynamically from enabled sections in SECTION_REGISTRY order.
   // Only sections that are enabled AND have items appear: the same guard the builders use.
   const navLinks = SECTION_REGISTRY
-    .filter(secReg => {
-      const sec = issue.sections[secReg.key];
-      return sec && sec.enabled && titled(sec.items).length > 0;
-    })
+    .filter(secReg => renders(issue.sections[secReg.key]))
     .map(secReg => {
       const anchor = anchorIdForSection(secReg.key);
       const navText = secReg.navLabel ?? secReg.label;
@@ -668,7 +591,6 @@ export function renderNewsletter(issue, opts = {}) {
   P { margin-top:0; margin-bottom:0; }
   :root { color-scheme: light only; supported-color-schemes: light only; }
   /* ===== Keep the light design legible in dark mode (Outlook.com + Apple/Gmail) ===== */
-  [data-ogsc] td[style*="rgb(255, 255, 255)"], [data-ogsb] td[style*="rgb(255, 255, 255)"],
   [data-ogsc] table[style*="rgb(255, 255, 255)"], [data-ogsb] table[style*="rgb(255, 255, 255)"] { background-color:#ffffff !important; }
   [data-ogsc] table[style*="#f6f6f6"], [data-ogsb] table[style*="#f6f6f6"], [data-ogsc] td[style*="#f6f6f6"], [data-ogsb] td[style*="#f6f6f6"] { background-color:#f6f6f6 !important; }
   [data-ogsc] td[style*="rgb(80, 0, 0)"], [data-ogsb] td[style*="rgb(80, 0, 0)"],
@@ -677,15 +599,13 @@ export function renderNewsletter(issue, opts = {}) {
   [data-ogsc] a[style*="#202020"], [data-ogsb] a[style*="#202020"] { color:#202020 !important; }
   [data-ogsc] p[style*="#404040"], [data-ogsb] p[style*="#404040"] { color:#404040 !important; }
   [data-ogsc] span[style*="#7A6A6A"], [data-ogsb] span[style*="#7A6A6A"] { color:#7A6A6A !important; }
-  [data-ogsc] h2[style*="#500000"], [data-ogsb] h2[style*="#500000"], [data-ogsc] h3[style*="#500000"], [data-ogsb] h3[style*="#500000"] { color:#500000 !important; }
   @media (prefers-color-scheme: dark) {
-    td[style*="rgb(255, 255, 255)"], table[style*="rgb(255, 255, 255)"] { background-color:#ffffff !important; }
+    table[style*="rgb(255, 255, 255)"] { background-color:#ffffff !important; }
     td[style*="#f6f6f6"], table[style*="#f6f6f6"] { background-color:#f6f6f6 !important; }
     td[style*="rgb(80, 0, 0)"], table[style*="rgb(80, 0, 0)"] { background-color:#500000 !important; }
-    p[style*="#202020"], h3[style*="#202020"], a[style*="#202020"] { color:#202020 !important; }
+    p[style*="#202020"], a[style*="#202020"] { color:#202020 !important; }
     p[style*="#404040"] { color:#404040 !important; }
     span[style*="#7A6A6A"] { color:#7A6A6A !important; }
-    h2[style*="#500000"], h3[style*="#500000"] { color:#500000 !important; }
   }
 </style>
 </head>
@@ -701,24 +621,8 @@ ${preheader(issue)}
   // Sections in SECTION_REGISTRY order; a section that renders nothing leaves no spacer behind.
   for (const secReg of SECTION_REGISTRY) {
     const sec = issue.sections[secReg.key];
-    if (!sec || !sec.enabled) continue;
-
-    let sectionHtml = '';
-    switch (secReg.kind) {
-      case 'briefs':
-        sectionHtml = buildBriefs(sec, editable);
-        break;
-      case 'grouped-list':
-        sectionHtml = buildGroupedList(secReg, sec, editable);
-        break;
-      case 'grouped-digest':
-        sectionHtml = buildGroupedDigest(secReg, sec, editable);
-        break;
-      case 'spotlight':
-        sectionHtml = buildSpotlight(secReg, sec, editable);
-        break;
-    }
-    if (sectionHtml) parts.push(SPACER_14, sectionHtml);
+    if (!renders(sec)) continue;
+    parts.push(SPACER_14, BUILDERS[secReg.kind](secReg, sec, editable));
   }
 
   // Footer spacer (26px before footer per template)

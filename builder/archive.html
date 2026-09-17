@@ -7,9 +7,9 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&display=swap" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="/css/tokens.css?v=3" />
-  <link rel="stylesheet" href="/css/sidebar.css?v=9" />
+  <link rel="stylesheet" href="/css/sidebar.css?v=10" />
   <style>
-    /* The desk's names, which the shared sidebar reads; every value a Carbon token. */
+    /* The accent for this page; the shared sidebar reads Carbon's own names. */
     :root {
   /* The accent: teal. Carbon's blue tokens are remapped here; nothing else moves. */
   --accent-10: var(--teal-10); --accent-20: var(--teal-20); --accent-30: var(--teal-30); --accent-40: var(--teal-40);
@@ -20,9 +20,7 @@
   --focus: var(--accent-60); --border-interactive: var(--accent-60); --interactive: var(--accent-60);
   --highlight: var(--accent-20); --notification-info-background: var(--accent-10); --notification-info-border: var(--accent-20); --support-info: var(--accent-70);
   --tag-background-blue: var(--accent-20); --tag-color-blue: var(--accent-80);
-      --side-bg: var(--background); --ink: var(--text-primary); --muted: var(--text-secondary); --line: var(--border-subtle-00);
-      --accent: var(--button-primary); --accent-deep: var(--button-primary-active);
-      --selected: var(--highlight); --hover: var(--accent-alpha); }
+}
     /* The desk's sidebar stays open here, like Home. */
     body { margin: 0; background: var(--background); color: var(--text-primary); display: flex; min-height: 100vh;
       font-family: var(--font-sans); font-size: 14px; line-height: 20px; letter-spacing: .16px; }

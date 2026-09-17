@@ -13,6 +13,8 @@ import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, deleteItem, insertItem
 const DESK_URL = new URLSearchParams(window.location.search).get('desk') || '';
 let pullMessage = ''; // survives the Review re-render after a pull
 import { renderNewsletter, renderProse } from './template.js';
+import { faIcon, dotsLoader, loadingLabel } from '../../js/icons.js';
+import { el, button } from '../../js/ui-aids.js';
 import { saveState, loadState, clearState } from './state.js';
 import { getField, setField } from './editpath.js';
 import { computePreviewScale } from './preview.js';
@@ -41,28 +43,6 @@ let restorePending = false;
 // ---------------------------------------------------------------------------
 // Autosave helpers
 // ---------------------------------------------------------------------------
-
-/** The desk's sliding-dots loader; mini = inline-sized for status rows. */
-function dotsLoader(mini = false) {
-  const wrap = document.createElement('div');
-  wrap.className = mini ? 'dots-loader dots-mini' : 'dots-loader';
-  wrap.setAttribute('aria-hidden', 'true');
-  for (let i = 0; i < 6; i += 1) {
-    wrap.append(Object.assign(document.createElement('span'), { className: 'dot' }));
-  }
-  return wrap;
-}
-
-/** "Pulling" + dots that type themselves, for busy status labels. */
-function loadingLabel(message) {
-  const frag = document.createDocumentFragment();
-  frag.append(message.replace(/…$/, ''));
-  const dots = document.createElement('span');
-  dots.className = 'dots-text';
-  dots.setAttribute('aria-hidden', 'true');
-  frag.append(dots);
-  return frag;
-}
 
 /**
  * Tiny debounce: returns a function that delays `fn` by `wait` ms,
@@ -94,15 +74,7 @@ const btnNext = document.getElementById('btn-next');
     Always one line tall, so a message never moves the page. */
 const wizardStatus = document.getElementById('wizard-status');
 function setWizardStatus(msg) {
-  if (wizardStatus) wizardStatus.textContent = msg;
-}
-
-/** Small Font Awesome glyph, same convention as the desk's faIcon(). */
-function faIcon(name) {
-  const i = document.createElement('i');
-  i.className = `fa-solid fa-${name}`;
-  i.setAttribute('aria-hidden', 'true');
-  return i;
+  wizardStatus.textContent = msg;
 }
 
 /** A note's icon: the glyph that goes with its --support-* colour, ahead of the words. */
@@ -112,13 +84,17 @@ function noteIcon(name) {
   return i;
 }
 
+/** One <option>: its value, its words, and whether it is the one picked. */
+function option(value, text, selected = false) {
+  const opt = el('option', '', text);
+  opt.value = value;
+  if (selected) opt.selected = true;
+  return opt;
+}
+
 /** A quiet word in the link colour: the builder's ghost button. */
 function ghostButton(label) {
-  const b = document.createElement('button');
-  b.type = 'button';
-  b.className = 'ghost-btn';
-  b.textContent = label;
-  return b;
+  return button(label, 'ghost-btn');
 }
 
 /**
@@ -131,14 +107,10 @@ function ghostButton(label) {
  */
 function inlineNote(kind, message, onRetry = null) {
   const icons = { error: 'circle-exclamation', success: 'circle-check', warning: 'triangle-exclamation' };
-  const note = document.createElement('div');
-  note.className = `note note--${kind}`;
+  const note = el('div', `note note--${kind}`);
   if (kind === 'error') note.setAttribute('role', 'alert');
   else { note.setAttribute('role', 'status'); note.setAttribute('aria-live', 'polite'); }
-  const words = document.createElement('span');
-  words.className = 'note-words';
-  words.textContent = message;
-  note.append(noteIcon(icons[kind]), words);
+  note.append(noteIcon(icons[kind]), el('span', '', message));
   if (onRetry) {
     const retry = ghostButton('Retry');
     retry.addEventListener('click', onRetry);
@@ -168,7 +140,6 @@ function syncStepNav() {
     indicator.classList.toggle('active', shows === 'current');
     indicator.classList.toggle('completed', shows === 'complete');
     const btn = indicator.querySelector('button');
-    if (!btn) return;
     if (shows === 'current') btn.setAttribute('aria-current', 'step');
     else btn.removeAttribute('aria-current');
     // A locked step is greyed, and its title says why.
@@ -181,6 +152,9 @@ function syncStepNav() {
 // Navigation
 // ---------------------------------------------------------------------------
 
+/** Which renderer draws each step. */
+const RENDER = { review: renderReview, triage: renderTriage, edit: renderEdit, export: renderExport };
+
 /**
  * Show the wizard section for `step`, hide all others.
  * Updates `state.step` and enables/disables Back/Next buttons.
@@ -189,22 +163,11 @@ function syncStepNav() {
  */
 function goTo(step) {
   const idx = STEPS.indexOf(step);
-  if (idx === -1) {
-    console.error(`goTo: unknown step "${step}"`);
-    return;
-  }
 
   state.step = step;
   state.reached = Math.max(state.reached, idx);
 
-  // Show/hide step containers
-  stepSections.forEach((section) => {
-    if (section.dataset.step === step) {
-      section.removeAttribute('hidden');
-    } else {
-      section.setAttribute('hidden', '');
-    }
-  });
+  stepSections.forEach((section) => { section.hidden = section.dataset.step !== step; });
 
   syncStepNav();
   setWizardStatus('');
@@ -214,16 +177,19 @@ function goTo(step) {
   btnBack.disabled = idx === 0;
   btnNext.hidden = idx === STEPS.length - 1;
 
-  // Step-specific render hooks
-  if (step === 'review') renderReview();
-  if (step === 'triage') renderTriage();
-  if (step === 'edit') renderEdit();
-  if (step === 'export') renderExport();
+  RENDER[step]();
 }
 
 // ---------------------------------------------------------------------------
 // Button wiring
 // ---------------------------------------------------------------------------
+
+/** The one gate Next and the step buttons share: with nothing pulled, the later
+ *  steps say why on the status line and stay put. */
+function tryGo(step) {
+  if (!canEnterStep(step, countIssueItems(state.issue))) { setWizardStatus(LOCKED_STEP_MESSAGE); return; }
+  goTo(step);
+}
 
 function goBack() {
   const idx = STEPS.indexOf(state.step);
@@ -231,11 +197,7 @@ function goBack() {
 }
 function goNext() {
   const idx = STEPS.indexOf(state.step);
-  if (idx >= STEPS.length - 1) return;
-  const next = STEPS[idx + 1];
-  // The same gate as the step buttons: with nothing pulled, Next says why and stays.
-  if (!canEnterStep(next, countIssueItems(state.issue))) { setWizardStatus(LOCKED_STEP_MESSAGE); return; }
-  goTo(next);
+  if (idx < STEPS.length - 1) tryGo(STEPS[idx + 1]);
 }
 btnBack.addEventListener('click', goBack);
 btnNext.addEventListener('click', goNext);
@@ -244,12 +206,9 @@ btnNext.addEventListener('click', goNext);
 // later steps need a loaded issue, and say so on the status line.
 stepIndicators.forEach((ind) => {
   const btn = ind.querySelector('button');
-  if (!btn) return;
   btn.addEventListener('click', () => {
     const target = ind.dataset.navStep;
-    if (!target || target === state.step) return;
-    if (!canEnterStep(target, countIssueItems(state.issue))) { setWizardStatus(LOCKED_STEP_MESSAGE); return; }
-    goTo(target);
+    if (target !== state.step) tryGo(target);
   });
   // The whole step stays a click surface (its number circle included); the button is the control.
   ind.addEventListener('click', (e) => {
@@ -263,16 +222,10 @@ stepIndicators.forEach((ind) => {
  *  with a tinted instruction note. Open state survives re-renders per step. */
 const openStepInfo = new Set();
 function attachStepInfo(container, key, lede, text) {
-  const row = document.createElement('div');
-  row.className = 'title-row';
-  const ledeEl = document.createElement('p');
-  ledeEl.className = 'step-lede';
-  ledeEl.textContent = lede;
-  const toggle = document.createElement('button');
-  toggle.type = 'button';
-  toggle.className = 'info-toggle';
-  const panel = document.createElement('div');
-  panel.className = 'info-panel';
+  const row = el('div', 'title-row');
+  const ledeEl = el('p', 'step-lede', lede);
+  const toggle = button('', 'info-toggle');
+  const panel = el('div', 'info-panel');
   panel.append(noteIcon('circle-info'), document.createTextNode(text));
   const sync = () => {
     panel.hidden = !openStepInfo.has(key);
@@ -288,29 +241,33 @@ function attachStepInfo(container, key, lede, text) {
   container.append(row, panel);
 }
 
+/** Every step opens the same way: its section, wiped back to the heading a
+ *  screen reader reads (the step row's own words), then the lede and the
+ *  View info note. Returns the section to fill. */
+function openStep(key, lede, info) {
+  const container = document.querySelector(`[data-step="${key}"]`);
+  const heading = document.querySelector(`[data-nav-step="${key}"] .step-btn`).textContent;
+  container.replaceChildren(el('h2', 'sr-only', heading));
+  attachStepInfo(container, key, lede, info);
+  return container;
+}
+
+/** A step with nothing to show says so in one line. */
+function emptyLine(container, text) {
+  container.appendChild(el('p', 'edit-empty-msg', text));
+}
+
 function renderReview() {
-  const container = document.querySelector('[data-step="review"]');
-  if (!container) return;
-  const h2 = container.querySelector('h2');
-  container.innerHTML = '';
-  if (h2) container.appendChild(h2);
-  attachStepInfo(container, 'review', 'Pick the issue and pull what the desk staged.',
+  const container = openStep('review', 'Pick the issue and pull what the desk staged.',
     'Pick the issue, pull what the desk staged, and look it over. Pull again any time. Only new items are added.');
 
   // ── Issue date: a dropdown of the desk's scheduled issues, with staged
   //    counts. The desk owns the schedule; the builder just picks from it. ──
-  const metaSection = document.createElement('div');
-  metaSection.className = 'triage-meta';
-  const dateLabel = document.createElement('label');
-  dateLabel.className = 'triage-field-label';
-  dateLabel.textContent = 'Issue';
-  const dateSelect = document.createElement('select');
-  dateSelect.className = 'triage-field-input';
+  const metaSection = el('div', 'triage-meta');
+  const dateLabel = el('label', 'triage-field-label', 'Issue');
+  const dateSelect = el('select', 'triage-field-input');
   const currentIso = state.issue ? displayDateToISO(state.issue.date || '') : '';
-  const placeholder = document.createElement('option');
-  placeholder.value = '';
-  placeholder.textContent = currentIso ? isoToDisplayDate(currentIso) : 'Loading issues…';
-  if (currentIso) placeholder.value = currentIso;
+  const placeholder = option(currentIso, currentIso ? isoToDisplayDate(currentIso) : 'Loading issues…');
   dateSelect.appendChild(placeholder);
   // While the restore banner asks, the issue cannot be changed under it.
   dateSelect.disabled = restorePending;
@@ -320,14 +277,11 @@ function renderReview() {
     // The issue keeps the display string the header renders ("July 1, 2026").
     state.issue.date = isoToDisplayDate(dateSelect.value);
     scheduleSave();
-    syncStepNav();
   });
   dateLabel.appendChild(dateSelect);
-  metaSection.appendChild(dateLabel);
   // Where a failed schedule load speaks: an error note under the field, with Retry.
-  const scheduleNote = document.createElement('div');
-  scheduleNote.className = 'note-slot';
-  metaSection.appendChild(scheduleNote);
+  const scheduleNote = el('div', 'note-slot');
+  metaSection.append(dateLabel, scheduleNote);
   container.appendChild(metaSection);
 
   // Fill the dropdown from the desk: scheduled dates plus anything staged.
@@ -340,27 +294,12 @@ function renderReview() {
       if (!data.ok) throw new Error(data.error || 'no schedule');
       const dates = [...new Set([...(data.schedule ?? []), ...Object.keys(data.staged ?? {})])].sort();
       if (!dates.length) { placeholder.textContent = currentIso ? isoToDisplayDate(currentIso) : 'No issues scheduled on the desk'; return; }
-      dateSelect.replaceChildren();
-      if (!currentIso) {
-        const pick = document.createElement('option');
-        pick.value = '';
-        pick.textContent = 'Pick an issue…';
-        dateSelect.appendChild(pick);
-      }
-      for (const iso of dates) {
-        const opt = document.createElement('option');
-        opt.value = iso;
-        opt.textContent = isoToDisplayDate(iso);
-        if (iso === currentIso) opt.selected = true;
-        dateSelect.appendChild(opt);
-      }
-      if (currentIso && !dates.includes(currentIso)) {
-        const opt = document.createElement('option');
-        opt.value = currentIso;
-        opt.textContent = isoToDisplayDate(currentIso);
-        opt.selected = true;
-        dateSelect.appendChild(opt);
-      }
+      // The saved issue may have dropped off the desk's schedule; it still belongs in the list.
+      const isos = currentIso && !dates.includes(currentIso) ? [...dates, currentIso] : dates;
+      dateSelect.replaceChildren(
+        ...(currentIso ? [] : [option('', 'Pick an issue…')]),
+        ...isos.map((iso) => option(iso, isoToDisplayDate(iso), iso === currentIso)),
+      );
     } catch {
       // The select keeps a real first option; the error speaks beside it, with a way to try again.
       if (!currentIso) placeholder.textContent = 'Pick an issue…';
@@ -373,22 +312,15 @@ function renderReview() {
   // an issue; this button fetches them, already builder-shaped. Re-pull adds
   // only what is new (matched by link, and by the stable desk id). The button
   // and its status share one row under the field.
-  const pullRow = document.createElement('div');
-  pullRow.className = 'pull-row';
-  const pullBtn = document.createElement('button');
-  pullBtn.type = 'button';
+  const pullRow = el('div', 'pull-row');
   // The step's one real action: a filled primary, like the desk's Rewrite/Publish.
-  pullBtn.className = 'btn btn-primary md-sidedoor-btn';
-  pullBtn.textContent = 'Pull from the desk';
+  const pullBtn = button('Pull from the desk', 'btn btn-primary');
   pullBtn.disabled = restorePending;   // locked while the restore banner asks
-  const pullStatus = document.createElement('span');
-  pullStatus.className = 'pull-status';
+  const pullStatus = el('span', 'pull-status', pullMessage);
   pullStatus.setAttribute('role', 'status');    // read aloud as it changes
   pullStatus.setAttribute('aria-live', 'polite');
-  pullStatus.textContent = pullMessage;
   // A failed pull is an error note under the row, with Retry.
-  const pullNote = document.createElement('div');
-  pullNote.className = 'note-slot';
+  const pullNote = el('div', 'note-slot');
   const setPull = (msg, busy = false) => {
     pullMessage = msg;
     pullNote.replaceChildren();
@@ -398,7 +330,6 @@ function renderReview() {
   pullBtn.addEventListener('click', async () => {
     const iso = displayDateToISO(state.issue?.date || '');
     if (!iso) return setPull('Pick the issue first.');
-    pullBtn.disabled = true;
     pullBtn.hidden = true;   // gone while pulling; no double-clicks
     setPull('Pulling…', true);
     try {
@@ -427,7 +358,6 @@ function renderReview() {
       setPull('');
       pullNote.replaceChildren(inlineNote('error', "Couldn't reach the desk.", () => pullBtn.click()));
     } finally {
-      pullBtn.disabled = false;
       pullBtn.hidden = false;
     }
   });
@@ -440,51 +370,28 @@ function renderReview() {
     for (const item of state.issue?.sections?.[sec.key]?.items ?? []) items.push([sec, item]);
   }
   if (!items.length) {
-    const empty = document.createElement('p');
-    empty.className = 'edit-empty-msg';
-    empty.textContent = 'Nothing here yet.';
-    container.appendChild(empty);
+    emptyLine(container, 'Nothing here yet.');
     return;
   }
-  const table = document.createElement('table');
-  table.className = 'review-table';
-  const thead = document.createElement('thead');
-  const headRow = document.createElement('tr');
-  for (const label of ['Item', 'Section']) {
-    const th = document.createElement('th');
-    th.textContent = label;
-    headRow.appendChild(th);
-  }
+  const table = el('table', 'review-table');
+  const thead = el('thead');
+  const headRow = el('tr');
+  headRow.append(...['Item', 'Section'].map((label) => el('th', '', label)));
   thead.appendChild(headRow);
-  table.appendChild(thead);
-  const tbody = document.createElement('tbody');
+  const tbody = el('tbody');
   for (const [sec, item] of items) {
-    const tr = document.createElement('tr');
-    const itemTd = document.createElement('td');
-    const title = document.createElement('strong');
-    title.textContent = item.fields?.title || item.fields?.url || '(untitled)';
-    itemTd.appendChild(title);
+    const tr = el('tr');
+    const itemTd = el('td');
+    itemTd.appendChild(el('strong', '', item.fields?.title || item.fields?.url || '(untitled)'));
     const source = String(item.fields?.source ?? '').trim();
-    if (source) {
-      const src = document.createElement('span');
-      src.className = 'review-table-sub';
-      src.textContent = source;
-      itemTd.appendChild(src);
-    }
-    tr.appendChild(itemTd);
-    const secTd = document.createElement('td');
-    secTd.textContent = sec.label;
+    if (source) itemTd.appendChild(el('span', 'review-table-sub', source));
+    const secTd = el('td', '', sec.label);
     const groupLabel = sec.groups.find((g) => g.key === item.group)?.label ?? '';
-    if (groupLabel) {
-      const grp = document.createElement('span');
-      grp.className = 'review-table-sub';
-      grp.textContent = groupLabel;
-      secTd.appendChild(grp);
-    }
-    tr.appendChild(secTd);
+    if (groupLabel) secTd.appendChild(el('span', 'review-table-sub', groupLabel));
+    tr.append(itemTd, secTd);
     tbody.appendChild(tr);
   }
-  table.appendChild(tbody);
+  table.append(thead, tbody);
   container.appendChild(table);
 }
 
@@ -520,23 +427,15 @@ function showUndoToast(message, onUndo, { focusUndo = false } = {}) {
   const prior = document.querySelector('.undo-toast');
   if (prior) prior.remove();
 
-  const toast = document.createElement('div');
-  toast.className = 'undo-toast';
+  const toast = el('div', 'undo-toast');
   toast.setAttribute('role', 'status');
-  const msg = document.createElement('span');
-  msg.className = 'undo-toast__msg';
-  msg.textContent = message;              // user-derived title → textContent only
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = 'undo-toast__btn';
-  btn.textContent = 'Undo';
-  btn.addEventListener('click', () => {
+  const btn = button('Undo', 'undo-toast__btn', { onClick: () => {
     clearTimeout(_undoToastTimer);
     toast.remove();
     onUndo();
-  });
-  toast.appendChild(msg);
-  toast.appendChild(btn);
+  } });
+  // The message is a user-derived title: textContent only.
+  toast.append(el('span', '', message), btn);
   const anchor = document.querySelector('.edit-column') || document.querySelector('.wizard-body');
   if (anchor) anchor.after(toast);
   else document.body.appendChild(toast);
@@ -553,24 +452,14 @@ function showUndoToast(message, onUndo, { focusUndo = false } = {}) {
  * Called each time the wizard navigates to the 'triage' step.
  */
 function renderTriage() {
-  const container = document.querySelector('[data-step="triage"]');
-  if (!container) return;
-
-  // Clear existing content, keeping the h2
-  const h2 = container.querySelector('h2');
-  container.innerHTML = '';
-  if (h2) container.appendChild(h2);
-  attachStepInfo(container, 'triage', 'Put the issue in order.',
+  const container = openStep('triage', 'Put the issue in order.',
     'Put the items in order with the arrows, mark one event Featured, and switch the Submit your research callout on or off. The issue builds in this order.');
 
   const issue = state.issue;
 
   // Nothing pulled yet: one line, and no empty section list to puzzle over.
   if (!issue || !countIssueItems(issue)) {
-    const msg = document.createElement('p');
-    msg.className = 'edit-empty-msg';
-    msg.textContent = 'No issue loaded. Pull from the desk on the Review step first.';
-    container.appendChild(msg);
+    emptyLine(container, 'No issue loaded. Pull from the desk on the Review step first.');
     return;
   }
 
@@ -583,226 +472,171 @@ function renderTriage() {
     if (sec) sec.enabled = (sec.items?.length ?? 0) > 0;
   }
 
-  const sectionsList = document.createElement('div');
-  sectionsList.className = 'triage-sections-list';
+  const sectionsList = el('div', 'triage-sections-list');
 
   for (const reg of populated) {
     const secData = issue.sections[reg.key];
     const items = secData.items;
-    const row = document.createElement('div');
-    row.className = 'triage-section-row';
-
     // Section name, with item count (e.g. "ERC Spotlight (2)")
-    const nameSpan = document.createElement('span');
-    nameSpan.className = 'triage-section-name';
-    nameSpan.textContent = `${reg.label} (${items.length})`;
-    row.appendChild(nameSpan);
-
+    const row = el('div', 'triage-section-row');
+    row.appendChild(el('span', 'triage-section-name', `${reg.label} (${items.length})`));
     sectionsList.appendChild(row);
 
     // Every populated section lists its items with reorder controls: grouped
     // (under group labels) where the section defines groups, flat otherwise
     // (e.g. Featured Research). Only Events also shows the featured toggle.
-    if (items.length > 0) {
-      const sectionContainer = document.createElement('div');
-      sectionContainer.className = 'triage-grouped-section';
+    const sectionContainer = el('div', 'triage-grouped-section');
 
-      const renderSectionItems = () => {
-        // Remember which arrow had focus, so the rebuild can hand it back.
-        const focused = document.activeElement;
-        const memo = focused && sectionContainer.contains(focused) && focused.dataset.moveItem
-          ? { item: focused.dataset.moveItem, dir: focused.dataset.moveDir } : null;
-        sectionContainer.innerHTML = '';
-        const secItems = (issue && issue.sections && issue.sections[reg.key] && issue.sections[reg.key].items) || [];
+    const renderSectionItems = () => {
+      // Remember which arrow had focus, so the rebuild can hand it back.
+      const focused = document.activeElement;
+      const memo = focused && sectionContainer.contains(focused) && focused.dataset.moveItem
+        ? { item: focused.dataset.moveItem, dir: focused.dataset.moveDir } : null;
+      sectionContainer.innerHTML = '';
 
-        // The one rule for Featured, printed once under the section's name.
-        if (reg.key === 'events') {
-          const rule = document.createElement('div');
-          rule.className = 'triage-section-note';
-          rule.textContent = 'One event is featured; it pins to the top under a Featured heading.';
-          sectionContainer.appendChild(rule);
-        }
-
-        const buckets = bucketSectionItems(reg, secItems);
-
-        for (const bucket of buckets) {
-          if (bucket.label) {
-            const grpLabel = document.createElement('div');
-            grpLabel.className = 'triage-group-label';
-            grpLabel.textContent = bucket.label; // registry constant, safe as textContent
-            sectionContainer.appendChild(grpLabel);
-          }
-
-          const bucketItems = bucket.items;
-          for (const item of bucketItems) {
-            // Index within the full section array (for reorder swaps)
-            const secIdx = secItems.indexOf(item);
-            // Position within this bucket (for button enable/disable)
-            const grpIdx = bucketItems.indexOf(item);
-            const title = (item.fields && item.fields.title) || 'item';
-
-            const evRow = document.createElement('div');
-            evRow.className = 'triage-event-row';
-
-            // Title (user-derived, textContent only)
-            const titleSpan = document.createElement('span');
-            titleSpan.className = 'triage-event-title';
-            titleSpan.textContent = (item.fields && item.fields.title) || '(untitled)';
-
-            // Up button
-            const upBtn = document.createElement('button');
-            upBtn.type = 'button';
-            upBtn.className = 'triage-reorder-btn';
-            upBtn.append(faIcon('arrow-up'));
-            upBtn.setAttribute('aria-label', `Move "${title}" up`);
-            upBtn.dataset.moveItem = item.id;
-            upBtn.dataset.moveDir = 'up';
-            upBtn.disabled = grpIdx === 0;
-            upBtn.addEventListener('click', () => {
-              const allItems = issue.sections[reg.key].items;
-              if (secIdx > 0) {
-                [allItems[secIdx - 1], allItems[secIdx]] = [allItems[secIdx], allItems[secIdx - 1]];
-                renderSectionItems();
-                scheduleSave();
-              }
-            });
-
-            // Down button
-            const downBtn = document.createElement('button');
-            downBtn.type = 'button';
-            downBtn.className = 'triage-reorder-btn';
-            downBtn.append(faIcon('arrow-down'));
-            downBtn.setAttribute('aria-label', `Move "${title}" down`);
-            downBtn.dataset.moveItem = item.id;
-            downBtn.dataset.moveDir = 'down';
-            downBtn.disabled = grpIdx === bucketItems.length - 1;
-            downBtn.addEventListener('click', () => {
-              const allItems = issue.sections[reg.key].items;
-              if (secIdx < allItems.length - 1) {
-                [allItems[secIdx], allItems[secIdx + 1]] = [allItems[secIdx + 1], allItems[secIdx]];
-                renderSectionItems();
-                scheduleSave();
-              }
-            });
-
-            evRow.appendChild(titleSpan);
-
-            // Featured toggle, events section only. The rule sits once under
-            // the section's name, not on every row.
-            if (reg.key === 'events') {
-              const featLabel = document.createElement('label');
-              featLabel.className = 'triage-featured-label';
-
-              const featCb = document.createElement('input');
-              featCb.type = 'checkbox';
-              featCb.className = 'triage-featured-cb';
-              featCb.setAttribute('aria-label', `Feature "${title}"`);
-              featCb.checked = !!item.featured;
-              featCb.addEventListener('change', () => {
-                const evItems = issue.sections.events.items;
-                const wasFeatured = item.featured;
-                // Exclusive: clear all, then set if newly checked
-                evItems.forEach((ev) => { ev.featured = false; });
-                if (!wasFeatured) item.featured = true;
-                renderSectionItems();
-                scheduleSave();
-              });
-
-              featLabel.appendChild(featCb);
-              featLabel.appendChild(document.createTextNode(' Featured'));
-              evRow.appendChild(featLabel);
-            }
-
-            // Reorder arrows, grouped so the pair stays together at the row's right.
-            const reorderGroup = document.createElement('div');
-            reorderGroup.className = 'triage-reorder-group';
-            reorderGroup.appendChild(upBtn);
-            reorderGroup.appendChild(downBtn);
-            evRow.appendChild(reorderGroup);
-
-            // Remove this item from the issue (with Undo), the desk's Remove:
-            // red quiet link with the trash icon, never a bare ✕.
-            const delBtn = document.createElement('button');
-            delBtn.type = 'button';
-            delBtn.className = 'triage-delete-btn';
-            delBtn.append(faIcon('trash-can'), ' Remove');
-            delBtn.setAttribute('aria-label', `Remove "${title}" from the issue`);
-            delBtn.title = 'Removes this item from the issue';
-            delBtn.addEventListener('click', (e) => deleteItemWithUndo(item.id, renderTriage, e.detail === 0));
-            evRow.appendChild(delBtn);
-
-            sectionContainer.appendChild(evRow);
-          }
-        }
-
-        if (memo) {
-          const same = sectionContainer.querySelector(`[data-move-item="${CSS.escape(memo.item)}"][data-move-dir="${memo.dir}"]`);
-          const other = sectionContainer.querySelector(`[data-move-item="${CSS.escape(memo.item)}"]:not([data-move-dir="${memo.dir}"])`);
-          const target = same && !same.disabled ? same : other;
-          if (target && !target.disabled) target.focus();
-        }
-      };
-
-      renderSectionItems();
-      sectionsList.appendChild(sectionContainer);
-
-      // ERC Research: optional "Submit your research" callout, a trailing
-      // on/off switch beneath the research items.
-      if (reg.key === 'research') {
-        const subRow = document.createElement('div');
-        subRow.className = 'triage-switch-row';
-
-        // The visible words are the switch's label, so a screen reader names it.
-        const subName = document.createElement('label');
-        subName.className = 'triage-switch-label';
-        subName.htmlFor = 'submit-callout-switch';
-        subName.textContent = 'Submit your research callout';
-
-        const switchLine = document.createElement('div');
-        switchLine.className = 'triage-switch-line';
-
-        const sw = document.createElement('label');
-        sw.className = 'triage-switch';
-        sw.title = 'Show this callout in the newsletter for this issue';
-        const subCb = document.createElement('input');
-        subCb.type = 'checkbox';
-        subCb.id = 'submit-callout-switch';
-        subCb.className = 'triage-switch-input';
-        subCb.setAttribute('role', 'switch');
-        subCb.checked = secData.showSubmit !== false;
-        subCb.setAttribute('aria-checked', String(subCb.checked));
-        const track = document.createElement('span');
-        track.className = 'triage-switch-track';
-        sw.appendChild(subCb);
-        sw.appendChild(track);
-
-        const stateLabel = document.createElement('span');
-        stateLabel.className = 'triage-switch-state';
-        stateLabel.textContent = subCb.checked ? 'On' : 'Off';
-
-        subCb.addEventListener('change', () => {
-          secData.showSubmit = subCb.checked;
-          subCb.setAttribute('aria-checked', String(subCb.checked));
-          stateLabel.textContent = subCb.checked ? 'On' : 'Off';
-          scheduleSave();
-        });
-
-        switchLine.appendChild(sw);
-        switchLine.appendChild(stateLabel);
-        subRow.appendChild(subName);
-        subRow.appendChild(switchLine);
-        sectionsList.appendChild(subRow);
+      // The one rule for Featured, printed once under the section's name.
+      if (reg.key === 'events') {
+        sectionContainer.appendChild(el('div', 'triage-section-note',
+          'One event is featured; it pins to the top under a Featured heading.'));
       }
+
+      const buckets = bucketSectionItems(reg, items);
+
+      for (const bucket of buckets) {
+        // The label is a registry constant, safe as textContent.
+        if (bucket.label) sectionContainer.appendChild(el('div', 'triage-group-label', bucket.label));
+
+        const bucketItems = bucket.items;
+        for (const item of bucketItems) {
+          // Index within the full section array (for reorder swaps)
+          const secIdx = items.indexOf(item);
+          // Position within this bucket (for button enable/disable)
+          const grpIdx = bucketItems.indexOf(item);
+          const title = (item.fields && item.fields.title) || 'item';
+
+          const evRow = el('div', 'triage-event-row');
+
+          // Title (user-derived, textContent only)
+          const titleSpan = el('span', 'triage-event-title', (item.fields && item.fields.title) || '(untitled)');
+
+          // The two arrows differ only in their word, glyph and move.
+          const arrow = (dir, glyph, disabled, onClick) => {
+            const btn = button('', 'triage-reorder-btn', { icon: glyph, onClick });
+            btn.setAttribute('aria-label', `Move "${title}" ${dir}`);
+            btn.dataset.moveItem = item.id;
+            btn.dataset.moveDir = dir;
+            btn.disabled = disabled;
+            return btn;
+          };
+          const upBtn = arrow('up', 'arrow-up', grpIdx === 0, () => {
+            if (secIdx > 0) {
+              [items[secIdx - 1], items[secIdx]] = [items[secIdx], items[secIdx - 1]];
+              renderSectionItems();
+              scheduleSave();
+            }
+          });
+          const downBtn = arrow('down', 'arrow-down', grpIdx === bucketItems.length - 1, () => {
+            if (secIdx < items.length - 1) {
+              [items[secIdx], items[secIdx + 1]] = [items[secIdx + 1], items[secIdx]];
+              renderSectionItems();
+              scheduleSave();
+            }
+          });
+
+          evRow.appendChild(titleSpan);
+
+          // Featured toggle, events section only. The rule sits once under
+          // the section's name, not on every row.
+          if (reg.key === 'events') {
+            const featLabel = el('label', 'triage-featured-label');
+
+            const featCb = el('input', 'triage-featured-cb');
+            featCb.type = 'checkbox';
+            featCb.setAttribute('aria-label', `Feature "${title}"`);
+            featCb.checked = !!item.featured;
+            featCb.addEventListener('change', () => {
+              const wasFeatured = item.featured;
+              // Exclusive: clear all, then set if newly checked
+              items.forEach((ev) => { ev.featured = false; });
+              if (!wasFeatured) item.featured = true;
+              renderSectionItems();
+              scheduleSave();
+            });
+
+            featLabel.append(featCb, ' Featured');
+            evRow.appendChild(featLabel);
+          }
+
+          // Reorder arrows, grouped so the pair stays together at the row's right.
+          const reorderGroup = el('div', 'triage-reorder-group');
+          reorderGroup.append(upBtn, downBtn);
+          evRow.appendChild(reorderGroup);
+
+          // Remove this item from the issue (with Undo), the desk's Remove:
+          // red quiet link with the trash icon, never a bare ✕.
+          const delBtn = button(' Remove', 'triage-delete-btn', {
+            icon: 'trash-can',
+            onClick: (e) => deleteItemWithUndo(item.id, renderTriage, e.detail === 0),
+          });
+          delBtn.setAttribute('aria-label', `Remove "${title}" from the issue`);
+          delBtn.title = 'Removes this item from the issue';
+          evRow.appendChild(delBtn);
+
+          sectionContainer.appendChild(evRow);
+        }
+      }
+
+      if (memo) {
+        const same = sectionContainer.querySelector(`[data-move-item="${CSS.escape(memo.item)}"][data-move-dir="${memo.dir}"]`);
+        const other = sectionContainer.querySelector(`[data-move-item="${CSS.escape(memo.item)}"]:not([data-move-dir="${memo.dir}"])`);
+        const target = same && !same.disabled ? same : other;
+        if (target && !target.disabled) target.focus();
+      }
+    };
+
+    renderSectionItems();
+    sectionsList.appendChild(sectionContainer);
+
+    // ERC Research: optional "Submit your research" callout, a trailing
+    // on/off switch beneath the research items.
+    if (reg.key === 'research') {
+      const subRow = el('div', 'triage-switch-row');
+
+      // The visible words are the switch's label, so a screen reader names it.
+      const subName = el('label', 'triage-switch-label', 'Submit your research callout');
+      subName.htmlFor = 'submit-callout-switch';
+
+      const switchLine = el('div', 'triage-switch-line');
+
+      const sw = el('label', 'triage-switch');
+      sw.title = 'Show this callout in the newsletter for this issue';
+      const subCb = el('input', 'triage-switch-input');
+      subCb.type = 'checkbox';
+      subCb.id = 'submit-callout-switch';
+      subCb.setAttribute('role', 'switch');
+      subCb.checked = secData.showSubmit !== false;
+      subCb.setAttribute('aria-checked', String(subCb.checked));
+      sw.append(subCb, el('span', 'triage-switch-track'));
+
+      const stateLabel = el('span', 'triage-switch-state', subCb.checked ? 'On' : 'Off');
+
+      subCb.addEventListener('change', () => {
+        secData.showSubmit = subCb.checked;
+        subCb.setAttribute('aria-checked', String(subCb.checked));
+        stateLabel.textContent = subCb.checked ? 'On' : 'Off';
+        scheduleSave();
+      });
+
+      switchLine.append(sw, stateLabel);
+      subRow.append(subName, switchLine);
+      sectionsList.appendChild(subRow);
     }
   }
 
   container.appendChild(sectionsList);
 
   if (missing.length) {
-    const rest = document.createElement('p');
-    rest.className = 'triage-missing';
-    rest.textContent = `Not in this issue: ${missing.join(', ')}.`;
-    container.appendChild(rest);
+    container.appendChild(el('p', 'triage-missing', `Not in this issue: ${missing.join(', ')}.`));
   }
 }
 
@@ -886,24 +720,22 @@ function refreshEditIframe(iframe) {
   iframe.srcdoc = renderNewsletter(state.issue, { editable: true });
 }
 
+/** One fold in the edit column's rail: its label, and the empty body to fill. */
+function railPanel(title) {
+  const details = el('details', 'reorder-panel');
+  const body = el('div', 'reorder-panel-body');
+  details.append(el('summary', 'reorder-panel-summary', title), body);
+  return { details, body };
+}
+
 /**
  * The introduction's home in the edit column: a panel with the same rich
  * editor the cards use, bound to issue.intro. The preview refreshes as you
  * type (debounced); the editor lives outside the iframe, so focus holds.
  */
 function buildIntroPanel(iframe) {
-  const details = document.createElement('details');
-  details.className = 'reorder-panel';
-  const summary = document.createElement('summary');
-  summary.className = 'reorder-panel-summary';
-  summary.textContent = 'Introduction';
-  details.appendChild(summary);
-  const body = document.createElement('div');
-  body.className = 'reorder-panel-body';
-  const hint = document.createElement('p');
-  hint.className = 'addon-hint';
-  hint.textContent = 'Shows under the header, before the first section.';
-  body.appendChild(hint);
+  const { details, body } = railPanel('Introduction');
+  body.appendChild(el('p', 'addon-hint', 'Shows under the header, before the first section.'));
   const refresh = debounce(() => refreshEditIframe(iframe), 500);
   const editor = buildRichEditor(state.issue?.intro || '', (md) => {
     if (!state.issue) state.issue = createEmptyIssue();
@@ -911,20 +743,14 @@ function buildIntroPanel(iframe) {
     scheduleSave();
     refresh();
   });
-  body.appendChild(editor.el);
   // Edits are live, so Save is a quiet word, not a second primary.
-  const save = document.createElement('button');
-  save.type = 'button';
-  save.className = 'ghost-btn intro-save-btn';
-  save.textContent = 'Save';
-  save.addEventListener('click', () => {
+  const save = button('Save', 'ghost-btn intro-save-btn', { onClick: () => {
     if (state.issue) saveState(state.issue);
     refreshEditIframe(iframe);
     save.textContent = 'Saved';
     setTimeout(() => { save.textContent = 'Save'; }, 1500);
-  });
-  body.appendChild(save);
-  details.appendChild(body);
+  } });
+  body.append(editor.el, save);
   return details;
 }
 
@@ -937,52 +763,26 @@ let miscItemSeq = 0;
  * (click-to-edit, reorder, delete).
  */
 function buildAddItemPanel(iframe) {
-  const details = document.createElement('details');
-  details.className = 'reorder-panel';
-  const summary = document.createElement('summary');
-  summary.className = 'reorder-panel-summary';
-  summary.textContent = 'Add an item';
-  details.appendChild(summary);
-  const body = document.createElement('div');
-  body.className = 'reorder-panel-body';
-  details.appendChild(body);
+  const { details, body } = railPanel('Add an item');
 
-  const field = (labelText, el) => {
-    const label = document.createElement('label');
-    label.className = 'addon-field';
-    const span = document.createElement('span');
-    span.textContent = labelText;
-    label.appendChild(span);
-    label.appendChild(el);
+  const field = (labelText, control) => {
+    const label = el('label', 'addon-field');
+    label.append(el('span', '', labelText), control);
     return label;
   };
   const textInput = () => {
-    const input = document.createElement('input');
+    const input = el('input', 'triage-field-input');
     input.type = 'text';
-    input.className = 'triage-field-input';
     return input;
   };
 
-  const sectionSelect = document.createElement('select');
-  sectionSelect.className = 'triage-field-input';
-  for (const reg of SECTION_REGISTRY) {
-    const opt = document.createElement('option');
-    opt.value = reg.key;
-    opt.textContent = reg.label;
-    sectionSelect.appendChild(opt);
-  }
-  const groupSelect = document.createElement('select');
-  groupSelect.className = 'triage-field-input';
+  const sectionSelect = el('select', 'triage-field-input');
+  sectionSelect.append(...SECTION_REGISTRY.map((reg) => option(reg.key, reg.label)));
+  const groupSelect = el('select', 'triage-field-input');
   const groupField = field('Group', groupSelect);
   const syncGroups = () => {
     const reg = SECTION_REGISTRY.find((r) => r.key === sectionSelect.value);
-    groupSelect.replaceChildren();
-    for (const g of reg?.groups ?? []) {
-      const opt = document.createElement('option');
-      opt.value = g.key;
-      opt.textContent = g.label;
-      groupSelect.appendChild(opt);
-    }
+    groupSelect.replaceChildren(...(reg?.groups ?? []).map((g) => option(g.key, g.label)));
     // A single unlabeled group (Miscellaneous) needs no picker.
     groupField.hidden = !(reg?.groups ?? []).some((g) => g.label);
   };
@@ -991,8 +791,7 @@ function buildAddItemPanel(iframe) {
 
   const titleInput = textInput();
   const linkInput = textInput();
-  const summaryInput = document.createElement('textarea');
-  summaryInput.className = 'triage-field-input';
+  const summaryInput = el('textarea', 'triage-field-input');
   summaryInput.rows = 3;
   const dateInput = textInput();
   const timeInput = textInput();
@@ -1011,25 +810,20 @@ function buildAddItemPanel(iframe) {
     imageField.hidden = !IMAGE_SECTIONS.has(key);
   };
 
-  const status = document.createElement('p');
-  status.className = 'addon-hint';
-  const addBtn = document.createElement('button');
-  addBtn.type = 'button';
-  addBtn.className = 'btn btn-secondary';
-  addBtn.textContent = 'Add to the issue';
-  addBtn.addEventListener('click', () => {
+  const status = el('p', 'addon-hint');
+  const addBtn = button('Add to the issue', 'btn btn-secondary', { onClick: () => {
     const title = titleInput.value.trim();
     if (!title) { status.textContent = 'Give it a title first.'; return; }
     if (!state.issue) state.issue = createEmptyIssue();
     const fields = { title };
     if (linkInput.value.trim()) fields.url = linkInput.value.trim();
     if (summaryInput.value.trim()) fields.summary = summaryInput.value.trim();
-    if (!dateInput.parentElement.hidden) {
+    if (!eventFields[0].hidden) {
       if (dateInput.value.trim()) fields.date = dateInput.value.trim();
       if (timeInput.value.trim()) fields.time = timeInput.value.trim();
       if (locationInput.value.trim()) fields.location = locationInput.value.trim();
     }
-    if (!deadlineInput.parentElement.hidden && deadlineInput.value.trim()) {
+    if (!oppFields[0].hidden && deadlineInput.value.trim()) {
       fields.meta = `Deadline: ${deadlineInput.value.trim()}`;
     }
     if (!imageField.hidden && imageCtl.get()) fields.image = imageCtl.get();
@@ -1046,19 +840,14 @@ function buildAddItemPanel(iframe) {
     for (const input of [titleInput, linkInput, summaryInput, dateInput, timeInput, locationInput, deadlineInput]) input.value = '';
     imageCtl.set('');
     status.textContent = `Added to ${SECTION_REGISTRY.find((r) => r.key === sectionSelect.value)?.label}.`;
-  });
+  } });
 
-  body.appendChild(field('Section', sectionSelect));
-  body.appendChild(groupField);
-  body.appendChild(field('Title', titleInput));
-  body.appendChild(field('Link', linkInput));
-  body.appendChild(field('Summary', summaryInput));
-  for (const f of eventFields) body.appendChild(f);
-  for (const f of oppFields) body.appendChild(f);
-  body.appendChild(imageField);
+  body.append(
+    field('Section', sectionSelect), groupField,
+    field('Title', titleInput), field('Link', linkInput), field('Summary', summaryInput),
+    ...eventFields, ...oppFields, imageField, addBtn, status,
+  );
   syncExtras();
-  body.appendChild(addBtn);
-  body.appendChild(status);
   return details;
 }
 
@@ -1202,21 +991,19 @@ async function uploadItemImage(file, onStatus) {
 /** The picture control: Add (or Replace) + Remove; the value is a URL the
  *  templates render. The button hides while a file is in flight. */
 function buildImageControl(initial, onChange) {
-  const wrap = document.createElement('div');
-  wrap.className = 'img-upload';
-  const fileInput = document.createElement('input');
+  const wrap = el('div', 'img-upload');
+  const fileInput = el('input');
   fileInput.type = 'file';
   fileInput.accept = '.png,.jpg,.jpeg,.gif,.webp,.pdf';
   fileInput.hidden = true;
-  const pick = document.createElement('button');
-  pick.type = 'button';
-  pick.className = 'edit-saveall-btn media-add';
-  const removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.className = 'edit-card-revert';
-  removeBtn.textContent = 'Remove media';
-  const status = document.createElement('span');
-  status.className = 'pull-status';
+  const pick = button('', 'ghost-btn media-add', { onClick: () => fileInput.click() });
+  const removeBtn = button('Remove media', 'edit-card-revert', { onClick: () => {
+    value = '';
+    onChange('');
+    setStatus('');
+    sync();
+  } });
+  const status = el('span', 'pull-status');
   status.setAttribute('role', 'status');    // read aloud as it changes
   status.setAttribute('aria-live', 'polite');
   let value = initial || '';
@@ -1228,13 +1015,6 @@ function buildImageControl(initial, onChange) {
     if (busy && msg) status.replaceChildren(dotsLoader(true), loadingLabel(msg));
     else status.textContent = msg;
   };
-  pick.addEventListener('click', () => fileInput.click());
-  removeBtn.addEventListener('click', () => {
-    value = '';
-    onChange('');
-    setStatus('');
-    sync();
-  });
   fileInput.addEventListener('change', async () => {
     const file = fileInput.files[0];
     if (!file) return;
@@ -1299,28 +1079,20 @@ function collectItemFields(doc, section, item) {
   return refs;
 }
 
-/** Friendly sub-labels for known field keys (fallback: capitalized key). */
+/** The sub-label for every field the template hooks: the ten data-edit-field
+ *  names, plus url, which collectItemFields adds under the title. */
 const FIELD_LABELS = {
   title: 'Title',
   url: 'Link',
   meta: 'Details',
   summary: 'Description',
-  description: 'Description',
-  author: 'Author',
   authors: 'Authors',
   intro: 'Introduction',
   date: 'Date',
-  name: 'Name',
-  eyebrow: 'Label',
+  time: 'Time',
+  location: 'Location',
   image: 'Media',
 };
-
-/** Title-case a section key for the panel header (e.g. "spotlight" → "Spotlight"). */
-function humanize(key) {
-  return String(key || '')
-    .replace(/[-_]+/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 /**
  * Converts a contentEditable's HTML back into the markdown we store, the
@@ -1358,11 +1130,9 @@ function htmlToMarkdown(html) {
  * `labelledBy` names the sublabel that is the editor's accessible name.
  */
 function buildRichEditor(initialMd, onChange, { labelledBy = '' } = {}) {
-  const wrap = document.createElement('div');
-  wrap.className = 'rich-editor';
+  const wrap = el('div', 'rich-editor');
 
-  const editable = document.createElement('div');
-  editable.className = 'rich-editable';
+  const editable = el('div', 'rich-editable');
   editable.contentEditable = 'true';
   editable.setAttribute('role', 'textbox');
   editable.setAttribute('aria-multiline', 'true');
@@ -1371,42 +1141,33 @@ function buildRichEditor(initialMd, onChange, { labelledBy = '' } = {}) {
 
   const emit = () => onChange(htmlToMarkdown(editable.innerHTML));
 
-  const toolbar = document.createElement('div');
-  toolbar.className = 'rich-toolbar';
-  const mkBtn = (label, title, run, italic = false) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'rich-btn';
+  const toolbar = el('div', 'rich-toolbar');
+  const mkBtn = (content, title, onClick) => {
+    const b = button('', 'rich-btn', { onClick });
     b.title = title;
-    b.textContent = label;
-    if (italic) b.style.fontStyle = 'italic';
+    b.append(content);
     // mousedown-preventDefault keeps the text selection while clicking the button.
     b.addEventListener('mousedown', (e) => e.preventDefault());
-    b.addEventListener('click', () => { run(); editable.focus(); emit(); });
     return b;
   };
-  toolbar.appendChild(mkBtn('B', 'Bold', () => document.execCommand('bold')));
-  toolbar.appendChild(mkBtn('I', 'Italic', () => document.execCommand('italic'), true));
+  // B and I: run the command, put the caret back, report the new markdown.
+  const styled = (command) => () => { document.execCommand(command); editable.focus(); emit(); };
+  const italicBtn = mkBtn('I', 'Italic', styled('italic'));
+  italicBtn.style.fontStyle = 'italic';
+  toolbar.appendChild(mkBtn('B', 'Bold', styled('bold')));
+  toolbar.appendChild(italicBtn);
 
   // The link ask is a row under the toolbar, not window.prompt: it keeps
   // the selection, pre-fills from a link the caret sits in, adds https:// when
   // the scheme is missing, and Escape or Cancel puts it away.
-  const linkRow = document.createElement('div');
-  linkRow.className = 'rich-link-row';
+  const linkRow = el('div', 'rich-link-row');
   linkRow.hidden = true;
-  const linkInput = document.createElement('input');
+  const linkInput = el('input', 'edit-card-input rich-link-input');
   linkInput.type = 'text';
-  linkInput.className = 'edit-card-input rich-link-input';
   linkInput.placeholder = 'https://';
   linkInput.setAttribute('aria-label', 'Link address');
-  const applyBtn = document.createElement('button');
-  applyBtn.type = 'button';
-  applyBtn.className = 'btn btn-primary rich-link-apply';
-  applyBtn.textContent = 'Apply';
-  const cancelLinkBtn = document.createElement('button');
-  cancelLinkBtn.type = 'button';
-  cancelLinkBtn.className = 'edit-card-revert';
-  cancelLinkBtn.textContent = 'Cancel';
+  const applyBtn = button('Apply', 'btn btn-primary rich-link-apply');
+  const cancelLinkBtn = button('Cancel', 'edit-card-revert');
   linkRow.append(linkInput, applyBtn, cancelLinkBtn);
 
   let savedRange = null;
@@ -1422,8 +1183,8 @@ function buildRichEditor(initialMd, onChange, { labelledBy = '' } = {}) {
     const inEditor = sel && sel.rangeCount > 0 && editable.contains(sel.anchorNode);
     savedRange = inEditor ? sel.getRangeAt(0).cloneRange() : null;
     const node = savedRange ? savedRange.commonAncestorContainer : null;
-    const el = node && node.nodeType === Node.ELEMENT_NODE ? node : node && node.parentElement;
-    savedAnchor = el && el.closest ? el.closest('a') : null;
+    const host = node && node.nodeType === Node.ELEMENT_NODE ? node : node && node.parentElement;
+    savedAnchor = host && host.closest ? host.closest('a') : null;
     if (savedAnchor && !editable.contains(savedAnchor)) savedAnchor = null;
     linkInput.value = savedAnchor ? savedAnchor.getAttribute('href') || '' : '';
     linkRow.hidden = false;
@@ -1442,9 +1203,8 @@ function buildRichEditor(initialMd, onChange, { labelledBy = '' } = {}) {
       sel.addRange(savedRange);
       if (savedRange.collapsed) {
         // Nothing selected: the address becomes the link's own text.
-        const a = document.createElement('a');
+        const a = el('a', '', url);
         a.href = url;
-        a.textContent = url;
         savedRange.insertNode(a);
         savedRange.setStartAfter(a);
         savedRange.collapse(true);
@@ -1454,10 +1214,7 @@ function buildRichEditor(initialMd, onChange, { labelledBy = '' } = {}) {
         document.execCommand('createLink', false, url);
       }
     }
-    linkRow.hidden = true;
-    savedRange = null;
-    savedAnchor = null;
-    editable.focus();
+    closeLinkRow();
     emit();
   };
   applyBtn.addEventListener('click', applyLink);
@@ -1469,24 +1226,15 @@ function buildRichEditor(initialMd, onChange, { labelledBy = '' } = {}) {
     if (e.key === 'Escape') { e.preventDefault(); closeLinkRow(); }
   });
 
-  const linkBtn = document.createElement('button');
-  linkBtn.type = 'button';
-  linkBtn.className = 'rich-btn';
-  linkBtn.title = 'Add link';
+  const linkBtn = mkBtn(faIcon('link'), 'Add link', () => { if (linkRow.hidden) openLinkRow(); else closeLinkRow(); });
   linkBtn.setAttribute('aria-label', 'Add link');
-  linkBtn.append(faIcon('link'));
-  linkBtn.addEventListener('mousedown', (e) => e.preventDefault());
-  linkBtn.addEventListener('click', () => { if (linkRow.hidden) openLinkRow(); else closeLinkRow(); });
   toolbar.appendChild(linkBtn);
 
   editable.addEventListener('input', emit);
 
-  wrap.appendChild(toolbar);
-  wrap.appendChild(linkRow);
-  wrap.appendChild(editable);
+  wrap.append(toolbar, linkRow, editable);
   return {
     el: wrap,
-    getMd: () => htmlToMarkdown(editable.innerHTML),
     setMd: (md) => { editable.innerHTML = renderProse(md || ''); },
     focus: () => editable.focus(),
   };
@@ -1500,7 +1248,6 @@ function buildRichEditor(initialMd, onChange, { labelledBy = '' } = {}) {
  * @param {HTMLIFrameElement} iframe
  */
 function openItemEditor(refs, iframe) {
-  if (!refs.length) return;
   const list = document.querySelector('.edit-card-list');
   if (!list) return;
 
@@ -1515,23 +1262,17 @@ function openItemEditor(refs, iframe) {
     return;
   }
 
-  const card = document.createElement('div');
-  card.className = 'edit-card';
+  const card = el('div', 'edit-card');
   card.setAttribute('role', 'group');
   // The card's name for a screen reader: the item's title, else the field's.
   const cardTitle = refs[0].item ? getField(state.issue, { ...refs[0], field: 'title' }) : '';
-  card.setAttribute('aria-label', cardTitle || FIELD_LABELS[refs[0].field] || humanize(refs[0].section));
+  card.setAttribute('aria-label', cardTitle || FIELD_LABELS[refs[0].field]);
 
   // Header: just a close control (× behaves like Save; edits are live). No
   // title label; the fields below make it clear which item you're editing.
-  const header = document.createElement('div');
-  header.className = 'edit-card-header';
-  const closeBtn = document.createElement('button');
-  closeBtn.type = 'button';
-  closeBtn.className = 'edit-card-close';
-  closeBtn.append(faIcon('xmark'));
+  const header = el('div', 'edit-card-header');
+  const closeBtn = button('', 'edit-card-close', { icon: 'xmark', onClick: () => closeCard(key) });
   closeBtn.setAttribute('aria-label', 'Close editor');
-  closeBtn.addEventListener('click', () => closeCard(key));
   header.appendChild(closeBtn);
   card.appendChild(header);
 
@@ -1540,17 +1281,14 @@ function openItemEditor(refs, iframe) {
 
   const fieldInputs = [];
   for (const ref of refs) {
-    const group = document.createElement('div');
-    group.className = 'edit-card-group';
-    const isLong = ref.field === 'summary' || ref.field === 'intro' || ref.field === 'description';
+    const group = el('div', 'edit-card-group');
+    const isLong = ref.field === 'summary' || ref.field === 'intro';
     // Every field's sublabel names it for a screen reader: a <label for>
     // on a text field, an id the editor or the media group points at otherwise.
     editFieldSeq += 1;
     const fieldId = `edit-field-${editFieldSeq}`;
-    const sub = document.createElement(ref.field === 'image' || isLong ? 'span' : 'label');
-    sub.className = 'edit-card-sublabel';
+    const sub = el(ref.field === 'image' || isLong ? 'span' : 'label', 'edit-card-sublabel', FIELD_LABELS[ref.field]);
     sub.id = `${fieldId}-label`;
-    sub.textContent = FIELD_LABELS[ref.field] || humanize(ref.field);
     group.appendChild(sub);
 
     const onEdit = (value) => {
@@ -1559,50 +1297,37 @@ function openItemEditor(refs, iframe) {
       debouncedPreview();
     };
 
+    // Each kind of field hands back the same handle, so the card wires them alike.
+    let ctl;
     if (ref.field === 'image') {
-      const ctl = buildImageControl(getField(state.issue, ref) ?? '', onEdit);
+      ctl = buildImageControl(getField(state.issue, ref) ?? '', onEdit);
       ctl.el.setAttribute('role', 'group');
       ctl.el.setAttribute('aria-labelledby', sub.id);
-      group.appendChild(ctl.el);
-      card.appendChild(group);
-      fieldInputs.push({ ref, get: ctl.get, set: ctl.set, focus: ctl.focus });
     } else if (isLong) {
       // Prose fields get a WYSIWYG editor (bold / italic / link) that stores
       // markdown. Live-renders as the newsletter does (via renderProse).
       const rich = buildRichEditor(getField(state.issue, ref) ?? '', onEdit, { labelledBy: sub.id });
-      group.appendChild(rich.el);
-      card.appendChild(group);
-      fieldInputs.push({ ref, get: rich.getMd, set: rich.setMd, focus: rich.focus });
+      ctl = { el: rich.el, set: rich.setMd, focus: rich.focus };
     } else {
-      const inputEl = document.createElement('input');
+      const inputEl = el('input', 'edit-card-input');
       inputEl.type = 'text';
       inputEl.id = fieldId;
       sub.htmlFor = fieldId;
-      inputEl.className = 'edit-card-input';
       inputEl.value = getField(state.issue, ref) ?? '';
       inputEl.addEventListener('input', () => onEdit(inputEl.value));
-      group.appendChild(inputEl);
-      card.appendChild(group);
-      fieldInputs.push({
-        ref,
-        get: () => inputEl.value,
-        set: (v) => { inputEl.value = v; },
-        focus: () => inputEl.focus(),
-      });
+      ctl = { el: inputEl, set: (v) => { inputEl.value = v; }, focus: () => inputEl.focus() };
     }
+    group.appendChild(ctl.el);
+    card.appendChild(group);
+    fieldInputs.push({ ref, set: ctl.set, focus: ctl.focus });
   }
 
   // What the fields held when the card opened, for Cancel.
   const opened = fieldInputs.map((f) => ({ ref: f.ref, value: getField(state.issue, f.ref) ?? '' }));
 
   // Footer: quiet Use original and Cancel, then Save (commit & close this one card).
-  const actions = document.createElement('div');
-  actions.className = 'edit-card-actions';
-  const cancelBtn = document.createElement('button');
-  cancelBtn.type = 'button';
-  cancelBtn.className = 'edit-card-revert';
-  cancelBtn.textContent = 'Cancel';
-  cancelBtn.addEventListener('click', () => {
+  const actions = el('div', 'edit-card-actions');
+  const cancelBtn = button('Cancel', 'edit-card-revert', { onClick: () => {
     let changed = false;
     opened.forEach(({ ref, value }, i) => {
       if ((getField(state.issue, ref) ?? '') === value) return;
@@ -1615,12 +1340,8 @@ function openItemEditor(refs, iframe) {
       refreshEditIframe(iframe);
     }
     closeCard(key);
-  });
-  const revertBtn = document.createElement('button');
-  revertBtn.type = 'button';
-  revertBtn.className = 'edit-card-revert';
-  revertBtn.append(faIcon('rotate-left'), ' Use original');
-  revertBtn.addEventListener('click', () => {
+  } });
+  const revertBtn = button(' Use original', 'edit-card-revert', { icon: 'rotate-left', onClick: () => {
     let reverted = 0;
     for (const f of fieldInputs) {
       // No baseline entry (item added after the snapshot, or no snapshot
@@ -1635,30 +1356,19 @@ function openItemEditor(refs, iframe) {
     if (!reverted) return;
     scheduleSave();
     refreshEditIframe(iframe);
-  });
+  } });
   // Edits are live, so Save is a quiet word that closes the card.
-  const saveBtn = document.createElement('button');
-  saveBtn.type = 'button';
-  saveBtn.className = 'ghost-btn edit-card-save';
-  saveBtn.textContent = 'Save';
-  saveBtn.addEventListener('click', () => closeCard(key));
+  const saveBtn = button('Save', 'ghost-btn edit-card-save', { onClick: () => closeCard(key) });
   // Remove this whole item from the issue (with Undo), only for real items,
   // not the intro. The desk's word for taking an item out of an issue.
   const itemId = refs[0] && refs[0].item;
   if (itemId) {
-    const delBtn = document.createElement('button');
-    delBtn.type = 'button';
-    delBtn.className = 'edit-card-delete';
-    delBtn.append(faIcon('trash-can'), ' Remove');
-    delBtn.addEventListener('click', (e) => {
+    actions.appendChild(button(' Remove', 'edit-card-delete', { icon: 'trash-can', onClick: (e) => {
       closeCard(key);
       deleteItemWithUndo(itemId, renderEdit, e.detail === 0);
-    });
-    actions.appendChild(delBtn);
+    } }));
   }
-  actions.appendChild(revertBtn);
-  actions.appendChild(cancelBtn);
-  actions.appendChild(saveBtn);
+  actions.append(revertBtn, cancelBtn, saveBtn);
   card.appendChild(actions);
 
   list.appendChild(card);
@@ -1711,53 +1421,32 @@ function updateColumnChrome() {
  * @returns {HTMLDetailsElement}
  */
 function buildReorderPanel(iframe) {
-  const details = document.createElement('details');
-  details.className = 'reorder-panel';
-
-  const summary = document.createElement('summary');
-  summary.className = 'reorder-panel-summary';
-  summary.textContent = 'Reorder items';
-  details.appendChild(summary);
-
-  const body = document.createElement('div');
-  body.className = 'reorder-panel-body';
-  details.appendChild(body);
+  const { details, body } = railPanel('Reorder items');
 
   // One polite region, outside the rebuilt body, says where a row landed.
-  const live = document.createElement('div');
-  live.className = 'sr-only';
+  const live = el('div', 'sr-only');
   live.setAttribute('role', 'status');
   live.setAttribute('aria-live', 'polite');
   details.appendChild(live);
 
   const render = () => {
     body.innerHTML = '';
-    const hint = document.createElement('p');
-    hint.className = 'addon-hint';
+    const hint = el('p', 'addon-hint', 'Drag a row, or focus it and press the arrow keys.');
     hint.id = 'reorder-hint';
-    hint.textContent = 'Drag a row, or focus it and press the arrow keys.';
     body.appendChild(hint);
     for (const reg of SECTION_REGISTRY) {
       const sec = state.issue.sections[reg.key];
       const secItems = (sec && sec.items) || [];
       if (secItems.length < 1) continue;
 
-      const secLabel = document.createElement('div');
-      secLabel.className = 'reorder-section-label';
-      secLabel.textContent = reg.label; // registry constant, safe as textContent
-      body.appendChild(secLabel);
+      // The section and group labels are registry constants, safe as textContent.
+      body.appendChild(el('div', 'reorder-section-label', reg.label));
 
       for (const bucket of bucketSectionItems(reg, secItems)) {
-        if (bucket.label) {
-          const grpLabel = document.createElement('div');
-          grpLabel.className = 'reorder-group-label';
-          grpLabel.textContent = bucket.label;
-          body.appendChild(grpLabel);
-        }
+        if (bucket.label) body.appendChild(el('div', 'reorder-group-label', bucket.label));
 
         // Each bucket is a listbox of named options.
-        const listEl = document.createElement('div');
-        listEl.className = 'reorder-list';
+        const listEl = el('div', 'reorder-list');
         listEl.setAttribute('role', 'listbox');
         listEl.setAttribute('aria-label', bucket.label ? `${reg.label}: ${bucket.label}` : reg.label);
 
@@ -1776,8 +1465,7 @@ function buildReorderPanel(iframe) {
         };
 
         bucket.items.forEach((item, idx) => {
-          const rowEl = document.createElement('div');
-          rowEl.className = 'reorder-row';
+          const rowEl = el('div', 'reorder-row');
           rowEl.draggable = bucket.items.length > 1;
           rowEl.dataset.itemId = item.id;
           rowEl.setAttribute('role', 'option');
@@ -1793,17 +1481,10 @@ function buildReorderPanel(iframe) {
             });
           }
 
-          const grip = document.createElement('span');
-          grip.className = 'reorder-grip';
-          grip.textContent = '⠿';
+          const grip = el('span', 'reorder-grip', '⠿');
           grip.setAttribute('aria-hidden', 'true');
-          rowEl.appendChild(grip);
-
-          const titleSpan = document.createElement('span');
-          titleSpan.className = 'reorder-title';
-          // User-derived, textContent only.
-          titleSpan.textContent = (item.fields && item.fields.title) || '(untitled)';
-          rowEl.appendChild(titleSpan);
+          // The title is user-derived: textContent only.
+          rowEl.append(grip, el('span', 'reorder-title', (item.fields && item.fields.title) || '(untitled)'));
 
           rowEl.addEventListener('dragstart', (e) => {
             listEl.dataset.dragIdx = String(idx);
@@ -1852,23 +1533,13 @@ function buildReorderPanel(iframe) {
  * Called each time the wizard navigates to 'edit'.
  */
 function renderEdit() {
-  const container = document.querySelector('[data-step="edit"]');
-  if (!container) return;
-
   // Drop any card registry from a previous visit (the DOM is rebuilt below).
   openCards.clear();
-
-  const h2 = container.querySelector('h2');
-  container.innerHTML = '';
-  if (h2) container.appendChild(h2);
-  attachStepInfo(container, 'edit', 'Check the issue and change anything in place.',
+  const container = openStep('edit', 'Check the issue and change anything in place.',
     'Click any text in the preview to edit it in a card on the right. The rail also holds the introduction, a one-off Add an item door, and reordering.');
 
   if (!state.issue) {
-    const msg = document.createElement('p');
-    msg.className = 'edit-empty-msg';
-    msg.textContent = 'No issue loaded. Pull from the desk on the Review step first.';
-    container.appendChild(msg);
+    emptyLine(container, 'No issue loaded. Pull from the desk on the Review step first.');
     return;
   }
 
@@ -1879,22 +1550,18 @@ function renderEdit() {
   }
 
   // What the sheet is: its scale, and that it is the editable one.
-  const previewNote = document.createElement('p');
-  previewNote.className = 'preview-note';
+  const previewNote = el('p', 'preview-note');
   const sayScale = (scale) => {
     previewNote.textContent = `Preview at ${Math.round(scale * 100)} percent, as it lands in Outlook. Click any text to edit it.`;
   };
   sayScale(PREVIEW_MAX_SCALE);
   container.appendChild(previewNote);
 
-  const layout = document.createElement('div');
-  layout.className = 'edit-layout';
+  const layout = el('div', 'edit-layout');
 
-  const wrap = document.createElement('div');
-  wrap.className = 'edit-preview-wrap';
+  const wrap = el('div', 'edit-preview-wrap');
 
-  const iframe = document.createElement('iframe');
-  iframe.className = 'edit-preview-iframe';
+  const iframe = el('iframe', 'edit-preview-iframe');
   iframe.setAttribute('title', 'Newsletter preview: click fields to edit');
   // No inner scrollbar: the iframe is sized to the full content height and the
   // PAGE owns scrolling, so the only scrollbar is the browser's (outside the
@@ -1938,9 +1605,7 @@ function renderEdit() {
     }
   });
 
-  previewResizeHandler = debounce(() => {
-    fitPreview();
-  }, 150);
+  previewResizeHandler = debounce(fitPreview, 150);
   window.addEventListener('resize', previewResizeHandler);
 
   wrap.appendChild(iframe);
@@ -1948,37 +1613,23 @@ function renderEdit() {
 
   // Persistent edit column (right). Always present so opening/closing cards
   // never reflows or rescales the sheet.
-  const column = document.createElement('div');
-  column.className = 'edit-column';
+  const column = el('div', 'edit-column');
 
-  const colHeader = document.createElement('div');
-  colHeader.className = 'edit-column-header';
-  const colTitle = document.createElement('span');
-  colTitle.className = 'edit-column-title';
+  const colHeader = el('div', 'edit-column-header');
+  const colTitle = el('span', 'edit-column-title', 'Editing');
   colTitle.tabIndex = -1;   // where focus lands when the last card closes
-  colTitle.textContent = 'Editing';
-  const saveAllBtn = document.createElement('button');
-  saveAllBtn.type = 'button';
-  saveAllBtn.className = 'edit-saveall-btn';
-  saveAllBtn.textContent = 'Save all';
+  const saveAllBtn = button('Save all', 'ghost-btn edit-saveall-btn', { onClick: closeAllCards });
   saveAllBtn.hidden = true;
-  saveAllBtn.addEventListener('click', closeAllCards);
-  colHeader.appendChild(colTitle);
-  colHeader.appendChild(saveAllBtn);
+  colHeader.append(colTitle, saveAllBtn);
 
-  const cardList = document.createElement('div');
-  cardList.className = 'edit-card-list';
-
-  const emptyHint = document.createElement('div');
-  emptyHint.className = 'edit-column-empty';
-  emptyHint.textContent = 'Click any text in the preview on the left. It opens here to edit.';
-
-  column.appendChild(colHeader);
-  column.appendChild(cardList);
-  column.appendChild(emptyHint);
-  column.appendChild(buildIntroPanel(iframe));
-  column.appendChild(buildAddItemPanel(iframe));
-  column.appendChild(buildReorderPanel(iframe));
+  column.append(
+    colHeader,
+    el('div', 'edit-card-list'),
+    el('div', 'edit-column-empty', 'Click any text in the preview on the left. It opens here to edit.'),
+    buildIntroPanel(iframe),
+    buildAddItemPanel(iframe),
+    buildReorderPanel(iframe),
+  );
   layout.appendChild(column);
 
   container.appendChild(layout);
@@ -1988,21 +1639,6 @@ function renderEdit() {
 // ---------------------------------------------------------------------------
 // Export step
 // ---------------------------------------------------------------------------
-
-/**
- * Convert an issue date string to a URL-safe slug.
- * Lowercases, replaces non-alphanumeric runs with `-`, trims leading/trailing dashes.
- * Falls back to `"newsletter"` if the input is empty.
- * @param {string} date
- * @returns {string}
- */
-function slugify(date) {
-  if (!date || !date.trim()) return 'newsletter';
-  return date
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 /**
  * Show a toast message in `container`. A success is a polite status that
@@ -2018,14 +1654,11 @@ function showExportToast(container, message, type = 'success', duration = 2800) 
   const existing = container.querySelector('.export-toast');
   if (existing) existing.remove();
 
-  const toast = document.createElement('div');
-  toast.className = `export-toast export-toast--${type}`;
+  const toast = el('div', `export-toast export-toast--${type}`);
   if (type === 'error') toast.setAttribute('role', 'alert');
   else { toast.setAttribute('role', 'status'); toast.setAttribute('aria-live', 'polite'); }
   // Use textContent, never innerHTML, for user-derived or code-derived messages
-  const words = document.createElement('span');
-  words.textContent = message;
-  toast.append(noteIcon(type === 'error' ? 'circle-exclamation' : 'circle-check'), words);
+  toast.append(noteIcon(type === 'error' ? 'circle-exclamation' : 'circle-check'), el('span', '', message));
   container.appendChild(toast);
 
   // Fade in
@@ -2041,37 +1674,25 @@ function showExportToast(container, message, type = 'success', duration = 2800) 
 /**
  * Copy the rendered newsletter HTML to the clipboard.
  * Falls back to a hidden textarea + execCommand if the Clipboard API is unavailable.
+ * @param {HTMLElement} container - the export step, where the toast lands
  */
-function copyHtml() {
-  const container = document.querySelector('[data-step="export"]');
+function copyHtml(container) {
   const html = renderNewsletter(state.issue);
 
-  const onSuccess = () => {
-    if (container) showExportToast(container, 'Copied.', 'success');
-  };
+  const onSuccess = () => showExportToast(container, 'Copied.', 'success');
   const onError = (err) => {
     console.error('[export] copyHtml failed:', err);
-    if (container) showExportToast(container, 'Copy failed. Check browser permissions.', 'error');
+    showExportToast(container, 'Copy failed. Check browser permissions.', 'error');
+  };
+  // The old way: for a browser with no Clipboard API, and for one that refused.
+  const legacy = (err) => {
+    try { fallbackCopy(html); onSuccess(); } catch (e) { onError(err || e); }
   };
 
   if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-    navigator.clipboard.writeText(html).then(onSuccess, (err) => {
-      // Clipboard API rejected; try fallback
-      try {
-        fallbackCopy(html);
-        onSuccess();
-      } catch (e) {
-        onError(err || e);
-      }
-    });
+    navigator.clipboard.writeText(html).then(onSuccess, legacy);
   } else {
-    // No Clipboard API; use execCommand fallback
-    try {
-      fallbackCopy(html);
-      onSuccess();
-    } catch (e) {
-      onError(e);
-    }
+    legacy();
   }
 }
 
@@ -2092,35 +1713,24 @@ function fallbackCopy(text) {
 }
 
 /**
- * Download the rendered newsletter as an .html file.
+ * Download the rendered newsletter as an .html file: a temporary object URL
+ * behind a hidden <a download>, revoked once the browser has the file.
+ * @param {HTMLElement} container - the export step, where the toast lands
  */
-function downloadHtml() {
-  const html = renderNewsletter(state.issue);
-  const slug = slugify(state.issue.date);
-  triggerDownload(
-    new Blob([html], { type: 'text/html' }),
-    `ERC_Newsletter_${slug}.html`
-  );
-  const container = document.querySelector('[data-step="export"]');
-  if (container) showExportToast(container, 'Downloaded.', 'success');
-}
-
-/**
- * Create a temporary object URL, click a hidden <a download>, then revoke it.
- * @param {Blob} blob
- * @param {string} filename
- */
-function triggerDownload(blob, filename) {
-  const url = URL.createObjectURL(blob);
+function downloadHtml(container) {
+  const date = String(state.issue.date ?? '').trim();
+  const slug = date ? date.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') : 'newsletter';
+  const url = URL.createObjectURL(new Blob([renderNewsletter(state.issue)], { type: 'text/html' }));
   const a = document.createElement('a');
   a.href = url;
-  a.download = filename;
+  a.download = `ERC_Newsletter_${slug}.html`;
   a.style.cssText = 'position:fixed;top:-9999px;left:-9999px;';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   // Revoke after a tick to let the browser start the download
   setTimeout(() => URL.revokeObjectURL(url), 100);
+  showExportToast(container, 'Downloaded.', 'success');
 }
 
 /**
@@ -2128,46 +1738,29 @@ function triggerDownload(blob, filename) {
  * Called each time the wizard navigates to 'export'.
  */
 function renderExport() {
-  const container = document.querySelector('[data-step="export"]');
-  if (!container) return;
-
-  const h2 = container.querySelector('h2');
-  container.innerHTML = '';
-  if (h2) container.appendChild(h2);
-  attachStepInfo(container, 'export', 'Copy the issue into Outlook, then archive it.',
+  const container = openStep('export', 'Copy the issue into Outlook, then archive it.',
     'Copy the finished HTML for Outlook, save the issue to the archive, or download the file. Copy HTML is the one Outlook needs.');
 
   // Nothing to export yet: one plain sentence, no buttons.
   if (!state.issue || !countIssueItems(state.issue)) {
-    const msg = document.createElement('p');
-    msg.className = 'edit-empty-msg';
-    msg.textContent = 'Nothing to export yet. Pull from the desk on the Review step first.';
-    container.appendChild(msg);
+    emptyLine(container, 'Nothing to export yet. Pull from the desk on the Review step first.');
     return;
   }
 
   // Button row. An error toast has no timeout; the next click on the row
   // clears it (in the capture phase, so a button's own new toast survives).
-  const btnRow = document.createElement('div');
-  btnRow.className = 'export-btn-row';
+  const btnRow = el('div', 'export-btn-row');
   btnRow.addEventListener('click', () => {
     const err = container.querySelector('.export-toast--error');
     if (err) err.remove();
   }, true);
 
   // Copy HTML: the step's one primary, with its icon in the slot.
-  const copyBtn = document.createElement('button');
-  copyBtn.type = 'button';
-  copyBtn.className = 'btn btn-primary export-action-btn';
-  copyBtn.append('Copy HTML', faIcon('copy'));
-  copyBtn.addEventListener('click', copyHtml);
+  const copyBtn = button('Copy HTML', 'btn btn-primary export-action-btn', { onClick: () => copyHtml(container) });
+  copyBtn.append(faIcon('copy'));
 
   // Download .html
-  const dlHtmlBtn = document.createElement('button');
-  dlHtmlBtn.type = 'button';
-  dlHtmlBtn.className = 'btn btn-secondary export-action-btn';
-  dlHtmlBtn.textContent = 'Download .html';
-  dlHtmlBtn.addEventListener('click', downloadHtml);
+  const dlHtmlBtn = button('Download .html', 'btn btn-secondary export-action-btn', { onClick: () => downloadHtml(container) });
 
   // Save to the archive: commits the issue's HTML through the desk, so it
   // shows up under Past newsletters for good. The archive write replaces an
@@ -2175,12 +1768,8 @@ function renderExport() {
   // gets one ask in the button's place before anything is written; a new
   // date saves on the click. An unreadable index falls back to the plain
   // button.
-  const archiveSlot = document.createElement('span');
-  archiveSlot.className = 'archive-slot';
-  const archiveBtn = document.createElement('button');
-  archiveBtn.type = 'button';
-  archiveBtn.className = 'btn btn-secondary export-action-btn';
-  archiveBtn.textContent = 'Save to the archive';
+  const archiveSlot = el('span', 'archive-slot');
+  const archiveBtn = button('Save to the archive', 'btn btn-secondary export-action-btn');
   archiveSlot.appendChild(archiveBtn);
   const indexReady = fetch(`${DESK_URL}/builder/newsletters/index.json`, { cache: 'no-store' })
     .then((res) => (res.ok ? res.json() : null))
@@ -2188,13 +1777,11 @@ function renderExport() {
   let savedThisVisit = null;   // a save on this visit puts the date in the archive; the next click asks
 
   // After the save: a note that stays, with the way to the archive and the way on.
-  const after = document.createElement('div');
-  after.className = 'export-after';
+  const after = el('div', 'export-after');
 
   const saveToArchive = async (iso) => {
     archiveSlot.replaceChildren();   // the button (or the ask) is gone while saving; no double-clicks
-    const saveStatus = document.createElement('span');
-    saveStatus.className = 'pull-status';
+    const saveStatus = el('span', 'pull-status');
     saveStatus.append(dotsLoader(true), loadingLabel('Saving…'));
     archiveSlot.appendChild(saveStatus);
     try {
@@ -2210,16 +1797,11 @@ function renderExport() {
       saveState(state.issue);
       savedThisVisit = { date: iso, label: isoToDisplayDate(iso) };
       const note = inlineNote('success', data.replaced ? 'Saved to the archive, replacing the earlier save.' : 'Saved to the archive.');
-      note.classList.add('save-note');
-      const open = document.createElement('a');
+      const open = el('a', '', 'Open Past newsletters');
       open.href = 'archive.html';
-      open.textContent = 'Open Past newsletters';
       note.append(open);
-      const next = document.createElement('button');
-      next.type = 'button';
-      next.className = 'btn btn-tertiary';
-      next.append('Start the next issue', faIcon('arrow-right'));
-      next.addEventListener('click', startNextIssue);
+      const next = button('Start the next issue', 'btn btn-tertiary', { onClick: startNextIssue });
+      next.append(faIcon('arrow-right'));
       after.replaceChildren(note, next);
     } catch (err) {
       showExportToast(container, err.message || "Couldn't save to the archive.", 'error');
@@ -2247,12 +1829,8 @@ function renderExport() {
     queueMicrotask(() => ok.focus({ preventScroll: true }));
   });
 
-  btnRow.appendChild(copyBtn);
-  btnRow.appendChild(archiveSlot);
-  btnRow.appendChild(dlHtmlBtn);
-
-  container.appendChild(btnRow);
-  container.appendChild(after);
+  btnRow.append(copyBtn, archiveSlot, dlHtmlBtn);
+  container.append(btnRow, after);
 }
 
 /** The way on after an issue is archived: storage cleared, back to Review for the next one. */
@@ -2283,41 +1861,30 @@ function showRestoreBanner(saved) {
   document.getElementById('restore-banner')?.remove();
   restorePending = true;
 
-  const banner = document.createElement('div');
+  const banner = el('div', 'restore-banner');
   banner.id = 'restore-banner';
-  banner.className = 'restore-banner';
   banner.setAttribute('role', 'region');
   banner.setAttribute('aria-label', 'Restore in-progress newsletter');
 
-  const msg = document.createElement('p');
-  msg.className = 'restore-banner__msg';
+  const msg = el('p', 'restore-banner__msg');
   msg.append(noteIcon('triangle-exclamation'), restoreBannerMessage(saved));   // names the date and the count
 
-  const btnRow = document.createElement('div');
-  btnRow.className = 'restore-banner__btns';
+  const btnRow = el('div', 'restore-banner__btns');
 
   const settle = () => {
     restorePending = false;
     banner.remove();
   };
 
-  const restoreBtn = document.createElement('button');
-  restoreBtn.type = 'button';
-  restoreBtn.className = 'btn btn-primary restore-banner__btn';
-  restoreBtn.textContent = 'Restore';
-  restoreBtn.addEventListener('click', () => {
+  const restoreBtn = button('Restore', 'btn btn-primary restore-banner__btn', { onClick: () => {
     settle();
     state.issue = saved;
     state.baseline = structuredClone(saved);
     // An issue with items goes on to the Outline; one without stays on Review.
     goTo(countIssueItems(saved) ? 'triage' : 'review');
-  });
+  } });
 
-  const discardBtn = document.createElement('button');
-  discardBtn.type = 'button';
-  discardBtn.className = 'btn btn-secondary restore-banner__btn';
-  discardBtn.textContent = 'Discard';
-  discardBtn.addEventListener('click', (e) => {
+  const discardBtn = button('Discard', 'btn btn-secondary restore-banner__btn', { onClick: (e) => {
     settle();
     clearState();
     if (state.step === 'review') renderReview();   // unlocks the Issue select and Pull
@@ -2327,12 +1894,10 @@ function showRestoreBanner(saved) {
       showRestoreBanner(saved);
       if (state.step === 'review') renderReview();   // locks them again while it asks
     }, { focusUndo: e.detail === 0 });
-  });
+  } });
 
-  btnRow.appendChild(restoreBtn);
-  btnRow.appendChild(discardBtn);
-  banner.appendChild(msg);
-  banner.appendChild(btnRow);
+  btnRow.append(restoreBtn, discardBtn);
+  banner.append(msg, btnRow);
   home.insertBefore(banner, home.firstChild);
 }
 

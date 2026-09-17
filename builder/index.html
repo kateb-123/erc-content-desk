@@ -7,10 +7,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&display=swap" />
   <link rel="stylesheet" href="/css/tokens.css?v=3" />
-  <link rel="stylesheet" href="/css/sidebar.css?v=9" />
-  <link rel="stylesheet" href="css/styles.css?v=47" />
+  <link rel="stylesheet" href="/css/sidebar.css?v=10" />
+  <link rel="stylesheet" href="css/styles.css?v=48" />
 </head>
-<body class="builder-shell">
+<body>
   <a class="skip-to-main" href="#main">Skip to content</a>
   <!-- The desk's sidebar, tucked behind a thin strip like Desk work, built by
        /js/sidebar-ui.js. Past newsletters, the Policy Exchange and the desk all
@@ -32,23 +32,14 @@
   <!-- The one-line status slot under the step row: what a locked step or Next says before anything is pulled. -->
   <p id="wizard-status" class="wizard-status" role="status" aria-live="polite"></p>
 
-  <!-- Each step's heading is for a screen reader; the step row names it on screen and the card opens with a lede. -->
+  <!-- Each step's renderer opens with the heading a screen reader reads, taken
+       from the step row's own words; on screen the step row names it and the
+       step opens with a lede. -->
   <main id="main" class="wizard-body">
-    <section data-step="review" class="wizard-step">
-      <h2 class="sr-only">Review</h2>
-    </section>
-
-    <section data-step="triage" class="wizard-step" hidden>
-      <h2 class="sr-only">Outline</h2>
-    </section>
-
-    <section data-step="edit" class="wizard-step" hidden>
-      <h2 class="sr-only">Preview &amp; Edit</h2>
-    </section>
-
-    <section data-step="export" class="wizard-step" hidden>
-      <h2 class="sr-only">Save &amp; Export</h2>
-    </section>
+    <section data-step="review" class="wizard-step"></section>
+    <section data-step="triage" class="wizard-step" hidden></section>
+    <section data-step="edit" class="wizard-step" hidden></section>
+    <section data-step="export" class="wizard-step" hidden></section>
   </main>
 
   <!-- Back is Carbon's secondary; Next is the tertiary door, like Go to Finalize. -->
@@ -59,6 +50,6 @@
   </div>
 
   <!-- Bump ?v when you change the JS so browsers load the new code (cache-busting). -->
-  <script type="module" src="js/app.js?v=36"></script>
+  <script type="module" src="js/app.js?v=37"></script>
 </body>
 </html>
