@@ -88,18 +88,14 @@ export function pageTextFromHtml(html) {
 }
 
 export function truncateForPrompt(text, cap = MAX_PAGE_CHARS) {
-  const s = String(text ?? '');
-  return s.length <= cap ? s : s.slice(0, cap);
+  return String(text ?? '').slice(0, cap);
 }
 
 /** Read a response body incrementally, stopping once it exceeds the char cap.
- * Falls back to res.text() (with the same cap) when the runtime gives no
- * streaming reader. Cancels the reader once the cap is hit so the rest of
- * the response is never buffered. */
+ * A response with no streaming body carries no text to read. Cancels the
+ * reader once the cap is hit so the rest of the response is never buffered. */
 async function readBodyCapped(res, cap) {
-  if (!res.body || typeof res.body.getReader !== 'function') {
-    return (await res.text()).slice(0, cap);
-  }
+  if (!res.body || typeof res.body.getReader !== 'function') return '';
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let text = '';
@@ -126,8 +122,7 @@ export async function fetchPageText(url, fetchImpl = fetch, lookupImpl) {
 
       let remaining = remainingBudget();
       if (remaining <= 0) return '';
-      const parsed = new URL(current);
-      if (!(await resolvesPublic(parsed.hostname, lookupImpl))) return '';
+      if (!(await resolvesPublic(new URL(current).hostname, lookupImpl))) return '';
 
       remaining = remainingBudget();
       if (remaining <= 0) return '';

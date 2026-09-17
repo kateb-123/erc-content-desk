@@ -12,10 +12,25 @@ const ALLOWED_ORIGINS = new Set([
   'https://erc-policy-exchange.vercel.app', // the hub on Vercel
 ]);
 
+export function isLocalOrigin(origin) {
+  return /^http:\/\/localhost(:\d+)?$/.test(origin);
+}
+
 export function setCors(req, res) {
   const origin = String(req.headers?.origin ?? '');
-  if (ALLOWED_ORIGINS.has(origin) || /^http:\/\/localhost(:\d+)?$/.test(origin)) {
+  if (ALLOWED_ORIGINS.has(origin) || isLocalOrigin(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Vary', 'Origin');
   }
+}
+
+/** The CORS headers, plus the browser's preflight answered: true when this
+ *  request WAS the preflight and the handler should stop here. */
+export function preflight(req, res, methods = 'POST') {
+  setCors(req, res);
+  if (req.method !== 'OPTIONS') return false;
+  res.setHeader('Access-Control-Allow-Methods', methods);
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.status(204).end();
+  return true;
 }

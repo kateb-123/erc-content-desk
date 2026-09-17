@@ -9,8 +9,9 @@
  */
 import Anthropic from '@anthropic-ai/sdk';
 import {
-  BULK_MODEL, BULK_SCHEMA, buildBulkPrompt, parseBulk, normalizeBulkItems,
+  BULK_MODEL, BULK_SCHEMA, buildBulkPrompt, normalizeBulkItems,
 } from './_lib/bulk-split.js';
+import { parseModelJson } from './_lib/reply-json.js';
 import { rowsToItems } from './_lib/bulk-rows.js';
 import { parseCsv } from './_lib/hub.js';
 
@@ -19,15 +20,6 @@ export const config = { maxDuration: 300 };
 const MAX_TEXT_LENGTH = 200000;
 const MAX_FILE_BYTES = 3 * 1024 * 1024;
 const anthropic = new Anthropic();
-
-function respondWithItems(res, items, warnings) {
-  const counts = {};
-  for (const item of items) {
-    const key = item.type || 'untyped';
-    counts[key] = (counts[key] || 0) + 1;
-  }
-  return res.status(200).json({ ok: true, items, counts, warnings });
-}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -45,11 +37,18 @@ export default async function handler(req, res) {
     }
   }
 
-  if (text.length > MAX_TEXT_LENGTH) {
-    return res.status(400).json({ ok: false, error: 'That document is too big. Split it in half and try again.' });
-  }
-
   try {
+    // .docx extracts to text before the length check, so a small file that
+    // unpacks to a huge body is refused like a huge paste.
+    if (/\.docx$/i.test(name)) {
+      if (!buffer) return res.status(400).json({ ok: false, error: 'The document upload came through empty. Try again.' });
+      const mammoth = await import('mammoth');
+      text = String((await mammoth.extractRawText({ buffer })).value ?? '').trim();
+    }
+    if (text.length > MAX_TEXT_LENGTH) {
+      return res.status(400).json({ ok: false, error: 'That document is too big. Split it in half and try again.' });
+    }
+
     // Spreadsheets: one row = one item, straight mapping, no model call.
     if (/\.(xlsx|csv)$/i.test(name)) {
       let matrix;
@@ -63,20 +62,11 @@ export default async function handler(req, res) {
         matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
       }
       const { items, warnings } = normalizeBulkItems({ items: rowsToItems(matrix) });
-      return respondWithItems(res, items, warnings);
+      return res.status(200).json({ ok: true, items, warnings });
     }
 
-    // Documents: .docx extracts to text first, then the Claude split.
-    if (/\.docx$/i.test(name)) {
-      if (!buffer) return res.status(400).json({ ok: false, error: 'The document upload came through empty. Try again.' });
-      const mammoth = await import('mammoth');
-      text = String((await mammoth.extractRawText({ buffer })).value ?? '').trim();
-    }
+    // Documents: the Claude split.
     if (!text) return res.status(400).json({ ok: false, error: 'Nothing readable in that file.' });
-    if (text.length > MAX_TEXT_LENGTH) {
-      // A small .docx can still extract to a huge text body.
-      return res.status(400).json({ ok: false, error: 'That document is too big. Split it in half and try again.' });
-    }
     const stream = anthropic.messages.stream({
       model: BULK_MODEL,
       max_tokens: 60000,
@@ -88,8 +78,8 @@ export default async function handler(req, res) {
       return res.status(502).json({ ok: false, error: 'That document is too big to split in one go. Split it in half and try again.' });
     }
     const out = response.content.find(b => b.type === 'text')?.text ?? '';
-    const { items, warnings } = normalizeBulkItems(parseBulk(out));
-    return respondWithItems(res, items, warnings);
+    const { items, warnings } = normalizeBulkItems(parseModelJson(out, 'bulk split'));
+    return res.status(200).json({ ok: true, items, warnings });
   } catch (err) {
     console.error('bulk split failed', err);
     return res.status(502).json({ ok: false, error: "Couldn't read that document. Try again in a moment." });

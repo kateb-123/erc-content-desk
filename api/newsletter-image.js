@@ -6,9 +6,9 @@
  * page to a PNG in the browser before uploading.
  */
 import { createHash } from 'node:crypto';
-import { setCors } from './_lib/cors.js';
+import { preflight } from './_lib/cors.js';
 import { checkRequest } from './_lib/turnstile.js';
-import { putRepoBinary } from './_lib/archive.js';
+import { putRepoFile, rawUrl } from './_lib/archive.js';
 
 export const config = { maxDuration: 60 };
 
@@ -21,16 +21,8 @@ const MAGIC = {
   webp: b => b.length > 12 && b.slice(0, 4).toString('ascii') === 'RIFF' && b.slice(8, 12).toString('ascii') === 'WEBP',
 };
 
-function imageRepo() { return process.env.ARCHIVE_REPO || 'kateb-123/erc-content-desk'; }
-function imageBranch() { return process.env.ARCHIVE_BRANCH || 'main'; }
-
 export default async function handler(req, res) {
-  setCors(req, res);
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'POST');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(204).end();
-  }
+  if (preflight(req, res)) return;
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, error: 'Use POST.' });
   }
@@ -41,12 +33,9 @@ export default async function handler(req, res) {
   if (!MAGIC[type]) {
     return res.status(400).json({ ok: false, error: 'Use a PNG, JPG, GIF, or WebP.' });
   }
-  let bytes;
-  try {
-    bytes = Buffer.from(String(req.body?.file ?? ''), 'base64');
-  } catch {
-    return res.status(400).json({ ok: false, error: "Couldn't read that file." });
-  }
+  // Buffer.from never throws on base64: bad input decodes to fewer or zero
+  // bytes, which the two checks below refuse.
+  const bytes = Buffer.from(String(req.body?.file ?? ''), 'base64');
   if (!bytes.length) return res.status(400).json({ ok: false, error: 'The file came through empty.' });
   if (bytes.length > MAX_BYTES) {
     return res.status(400).json({ ok: false, error: 'That picture is too big. Keep it under 2.5 MB.' });
@@ -58,12 +47,9 @@ export default async function handler(req, res) {
     const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const hash = createHash('sha256').update(bytes).digest('hex').slice(0, 8);
     const file = `builder/images/img-${stamp}-${hash}.${type}`;
-    await putRepoBinary(file, bytes.toString('base64'),
+    await putRepoFile(file, bytes, null,
       `newsletter image ${stamp}-${hash} (via the builder)`);
-    return res.status(200).json({
-      ok: true,
-      url: `https://raw.githubusercontent.com/${imageRepo()}/${imageBranch()}/${file}`,
-    });
+    return res.status(200).json({ ok: true, url: rawUrl(file) });
   } catch (err) {
     return res.status(502).json({ ok: false, error: err.message });
   }

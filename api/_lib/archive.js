@@ -3,55 +3,31 @@
  * desk's own host serves every saved issue directly. Saving puts the
  * issue's HTML and refreshes the index the archive page lists.
  */
+import { getContents, putContents } from './github.js';
+
 function repo() { return process.env.ARCHIVE_REPO || 'kateb-123/erc-content-desk'; }
 function branch() { return process.env.ARCHIVE_BRANCH || 'main'; }
-function token() {
-  const t = process.env.GITHUB_TOKEN;
-  if (!t) throw new Error('GITHUB_TOKEN must be set');
-  return t;
-}
 
-function ghHeaders() {
-  return {
-    Authorization: `Bearer ${token()}`,
-    Accept: 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28',
-  };
-}
-
-function contentsUrl(path) {
-  return `https://api.github.com/repos/${repo()}/contents/${path}`;
+/** Where the public web serves a path in that repo, the moment it lands. */
+export function rawUrl(path) {
+  return `https://raw.githubusercontent.com/${repo()}/${branch()}/${path}`;
 }
 
 /** { text, sha } — or { text: null, sha: null } when the file doesn't exist yet. */
 export async function readRepoFile(path) {
-  const res = await fetch(`${contentsUrl(path)}?ref=${branch()}`, { headers: ghHeaders() });
+  const res = await getContents({ repo: repo(), path, branch: branch() });
   if (res.status === 404) return { text: null, sha: null };
   if (!res.ok) throw new Error(`GitHub read failed: HTTP ${res.status}`);
   const data = await res.json();
   return { text: Buffer.from(data.content, 'base64').toString('utf8'), sha: data.sha };
 }
 
-/** Commit already-base64 bytes (images) — new unique paths, so no sha dance. */
-export async function putRepoBinary(path, base64, message) {
-  const res = await fetch(contentsUrl(path), {
-    method: 'PUT',
-    headers: { ...ghHeaders(), 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, branch: branch(), content: base64 }),
-  });
-  if (!res.ok) throw new Error(`GitHub write failed: HTTP ${res.status}`);
-}
-
-export async function putRepoFile(path, text, sha, message) {
-  const body = {
-    message, branch: branch(),
-    content: Buffer.from(text, 'utf8').toString('base64'),
-  };
-  if (sha) body.sha = sha;
-  const res = await fetch(contentsUrl(path), {
-    method: 'PUT',
-    headers: { ...ghHeaders(), 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+/** Commit one file: text is encoded here, a Buffer (an image) is already the
+ *  bytes. An image goes to a new unique path, so it passes no sha. */
+export async function putRepoFile(path, content, sha, message) {
+  const bytes = Buffer.isBuffer(content) ? content : Buffer.from(content, 'utf8');
+  const res = await putContents({
+    repo: repo(), path, base64: bytes.toString('base64'), sha, message, branch: branch(),
   });
   if (!res.ok) throw new Error(`GitHub write failed: HTTP ${res.status}`);
 }

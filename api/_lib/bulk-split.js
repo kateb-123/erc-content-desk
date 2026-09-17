@@ -55,14 +55,6 @@ export function buildBulkPrompt(text) {
   ].join('\n');
 }
 
-export function parseBulk(text) {
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error('bulk split was not valid JSON');
-  }
-}
-
 export function normalizeBulkItems(parsed) {
   const warnings = [];
   const s = v => String(v ?? '').trim();

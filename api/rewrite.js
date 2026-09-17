@@ -7,8 +7,9 @@ import Anthropic from '@anthropic-ai/sdk';
 import { ERC_VOICE } from './_lib/voice.js';
 import {
   REWRITE_MODEL, REWRITE_SCHEMA, rewriteCandidates,
-  buildRewritePrompt, parseRewrites, normalizeRewrites,
+  buildRewritePrompt, normalizeRewrites,
 } from './_lib/rewrite.js';
+import { parseModelJson } from './_lib/reply-json.js';
 import { readAllRows } from './_lib/store.js';
 
 export const config = { maxDuration: 300 };
@@ -46,7 +47,7 @@ export default async function handler(req, res) {
       return res.status(502).json({ ok: false, error: 'Too many items to rewrite in one go. Publish what you have and rewrite the next batch separately.' });
     }
     const text = response.content.find(b => b.type === 'text')?.text ?? '';
-    const { rewrites, warnings } = normalizeRewrites(parseRewrites(text), candidates);
+    const { rewrites, warnings } = normalizeRewrites(parseModelJson(text, 'rewrite'), candidates);
     return res.status(200).json({ ok: true, rewrites, warnings });
   } catch (err) {
     console.error('rewrite failed', err);

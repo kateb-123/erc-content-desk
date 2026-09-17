@@ -6,8 +6,7 @@
  * CORS admits the builder's origins only.
  */
 import { setCors } from './_lib/cors.js';
-import { readAllRows, readScheduleRows } from './_lib/store.js';
-import { normalizeSchedule } from '../js/schedule.js';
+import { readAllRows, readSchedule } from './_lib/store.js';
 import { issueForPull, stagedCounts } from '../js/rows-to-issue.js';
 
 export default async function handler(req, res) {
@@ -27,13 +26,7 @@ export default async function handler(req, res) {
   }
   try {
     // The two sheet reads are independent — fetch them together.
-    const [rows, schedule] = await Promise.all([
-      readAllRows(),
-      readScheduleRows().then(normalizeSchedule).catch(err => {
-        console.error('schedule read failed (tab missing?)', err);
-        return [];
-      }),
-    ]);
+    const [rows, schedule] = await Promise.all([readAllRows(), readSchedule()]);
     return res.status(200).json({
       ok: true,
       ...(issue ? { issue: issueForPull(rows, issue) } : {}),

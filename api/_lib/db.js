@@ -11,7 +11,7 @@
  *
  * `seq` is the insert order and stands in for the Sheet's row number: the
  * copy inserts in sheet order, so ORDER BY seq is the order Kate is used to.
- * `sheet_row` remembers where a copied row came from, for the diff.
+ * `sheet_row` records where a copied row came from; nothing reads it back.
  */
 
 import { neon } from '@neondatabase/serverless';
@@ -54,9 +54,9 @@ export function createDb(query) {
   }
 
   async function readAllRows() {
-    const rows = await query(`SELECT seq, sheet_row, ${COLS} FROM items ORDER BY seq`);
+    const rows = await query(`SELECT seq, ${COLS} FROM items ORDER BY seq`);
     return rows.map(r => ({
-      ...valuesToRow(SHEET_COLUMNS.map(c => r[c] ?? '')),
+      ...valuesToRow(SHEET_COLUMNS.map(c => r[c])),
       _rowNumber: Number(r.seq),
     }));
   }
@@ -71,7 +71,7 @@ export function createDb(query) {
       const chunk = rows.slice(at, at + UPSERT_CHUNK);
       const groups = chunk.map((_, i) =>
         `(${Array.from({ length: width }, (_, j) => `$${i * width + j + 1}`).join(', ')})`);
-      const params = chunk.flatMap(row => [row._rowNumber ?? null, ...rowToValues(row).map(String)]);
+      const params = chunk.flatMap(row => [row._rowNumber ?? null, ...rowToValues(row)]);
       await query(`INSERT INTO items (sheet_row, ${COLS}) VALUES ${groups.join(', ')}
         ON CONFLICT (${q('id')}) DO UPDATE SET sheet_row = EXCLUDED.sheet_row,
         ${SHEET_COLUMNS.map(c => `${q(c)} = EXCLUDED.${q(c)}`).join(', ')}`, params);
@@ -79,12 +79,12 @@ export function createDb(query) {
   }
 
   async function appendRow(row) {
-    const params = rowToValues(row).map(String);
+    const params = rowToValues(row);
     await query(`INSERT INTO items (${COLS}) VALUES (${params.map((_, i) => `$${i + 1}`).join(', ')})`, params);
   }
 
   async function updateRow(row) {
-    const values = rowToValues(row).map(String);
+    const values = rowToValues(row);
     const sets = SHEET_COLUMNS.map((c, i) => `${q(c)} = $${i + 1}`).join(', ');
     const hit = await query(`UPDATE items SET ${sets} WHERE ${q('id')} = $${values.length + 1} RETURNING ${q('id')}`,
       [...values, row.id]);

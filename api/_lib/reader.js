@@ -7,12 +7,15 @@
  * A failed model call throws, so the row stays pending and Sort's catch-up
  * reads it again.
  */
+import Anthropic from '@anthropic-ai/sdk';
 import { applyExtractedWithProvenance, linkCheckedFromFetch } from '../../js/workflow.js';
+import { fetchPageText } from './fetch-page.js';
 import {
   EXTRACT_MODEL, EXTRACTION_SCHEMA, CLEAN_TYPES,
-  buildExtractionPrompt, parseExtraction, normalizeExtraction,
+  buildExtractionPrompt, normalizeExtraction,
 } from './extract.js';
-import { doiFromUrl } from './crossref.js';
+import { parseModelJson } from './reply-json.js';
+import { doiFromUrl, crossrefText } from './crossref.js';
 
 export async function readRow(row, { fetchPage, extract, lookupDoi }) {
   let pageText = '';
@@ -41,7 +44,7 @@ export async function readRow(row, { fetchPage, extract, lookupDoi }) {
 }
 
 /** The production extract: one Haiku call, parsed. */
-export function extractWithClaude(anthropic) {
+function extractWithClaude(anthropic) {
   return async (row, pageText) => {
     const response = await anthropic.messages.create({
       model: EXTRACT_MODEL,
@@ -49,6 +52,15 @@ export function extractWithClaude(anthropic) {
       output_config: { format: { type: 'json_schema', schema: EXTRACTION_SCHEMA } },
       messages: [{ role: 'user', content: buildExtractionPrompt(row, pageText) }],
     });
-    return parseExtraction(response.content.find(b => b.type === 'text')?.text ?? '');
+    return parseModelJson(response.content.find(b => b.type === 'text')?.text ?? '', 'extraction');
   };
+}
+
+/** The live reader, wired once: the page fetcher, the Haiku extract and
+ *  Crossref. The client waits for the first call so importing this module
+ *  never needs a key. */
+let client;
+export function liveReadRow(row) {
+  client ??= new Anthropic({ timeout: 20_000, maxRetries: 1 });
+  return readRow(row, { fetchPage: fetchPageText, extract: extractWithClaude(client), lookupDoi: crossrefText });
 }

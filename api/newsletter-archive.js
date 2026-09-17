@@ -4,7 +4,7 @@
  * archive index. Re-saving the same issue overwrites it (that's normal —
  * the last save before sending wins).
  */
-import { setCors } from './_lib/cors.js';
+import { preflight } from './_lib/cors.js';
 import { readRepoFile, putRepoFile, mergeArchiveIndex, archiveLabel } from './_lib/archive.js';
 
 export const config = { maxDuration: 60 };
@@ -12,12 +12,7 @@ export const config = { maxDuration: 60 };
 const MAX_HTML_BYTES = 2 * 1024 * 1024;
 
 export default async function handler(req, res) {
-  setCors(req, res);
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'POST');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(204).end();
-  }
+  if (preflight(req, res)) return;
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, error: 'Use POST.' });
   }

@@ -7,14 +7,11 @@
  * A reading that fails leaves the row pending; Sort's catch-up reads it again.
  */
 import { randomUUID } from 'node:crypto';
-import Anthropic from '@anthropic-ai/sdk';
 import { waitUntil } from '@vercel/functions';
 import { buildSubmission, validateSubmission } from '../js/intake.js';
-import { fetchPageText } from './_lib/fetch-page.js';
-import { readRow, extractWithClaude } from './_lib/reader.js';
-import { crossrefText } from './_lib/crossref.js';
+import { liveReadRow } from './_lib/reader.js';
 import { appendRow, updateRow, readAllRows } from './_lib/store.js';
-import { setCors } from './_lib/cors.js';
+import { preflight } from './_lib/cors.js';
 import { checkRequest } from './_lib/turnstile.js';
 
 export const config = { maxDuration: 60 };
@@ -38,12 +35,7 @@ export function createSubmitHandler(deps) {
   return async function handler(req, res) {
     // The public share page is served from another origin, so the browser
     // preflights this POST — answer it before anything else.
-    setCors(req, res);
-    if (req.method === 'OPTIONS') {
-      res.setHeader('Access-Control-Allow-Methods', 'POST');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-      return res.status(204).end();
-    }
+    if (preflight(req, res)) return;
     if (req.method !== 'POST') {
       return res.status(405).json({ ok: false, errors: ['Use POST.'] });
     }
@@ -81,13 +73,10 @@ export function createSubmitHandler(deps) {
   };
 }
 
-const anthropic = new Anthropic({ timeout: 20_000, maxRetries: 1 });
-const extract = extractWithClaude(anthropic);
-
 export default createSubmitHandler({
   appendRow,
   updateRow,
-  readRow: row => readRow(row, { fetchPage: fetchPageText, extract, lookupDoi: crossrefText }),
+  readRow: liveReadRow,
   currentRow: async id => (await readAllRows()).find(r => r.id === id),
   defer: waitUntil,
   checkRequest,

@@ -5,10 +5,7 @@
  * (waitUntil has no retries); this is what makes sure no card is shown unread
  * (Kate, Sep 10).
  */
-import Anthropic from '@anthropic-ai/sdk';
-import { fetchPageText } from './_lib/fetch-page.js';
-import { readRow, extractWithClaude } from './_lib/reader.js';
-import { crossrefText } from './_lib/crossref.js';
+import { liveReadRow } from './_lib/reader.js';
 import { readAllRows, updateRow } from './_lib/store.js';
 import { runPool } from '../js/pool.js';
 
@@ -53,11 +50,8 @@ export function createReadHandler(deps) {
   };
 }
 
-const anthropic = new Anthropic({ timeout: 20_000, maxRetries: 1 });
-const extract = extractWithClaude(anthropic);
-
 export default createReadHandler({
   readAllRows,
   updateRow,
-  readRow: row => readRow(row, { fetchPage: fetchPageText, extract, lookupDoi: crossrefText }),
+  readRow: liveReadRow,
 });

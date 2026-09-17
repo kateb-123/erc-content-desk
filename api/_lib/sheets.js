@@ -15,20 +15,10 @@
 
 import { SHEET_COLUMNS, rowToValues, valuesToRow } from '../../js/schema.js';
 
-function sheetApiUrl() {
-  const url = process.env.SHEET_API_URL;
-  if (!url) throw new Error('SHEET_API_URL must be set');
-  return url;
-}
-
-function sheetApiToken() {
-  const token = process.env.SHEET_API_TOKEN;
-  if (!token) throw new Error('SHEET_API_TOKEN must be set');
-  return token;
-}
-
-export function headerValues() {
-  return SHEET_COLUMNS.slice();
+function requireEnv(name) {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} must be set`);
+  return value;
 }
 
 /**
@@ -38,8 +28,8 @@ export function headerValues() {
  * deployment's most common symptom), or the endpoint's own JSON error.
  */
 async function callSheetApi(action, payload, { timeoutMs } = {}) {
-  const url = sheetApiUrl();
-  const token = sheetApiToken();
+  const url = requireEnv('SHEET_API_URL');
+  const token = requireEnv('SHEET_API_TOKEN');
 
   let res;
   try {
@@ -96,7 +86,7 @@ export async function updateRow(row) {
 }
 
 export async function writeHeader() {
-  await callSheetApi('header', { values: headerValues() });
+  await callSheetApi('header', { values: SHEET_COLUMNS });
 }
 
 /** Raw display values from the named "schedule" tab (row 2 down). Pass

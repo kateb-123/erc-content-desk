@@ -79,12 +79,10 @@ export default async function handler(req, res) {
     // GitHub commit above already succeeded, so a stamping failure here must
     // not report total failure — the rows are live either way.
     const now = new Date().toISOString();
-    const rowNumberById = new Map(all.map(r => [r.id, r._rowNumber]));
     try {
-      const stamps = [...published, ...skipped]
-        .filter(row => rowNumberById.has(row.id))
-        .map(row => markPublished({ ...row, _rowNumber: rowNumberById.get(row.id) }, now));
-      await updateRows(stamps);
+      // published and skipped are the rows read above, _rowNumber and all;
+      // the store matches by id in either mode.
+      await updateRows([...published, ...skipped].map(row => markPublished(row, now)));
     } catch (err) {
       console.error('publish stamping failed', err);
       return res.status(200).json({

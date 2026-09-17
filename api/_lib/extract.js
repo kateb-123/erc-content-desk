@@ -93,14 +93,6 @@ export function buildExtractionPrompt(row, pageText = '') {
   return parts.join('\n');
 }
 
-export function parseExtraction(text) {
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error('extraction was not valid JSON');
-  }
-}
-
 export function normalizeExtraction(extracted, row) {
   const fields = {};
   for (const key of [...FIELD_KEYS, ...GUESS_KEYS]) {

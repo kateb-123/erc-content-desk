@@ -32,10 +32,20 @@ export const SCHEDULE_SHEET_TIMEOUT_MS = 2500;
 export const SCHEDULE_REFRESH_MS = 10 * 60 * 1000;
 const SYNCED_KEY = 'schedule_synced_at';
 
-/** Look up each row's live Sheet row number by id, from a single Sheet read. */
-async function sheetRowNumbers(sheetStore) {
+/** Write each row at its live Sheet row number, from a single Sheet read:
+ *  _rowNumber is advisory, since a sort or delete made by hand in the Sheet
+ *  shifts every row below it. Returns the ids with no Sheet row; a write that
+ *  fails is the caller's to handle. */
+async function writeToSheet(sheetStore, rows) {
   const live = await sheetStore.readAllRows();
-  return new Map(live.map(r => [r.id, r._rowNumber]));
+  const byId = new Map(live.map(r => [r.id, r._rowNumber]));
+  const missing = [];
+  for (const row of rows) {
+    const n = byId.get(row.id);
+    if (!n) { missing.push(row.id); continue; }
+    await sheetStore.updateRow({ ...row, _rowNumber: n });
+  }
+  return missing;
 }
 
 /**
@@ -55,17 +65,8 @@ export function createStore({ mode, db: dbStore, sheet: sheetStore, log = consol
       readScheduleRows: () => sheetStore.readScheduleRows(),
       appendRow: row => sheetStore.appendRow(row),
       async updateRows(rows) {
-        // _rowNumber is advisory: a sort or delete made by hand in the Sheet
-        // shifts every row below it, so re-resolve by id before writing.
-        const byId = await sheetRowNumbers(sheetStore);
-        let saved = 0, unmatched = 0;
-        for (const row of rows) {
-          const n = byId.get(row.id);
-          if (!n) { unmatched += 1; continue; }
-          await sheetStore.updateRow({ ...row, _rowNumber: n });
-          saved += 1;
-        }
-        return { saved, unmatched };
+        const missing = await writeToSheet(sheetStore, rows);
+        return { saved: rows.length - missing.length, unmatched: missing.length };
       },
     };
   }
@@ -110,11 +111,8 @@ export function createStore({ mode, db: dbStore, sheet: sheetStore, log = consol
       }
       if (written.length) {
         await mirror(`update ${written.map(r => r.id).join(',')}`, async () => {
-          const byId = await sheetRowNumbers(sheetStore);
-          for (const row of written) {
-            const n = byId.get(row.id);
-            if (!n) { log.error(`sheet mirror: no sheet row for ${row.id}`); continue; }
-            await sheetStore.updateRow({ ...row, _rowNumber: n });
+          for (const id of await writeToSheet(sheetStore, written)) {
+            log.error(`sheet mirror: no sheet row for ${id}`);
           }
         });
       }
@@ -143,9 +141,13 @@ export function store() {
 }
 
 export const readAllRows = () => store().readAllRows();
-export const readScheduleRows = () => store().readScheduleRows();
 export const appendRow = row => store().appendRow(row);
 export const updateRows = rows => store().updateRows(rows);
+/** The issue dates, normalized; a failed read (a missing tab) logs and gives []. */
+export const readSchedule = () => store().readScheduleRows().then(normalizeSchedule).catch(err => {
+  console.error('schedule read failed (tab missing?)', err);
+  return [];
+});
 /** One row; the batch form is cheaper when you have several. */
 export const updateRow = row => updateRows([row]).then(({ unmatched }) => {
   if (unmatched) throw new Error(`updateRow: no row with id ${row.id}`);

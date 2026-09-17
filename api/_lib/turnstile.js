@@ -9,6 +9,8 @@
  * refuse the request. Anyone who forges the desk's Origin header still gets
  * in — the desk has no auth by Kate's rule; this stops bots driving the form.
  */
+import { isLocalOrigin } from './cors.js';
+
 const SITEVERIFY = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 const MAX_TOKEN_LENGTH = 2048;   // Cloudflare's stated ceiling
 const TIMEOUT_MS = 8000;
@@ -18,7 +20,7 @@ export const REJECTED = "Couldn't confirm you're a person. Reload the page and t
 export function tokenRequired(req) {
   const origin = String(req.headers?.origin ?? '');
   const host = String(req.headers?.host ?? '');
-  if (/^http:\/\/localhost(:\d+)?$/.test(origin)) return false;
+  if (isLocalOrigin(origin)) return false;
   return !origin || origin !== `https://${host}`;
 }
 

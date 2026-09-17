@@ -11,7 +11,7 @@
  * The timestamp is taken here, in the ERC's timezone, rather than from the
  * visitor's clock.
  */
-import { setCors } from './_lib/cors.js';
+import { preflight } from './_lib/cors.js';
 import { checkRequest } from './_lib/turnstile.js';
 
 export const config = { maxDuration: 30 };
@@ -45,12 +45,7 @@ export function validateSignup({ name, email }) {
 export default async function handler(req, res) {
   // The signup pages are served from another origin, so the browser
   // preflights this POST — answer it before anything else.
-  setCors(req, res);
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'POST');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(204).end();
-  }
+  if (preflight(req, res)) return;
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, errors: ['Use POST.'] });
   }
