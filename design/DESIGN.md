@@ -56,7 +56,7 @@ allows a hex only in `css/tokens.css`.
 | `--support-success` / `--text-success` | `#cedc00` / `#4f5500` | Alliance citrine as an icon (`--ok-mark`) and the toggle when on / the dark citrine as text (`--ok`), since citrine is 1.5:1 on white |
 | `--support-warning` / `--text-warning` | `#006c93` / `#006c93` | UT's Globe blue, needs doing as an icon, the triangle (`--warn-mark`) and as text (`--warn`); the warning tab. The palette's purple read as Halloween beside orange; Carbon's warning yellow held the job from Sep 15 to Sep 17 |
 | `--support-info` | `#3d4a57` | slate, the info note's bar and icon (Carbon's blue collided with navy) |
-| `--notification-*-background` / `-border` | info `#f0f2f4`, success `#f7f9e0`, warning `#f6f2ff`, error `#fceef2`; the border is the role's colour at 30% | inline notes: the info panel, the fix panel, the link ask, the builder's status boxes; text on them is `--text-primary` |
+| `--notification-*-background` / `-border` | info `#f0f2f4`, success `#f7f9e0`, warning `#e8f2f6`, error `#fceef2`; the border is the role's colour at 30% | inline notes: the info panel, the fix panel, the link ask, the builder's status boxes; text on them is `--text-primary` |
 | `--tag-background-*` / `--tag-color-*` | gray `#e0e0e0`/`#161616`, blue the accent's 20 under the desk's grey or the builder's navy 80, review `#cce4ed`/`#004a66` | tags: a fact, New, a duplicate (needs review, so it wears the review blue); the queue count |
 | `--accent-30` to `--accent-80` | the app's ramp | the sliding-dots loader; `--accent-30` is Publish's held segment |
 | `--background-inverse` / `--link-inverse` | `#393939` / the accent's step 30 | the builder's Undo toast |
@@ -100,7 +100,11 @@ template and the public Exchange site.
   Carbon's secondary, the dark grey fill. A Save inside an open card whose
   edits are already live is a ghost word (audit round two, Sep 17).
   Quiet words (Edit, Delete, Skip, Undo, Cancel in a panel) are ghost buttons:
-  32px, a `--background-hover` fill on hover, no underline. No press scale.
+  32px, a `--background-hover` fill on hover. No press scale. On the desk,
+  where links and quiet words are grey like secondary text, a word that acts
+  with no icon wears an underline (View info, Change, Verify link, Undo,
+  Re-check), so it never reads as text; Edit and Delete carry their icons,
+  Skip and Cancel stay muted (design critique, Sep 18).
 - **Fields.** 40px, on the field surface, a `--border-strong-01` line under them
   and nothing else; the focus ring replaces the line. Labels are label-01 above.
 - **Tabs.** Sort's sections are Carbon tabs in one row under a hairline: 40px,
@@ -142,8 +146,8 @@ template and the public Exchange site.
   view while the list scrolls.
 - The desk's nav is a top bar across every page (Kate's wireframes, Sep 17;
   the sidebar of Sep 16 to 17 is gone): 56px on the page ground under a
-  hairline, 40px sides. On the left an 18px outlined brand mark and a
-  breadcrumb: the desk's name (always a link home), then the lane the page is
+  hairline, 40px sides. On the left a breadcrumb (no mark: the wireframe's
+  placeholder square read as a checkbox; the tab icon carries the mark): the desk's name (always a link home), then the lane the page is
   in, then the page where one stands under its lane (the builder and Past
   issues under Newsletter). On the right the two other lanes as quiet links
   (`--text-secondary`, `--text-primary` on hover, no underline); the front
@@ -179,7 +183,7 @@ look, everywhere it appears.
 | **Add media** → Replace / Remove media | none | a small ghost word under the edit form's fields, then Replace and the muted Remove word | attach a picture or PDF flyer to any item (every item's Edit on Sort and Finalize since Sep 17, ERC only before; newsletter items in the builder), the URL rides the row’s infographic column into the email |
 | **Send early? → Confirm / Cancel** | fa-clock on the note | warning note, one ask (same as Verify link) | picking an event that belongs to a later issue, the words stay bare, the bubble carries the icon |
 | Door buttons (Go to Finalize/Publish, Send to Newsletter, the receipt's door) | → `fa-arrow-right` | Carbon's tertiary button with the arrow in its right slot (Sep 15, option A; square since Sep 17), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
-| **Top bar** (the brand mark; ERC Content Desk / the lane / the page; the two other lanes on the right) | none | a 56px bar under a hairline; crumb links in the ink, lane links quiet | every way around the desk (Kate's wireframes, Sep 17): the brand leads home, a lane opens its page in place, the builder's pages crumb under Newsletter |
+| **Top bar** (ERC Content Desk / the lane / the page; the two other lanes on the right) | none | a 56px bar under a hairline; crumb links in the ink, lane links quiet | every way around the desk (Kate's wireframes, Sep 17): the brand leads home, a lane opens its page in place, the builder's pages crumb under Newsletter |
 | **Keep the rest (N)** | ✓ `fa-check` | the small dark-grey button, Carbon's secondary (Kate, Sep 17: a sweep across a list is grey, the one decision on a card is the primary), right of a Sort section's head, and right of Finalize's head while rewrites wait to be checked | keep every listed row that has a real type and a checked link (Sep 11); on Finalize, keep every rewrite still to check (one name for both since audit round two); one row at a time is Keep on its card (Sep 16). Keys on Sort (Sep 17): up and down move, K keeps, S skips, D deletes, U undoes. A decision says itself in the status line ("Kept: title") and the next card's title takes focus; Undo last says what it undid |
 | **Publish N to the Exchange → Confirm / Cancel** | `fa-triangle-exclamation` on the ask | the primary, then one warning note in its place | the one ask before the append-only write to the public site (design audit b6, Sep 17), at body-01 with the count and "live" in 600; Keep the rest on Finalize gets "Kept N rewrites. Undo" instead of an ask |
 
@@ -190,11 +194,13 @@ sides. The form puts the link first as the one big field (52px, on
 we can."), then the title, the description, the type as a segmented row
 (square words joined by hairlines, the picked one in the app's fill), then
 the initials, the Spotlight ask and Add to the queue (48px) on one row, with
-the bulk door folded under. The column holds Desk work, a box of the three
-lanes (name, a line under it, the count at 20/28 light, an arrow; Newsletter
-names the next issue), Recently added (the four newest items with who and
-when), and Links to hand out (the public site, Share an item, Listserv
-sign-up, each with a copy button). The stat tiles and the queue fold of Sep
+the bulk door folded under. The column holds a box of the three lanes (name,
+the count at 20/28 light, an arrow; Newsletter names the next issue under
+its name). Each lane counts the work waiting on its page (design critique,
+Sep 18): Sort the queue, Newsletter what waits to be added to the next
+issue, Policy Exchange what Publish would add (from the live Exchange
+check, which the front page asks for quietly), then Recently added (the four newest items with who and
+when). The stat tiles and the queue fold of Sep
 15 to 17 are gone; the queue is worked on Sort.
 
 Sort is one section at a time (Sep 11 option A; Sep 15 the card stream and the

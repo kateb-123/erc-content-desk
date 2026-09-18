@@ -10,9 +10,9 @@ import { faIcon } from './icons.js';
 import { buildPool, newsletterOnly, reshareFlags } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, typeDisplay } from './schema.js';
-import { GROUP_LABELS } from './newsletter-view.js';   // the issue's shape: spotlight leads, then the newsletter's sections
+import { GROUP_LABELS, splitPool } from './newsletter-view.js';   // the issue's shape: spotlight leads, then the newsletter's sections
 import { isoToShort } from './queue-view.js';
-import { eventTiming, deadlineState } from './schedule.js';
+import { eventTiming } from './schedule.js';
 import { el, button, focusKeyIn, restoreFocus } from './ui-aids.js';
 
 // The builder lives inside this project — same origin, one deploy.
@@ -149,19 +149,8 @@ export function renderNewsletter(container, props) {
   // Items the issue has outrun leave the picking list entirely — an event that
   // happens before it lands, an opportunity that closes first. They fold away
   // at the bottom where the only move left is Delete.
-  const pastEntry = r => {
-    if (timings.get(r.id)?.state === 'passed') {
-      return { row: r, why: 'Before this issue', when: isoToShort(r.date, today) };
-    }
-    if (r.type === 'opportunity' && r.deadline && deadlineState(issue, r.deadline) === 'passed') {
-      return { row: r, why: 'Closes before this issue', when: `Deadline ${isoToShort(r.deadline, today)}` };
-    }
-    return null;
-  };
-  const past = pool.map(pastEntry).filter(Boolean);
-  const pastIds = new Set(past.map(p => p.row.id));
-  for (const id of pastIds) picked.delete(id);
-  const live = pool.filter(r => !pastIds.has(r.id));
+  const { live, past } = splitPool(rows, schedule, issue, today);
+  for (const p of past) picked.delete(p.row.id);
   const selected = live.filter(r => picked.has(r.id));
   let askRow = null;   // the row asking "Send early?", brought into view after the rebuild
   let askConfirm = null;

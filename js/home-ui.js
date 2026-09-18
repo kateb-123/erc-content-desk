@@ -32,7 +32,7 @@ function recentRow(row, today) {
 }
 
 export function renderHome(container, props) {
-  const { rows, schedule, today, loaded, loadFailed, onGoTo, onSubmitted, onRefresh, knownLinks } = props;
+  const { rows, schedule, today, loaded, loadFailed, preview, onGoTo, onSubmitted, onRefresh, knownLinks } = props;
   // The words, the form and the lanes paint at once; only the counts and
   // the newest items wait on the Sheet read.
   let page = container.querySelector('.home-page');
@@ -53,9 +53,10 @@ export function renderHome(container, props) {
     container.replaceChildren(page);
   }
 
-  // The lanes' counts once the rows are in; Newsletter names the next issue.
+  // The lanes' counts once the rows are in: the work waiting on each page.
+  // Newsletter names the next issue.
   const issue = nextIssueDate(schedule, today);
-  const counts = loaded ? laneCounts(rows, issue) : null;
+  const counts = loaded ? laneCounts(rows, { schedule, issue, today, preview }) : null;
   for (const a of page.querySelectorAll('.lane')) {
     const key = a.dataset.key;
     a.querySelector('.lane-count').textContent = counts ? String(counts[key]) : '';

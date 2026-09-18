@@ -1,5 +1,6 @@
 /** Pure helpers for the front page: the lanes' counts and the newest items. */
-import { pendingRows, circlebackRows, readyToPublish } from './workflow.js';
+import { pendingRows, circlebackRows, readyToPublish, newsletterOnly } from './workflow.js';
+import { splitPool } from './newsletter-view.js';
 
 /** The queue count, shown on the front page's Sort lane and Sort's own head:
  *  everything still waiting on a decision. */
@@ -7,14 +8,16 @@ export function queueBadgeCount(rows) {
   return pendingRows(rows).length + circlebackRows(rows).length;
 }
 
-/** The three lanes' counts (Kate's wireframes, Sep 17): Sort the queue,
- *  Newsletter the rows in the next issue, Policy Exchange the kept rows
- *  still to publish. */
-export function laneCounts(rows, issue) {
+/** The three lanes' counts, each the work waiting on its page (design
+ *  critique, Sep 18): Sort the queue, Newsletter what waits to be added to
+ *  the next issue, Policy Exchange what Publish would add. Publish's number
+ *  needs the live Exchange check (preview); until it lands, the kept rows
+ *  that could publish stand in. */
+export function laneCounts(rows, { schedule, issue, today, preview }) {
   return {
     sort: queueBadgeCount(rows),
-    newsletter: issue ? issueSummary(rows, issue).inIssue : 0,
-    exchange: readyToPublish(rows).length,
+    newsletter: splitPool(rows, schedule, issue, today).live.length,
+    exchange: preview ? preview.adding.length : readyToPublish(rows).filter(r => !newsletterOnly(r)).length,
   };
 }
 
@@ -24,9 +27,3 @@ export function recentlyAdded(rows, count = 4) {
     .sort((a, b) => String(b.submitted_at ?? '').localeCompare(String(a.submitted_at ?? '')))
     .slice(0, count);
 }
-
-/** The rows stamped for an issue. */
-export function issueSummary(rows, issue) {
-  return { inIssue: rows.filter(r => String(r.newsletter_issue ?? '') === issue).length };
-}
-

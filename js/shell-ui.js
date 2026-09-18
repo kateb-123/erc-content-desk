@@ -1,6 +1,7 @@
 /**
- * The top bar (Kate's wireframes, Sep 17): the brand mark and the breadcrumb
- * on the left, the two other lanes on the right. Built once into
+ * The top bar (Kate's wireframes, Sep 17): the breadcrumb on the left (no
+ * mark: the wireframe's placeholder square read as a checkbox, design
+ * critique Sep 18), the two other lanes on the right. Built once into
  * <header class="topbar">; the crumb and the lanes are redrawn on each render,
  * since the screen changes them. On the desk its links switch screens in
  * place; on the builder's pages they are plain links.
@@ -18,7 +19,6 @@ function deskLink(label, href, onGo) {
 
 function build(header) {
   header.replaceChildren();
-  header.append(el('span', 'topbar-mark'));
   const trail = el('nav', 'topbar-crumbs');
   trail.setAttribute('aria-label', 'Breadcrumb');
   const lanes = el('nav', 'topbar-lanes');

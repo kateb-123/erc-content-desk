@@ -153,8 +153,8 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .bulk-drop.is-busy { cursor: default; color: var(--text-helper); }   /* the zone reads its file's name while a split runs (f9) */
 .bulk-drop:focus-within { outline: 2px solid var(--focus); outline-offset: -2px; }   /* the hidden file input is in the tab order (design audit a6) */
 .bulk-templates { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: var(--spacing-03) 0 0; }
-.bulk-templates a { color: var(--link-primary); text-decoration: none; }
-.bulk-templates a:hover { color: var(--link-primary-hover); text-decoration: underline; }
+.bulk-templates a { color: var(--link-primary); }
+.bulk-templates a:hover { color: var(--link-primary-hover); }
 .bulk-table { margin: var(--spacing-02) 0 var(--spacing-04); }
 .bulk-table .field-error { margin-top: var(--spacing-01); }
 .bulk-remove { width: 6.5rem; text-align: right; }
@@ -287,8 +287,15 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .link-alert .alert-field-label { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: 0 0 var(--spacing-02); }   /* a name over the field, not a placeholder (audit round two, f4) */
 .link-alert input[type="url"] { height: 32px; font-size: 12px; letter-spacing: .32px; padding: 0 var(--spacing-03); width: 16rem; max-width: 100%; }
 .link-alert.is-clickable { cursor: pointer; }
-.alert-word { color: var(--link-primary); text-decoration: none; }
-.alert-word:hover { color: var(--link-primary-hover); text-decoration: underline; }
+.alert-word { color: var(--link-primary); }
+.alert-word:hover { color: var(--link-primary-hover); }
+/* On the desk links and quiet words are grey (Kate's pick, Sep 17), the grey of
+   secondary text, so a word that acts wears an underline or it reads as text
+   (design critique, Sep 18). Words with an icon (Edit, Delete) and the muted
+   ones (Skip, Cancel) read as buttons already. */
+.info-toggle, .alert-word, .source-link, .undo-link, .bulk-templates a,
+.linkish:not(:has(.fa-solid)):not(.quiet-link):not(.skip-link) { text-decoration: underline; text-underline-offset: 3px; }
+.undo-link:disabled { text-decoration: none; }
 .link-alert input.is-invalid { border-bottom-color: var(--err); outline: 2px solid var(--err); outline-offset: -2px; }
 .field-error { margin: var(--spacing-02) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--err); }
 .load-failed { margin: var(--spacing-05) 0; color: var(--muted); display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; }

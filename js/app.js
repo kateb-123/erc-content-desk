@@ -362,6 +362,23 @@ async function loadPublishPreview() {
   render();
 }
 
+/** The Exchange check for the front page's lane: no loader, no status line; a
+ *  miss leaves the lane on its stand-in count until the rows change. */
+const laneCheck = { inFlight: false, failedAt: null };
+async function quietPublishCheck() {
+  laneCheck.inFlight = true;
+  const rowsAsked = state.rows;
+  try {
+    await whenSaved();
+    const data = await readReply(await fetch('/api/publish'), 'check the Exchange');
+    if (state.rows === rowsAsked || !state.publishPreview) state.publishPreview = data;
+  } catch {
+    laneCheck.failedAt = rowsAsked;
+  }
+  laneCheck.inFlight = false;
+  render();
+}
+
 async function publishNow() {
   state.busy = true;
   render();
@@ -474,8 +491,12 @@ function render() {
   const today = new Date().toISOString().slice(0, 10);
   const common = { rows: state.rows, schedule: state.schedule, today };
   if (state.screen === 'home') {
+    // Policy Exchange's lane counts what Publish would add, which only the live
+    // Exchange check knows: the front page asks for it quietly, once per change.
+    if (state.loaded && !state.publishPreview && !laneCheck.inFlight && laneCheck.failedAt !== state.rows) quietPublishCheck();
     renderHome(screens.home, {
       ...common, loaded: state.loaded, loadFailed: state.loadFailed,
+      preview: state.publishPreview,
       onGoTo: goTo,
       onSubmitted: reload,
       onRefresh: reload,
