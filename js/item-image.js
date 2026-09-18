@@ -1,47 +1,101 @@
 /**
- * Picture upload for desk items and the builder's newsletter items alike:
- * PNG/JPG/GIF/WebP go up as-is, a PDF's first page is rasterized in-browser
- * first, and the value is the public URL POST /api/newsletter-image hands
- * back. On desk rows the URL lives in the `infographic` column, which rides
- * the hub CSV on publish and becomes the newsletter item's picture on pull.
+ * Picture upload for desk items and the builder's newsletter items alike.
+ * New pictures are shrunk before they go up (Kate, Sep 17): a photo, a
+ * flyer or a PDF's first page becomes a JPG at most MAX_WIDTH wide, any
+ * see-through part on white (her pick: a cut-out shows a white margin in a
+ * dark inbox, 1.9 MB became 137 KB); a GIF goes as it is. The value is the
+ * public URL POST /api/newsletter-image hands back. On desk rows the URL
+ * lives in the `infographic` column, which rides the hub CSV on publish and
+ * becomes the newsletter item's picture on pull.
  */
 import { dotsLoader, loadingLabel } from './icons.js';
 import { jsonInit } from './sheet-client.js';
 
-/** PDF flyers become a PNG in the browser (first page) so email clients can
- *  show them — pdf.js loads lazily from the CDN only when a PDF arrives. */
-async function pdfFirstPageToPng(file) {
+/** Twice the widest the email shows a picture (552px), so it stays sharp. */
+export const MAX_WIDTH = 1200;
+const JPEG_QUALITY = 0.85;
+
+/** The size a picture goes up at: its own, or MAX_WIDTH wide when wider. */
+export function fitWidth(width, height) {
+  if (width <= MAX_WIDTH) return { width, height };
+  return { width: MAX_WIDTH, height: Math.round(height * MAX_WIDTH / width) };
+}
+
+/** A JPG or PNG that needed no shrinking stays as it is when its JPG comes
+ *  out bigger. A WebP always goes as a JPG: not every inbox shows WebP. */
+export function keepOriginal({ type, width, size }, jpegSize) {
+  return (type === 'image/jpeg' || type === 'image/png') && width <= MAX_WIDTH && size <= jpegSize;
+}
+
+/** The canvas as a JPG; `failure` is the sentence when the browser can't. */
+const toJpeg = (canvas, failure) => new Promise((resolve, reject) =>
+  canvas.toBlob(b => (b ? resolve(b) : reject(new Error(failure))), 'image/jpeg', JPEG_QUALITY));
+
+/** The picture as a JPG at most MAX_WIDTH wide, on white, or null to send
+ *  the file as it is: a GIF (it may move), a small JPG or PNG its JPG would
+ *  only make bigger (a tiny logo keeps its see-through ground that way), or
+ *  one the browser can't redraw. */
+async function shrinkPicture(file) {
+  if (file.type === 'image/gif') return null;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const original = { type: file.type, width: bitmap.width, size: file.size };
+    const { width, height } = fitWidth(bitmap.width, bitmap.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'white';   // what a see-through part shows in the email anyway
+    ctx.fillRect(0, 0, width, height);
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    bitmap.close();
+    const jpeg = await toJpeg(canvas);
+    return keepOriginal(original, jpeg.size) ? null : jpeg;
+  } catch {
+    return null;
+  }
+}
+
+/** PDF flyers become a picture in the browser (the first page, on white) so
+ *  email clients can show them; pdf.js loads lazily from the CDN only when a
+ *  PDF arrives. */
+async function pdfFirstPage(file) {
   const pdfjs = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
   pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
   const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
   const page = await doc.getPage(1);
-  const scale = 1200 / page.getViewport({ scale: 1 }).width;
+  const scale = MAX_WIDTH / page.getViewport({ scale: 1 }).width;
   const viewport = page.getViewport({ scale });
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(viewport.width);
   canvas.height = Math.round(viewport.height);
   // intent 'print' keeps the raster off requestAnimationFrame, which browsers
-  // pause in a background tab — otherwise switching tabs mid-upload leaves the
+  // pause in a background tab; otherwise switching tabs mid-upload leaves the
   // conversion stuck on "Converting the PDF" until you come back.
   await page.render({ canvasContext: canvas.getContext('2d'), viewport, intent: 'print' }).promise;
-  return new Promise((resolve, reject) =>
-    canvas.toBlob(b => (b ? resolve(b) : reject(new Error("Couldn't convert that PDF."))), 'image/png'));
+  return canvas;
 }
 
 const IMAGE_EXTS = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp' };
 
 /** Upload one picture (PNG/JPG/GIF/WebP, or a PDF's first page) → public URL. */
 async function uploadItemImage(file, onStatus) {
+  const pdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
   let blob = file;
   let ext = IMAGE_EXTS[file.type];
-  if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
+  if (!pdf && !ext) throw new Error('Use a PNG, JPG, GIF, WebP or PDF.');
+  if (pdf) {
     onStatus('Converting the PDF…');
-    blob = await pdfFirstPageToPng(file);
-    ext = 'png';
+    blob = await toJpeg(await pdfFirstPage(file), "Couldn't convert that PDF.");
+    ext = 'jpg';
+    onStatus('Uploading…');
+  } else {
+    onStatus('Uploading…');   // shrinking takes a moment too
+    const jpeg = await shrinkPicture(file);
+    if (jpeg) { blob = jpeg; ext = 'jpg'; }
   }
-  if (!ext) throw new Error('Use a PNG, JPG, GIF, WebP or PDF.');
   if (blob.size > 2.5 * 1024 * 1024) throw new Error('Too big. Keep it under 2.5 MB.');
-  onStatus('Uploading…');
   const b64 = await new Promise((resolve, reject) => {
     const r = new FileReader();
     r.onload = () => resolve(String(r.result).split(',')[1] ?? '');
@@ -57,7 +111,7 @@ async function uploadItemImage(file, onStatus) {
 }
 
 /** The picture control: Add (or Replace) + Remove media; the value is a
- *  URL. The button hides while a file is in flight — no double uploads. */
+ *  URL. The button hides while a file is in flight, so nothing goes up twice. */
 export function buildImageControl(initial, onChange) {
   const wrap = document.createElement('div');
   wrap.className = 'img-upload';
