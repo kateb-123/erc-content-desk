@@ -554,13 +554,13 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   min-width: 0;
   overflow: hidden;
   background: var(--layer-accent-01);
-  padding: var(--spacing-06); /* = STAGE_PAD */
+  padding: var(--spacing-06);
 }
 
 /* The column is sticky: it rides beside the page-long sheet, scrolling
    inside itself when its cards run past the window. */
 .edit-column {
-  flex: 0 0 340px; /* = COLUMN_W */
+  flex: 0 0 340px;
   min-width: 0; /* defeat the min-content floor so wide nowrap children (reorder rows) can't stretch the column */
   position: sticky;
   top: var(--spacing-05);

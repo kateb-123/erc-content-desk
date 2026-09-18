@@ -704,12 +704,6 @@ const PREVIEW_WIDTH = 705;
     edit column always fits and there's never a horizontal scrollbar. */
 const PREVIEW_MAX_SCALE = 0.95;
 
-/** Persistent edit-column width (px), matches .edit-column in styles.css. */
-const COLUMN_W = 340;
-/** Flex gap between preview and edit column, for the scale sum. */
-const EDIT_GAP = 20;
-/** Horizontal padding on ONE side of the gray stage, matches .edit-preview-wrap. */
-const STAGE_PAD = 24;
 
 /**
  * Re-render the editable iframe (after an edit) and re-attach listeners.
@@ -1576,12 +1570,20 @@ function renderEdit() {
     // helper (which reserves the column, gap, and both sides of stage padding).
     const layoutWidth = layout.clientWidth;
     if (!layoutWidth) return; // step not laid out yet; a later refit will run
+    // The column, the gap and the stage's padding are read from the page, not
+    // copied from the stylesheet: a hand-copied number drifts the moment the
+    // CSS changes, and the preview then scales by the wrong amount.
+    const rowStyle = getComputedStyle(layout);
+    const gap = parseFloat(rowStyle.columnGap || rowStyle.gap) || 0;
+    const columnWidth = layout.querySelector('.edit-column')?.getBoundingClientRect().width ?? 0;
+    const wrapStyle = getComputedStyle(wrap);
+    const stagePad = ((parseFloat(wrapStyle.paddingLeft) || 0) + (parseFloat(wrapStyle.paddingRight) || 0)) / 2;
     iframe.style.zoom = '1';
     iframe.style.width = PREVIEW_WIDTH + 'px';
     const contentHeight = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
     iframe.style.height = contentHeight + 'px';
     const scale = computePreviewScale({
-      layoutWidth, columnWidth: COLUMN_W, gap: EDIT_GAP, stagePad: STAGE_PAD,
+      layoutWidth, columnWidth, gap, stagePad,
       sheetWidth: PREVIEW_WIDTH, maxScale: PREVIEW_MAX_SCALE,
     });
     if (scale <= 0) return;
