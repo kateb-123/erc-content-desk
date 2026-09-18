@@ -5,8 +5,12 @@
  */
 export const DESK = { label: 'ERC Content Desk', href: '/' };
 
-// The public site the desk publishes to, and the archive of sent issues.
+// The public site the desk publishes to, its share and sign-up pages (a
+// separate origin on purpose: nothing on them can lead back here), and the
+// archive of sent issues.
 export const EXCHANGE_URL = 'https://erc-policy-exchange.vercel.app/';
+export const SHARE_URL = 'https://erc-policy-exchange.vercel.app/share/';
+export const SIGNUP_URL = 'https://erc-policy-exchange.vercel.app/newsletter/';
 export const ARCHIVE_PATH = '/builder/archive.html';
 
 /** The three lanes, in the front page's order. */

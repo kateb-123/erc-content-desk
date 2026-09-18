@@ -1,10 +1,28 @@
-/** Pure text helpers for Home's stat cards and the hand-out lines. */
-import { pendingRows, circlebackRows } from './workflow.js';
+/** Pure helpers for the front page: the lanes' counts, the newest items, the hand-out lines. */
+import { pendingRows, circlebackRows, readyToPublish } from './workflow.js';
 
-/** The queue count, shown on Home's tile and the fold's badge: everything
- *  still waiting on a decision. */
+/** The queue count, shown on the front page's Sort lane and Sort's own head:
+ *  everything still waiting on a decision. */
 export function queueBadgeCount(rows) {
   return pendingRows(rows).length + circlebackRows(rows).length;
+}
+
+/** The three lanes' counts (Kate's wireframes, Sep 17): Sort the queue,
+ *  Newsletter the rows in the next issue, Policy Exchange the kept rows
+ *  still to publish. */
+export function laneCounts(rows, issue) {
+  return {
+    sort: queueBadgeCount(rows),
+    newsletter: issue ? issueSummary(rows, issue).inIssue : 0,
+    exchange: readyToPublish(rows).length,
+  };
+}
+
+/** Recently added: the newest rows first, deleted ones left out. */
+export function recentlyAdded(rows, count = 4) {
+  return rows.filter(r => r.status !== 'trashed')
+    .sort((a, b) => String(b.submitted_at ?? '').localeCompare(String(a.submitted_at ?? '')))
+    .slice(0, count);
 }
 
 /**

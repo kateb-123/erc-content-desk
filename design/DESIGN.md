@@ -41,7 +41,7 @@ allows a hex only in `css/tokens.css`.
 | `--layer-02` / `--border-subtle-01` | `#ffffff` / `#c6c6c6` | a card, a list, a table, the receipt, the busy popup: a white box with a hairline (`--layer`, `--layer-line`; pick C, Sep 17) |
 | `--layer-01` | `#f4f4f4` | a grey box inside a card: Finalize's edit box, decided Sort rows, table header rows, the builder's edit stage |
 | `--layer-accent-01` | `#e0e0e0` | table header rows, progress tracks, the edit stage |
-| `--accent-10` / `--accent-20` | the desk `#fff4ea` / `#ffdfc7`, the builder `#eef1f5` / `#d8e0ea` | row hover and the stat tiles (`--row-hover`, `--tint`); the chosen row and the lit menu item (`--selected`, in `--accent-deep` text with a 3px `--border-interactive` bar) |
+| `--accent-10` / `--accent-20` | the desk `#fff4ea` / `#ffdfc7`, the builder `#eef1f5` / `#d8e0ea` | row hover and tinted rows (`--row-hover`, `--tint`); the chosen row (`--selected`, in `--accent-deep` text with a 3px `--border-interactive` bar) |
 | `--accent-alpha` | the accent at 6% | the hover wash on quiet buttons and menu rows (`--hover`), layered over any tint |
 | `--field-01` / `--field-02` | `#f4f4f4` / `#ffffff` | fields: white on a layer, grey on the page |
 | `--text-primary` / `--text-secondary` / `--text-helper` / `--text-placeholder` | `#161616` / `#525252` / `#6f6f6f` / `#a8a8a8` | ink (`--ink`), quiet text (`--muted`), helper lines, placeholders (placeholders are decoration, never the only label) |
@@ -57,7 +57,7 @@ allows a hex only in `css/tokens.css`.
 | `--support-warning` / `--text-warning` | `#006c93` / `#006c93` | UT's Globe blue, needs doing as an icon, the triangle (`--warn-mark`) and as text (`--warn`); the warning tab. The palette's purple read as Halloween beside orange; Carbon's warning yellow held the job from Sep 15 to Sep 17 |
 | `--support-info` | `#3d4a57` | slate, the info note's bar and icon (Carbon's blue collided with navy) |
 | `--notification-*-background` / `-border` | info `#f0f2f4`, success `#f7f9e0`, warning `#f6f2ff`, error `#fceef2`; the border is the role's colour at 30% | inline notes: the info panel, the fix panel, the link ask, the builder's status boxes; text on them is `--text-primary` |
-| `--tag-background-*` / `--tag-color-*` | gray `#e0e0e0`/`#161616`, blue the accent's 20 under the desk's grey or the builder's navy 80, review `#cce4ed`/`#004a66` | tags: a fact, New, a duplicate (needs review, so it wears the review blue); the picked type pill; the queue count |
+| `--tag-background-*` / `--tag-color-*` | gray `#e0e0e0`/`#161616`, blue the accent's 20 under the desk's grey or the builder's navy 80, review `#cce4ed`/`#004a66` | tags: a fact, New, a duplicate (needs review, so it wears the review blue); the queue count |
 | `--accent-30` to `--accent-80` | the app's ramp | the sliding-dots loader; `--accent-30` is Publish's held segment |
 | `--background-inverse` / `--link-inverse` | `#393939` / the accent's step 30 | the builder's Undo toast |
 | `--overlay` | `#16161680` | the dim behind the busy popup and the tutorial |
@@ -82,7 +82,7 @@ template and the public Exchange site.
 
 - **Square.** Radius 0 on buttons, fields, tiles, tables, notes, the busy popup
   and the top bar. The only round things are tags (`--radius-tag-md` 12px at
-  24px tall, `--radius-tag-lg` 16px on the 32px type pills), the queue count,
+  24px tall), the queue count,
   the toggle and the loader's dots.
 - **White boxes with a hairline** (pick C, Sep 17; Carbon's grey tiles before).
   A card, a list or a table is `--layer-02` with a 1px `--layer-line` hairline;
@@ -109,7 +109,7 @@ template and the public Exchange site.
   sideways, never wraps. They are read as tabs: one tab stop, Left and Right
   move between them, Home and End jump (audit round two, Sep 17).
 - **Folds.** Every fold opens from a chevron on its left, pointing right when
-  shut and down when open: Home's queue, Finalize's No rewrite needed, Send to
+  shut and down when open: the front page's bulk door, Finalize's No rewrite needed, Send to
   Newsletter's groups, Already sent and Past items. A chevron means a fold and
   nothing else (audit round two, Sep 17).
 - **Sticky foot.** Send to Newsletter's Send and its "N picked" ride a foot at
@@ -182,6 +182,20 @@ look, everywhere it appears.
 | **Top bar** (the brand mark; ERC Content Desk / the lane / the page; the two other lanes on the right) | none | a 56px bar under a hairline; crumb links in the ink, lane links quiet | every way around the desk (Kate's wireframes, Sep 17): the brand leads home, a lane opens its page in place, the builder's pages crumb under Newsletter |
 | **Keep the rest (N)** | ✓ `fa-check` | the small dark-grey button, Carbon's secondary (Kate, Sep 17: a sweep across a list is grey, the one decision on a card is the primary), right of a Sort section's head, and right of Finalize's head while rewrites wait to be checked | keep every listed row that has a real type and a checked link (Sep 11); on Finalize, keep every rewrite still to check (one name for both since audit round two); one row at a time is Keep on its card (Sep 16). Keys on Sort (Sep 17): up and down move, K keeps, S skips, D deletes, U undoes. A decision says itself in the status line ("Kept: title") and the next card's title takes focus; Undo last says what it undid |
 | **Publish N to the Exchange → Confirm / Cancel** | `fa-triangle-exclamation` on the ask | the primary, then one warning note in its place | the one ask before the append-only write to the public site (design audit b6, Sep 17), at body-01 with the count and "live" in 600; Keep the rest on Finalize gets "Kept N rewrites. Undo" instead of an ask |
+
+The front page (Kate's wireframes, Sep 17; `design/mockups/index.png`) is the
+share form on the left and a 360px column on the right, 56px in from the
+sides. The form puts the link first as the one big field (52px, on
+`--field-01`, a 2px line under it, "We will pull the title and description if
+we can."), then the title, the description, the type as a segmented row
+(square words joined by hairlines, the picked one in the app's fill), then
+the initials, the Spotlight ask and Add to the queue (48px) on one row, with
+the bulk door folded under. The column holds Desk work, a box of the three
+lanes (name, a line under it, the count at 20/28 light, an arrow; Newsletter
+names the next issue), Recently added (the four newest items with who and
+when), and Links to hand out (the public site, Share an item, Listserv
+sign-up, each with a copy button). The stat tiles and the queue fold of Sep
+15 to 17 are gone; the queue is worked on Sort.
 
 Sort is one section at a time (Sep 11 option A; Sep 15 the card stream and the
 stacked All view went), drawn as a list and a card (Claude Design round two,

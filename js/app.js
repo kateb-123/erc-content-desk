@@ -7,7 +7,6 @@ import { renderHome } from './home-ui.js';
 import { renderShell } from './shell-ui.js';
 import { openedScreen, screenHash, pageTitle } from './shell-view.js';
 import { renderIssue, resetIssueEntry } from './issue-ui.js';
-import { latestIssue, queueBadgeCount } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
 import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
@@ -34,8 +33,6 @@ const state = {
   justSent: null,           // { issue, ids } from the last newsletter send (view state)
   publishPreview: null,
   publishedCsv: '',       // the CSV from the last publish, for the receipt's re-download
-  hubUpdated: null,
-  lastIssue: null,          // newest archived issue date, for Home's strip
   rewroteNote: null,
   lastKeepAll: null,        // [{ id, old }] from the last Keep all remaining, until undone or left
 };
@@ -479,17 +476,10 @@ function render() {
   if (state.screen === 'home') {
     renderHome(screens.home, {
       ...common, loaded: state.loaded, loadFailed: state.loadFailed,
-      hubUpdated: state.hubUpdated,
-      lastIssue: state.lastIssue,
       onGoTo: goTo,
       onSubmitted: reload,
       onRefresh: reload,
       knownLinks: () => state.rows,   // the form is mounted once: it asks for the rows instead of holding a copy
-      // The queue's trash can, through the same queued write as Sort. Undo hands
-      // back the row as it was before the delete, status and newsletter stamp
-      // included, so a deleted circle-back comes back a circle-back and a
-      // quick-added item keeps its issue.
-      onDeleteFromQueue: (row, action) => change([action === 'trash' ? trash(row) : row]),
     });
   } else if (state.screen === 'issue') {
     renderIssue(screens.issue, {
@@ -605,31 +595,6 @@ function render() {
   }
   if (switched) focusHeading(screens[state.screen]);
 }
-
-// Home's "Exchange updated" fact: when news.csv last changed, not the date
-// column (item dates can sit in the future). The Exchange repo is private,
-// so the desk asks its own endpoint, which reads the live file's header.
-// Fetched once per visit; a miss leaves the tile's quiet word.
-(async () => {
-  try {
-    const res = await fetch('/api/hub-updated');
-    const stamp = (await res.json())?.lastModified;
-    const d = new Date(stamp ?? NaN);
-    state.hubUpdated = Number.isNaN(d.getTime()) ? ''
-      : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  } catch { state.hubUpdated = ''; }
-  render();
-})();
-
-// Home's "Last newsletter" fact: the newest date in the builder's archive
-// index. Fetched once per visit; a miss leaves the tile's quiet word.
-(async () => {
-  try {
-    const res = await fetch('/builder/newsletters/index.json');
-    state.lastIssue = latestIssue(await res.json());
-  } catch { state.lastIssue = ''; }
-  render();
-})();
 
 // Back, Forward and a typed address switch screens like a menu pick would.
 window.addEventListener('hashchange', () => {

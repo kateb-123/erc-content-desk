@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { queueBadgeCount, latestIssue, shareLine, signupLine, issueSummary, issueTally } from '../js/home-panel.js';
+import { queueBadgeCount, latestIssue, shareLine, signupLine, issueSummary, issueTally, laneCounts, recentlyAdded } from '../js/home-panel.js';
 
 test('queueBadgeCount counts new plus parked rows', () => {
   const rows = [
@@ -64,4 +64,33 @@ test('issueTally is the count half of the line, on its own for the card (Kate\'s
   assert.equal(issueTally(4), '4 items so far');
   assert.equal(issueTally(1), '1 item so far');
   assert.equal(issueTally(0), 'nothing in yet');
+});
+
+// ── The front page's lanes and its Recently added list (Kate's wireframes, Sep 17) ──
+
+test('laneCounts: Sort counts the queue, Newsletter the rows in the next issue, Policy Exchange the kept rows still to publish', () => {
+  const rows = [
+    { status: 'new' }, { status: 'circleback' },
+    { status: 'kept', newsletter_issue: '2026-09-22' },
+    { status: 'kept', newsletter_issue: '2026-10-06' },
+    { status: 'kept' },
+    { status: 'kept', published_at: '2026-09-01T10:00:00Z' },
+    { status: 'trashed' },
+  ];
+  assert.deepEqual(laneCounts(rows, '2026-09-22'), { sort: 2, newsletter: 1, exchange: 1 });
+  assert.deepEqual(laneCounts([], ''), { sort: 0, newsletter: 0, exchange: 0 });
+});
+
+test('recentlyAdded: the newest rows first, deleted ones left out, capped at the count asked for', () => {
+  const rows = [
+    { id: 'a', status: 'new', submitted_at: '2026-09-12T10:00:00Z' },
+    { id: 'b', status: 'kept', submitted_at: '2026-09-15T10:00:00Z' },
+    { id: 'c', status: 'trashed', submitted_at: '2026-09-16T10:00:00Z' },
+    { id: 'd', status: 'new', submitted_at: '2026-09-14T10:00:00Z' },
+    { id: 'e', status: 'circleback', submitted_at: '' },
+    { id: 'f', status: 'new', submitted_at: '2026-09-11T10:00:00Z' },
+  ];
+  assert.deepEqual(recentlyAdded(rows, 4).map(r => r.id), ['b', 'd', 'a', 'f']);
+  assert.deepEqual(recentlyAdded(rows, 2).map(r => r.id), ['b', 'd']);
+  assert.deepEqual(recentlyAdded([], 4), []);
 });

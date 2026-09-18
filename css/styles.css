@@ -93,39 +93,44 @@ button {
 button:hover:not(:disabled) { background: var(--accent); color: var(--text-on-accent); border-color: var(--accent); }
 button:disabled { cursor: default; color: var(--text-on-color-disabled); border-color: var(--button-disabled); }
 
-/* The submit form (Claude Design round two, Kate's pick Sep 16): Title and
-   Link side by side, the type as pills, and initials, Spotlight and Submit on
-   one row at the foot. */
-.sf-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 var(--spacing-06); }
+/* The share form (Kate's wireframes, Sep 17): the link first, as the one big
+   field, then the title, the description, the type as a segmented row, and
+   the foot with the initials, the Spotlight ask and Add to the queue. */
+.submit-form { display: flex; flex-direction: column; gap: var(--spacing-06); }
+.submit-form label { margin-top: 0; }
+.sf-link-hero label { font-size: 14px; line-height: 20px; letter-spacing: .16px; font-weight: 600; color: var(--ink); }
+.sf-link-hero input { height: 52px; font-size: 16px; background: var(--field-01); border-bottom-width: 2px; }
+.submit-form #sf-blurb { min-height: 140px; }
 /* The foot aligns at the top: the checkbox and the button sit on the input's row
    (24px down, under the label's line) whether or not a message hangs under the
    initials (audit round two, f6). */
-.sf-foot { display: flex; align-items: flex-start; gap: var(--spacing-05); flex-wrap: wrap; margin-top: var(--spacing-06); }
+.sf-foot { display: flex; align-items: flex-start; gap: var(--spacing-05); flex-wrap: wrap; }
 .sf-foot .sf-initials label { margin-top: 0; }
 .sf-foot .sf-initials input { width: 7rem; }
 .sf-foot label.check { margin: var(--spacing-06) 0 0; min-height: 40px; display: flex; align-items: center; gap: var(--spacing-03); font-size: 14px; letter-spacing: .16px; color: var(--ink); }
-.submit-form .submit-btn { margin-left: auto; margin-top: var(--spacing-06); }
-/* The description's hint is a helper line under the field, not part of the label (f8). */
+.submit-form .submit-btn { margin-left: auto; margin-top: var(--spacing-06); height: 48px; padding: 0 var(--spacing-06); }
+/* A field's hint is a helper line under it, not part of the label (f8). */
 .submit-form .sf-help { margin: var(--spacing-02) 0 0; }
 /* The one ask before a link already in the queue goes in again (e19): the warning note where the primary was. */
 .submit-form .sf-ask { margin: var(--spacing-05) 0 0; font-size: 14px; line-height: 20px; letter-spacing: .16px; padding: var(--spacing-04) var(--spacing-05); }
 .submit-form .sf-ask:focus { outline: 2px solid var(--focus); outline-offset: -2px; }
 
-/* Type and subtype pills: Carbon's selectable tags, 32px, the picked one blue. */
-.type-picker { border: none; padding: 0; margin: var(--spacing-05) 0 0; }
+/* The type as a segmented row (Kate's wireframes, Sep 17): square words
+   joined by hairlines, the picked one filled; the picked type's subtypes as
+   a smaller row under it. */
+.type-picker { border: none; padding: 0; margin: 0; }
 .type-picker legend { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); padding: 0; margin-bottom: var(--spacing-03); }
-.pill-row { display: flex; flex-wrap: wrap; gap: var(--spacing-03); }
+.pill-row { display: flex; flex-wrap: wrap; width: fit-content; border: 1px solid var(--border-strong-01); }
 .type-word {
-  display: inline-flex; align-items: center; height: 32px; padding: 0 var(--spacing-04);
-  border: 1px solid var(--border-strong-01); border-radius: var(--radius-tag-lg);
+  display: inline-flex; align-items: center; height: 40px; padding: 0 var(--spacing-04);
+  border: 0; border-right: 1px solid var(--border-strong-01); border-radius: 0;
   background: var(--layer-02); color: var(--ink);
   font: inherit; letter-spacing: .16px; cursor: pointer;
 }
+.type-word:last-child { border-right: 0; }
 .type-word:hover:not(:disabled) { background: var(--layer-hover-01); color: var(--ink); border-color: var(--border-strong-01); }
-.type-word.is-picked { background: var(--tag-background-blue); border-color: var(--tag-background-blue); color: var(--tag-color-blue); }
-.type-word.is-picked:hover:not(:disabled) { background: var(--tag-background-blue); border-color: var(--tag-background-blue); color: var(--tag-color-blue); }
-.type-word.is-picked::before { content: "\f00c"; font-family: "Font Awesome 7 Free"; font-weight: 900; font-size: 11px; margin-right: var(--spacing-02); }
-.type-word.is-small { height: 24px; padding: 0 var(--spacing-03); font-size: 12px; letter-spacing: .32px; border-radius: var(--radius-tag-md); }
+.type-word.is-picked, .type-word.is-picked:hover:not(:disabled) { background: var(--button-primary); border-color: var(--border-strong-01); color: var(--text-on-accent); }
+.type-word.is-small { height: 32px; padding: 0 var(--spacing-03); font-size: 12px; letter-spacing: .32px; }
 .subtype-label { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: var(--spacing-04) 0 var(--spacing-03); }
 .type-hint { margin: var(--spacing-03) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
 
@@ -440,34 +445,47 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .publish-table .p-fate-fix { color: var(--warn); font-weight: 600; text-decoration: underline; }
 .table-scroll { overflow-x: auto; }
 
-/* Home screen */
-/* Home breathes a little more than the pipeline screens (Kate, Sep 15: "a little spacing overall"). */
-.home-grid { margin-top: var(--spacing-07); }
-.home-form.card { padding: var(--spacing-06); }
-.home-form h2 { font-size: 20px; line-height: 28px; font-weight: 600; margin: 0 0 var(--spacing-02); }   /* heading-03 */
-
-/* The stats: four tiles (Kate's pick J of four, Sep 16; Carbon tiles since
-   Sep 17). A grid, so a narrow window gets two rows instead of a broken line. */
-.stats-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--spacing-05); margin-top: var(--spacing-05); }
-.stat {
-  display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-03);
-  height: auto; padding: var(--spacing-05); border-radius: 0; background: var(--tint);
-  border: 1px solid transparent; color: var(--ink); text-decoration: none; text-align: left;
-  font: inherit; letter-spacing: .16px; cursor: default; box-sizing: border-box; width: 100%;
+/* The front page (Kate's wireframes, Sep 17): the share form on the left, a
+   360px column on the right with the three lanes, the newest items and the
+   links to hand out. */
+.home-page { display: flex; gap: var(--spacing-09); align-items: flex-start; padding: 0 var(--spacing-05); }   /* 56px sides, as the wireframe frames the front page */
+.home-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-06); }
+.home-head h2 { font-size: 28px; line-height: 36px; font-weight: 300; letter-spacing: 0; margin: 0; }   /* the page title, light, as the wireframes draw it */
+.home-head .lede { margin: var(--spacing-02) 0 0; }
+.home-side { width: 360px; flex: none; display: flex; flex-direction: column; gap: var(--spacing-06); }
+.block-label { font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600; color: var(--muted); margin: 0 0 var(--spacing-03); }
+/* The lanes: a box of three rows, each a link with its count and an arrow. */
+.lanes { border: 1px solid var(--layer-line); }
+.lane {
+  display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-05);
+  border-bottom: 1px solid var(--layer-line); color: var(--ink); text-decoration: none;
   transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
-a.stat, button.stat { cursor: pointer; }
-a.stat:hover, button.stat:hover:not(:disabled) { background: var(--highlight); border-color: transparent; color: var(--ink); }
-.stat > .fa-solid { color: var(--accent); font-size: 16px; }   /* the leading icon */
-/* The label says what the tile does (e23): its words, then a cue glyph at the
-   right in the secondary icon colour; the queue's chevron turns while its fold is open. */
-.stat-label { display: flex; align-items: center; gap: var(--spacing-03); align-self: stretch; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--ink); }
-.stat-label .fa-solid { margin-left: auto; color: var(--icon-secondary); font-size: 12px; transition: transform var(--duration-fast-02) var(--ease-standard); }
-.stat[aria-expanded="true"] .stat-label .fa-chevron-down { transform: rotate(180deg); }
-.stat-value { font-size: 28px; line-height: 36px; font-weight: 400; color: var(--accent-deep); }   /* heading-04 */
-/* A tile with no value yet, none to show, or a failed read says so quietly, in the label's size, in the value's slot (d5). */
-.stat-value.is-empty { font-size: 12px; letter-spacing: .32px; font-weight: 400; color: var(--muted); }
-.stat-value small { font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 400; color: var(--muted); }
+.lane:last-child { border-bottom: 0; }
+.lane:hover { background: var(--row-hover); color: var(--ink); }
+.lane-words { flex: 1 1 auto; min-width: 0; }
+.lane-name { display: block; font-size: 16px; line-height: 22px; font-weight: 600; }   /* heading-02 */
+.lane-sub { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
+.lane-count { font-size: 20px; line-height: 28px; font-weight: 300; }
+.lane .fa-arrow-right { font-size: 12px; color: var(--icon-secondary); }
+/* The newest items and the hand-outs: rows between hairlines. */
+.recent, .handouts { border-top: 1px solid var(--line); }
+.recent-row { padding: var(--spacing-04) 0; border-bottom: 1px solid var(--line); }
+.recent-title { font-size: 14px; line-height: 18px; }
+.recent-meta { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); margin: var(--spacing-01) 0 0; }
+.recent > .recent-meta { padding: var(--spacing-04) 0; }
+.handout-row { display: flex; align-items: center; gap: var(--spacing-03); padding: var(--spacing-02) 0; border-bottom: 1px solid var(--line); }
+.handout-row a { flex: 1 1 auto; min-width: 0; color: var(--ink); text-decoration: none; }
+.handout-row a:hover { text-decoration: underline; }
+.handout-row .fa-arrow-up-right-from-square { font-size: 10px; color: var(--icon-secondary); }
+.copy-btn {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; padding: 0; margin: 0; border: 0; border-radius: 0;
+  background: none; color: var(--icon-secondary); font-size: 12px; line-height: 1; cursor: pointer;
+  transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
+}
+.copy-btn:hover:not(:disabled) { background: var(--row-hover); color: var(--icon-primary); border: 0; }
+.copy-btn .fa-check { color: var(--ok); }
 /* The queue count: a round tag in the accent. */
 .queue-badge {
   display: inline-flex; align-items: center; justify-content: center;
@@ -487,21 +505,8 @@ a.stat:hover, button.stat:hover:not(:disabled) { background: var(--highlight); b
 .quick-panel { margin-top: var(--spacing-06); border: 1px solid var(--layer-line);   /* a white box with a hairline; dashed is for drop zones (audit round two, e22) */ border-radius: 0; background: var(--layer-02); padding: var(--spacing-05) var(--spacing-06) var(--spacing-06); }
 .quick-panel h3 { font-size: 16px; line-height: 22px; font-weight: 600; margin: 0 0 var(--spacing-04); }
 
-/* Queue table (bottom of Home) */
+/* Queue table (Next newsletter's list, until it folds into the Newsletter page) */
 .item-title { font-weight: 400; color: var(--ink); }
-/* The queue, folded at the bottom of Home: a details whose summary is the
-   heading, chevron left like every other opener, turned when open. */
-.queue-fold { margin-top: var(--spacing-09); }
-.queue-fold summary {
-  list-style: none; cursor: pointer; display: flex; align-items: center; gap: var(--spacing-03);
-  font-size: 20px; line-height: 28px; font-weight: 600;
-}
-.queue-fold summary::-webkit-details-marker { display: none; }
-.queue-fold summary h2 { font: inherit; margin: 0; display: inline; }
-.queue-fold summary .fa-solid { font-size: .8rem; color: var(--icon-secondary); transition: transform var(--duration-fast-02) var(--ease-standard); }
-.queue-fold[open] summary .fa-solid { transform: rotate(180deg); }
-.queue-fold summary:hover .fa-solid { color: var(--icon-primary); }
-.queue-body { margin-top: var(--spacing-04); }
 
 .queue-head { display: flex; align-items: baseline; justify-content: flex-end; gap: var(--spacing-05); flex-wrap: wrap; margin: 0 0 var(--spacing-04); }
 .queue-table { width: 100%; border-collapse: collapse; background: var(--layer); border: 1px solid var(--layer-line); }

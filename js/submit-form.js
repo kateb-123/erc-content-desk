@@ -108,15 +108,14 @@ export function renderSubmitForm(container, {
 
   container.innerHTML = `
     <form class="submit-form" novalidate>
-      <div class="sf-pair">
-        <div><label for="sf-title">Title</label>
-          <input id="sf-title" type="text" autocomplete="off"></div>
-        <div><label for="sf-link">Link <span class="hint">(required)</span></label>
-          <input id="sf-link" type="url" autocomplete="off" placeholder="https://"></div>
-      </div>
-      <label for="sf-blurb">Description</label>
-      <textarea id="sf-blurb" rows="4" aria-describedby="sf-blurb-help"></textarea>
-      <p class="hint type-hint sf-help" id="sf-blurb-help">Paste whatever you have: dates, abstract, the whole announcement. Headlines can skip this.</p>
+      <div class="sf-link-hero"><label for="sf-link">Paste a link</label>
+        <input id="sf-link" type="url" autocomplete="off" placeholder="https://" aria-describedby="sf-link-help">
+        <p class="hint sf-help" id="sf-link-help">We will pull the title and description if we can.</p></div>
+      <div><label for="sf-title">Title</label>
+        <input id="sf-title" type="text" autocomplete="off"></div>
+      <div><label for="sf-blurb">Description</label>
+        <textarea id="sf-blurb" rows="6" aria-describedby="sf-blurb-help"></textarea>
+        <p class="hint sf-help" id="sf-blurb-help">Dates, abstract, the whole announcement. Headlines can skip this.</p></div>
       <fieldset class="type-picker"></fieldset>
       <div class="sf-foot">
         <div class="sf-initials"><label for="sf-submitter">Your initials <span class="hint">(required)</span></label>
