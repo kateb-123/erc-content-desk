@@ -2,10 +2,10 @@
    written down (Kate, Sep 17, 2026: "adopt Carbon's look", picture A of four).
    Every page loads this first; the desk, the builder and Past newsletters then
    name what they use in their own :root, in Carbon's names or as aliases of
-   them. Values are Carbon's own (tokens.json in the ibm-carbon-template
-   export), so nothing here is a design decision of ours. It holds the subset
-   the two apps read: a Carbon token comes back in when a screen first needs
-   it. */
+   them. The neutrals are Carbon's own (tokens.json in the ibm-carbon-template
+   export); the accent ramps and the status colours are Kate's palette of
+   Sep 17, 2026 (late night). It holds the subset the two apps read: a Carbon
+   token comes back in when a screen first needs it. */
 :root {
   /* Surfaces: the page, then layers stacked on it. */
   --background: #ffffff;
@@ -49,8 +49,8 @@
   --button-secondary: #393939;
   --button-secondary-hover: #474747;
   --button-secondary-active: #6f6f6f;
-  --button-danger-secondary: #da1e28;
-  --button-danger-hover: #b81922;
+  --button-danger-secondary: #b3123c;   /* the palette's crimson: Delete and Remove */
+  --button-danger-hover: #8f0e30;       /* crimson darkened one step for the hover */
   --button-disabled: #c6c6c6;
 
   /* Focus and selection. */
@@ -60,58 +60,76 @@
   --interactive: #0f62fe;
   --toggle-off: #8d8d8d;
 
-  /* Status: each colour ships with its icon; the word beside it is text-primary. */
-  --support-error: #da1e28;
-  --support-success: #24a148;
-  --support-warning: #f1c21b;
-  --support-info: #0043ce;
-  --notification-error-background: #fff1f1;
-  --notification-error-border: #da1e284d;
-  --notification-success-background: #defbe6;
-  --notification-success-border: #24a1484d;
-  --notification-warning-background: #fcf4d6;
-  --notification-warning-border: #f1c21b4d;
-  --notification-info-background: #edf5ff;
-  --notification-info-border: #0043ce4d;
+  /* Status (Kate's palette, Sep 17): shared by both apps, never forked by the
+     accent. Each role is an icon colour, a note tint and a 30% border; the
+     word beside the icon is text-primary. Published is Alliance citrine, needs
+     review Carbon's purple (the warning yellow before), an error crimson,
+     information slate (Carbon's blue collided with navy). */
+  --support-error: #b3123c;
+  --support-success: #cedc00;
+  --support-warning: #6929c4;
+  --support-info: #3d4a57;
+  --notification-error-background: #fceef2;
+  --notification-error-border: #b3123c4d;
+  --notification-success-background: #f7f9e0;
+  --notification-success-border: #cedc004d;
+  --notification-warning-background: #f6f2ff;
+  --notification-warning-border: #6929c44d;
+  --notification-info-background: #f0f2f4;
+  --notification-info-border: #3d4a574d;
+
+  /* Status as text. Citrine is 1.5:1 on white, so a published WORD takes the
+     dark citrine; purple holds as icon and as text alike. */
+  --text-success: #4f5500;
+  --text-warning: #6929c4;
 
   /* Tags. */
   --tag-background-blue: #d0e2ff;
   --tag-color-blue: #0043ce;
   --tag-background-gray: #e0e0e0;
   --tag-color-gray: #161616;
-  --tag-background-yellow: #fddc69;
-  --tag-color-yellow: #684e00;
+  --tag-background-purple: #e8daff;   /* a possible duplicate: needs review, so it wears the review colour */
+  --tag-color-purple: #6929c4;
 
-  /* Palette steps we read directly: the text shades of green and yellow
-     (support-success and support-warning are icon colours and do not clear
-     4.5:1 as text). */
-  --green-60: #198038;
-  --yellow-70: #684e00;
-
-  /* The accent ramps, one per app (Kate, Sep 17, pick G of eight in the
-     switcher: "a different shade of blue, lighter, less aggressive"): the desk
-     keeps its own blue from before Carbon, the builder takes Carbon's teal, so
-     the two apps differ by hue and by nothing else. Each app's :root maps the
-     accent tokens (button, link, focus, interactive, highlight, the info note,
+  /* The accent ramps, one per app (Kate's palette, Sep 17, late night): UT
+     Martin navy for the desk, its brand value #0b2341 at step 80; UT System
+     orange for the builder, its brand value #ff8200 at step 50. Each app's
+     :root maps the accent tokens (button, link, focus, interactive, highlight,
      the New tag, the loader's ramp) to its --accent-NN steps. */
-  --desk-blue-10: #eaf2f8;
-  --desk-blue-20: #d5e6f2;
-  --desk-blue-30: #9ec9e8;
-  --desk-blue-40: #63a3cd;
-  --desk-blue-50: #4a8cbf;
-  --desk-blue-60: #1d6ea5;
-  --desk-blue-70: #19608f;
-  --desk-blue-80: #14507a;
-  --desk-blue-alpha: rgba(29, 110, 165, .06);
-  --teal-10: #d9fbfb;
-  --teal-20: #9ef0f0;
-  --teal-30: #3ddbd9;
-  --teal-40: #08bdba;
-  --teal-50: #009d9a;
-  --teal-60: #007d79;
-  --teal-70: #005d5d;
-  --teal-80: #004144;
-  --teal-alpha: rgba(0, 125, 121, .06);
+  --navy-10: #eef1f5;
+  --navy-20: #d8e0ea;
+  --navy-30: #adbdd2;
+  --navy-40: #7691b3;
+  --navy-50: #4d6c96;
+  --navy-60: #1e416b;
+  --navy-70: #153154;
+  --navy-80: #0b2341;
+  --navy-alpha: rgba(30, 65, 107, .06);
+  --orange-10: #fff4ea;
+  --orange-20: #ffdfc7;
+  --orange-30: #ffbd8a;
+  --orange-40: #ffa155;
+  --orange-50: #ff8200;
+  --orange-60: #f27700;
+  --orange-70: #db6b00;
+  --orange-80: #7d3b00;
+  --orange-alpha: rgba(242, 119, 0, .06);
+
+  /* What each ramp can carry. Navy step 60 is 10.4:1 on white, so it does
+     every job under a white label. Orange step 60 is 2.8:1 on white, so it
+     fills only, under a dark label, and the jobs that need contrast against
+     white move down the ramp: the outline, the focus ring and the tab bar to
+     step 70 (3.4:1), links and the text on a tinted row to step 80 (8.4:1). */
+  --navy-label: #ffffff;                    /* on a navy fill */
+  --navy-outline-text: var(--navy-60);      /* inside a navy outline */
+  --navy-line: var(--navy-60);              /* the outline, the focus ring, the tab bar, the 3px bars */
+  --navy-link: var(--navy-60);
+  --navy-link-hover: var(--navy-70);
+  --orange-label: #161616;
+  --orange-outline-text: #161616;
+  --orange-line: var(--orange-70);
+  --orange-link: var(--orange-80);
+  --orange-link-hover: var(--orange-80);    /* the underline carries the hover */
 
   /* Spacing steps: use them for every gap, margin and pad; 10px is a bug. */
   --spacing-01: 2px;

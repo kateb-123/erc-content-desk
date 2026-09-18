@@ -5,14 +5,16 @@
    token from /css/tokens.css; the desk's own names are aliases so the rules
    read in the desk's vocabulary. */
 :root {
-  /* The accent: desk-blue (Kate, Sep 17, pick G). Carbon's blue tokens are remapped here; nothing else moves. */
-  --accent-10: var(--desk-blue-10); --accent-20: var(--desk-blue-20); --accent-30: var(--desk-blue-30); --accent-40: var(--desk-blue-40);
-  --accent-50: var(--desk-blue-50); --accent-60: var(--desk-blue-60); --accent-70: var(--desk-blue-70); --accent-80: var(--desk-blue-80);
-  --accent-alpha: var(--desk-blue-alpha);
+  /* The accent: navy (Kate's palette, Sep 17, late night). Carbon's blue tokens are remapped here, the builder does the same with orange; nothing else moves. */
+  --accent-10: var(--navy-10); --accent-20: var(--navy-20); --accent-30: var(--navy-30); --accent-40: var(--navy-40);
+  --accent-50: var(--navy-50); --accent-60: var(--navy-60); --accent-70: var(--navy-70); --accent-80: var(--navy-80);
+  --accent-alpha: var(--navy-alpha);
+  --text-on-accent: var(--navy-label); --text-in-outline: var(--navy-outline-text);   /* the label on a fill, the label inside an outline */
   --button-primary: var(--accent-60); --button-primary-hover: var(--accent-70); --button-primary-active: var(--accent-80);
-  --link-primary: var(--accent-60); --link-primary-hover: var(--accent-70);
-  --focus: var(--accent-60); --border-interactive: var(--accent-60); --interactive: var(--accent-60);
-  --highlight: var(--accent-20); --notification-info-background: var(--accent-10); --notification-info-border: var(--accent-20); --support-info: var(--accent-70);
+  --button-tertiary: var(--navy-line);
+  --link-primary: var(--navy-link); --link-primary-hover: var(--navy-link-hover);
+  --focus: var(--navy-line); --border-interactive: var(--navy-line); --interactive: var(--accent-60);
+  --highlight: var(--accent-20);
   --tag-background-blue: var(--accent-20); --tag-color-blue: var(--accent-80);
   --layer: var(--layer-02);            /* a card, a list, a table: a white box with a hairline (Sep 17, pick C) */
   --layer-line: var(--border-subtle-01);
@@ -22,18 +24,18 @@
   --line-in: var(--border-subtle-01);  /* hairlines inside a layer */
   --accent: var(--button-primary);
   --accent-deep: var(--button-primary-active);
-  --tint: var(--notification-info-background);   /* the accent's palest step: info notes, ERC and held rows, the stat tiles */
-  --selected: var(--highlight);                  /* the chosen row, the lit menu item: the accent's second step (Sep 17, pick C) */
+  --tint: var(--accent-10);            /* the accent's palest step: ERC and held rows, the stat tiles; the info panel takes the info note's own tint */
+  --selected: var(--highlight);        /* the chosen row, the lit menu item: the accent's second step (Sep 17, pick C) */
   --hover: var(--accent-alpha);
   --row-hover: var(--accent-10);
-  --ok: var(--green-60);               /* success as text */
+  --ok: var(--text-success);           /* success as text */
   --ok-mark: var(--support-success);   /* success as an icon */
   --ok-bg: var(--notification-success-background);
   --err: var(--support-error);
-  --amber-bg: var(--notification-warning-background);
-  --amber: var(--yellow-70);           /* warning as text */
-  --amber-mark: var(--support-warning); /* warning as an icon: the triangle */
-  --amber-line: var(--notification-warning-border);
+  --warn-bg: var(--notification-warning-background);
+  --warn: var(--text-warning);         /* needs doing, as text */
+  --warn-mark: var(--support-warning); /* needs doing, as an icon: the triangle */
+  --warn-line: var(--notification-warning-border);
 }
 
 * { box-sizing: border-box; }
@@ -80,14 +82,14 @@ button {
   display: inline-flex; align-items: center;
   font: inherit; font-weight: 400; letter-spacing: .16px;
   height: 40px; padding: 0 var(--spacing-05);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--button-tertiary);
   border-radius: 0;
   background: transparent;
-  color: var(--accent);
+  color: var(--text-in-outline);
   cursor: pointer;
 }
 
-button:hover:not(:disabled) { background: var(--accent); color: var(--text-on-color); border-color: var(--accent); }
+button:hover:not(:disabled) { background: var(--accent); color: var(--text-on-accent); border-color: var(--accent); }
 button:disabled { cursor: default; color: var(--text-on-color-disabled); border-color: var(--button-disabled); }
 
 /* The submit form (Claude Design round two, Kate's pick Sep 16): Title and
@@ -137,7 +139,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .bulk-door summary:hover { color: var(--ink); }
 .bulk-door summary:hover .fa-chevron-down { color: var(--icon-primary); }
 /* A file dragged over the intake card lights the door, whether it is open or shut. */
-.bulk-door.is-drag summary { color: var(--accent); }
+.bulk-door.is-drag summary { color: var(--link-primary); }
 .bulk-drop { display: block; border: 1px dashed var(--border-strong-01); border-radius: 0; padding: var(--spacing-06) var(--spacing-05); margin: var(--spacing-04) 0 var(--spacing-01); text-align: center; cursor: pointer; background: var(--field-02); color: var(--muted); }
 .bulk-drop strong { color: var(--ink); font-weight: 600; }
 .bulk-drop .hint { display: block; margin-top: var(--spacing-02); font-size: 12px; letter-spacing: .32px; color: var(--text-helper); }
@@ -166,10 +168,10 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .nl-row.nl-later .item-title { color: var(--muted); font-weight: 400; }   /* sunk to the bottom with its note, not dimmed (design audit b11) */
 .nl-ask {
   display: block; width: fit-content; margin: var(--spacing-02) 0 0;
-  font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--ink); background: var(--amber-bg);
-  border: 1px solid var(--amber-line); border-left: 3px solid var(--amber-mark); border-radius: 0; padding: var(--spacing-03) var(--spacing-04);
+  font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--ink); background: var(--warn-bg);
+  border: 1px solid var(--warn-line); border-left: 3px solid var(--warn-mark); border-radius: 0; padding: var(--spacing-03) var(--spacing-04);
 }
-.nl-ask .alert-mark, .nl-ask .fa-clock { margin-right: var(--spacing-02); color: var(--amber-mark); }
+.nl-ask .alert-mark, .nl-ask .fa-clock { margin-right: var(--spacing-02); color: var(--warn-mark); }
 .nl-ask .alert-word { color: var(--link-primary); }
 .nl-past .badge { margin-left: var(--spacing-01); }
 .nl-past-act { text-align: right; width: 6.5rem; }
@@ -209,11 +211,11 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .door {
   display: inline-flex; align-items: center; justify-content: space-between; gap: var(--spacing-06);
   height: 32px; padding: 0 var(--spacing-04);
-  border: 1px solid var(--accent); border-radius: 0;
-  background: transparent; color: var(--accent); text-decoration: none;
+  border: 1px solid var(--button-tertiary); border-radius: 0;
+  background: transparent; color: var(--text-in-outline); text-decoration: none;
   font: inherit; letter-spacing: .16px; cursor: pointer;
 }
-.door:hover:not(:disabled) { background: var(--accent); color: var(--text-on-color); border-color: var(--accent); }
+.door:hover:not(:disabled) { background: var(--accent); color: var(--text-on-accent); border-color: var(--accent); }
 .door .fa-arrow-right { font-size: .85em; }
 
 .screen-head { display: flex; align-items: baseline; gap: var(--spacing-05); flex-wrap: wrap; margin: var(--spacing-05) 0 var(--spacing-05); }
@@ -223,7 +225,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .info-toggle:hover:not(:disabled) { border: none; background: none; color: var(--link-primary-hover); text-decoration: underline; }
 /* The info panel is Carbon's inline notification, informational. */
 .info-panel {
-  background: var(--tint); border: 1px solid var(--notification-info-border); border-left: 3px solid var(--support-info);
+  background: var(--notification-info-background); border: 1px solid var(--notification-info-border); border-left: 3px solid var(--support-info);
   border-radius: 0; padding: var(--spacing-04) var(--spacing-05); margin: var(--spacing-03) 0 var(--spacing-03); color: var(--text-primary); max-width: 46rem;
 }
 /* Header buttons: the screen's decision is a small primary; its door is the tertiary; both sit right. */
@@ -248,12 +250,12 @@ button.trash-link, .trash-link { color: var(--button-danger-secondary); }
 button.primary {
   position: relative; justify-content: flex-start; gap: 0;
   padding: 0 var(--spacing-10) 0 var(--spacing-05);
-  background: var(--accent); border-color: transparent; color: var(--text-on-color);
+  background: var(--accent); border-color: transparent; color: var(--text-on-accent);
 }
 button.primary .fa-solid { position: absolute; right: var(--spacing-05); top: 50%; transform: translateY(-50%); margin: 0; font-size: 14px; }
 button.primary:not(:has(.fa-solid)) { padding-right: var(--spacing-05); }   /* no icon, no slot */
-button.primary:hover:not(:disabled) { background: var(--button-primary-hover); border-color: transparent; color: var(--text-on-color); }
-button.primary:active:not(:disabled) { background: var(--accent-deep); }
+button.primary:hover:not(:disabled) { background: var(--button-primary-hover); border-color: transparent; color: var(--text-on-accent); }
+button.primary:active:not(:disabled) { background: var(--accent-deep); color: var(--text-on-color); }   /* step 80 is dark on every ramp, so the pressed label is white */
 button.primary:disabled { background: var(--button-disabled); border-color: transparent; color: var(--text-on-color-disabled); }
 
 /* Tags (Carbon's 24px pill, label-01 type), one colour per meaning: bare
@@ -269,7 +271,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 }
 /* In the newsletter pool's type cell the badge sits on its own line under the subtype. */
 .nl-table .badge { margin-top: var(--spacing-02); }
-.badge-dupe { background: var(--tag-background-yellow); color: var(--tag-color-yellow); }
+.badge-dupe { background: var(--tag-background-purple); color: var(--tag-color-purple); }
 .badge-new { background: var(--tag-background-blue); color: var(--tag-color-blue); }
 /* The link ask, inside the fix panel: the panel draws the warning box. */
 .link-alert .alert-line { margin: 0; }
@@ -284,10 +286,10 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .field-error { margin: var(--spacing-02) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--err); }
 .load-failed { margin: var(--spacing-05) 0; color: var(--muted); display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; }
 
-/* Needs a fix, the one warning tab: yellow-70 for its word, the triangle in support-warning. */
-.sort-nav .sort-filter.is-alert:not(.is-active) { color: var(--amber); }
-.sort-nav .sort-filter.is-alert:not(.is-active):hover { color: var(--amber); border-bottom-color: var(--amber-mark); }
-.sort-nav .sort-filter.is-alert.is-active, .sort-nav .sort-filter.is-alert.is-active:hover:not(:disabled) { color: var(--amber); border-bottom-color: var(--amber-mark); }
+/* Needs a fix, the one warning tab: the review colour for its word, the triangle in support-warning. */
+.sort-nav .sort-filter.is-alert:not(.is-active) { color: var(--warn); }
+.sort-nav .sort-filter.is-alert:not(.is-active):hover { color: var(--warn); border-bottom-color: var(--warn-mark); }
+.sort-nav .sort-filter.is-alert.is-active, .sort-nav .sort-filter.is-alert.is-active:hover:not(:disabled) { color: var(--warn); border-bottom-color: var(--warn-mark); }
 .img-upload { display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; }
 .img-upload .media-add { margin-left: 0; }   /* the small Add media word (Kate, Sep 17), a ghost button */
 .img-thumb { width: 48px; height: 48px; object-fit: cover; border: 1px solid var(--line-in); flex: none; }   /* the attached picture, in view (design audit b8) */
@@ -352,7 +354,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .f-group-head.is-fold .fa-chevron-down, .f-group-head.is-fold .fa-chevron-right { width: 12px; text-align: center; color: var(--icon-secondary); }   /* the opener on the left, like every fold (audit round two, f1) */
 /* Finalize's rows follow Sort's (style audit, Sep 16): the row, text, title and
    meta rules below are shared with .sort-row, so long titles wrap on both. */
-.f-list-row.is-rewrite { background-color: var(--amber-bg); }
+.f-list-row.is-rewrite { background-color: var(--warn-bg); }
 .f-list-row.is-deleted { cursor: default; color: var(--muted); align-items: center; }
 .f-list-row.is-deleted .f-row-title { text-decoration: line-through; }
 .f-list-row.is-deleted .linkish { margin-left: auto; }
@@ -362,7 +364,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .f-card .f-verify-actions .trash-link + .primary { margin-left: auto; }
 .f-diff-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-04); margin: var(--spacing-03) 0 0; }
 .f-diff-box { border: 1px solid var(--line-in); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); background: var(--layer-02); }
-.f-diff-box.is-after { background: var(--tint); border-color: var(--notification-info-border); }
+.f-diff-box.is-after { background: var(--tint); border-color: var(--accent-20); }
 .f-diff-box .f-blurb-text, .f-original .f-blurb-text, .sort-card .f-blurb-text { margin: 0; }
 .f-original { border: 1px solid var(--line-in); border-left: 3px solid var(--border-strong-01); background: var(--layer-02); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); margin-top: var(--spacing-03); }
 .f-pane-empty, .sort-pane-empty { border: 1px dashed var(--border-strong-01); border-radius: 0; padding: var(--spacing-08) var(--spacing-05); text-align: center; color: var(--muted); }
@@ -396,10 +398,10 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .f-check-source { margin: 0 0 var(--spacing-04); color: var(--muted); }
 .f-diff-label { margin: 0 0 var(--spacing-01); font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
 .f-old { margin: 0; color: var(--ink); max-width: 60rem; }
-.f-old .diff-del { text-decoration: line-through; color: var(--amber); }
+.f-old .diff-del { text-decoration: line-through; color: var(--warn); }
 .f-blurb-text .diff-add { background: var(--ok-bg); border-radius: 0; padding: 0 2px; }
 .f-verify-actions { display: flex; gap: var(--spacing-03); align-items: center; margin: var(--spacing-05) 0 var(--spacing-01); border-top: 1px solid var(--line-in); padding-top: var(--spacing-05); }
-.rewrite-note { margin: 0 0 var(--spacing-03); color: var(--amber); }
+.rewrite-note { margin: 0 0 var(--spacing-03); color: var(--warn); }
 .f-edit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: var(--spacing-03) var(--spacing-04); }
 .f-edit-grid label { margin: 0; }
 .f-edit-card { background: var(--layer-01); border: 0; border-radius: 0; padding: var(--spacing-05); margin: var(--spacing-01) 0 var(--spacing-02); }
@@ -413,7 +415,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 /* Publish: queue-style fate groups */
 .p-group { font-size: 16px; line-height: 22px; font-weight: 600; margin: var(--spacing-06) 0 var(--spacing-02); }
 .publish-table tr.p-held td { background: var(--tint); }
-.publish-table tr.p-notready td { background: var(--amber-bg); }
+.publish-table tr.p-notready td { background: var(--warn-bg); }
 .publish-table tr.p-skip .item-title { color: var(--muted); font-weight: 400; }
 /* Publish as one table (Claude Design round two, Kate's pick Sep 16): a bar
    whose segments share the rows by fate, a legend that filters, a Fate column.
@@ -423,7 +425,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .p-seg { display: block; min-width: 6px; }
 .p-seg-adding { background: var(--accent); }
 .p-seg-held { background: var(--accent-30); }
-.p-seg-fix { background: var(--tag-background-yellow); }
+.p-seg-fix { background: var(--tag-background-purple); }
 .p-seg-live { background: var(--border-strong-01); }
 .p-legend { display: flex; flex-wrap: wrap; gap: var(--spacing-02) var(--spacing-05); margin-top: var(--spacing-03); }
 .p-legend-item { display: inline-flex; align-items: center; gap: var(--spacing-03); height: auto; border: 0; background: none; padding: var(--spacing-01) 0; font: inherit; letter-spacing: .16px; color: var(--muted); cursor: pointer; }
@@ -433,7 +435,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .publish-table th.p-fate, .publish-table td.p-fate { width: 9.5rem; font-weight: 600; }
 .publish-table tr.p-adding td.p-fate { color: var(--link-primary); }
 .publish-table tr.p-skip td.p-fate { font-weight: 400; }
-.publish-table .p-fate-fix { color: var(--amber); font-weight: 600; text-decoration: underline; }
+.publish-table .p-fate-fix { color: var(--warn); font-weight: 600; text-decoration: underline; }
 .table-scroll { overflow-x: auto; }
 
 /* Home screen */
@@ -625,7 +627,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .sort-row-title, .f-row-title { font-size: 14px; line-height: 18px; font-weight: 400; }
 .sort-row-meta, .f-row-type { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
 /* The one alert on a Needs a fix row: the warning triangle before the title. */
-.sort-row .fix-mark, .f-list-row .fix-mark { color: var(--amber-mark); font-size: 12px; margin-top: 3px; flex: none; }
+.sort-row .fix-mark, .f-list-row .fix-mark { color: var(--warn-mark); font-size: 12px; margin-top: 3px; flex: none; }
 .sort-done { display: flex; align-items: flex-start; gap: var(--spacing-03); padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--line-in); background: var(--layer-01); }
 .sort-done .sort-row-title, .sort-done .sort-row-meta { color: var(--muted); }
 .sort-done.is-trashed .sort-row-title { text-decoration: line-through; }
@@ -646,11 +648,11 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 /* The fix panel: Carbon's inline notification, a warning while the row needs
    a fix, informational while a type changes. */
 .fix-panel { border: 1px solid var(--line-in); border-left: 3px solid var(--support-info); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); background: var(--layer-02); }
-.fix-panel.is-alert { border-color: var(--amber-line); border-left-color: var(--amber-mark); background: var(--amber-bg); }
+.fix-panel.is-alert { border-color: var(--warn-line); border-left-color: var(--warn-mark); background: var(--warn-bg); }
 .fix-head { margin: 0 0 var(--spacing-02); font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600; color: var(--muted); }
 .fix-head.is-alert { color: var(--ink); }
 .fix-head .fa-solid { margin-right: var(--spacing-02); }
-.fix-head.is-alert .fa-solid { color: var(--amber-mark); }
+.fix-head.is-alert .fa-solid { color: var(--warn-mark); }
 .fix-panel > .fix-head ~ .fix-head { margin-top: var(--spacing-04); }
 .fix-line { margin: 0; color: var(--ink); }
 .radio-line { display: flex; align-items: center; gap: var(--spacing-03); margin: var(--spacing-01) 0; color: var(--ink); cursor: pointer; }

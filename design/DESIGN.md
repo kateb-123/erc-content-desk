@@ -11,16 +11,19 @@ Both apps wear IBM Carbon v11's White theme (Kate, Sep 17, from four pictures
 of Sort at four depths: "A: full Carbon"), with two amendments of the same
 night: cards, lists and tables are white boxes with a hairline instead of
 Carbon's grey tiles, and the chosen things wear the accent's tint ("it's all a
-smidge grey", pick C of four); and each app has its own accent hue, the desk
-its blue from before Carbon and the builder Carbon's teal ("a different shade
-of blue, lighter, less aggressive", pick G of eight in a switcher; "we just
-want a little variation"). Carbon is a square, one-family system; its rules
+smidge grey", pick C of four); and each app has its own accent hue. Since
+Kate's palette of Sep 17 (late night) the desk wears UT Martin navy and the
+builder UT System orange, and the four status colours are the palette's too
+(citrine, purple, crimson, slate); before that the desk had its own blue and
+the builder Carbon's teal ("a different shade of blue, lighter, less
+aggressive", pick G of eight in a switcher; "we just want a little
+variation"). Carbon is a square, one-family system; its rules
 below replace the desk's own radii and fonts of Sep 1 to Sep 16. The tokens live in `css/tokens.css`, the one file
 where a colour, a size or a face is written down; every page loads it first.
 Both apps and the shared sidebar read Carbon's own names; each app's `:root`
-maps only its accent ramp onto Carbon's blue tokens. The source is the
-`ibm-carbon-template` export (tokens.json, Sep 16); nothing in tokens.css is
-a design decision of ours.
+maps only its accent ramp onto Carbon's blue tokens. The neutrals come from
+the `ibm-carbon-template` export (tokens.json, Sep 16); the accents and the
+status colours are Kate's palette.
 
 ## Tokens
 
@@ -33,25 +36,25 @@ allows a hex only in `css/tokens.css`.
 | `--layer-02` / `--border-subtle-01` | `#ffffff` / `#c6c6c6` | a card, a list, a table, the receipt, the busy popup: a white box with a hairline (`--layer`, `--layer-line`; pick C, Sep 17) |
 | `--layer-01` | `#f4f4f4` | a grey box inside a card: Finalize's edit box, decided Sort rows, table header rows, the builder's edit stage |
 | `--layer-accent-01` | `#e0e0e0` | table header rows, progress tracks, the edit stage |
-| `--accent-10` / `--accent-20` | the desk `#eaf2f8` / `#d5e6f2`, the builder `#d9fbfb` / `#9ef0f0` | row hover and the stat tiles (`--row-hover`, `--tint`); the chosen row and the lit menu item (`--selected`, in `--accent-deep` text with a 3px `--border-interactive` bar) |
+| `--accent-10` / `--accent-20` | the desk `#eef1f5` / `#d8e0ea`, the builder `#fff4ea` / `#ffdfc7` | row hover and the stat tiles (`--row-hover`, `--tint`); the chosen row and the lit menu item (`--selected`, in `--accent-deep` text with a 3px `--border-interactive` bar) |
 | `--accent-alpha` | the accent at 6% | the hover wash on quiet buttons and menu rows (`--hover`), layered over any tint |
 | `--field-01` / `--field-02` | `#f4f4f4` / `#ffffff` | fields: white on a layer, grey on the page |
 | `--text-primary` / `--text-secondary` / `--text-helper` / `--text-placeholder` | `#161616` / `#525252` / `#6f6f6f` / `#a8a8a8` | ink (`--ink`), quiet text (`--muted`), helper lines, placeholders (placeholders are decoration, never the only label) |
 | `--border-subtle-00` / `--border-subtle-01` | `#e0e0e0` / `#c6c6c6` | hairlines on the page (`--line`) and inside a layer (`--line-in`); dividers only |
 | `--border-strong-01` | `#8d8d8d` | the line under a field, dashed drop zones, tag outlines: anything interactive holds 3:1 |
-| `--button-primary` / `-hover` / `-active` | the desk `#1d6ea5` / `#19608f` / `#14507a` (`--desk-blue-60/70/80`); the builder `#007d79` / `#005d5d` / `#004144` (`--teal-60/70/80`) | the one accent per app (`--accent`, `--accent-deep`): filled buttons, tertiary outlines, links, focus, the active tab bar, the lit step. Each app's `:root` maps Carbon's blue tokens (button, tertiary, link, focus, interactive, highlight, the info note, the New tag) to its `--accent-NN` ramp; IBM blue `#0f62fe` is Carbon's default and appears nowhere on screen |
+| `--button-primary` / `-hover` / `-active` | the desk `#1e416b` / `#153154` / `#0b2341` (`--navy-60/70/80`); the builder `#f27700` / `#db6b00` / `#7d3b00` (`--orange-60/70/80`) | the one accent per app (`--accent`, `--accent-deep`): filled buttons, tertiary outlines, links, focus, the active tab bar, the lit step. Each app's `:root` maps Carbon's blue tokens (button, tertiary, link, focus, interactive, highlight, the New tag) to its `--accent-NN` ramp; IBM blue `#0f62fe` is Carbon's default and appears nowhere on screen. Navy step 60 is 10.4:1 on white, so it does every job under a white label. Orange step 60 is 2.8:1 on white, so it fills only, under a dark label (`--text-on-accent`, `--text-in-outline`), and the jobs that need contrast against white move down the ramp: the outline, the focus ring, the tab bar and the 3px bars to step 70, links and the text on a tinted row to step 80. A pressed primary is step 80 under a white label on both ramps |
 | `--button-secondary` / `-hover` | `#393939` / `#474747` | the builder's Back, Save to the archive, Download: Carbon's dark grey beside a primary |
 | `--button-disabled` / `--text-on-color-disabled` | `#c6c6c6` / `#8d8d8d` | a locked Keep: full opacity, grey fill |
-| `--link-primary` / `-hover` | `#0f62fe` / `#0043ce` | links and the quiet action words |
-| `--focus` | `#0f62fe` | the 2px focus ring, drawn inside the control |
-| `--support-error` / `--button-danger-secondary` | `#da1e28` | destructive words (`--err`) and the error note's bar |
-| `--support-success` / `--green-60` | `#24a148` / `#198038` | success as an icon (`--ok-mark`) / as text (`--ok`); the toggle when on |
-| `--support-warning` / `--yellow-70` | `#f1c21b` / `#684e00` | needs doing as an icon, the triangle (`--amber-mark`) / as text (`--amber`); the warning tab |
-| `--support-info` | `#0043ce` | the info note's bar |
-| `--notification-*-background` / `-border` | info `#edf5ff`, success `#defbe6`, warning `#fcf4d6`, error `#fff1f1` | inline notes: the info panel (`--tint`), the fix panel, the link ask, the builder's status boxes; text on them is `--text-primary` |
-| `--tag-background-*` / `--tag-color-*` | gray `#e0e0e0`/`#161616`, blue `#d0e2ff`/`#0043ce`, yellow `#fddc69`/`#684e00` | tags: a fact, New, a duplicate; the picked type pill; the queue count |
+| `--link-primary` / `-hover` | the desk navy 60 / 70, the builder orange 80 / 80 | links and the quiet action words; the orange hover is the underline alone |
+| `--focus` | the desk navy 60, the builder orange 70 | the 2px focus ring, drawn inside the control |
+| `--support-error` / `--button-danger-secondary` | `#b3123c` | crimson: destructive words (`--err`) and the error note's bar |
+| `--support-success` / `--text-success` | `#cedc00` / `#4f5500` | Alliance citrine as an icon (`--ok-mark`) and the toggle when on / the dark citrine as text (`--ok`), since citrine is 1.5:1 on white |
+| `--support-warning` / `--text-warning` | `#6929c4` / `#6929c4` | Carbon's purple, needs doing as an icon, the triangle (`--warn-mark`) and as text (`--warn`); the warning tab. The warning yellow from Sep 15 to Sep 17 |
+| `--support-info` | `#3d4a57` | slate, the info note's bar and icon (Carbon's blue collided with navy) |
+| `--notification-*-background` / `-border` | info `#f0f2f4`, success `#f7f9e0`, warning `#f6f2ff`, error `#fceef2`; the border is the role's colour at 30% | inline notes: the info panel, the fix panel, the link ask, the builder's status boxes; text on them is `--text-primary` |
+| `--tag-background-*` / `--tag-color-*` | gray `#e0e0e0`/`#161616`, blue the accent's 20 / 80, purple `#e8daff`/`#6929c4` | tags: a fact, New, a duplicate (needs review, so it wears purple); the picked type pill; the queue count |
 | `--accent-30` to `--accent-80` | the app's ramp | the sliding-dots loader; `--accent-30` is Publish's held segment |
-| `--background-inverse` / `--link-inverse` | `#393939` / `#78a9ff` | the builder's Undo toast |
+| `--background-inverse` / `--link-inverse` | `#393939` / the accent's step 30 | the builder's Undo toast |
 | `--overlay` | `#16161680` | the dim behind the busy popup and the tutorial |
 | `--spacing-01` to `--spacing-10` | 2, 4, 8, 12, 16, 24, 32, 40, 48, 64px | every gap, pad and margin; 16 is the default; 10px is a bug |
 
@@ -85,8 +88,8 @@ template and the public Exchange site.
   a grey box. The accent's tint means "this one"; grey means "a box".
 - **Buttons.** 40px tall (32px in a screen head or a section head, 48px for the
   builder's export trio), 16px side padding, the label left. A primary is the
-  blue fill with its icon in a 64px right slot (48px on the small size); with no
-  icon the slot goes. Everything beside a primary is Carbon's tertiary: the blue
+  accent's fill with its icon in a 64px right slot (48px on the small size); with no
+  icon the slot goes. Everything beside a primary is Carbon's tertiary: the accent's
   outline that fills on hover (Cancel, the doors, Quick add, the builder's Next
   and Start the next issue). The builder's Back and archive buttons are
   Carbon's secondary, the dark grey fill. A Save inside an open card whose
@@ -120,7 +123,7 @@ template and the public Exchange site.
   the primary adds a 1px inset white ring so the ring shows on its own fill.
 - **Steps.** The builder's wizard is Carbon's progress indicator: four equal
   steps under a hairline, a 20px circle at each one's left; reached steps turn
-  the line blue, the current step fills its circle and goes 600, a finished one
+  the line the accent's, the current step fills its circle and goes 600, a finished one
   shows a check and keeps it when you go back. The whole step is the target,
   40px tall. A step that needs a pulled issue is drawn in `--text-disabled`
   with a disabled circle, and pressing it says why on the line right under the
@@ -166,14 +169,14 @@ look, everywhere it appears.
 
 | Action | Icon | Look | Means |
 |---|---|---|---|
-| **Keep** | ✓ `fa-check` | the primary: blue fill, the check in its right slot (the ONE per card) | accept into the pipeline / accept the rewrite |
+| **Keep** | ✓ `fa-check` | the primary: the accent's fill, the check in its right slot (the ONE per card) | accept into the pipeline / accept the rewrite |
 | **Skip** | none | muted ghost button | park it (status stays `circleback` underneath); it waits under Sort's Skipped pill with Keep and Delete (Sep 15) |
 | **Delete** | `fa-trash-can` | red ghost button | trash the ITEM for good (any screen, any time); the row stays listed greyed with Undo for the visit on Sort, the queue, Finalize and Send to Newsletter (design audit, Sep 17) |
-| **Edit** | `fa-pen` | blue ghost button | inline edit, persists on Save. One form on Sort and Finalize (audit round two, Sep 17): the fields the type uses, then Link and Media, on the grey edit box; the description opens with the original text when there is no rewrite yet; any way out of an edited form holds with "Save or cancel this edit first." |
+| **Edit** | `fa-pen` | ghost button in the link colour | inline edit, persists on Save. One form on Sort and Finalize (audit round two, Sep 17): the fields the type uses, then Link and Media, on the grey edit box; the description opens with the original text when there is no rewrite yet; any way out of an edited form holds with "Save or cancel this edit first." |
 | **Use original** | `fa-rotate-left` | muted ghost button | reject the rewrite, keep the Sheet text |
 | **Remove** | `fa-trash-can` | red ghost button | take OUT of the newsletter issue (returns to the pool); shares Delete's icon by Kate's explicit pick; on Next newsletter and in the builder the row stays listed with Undo (Sep 17) |
 | **Verify link ↗ → Confirm / Change** | `fa-triangle-exclamation` | warning note, one ask | open the source, then stamp it good or paste a new link |
-| **View info / Hide info** | none | blue word beside every screen/step title | opens the tinted instruction panel |
+| **View info / Hide info** | none | a word in the link colour beside every screen/step title | opens the tinted instruction panel |
 | **Re-check** | none | a link in Publish's lede | force a fresh hub check |
 | **Add media** → Replace / Remove media | none | a small ghost word under the edit form's fields, then Replace and the muted Remove word | attach a picture or PDF flyer to any item (every item's Edit on Sort and Finalize since Sep 17, ERC only before; newsletter items in the builder), the URL rides the row’s infographic column into the email |
 | **Send early? → Confirm / Cancel** | fa-clock on the note | warning note, one ask (same as Verify link) | picking an event that belongs to a later issue, the words stay bare, the bubble carries the icon |
@@ -200,9 +203,9 @@ bottom of the list, greyed (deleted ones struck through) with Undo. When a
 section runs out, a dashed pane takes the card's place and names the next
 section that holds anything (or Go to Finalize).
 
-Carbon's warning yellow means "needs doing", nowhere else on the screen (Kate,
-Sep 15). Needs a fix, the one warning tab, gathers every row that cannot be kept
-yet (no type, link not opened) and every possible duplicate; one yellow triangle
+Purple means "needs doing", nowhere else on the screen (Kate's palette, Sep 17;
+Carbon's warning yellow held that job from Sep 15). Needs a fix, the one warning tab, gathers every row that cannot be kept
+yet (no type, link not opened) and every possible duplicate; one purple triangle
 (`fa-triangle-exclamation`) leads each of its titles, and a fixed row moves to
 its section. On the card, the warning note says each reason: **Needs a type**
 (the types as radios, the picked type's subtypes indented under it; the subtype
@@ -230,8 +233,8 @@ nothing over `--duration-moderate-02` 240ms, and nothing decorative moves.
   Undo; that is what records the decision.
 - Tab/section switch: ±16px directional slide, 110ms `--ease-standard`.
 - Confirmations: SVG check draws itself, 240ms.
-- Loading: the sliding-dots track on Carbon's blue ramp (`--blue-30` to
-  `--blue-80`), label under the track with typed trailing dots; mini variant
+- Loading: the sliding-dots track on the app's accent ramp (`--accent-30` to
+  `--accent-50`), label under the track with typed trailing dots; mini variant
   inline in control rows.
 - Blocking progress popup (bulk upload's Add all, Sep 10): page dimmed with
   `--overlay`, a square `--layer-01` card, the count at heading-02, an 8px
@@ -254,8 +257,9 @@ thing everywhere (see the vocabulary table).
 - No shadows at all (Kate, Sep 2; Carbon agrees): layers separate things, and
   focus is an outline.
 - No hex outside `css/tokens.css`; no size off the spacing scale.
-- One accent hue per app, and that is the only way the desk and the builder
-  differ: the desk its blue, the builder Carbon's teal.
+- One accent per app, the desk navy and the builder orange, and that is the
+  only way the desk and the builder differ, except that orange takes a dark
+  label where navy takes white (Kate's palette, Sep 17).
 - Colour is never the only signal: a status colour ships with its icon and a word.
 - Nothing is "done" without a screenshot from the running sandbox.
 
