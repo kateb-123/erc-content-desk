@@ -2,7 +2,7 @@
  * Home, the team's main page: four stat cards on top (the queue count, the
  * next newsletter, Exchange updated, the last newsletter), then the shared
  * submit form, and the queue table folded at the bottom (a details, its own
- * chevron). Every way elsewhere is in the sidebar. The form and the fold are mounted once and left alone on
+ * chevron). Every way elsewhere is in the top bar. The form and the fold are mounted once and left alone on
  * re-renders, so typing is never wiped and the fold stays the way it was
  * left; the strip and the table inside the fold rebuild.
  */
@@ -12,7 +12,7 @@ import { renderQueueTable } from './queue-ui.js';
 import { queueBadgeCount, issueSummary, issueTally } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
 import { isoToShort } from './queue-view.js';
-import { EXCHANGE_URL, ARCHIVE_PATH } from './sidebar-view.js';
+import { EXCHANGE_URL, ARCHIVE_PATH } from './shell-view.js';
 import { el, tryAgain } from './ui-aids.js';
 
 /**

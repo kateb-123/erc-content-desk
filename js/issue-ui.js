@@ -1,6 +1,6 @@
 /**
  * Next newsletter: the issue's current state as a table, with quick add.
- * Reached from the sidebar, and from Home's Next newsletter tile. Quick add
+ * Reached from the top bar, and from Home's Next newsletter tile. Quick add
  * opens the submit form; what it saves lands in this issue AND in the queue,
  * so Sort sees it too, and the table marks it Not sorted yet until Sort has.
  * Remove takes an item out of the issue; it stays in the queue.

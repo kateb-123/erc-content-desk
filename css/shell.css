@@ -1,0 +1,62 @@
+/* The shell every page shares (Kate's wireframes, Sep 17): a 56px top bar with
+   the brand mark, a breadcrumb and the two other lanes as links; the sidebar
+   of Sep 16 to 17 is gone. It reads Carbon's own names from /css/tokens.css,
+   so no page mirrors the desk's aliases for it. */
+/* Rules every page needs, so they live with the one stylesheet every page loads (audit round two, d2 and e27):
+   the hidden attribute, sr-only for the cues the shell emits, and the skip link, off screen until it takes focus. */
+/* The hidden attribute wins over every display rule on either app (the buttons are inline-flex). */
+[hidden] { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.skip-to-main { position: absolute; left: var(--spacing-05); top: -100px; z-index: 100; height: 40px; padding: 0 var(--spacing-05); display: inline-flex; align-items: center; background: var(--background); color: var(--link-primary); font: inherit; letter-spacing: .16px; text-decoration: none; border: 1px solid var(--border-subtle-01); }
+.skip-to-main:focus { top: var(--spacing-03); outline: 2px solid var(--focus); outline-offset: -2px; }
+
+.topbar, .topbar * { box-sizing: border-box; }
+.topbar {
+  height: 56px; flex: none;
+  display: flex; align-items: center; gap: var(--spacing-03);
+  padding: 0 var(--spacing-08);
+  background: var(--background); border-bottom: 1px solid var(--border-subtle-01);
+  font-family: var(--font-sans); font-size: 14px; line-height: 20px; letter-spacing: .16px; color: var(--text-primary);
+}
+.topbar-mark { width: 18px; height: 18px; flex: none; border: 1px solid var(--border-strong-01); }
+.topbar-crumbs { display: flex; align-items: center; gap: var(--spacing-03); min-width: 0; }
+.topbar-crumbs a, .topbar-lanes a { color: var(--text-primary); text-decoration: none; transition: color var(--duration-fast-01) var(--ease-productive); }
+.topbar-crumbs a:hover, .topbar-lanes a:hover { color: var(--text-secondary); }
+.topbar-brand { font-weight: 600; }
+.topbar-sep { color: var(--border-strong-01); }
+.topbar-here { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar-lanes { margin-left: auto; display: flex; align-items: center; gap: var(--spacing-06); }
+.topbar-lanes a { color: var(--text-secondary); }
+.topbar-lanes a:hover { color: var(--text-primary); }
+.topbar a:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; box-shadow: none; }
+
+/* Sliding-dots loader (Kate's pick, Sep 1), the one copy for both apps: six
+   dots slide across a track with staggered delays, on the app's own accent
+   ramp. Mini = the inline size for status rows. It lives here because every
+   page loads this file and every page draws it; the desk sizes it for the
+   status line and Publish's shade in css/styles.css. */
+.dots-loader { position: relative; height: var(--dl-s, 20px); width: var(--dl-w, 250px); margin: var(--spacing-06) auto; }
+.dots-loader .dot {
+  position: absolute; height: var(--dl-s, 20px); width: var(--dl-s, 20px);
+  border-radius: var(--radius-round); border: 2px solid var(--background); box-sizing: border-box;
+  animation: dots-slide 3s ease-in-out infinite;
+}
+.dots-loader .dot:nth-child(1) { background: var(--accent-30); animation-delay: .5s; }
+.dots-loader .dot:nth-child(2) { background: var(--accent-40); animation-delay: .4s; }
+.dots-loader .dot:nth-child(3) { background: var(--accent-50); animation-delay: .3s; }
+.dots-loader .dot:nth-child(4) { background: var(--accent-60); animation-delay: .2s; }
+.dots-loader .dot:nth-child(5) { background: var(--accent-70); animation-delay: .1s; }
+.dots-loader .dot:nth-child(6) { background: var(--accent-80); animation-delay: 0s; }
+@keyframes dots-slide {
+  15% { transform: translateX(0); }
+  45%, 65% { transform: translateX(calc(var(--dl-w, 250px) - var(--dl-s, 20px))); }
+  95% { transform: translateX(0); }
+}
+.dots-mini { --dl-w: 90px; --dl-s: 10px; display: inline-block; vertical-align: middle; margin: 0 var(--spacing-03) 0 0; }
+/* Busy status labels get trailing dots that type themselves. */
+.dots-text::after { content: ""; animation: dots-text 3s infinite; }
+@keyframes dots-text { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .dots-loader .dot, .dots-text::after { animation: none; }
+}

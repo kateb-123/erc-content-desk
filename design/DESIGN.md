@@ -1,9 +1,11 @@
 # Design spec: ERC Content Desk + Newsletter Builder
 
 One look across both apps. This file is the source of truth for style decisions:
-read it before any UI work. There are no mockups: verification is a screenshot from
-the running sandbox (`localhost:4173`, serves `/builder/` too), approved by Kate
-before deploy.
+read it before any UI work. The mockups are Kate's wireframes of Sep 17 in
+`design/mockups/` (five pages and their 1280 by 900 renders): verification is a
+screenshot from the running sandbox (`localhost:4173`, serves `/builder/` too)
+matched against them with `scripts/visual-diff.mjs`, approved by Kate before
+deploy.
 
 ## The system: IBM Carbon (Sep 17, 2026)
 
@@ -23,7 +25,7 @@ lighter, less aggressive", pick G of eight in a switcher; "we just want a
 little variation"). Carbon is a square, one-family system; its rules
 below replace the desk's own radii and fonts of Sep 1 to Sep 16. The tokens live in `css/tokens.css`, the one file
 where a colour, a size or a face is written down; every page loads it first.
-Both apps and the shared sidebar read Carbon's own names; each app's `:root`
+Both apps and the shared top bar read Carbon's own names; each app's `:root`
 maps only its accent ramp onto Carbon's blue tokens. The neutrals come from
 the `ibm-carbon-template` export (tokens.json, Sep 16); the accents and the
 status colours are Kate's palette.
@@ -35,7 +37,7 @@ allows a hex only in `css/tokens.css`.
 
 | Token | Value | Use |
 |---|---|---|
-| `--background` | `#ffffff` | the page (both apps), the sidebar's ground |
+| `--background` | `#ffffff` | the page (both apps), the top bar's ground |
 | `--layer-02` / `--border-subtle-01` | `#ffffff` / `#c6c6c6` | a card, a list, a table, the receipt, the busy popup: a white box with a hairline (`--layer`, `--layer-line`; pick C, Sep 17) |
 | `--layer-01` | `#f4f4f4` | a grey box inside a card: Finalize's edit box, decided Sort rows, table header rows, the builder's edit stage |
 | `--layer-accent-01` | `#e0e0e0` | table header rows, progress tracks, the edit stage |
@@ -79,7 +81,7 @@ template and the public Exchange site.
 ## Shape
 
 - **Square.** Radius 0 on buttons, fields, tiles, tables, notes, the busy popup
-  and the sidebar. The only round things are tags (`--radius-tag-md` 12px at
+  and the top bar. The only round things are tags (`--radius-tag-md` 12px at
   24px tall, `--radius-tag-lg` 16px on the 32px type pills), the queue count,
   the toggle and the loader's dots.
 - **White boxes with a hairline** (pick C, Sep 17; Carbon's grey tiles before).
@@ -132,32 +134,25 @@ template and the public Exchange site.
   with a disabled circle, and pressing it says why on the line right under the
   steps. A date alone opens nothing: a step opens once a pull brought items
   (audit round two, Sep 17).
-- Every page's first line (a screen title, Home's stat tiles, the builder's
-  title, Past newsletters' title) sits 44px from the top of the window; on the
-  desk the status line keeps its one-line slot above it, so a message never
-  moves the page (style audit, Sep 16).
+- Every page's first line sits 24px under the top bar (Kate's wireframes,
+  Sep 17); on the desk the status line keeps its one-line slot above it, so a
+  message never moves the page.
 - Sort and Finalize share one list row and one card: titles at 14/18 with the
   source or type under them at label-01, and the card (16px padding) stays in
   view while the list scrolls.
-- The desk's nav is a sidebar down the left of every page (Kate, Sep 16, from the
-  Claude Design docs: "I like the sidebar the most. but then I think keep our
-  stuff"), drawn as Carbon's side nav: 256px on the page ground with a hairline
-  on its right, four groups in the order of Claude Design's second round (Kate's
-  pick, Sep 16): the desk, Policy Exchange, Newsletter, then **Desk work** (the
-  pipeline) as a fold that remembers being shut and always opens on a pipeline
-  screen. Group labels are label-01 with the group's icon in `--icon-secondary`;
-  the 32px rows under them carry none and sit indented; Sort shows the queue
-  count; the lit row sits on `--accent-20` in `--accent-deep` at 600 with the
-  3px bar. On
-  a Desk work screen the sidebar tucks away (Kate, Sep 16, from four clickable
-  options: "b when it's expanded and the button. but also the thin grey bar to
-  the left like C"): a 48px strip holds one ghost menu button; open, the sidebar
-  is back in place and pushes the page over, with a ghost close button on the
-  menu button's own spot. A pick, the close button or Escape tucks it away;
-  every screen starts tucked. The front door keeps its sidebar. The builder's
-  pages carry the same sidebar (Kate, Sep 16, option B): the builder tucks it
-  like Desk work, its header bar is gone, and a Newsletter builder title sits
-  on the page with the steps under it; Past newsletters keeps it open like Home.
+- The desk's nav is a top bar across every page (Kate's wireframes, Sep 17;
+  the sidebar of Sep 16 to 17 is gone): 56px on the page ground under a
+  hairline, 40px sides. On the left an 18px outlined brand mark and a
+  breadcrumb: the desk's name (always a link home), then the lane the page is
+  in, then the page where one stands under its lane (the builder and Past
+  issues under Newsletter). On the right the two other lanes as quiet links
+  (`--text-secondary`, `--text-primary` on hover, no underline); the front
+  page, which lists all three lanes itself, shows none. Links switch screens
+  in place on the desk and are plain links on the builder's pages. The
+  addresses are the lanes' names: /#sort, /#newsletter, /#exchange (the old
+  ones still land). The content sits in a 1280px column, 24px under the bar,
+  the way the wireframes frame it; the desk's status line keeps its one-line
+  slot at the top of that column.
 
 ## Icons
 
@@ -184,8 +179,7 @@ look, everywhere it appears.
 | **Add media** → Replace / Remove media | none | a small ghost word under the edit form's fields, then Replace and the muted Remove word | attach a picture or PDF flyer to any item (every item's Edit on Sort and Finalize since Sep 17, ERC only before; newsletter items in the builder), the URL rides the row’s infographic column into the email |
 | **Send early? → Confirm / Cancel** | fa-clock on the note | warning note, one ask (same as Verify link) | picking an event that belongs to a later issue, the words stay bare, the bubble carries the icon |
 | Door buttons (Go to Finalize/Publish, Send to Newsletter, the receipt's door) | → `fa-arrow-right` | Carbon's tertiary button with the arrow in its right slot (Sep 15, option A; square since Sep 17), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
-| **Sidebar items** (ERC Content Desk; Policy Exchange: Policy Exchange, Share an item, Listserv sign-up; Newsletter: Next newsletter, Newsletter builder, Past newsletters; Desk work: Sort, Finalize, Publish to Exchange, Send to Newsletter) | one FA glyph per group heading (`fa-globe`, `fa-envelope-open-text`, `fa-layer-group`), none on the items; the Desk work heading adds a chevron | 32px indented rows in the sidebar, the lit one on the selected layer with a 3px blue bar; the three hand-outs carry a small `fa-copy` icon on the right; Sort carries the queue count | every way around the desk (Kate, Sep 16). Pipeline items open the pipeline in its own window from the front door (`/#sort`, Sep 15) and switch in place inside it; outside pages open a new tab; on the builder's pages every desk page is a plain link (the pipeline still opens its window; the desk, Next newsletter at `/#issue` and the builder's own pages open in place); the copy icon hands over one sentence with the link and turns into a check for a moment |
-| **Show the menu / Hide the menu** | `fa-bars` / `fa-xmark` | ghost icon button on the 48px strip / the same on the same spot in the sidebar's top row | Desk work screens only: bring the sidebar back in place, tuck it away again (Sep 16) |
+| **Top bar** (the brand mark; ERC Content Desk / the lane / the page; the two other lanes on the right) | none | a 56px bar under a hairline; crumb links in the ink, lane links quiet | every way around the desk (Kate's wireframes, Sep 17): the brand leads home, a lane opens its page in place, the builder's pages crumb under Newsletter |
 | **Keep the rest (N)** | ✓ `fa-check` | the small dark-grey button, Carbon's secondary (Kate, Sep 17: a sweep across a list is grey, the one decision on a card is the primary), right of a Sort section's head, and right of Finalize's head while rewrites wait to be checked | keep every listed row that has a real type and a checked link (Sep 11); on Finalize, keep every rewrite still to check (one name for both since audit round two); one row at a time is Keep on its card (Sep 16). Keys on Sort (Sep 17): up and down move, K keeps, S skips, D deletes, U undoes. A decision says itself in the status line ("Kept: title") and the next card's title takes focus; Undo last says what it undid |
 | **Publish N to the Exchange → Confirm / Cancel** | `fa-triangle-exclamation` on the ask | the primary, then one warning note in its place | the one ask before the append-only write to the public site (design audit b6, Sep 17), at body-01 with the count and "live" in 600; Keep the rest on Finalize gets "Kept N rewrites. Undo" instead of an ask |
 

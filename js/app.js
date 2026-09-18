@@ -4,8 +4,8 @@ import { readAllWaiting } from './reader-client.js';
 import { readerQueue, undoWords, withoutRow } from './sort-view.js';
 import { dotsLoader, loadingLabel } from './icons.js';
 import { renderHome } from './home-ui.js';
-import { renderSidebar } from './sidebar-ui.js';
-import { openedScreen, screenHash } from './sidebar-view.js';
+import { renderShell } from './shell-ui.js';
+import { openedScreen, screenHash, pageTitle } from './shell-view.js';
 import { renderIssue, resetIssueEntry } from './issue-ui.js';
 import { latestIssue, queueBadgeCount } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
@@ -432,17 +432,11 @@ try {
 } catch { /* ignore bad stashes */ }
 
 const SCREEN_ORDER = ['home', 'issue', 'sort', 'finalize', 'publish', 'build'];
-// The pipeline's screens can be opened straight from a hash (/#sort). The
-// sidebar's Desk work items open one in a NEW window from the front door: a
-// new section of the work is a new set of activities. That window keeps its
-// hash in step so a reload stays put.
-const openedAt = location.hash.slice(1);
-// A pipeline hash makes this the pipeline's window; #issue (the builder's menu
-// links there) lands on Next newsletter in an ordinary front-door window.
-const opened = openedScreen(location.hash);
-const isSectionWindow = opened.isSectionWindow;
-if (opened.screen) state.screen = opened.screen;
-const SCREEN_NAMES = { issue: 'Next newsletter', sort: 'Sort', finalize: 'Finalize', publish: 'Publish to Exchange', build: 'Send to Newsletter' };
+// Every screen but the front page has an address (/#sort, /#newsletter,
+// /#exchange, and the old screens' own until they fold into the lanes), so a
+// typed or bookmarked one opens there and a reload stays put.
+const openedAt = openedScreen(location.hash);
+state.screen = openedAt;
 let shownScreen = null;
 
 /** A screen switch tells assistive tech where it landed: the incoming title
@@ -456,16 +450,12 @@ function focusHeading(section) {
 
 function render() {
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
-  renderSidebar(document.querySelector('.side'), {
-    screen: state.screen, isSectionWindow, onGo: goTo,
-    queueCount: state.loaded ? queueBadgeCount(state.rows) : null,
-  });
-  document.title = state.screen === 'home' ? 'ERC Content Desk' : `${SCREEN_NAMES[state.screen]} · ERC Content Desk`;
-  // One sidebar on every page. In the pipeline's own window
-  // its items switch in place; from the front door they open that window.
-  // Every screen but the front door keeps an address, as a history entry, so
-  // Back and a reload land where the reader was. The skip
-  // link moves focus without touching the address.
+  renderShell(document.querySelector('.topbar'), { screen: state.screen, onGo: goTo });
+  document.title = pageTitle(state.screen);
+  // The top bar's links switch screens in place. Every screen but the front
+  // page keeps an address, as a history entry, so Back and a reload land
+  // where the reader was. The skip link moves focus without touching the
+  // address.
   const hash = screenHash(state.screen);
   if (location.hash !== hash) {
     if (shownScreen === null) history.replaceState(null, '', hash || location.pathname);
@@ -643,7 +633,7 @@ function render() {
 
 // Back, Forward and a typed address switch screens like a menu pick would.
 window.addEventListener('hashchange', () => {
-  const target = openedScreen(location.hash).screen ?? 'home';
+  const target = openedScreen(location.hash);
   if (target !== state.screen) goTo(target);
 });
 
@@ -658,8 +648,8 @@ document.querySelector('.skip-to-main')?.addEventListener('click', event => {
 
 render();   // the shell paints before the first fetch, not after it
 reload().then(() => {
-  // A window opened at a section runs that screen's arrival step once the
-  // rows are in, the way goTo would have.
+  // A page opened at a screen's address runs that screen's arrival step once
+  // the rows are in, the way goTo would have.
   if (openedAt === 'sort') readBeforeSort();
   if (openedAt === 'publish' && !state.publishPreview) loadPublishPreview();
 });

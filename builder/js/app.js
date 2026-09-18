@@ -18,7 +18,7 @@ import { readReply, postJson, plainError } from '../../js/sheet-client.js';
 import { saveState, loadState, clearState } from './state.js';
 import { getField, setField } from './editpath.js';
 import { computePreviewScale } from './preview.js';
-import { renderSidebar } from '../../js/sidebar-ui.js';
+import { renderShell } from '../../js/shell-ui.js';
 import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO } from './wizard.js';
 import { arrowKeyTarget, normalizeLinkUrl, reorderRowName, movedAnnouncement } from './editing.js';
 
@@ -1793,8 +1793,8 @@ function showRestoreBanner(saved) {
   home.insertBefore(banner, home.firstChild);
 }
 
-// The desk's sidebar, tucked behind the thin strip like Desk work.
-renderSidebar(document.querySelector('.side'), { screen: 'builder', isSectionWindow: false, onGo: () => {}, queueCount: null });
+// The desk's top bar: the builder crumbs under Newsletter.
+renderShell(document.querySelector('.topbar'), { screen: 'builder' });
 // A saved issue locks Review before it is drawn, so the first render already knows.
 const savedIssue = loadState();
 restorePending = Boolean(savedIssue);

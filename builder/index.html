@@ -7,15 +7,14 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&display=swap" />
   <link rel="stylesheet" href="/css/tokens.css?v=5" />
-  <link rel="stylesheet" href="/css/sidebar.css?v=11" />
-  <link rel="stylesheet" href="css/styles.css?v=51" />
+  <link rel="stylesheet" href="/css/shell.css?v=1" />
+  <link rel="stylesheet" href="css/styles.css?v=52" />
 </head>
 <body>
   <a class="skip-to-main" href="#main">Skip to content</a>
-  <!-- The desk's sidebar, tucked behind a thin strip like Desk work, built by
-       /js/sidebar-ui.js. Past newsletters, the Policy Exchange and the desk all
-       live in it; the builder's pages carry no header bar of their own. -->
-  <nav class="side" aria-label="Desk"></nav>
+  <!-- The desk's top bar, built by /js/shell-ui.js: the breadcrumb puts the
+       builder under Newsletter. -->
+  <header class="topbar"></header>
 
   <div class="builder-main">
   <div class="builder-head"><h1>Newsletter builder</h1></div>
@@ -50,6 +49,6 @@
   </div>
 
   <!-- Bump ?v when you change the JS so browsers load the new code (cache-busting). -->
-  <script type="module" src="js/app.js?v=39"></script>
+  <script type="module" src="js/app.js?v=40"></script>
 </body>
 </html>

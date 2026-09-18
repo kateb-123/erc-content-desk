@@ -1,8 +1,8 @@
-/** Pure text helpers for Home's stat cards and the sidebar's hand-out lines. */
+/** Pure text helpers for Home's stat cards and the hand-out lines. */
 import { pendingRows, circlebackRows } from './workflow.js';
 
-/** The queue count, shown on Home's tile, the fold's badge and Sort's sidebar
- *  row: everything still waiting on a decision. */
+/** The queue count, shown on Home's tile and the fold's badge: everything
+ *  still waiting on a decision. */
 export function queueBadgeCount(rows) {
   return pendingRows(rows).length + circlebackRows(rows).length;
 }

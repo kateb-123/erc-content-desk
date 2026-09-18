@@ -29,12 +29,12 @@ body {
   color: var(--text-primary);
   background: var(--background);
   min-height: 100vh;
-  display: flex;
+  display: flex; flex-direction: column;
 }
 
 /* --- Shell and page head ---------------------------------- */
-/* Like Sort: the desk's sidebar tucked behind a thin strip on the left, the
-   title on the page ground, the steps under it. */
+/* The desk's top bar across the top (css/shell.css), the title on the page
+   ground under it, the steps under that. */
 .builder-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 
 /* One column down the page: the title, the steps, the status line, the step's
@@ -49,7 +49,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   max-width: 1200px;
 }
 
-.builder-head { padding: 44px var(--spacing-07) var(--spacing-05); }   /* the desk's 44px first line */
+.builder-head { padding: var(--spacing-06) var(--spacing-07) var(--spacing-05); }   /* 24px under the bar, like the desk */
 .builder-head h1 {
   font-size: 28px; line-height: 36px; font-weight: 400; letter-spacing: 0;   /* heading-04 */
   margin: 0;

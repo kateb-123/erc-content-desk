@@ -7,9 +7,9 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&display=swap" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="/css/tokens.css?v=5" />
-  <link rel="stylesheet" href="/css/sidebar.css?v=11" />
+  <link rel="stylesheet" href="/css/shell.css?v=1" />
   <style>
-    /* The accent for this page; the shared sidebar reads Carbon's own names. */
+    /* The accent for this page; the shared top bar reads Carbon's own names. */
     :root {
   /* The accent: navy, as in the builder's stylesheet (Kate's palette and her pick, Sep 17, late night). */
   --accent-10: var(--navy-10); --accent-20: var(--navy-20); --accent-30: var(--navy-30); --accent-40: var(--navy-40);
@@ -23,8 +23,8 @@
   --highlight: var(--accent-20);
   --tag-background-blue: var(--accent-20); --tag-color-blue: var(--accent-80);
 }
-    /* The desk's sidebar stays open here, like Home. */
-    body { margin: 0; background: var(--background); color: var(--text-primary); display: flex; min-height: 100vh;
+    /* The desk's top bar across the top, the list under it. */
+    body { margin: 0; background: var(--background); color: var(--text-primary); display: flex; flex-direction: column; min-height: 100vh;
       font-family: var(--font-sans); font-size: 14px; line-height: 20px; letter-spacing: .16px; }
     .page-main { flex: 1 1 auto; min-width: 0; }
     .wrap { max-width: 42rem; margin: 0 auto; padding: 44px var(--spacing-05) var(--spacing-10); }
@@ -71,7 +71,7 @@
 </head>
 <body>
   <a class="skip-to-main" href="#main">Skip to content</a>
-  <nav class="side" aria-label="Desk"></nav>
+  <header class="topbar"></header>
   <main id="main" class="page-main">
   <div class="wrap">
     <h1>Past newsletters</h1>
@@ -80,8 +80,8 @@
   </div>
   </main>
   <script type="module">
-    import { renderSidebar } from '/js/sidebar-ui.js';
-    renderSidebar(document.querySelector('.side'), { screen: 'past', isSectionWindow: false, onGo: () => {}, queueCount: null });
+    import { renderShell } from '/js/shell-ui.js';
+    renderShell(document.querySelector('.topbar'), { screen: 'past' });
   </script>
   <script>
     // The list says it is busy while the fetch runs, and a failed load offers Retry.

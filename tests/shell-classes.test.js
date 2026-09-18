@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 
 // Audit round two, d1 and d2: a rule written for one element must not catch
-// another that shares its class, and every page that draws the sidebar must
-// have the rules the sidebar's markup relies on.
+// another that shares its class, and every page that draws the shell must
+// have the rules the shell's markup relies on.
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const scripts = dir => readdirSync(new URL(`../${dir}`, import.meta.url)).filter(f => f.endsWith('.js')).map(f => read(`${dir}/${f}`)).join('\n');
 
@@ -18,11 +18,12 @@ test('the skip link\'s class belongs to the skip link alone', () => {
 });
 
 test('sr-only and the skip link live in the stylesheet every page loads', () => {
-  const sidebar = read('css/sidebar.css');
-  assert.match(sidebar, /\.sr-only\s*\{[^}]*clip/);
-  assert.match(sidebar, /\.skip-to-main\s*\{/);
+  const shell = read('css/shell.css');
+  assert.match(shell, /\.sr-only\s*\{[^}]*clip/);
+  assert.match(shell, /\.skip-to-main\s*\{/);
   for (const page of ['index.html', 'builder/index.html', 'builder/archive.html']) {
-    assert.match(read(page), /css\/sidebar\.css/, `${page} loads the sidebar stylesheet`);
+    assert.match(read(page), /css\/shell\.css/, `${page} loads the shell stylesheet`);
+    assert.match(read(page), /<header class="topbar">/, `${page} carries the top bar`);
   }
 });
 

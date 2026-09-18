@@ -118,7 +118,7 @@ function buildLinkAlert(row, href, onVerify) {
     after.hidden = true;
     const a = el('a', 'alert-word', 'Verify link ↗');
     a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
-    a.append(el('span', 'sr-only', ' (opens in a new tab)'));   // as the sidebar says it
+    a.append(el('span', 'sr-only', ' (opens in a new tab)'));   // every new tab is named for assistive tech
     a.addEventListener('click', () => { after.hidden = false; });
     line.append(' ', a);
   } else {

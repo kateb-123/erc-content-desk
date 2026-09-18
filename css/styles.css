@@ -193,17 +193,12 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .status-busy { color: var(--muted); }
 .status-note { color: var(--muted); }
 
-/* The shell (Kate, Sep 16, from the Claude Design docs: "I like the sidebar the
-   most. but then I think keep our stuff"): a sidebar down the left on every
-   page, the content column beside it. */
-.desk { display: flex; min-height: 100vh; margin: 0; padding: 0; }
-/* Every page's first line sits 44px down, the desk and the builder alike (style audit, Sep 16):
-   8px here, the status line's one-line slot, then the first element's 16px. */
-.desk-main { flex: 1 1 auto; min-width: 0; padding: var(--spacing-03) var(--spacing-07) var(--spacing-10); box-sizing: border-box; }
-.desk-main > * { max-width: 68rem; margin-left: auto; margin-right: auto; }
-/* The skip link and .sr-only live in css/sidebar.css, which every page loads (audit round two, d1 and d2). */
-
-/* The sidebar's own rules live in css/sidebar.css, shared with the builder's pages. */
+/* The shell (Kate's wireframes, Sep 17): the top bar across the top of every
+   page, the content under it in a 1280px column with 40px sides, the way the
+   wireframes frame it. The bar's own rules live in css/shell.css, shared with
+   the builder's pages, as do the skip link and .sr-only. */
+.desk { display: flex; flex-direction: column; min-height: 100vh; margin: 0; padding: 0; }
+.desk-main { flex: 1 1 auto; min-width: 0; width: 100%; max-width: 1280px; margin: 0 auto; padding: var(--spacing-06) var(--spacing-08) var(--spacing-07); box-sizing: border-box; }
 
 /* Doors (Kate, Sep 15, option A): every way onward wears one look, Carbon's
    tertiary button with the arrow in its right slot: Go to Finalize, Go to
@@ -586,7 +581,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 /* Sort decisions move no pixels (Kate, Sep 9). The decided card is replaced at
    once; the sliver on the left is what records it. No exit animation. */
 
-/* The sliding-dots loader itself is in css/sidebar.css, the one stylesheet
+/* The sliding-dots loader itself is in css/shell.css, the one stylesheet
    every page loads; the desk only sizes it where it sits. */
 .status .dots-loader { margin: 0 var(--spacing-03) 0 0; }   /* inline in the one-line slot (audit round two, e7) */
 
