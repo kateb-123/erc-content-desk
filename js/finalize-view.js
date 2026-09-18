@@ -3,6 +3,13 @@
  * stage the screen is in, how the kept rows group down the left, the progress
  * line and bar, and which row the card on the right shows.
  */
+import { readyToFinalize, canRewrite } from './workflow.js';
+
+/** The Finalize tab's count: kept items whose rewrite is still to do or to
+ *  check; `verified` is the ids checked this visit. */
+export function finalizeWaiting(rows, verified = new Set()) {
+  return readyToFinalize(rows).filter(r => canRewrite(r) && !verified.has(r.id)).length;
+}
 
 /** before: rewrites wait; checking: rewrites came back and wait to be
  *  checked; plain: nothing to rewrite or check. */

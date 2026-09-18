@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges, fieldsForType, dateField, editFields, editBase } from '../js/finalize-view.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges, fieldsForType, dateField, editFields, editBase, finalizeWaiting } from '../js/finalize-view.js';
 
 const keeps = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }];
 
@@ -94,4 +94,19 @@ test('editChanges: an untouched prefill is no change; an edited one is', () => {
   const base = editBase(row);
   assert.deepEqual(editChanges(row, { headline: 'T', blurb: 'The original.' }, base), {});
   assert.deepEqual(editChanges(row, { headline: 'T', blurb: 'The original, trimmed.' }, base), { blurb: 'The original, trimmed.' });
+});
+
+// The Finalize tab's count (Kate's wireframes, Sep 17): the kept items whose
+// rewrite is still to do or still to check this visit.
+test('finalizeWaiting counts the rewrites to do or to check, not the ones checked this visit or needing none', () => {
+  const rows = [
+    { id: 'e1', status: 'kept', type: 'event', blurb: 'Some text' },
+    { id: 'e2', status: 'kept', type: 'event', blurb: 'Some text' },
+    { id: 'h1', status: 'kept', type: 'headline', blurb: 'x' },
+    { id: 'o1', status: 'kept', type: 'opportunity', blurb: 'x', rewrite_checked: '2026-09-01T00:00:00Z' },
+    { id: 'p1', status: 'kept', type: 'event', blurb: 'x', published_at: 'x' },
+    { id: 'n1', status: 'new', type: 'event', blurb: 'x' },
+  ];
+  assert.equal(finalizeWaiting(rows, new Set()), 2);
+  assert.equal(finalizeWaiting(rows, new Set(['e2'])), 1);
 });

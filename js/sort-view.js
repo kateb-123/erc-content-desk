@@ -1,12 +1,14 @@
 /**
- * Pure ordering, counting, and grouping for Sort's tables. View logic only —
- * nothing here writes anywhere.
+ * Pure ordering and checks for Sort's one list and its card (Kate's
+ * wireframes, Sep 17, and her answers, Sep 18). View logic only; nothing
+ * here writes anywhere.
  */
 import { isoToShort, bySubmitted } from './queue-view.js';
 import { TYPE_ORDER, isValidSubtype } from './schema.js';
-import { duplicateFlags, linkNeedsCheck } from './workflow.js';
+import { duplicateFlags, linkNeedsCheck, sendTo } from './workflow.js';
 
-// Oldest first, a row with no date last: the queue table's own comparator.
+// Newest first, a row with no date last.
+const newestFirst = bySubmitted('desc');
 const oldestFirst = bySubmitted('asc');
 
 /**
@@ -18,8 +20,8 @@ export function isErc(row) {
   return Boolean(row.spotlight_request) || row.subtype === 'ERC Research';
 }
 
-/** Kept rows that still lack a real type: they come BACK to Sort's Needs a
- *  fix, because fixing a type belongs here, not at the bottom of Publish.
+/** Kept rows that still lack a real type: they come BACK to Sort's list,
+ *  because fixing a type belongs here, not at the bottom of Publish.
  *  Setting the type releases them; rows already in an issue stay gone. */
 export function keptUntyped(rows) {
   return rows.filter(r => r.status === 'kept'
@@ -29,7 +31,7 @@ export function keptUntyped(rows) {
 }
 
 /** Submitted but not yet filed by the reader (pending_read). Every card is
- *  read before she sees it, so these wait out of the sections until it is. */
+ *  read before she sees it, so these wait out of the list until it is. */
 function awaitingReader(row) {
   return row.pending_read === 'yes';
 }
@@ -39,24 +41,6 @@ export function readerQueue(rows) {
   return rows.filter(r => r.status === 'new' && awaitingReader(r)).map(r => r.id);
 }
 
-
-/**
- * Per-tab totals, read off the same walk that builds the lists, so a tab's
- * number is exactly what that tab lists: an ERC event must not count under
- * both ERC and Events, nor a row with a legacy type under neither. There is
- * no All, since the screen shows one section at a time.
- */
-export function sortCounts(rows) {
-  const counts = Object.fromEntries(SECTION_ORDER.map(k => [k, 0]));
-  for (const g of allSections(rows)) counts[g.section] = g.live.length;
-  return counts;
-}
-
-/** Where Sort lands with no tab picked: the first one holding anything,
- *  Needs a fix first; Needs a fix again when the queue is empty. */
-export function landingSection(counts) {
-  return SECTION_ORDER.find(k => counts[k] > 0) ?? SECTION_ORDER[0];
-}
 
 /** No real type yet: nothing picked, or a subtype the schema does not know. */
 export function needsType(row) {
@@ -70,9 +54,9 @@ export function fixContext(rows, today) {
 }
 
 /**
- * Why a row sits under Needs a fix: the two things that keep it
- * out of Keep the rest, and a possible duplicate of an item that is not live
- * yet. One section gathers them, so the rows themselves carry no amber marks.
+ * What the card asks about a row: the two things that lock Keep and next, and
+ * a possible duplicate of an item that is not live yet. The list marks such a
+ * row with the triangle; the card says why.
  */
 export function fixReasons(row, ctx) {
   const out = [];
@@ -93,25 +77,6 @@ export function dupeReason(row, ctx) {
   return prior && !String(prior.published_at ?? '').trim() ? dupeBadgeText(prior, ctx?.today) : '';
 }
 
-/** Which section a row belongs to: 'fix', 'erc', or a TYPE_ORDER type. */
-export function sectionOf(row, ctx) {
-  if (fixReasons(row, ctx).length) return 'fix';
-  if (isErc(row)) return 'erc';
-  return TYPE_ORDER.includes(row.type) ? row.type : 'fix';
-}
-
-// Skipped last: every parked row, any type, waits there
-// with Keep and Delete, so a Skip is never the end of the road.
-export const SECTION_ORDER = ['fix', 'erc', ...TYPE_ORDER, 'skipped'];
-
-// 'Needs a fix': the one amber thing on the screen. It gathers every row that
-// cannot be kept yet (no type, link not opened) and possible duplicates, so
-// the rows themselves carry no amber marks.
-export const SECTION_LABELS = {
-  fix: 'Needs a fix', erc: 'ERC', erc_event: 'ERC events', research: 'Research',
-  event: 'Events', opportunity: 'Opportunities', headline: 'Headlines', skipped: 'Skipped',
-};
-
 const PRIOR_WORDS = { trashed: 'deleted', kept: 'kept', circleback: 'parked', new: 'in the queue' };
 
 /** The duplicate badge names the earlier item and what happened to it, so the
@@ -130,54 +95,41 @@ export function isNewToday(row, today) {
 }
 
 /**
- * A section as a list: its pending rows oldest first,
- * then the ones decided this session at the bottom, greyed, so a
- * mistake stays in reach. Needs a fix also lists kept rows that lost their
- * type, since typing is their fix.
+ * Sort's one list: the waiting rows newest first (the kept rows that lost
+ * their type among them), then the skipped ones newest first under them
+ * (Kate, Sep 18: skipped sinks to the bottom, tagged); last, greyed, the rows
+ * kept or deleted this visit, so a mistake stays in reach. A row skipped this
+ * visit is live with the skipped, not greyed.
  */
-export function sectionRows(rows, section, sessionDecided = new Set(), ctx = fixContext(rows), decidedFrom = new Map()) {
-  // Decided from Skipped this session (decidedFrom says what the row was before):
-  // it greys under Skipped with Undo, not in its type section.
-  const fromSkipped = r => decidedFrom.get(r.id) === 'circleback';
-  if (section === 'skipped') {
-    return {
-      live: rows.filter(r => r.status === 'circleback' && !awaitingReader(r)).sort(oldestFirst),
-      done: rows.filter(r => r.status !== 'circleback' && sessionDecided.has(r.id) && fromSkipped(r)).sort(oldestFirst),
-    };
-  }
-  const here = rows.filter(r => sectionOf(r, ctx) === section && !awaitingReader(r));
-  const fixups = section === 'fix' ? keptUntyped(rows) : [];
-  const live = [...here.filter(r => r.status === 'new'), ...fixups].sort(oldestFirst);
-  const seen = new Set();
-  const listed = live.filter(r => !seen.has(r.id) && seen.add(r.id));
-  return {
-    live: listed,
-    // A kept fix-up decided this session is already live above as the fix-up —
-    // it must not also appear greyed at the bottom.
-    done: here.filter(r => r.status !== 'new' && sessionDecided.has(r.id) && !fromSkipped(r) && !seen.has(r.id))
-      .sort(oldestFirst),
-  };
+export function sortList(rows, sessionDecided = new Set()) {
+  const waiting = rows.filter(r => r.status === 'new' && !awaitingReader(r));
+  const seen = new Set(waiting.map(r => r.id));
+  const live = [...waiting, ...keptUntyped(rows).filter(r => !seen.has(r.id))].sort(newestFirst);
+  const skipped = rows.filter(r => r.status === 'circleback' && !awaitingReader(r)).sort(newestFirst);
+  const listed = new Set([...live, ...skipped].map(r => r.id));
+  const done = rows.filter(r => sessionDecided.has(r.id) && !listed.has(r.id)
+    && (r.status === 'kept' || r.status === 'trashed')).sort(newestFirst);
+  return { live: [...live, ...skipped], done };
 }
 
-/**
- * Every section that holds something, in tab order, each with its own rows:
- * the one walk the counts are read from, and the invariant the tests hold
- * (one row, one section). The screen itself shows one section at a time.
- */
-export function allSections(rows, sessionDecided = new Set(), decidedFrom = new Map()) {
-  const ctx = fixContext(rows);
-  return SECTION_ORDER
-    .map(section => ({ section, ...sectionRows(rows, section, sessionDecided, ctx, decidedFrom) }))
-    .filter(g => g.live.length || g.done.length);
+/** Whole days the oldest waiting row has sat, by the desk's UTC date; null
+ *  when nothing waits or nothing is dated. */
+export function oldestWait(rows, today) {
+  const dates = rows.filter(r => r.status === 'new')
+    .map(r => String(r.submitted_at ?? '').slice(0, 10)).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+  if (!dates.length || !today) return null;
+  return Math.max(0, Math.round((Date.parse(today) - Date.parse(dates[0])) / 86400000));
 }
 
-// ── Sort as a list and a card ──
+// ── The card ──
 
-/** Why the card's Keep is locked, in the words of its tooltip; '' when the
- *  row can be kept. The same two reasons keep a row out of Keep the rest. */
+/** Why the card's Keep and next is locked, in the words of its tooltip; ''
+ *  when the row can be kept. A row ticked for neither page has nowhere to go. */
 export function keepBlock(row) {
   if (needsType(row)) return 'Set a type first';
   if (linkNeedsCheck(row)) return 'Check the link first';
+  const to = sendTo(row);
+  if (!to.newsletter && !to.exchange) return 'Tick Newsletter or Policy Exchange';
   return '';
 }
 
@@ -188,13 +140,6 @@ export function nextSelected(liveIds, selectedId, lastIndex = 0) {
   if (selectedId && liveIds.includes(selectedId)) return selectedId;
   if (!liveIds.length) return null;
   return liveIds[Math.min(Math.max(lastIndex, 0), liveIds.length - 1)];
-}
-
-/** The next section after `current` that holds anything, wrapping round. */
-export function nextSectionWithRows(counts, current) {
-  const at = SECTION_ORDER.indexOf(current);
-  const order = [...SECTION_ORDER.slice(at + 1), ...SECTION_ORDER.slice(0, Math.max(at, 0))];
-  return order.find(k => counts[k] > 0) ?? null;
 }
 
 const UNDO_VERBS = { keep: 'kept', circleback: 'skipped', trash: 'deleted' };

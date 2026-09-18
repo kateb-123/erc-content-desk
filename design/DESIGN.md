@@ -107,11 +107,13 @@ template and the public Exchange site.
   Skip and Cancel stay muted (design critique, Sep 18).
 - **Fields.** 40px, on the field surface, a `--border-strong-01` line under them
   and nothing else; the focus ring replaces the line. Labels are label-01 above.
-- **Tabs.** Sort's sections are Carbon tabs in one row under a hairline: 40px,
-  quiet text, a 2px `--border-interactive` bar under the lit one (it keeps that
-  look under the mouse), a `--border-strong-01` bar on hover; the row scrolls
-  sideways, never wraps. They are read as tabs: one tab stop, Left and Right
-  move between them, Home and End jump (audit round two, Sep 17).
+- **Tabs.** A page's tabs (Sort content's Sort and Finalize, Newsletter's Next
+  issue and Past issues) sit under its title in one row under a hairline: 40px,
+  quiet text with a round count, a 2px `--border-interactive` bar under the lit
+  one (it keeps that look under the mouse), a `--border-strong-01` bar on hover;
+  a fact about the page may sit at the row's right ("Oldest has waited N
+  days"). They are read as tabs: one tab stop, Left and Right move between
+  them, Home and End jump (audit round two, Sep 17).
 - **Folds.** Every fold opens from a chevron on its left, pointing right when
   shut and down when open: the front page's bulk door, Finalize's No rewrite needed, Send to
   Newsletter's groups, Already sent and Past items. A chevron means a fold and
@@ -122,7 +124,7 @@ template and the public Exchange site.
 - **Notes.** Every panel that speaks is Carbon's inline notification: a
   `--notification-*-background`, a 1px `-border`, a 3px left bar in the
   `--support-*` colour, the matching icon, `--text-primary` words. Info for the
-  View info panel and a plain type change; warning for Needs a fix, the link ask,
+  View info panel; warning for Sort's card questions (the link, a duplicate),
   Send early?, the builder's restore banner and its Replace the archived issue?
   ask; success and error for the builder's upload, pull, save and export
   results. An error note that can be retried carries a ghost Retry, and a
@@ -142,8 +144,8 @@ template and the public Exchange site.
   Sep 17); on the desk the status line keeps its one-line slot above it, so a
   message never moves the page.
 - Sort and Finalize share one list row and one card: titles at 14/18 with the
-  source or type under them at label-01, and the card (16px padding) stays in
-  view while the list scrolls.
+  source or type under them at label-01, and the card stays in view while the
+  list scrolls.
 - The desk's nav is a top bar across every page (Kate's wireframes, Sep 17;
   the sidebar of Sep 16 to 17 is gone): 56px on the page ground under a
   hairline, 40px sides. On the left a breadcrumb (no mark: the wireframe's
@@ -171,20 +173,22 @@ look, everywhere it appears.
 
 | Action | Icon | Look | Means |
 |---|---|---|---|
-| **Keep** | ✓ `fa-check` | the primary: the app's fill, the check in its right slot (the ONE per card) | accept into the pipeline / accept the rewrite |
-| **Skip** | none | muted ghost button | park it (status stays `circleback` underneath); it waits under Sort's Skipped pill with Keep and Delete (Sep 15) |
+| **Keep and next** (Sort) / **Keep** (Finalize) | ✓ `fa-check` | the primary: the app's fill, the check in its right slot (the ONE per card) | accept into the pipeline and move to the next item / accept the rewrite |
+| **Skip for now** | none | muted ghost button | park it (status stays `circleback` underneath); it sinks to the bottom of Sort's list with a grey Skipped tag, and its card has Keep and next and Delete (Kate, Sep 18) |
 | **Delete** | `fa-trash-can` | red ghost button | trash the ITEM for good (any screen, any time); the row stays listed greyed with Undo for the visit on Sort, the queue, Finalize and Send to Newsletter (design audit, Sep 17) |
-| **Edit** | `fa-pen` | ghost button in the link colour | inline edit, persists on Save. One form on Sort and Finalize (audit round two, Sep 17): the fields the type uses, then Link and Media, on the grey edit box; the description opens with the original text when there is no rewrite yet; any way out of an edited form holds with "Save or cancel this edit first." |
+| **Edit** | `fa-pen` | ghost button in the link colour | Finalize's inline edit, persists on Save: the fields the type uses, then Link and Media, on the grey edit box; any way out of an edited form holds with "Save or cancel this edit first." Sort's card has no Edit: every field on it is edited in place and saves as you leave it (Kate, Sep 18) |
 | **Use original** | `fa-rotate-left` | muted ghost button | reject the rewrite, keep the Sheet text |
 | **Remove** | `fa-trash-can` | red ghost button | take OUT of the newsletter issue (returns to the pool); shares Delete's icon by Kate's explicit pick; on Next newsletter and in the builder the row stays listed with Undo (Sep 17) |
-| **Verify link ↗ → Confirm / Change** | `fa-triangle-exclamation` | warning note, one ask | open the source, then stamp it good or paste a new link |
+| **Verify link ↗ → Confirm / Change** | `fa-triangle-exclamation` | warning note, one ask | open the source, then stamp it good or paste a new link; a link that needs no check shows as itself with Change beside it |
 | **View info / Hide info** | none | a word in the link colour beside every screen/step title | opens the tinted instruction panel |
 | **Re-check** | none | a link in Publish's lede | force a fresh hub check |
-| **Add media** → Replace / Remove media | none | a small ghost word under the edit form's fields, then Replace and the muted Remove word | attach a picture or PDF flyer to any item (every item's Edit on Sort and Finalize since Sep 17, ERC only before; newsletter items in the builder), the URL rides the row’s infographic column into the email |
+| **Add media** → Replace / Remove media | none | a small ghost word under the card's fields, then Replace and the muted Remove word | attach a picture or PDF flyer to any item (Sort's card and Finalize's Edit; newsletter items in the builder), the URL rides the row’s infographic column into the email |
 | **Send early? → Confirm / Cancel** | fa-clock on the note | warning note, one ask (same as Verify link) | picking an event that belongs to a later issue, the words stay bare, the bubble carries the icon |
-| Door buttons (Go to Finalize/Publish, Send to Newsletter, the receipt's door) | → `fa-arrow-right` | Carbon's tertiary button with the arrow in its right slot (Sep 15, option A; square since Sep 17), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
+| Door buttons (Go to Publish, Send to Newsletter, the receipt's door) | → `fa-arrow-right` | Carbon's tertiary button with the arrow in its right slot (Sep 15, option A; square since Sep 17), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
 | **Top bar** (ERC Content Desk / the lane / the page; the two other lanes on the right) | none | a 56px bar under a hairline; crumb links in the ink, lane links quiet | every way around the desk (Kate's wireframes, Sep 17): the brand leads home, a lane opens its page in place, the builder's pages crumb under Newsletter |
-| **Keep the rest (N)** | ✓ `fa-check` | the small dark-grey button, Carbon's secondary (Kate, Sep 17: a sweep across a list is grey, the one decision on a card is the primary), right of a Sort section's head, and right of Finalize's head while rewrites wait to be checked | keep every listed row that has a real type and a checked link (Sep 11); on Finalize, keep every rewrite still to check (one name for both since audit round two); one row at a time is Keep on its card (Sep 16). Keys on Sort (Sep 17): up and down move, K keeps, S skips, D deletes, U undoes. A decision says itself in the status line ("Kept: title") and the next card's title takes focus; Undo last says what it undid |
+| **Keep the rest (N)** | ✓ `fa-check` | the small dark-grey button, Carbon's secondary (Kate, Sep 17: a sweep across a list is grey, the one decision on a card is the primary), right of Finalize's head while rewrites wait to be checked | keep every rewrite still to check. Sort's Keep the rest went with its sections (Kate, Sep 18: "Drop it") |
+| **Send it to** Newsletter / Policy Exchange | none | two checkboxes on Sort's card | where the item goes once kept (Kate, Sep 18: "Tick = it waits on that page"): ticked for Newsletter it waits in the newsletter's pool at once, for Policy Exchange on Publish; both ticked by default, a spotlight event Newsletter only; ticked for neither, Keep and next is locked |
+| **Undo** (Sort) | none | the status line's word after a decision; a greyed row's own Undo | Keys on Sort (Sep 17): up and down move, K keeps, S skips, D deletes, U undoes; the buttons' tooltips name them. A decision says itself in the status line ("Kept: title. Undo"), the card moves to the next item and takes focus; Undo says what it undid |
 | **Publish N to the Exchange → Confirm / Cancel** | `fa-triangle-exclamation` on the ask | the primary, then one warning note in its place | the one ask before the append-only write to the public site (design audit b6, Sep 17), at body-01 with the count and "live" in 600; Keep the rest on Finalize gets "Kept N rewrites. Undo" instead of an ask |
 
 The front page (Kate's wireframes, Sep 17; `design/mockups/index.png`) is the
@@ -203,37 +207,35 @@ check, which the front page asks for quietly), then Recently added (the four new
 when). The stat tiles and the queue fold of Sep
 15 to 17 are gone; the queue is worked on Sort.
 
-Sort is one section at a time (Sep 11 option A; Sep 15 the card stream and the
-stacked All view went), drawn as a list and a card (Claude Design round two,
-Kate's pick C, Sep 16). The sections sit as Carbon tabs in one row on top (Needs a
-fix, ERC, ERC events, Research, Events, Opportunities, Headlines, Skipped); the
-screen lands on the first one that holds anything, Needs a fix first. There is
-no All. Under the pills: the section's name, Undo last and Keep the rest, one
-hint, then the list on the left and the card on the right (1 : 1.25). A list
-row is the title with authors or source · date, plus a New badge on a row that
-came in today; the chosen row sits on the selected layer with its 3px bar (the chevron went in audit round two: a chevron means a fold). The card stays in
-view while the list scrolls: the type line with Change and the badges on top (as
-on Finalize's card), the title, the meta line, the description, notes, Open
-source · from whom, then Edit · Delete far left and Skip · Keep right. A
-decision moves the card to the row now in its place; decided rows sink to the
-bottom of the list, greyed (deleted ones struck through) with Undo. When a
-section runs out, a dashed pane takes the card's place and names the next
-section that holds anything (or Go to Finalize).
+Sort content (Kate's wireframes, Sep 17, and her answers, Sep 18;
+`design/mockups/sort.png`) is one page with two tabs, Sort and Finalize,
+each with its count; the Sort tab's row says how long the oldest item has
+waited. Sort is one list, 420px, down the left: a grey head ("N waiting",
+"Newest first"), then the waiting items newest first (the kept items that
+lost their type among them), then the skipped ones newest first, each with a
+grey Skipped tag, and last, greyed, what was kept or deleted this visit with
+its Undo. A row is the title with source · added by who · when; the chosen
+one sits on the selected layer with its 3px bar and its title at 600. On the
+right the card, kept in view while the list scrolls: the tags (New, Skipped,
+Spotlight requested, External submission, In a past issue) with the position
+("1 of 15") at the right; the title as the heading, edited in place; when
+and by whom; the link (open it, or Change it); a warning note for each
+question (Check the link, Possible duplicate); the description; the type as
+a segmented row with the picked type's subtypes under it (the subtype pick
+is the save, a flat ERC Event saves on the type); the fields the type uses,
+two to a row, none until a type is picked; Media; Send it to; then Delete
+far left and Skip for now and Keep and next right. Every field saves as you
+leave it, and a redraw never drops what you are typing. The View info panel,
+the section tabs and Needs a fix are gone (Sep 18).
 
 Blue means "needs doing", nowhere else on the screen (Kate's palette and her
 pick, Sep 17; the palette's purple read as Halloween beside orange, and
-Carbon's warning yellow held the job from Sep 15). Needs a fix, the one warning tab, gathers every row that cannot be kept
-yet (no type, link not opened) and every possible duplicate; one blue triangle
-(`fa-triangle-exclamation`) leads each of its titles, and a fixed row moves to
-its section. On the card, the warning note says each reason: **Needs a type**
-(the types as radios, the picked type's subtypes indented under it; the subtype
-pick is the save, a flat ERC Event saves on the type pick), **Check the link**
-(the Verify link ask), **Possible duplicate** (which item it matches). Keep stays
-locked in Carbon's disabled grey until the type and the link are settled, and its
-tooltip says which. Change on the type line opens the same radios in an info note
-with Cancel. Skipped, last on the menu, holds every parked row of any type (option
-B, Sep 15), each wearing its type as a grey tag; its card has Keep and Delete, no
-Skip. Spotlight requested is a grey fact tag like External submission.
+Carbon's warning yellow held the job from Sep 15). A row the card has a
+question about leads its title with a blue triangle
+(`fa-triangle-exclamation`); a missing type turns the Type label and its row
+blue. Keep and next stays locked in Carbon's disabled grey until the type
+and the link are settled and the item has somewhere to go, and its tooltip
+says which. Spotlight requested is a grey fact tag like External submission.
 
 Placement grammar: tools (Edit) pair with Delete far LEFT of a card footer; the
 decision pair (secondary then primary) sits RIGHT; the position counter sits alone
@@ -247,9 +249,9 @@ All CSS/vanilla; `prefers-reduced-motion` kills everything. Carbon's clock:
 nothing over `--duration-moderate-02` 240ms, and nothing decorative moves.
 
 - Decision: NO motion (Kate, Sep 9; the slide and the shrink were both
-  rejected). The decided row greys in place at the bottom of its section with
+  rejected). The decided row greys in place at the bottom of the list with
   Undo; that is what records the decision.
-- Tab/section switch: ±16px directional slide, 110ms `--ease-standard`.
+- Screen switch: ±16px directional slide, 110ms `--ease-standard`.
 - Confirmations: SVG check draws itself, 240ms.
 - Loading: the sliding-dots track on the app's accent ramp (`--accent-30` to
   `--accent-50`), label under the track with typed trailing dots; mini variant

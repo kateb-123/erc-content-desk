@@ -1,12 +1,7 @@
 /** Pure helpers for the front page: the lanes' counts and the newest items. */
-import { pendingRows, circlebackRows, readyToPublish } from './workflow.js';
+import { readyToPublish } from './workflow.js';
 import { splitPool } from './newsletter-view.js';
-
-/** The queue count, shown on the front page's Sort lane and Sort's own head:
- *  everything still waiting on a decision. */
-export function queueBadgeCount(rows) {
-  return pendingRows(rows).length + circlebackRows(rows).length;
-}
+import { sortList } from './sort-view.js';
 
 /** The three lanes' counts, each the work waiting on its page (design
  *  critique, Sep 18): Sort the queue, Newsletter what waits to be added to
@@ -15,7 +10,7 @@ export function queueBadgeCount(rows) {
  *  ticked for the Exchange stand in. */
 export function laneCounts(rows, { schedule, issue, today, preview }) {
   return {
-    sort: queueBadgeCount(rows),
+    sort: sortList(rows).live.length,   // exactly what Sort's list shows
     newsletter: splitPool(rows, schedule, issue, today).live.length,
     exchange: preview ? preview.adding.length : readyToPublish(rows).length,
   };

@@ -1,18 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { queueBadgeCount, laneCounts, recentlyAdded } from '../js/home-panel.js';
-
-test('queueBadgeCount counts new plus parked rows', () => {
-  const rows = [
-    { status: 'new' }, { status: 'new' }, { status: 'kept' },
-    { status: 'circleback' }, { status: 'trashed' },
-  ];
-  assert.equal(queueBadgeCount(rows), 3);
-});
-
-test('queueBadgeCount handles an empty desk', () => {
-  assert.equal(queueBadgeCount([]), 0);
-});
+import { laneCounts, recentlyAdded } from '../js/home-panel.js';
 
 // ── The front page's lanes and its Recently added list (Kate's wireframes, Sep 17) ──
 

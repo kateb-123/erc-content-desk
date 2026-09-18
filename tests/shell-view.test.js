@@ -22,7 +22,7 @@ test('the breadcrumb: the desk alone on the front page, the desk then the page e
 });
 
 test('until their screens fold into the lanes, the old screens crumb under the lane they belong to', () => {
-  assert.deepEqual(crumbs('finalize').map(c => c.label), ['ERC Content Desk', 'Sort content', 'Finalize']);
+  assert.deepEqual(crumbs('finalize').map(c => c.label), ['ERC Content Desk', 'Sort content']);   // a tab of Sort content since Sep 18
   assert.deepEqual(crumbs('publish').map(c => c.label), ['ERC Content Desk', 'Policy Exchange']);
   assert.deepEqual(crumbs('issue').map(c => c.label), ['ERC Content Desk', 'Newsletter']);
   assert.deepEqual(crumbs('build').map(c => c.label), ['ERC Content Desk', 'Newsletter', 'Send to Newsletter']);
@@ -65,6 +65,7 @@ test('every screen but the front page keeps an address, in the lanes\' names', (
 test('the window title names the page, the desk after it', () => {
   assert.equal(pageTitle('home'), 'ERC Content Desk');
   assert.equal(pageTitle('sort'), 'Sort content · ERC Content Desk');
+  assert.equal(pageTitle('finalize'), 'Finalize · ERC Content Desk');
   assert.equal(pageTitle('publish'), 'Policy Exchange · ERC Content Desk');
   assert.equal(pageTitle('builder'), 'Newsletter builder · ERC Content Desk');
 });

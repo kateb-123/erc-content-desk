@@ -441,3 +441,16 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Replace the archived [date] issue? Confirm · Cancel" · "Saved to the archive." · "Saved to the archive, replacing the earlier save." · "Open Past newsletters" · "Start the next issue"
 "Restore the sent [date] issue ([N] items)?" (the builder's banner for an issue already saved to the archive)
 "Pick the issue first." · "Pick the issue on Review first."
+
+# Sort content (Kate's wireframes, Sep 18)
+
+"Sort content" (the page title) · "Sort" / "Finalize" (its tabs, each with a count) · "Oldest has waited [N] days" / "Oldest came in today"
+"[N] waiting" / "Newest first" (the list's head) · "Skipped" (the tag on a parked row, in the list and on the card)
+"added by [initials]" (a row's second line and the card's meta) · "[N] of [M]" (the card's position)
+"Check the link" · "The desk couldn't open this page." · "This link may open a different item." · "Verify link" · "Confirm" · "Change" · "New link" · "Save" · "Cancel" · "No link"
+"Possible duplicate" · "Type" · "Description" · "Media" · "Send it to" · "Newsletter" · "Policy Exchange"
+"The reader wasn't sure. Check: [fields]." · "The reader wasn't sure. Check the fields."
+"Delete" · "Skip for now" · "Keep and next" · tooltips "Delete (D)", "Skip for now (S)", "Keep and next (K)", or why Keep and next is locked: "Set a type first", "Check the link first", "Tick Newsletter or Policy Exchange"
+"Kept: [title]" / "Skipped: [title]" / "Deleted: [title]", then "Undo" on the status line
+"Nothing to sort." · "All sorted." · "New items are being read." (the card's place when nothing waits)
+Gone on Sep 18 with the section tabs: "Needs a fix" and the section names, "Keep the rest" on Sort, "Undo last", "Go to Finalize", Sort's View info panel and its three hints, "Next: [section]", "Nothing left in this section."

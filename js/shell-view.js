@@ -18,7 +18,7 @@ export const LANES = [
 const SCREENS = {
   home: { lane: null, hash: '' },
   sort: { lane: 'sort', hash: '#sort' },
-  finalize: { lane: 'sort', hash: '#finalize', page: 'Finalize' },
+  finalize: { lane: 'sort', hash: '#finalize', title: 'Finalize' },   // a tab of Sort content, so no crumb of its own
   issue: { lane: 'newsletter', hash: '#newsletter' },
   build: { lane: 'newsletter', hash: '#build', page: 'Send to Newsletter' },
   publish: { lane: 'exchange', hash: '#exchange' },

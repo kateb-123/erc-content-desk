@@ -22,7 +22,6 @@ const state = {
   loaded: false,
   loadFailed: false,         // the first read failed: Home and Next newsletter offer Try again
   busy: false,
-  sortFilter: '',           // '' = not picked yet (Sort lands where the work is); 'fix', 'erc', or a type key
   undoStack: [],            // [{ rows, decision, kind }]: every Sort change, newest last; its top is what Undo last would restore
   sortedIds: new Set(),     // decided since this page opened — they stay listed, greyed (view state)
   decidedFrom: new Map(),   // id -> status before this session's decision: where Undo takes it back, and a row kept from Skipped greys under Skipped (view state)
@@ -188,9 +187,16 @@ function change(rows, { decision = false, kind = 'edit' } = {}) {
   noteChange(rows);
 }
 
+/** The row as memory holds it now. A card's save can land after another
+ *  change to the same row (a field saves as focus leaves it, a tick lands
+ *  first), so every Sort change starts from this, never from the row the
+ *  card was drawn with. */
+const current = row => state.rows.find(r => r._rowNumber === row._rowNumber) ?? row;
+
 const DECIDED_WORDS = { keep: 'Kept', trash: 'Deleted', circleback: 'Skipped' };
 
-function decide(row, action) {
+function decide(drawn, action) {
+  const row = current(drawn);
   // A decided row holds its place, greyed at the bottom of its section, so a
   // mistake stays in reach. Deciding never moves you.
   state.decidedFrom.set(row.id, row.status);
@@ -200,22 +206,11 @@ function decide(row, action) {
     : circleback(row);
   change([next], { decision: true, kind: action });   // the list updates now; the write drains behind it
   // The decision in words, for everyone and for a screen reader.
-  setStatus(`${DECIDED_WORDS[action] ?? 'Done'}: ${row.headline || row.link || 'this item'}`, 'ok');
+  // Its way back sits on the same line (Sort's Undo last went with the old list head).
+  setStatus(`${DECIDED_WORDS[action] ?? 'Done'}: ${row.headline || row.link || 'this item'}`, 'ok', { label: 'Undo', onClick: undoLast });
 }
 
-/** Keep the rest: keep every row still standing in the section, as one
- *  decision Undo last walks back as one. */
-function keepAll(rows) {
-  if (!rows.length) return;
-  for (const r of rows) {
-    state.decidedFrom.set(r.id, r.status);
-    state.sortedIds.add(r.id);
-  }
-  change(rows.map(keep), { decision: true, kind: 'keep-all' });
-  setStatus(`Kept ${rows.length}`, 'ok');
-}
-
-/** Undo on one greyed row of a section's list: back to the queue, in place. */
+/** Undo on one greyed row of Sort's list: back to the queue, in place. */
 function undoRow(row) {
   // Back to what it was: a row kept from Skipped returns to Skipped, not to new.
   const back = state.decidedFrom.get(row.id) ?? 'new';
@@ -277,9 +272,8 @@ async function stampSubmitted(data) {
   render();
 }
 
-function goTo(key, filter) {
+function goTo(key) {
   if (key !== state.screen) setStatus('');   // last screen's message doesn't follow
-  if (key === 'sort' && filter) { state.sortFilter = filter; saveSortSpot(); }   // Publish's "fix in Sort" lands on the tab it names
   if (key === 'sort' && state.screen !== 'sort') readBeforeSort();
   if (key === 'issue' && state.screen !== 'issue') resetIssueEntry();
   if (key === 'finalize' && state.screen !== 'finalize') { resetFinalizeEntry(); state.lastKeepAll = null; }
@@ -430,21 +424,6 @@ async function unsendFromNewsletter(ids) {
   render();
 }
 
-// A reload (or an accidental same-tab jump and Back) shouldn't lose Kate's
-// place mid-sort — the spot rides sessionStorage, view state only.
-const SORT_SPOT_KEY = 'desk-sort-spot';
-function saveSortSpot() {
-  try {
-    sessionStorage.setItem(SORT_SPOT_KEY, JSON.stringify({ filter: state.sortFilter }));
-  } catch { /* private mode etc. — losing the spot is fine */ }
-}
-try {
-  const spot = JSON.parse(sessionStorage.getItem(SORT_SPOT_KEY) ?? 'null');
-  if (spot && typeof spot.filter === 'string') {
-    state.sortFilter = spot.filter;
-  }
-} catch { /* ignore bad stashes */ }
-
 const SCREEN_ORDER = ['home', 'issue', 'sort', 'finalize', 'publish', 'build'];
 // Every screen but the front page has an address (/#sort, /#newsletter,
 // /#exchange, and the old screens' own until they fold into the lanes), so a
@@ -513,21 +492,22 @@ function render() {
     });
   } else if (state.screen === 'sort') {
     renderSort(screens.sort, {
-      ...common, filter: state.sortFilter, sortedCount: state.sortedIds.size,
+      ...common, sortedCount: state.sortedIds.size,
       onGoTo: goTo,
-      lastDecision: state.undoStack.at(-1) ?? null,
       sessionDecided: state.sortedIds,
-      decidedFrom: state.decidedFrom,
-      onFilter: key => { state.sortFilter = key; saveSortSpot(); render(); },
-      onDecide: decide, onUndo: undoLast, onKeepAll: keepAll, onUndoRow: undoRow,
-      onEditRow: (row, changes) => change([{ ...row, ...changes }], { kind: 'edit' }),
+      verified: state.verifiedIds,
+      onDecide: decide, onUndo: undoLast, onUndoRow: undoRow,
+      onEditRow: (row, changes) => change([{ ...current(row), ...changes }], { kind: 'edit' }),
       // Type + subtype + provenance move together in one queued write.
-      onEditType: (row, type, subtype) => change([{
-        ...row, type, subtype: subtype || row.subtype,
-        auto_filled: withoutAutoFilled(row.auto_filled, subtype ? ['type', 'subtype'] : ['type']),
-      }], { kind: 'type' }),
+      onEditType: (drawn, type, subtype) => {
+        const row = current(drawn);
+        change([{
+          ...row, type, subtype: subtype || '',
+          auto_filled: withoutAutoFilled(row.auto_filled, subtype ? ['type', 'subtype'] : ['type']),
+        }], { kind: 'type' });
+      },
       onVerifyLink: (row, newLink) => change([{
-        ...row, ...(newLink ? { link: newLink } : {}), link_checked: 'human',
+        ...current(row), ...(newLink ? { link: newLink } : {}), link_checked: 'human',
       }], { kind: 'link' }),
     });
   } else if (state.screen === 'finalize') {

@@ -9,13 +9,13 @@
 // canRewrite lives in workflow.js so this screen and /api/rewrite can never
 // disagree about what needs rewriting.
 import { readyToFinalize, canRewrite, needsDescription } from './workflow.js';
-import { isErc } from './sort-view.js';
+import { isErc, sortList } from './sort-view.js';
 import { TYPE_ORDER, typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { dotsLoader, faIcon, loadingLabel } from './icons.js';
-import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection } from './finalize-view.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, finalizeWaiting } from './finalize-view.js';
 import { buildEditForm, holdIfDirty } from './edit-form.js';
-import { screenHead } from './screen-info.js';
+import { sortPageHead } from './sort-head.js';
 import { el, button, focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
 
 
@@ -248,9 +248,15 @@ export function renderFinalize(container, props) {
   });
   const toCheck = groups.find(g => g.key === 'check')?.rows ?? [];
 
-  // ── The head: title, one line of progress, one action on the right. ──
-  const { head, lede } = screenHead('Finalize', 'finalize',
-    'Rewrite the descriptions that need an ERC voice, then check each one: Keep saves the rewrite, Use original leaves the text as it was. Click any row on the left to see it, edit it, or delete it. Then go to Publish.');
+  // ── The head: Sort content's title and tabs, then one line of progress and one action on the right. ──
+  container.append(sortPageHead({
+    active: 'finalize',
+    counts: { sort: sortList(rows).live.length, finalize: finalizeWaiting(rows, verified) },
+    onGoTo, canLeave: () => !held(),
+  }));
+  const head = el('div', 'screen-head finalize-head');
+  const lede = el('p', 'lede');
+  head.append(lede);
   const progress = stage === 'checking'
     ? finalizeProgress('checking', { total: Math.max(reviewTotal || 0, checks), left: checks })
     : finalizeProgress(stage, { pending: pending.length, keeps: keeps.length });
@@ -297,7 +303,8 @@ export function renderFinalize(container, props) {
   const deleted = [...justDeleted.values()].filter(r => rows.find(x => x.id === r.id)?.status === 'trashed');
   if (!keeps.length && !deleted.length) return;
 
-  if (stage !== 'plain') {
+  // The bar shows once there is progress to show (design critique, Sep 18: an empty track read as a divider).
+  if (stage !== 'plain' && progress.pct > 0) {
     const bar = el('div', 'f-progress');
     bar.setAttribute('role', 'progressbar');
     bar.setAttribute('aria-valuenow', String(progress.pct));

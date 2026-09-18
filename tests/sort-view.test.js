@@ -1,120 +1,61 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { keptUntyped, readerQueue, sortCounts, sectionOf, allSections, sectionRows, fixReasons, dupeReason, dupeBadgeText, isNewToday, landingSection, keepBlock, nextSelected, nextSectionWithRows, undoWords, withoutRow, adjacentTab } from '../js/sort-view.js';
+import { keptUntyped, readerQueue, sortList, oldestWait, fixReasons, dupeReason, dupeBadgeText, isNewToday, keepBlock, nextSelected, undoWords, withoutRow, adjacentTab } from '../js/sort-view.js';
 
-// Shuffled on purpose: statuses mixed in, groups interleaved, dates unordered.
-// Every typed row carries a real subtype: without one it would sit under Needs a fix.
-const rows = [
-  { id: 'h1', status: 'new', type: 'headline', subtype: 'Texas', submitted_at: '2026-08-20T10:00:00Z' },
-  { id: 'r2', status: 'new', type: 'research', subtype: 'Report', submitted_at: '2026-08-26T09:00:00Z' },
-  { id: 'kept', status: 'kept', type: 'event', subtype: 'Off-Campus', submitted_at: '2026-08-19T09:00:00Z' },
-  { id: 'u1', status: 'new', type: '', submitted_at: '2026-08-25T12:00:00Z' },
-  { id: 'e1', status: 'new', type: 'event', subtype: 'Off-Campus', submitted_at: '2026-08-24T08:00:00Z' },
-  { id: 'r1', status: 'new', type: 'research', subtype: 'Report', submitted_at: '2026-08-22T08:00:00Z' },
-  { id: 'o1', status: 'new', type: 'opportunity', subtype: 'Other', submitted_at: '2026-08-23T08:00:00Z' },
-  { id: 'weird', status: 'new', type: 'legacy-type', submitted_at: '2026-08-21T08:00:00Z' },
-  { id: 'r3', status: 'new', type: 'research', subtype: 'Report', submitted_at: '' },
-  { id: 'erc1', status: 'new', type: 'event', subtype: 'A&M', spotlight_request: true, submitted_at: '2026-08-24T09:00:00Z' },
-  { id: 'erc2', status: 'new', type: 'research', subtype: 'ERC Research', submitted_at: '2026-08-23T09:00:00Z' },
-];
+// ── One list, newest first (Kate's wireframes and her answers, Sep 18) ──
 
-test('sortCounts totals pending rows per bucket, each row in one bucket only', () => {
-  // erc1 (a spotlight event) and erc2 (ERC Research) count under ERC and not
-  // again under Events/Research; 'weird' (a legacy type) counts under Needs a
-  // type, where it is listed. Before Sep 15 the first two double-counted and
-  // the third counted nowhere.
-  assert.deepEqual(sortCounts(rows), {
-    erc: 2, fix: 2, erc_event: 0, research: 3, event: 1, opportunity: 1, headline: 1, skipped: 0,
-  });
-});
+const at = (id, status, submitted_at, extra = {}) => ({ id, status, type: 'research', subtype: 'Report', submitted_at, ...extra });
 
-test('allSections over the whole queue loses nothing and repeats nothing', () => {
-  const listed = allSections(rows).flatMap(g => g.live.map(r => r.id));
-  assert.equal(new Set(listed).size, listed.length);
-  assert.deepEqual([...listed].sort(),
-    ['e1', 'erc1', 'erc2', 'h1', 'o1', 'r1', 'r2', 'r3', 'u1', 'weird'].sort());
-});
-
-test('allSections orders a section oldest first, the way the card stream did', () => {
-  const research = allSections(rows).find(g => g.section === 'research');
-  assert.deepEqual(research.live.map(r => r.id), ['r1', 'r2', 'r3']);
-});
-
-test('kept rows without a type come back to Sort, unless already in an issue or live', () => {
+test('sortList: the waiting rows newest first, the skipped ones under them newest first, this visit\'s decisions greyed last', () => {
   const rows = [
-    { id: 1, status: 'kept', type: '' },
+    at('n1', 'new', '2026-09-10T10:00:00Z'),
+    at('n2', 'new', '2026-09-12T10:00:00Z'),
+    at('n0', 'new', ''),
+    at('s1', 'circleback', '2026-09-11T10:00:00Z'),
+    at('s2', 'circleback', '2026-09-09T10:00:00Z'),
+    at('k1', 'kept', '2026-09-13T10:00:00Z'),
+    at('t1', 'trashed', '2026-09-08T10:00:00Z'),
+    at('old', 'kept', '2026-09-01T10:00:00Z'),
+  ];
+  const { live, done } = sortList(rows, new Set(['k1', 't1']));
+  assert.deepEqual(live.map(r => r.id), ['n2', 'n1', 'n0', 's1', 's2']);
+  assert.deepEqual(done.map(r => r.id), ['k1', 't1']);
+});
+
+test('sortList: a row skipped this visit is still live, at the bottom with the skipped; a row kept from Skipped greys', () => {
+  const rows = [at('a', 'circleback', '2026-09-12T10:00:00Z'), at('b', 'new', '2026-09-10T10:00:00Z'), at('c', 'kept', '2026-09-11T10:00:00Z')];
+  const { live, done } = sortList(rows, new Set(['a', 'c']));
+  assert.deepEqual(live.map(r => r.id), ['b', 'a']);
+  assert.deepEqual(done.map(r => r.id), ['c']);
+});
+
+test('sortList: kept rows that lost their type come back, since typing is their fix, unless already in an issue or live', () => {
+  const rows = [
+    { id: 1, status: 'kept', type: '', submitted_at: '2026-09-09T10:00:00Z' },
     { id: 2, status: 'kept', type: 'event', subtype: 'Off-Campus' },
     { id: 3, status: 'kept', type: '', newsletter_issue: '2026-09-01' },
     { id: 4, status: 'kept', type: '', published_at: '2026-08-25' },
-    { id: 5, status: 'new', type: '' },
+    { id: 5, status: 'new', type: '', submitted_at: '2026-09-10T10:00:00Z' },
   ];
   assert.deepEqual(keptUntyped(rows).map(r => r.id), [1]);
-  // Needs a type lists the pending untyped first, then the kept fix-ups.
-  assert.deepEqual(allSections(rows)[0].live.map(r => r.id), [5, 1]);
+  assert.deepEqual(sortList(rows).live.map(r => r.id), [5, 1]);
 });
 
-test("a card decided this session stays in its section, greyed at the bottom, so a mistake is in reach", () => {
-  const decided = rows.map(r => (r.id === 'r1' ? { ...r, status: 'kept' } : r));
-  const research = d => allSections(decided, d).find(g => g.section === 'research');
-  // Without the session set the decided row is gone from the list, as before.
-  assert.deepEqual(research(new Set()).live.map(r => r.id), ['r2', 'r3']);
-  assert.deepEqual(research(new Set()).done.map(r => r.id), []);
-  // With it, r1 is still listed, out of the live rows and into done.
-  assert.deepEqual(research(new Set(['r1'])).live.map(r => r.id), ['r2', 'r3']);
-  assert.deepEqual(research(new Set(['r1'])).done.map(r => r.id), ['r1']);
-});
-
-test('trashed and skipped session rows stay listed too — any decision is reversible', () => {
-  const decided = rows.map(r => {
-    if (r.id === 'e1') return { ...r, status: 'trashed' };
-    if (r.id === 'o1') return { ...r, status: 'circleback' };
-    return r;
-  });
-  const groups = allSections(decided, new Set(['e1', 'o1']));
-  assert.deepEqual(groups.find(g => g.section === 'event').done.map(r => r.id), ['e1']);
-  assert.deepEqual(groups.find(g => g.section === 'opportunity').done.map(r => r.id), ['o1']);
-});
-
-test('a session-decided row that is also a kept fix-up appears once, not twice', () => {
-  const rows = [{ id: 1, status: 'kept', type: '' }, { id: 2, status: 'new', type: 'event', subtype: 'Off-Campus' }];
-  const untyped = allSections(rows, new Set([1])).find(g => g.section === 'fix');
-  const ids = [...untyped.live, ...untyped.done].map(r => r.id);
-  assert.deepEqual(ids.filter(id => id === 1).length, 1);
-});
-
-test('the filter counts still mean work remaining — a decided card stops counting', () => {
-  const decided = rows.map(r => (r.id === 'r1' ? { ...r, status: 'kept' } : r));
-  assert.equal(sortCounts(decided).research, sortCounts(rows).research - 1);
-});
-
-test('ERC Events get their own counted section, separate from the ERC bucket', () => {
+test('sortList: a row still waiting for the reader never reaches the list', () => {
   const rows = [
-    { id: 'x', status: 'new', type: 'erc_event', subtype: '', submitted_at: '2026-09-01T00:00:00Z' },
-    { id: 'y', status: 'new', type: 'event', subtype: 'A&M', submitted_at: '2026-09-02T00:00:00Z' },
+    at('p1', 'new', '2026-09-10T10:00:00Z', { pending_read: 'yes' }),
+    at('p2', 'circleback', '2026-09-10T10:01:00Z', { pending_read: 'yes' }),
+    at('e9', 'new', '2026-09-10T09:00:00Z'),
   ];
-  assert.equal(sortCounts(rows).erc_event, 1);
-  assert.equal(sortCounts(rows).event, 1);
-  assert.equal(sectionOf(rows[0]), 'erc_event');
+  assert.deepEqual(sortList(rows).live.map(r => r.id), ['e9']);
 });
 
-test('ERC Events lead, ahead of research', () => {
-  const rows = [
-    { id: 'r', status: 'new', type: 'research', subtype: 'Report', submitted_at: '2026-09-01T00:00:00Z' },
-    { id: 'e', status: 'new', type: 'erc_event', subtype: '', submitted_at: '2026-09-02T00:00:00Z' },
-  ];
-  assert.deepEqual(allSections(rows).map(g => g.section), ['erc_event', 'research']);
-});
-
-test('a row still waiting for the reader never reaches a list or a count', () => {
-  const waiting = [
-    { id: 'p1', status: 'new', type: 'event', subtype: 'Off-Campus', pending_read: 'yes', submitted_at: '2026-09-10T10:00:00Z' },
-    { id: 'p2', status: 'new', type: '', pending_read: 'yes', submitted_at: '2026-09-10T10:01:00Z' },
-    { id: 'e9', status: 'new', type: 'event', subtype: 'Off-Campus', pending_read: '', submitted_at: '2026-09-10T09:00:00Z' },
-  ];
-  assert.deepEqual(allSections(waiting).flatMap(g => g.live.map(r => r.id)), ['e9']);
-  const counts = sortCounts(waiting);
-  assert.equal(counts.fix, 0);
-  assert.equal(counts.event, 1);
+test('oldestWait: whole days the oldest waiting row has sat, by the desk\'s UTC date; none when nothing waits', () => {
+  const rows = [at('a', 'new', '2026-09-10T23:00:00Z'), at('b', 'new', '2026-09-15T01:00:00Z'), at('s', 'circleback', '2026-08-01T00:00:00Z')];
+  assert.equal(oldestWait(rows, '2026-09-18'), 8);
+  assert.equal(oldestWait([at('b', 'new', '2026-09-18T01:00:00Z')], '2026-09-18'), 0);
+  assert.equal(oldestWait([], '2026-09-18'), null);
+  assert.equal(oldestWait([at('x', 'new', '')], '2026-09-18'), null);
 });
 
 test('readerQueue lists the waiting rows Sort must have read, and only those', () => {
@@ -146,71 +87,11 @@ test('isNewToday marks what was submitted today, by the same UTC date the desk u
   assert.equal(isNewToday({ submitted_at: '2026-09-10T01:00:00Z' }, ''), false);
 });
 
-test('sectionRows: a section\'s pending rows oldest first, this session\'s decided ones at the bottom, nothing else', () => {
-  const rs = [
-    { id: 'h2', status: 'new', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-10T10:00:00Z' },
-    { id: 'gone', status: 'trashed', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-09T10:00:00Z' },
-    { id: 'h1', status: 'new', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-08T10:00:00Z' },
-    { id: 'old', status: 'trashed', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-01T10:00:00Z' },
-    { id: 'kept', status: 'kept', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-07T10:00:00Z' },
-    { id: 'parked', status: 'circleback', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-06T10:00:00Z' },
-    { id: 'reading', status: 'new', type: 'headline', subtype: 'Texas', pending_read: 'yes', submitted_at: '2026-09-11T10:00:00Z' },
-    { id: 'erc', status: 'new', type: 'headline', subtype: 'Texas', spotlight_request: true, submitted_at: '2026-09-05T10:00:00Z' },
-    { id: 'ev', status: 'new', type: 'event', subtype: 'Off-Campus', submitted_at: '2026-09-05T10:00:00Z' },
-  ];
-  const { live, done } = sectionRows(rs, 'headline', new Set(['gone', 'kept', 'parked']));
-  assert.deepEqual(live.map(r => r.id), ['h1', 'h2']);
-  assert.deepEqual(done.map(r => r.id), ['parked', 'kept', 'gone']);
-  assert.deepEqual(sectionRows(rs, 'erc').live.map(r => r.id), ['erc']);
-  assert.deepEqual(sectionRows(rs, 'event').live.map(r => r.id), ['ev']);
-});
-
-test('sectionRows for Needs a type also lists kept rows that lost their type, since typing is their fix', () => {
-  const rs = [
-    { id: 'u1', status: 'new', type: '', submitted_at: '2026-09-10T10:00:00Z' },
-    { id: 'k1', status: 'kept', type: 'legacy-type', submitted_at: '2026-09-09T10:00:00Z' },
-    { id: 'ok', status: 'new', type: 'event', subtype: 'Off-Campus', submitted_at: '2026-09-08T10:00:00Z' },
-  ];
-  assert.deepEqual(sectionRows(rs, 'fix').live.map(r => r.id), ['k1', 'u1']);
-});
-
-test('allSections: every non-empty section in pill order, each row in exactly one of them', () => {
-  const rs = [
-    { id: 'h1', status: 'new', type: 'headline', subtype: 'Texas', submitted_at: '2026-08-20T10:00:00Z' },
-    { id: 'u1', status: 'new', type: '', submitted_at: '2026-08-25T12:00:00Z' },
-    { id: 'e1', status: 'new', type: 'event', subtype: 'Off-Campus', submitted_at: '2026-08-24T08:00:00Z' },
-    { id: 'erc1', status: 'new', type: 'event', subtype: 'Off-Campus', spotlight_request: true, submitted_at: '2026-08-24T09:00:00Z' },
-    { id: 'old', status: 'kept', type: 'research', subtype: 'Report', submitted_at: '2026-08-01T08:00:00Z' },
-  ];
-  const groups = allSections(rs);
-  assert.deepEqual(groups.map(g => g.section), ['fix', 'erc', 'event', 'headline']);
-  assert.deepEqual(groups.map(g => g.live.map(r => r.id)), [['u1'], ['erc1'], ['e1'], ['h1']]);
-  const ids = groups.flatMap(g => g.live.map(r => r.id));
-  assert.equal(new Set(ids).size, ids.length);
-});
-
-test('allSections keeps a section that only holds rows decided this session', () => {
-  const rs = [{ id: 'gone', status: 'trashed', type: 'headline', subtype: 'Texas', submitted_at: '2026-08-20T10:00:00Z' }];
-  assert.deepEqual(allSections(rs, new Set(['gone'])).map(g => g.section), ['headline']);
-  assert.deepEqual(allSections(rs).map(g => g.section), []);
-});
-
-test('an ERC row counts once, under ERC, not again under its own type', () => {
-  const rs = [{ id: 'e', status: 'new', type: 'event', subtype: 'Off-Campus', spotlight_request: true, submitted_at: '2026-09-01T00:00:00Z' }];
-  assert.deepEqual(sortCounts(rs), { erc: 1, fix: 0, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0, skipped: 0 });
-});
-
-test('a row with a legacy type counts under Needs a type, where it is listed', () => {
-  const rs = [{ id: 'w', status: 'new', type: 'legacy-type', submitted_at: '2026-09-01T00:00:00Z' }];
-  assert.equal(sortCounts(rs).fix, 1);
-  assert.equal(allSections(rs)[0].section, 'fix');
-});
-
-// Needs a fix (Kate, Sep 15): one section gathers every row that cannot be
-// kept yet, plus possible duplicates, instead of amber marks on rows.
+// The checks stay on the card (Kate, Sep 18): no type, a link not opened, a
+// possible duplicate. The list marks the row; the card says why.
 const ok = { id: 'ok', status: 'new', type: 'research', subtype: 'Report', link: 'https://a.org/1', link_checked: 'ok', submitted_at: '2026-09-01T00:00:00Z' };
 
-test('fixReasons names what keeps a row out of Keep the rest, and a possible duplicate', () => {
+test('fixReasons names what locks Keep and next, and a possible duplicate', () => {
   assert.deepEqual(fixReasons(ok, { rows: [ok] }), []);
   assert.deepEqual(fixReasons({ ...ok, type: '' }, { rows: [] }), ['No type']);
   assert.deepEqual(fixReasons({ ...ok, subtype: 'Not a real one' }, { rows: [] }), ['No type']);
@@ -240,80 +121,12 @@ test('dupeReason is the duplicate half of fixReasons, and empty when there is no
   assert.equal(dupeReason({ ...later, type: '', link_checked: 'failed' }, { rows: [later] }), '');
 });
 
-test('sectionOf sends any row with a fix to the fix section, ahead of ERC and its type', () => {
-  const rs = [{ ...ok, id: 'l', link_checked: 'failed' }, { ...ok, id: 'e', spotlight_request: true, link_checked: 'failed' }];
-  assert.equal(sectionOf(rs[0], { rows: rs }), 'fix');
-  assert.equal(sectionOf(rs[1], { rows: rs }), 'fix');
-  assert.equal(sectionOf(ok, { rows: [ok] }), 'research');
-});
+// ── The card ──
 
-test('a row with an unchecked link lists under Needs a fix only, never also under its type', () => {
-  const rs = [ok, { ...ok, id: 'bad', link_checked: 'failed', submitted_at: '2026-09-02T00:00:00Z' }];
-  const groups = allSections(rs);
-  assert.deepEqual(groups.map(g => [g.section, g.live.map(r => r.id)]), [['fix', ['bad']], ['research', ['ok']]]);
-  assert.equal(sortCounts(rs).fix, 1);
-  assert.equal(sortCounts(rs).research, 1);
-});
-
-// One table at a time (Kate, Sep 15): no All pill. Sort lands on the first
-// section that holds something, Needs a fix first.
-test('landingSection is the first pill with anything in it, Needs a fix first, else Needs a fix', () => {
-  assert.equal(landingSection({ fix: 2, erc: 1, erc_event: 0, research: 3, event: 0, opportunity: 0, headline: 0 }), 'fix');
-  assert.equal(landingSection({ fix: 0, erc: 0, erc_event: 0, research: 3, event: 0, opportunity: 0, headline: 1 }), 'research');
-  assert.equal(landingSection({ fix: 0, erc: 0, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0 }), 'fix');
-});
-
-// Skipped (Kate, Sep 15, option B): a parked row waits under its own pill, any
-// type, with Keep and Delete, so a Skip is never the end of the road. Before
-// this only Home listed circle-backs, and only with a trash can.
-test('a skipped row lives under Skipped, whatever its type, and in no other section', () => {
-  const rs = [
-    { id: 'p1', status: 'circleback', type: 'research', subtype: 'Report', submitted_at: '2026-09-02T00:00:00Z' },
-    { id: 'p2', status: 'circleback', type: '', submitted_at: '2026-09-01T00:00:00Z' },
-    { id: 'n1', status: 'new', type: 'research', subtype: 'Report', submitted_at: '2026-09-03T00:00:00Z' },
-    { id: 'reading', status: 'circleback', type: 'event', subtype: 'A&M', pending_read: 'yes', submitted_at: '2026-09-04T00:00:00Z' },
-  ];
-  const groups = allSections(rs);
-  assert.deepEqual(groups.map(g => [g.section, g.live.map(r => r.id)]), [['research', ['n1']], ['skipped', ['p2', 'p1']]]);
-  assert.equal(sortCounts(rs).skipped, 2);
-  assert.equal(sortCounts(rs).fix, 0);   // an untyped parked row waits under Skipped, not Needs a fix
-});
-
-test('Skipped is the last pill; Sort lands there only when nothing else is waiting', () => {
-  assert.equal(landingSection({ fix: 0, erc: 0, erc_event: 0, research: 0, event: 0, opportunity: 0, headline: 0, skipped: 2 }), 'skipped');
-  assert.equal(landingSection({ fix: 0, erc: 0, erc_event: 0, research: 1, event: 0, opportunity: 0, headline: 0, skipped: 2 }), 'research');
-});
-
-test('a row skipped this session greys in its own section and is already live under Skipped', () => {
-  const rs = [
-    { id: 'r1', status: 'circleback', type: 'research', subtype: 'Report', submitted_at: '2026-09-02T00:00:00Z' },
-    { id: 'r2', status: 'new', type: 'research', subtype: 'Report', submitted_at: '2026-09-03T00:00:00Z' },
-  ];
-  const decided = new Set(['r1']);
-  const from = new Map([['r1', 'new']]);
-  assert.deepEqual(sectionRows(rs, 'research', decided, undefined, from).done.map(r => r.id), ['r1']);
-  assert.deepEqual(sectionRows(rs, 'skipped', decided, undefined, from).live.map(r => r.id), ['r1']);
-});
-
-test('a row kept or deleted from Skipped greys under Skipped, not in its type section', () => {
-  const rs = [
-    { id: 'k', status: 'kept', type: 'research', subtype: 'Report', submitted_at: '2026-09-02T00:00:00Z' },
-    { id: 'd', status: 'trashed', type: 'event', subtype: 'A&M', submitted_at: '2026-09-01T00:00:00Z' },
-    { id: 'p', status: 'circleback', type: 'headline', subtype: 'Texas', submitted_at: '2026-09-03T00:00:00Z' },
-  ];
-  const decided = new Set(['k', 'd']);
-  const from = new Map([['k', 'circleback'], ['d', 'circleback']]);
-  const groups = allSections(rs, decided, from);
-  assert.deepEqual(groups.map(g => g.section), ['skipped']);
-  assert.deepEqual(groups[0].live.map(r => r.id), ['p']);
-  assert.deepEqual(groups[0].done.map(r => r.id), ['d', 'k']);
-});
-
-// ── Sort as a list and a card (Claude Design round two, Kate's pick C, Sep 16) ──
-
-test('keepBlock says why Keep is locked: a type first, then the link; nothing when it can be kept', () => {
+test('keepBlock says why Keep and next is locked: a type first, then the link, then somewhere to send it; nothing when it can be kept', () => {
   assert.equal(keepBlock({ type: '', subtype: '', link: 'https://x.org', link_checked: 'ok' }), 'Set a type first');
   assert.equal(keepBlock({ type: 'headline', subtype: 'Texas', link: 'https://x.org', link_checked: 'failed' }), 'Check the link first');
+  assert.equal(keepBlock({ type: 'headline', subtype: 'Texas', link: 'https://x.org', link_checked: 'ok', send_to: 'none' }), 'Tick Newsletter or Policy Exchange');
   assert.equal(keepBlock({ type: 'headline', subtype: 'Texas', link: 'https://x.org', link_checked: 'ok' }), '');
 });
 
@@ -323,13 +136,6 @@ test('nextSelected keeps the chosen row while it is live, else takes the row now
   assert.equal(nextSelected(['a'], 'c', 2), 'a');
   assert.equal(nextSelected([], 'a', 0), null);
   assert.equal(nextSelected(['a', 'b'], null, 0), 'a');
-});
-
-test('nextSectionWithRows finds the next section that holds anything, wrapping round, else none', () => {
-  const counts = { fix: 0, erc: 0, erc_event: 0, research: 2, event: 0, opportunity: 1, headline: 0, skipped: 0 };
-  assert.equal(nextSectionWithRows(counts, 'research'), 'opportunity');
-  assert.equal(nextSectionWithRows(counts, 'opportunity'), 'research');
-  assert.equal(nextSectionWithRows({ ...counts, research: 0, opportunity: 0 }, 'fix'), null);
 });
 
 // Audit round two, e3: Undo last says what it undid, and a row's own Undo takes
@@ -354,13 +160,13 @@ test('withoutRow: drops one row from every entry and empties the entries it leav
   assert.equal(stack.length, 3, 'the stack passed in is not changed');
 });
 
-// Audit round two, e14: the section tabs are one tab stop; Left and Right move between them.
+// Audit round two, e14: the tabs (Sort and Finalize since Sep 18) are one tab stop; Left and Right move between them.
 test('adjacentTab: Left and Right wrap, Home and End jump, other keys do nothing', () => {
-  const keys = ['fix', 'erc', 'research'];
-  assert.equal(adjacentTab(keys, 'erc', 'ArrowRight'), 'research');
-  assert.equal(adjacentTab(keys, 'research', 'ArrowRight'), 'fix');
-  assert.equal(adjacentTab(keys, 'fix', 'ArrowLeft'), 'research');
-  assert.equal(adjacentTab(keys, 'erc', 'Home'), 'fix');
-  assert.equal(adjacentTab(keys, 'fix', 'End'), 'research');
-  assert.equal(adjacentTab(keys, 'fix', 'Enter'), null);
+  const keys = ['sort', 'finalize', 'third'];
+  assert.equal(adjacentTab(keys, 'finalize', 'ArrowRight'), 'third');
+  assert.equal(adjacentTab(keys, 'third', 'ArrowRight'), 'sort');
+  assert.equal(adjacentTab(keys, 'sort', 'ArrowLeft'), 'third');
+  assert.equal(adjacentTab(keys, 'finalize', 'Home'), 'sort');
+  assert.equal(adjacentTab(keys, 'sort', 'End'), 'third');
+  assert.equal(adjacentTab(keys, 'sort', 'Enter'), null);
 });

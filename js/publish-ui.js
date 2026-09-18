@@ -85,7 +85,7 @@ function itemRows({ row, fate }, { rerender, onGoTo, today }) {
   const fateTd = el('td', 'p-fate');
   if (fate === 'fix') {
     const jump = button('Needs a fix', 'linkish p-fate-fix',
-      { onClick: event => { event.stopPropagation(); onGoTo('sort', 'fix'); } });
+      { onClick: event => { event.stopPropagation(); onGoTo('sort'); } });
     jump.title = "Opens Sort's Needs a fix";
     fateTd.append(jump);
   } else {

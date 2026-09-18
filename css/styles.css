@@ -232,8 +232,8 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 /* Header buttons: the screen's decision is a small primary; its door is the tertiary; both sit right. */
 /* The small primary: a screen head's decision and Sort's Keep the rest. Stays
    above button.primary:not(:has(.fa-solid)) so an icon-less one keeps its 16px. */
-.screen-head button.primary, .list-head .list-keep { margin-left: auto; align-self: center; height: 32px; padding: 0 var(--spacing-09) 0 var(--spacing-04); }
-.screen-head button.primary .fa-solid, .list-head .list-keep .fa-solid { right: var(--spacing-04); }
+.screen-head button.primary { margin-left: auto; align-self: center; height: 32px; padding: 0 var(--spacing-09) 0 var(--spacing-04); }
+.screen-head button.primary .fa-solid { right: var(--spacing-04); }
 .screen-head .door { margin-left: auto; align-self: center; }
 .screen-head .p-ask { margin-left: auto; align-self: center; font-size: 14px; line-height: 20px; letter-spacing: .16px; padding: var(--spacing-04) var(--spacing-05); }   /* the one ask before Publish, in the button's place (design audit b6), at body-01 (audit round two, e10) */
 .screen-head .p-ask strong { font-weight: 600; }
@@ -280,59 +280,24 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .nl-table .badge { margin-top: var(--spacing-02); }
 .badge-dupe { background: var(--tag-background-review); color: var(--tag-color-review); }
 .badge-new { background: var(--tag-background-blue); color: var(--tag-color-blue); }
-/* The link ask, inside the fix panel: the panel draws the warning box. */
-.link-alert .alert-line { margin: 0; }
-.link-alert .alert-change { display: none; }
-.link-alert .alert-change.is-open { display: block; margin: var(--spacing-03) 0 0; }
-.link-alert .alert-field-label { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: 0 0 var(--spacing-02); }   /* a name over the field, not a placeholder (audit round two, f4) */
-.link-alert input[type="url"] { height: 32px; font-size: 12px; letter-spacing: .32px; padding: 0 var(--spacing-03); width: 16rem; max-width: 100%; }
-.link-alert.is-clickable { cursor: pointer; }
 .alert-word { color: var(--link-primary); }
 .alert-word:hover { color: var(--link-primary-hover); }
 /* On the desk links and quiet words are grey (Kate's pick, Sep 17), the grey of
    secondary text, so a word that acts wears an underline or it reads as text
    (design critique, Sep 18). Words with an icon (Edit, Delete) and the muted
    ones (Skip, Cancel) read as buttons already. */
-.info-toggle, .alert-word, .source-link, .undo-link, .bulk-templates a,
+.info-toggle, .alert-word, .source-link, .bulk-templates a,
 .linkish:not(:has(.fa-solid)):not(.quiet-link):not(.skip-link) { text-decoration: underline; text-underline-offset: 3px; }
-.undo-link:disabled { text-decoration: none; }
-.link-alert input.is-invalid { border-bottom-color: var(--err); outline: 2px solid var(--err); outline-offset: -2px; }
+.card-link-change input.is-invalid { border-bottom-color: var(--err); outline: 2px solid var(--err); outline-offset: -2px; }
 .field-error { margin: var(--spacing-02) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--err); }
 .load-failed { margin: var(--spacing-05) 0; color: var(--muted); display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; }
 
-/* Needs a fix, the one warning tab: the review colour for its word, the triangle in support-warning. */
-.sort-nav .sort-filter.is-alert:not(.is-active) { color: var(--warn); }
-.sort-nav .sort-filter.is-alert:not(.is-active):hover { color: var(--warn); border-bottom-color: var(--warn-mark); }
-.sort-nav .sort-filter.is-alert.is-active, .sort-nav .sort-filter.is-alert.is-active:hover:not(:disabled) { color: var(--warn); border-bottom-color: var(--warn-mark); }
 .img-upload { display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; }
 .img-upload .media-add { margin-left: 0; }   /* the small Add media word (Kate, Sep 17), a ghost button */
 .img-thumb { width: 48px; height: 48px; object-fit: cover; border: 1px solid var(--line-in); flex: none; }   /* the attached picture, in view (design audit b8) */
 .load-line { margin: var(--spacing-02) 0 0; text-align: center; color: var(--muted); }
 .status .linkish { height: 24px; vertical-align: middle; }
 .img-status { color: var(--muted); display: inline-flex; align-items: center; gap: var(--spacing-03); }
-/* Section menu: the sections as Carbon tabs, one row on top (Claude Design round two, Kate's pick C, Sep 16). */
-.sort-body { margin-top: var(--spacing-03); }
-.sort-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 0; margin: 0 0 var(--spacing-05); border-bottom: 1px solid var(--line); }
-.sort-nav .sort-filter { flex: none; }
-.sort-group { font-weight: 600; margin: 0; }
-/* Undo sits under the section label. The row keeps its height when disabled so
-   a fresh stack doesn't start the card higher and drop it on the first decision. */
-.undo-link {
-  display: block; border: none; background: none; padding: 0; height: auto; min-height: 24px; white-space: nowrap;
-  margin: var(--spacing-01) 0 var(--spacing-03); font: inherit; letter-spacing: .16px;
-  color: var(--link-primary); cursor: pointer;
-}
-.undo-link:hover:not(:disabled) { border: none; background: none; color: var(--link-primary-hover); text-decoration: underline; }
-.undo-link:disabled { color: var(--text-disabled); cursor: default; border: none; }
-.sort-filter {
-  height: 40px; padding: 0 var(--spacing-05); margin-bottom: -1px;
-  border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none;
-  color: var(--muted); cursor: pointer; font: inherit; letter-spacing: .16px;
-  transition: border-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
-}
-.sort-filter:hover:not(.is-active) { border: 0; border-bottom: 2px solid var(--border-strong-01); background: none; color: var(--ink); }
-.sort-filter.is-active { color: var(--ink); font-weight: 600; background: none; border-bottom-color: var(--border-interactive); }
-.sort-filter.is-active:hover:not(:disabled) { background: none; color: var(--ink); border: 0; border-bottom: 2px solid var(--border-interactive); }   /* the base button hover would fill it (audit round two, e5) */
 .type-line { color: var(--muted); margin: 0; }
 .type-line .type-label { color: var(--ink); }
 /* Quiet action words: Carbon's ghost button, the word in the link colour with
@@ -601,67 +566,91 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .queue-wait { display: inline-flex; align-items: center; height: 24px; }
 .queue-wait:focus { outline: none; }
 .queue-row.is-deleted td { opacity: .5; }
-/* Sort as a list (every section tab): one Keep for the page, rows sink when decided. */
-.list-head { display: flex; align-items: center; gap: var(--spacing-05); margin: 0 0 var(--spacing-02); }
-.list-head .undo-link { margin: 0; }
-.list-head .list-keep { white-space: nowrap; flex: none; }
-.list-hint { margin: 0 0 var(--spacing-04); }
-/* Sort as a list and a card (Claude Design round two, Kate's pick C, Sep 16):
-   the rows down the left, the chosen row's card on the right, kept in view
-   while the list scrolls. Finalize's list and card, with Sort's fix panel. */
-.sort-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: var(--spacing-05); align-items: start; }
-.sort-rows, .f-list { background: var(--layer); border: 1px solid var(--layer-line); border-radius: 0; overflow: hidden; }
+/* A page's head (Kate's wireframes, Sep 17): the title, then its tabs under a
+   hairline, a count on each; a fact about the page may sit at the row's right. */
+.page-head { margin: 0 0 var(--spacing-05); }
+.page-title { font-size: 28px; line-height: 36px; font-weight: 300; letter-spacing: 0; margin: 0 0 var(--spacing-05); }
+.page-tabs { display: flex; align-items: center; gap: var(--spacing-05); border-bottom: 1px solid var(--line); }
+.tabs { display: flex; }
+.tab {
+  display: inline-flex; align-items: center; gap: var(--spacing-03); height: 40px; padding: 0 var(--spacing-05); margin-bottom: -1px;
+  border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; color: var(--muted); font: inherit; letter-spacing: .16px;
+  transition: border-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
+}
+.tab:hover:not(:disabled) { background: none; color: var(--ink); border: 0; border-bottom: 2px solid var(--border-strong-01); }
+.tab.is-active, .tab.is-active:hover:not(:disabled) { color: var(--ink); font-weight: 600; border-bottom: 2px solid var(--border-interactive); }
+.tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 var(--spacing-03); border-radius: var(--radius-tag-md); background: var(--layer-01); font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 400; }
+.tab.is-active .tab-count { background: var(--layer-accent-01); }
+.page-tabs-note { margin-left: auto; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
+
+/* Sort content's Sort tab (Kate's wireframes, Sep 17): the list, 420px, down
+   the left, the chosen item's card on the right, kept in view while the list
+   scrolls. Finalize's list and card share the row and card rules. */
+.sort-split { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: var(--spacing-06); align-items: start; }
+.sort-list, .f-list { background: var(--layer); border: 1px solid var(--layer-line); border-radius: 0; overflow: hidden; }
+.sort-list-head { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-03) var(--spacing-05); background: var(--layer-01); font-size: 12px; line-height: 16px; letter-spacing: .32px; }
+.sort-list-count { font-weight: 600; color: var(--muted); }
+.sort-list-order { margin-left: auto; color: var(--text-helper); }
 .sort-row, .f-list-row {
   display: flex; align-items: flex-start; gap: var(--spacing-03); width: 100%; height: auto; box-sizing: border-box; text-align: left;
   padding: var(--spacing-04) var(--spacing-05); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; background: transparent;
   font: inherit; letter-spacing: .16px; color: var(--ink); cursor: pointer;
   transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
-.sort-rows > :first-child, .f-list > :first-child { border-top: 0; }
+.f-list > :first-child { border-top: 0; }
 .sort-row:hover:not(:disabled), .f-list-row:hover:not(:disabled) { border-color: var(--line-in); background: var(--row-hover); color: var(--ink); }
 .sort-row.is-selected, .f-list-row.is-selected { background-color: var(--selected); color: var(--accent-deep); box-shadow: inset 3px 0 0 var(--border-interactive); }
 .sort-row.is-selected:hover:not(:disabled), .f-list-row.is-selected:hover:not(:disabled) { background: var(--selected); color: var(--accent-deep); }   /* the chosen row keeps its tint under the mouse */
 .sort-row-text, .f-row-text { display: flex; flex-direction: column; gap: var(--spacing-01); min-width: 0; flex: 1 1 auto; }
-.sort-row-badges { display: flex; flex-wrap: wrap; gap: var(--spacing-02); margin-bottom: var(--spacing-01); }
-.sort-row-badges .badge, .sort-card-top .badge { margin-right: 0; }
+.sort-row.is-selected .sort-row-title { font-weight: 600; }
+.sort-row-title .badge, .sort-card-top .badge { margin-right: 0; }
 .sort-row-title, .f-row-title { font-size: 14px; line-height: 18px; font-weight: 400; }
 .sort-row-meta, .f-row-type { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
-/* The one alert on a Needs a fix row: the warning triangle before the title. */
+/* A row the card has a question about (no type, the link, a duplicate): the triangle before the title. */
 .sort-row .fix-mark, .f-list-row .fix-mark { color: var(--warn-mark); font-size: 12px; margin-top: 3px; flex: none; }
 .sort-done { display: flex; align-items: flex-start; gap: var(--spacing-03); padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--line-in); background: var(--layer-01); }
 .sort-done .sort-row-title, .sort-done .sort-row-meta { color: var(--muted); }
 .sort-done.is-trashed .sort-row-title { text-decoration: line-through; }
 .sort-done-acts { margin-left: auto; white-space: nowrap; }
-.sort-card { display: flex; flex-direction: column; gap: var(--spacing-03); }
+.sort-card { display: flex; flex-direction: column; gap: var(--spacing-05); }
 /* One card rule for Sort and Finalize: the same padding, and in view while a long list scrolls. */
 .sort-card, .f-card { padding: var(--spacing-05); box-sizing: border-box; position: sticky; top: calc(20px + var(--spacing-05)); max-height: calc(100vh - 2rem); overflow-y: auto; }
+.sort-card { padding: var(--spacing-06); }
 /* A card taller than the window fades at its foot until the reader scrolls to the end (design audit c3). */
 .sort-card.is-more::after, .f-card.is-more::after { content: ""; position: sticky; bottom: calc(-1 * var(--spacing-05)); display: block; height: 40px; margin: -40px 0 calc(-1 * var(--spacing-05)); flex: none; background: linear-gradient(transparent, var(--layer)); pointer-events: none; }
-.sort-card h3 { margin: 0; font-size: 16px; line-height: 22px; font-weight: 600; }   /* heading-02 */
-.sort-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02) var(--spacing-04); }
-.sort-card-meta { margin: calc(-1 * var(--spacing-02)) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
-.sort-card .f-blurb-text.is-quiet { color: var(--muted); }
-.sort-card-acts { display: flex; align-items: center; gap: var(--spacing-05); border-top: 1px solid var(--line-in); padding-top: var(--spacing-05); margin-top: var(--spacing-03); }
+.sort-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02); }
+.sort-card-pos { margin-left: auto; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
+/* Every field on the card is edited in place (Kate, Sep 18); the title reads as the card's heading until it is clicked. */
+.sort-card input.card-title { height: auto; padding: var(--spacing-01) 0; font-size: 20px; line-height: 26px; font-weight: 600; background: transparent; border-bottom: 1px solid transparent; }
+.sort-card input.card-title:hover { border-bottom-color: var(--border-strong-01); }
+.sort-card-meta { margin: calc(-1 * var(--spacing-04)) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.card-link-line { margin: 0; font-size: 14px; line-height: 20px; }
+.card-link { margin-top: calc(-1 * var(--spacing-03)); }
+.card-link .source-link { color: var(--muted); }
+.card-link .fa-arrow-up-right-from-square, .card-note-box .fa-arrow-up-right-from-square { font-size: 10px; }
+.card-link-change { display: flex; align-items: flex-end; gap: var(--spacing-04); flex-wrap: wrap; margin-top: var(--spacing-04); }
+.card-link-change .card-field { flex: 1 1 260px; }
+.card-link-change .field-error { flex-basis: 100%; }
+/* The card's questions: Carbon's inline warning note, one per question. */
+.card-note-box { padding: var(--spacing-04) var(--spacing-05); border: 1px solid var(--warn-line); border-left: 3px solid var(--warn-mark); background: var(--warn-bg); }
+.card-note-head { margin: 0 0 var(--spacing-02); font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600; color: var(--ink); }
+.card-note-head .fa-solid { margin-right: var(--spacing-02); color: var(--warn-mark); }
+.card-quiet { margin: 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.card-field > label, .card-field-label, .card-type legend, .card-send legend { display: block; margin: 0 0 var(--spacing-03); padding: 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.card-type, .card-send { border: 0; padding: 0; margin: 0; min-width: 0; }
+.card-type.is-alert legend { color: var(--warn); font-weight: 600; }
+.card-type.is-alert legend .fa-solid { margin-right: var(--spacing-02); color: var(--warn-mark); }
+.card-type.is-alert > .pill-row:first-of-type { border-color: var(--warn-mark); }
+.pill-row.is-sub { margin-top: var(--spacing-03); }
+.card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-05) var(--spacing-06); }
+.card-send-line { display: flex; gap: var(--spacing-06); }
+.card-send label.check { display: inline-flex; align-items: center; gap: var(--spacing-03); margin: 0; font-size: 14px; line-height: 20px; letter-spacing: .16px; color: var(--ink); cursor: pointer; }
+.card-send input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
+.sort-card-acts { display: flex; align-items: center; gap: var(--spacing-05); border-top: 1px solid var(--line-in); padding-top: var(--spacing-05); }
 .sort-card-right { margin-left: auto; display: flex; align-items: center; gap: var(--spacing-05); }
-.sort-card input { background: var(--field-01); }   /* a field on a white card is grey (Carbon's layer model) */
+.sort-card input:not([type="checkbox"]), .sort-card textarea { background: var(--field-01); }   /* a field on a white card is grey (Carbon's layer model) */
+.sort-card input.card-title { background: transparent; }   /* after the grey fields: the title reads as the heading */
 .f-edit-card input, .f-edit-card textarea { background: var(--field-02); }   /* a field on the grey edit box is white (Carbon's layer model) */
-/* The fix panel: Carbon's inline notification, a warning while the row needs
-   a fix, informational while a type changes. */
-.fix-panel { border: 1px solid var(--line-in); border-left: 3px solid var(--support-info); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); background: var(--layer-02); }
-.fix-panel.is-alert { border-color: var(--warn-line); border-left-color: var(--warn-mark); background: var(--warn-bg); }
-.fix-head { margin: 0 0 var(--spacing-02); font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600; color: var(--muted); }
-.fix-head.is-alert { color: var(--ink); }
-.fix-head .fa-solid { margin-right: var(--spacing-02); }
-.fix-head.is-alert .fa-solid { color: var(--warn-mark); }
-.fix-panel > .fix-head ~ .fix-head { margin-top: var(--spacing-04); }
-.fix-line { margin: 0; color: var(--ink); }
-.radio-line { display: flex; align-items: center; gap: var(--spacing-03); margin: var(--spacing-01) 0; color: var(--ink); cursor: pointer; }
-.radio-line input { margin: 0; accent-color: var(--accent); }
-.type-radios { border: 0; padding: 0; margin: 0; min-width: 0; }   /* a fieldset, reset to the panel's own spacing (design audit b10) */
-.sub-radios { margin: var(--spacing-01) 0 var(--spacing-02) var(--spacing-06); padding: 0 0 0 var(--spacing-04); border: 0; border-left: 1px solid var(--line-in); min-width: 0; }
-.sub-radios .radio-line { font-size: 12px; line-height: 16px; letter-spacing: .32px; margin: var(--spacing-02) 0; }
-.fix-panel .link-alert { margin: 0; padding: 0; border: 0; background: none; }
-.fix-panel .linkish { margin-left: 0; }
 @media (max-width: 900px) {
   .sort-split { grid-template-columns: minmax(0, 1fr); }
   .sort-card, .f-card { position: static; max-height: none; }
