@@ -7,7 +7,7 @@
  */
 import { screenHead } from './screen-info.js';
 import { faIcon } from './icons.js';
-import { buildPool, newsletterOnly, reshareFlags } from './workflow.js';
+import { buildPool, sendTo, reshareFlags } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, typeDisplay } from './schema.js';
 import { GROUP_LABELS, splitPool } from './newsletter-view.js';   // the issue's shape: spotlight leads, then the newsletter's sections
@@ -315,7 +315,7 @@ export function renderNewsletter(container, props) {
       const typeTd = el('td');
       typeTd.append(el('span', '', row.type ? typeDisplay(row.type) : ''));
       if (row.subtype) typeTd.append(el('span', 'item-source', row.subtype));
-      if (newsletterOnly(row)) typeTd.append(el('span', 'badge', 'Newsletter only'));
+      if (!sendTo(row).exchange) typeTd.append(el('span', 'badge', 'Newsletter only'));
       tr.append(typeTd);
       tr.append(el('td', '', isoToShort(row.published_at, today) || ''));
       tr.addEventListener('click', () => pickGesture(row));

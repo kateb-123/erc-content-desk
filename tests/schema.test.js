@@ -14,18 +14,19 @@ test('the CSV columns match the hub news.csv header exactly, in order', () => {
   ]);
 });
 
-test('sheet columns are the 14 hub columns plus the 15 workflow columns', () => {
+test('sheet columns are the 14 hub columns plus the 16 workflow columns', () => {
   assert.deepEqual(WORKFLOW_COLUMNS, [
     'id', 'status', 'submitter', 'submitted_at', 'spotlight_request',
     'note', 'original_text', 'published_at', 'newsletter_issue', 'auto_filled',
     'link_checked', 'rewrite_checked', 'submitter_email', 'needs_review',
-    'pending_read',
+    'pending_read', 'send_to',
   ]);
   assert.deepEqual(SHEET_COLUMNS, [...CSV_COLUMNS, ...WORKFLOW_COLUMNS]);
-  // needs_review, then pending_read, were APPENDED, never inserted: the sheet is
+  // needs_review, then pending_read, then send_to were APPENDED, never inserted: the sheet is
   // written by position, so an insert would shift every existing row's data right.
-  assert.equal(WORKFLOW_COLUMNS.at(-2), 'needs_review');
-  assert.equal(WORKFLOW_COLUMNS.at(-1), 'pending_read');
+  assert.equal(WORKFLOW_COLUMNS.at(-3), 'needs_review');
+  assert.equal(WORKFLOW_COLUMNS.at(-2), 'pending_read');
+  assert.equal(WORKFLOW_COLUMNS.at(-1), 'send_to');
   assert.deepEqual(BOOLEAN_COLUMNS, ['spotlight_request']);
 });
 
@@ -43,7 +44,7 @@ test('blankRow applies overrides', () => {
 
 test('rowToValues writes booleans as TRUE or empty, in column order', () => {
   const values = rowToValues(blankRow({ headline: 'Test', spotlight_request: true }));
-  assert.equal(values.length, 29);
+  assert.equal(values.length, 30);
   assert.equal(values[CSV_COLUMNS.indexOf('headline')], 'Test');
   assert.equal(values[SHEET_COLUMNS.indexOf('spotlight_request')], 'TRUE');
 });

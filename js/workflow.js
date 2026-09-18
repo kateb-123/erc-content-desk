@@ -2,7 +2,8 @@
  * Status transitions and derived views over sheet rows. Everything here is
  * pure — callers persist the returned copies. v2 statuses:
  * new -> kept | circleback | trashed; kept rows then gain published_at
- * (Publish to Exchange) and newsletter_issue (Send to Newsletter).
+ * (Publish to Exchange) and newsletter_issue (Send to Newsletter). Where a
+ * kept row goes is its send_to (Sort's "Send it to", Sep 18).
  */
 import { CSV_COLUMNS, TYPES } from './schema.js';
 
@@ -14,8 +15,10 @@ export function circlebackRows(rows) {
   return rows.filter(r => r.status === 'circleback');
 }
 
+/** Keep freezes the row's Send it to, so a later stamp or type change never
+ *  moves it off a page it was kept for. */
 export function keep(row) {
-  return { ...row, status: 'kept' };
+  return { ...row, status: 'kept', send_to: sendToValue(sendTo(row)) };
 }
 
 export function trash(row) {
@@ -114,15 +117,42 @@ export function needsDescription(row) {
   return needsErcVoice(row) && !hasText(row);
 }
 
-export function readyToPublish(rows) {
-  // A row stamped into an issue is done with Publish — newsletter-only holds
-  // drain here instead of sitting in the held list forever.
-  return rows.filter(r => r.status === 'kept' && !r.published_at && !r.newsletter_issue);
+/**
+ * Where a row goes (Kate, Sep 18: "Tick = it waits on that page"): its
+ * send_to, 'both' | 'newsletter' | 'exchange' | 'none'. A row nobody has
+ * ticked (every row kept before Send it to) takes the old routing: both,
+ * except a spotlight event (newsletterOnly) and a row stamped into an issue
+ * before it was published (quick add stamps before Sort), which stay off the
+ * Exchange.
+ */
+const SEND_TO = {
+  both: { newsletter: true, exchange: true },
+  newsletter: { newsletter: true, exchange: false },
+  exchange: { newsletter: false, exchange: true },
+  none: { newsletter: false, exchange: false },
+};
+export function sendTo(row) {
+  const set = SEND_TO[String(row?.send_to ?? '')];
+  if (set) return { ...set };
+  const newsletterOnlyHold = newsletterOnly(row) || (Boolean(row?.newsletter_issue) && !row?.published_at);
+  return { newsletter: true, exchange: !newsletterOnlyHold };
 }
 
+/** The ticks as the one word the row stores. */
+export function sendToValue({ newsletter, exchange }) {
+  if (newsletter && exchange) return 'both';
+  if (newsletter) return 'newsletter';
+  return exchange ? 'exchange' : 'none';
+}
+
+/** Kept, ticked for the Exchange, not published yet: an issue stamp does not take a row off the Exchange's list. */
+export function readyToPublish(rows) {
+  return rows.filter(r => r.status === 'kept' && !r.published_at && sendTo(r).exchange);
+}
+
+/** Kept, ticked for the Newsletter, not in an issue yet: it waits there at once, published or not. */
 export function buildPool(rows) {
-  return rows.filter(r => r.status === 'kept' && !r.newsletter_issue
-    && (Boolean(r.published_at) || newsletterOnly(r)));
+  return rows.filter(r => r.status === 'kept' && !r.newsletter_issue && sendTo(r).newsletter);
 }
 
 export function markPublished(row, timestamp) {
@@ -133,7 +163,7 @@ export function markNewsletterIssue(row, issueDate) {
   return { ...row, newsletter_issue: issueDate };
 }
 
-/** The un-send: clear the stamp and the row rejoins the pool (and Publish's held list). */
+/** The un-send: clear the stamp and the row rejoins the pool. */
 export function clearNewsletterIssue(row) {
   return { ...row, newsletter_issue: '' };
 }

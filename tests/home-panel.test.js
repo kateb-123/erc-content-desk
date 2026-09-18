@@ -32,8 +32,9 @@ const laneSchedule = ['2026-09-22', '2026-10-06'];
 
 test('laneCounts: Sort counts the queue, Newsletter what waits to be added, Policy Exchange what Publish would add', () => {
   const preview = { adding: ['p1'], newsletterOnly: ['w2'], notReady: [], skipped: ['p2'] };
+  // Newsletter: w1, w2, and p1, p2 (kept, ticked for both by default, waiting there before they are published).
   assert.deepEqual(laneCounts(laneRows, { schedule: laneSchedule, issue: '2026-09-22', today: '2026-09-18', preview }),
-    { sort: 2, newsletter: 2, exchange: 1 });
+    { sort: 2, newsletter: 4, exchange: 1 });
 });
 
 test('laneCounts: before the Exchange check lands, Policy Exchange counts the kept rows it could publish', () => {

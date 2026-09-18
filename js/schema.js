@@ -18,6 +18,9 @@ export const WORKFLOW_COLUMNS = [
   // Last, so the Sheet mirror gains a column instead of shifting one. 'yes'
   // from submit until the reader has filed the row; Sort holds it until then.
   'pending_read',
+  // Sort's Send it to (Sep 18): 'both' | 'newsletter' | 'exchange' | 'none';
+  // blank on rows kept before it, which take the old routing (workflow.js sendTo).
+  'send_to',
 ];
 
 export const SHEET_COLUMNS = [...CSV_COLUMNS, ...WORKFLOW_COLUMNS];

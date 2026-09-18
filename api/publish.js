@@ -5,7 +5,7 @@
  * Never modifies or deletes an existing hub row.
  */
 import { readAllRows, updateRows } from './_lib/store.js';
-import { readyToPublish, markPublished, newsletterOnly } from '../js/workflow.js';
+import { readyToPublish, markPublished } from '../js/workflow.js';
 import { isValidType, isValidSubtype } from '../js/schema.js';
 import { isSafeLink } from '../js/links.js';
 import { fetchHubCsv, putHubCsv, diffAgainstHub, appendRowsToCsv, parseCsv } from './_lib/hub.js';
@@ -28,12 +28,12 @@ export default async function handler(req, res) {
     const all = await readAllRows();
     const candidates = readyToPublish(all);
 
-    // Split candidates into publishable (valid type/subtype and a safe link) and notReady.
-    const eligible = candidates.filter(r =>
+    // Split candidates into publishable (valid type/subtype and a safe link) and
+    // notReady. The candidates are the rows ticked for the Exchange (Sort's Send
+    // it to, Sep 18): nothing is held back here any more.
+    const publishable = candidates.filter(r =>
       isValidType(r.type) && isValidSubtype(r.type, r.subtype) && isSafeLink(r.link));
-    const held = eligible.filter(newsletterOnly);
-    const publishable = eligible.filter(r => !newsletterOnly(r));
-    const notReady = candidates.filter(r => !eligible.includes(r));
+    const notReady = candidates.filter(r => !publishable.includes(r));
 
     if (req.method === 'GET') {
       const { text } = await fetchHubCsv();
@@ -43,7 +43,6 @@ export default async function handler(req, res) {
         adding: newRows.map(label),
         skipped: skipped.map(label),
         notReady: notReady.map(label),
-        newsletterOnly: held.map(label),
         hubCount: Math.max(parseCsv(text).length - 1, 0),
       });
     }

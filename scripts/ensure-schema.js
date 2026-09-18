@@ -1,6 +1,6 @@
 /**
  * Adds any column SHEET_COLUMNS gained since the items table was created
- * (pending_read, Sep 10). Run once against the live database BEFORE deploying
+ * (pending_read, Sep 10; send_to, Sep 18). Run once against the live database BEFORE deploying
  * code that reads the new column, or every read fails:
  *   node --env-file=.env scripts/ensure-schema.js
  * Safe to rerun: every statement is IF NOT EXISTS and no data changes.

@@ -5,7 +5,7 @@ import {
   pendingRows, circlebackRows,
   keep, trash, circleback,
   applyExtractedWithProvenance, withoutAutoFilled,
-  readyToPublish, buildPool,
+  readyToPublish, buildPool, sendTo, sendToValue,
   markPublished, markNewsletterIssue,
   duplicateFlags,
   newsletterOnly, linkCheckedFromFetch, linkNeedsCheck, reshareFlags, clearNewsletterIssue,
@@ -40,20 +40,51 @@ test('filters split by status and publish state', () => {
   assert.deepEqual(pendingRows(rows).map(r => r.id), ['a']);
   assert.deepEqual(circlebackRows(rows).map(r => r.id), ['b']);
   assert.deepEqual(readyToPublish(rows).map(r => r.id), ['c']);
-  assert.deepEqual(buildPool(rows).map(r => r.id), ['d']);
+  // Send it to (Kate, Sep 18): a kept row waits on Newsletter as soon as it is kept, published or not.
+  assert.deepEqual(buildPool(rows).map(r => r.id), ['c', 'd']);
 });
 
-test('buildPool also takes newsletter-only rows that never reach the Exchange', () => {
+// ── Send it to (Kate, Sep 18: "Tick = it waits on that page") ──
+
+test('sendTo reads the ticks a row carries', () => {
+  assert.deepEqual(sendTo(row({ send_to: 'both' })), { newsletter: true, exchange: true });
+  assert.deepEqual(sendTo(row({ send_to: 'newsletter' })), { newsletter: true, exchange: false });
+  assert.deepEqual(sendTo(row({ send_to: 'exchange' })), { newsletter: false, exchange: true });
+  assert.deepEqual(sendTo(row({ send_to: 'none' })), { newsletter: false, exchange: false });
+});
+
+test('an untouched row takes the old rule: both, but a spotlight event and a row already stamped unpublished are newsletter only', () => {
+  assert.deepEqual(sendTo(row({ type: 'research' })), { newsletter: true, exchange: true });
+  assert.deepEqual(sendTo(row({ type: 'event', subtype: 'A&M', spotlight_request: true })), { newsletter: true, exchange: false });
+  assert.deepEqual(sendTo(row({ type: 'headline', newsletter_issue: '2026-09-22' })), { newsletter: true, exchange: false });   // quick add stamps before Sort
+  assert.deepEqual(sendTo(row({ type: 'headline', newsletter_issue: '2026-09-22', published_at: 'x' })), { newsletter: true, exchange: true });
+});
+
+test('sendToValue writes the ticks back as one word', () => {
+  assert.equal(sendToValue({ newsletter: true, exchange: true }), 'both');
+  assert.equal(sendToValue({ newsletter: true, exchange: false }), 'newsletter');
+  assert.equal(sendToValue({ newsletter: false, exchange: true }), 'exchange');
+  assert.equal(sendToValue({ newsletter: false, exchange: false }), 'none');
+});
+
+test('keep freezes the ticks on the row, so a later stamp or type change never moves it', () => {
+  assert.equal(keep(row({ type: 'research' })).send_to, 'both');
+  assert.equal(keep(row({ type: 'event', subtype: 'A&M', spotlight_request: true })).send_to, 'newsletter');
+  assert.equal(keep(row({ type: 'research', send_to: 'exchange' })).send_to, 'exchange');
+});
+
+test('a tick puts a kept row on that page: Newsletter at once, published or not; the Exchange until it is published', () => {
   const rows = [
-    // held: kept, unpublished, spotlight A&M event -> newsletter-only, belongs in the pool
-    row({ id: 'g', status: 'kept', type: 'event', subtype: 'A&M', spotlight_request: true }),
-    // not held: kept, unpublished, non-spotlight -> stays out of the pool
-    row({ id: 'h', status: 'kept', type: 'event', subtype: 'A&M', spotlight_request: false }),
-    // published rows behave as before
-    row({ id: 'i', status: 'kept', published_at: '2026-09-01T00:00:00.000Z' }),
-    row({ id: 'j', status: 'kept', published_at: '2026-09-01T00:00:00.000Z', newsletter_issue: '2026-09-01' }),
+    row({ id: 'n', status: 'kept', send_to: 'newsletter' }),
+    row({ id: 'e', status: 'kept', send_to: 'exchange' }),
+    row({ id: 'b', status: 'kept', send_to: 'both' }),
+    row({ id: 'x', status: 'kept', send_to: 'none' }),
+    row({ id: 'bs', status: 'kept', send_to: 'both', newsletter_issue: '2026-09-22' }),   // in an issue, still to publish
+    row({ id: 'bp', status: 'kept', send_to: 'both', published_at: 'x' }),
+    row({ id: 'q', status: 'new', send_to: 'both' }),
   ];
-  assert.deepEqual(buildPool(rows).map(r => r.id), ['g', 'i']);
+  assert.deepEqual(buildPool(rows).map(r => r.id), ['n', 'b', 'bp']);
+  assert.deepEqual(readyToPublish(rows).map(r => r.id), ['e', 'b', 'bs']);
 });
 
 test('markPublished and markNewsletterIssue stamp pure copies', () => {
@@ -125,16 +156,14 @@ test('newsletterOnly holds spotlight events except webinars', () => {
   assert.equal(newsletterOnly(blankRow({ type: 'research', subtype: 'ERC Research', spotlight_request: true })), false);
 });
 
-test('a row stamped into an issue is done with Publish — held rows drain', () => {
+test('a row kept before Send it to keeps the old routing: newsletter-only holds and quick-added stamps stay off the Exchange', () => {
   const rows = [
-    // stamped newsletter-only hold: out of readyToPublish entirely
     blankRow({ id: 'a', status: 'kept', type: 'event', subtype: 'A&M', spotlight_request: true, newsletter_issue: '2026-09-01' }),
-    // unstamped hold: still a candidate (Publish lists it under Newsletter only)
     blankRow({ id: 'b', status: 'kept', type: 'event', subtype: 'A&M', spotlight_request: true }),
-    // regular kept row, unpublished: still a candidate
     blankRow({ id: 'c', status: 'kept', type: 'headline', subtype: 'Texas' }),
+    blankRow({ id: 'd', status: 'kept', type: 'headline', subtype: 'Texas', newsletter_issue: '2026-09-01' }),
   ];
-  assert.deepEqual(readyToPublish(rows).map(r => r.id), ['b', 'c']);
+  assert.deepEqual(readyToPublish(rows).map(r => r.id), ['c']);
 });
 
 test('reshareFlags points a row at a same-link row already sent in a past issue', () => {

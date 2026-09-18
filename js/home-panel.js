@@ -1,5 +1,5 @@
 /** Pure helpers for the front page: the lanes' counts and the newest items. */
-import { pendingRows, circlebackRows, readyToPublish, newsletterOnly } from './workflow.js';
+import { pendingRows, circlebackRows, readyToPublish } from './workflow.js';
 import { splitPool } from './newsletter-view.js';
 
 /** The queue count, shown on the front page's Sort lane and Sort's own head:
@@ -12,12 +12,12 @@ export function queueBadgeCount(rows) {
  *  critique, Sep 18): Sort the queue, Newsletter what waits to be added to
  *  the next issue, Policy Exchange what Publish would add. Publish's number
  *  needs the live Exchange check (preview); until it lands, the kept rows
- *  that could publish stand in. */
+ *  ticked for the Exchange stand in. */
 export function laneCounts(rows, { schedule, issue, today, preview }) {
   return {
     sort: queueBadgeCount(rows),
     newsletter: splitPool(rows, schedule, issue, today).live.length,
-    exchange: preview ? preview.adding.length : readyToPublish(rows).filter(r => !newsletterOnly(r)).length,
+    exchange: preview ? preview.adding.length : readyToPublish(rows).length,
   };
 }
 

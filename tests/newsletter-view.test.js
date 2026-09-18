@@ -7,7 +7,7 @@ import { splitPool } from '../js/newsletter-view.js';
 const schedule = ['2026-09-22', '2026-10-06'];
 const kept = (id, extra) => ({ id, status: 'kept', published_at: '2026-09-01T10:00:00Z', ...extra });
 
-test('splitPool: the kept, published, unstamped rows wait; an event before the issue and an opportunity closing first are outrun', () => {
+test('splitPool: the kept rows ticked for the newsletter and not in an issue wait; an event before the issue and an opportunity closing first are outrun', () => {
   const rows = [
     kept('a', { type: 'research' }),
     kept('b', { type: 'event', date: '2026-09-18' }),
@@ -15,10 +15,11 @@ test('splitPool: the kept, published, unstamped rows wait; an event before the i
     kept('d', { type: 'opportunity', deadline: '2026-10-01' }),
     kept('e', { type: 'research', newsletter_issue: '2026-09-22' }),
     { id: 'f', status: 'new', type: 'research' },
-    { id: 'g', status: 'kept', type: 'research' },   // not on the Exchange yet, and not newsletter-only
+    { id: 'g', status: 'kept', type: 'research' },   // not on the Exchange yet: waits all the same (Send it to, Sep 18)
+    { id: 'h', status: 'kept', type: 'research', send_to: 'exchange' },   // not ticked for the newsletter
   ];
   const { live, past } = splitPool(rows, schedule, '2026-09-22', '2026-09-18');
-  assert.deepEqual(live.map(r => r.id), ['a', 'd']);
+  assert.deepEqual(live.map(r => r.id), ['a', 'd', 'g']);
   assert.deepEqual(past.map(p => [p.row.id, p.why, p.when]), [
     ['b', 'Before this issue', 'Sep 18'],
     ['c', 'Closes before this issue', 'Deadline Sep 20'],
