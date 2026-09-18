@@ -6,7 +6,7 @@ import { dotsLoader, loadingLabel } from './icons.js';
 import { renderHome } from './home-ui.js';
 import { renderSidebar } from './sidebar-ui.js';
 import { openedScreen, screenHash } from './sidebar-view.js';
-import { renderIssue } from './issue-ui.js';
+import { renderIssue, resetIssueEntry } from './issue-ui.js';
 import { latestIssue, queueBadgeCount } from './home-panel.js';
 import { nextIssueDate } from './schedule.js';
 import { renderSort } from './sort-ui.js';
@@ -284,6 +284,7 @@ function goTo(key, filter) {
   if (key !== state.screen) setStatus('');   // last screen's message doesn't follow
   if (key === 'sort' && filter) { state.sortFilter = filter; saveSortSpot(); }   // Publish's "fix in Sort" lands on the tab it names
   if (key === 'sort' && state.screen !== 'sort') readBeforeSort();
+  if (key === 'issue' && state.screen !== 'issue') resetIssueEntry();
   if (key === 'finalize' && state.screen !== 'finalize') { resetFinalizeEntry(); state.lastKeepAll = null; }
   // The ticks survive a hop to another screen; only the receipt resets.
   if (key === 'build' && state.screen !== 'build') state.justSent = null;

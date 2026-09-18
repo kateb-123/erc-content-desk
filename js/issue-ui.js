@@ -16,9 +16,17 @@ import { el, button, focusKeyIn, restoreFocus, tryAgain, inFlight } from './ui-a
 
 let quickOpen = false;   // view state: the form stays open across re-renders
 let quickJustOpened = false;   // the panel takes focus once, on the click that opened it
-// Removed, id -> the row as it was: it stays listed, greyed, with Undo, and
-// keeps standing across screen switches until a reload.
+// Removed, id -> the row as it was: it stays listed, greyed, with Undo, for
+// as long as the screen is open. Leaving the screen clears it, as it does on
+// Finalize, Publish and Send to Newsletter.
 const justRemoved = new Map();
+
+/** Arriving at Next newsletter starts fresh: no open quick add, no greyed rows. */
+export function resetIssueEntry() {
+  quickOpen = false;
+  quickJustOpened = false;
+  justRemoved.clear();
+}
 
 const INFO = 'Quick add puts an item in this issue and in the queue for Sort at once. Remove takes an item out of this issue; it stays in the queue. Not sorted yet marks an item Sort has not had yet.';
 
