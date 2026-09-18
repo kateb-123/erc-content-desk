@@ -14,6 +14,16 @@ export async function readReply(res, what) {
   throw new Error(`The desk couldn't ${what} right now (server error ${res.status}). Try again in a minute.`);
 }
 
+/** fetch's options for a JSON body: POST unless told otherwise. */
+export const jsonInit = (body, method = 'POST') => ({
+  method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+});
+
+/** POST a JSON body to the desk's own api and read the reply (see readReply). */
+export async function postJson(url, body, what) {
+  return readReply(await fetch(url, jsonInit(body)), what);
+}
+
 /** The sentence for the status bar: a dropped connection gets its own words. */
 export function plainError(err) {
   return err instanceof TypeError ? "Couldn't reach the server. Check your connection." : err.message;
@@ -35,11 +45,7 @@ export async function fetchDesk() {
 /** POST /api/read: the reader's catch-up over the given waiting rows. */
 export async function readNewRows(ids) {
   try {
-    return await json(await fetch('/api/read', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids }),
-    }), 'read the new items');
+    return await postJson('/api/read', { ids }, 'read the new items');
   } catch (err) {
     if (err instanceof TypeError) throw new Error("Couldn't reach the server. Check your connection.");
     throw err;
@@ -49,11 +55,7 @@ export async function readNewRows(ids) {
 export async function saveRows(rows) {
   if (!rows.length) return 0;
   try {
-    const res = await fetch('/api/sheet', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rows }),
-    });
+    const res = await fetch('/api/sheet', jsonInit({ rows }, 'PATCH'));
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) {
       if (data.saved !== undefined) throw new Error(`Saved ${data.saved} of ${rows.length} rows, then couldn't reach the sheet.`);

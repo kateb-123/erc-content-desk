@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readReply } from '../js/sheet-client.js';
+import { readReply, jsonInit, postJson } from '../js/sheet-client.js';
 
 // A fetch Response stand-in: json() throws when the body is not JSON (a
 // Vercel timeout page, a proxy error), which is what reached the status bar
@@ -33,4 +33,20 @@ test('readReply names the failure in plain words when the server gave only a sta
 test('readReply surfaces a validation list (errors: [...]) as one sentence', async () => {
   const res = { status: 400, json: async () => ({ ok: false, errors: ['Add a link.', 'Add your name or initials.'] }) };
   await assert.rejects(readReply(res, 'add that link'), { message: 'Add a link. Add your name or initials.' });
+});
+
+test('jsonInit sends a JSON body, POST unless told otherwise', () => {
+  assert.deepEqual(jsonInit({ ids: ['a'] }), {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"ids":["a"]}',
+  });
+  assert.equal(jsonInit({ rows: [] }, 'PATCH').method, 'PATCH');
+});
+
+test('postJson posts the body and reads the reply the way readReply does', async (t) => {
+  const calls = [];
+  t.mock.method(globalThis, 'fetch', async (url, init) => { calls.push({ url, init }); return reply(504); });
+  await assert.rejects(postJson('/api/newsletter-archive', { issueDate: '2026-09-22' }, 'save to the archive'),
+    { message: "The desk couldn't save to the archive right now (server error 504). Try again in a minute." });
+  assert.equal(calls[0].url, '/api/newsletter-archive');
+  assert.deepEqual(calls[0].init, jsonInit({ issueDate: '2026-09-22' }));
 });

@@ -1,5 +1,5 @@
 /** Entry point. Owns all state; screens are pure renderers. */
-import { fetchDesk, saveRows, readNewRows, readReply, plainError } from './sheet-client.js';
+import { fetchDesk, saveRows, readNewRows, readReply, postJson, plainError } from './sheet-client.js';
 import { readAllWaiting } from './reader-client.js';
 import { readerQueue, undoWords, withoutRow } from './sort-view.js';
 import { dotsLoader, loadingLabel } from './icons.js';
@@ -322,7 +322,7 @@ async function runRewrite() {
   render();
   setStatus('');   // Finalize's own loader carries this — no second row in the bar
   try {
-    const data = await readReply(await fetch('/api/rewrite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) }), 'rewrite the descriptions');
+    const data = await postJson('/api/rewrite', { ids }, 'rewrite the descriptions');
     // Nothing persists yet: the originals stay safe in the Sheet, the new
     // text lives in local rows, and each check decision saves its row —
     // /api/rewrite stays read-only, as its own header promises.
@@ -371,7 +371,7 @@ async function publishNow() {
   setStatus('Publishing to the Exchange…');
   await whenSaved();   // every decision must be in the Sheet before the server reads it
   try {
-    const data = await readReply(await fetch('/api/publish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }), 'publish');
+    const data = await postJson('/api/publish', {}, 'publish');
     state.publishPreview = null;
     state.justPublished = data.published;
     state.publishedCsv = data.csv ?? '';

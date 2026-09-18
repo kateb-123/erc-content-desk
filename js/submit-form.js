@@ -49,7 +49,7 @@ import { withScheme } from './links.js';
 import { checkSvg, dotsLoader, loadingLabel, faIcon } from './icons.js';
 import { runPool } from './pool.js';
 import { openBusyOverlay } from './busy-overlay.js';
-import { readReply, plainError } from './sheet-client.js';
+import { postJson, plainError } from './sheet-client.js';
 import { queueMatch } from './queue-view.js';
 import { el, button, focusKeyIn, restoreFocus } from './ui-aids.js';
 
@@ -85,14 +85,7 @@ export function bulkSubmissionBody(item, submitter) {
 
 /** POST one item. A server page instead of JSON (a 502, a timeout) becomes
  * one plain sentence with the status, never parser noise. */
-async function postSubmission(body) {
-  const res = await fetch('/api/submit', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  return readReply(res, 'add that to the queue');
-}
+const postSubmission = body => postJson('/api/submit', body, 'add that to the queue');
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
@@ -471,16 +464,11 @@ export function renderSubmitForm(container, {
     show(bulkStatus, 'This can take a minute…', 'busy');
     try {
       const isText = /\.(md|txt|csv)$/i.test(file.name);
-      const res = await fetch('/api/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: file.name,
-          text: isText ? await file.text() : '',
-          file: isText ? '' : await fileToBase64(file),
-        }),
-      });
-      const data = await readReply(res, 'split that file');
+      const data = await postJson('/api/bulk', {
+        name: file.name,
+        text: isText ? await file.text() : '',
+        file: isText ? '' : await fileToBase64(file),
+      }, 'split that file');
       showBulkRows(data.items, true);
       bulkReview.hidden = false;
       show(bulkStatus, (data.warnings ?? []).join(' '), 'note');
@@ -494,8 +482,6 @@ export function renderSubmitForm(container, {
   }
 
   bulkFile.addEventListener('change', () => splitFile(bulkFile.files[0]));
-  bulkDrop.addEventListener('dragover', event => { event.preventDefault(); bulkDrop.classList.add('is-drag'); });
-  bulkDrop.addEventListener('dragleave', () => bulkDrop.classList.remove('is-drag'));
 
   // A file dropped anywhere on the intake card opens the door and splits it;
   // one dropped elsewhere goes nowhere, instead of the browser leaving the page

@@ -28,7 +28,7 @@
   font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-secondary);
 }
 .side-label .fa-solid { width: 16px; text-align: center; font-size: 12px; color: var(--icon-secondary); flex: none; }
-.side-fold { border: 0; background: none; cursor: pointer; text-align: left; width: 100%; height: auto; margin: 0; }
+.side-fold { border: 0; background: none; cursor: pointer; text-align: left; width: 100%; height: auto; margin: 0; transition: color var(--duration-fast-01) var(--ease-productive); }
 /* The desk's base button hover (accent fill) outranks a bare class hover, so these carry the .side prefix (design audit b17, Sep 17). */
 .side .side-fold:hover:not(:disabled) { background: none; border: 0; color: var(--text-primary); }
 .side-fold .side-chevron { width: auto; font-size: 9px; color: var(--icon-secondary); margin-left: var(--spacing-01); }
@@ -52,6 +52,7 @@
   flex: none; display: inline-flex; align-items: center; justify-content: center;
   width: 32px; height: 32px; border: 0; background: none; padding: 0; border-radius: 0;
   color: var(--icon-secondary); font-size: 12px; cursor: pointer; line-height: 1; margin: 0;
+  transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
 }
 .side .side-copy:hover:not(:disabled) { color: var(--icon-primary); background: var(--row-hover, var(--accent-alpha)); border: 0; }
 .side-copy .fa-check { color: var(--support-success); }

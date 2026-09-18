@@ -1,12 +1,12 @@
 /**
- * Picture upload for desk items — the same loop the builder uses for
- * newsletter items (its app.js keeps a local copy): PNG/JPG/GIF/WebP go up
- * as-is, a PDF's first page is rasterized in-browser first, and the value
- * is the public URL POST /api/newsletter-image hands back. On desk rows the
- * URL lives in the `infographic` column, which rides the hub CSV on publish
- * and becomes the newsletter item's picture on pull.
+ * Picture upload for desk items and the builder's newsletter items alike:
+ * PNG/JPG/GIF/WebP go up as-is, a PDF's first page is rasterized in-browser
+ * first, and the value is the public URL POST /api/newsletter-image hands
+ * back. On desk rows the URL lives in the `infographic` column, which rides
+ * the hub CSV on publish and becomes the newsletter item's picture on pull.
  */
 import { dotsLoader, loadingLabel } from './icons.js';
+import { jsonInit } from './sheet-client.js';
 
 /** PDF flyers become a PNG in the browser (first page) so email clients can
  *  show them — pdf.js loads lazily from the CDN only when a PDF arrives. */
@@ -48,11 +48,7 @@ async function uploadItemImage(file, onStatus) {
     r.onerror = () => reject(new Error("Couldn't read that file."));
     r.readAsDataURL(blob);
   });
-  const res = await fetch('/api/newsletter-image', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: file.name, type: ext, file: b64 }),
-  });
+  const res = await fetch('/api/newsletter-image', jsonInit({ name: file.name, type: ext, file: b64 }));
   // A server page instead of JSON (a 502, a timeout) becomes a sentence, not parser noise.
   if (!res.ok) throw new Error(`The desk couldn't upload that file (server error ${res.status}). Try again.`);
   const data = await res.json().catch(() => ({}));
@@ -123,5 +119,6 @@ export function buildImageControl(initial, onChange) {
     el: wrap,
     get: () => value,
     set: (v) => { value = v || ''; setStatus(''); sync(); },
+    focus: () => pick.focus(),
   };
 }
