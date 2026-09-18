@@ -63,39 +63,41 @@
   /* Status (Kate's palette, Sep 17): shared by both apps, never forked by the
      accent. Each role is an icon colour, a note tint and a 30% border; the
      word beside the icon is text-primary. Published is Alliance citrine, needs
-     review Carbon's purple (the warning yellow before), an error crimson,
-     information slate (Carbon's blue collided with navy). */
+     review UT's Globe blue (the palette's purple read as Halloween beside
+     orange; the warning yellow before that), an error crimson, information
+     slate (Carbon's blue collided with navy). */
   --support-error: #b3123c;
   --support-success: #cedc00;
-  --support-warning: #6929c4;
+  --support-warning: #006c93;
   --support-info: #3d4a57;
   --notification-error-background: #fceef2;
   --notification-error-border: #b3123c4d;
   --notification-success-background: #f7f9e0;
   --notification-success-border: #cedc004d;
-  --notification-warning-background: #f6f2ff;
-  --notification-warning-border: #6929c44d;
+  --notification-warning-background: #e8f2f6;
+  --notification-warning-border: #006c934d;
   --notification-info-background: #f0f2f4;
   --notification-info-border: #3d4a574d;
 
   /* Status as text. Citrine is 1.5:1 on white, so a published WORD takes the
-     dark citrine; purple holds as icon and as text alike. */
+     dark citrine; the review blue holds as icon and as text alike (5.9:1). */
   --text-success: #4f5500;
-  --text-warning: #6929c4;
+  --text-warning: #006c93;
 
   /* Tags. */
   --tag-background-blue: #d0e2ff;
   --tag-color-blue: #0043ce;
   --tag-background-gray: #e0e0e0;
   --tag-color-gray: #161616;
-  --tag-background-purple: #e8daff;   /* a possible duplicate: needs review, so it wears the review colour */
-  --tag-color-purple: #6929c4;
+  --tag-background-review: #cce4ed;   /* a possible duplicate: needs review, so it wears the review colour */
+  --tag-color-review: #004a66;
 
-  /* The accent ramps, one per app (Kate's palette, Sep 17, late night): UT
-     Martin navy for the desk, its brand value #0b2341 at step 80; UT System
-     orange for the builder, its brand value #ff8200 at step 50. Each app's
-     :root maps the accent tokens (button, link, focus, interactive, highlight,
-     the New tag, the loader's ramp) to its --accent-NN steps. */
+  /* The accent ramps, one per app (Kate's palette, Sep 17, late night, then
+     her picks on the switcher): UT System orange for the desk, its brand
+     value #ff8200 at step 50; UT Martin navy for the builder, its brand value
+     #0b2341 at step 80. Each app's :root maps the accent tokens (button, link,
+     focus, interactive, highlight, the New tag, the loader's ramp) to its
+     --accent-NN steps. */
   --navy-10: #eef1f5;
   --navy-20: #d8e0ea;
   --navy-30: #adbdd2;
@@ -113,23 +115,30 @@
   --orange-60: #f27700;
   --orange-70: #db6b00;
   --orange-80: #7d3b00;
-  --orange-alpha: rgba(242, 119, 0, .06);
+  --orange-alpha: rgba(255, 130, 0, .06);
 
-  /* What each ramp can carry. Navy step 60 is 10.4:1 on white, so it does
-     every job under a white label. Orange step 60 is 2.8:1 on white, so it
-     fills only, under a dark label, and the jobs that need contrast against
-     white move down the ramp: the outline, the focus ring and the tab bar to
-     step 70 (3.4:1), links and the text on a tinted row to step 80 (8.4:1). */
+  /* What each ramp can carry. Navy step 60 is 10.4:1 on white, so it fills,
+     lines and links under a white label. Orange never darkens (its deeper
+     steps read as another university's burnt orange: Kate, Sep 17) and at
+     2.5:1 on white the brand value cannot carry text, so on the desk orange
+     MARKS and does not fill: the 3px bars, the tab line, the progress bars
+     and the tints. The desk's fills are ink, its lines and links Carbon's
+     grey ("ink fills, orange marks", her pick of four); steps 60 to 80 are
+     drawn nowhere but the loader's last dots. */
   --navy-label: #ffffff;                    /* on a navy fill */
+  --navy-fill: var(--navy-60); --navy-fill-hover: var(--navy-70); --navy-fill-active: var(--navy-80);
   --navy-outline-text: var(--navy-60);      /* inside a navy outline */
-  --navy-line: var(--navy-60);              /* the outline, the focus ring, the tab bar, the 3px bars */
+  --navy-line: var(--navy-60);              /* the outline, the focus ring */
+  --navy-mark: var(--navy-60);              /* the 3px bars, the tab line, the progress bars */
   --navy-link: var(--navy-60);
   --navy-link-hover: var(--navy-70);
-  --orange-label: #161616;
-  --orange-outline-text: #161616;
-  --orange-line: var(--orange-70);
-  --orange-link: var(--orange-80);
-  --orange-link-hover: var(--orange-80);    /* the underline carries the hover */
+  --orange-label: #ffffff;                  /* on the ink fill */
+  --orange-fill: #161616; --orange-fill-hover: #393939; --orange-fill-active: #525252;
+  --orange-outline-text: #525252;
+  --orange-line: #525252;
+  --orange-mark: var(--orange-50);
+  --orange-link: #525252;
+  --orange-link-hover: #161616;
 
   /* Spacing steps: use them for every gap, margin and pad; 10px is a bug. */
   --spacing-01: 2px;

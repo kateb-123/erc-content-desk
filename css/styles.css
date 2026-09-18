@@ -1,21 +1,22 @@
 /* The desk in IBM Carbon (Kate, Sep 17, 2026: "adopt Carbon's look", picture A
-   of four; then "a smidge grey" and "a different shade of blue": white boxes
-   with a hairline instead of grey tiles, the chosen things in the accent's
-   tint, and the desk's own blue as the accent, pick G). Every value below is a
-   token from /css/tokens.css; the desk's own names are aliases so the rules
-   read in the desk's vocabulary. */
+   of four; then "a smidge grey": white boxes with a hairline instead of grey
+   tiles, the chosen things in the accent's tint; then her own palette that
+   night, orange as marks). Every value below is a token from /css/tokens.css;
+   the desk's own names are aliases so the rules read in the desk's
+   vocabulary. */
 :root {
-  /* The accent: navy (Kate's palette, Sep 17, late night). Carbon's blue tokens are remapped here, the builder does the same with orange; nothing else moves. */
-  --accent-10: var(--navy-10); --accent-20: var(--navy-20); --accent-30: var(--navy-30); --accent-40: var(--navy-40);
-  --accent-50: var(--navy-50); --accent-60: var(--navy-60); --accent-70: var(--navy-70); --accent-80: var(--navy-80);
-  --accent-alpha: var(--navy-alpha);
-  --text-on-accent: var(--navy-label); --text-in-outline: var(--navy-outline-text);   /* the label on a fill, the label inside an outline */
-  --button-primary: var(--accent-60); --button-primary-hover: var(--accent-70); --button-primary-active: var(--accent-80);
-  --button-tertiary: var(--navy-line);
-  --link-primary: var(--navy-link); --link-primary-hover: var(--navy-link-hover);
-  --focus: var(--navy-line); --border-interactive: var(--navy-line); --interactive: var(--accent-60);
+  /* The accent: orange, as marks (Kate's palette and her pick, Sep 17, late night): ink fills, grey lines and links, orange on the
+     3px bars, the tab line, the progress bars and the tints. Carbon's blue tokens are remapped here, the builder does the same with navy. */
+  --accent-10: var(--orange-10); --accent-20: var(--orange-20); --accent-30: var(--orange-30); --accent-40: var(--orange-40);
+  --accent-50: var(--orange-50); --accent-60: var(--orange-60); --accent-70: var(--orange-70); --accent-80: var(--orange-80);
+  --accent-alpha: var(--orange-alpha);
+  --text-on-accent: var(--orange-label); --text-in-outline: var(--orange-outline-text);   /* the label on a fill, the label inside an outline */
+  --button-primary: var(--orange-fill); --button-primary-hover: var(--orange-fill-hover); --button-primary-active: var(--orange-fill-active);
+  --button-tertiary: var(--orange-line);
+  --link-primary: var(--orange-link); --link-primary-hover: var(--orange-link-hover);
+  --focus: var(--orange-line); --border-interactive: var(--orange-mark); --interactive: var(--orange-mark);
   --highlight: var(--accent-20);
-  --tag-background-blue: var(--accent-20); --tag-color-blue: var(--accent-80);
+  --tag-background-blue: var(--accent-20); --tag-color-blue: var(--orange-link);
   --layer: var(--layer-02);            /* a card, a list, a table: a white box with a hairline (Sep 17, pick C) */
   --layer-line: var(--border-subtle-01);
   --ink: var(--text-primary);
@@ -255,8 +256,14 @@ button.primary {
 button.primary .fa-solid { position: absolute; right: var(--spacing-05); top: 50%; transform: translateY(-50%); margin: 0; font-size: 14px; }
 button.primary:not(:has(.fa-solid)) { padding-right: var(--spacing-05); }   /* no icon, no slot */
 button.primary:hover:not(:disabled) { background: var(--button-primary-hover); border-color: transparent; color: var(--text-on-accent); }
-button.primary:active:not(:disabled) { background: var(--accent-deep); color: var(--text-on-color); }   /* step 80 is dark on every ramp, so the pressed label is white */
+button.primary:active:not(:disabled) { background: var(--accent-deep); color: var(--text-on-color); }   /* the pressed fill is dark, so its label is white */
 button.primary:disabled { background: var(--button-disabled); border-color: transparent; color: var(--text-on-color-disabled); }
+/* Keep the rest, a sweep across a whole list, is Carbon's secondary, the dark
+   grey fill (Kate, Sep 17: "a shade of the grey"); the one decision on a card
+   keeps the primary. */
+button.primary.list-keep:not(:disabled) { background: var(--button-secondary); border-color: transparent; color: var(--text-on-color); }
+button.primary.list-keep:hover:not(:disabled) { background: var(--button-secondary-hover); border-color: transparent; color: var(--text-on-color); }
+button.primary.list-keep:active:not(:disabled) { background: var(--button-secondary-active); }
 
 /* Tags (Carbon's 24px pill, label-01 type), one colour per meaning: bare
    .badge = a grey fact ("Already live", "In a past issue", "Spotlight
@@ -271,7 +278,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 }
 /* In the newsletter pool's type cell the badge sits on its own line under the subtype. */
 .nl-table .badge { margin-top: var(--spacing-02); }
-.badge-dupe { background: var(--tag-background-purple); color: var(--tag-color-purple); }
+.badge-dupe { background: var(--tag-background-review); color: var(--tag-color-review); }
 .badge-new { background: var(--tag-background-blue); color: var(--tag-color-blue); }
 /* The link ask, inside the fix panel: the panel draws the warning box. */
 .link-alert .alert-line { margin: 0; }
@@ -425,7 +432,7 @@ button.primary:disabled { background: var(--button-disabled); border-color: tran
 .p-seg { display: block; min-width: 6px; }
 .p-seg-adding { background: var(--accent); }
 .p-seg-held { background: var(--accent-30); }
-.p-seg-fix { background: var(--tag-background-purple); }
+.p-seg-fix { background: var(--tag-background-review); }
 .p-seg-live { background: var(--border-strong-01); }
 .p-legend { display: flex; flex-wrap: wrap; gap: var(--spacing-02) var(--spacing-05); margin-top: var(--spacing-03); }
 .p-legend-item { display: inline-flex; align-items: center; gap: var(--spacing-03); height: auto; border: 0; background: none; padding: var(--spacing-01) 0; font: inherit; letter-spacing: .16px; color: var(--muted); cursor: pointer; }

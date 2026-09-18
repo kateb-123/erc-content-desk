@@ -2,22 +2,21 @@
    ERC Newsletter Builder in IBM Carbon: one look across both apps.
    ------------------------------------------------------------
    Every value is a Carbon token from /css/tokens.css, loaded before this
-   file; this :root only maps Carbon's blue tokens onto the builder's teal
+   file; this :root only maps Carbon's blue tokens onto the builder's navy
    ramp. The newsletter EMAIL template keeps its own design (maroon lives
    there and nowhere in-app).
    ============================================================ */
 
 :root {
-  /* The accent: orange (Kate's palette, Sep 17, late night). Carbon's blue tokens are remapped here, the desk does the same with navy; nothing else moves.
-     Orange fills only, under a dark label: the outline, the focus ring and the tab bar sit on step 70, links on step 80 (see tokens.css). */
-  --accent-10: var(--orange-10); --accent-20: var(--orange-20); --accent-30: var(--orange-30); --accent-40: var(--orange-40);
-  --accent-50: var(--orange-50); --accent-60: var(--orange-60); --accent-70: var(--orange-70); --accent-80: var(--orange-80);
-  --accent-alpha: var(--orange-alpha);
-  --text-on-accent: var(--orange-label); --text-in-outline: var(--orange-outline-text);   /* the label on a fill, the label inside an outline */
-  --button-primary: var(--accent-60); --button-primary-hover: var(--accent-70); --button-primary-active: var(--accent-80);
-  --button-tertiary: var(--orange-line);
-  --link-primary: var(--orange-link); --link-primary-hover: var(--orange-link-hover);
-  --focus: var(--orange-line); --border-interactive: var(--orange-line); --interactive: var(--accent-60);
+  /* The accent: navy (Kate's palette and her pick, Sep 17, late night). Carbon's blue tokens are remapped here, the desk does the same with orange as marks; nothing else moves. */
+  --accent-10: var(--navy-10); --accent-20: var(--navy-20); --accent-30: var(--navy-30); --accent-40: var(--navy-40);
+  --accent-50: var(--navy-50); --accent-60: var(--navy-60); --accent-70: var(--navy-70); --accent-80: var(--navy-80);
+  --accent-alpha: var(--navy-alpha);
+  --text-on-accent: var(--navy-label); --text-in-outline: var(--navy-outline-text);   /* the label on a fill, the label inside an outline */
+  --button-primary: var(--navy-fill); --button-primary-hover: var(--navy-fill-hover); --button-primary-active: var(--navy-fill-active);
+  --button-tertiary: var(--navy-line);
+  --link-primary: var(--navy-link); --link-primary-hover: var(--navy-link-hover);
+  --focus: var(--navy-line); --border-interactive: var(--navy-mark); --interactive: var(--navy-mark);
   --highlight: var(--accent-20);
   --tag-background-blue: var(--accent-20); --tag-color-blue: var(--accent-80);
   --link-inverse: var(--accent-30);   /* the Undo toast's bar and word on the inverse ground */

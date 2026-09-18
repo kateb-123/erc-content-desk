@@ -270,7 +270,7 @@ export function renderFinalize(container, props) {
     head.append(btn);
   } else if (!busy && stage === 'checking' && toCheck.length > 1) {
     // The bulk keep, named and drawn as on Sort.
-    const all = button(` Keep the rest (${toCheck.length})`, 'primary', {
+    const all = button(` Keep the rest (${toCheck.length})`, 'primary list-keep', {
       focus: 'keep-all',
       icon: 'check',
       onClick: () => { if (held()) return; all.disabled = true; selectedId = null; onVerifyAll(toCheck.map(r => r.id)); },
