@@ -8,7 +8,7 @@
  * concrete voice/compression targets on top of ERC_VOICE.
  */
 import { VOICE_EXAMPLES } from './voice-examples.js';
-import { canRewrite, readyToPublish } from '../../js/workflow.js';
+import { canRewrite, readyToFinalize } from '../../js/workflow.js';
 
 export const REWRITE_MODEL = 'claude-opus-5';
 
@@ -16,9 +16,9 @@ const ORIGINAL_TEXT_CAP = 1500;
 
 export function rewriteCandidates(rows) {
   // Finalize's own list, filtered the same way (js/app.js): the stamped-row
-  // gate is readyToPublish, and canRewrite is the guard that never sends the
+  // gate is readyToFinalize, and canRewrite is the guard that never sends the
   // model an item with no source text to work from.
-  return readyToPublish(rows).filter(canRewrite);
+  return readyToFinalize(rows).filter(canRewrite);
 }
 
 export const REWRITE_SCHEMA = {

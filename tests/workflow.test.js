@@ -5,7 +5,7 @@ import {
   pendingRows, circlebackRows,
   keep, trash, circleback,
   applyExtractedWithProvenance, withoutAutoFilled,
-  readyToPublish, buildPool, sendTo, sendToValue,
+  readyToPublish, readyToFinalize, buildPool, sendTo, sendToValue,
   markPublished, markNewsletterIssue,
   duplicateFlags,
   newsletterOnly, linkCheckedFromFetch, linkNeedsCheck, reshareFlags, clearNewsletterIssue,
@@ -154,6 +154,17 @@ test('newsletterOnly holds spotlight events except webinars', () => {
   assert.equal(newsletterOnly(blankRow({ type: 'event', subtype: 'Webinar-Online', spotlight_request: true })), false);
   assert.equal(newsletterOnly(blankRow({ type: 'event', subtype: 'A&M', spotlight_request: false })), false);
   assert.equal(newsletterOnly(blankRow({ type: 'research', subtype: 'ERC Research', spotlight_request: true })), false);
+});
+
+test('Finalize takes every kept row still on its way, wherever it is ticked for: not published, not in an issue', () => {
+  const rows = [
+    row({ id: 'n', status: 'kept', send_to: 'newsletter' }),
+    row({ id: 'e', status: 'kept', send_to: 'exchange' }),
+    row({ id: 'p', status: 'kept', send_to: 'both', published_at: 'x' }),
+    row({ id: 's', status: 'kept', send_to: 'both', newsletter_issue: '2026-09-22' }),
+    row({ id: 'q', status: 'new' }),
+  ];
+  assert.deepEqual(readyToFinalize(rows).map(r => r.id), ['n', 'e']);
 });
 
 test('a row kept before Send it to keeps the old routing: newsletter-only holds and quick-added stamps stay off the Exchange', () => {

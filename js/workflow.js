@@ -145,6 +145,12 @@ export function sendToValue({ newsletter, exchange }) {
   return exchange ? 'exchange' : 'none';
 }
 
+/** Kept and still on its way, wherever it is ticked for: Finalize's list and
+ *  the rewrite's candidates. Out once it is published or in an issue. */
+export function readyToFinalize(rows) {
+  return rows.filter(r => r.status === 'kept' && !r.published_at && !r.newsletter_issue);
+}
+
 /** Kept, ticked for the Exchange, not published yet: an issue stamp does not take a row off the Exchange's list. */
 export function readyToPublish(rows) {
   return rows.filter(r => r.status === 'kept' && !r.published_at && sendTo(r).exchange);

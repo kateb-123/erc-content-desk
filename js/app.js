@@ -12,7 +12,7 @@ import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
 import { renderPublish, downloadCsv, resetPublishAsk } from './publish-ui.js';
 import { renderNewsletter, resetNewsletterEntry } from './newsletter-ui.js';
-import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToPublish, canRewrite } from './workflow.js';
+import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToFinalize, canRewrite } from './workflow.js';
 
 
 const state = {
@@ -311,7 +311,7 @@ async function undoLast() {
 async function runRewrite() {
   // Scope the request to exactly what Finalize is showing — the server
   // applies the same shared predicate, so the two can never disagree.
-  const ids = readyToPublish(state.rows)
+  const ids = readyToFinalize(state.rows)
     .filter(r => canRewrite(r) && !state.rewriteReview.has(r.id))
     .map(r => r.id);
   if (!ids.length) return;

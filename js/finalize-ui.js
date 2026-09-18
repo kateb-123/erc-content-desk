@@ -8,7 +8,7 @@
  */
 // canRewrite lives in workflow.js so this screen and /api/rewrite can never
 // disagree about what needs rewriting.
-import { readyToPublish, canRewrite, needsDescription } from './workflow.js';
+import { readyToFinalize, canRewrite, needsDescription } from './workflow.js';
 import { isErc } from './sort-view.js';
 import { TYPE_ORDER, typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
@@ -236,7 +236,7 @@ export function renderFinalize(container, props) {
   const held = () => holdIfDirty(openForm, container.querySelector('.f-card'));
   container.replaceChildren();
   openForm = null;
-  const keeps = standingOrder(readyToPublish(rows));
+  const keeps = standingOrder(readyToFinalize(rows));
   const handled = id => review.has(id) || verified.has(id);
   const pending = keeps.filter(r => canRewrite(r) && !handled(r.id));
   const checks = review.size;
