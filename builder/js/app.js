@@ -8,13 +8,13 @@
 import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, deleteItem, insertItem, partitionPulled, countIssueItems, splitSections, bucketSectionItems, moveWithinBucket } from './model.js';
 
 // The builder lives INSIDE the desk's project (/builder/), so the desk's API
-// is same-origin: relative fetches, no CORS. ?desk= still overrides for
-// unusual dev setups.
-const DESK_URL = new URLSearchParams(window.location.search).get('desk') || '';
+// is same-origin: relative fetches, no CORS.
 let pullMessage = ''; // survives the Review re-render after a pull
 import { renderNewsletter, renderProse } from './template.js';
 import { faIcon, dotsLoader, loadingLabel } from '../../js/icons.js';
 import { el, button } from '../../js/ui-aids.js';
+import { buildImageControl } from '../../js/item-image.js';
+import { readReply, postJson, plainError } from '../../js/sheet-client.js';
 import { saveState, loadState, clearState } from './state.js';
 import { getField, setField } from './editpath.js';
 import { computePreviewScale } from './preview.js';
@@ -289,9 +289,7 @@ function renderReview() {
     scheduleNote.replaceChildren();
     if (!currentIso) placeholder.textContent = 'Loading issues…';
     try {
-      const res = await fetch(`${DESK_URL}/api/newsletter-pull`);
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'no schedule');
+      const data = await readReply(await fetch('/api/newsletter-pull'), 'load the issues');
       const dates = [...new Set([...(data.schedule ?? []), ...Object.keys(data.staged ?? {})])].sort();
       if (!dates.length) { placeholder.textContent = currentIso ? isoToDisplayDate(currentIso) : 'No issues scheduled on the desk'; return; }
       // The saved issue may have dropped off the desk's schedule; it still belongs in the list.
@@ -333,9 +331,7 @@ function renderReview() {
     pullBtn.hidden = true;   // gone while pulling; no double-clicks
     setPull('Pulling…', true);
     try {
-      const res = await fetch(`${DESK_URL}/api/newsletter-pull?issue=${iso}`);
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'pull failed');
+      const data = await readReply(await fetch(`/api/newsletter-pull?issue=${iso}`), 'pull the issue');
       if (!countIssueItems(data.issue)) {
         const staged = Object.entries(data.staged ?? {}).sort(([a], [b]) => a.localeCompare(b));
         setPull(staged.length
@@ -436,7 +432,10 @@ function showUndoToast(message, onUndo, { focusUndo = false } = {}) {
   } });
   // The message is a user-derived title: textContent only.
   toast.append(el('span', '', message), btn);
-  const anchor = document.querySelector('.edit-column') || document.querySelector('.wizard-body');
+  // A visited Edit step leaves its .edit-column in the page, hidden; a bare
+  // query would put the toast there, out of sight, on any later step.
+  const visibleStep = document.querySelector('[data-step]:not([hidden])');
+  const anchor = (visibleStep && visibleStep.querySelector('.edit-column')) || document.querySelector('.wizard-body');
   if (anchor) anchor.after(toast);
   else document.body.appendChild(toast);
   requestAnimationFrame(() => toast.classList.add('undo-toast--visible'));
@@ -574,7 +573,7 @@ function renderTriage() {
 
           // Remove this item from the issue (with Undo), the desk's Remove:
           // red quiet link with the trash icon, never a bare ✕.
-          const delBtn = button(' Remove', 'triage-delete-btn', {
+          const delBtn = button(' Remove', 'ghost-btn ghost-btn--danger', {
             icon: 'trash-can',
             onClick: (e) => deleteItemWithUndo(item.id, renderTriage, e.detail === 0),
           });
@@ -689,20 +688,56 @@ function firstField(card) {
     .find((el) => el.type !== 'file' && !el.closest('[hidden]')) || null;
 }
 
-/**
- * The window-resize listener that re-fits the preview to the pane width.
- * Tracked at module scope so re-entering the edit step removes the prior one
- * instead of stacking listeners.
- * @type {(() => void)|null}
- */
-let previewResizeHandler = null;
-
 /** True newsletter width (px). The preview is scaled down to fit narrower panes. */
 const PREVIEW_WIDTH = 705;
 
 /** Cap the preview at 95% of true size; scales down on narrow windows so the
     edit column always fits and there's never a horizontal scrollbar. */
 const PREVIEW_MAX_SCALE = 0.95;
+
+/**
+ * Re-fits the Edit step's preview iframe to the current pane width. Reads
+ * the layout fresh from the document on every call rather than closing over
+ * one render's elements, so a single listener bound once (below) keeps
+ * re-fitting the preview correctly across every future visit to the step.
+ * Silently no-ops when `.edit-layout` isn't on screen: a different step is
+ * showing, or Edit has never been rendered yet.
+ */
+function fitPreview() {
+  const layout = document.querySelector('.edit-layout');
+  if (!layout) return;
+  const iframe = layout.querySelector('.edit-preview-iframe');
+  const wrap = layout.querySelector('.edit-preview-wrap');
+  const doc = iframe && iframe.contentDocument;
+  if (!doc || !doc.body) return;
+  // Measure the whole two-column row; the sheet's share is computed by the
+  // helper (which reserves the column, gap, and both sides of stage padding).
+  const layoutWidth = layout.clientWidth;
+  if (!layoutWidth) return; // hidden (another step showing) or not laid out yet
+  // The column, the gap and the stage's padding are read from the page, not
+  // copied from the stylesheet: a hand-copied number drifts the moment the
+  // CSS changes, and the preview then scales by the wrong amount.
+  const rowStyle = getComputedStyle(layout);
+  const gap = parseFloat(rowStyle.columnGap || rowStyle.gap) || 0;
+  const columnWidth = layout.querySelector('.edit-column')?.getBoundingClientRect().width ?? 0;
+  const wrapStyle = getComputedStyle(wrap);
+  const stagePad = ((parseFloat(wrapStyle.paddingLeft) || 0) + (parseFloat(wrapStyle.paddingRight) || 0)) / 2;
+  iframe.style.zoom = '1';
+  iframe.style.width = PREVIEW_WIDTH + 'px';
+  const contentHeight = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
+  iframe.style.height = contentHeight + 'px';
+  const scale = computePreviewScale({
+    layoutWidth, columnWidth, gap, stagePad,
+    sheetWidth: PREVIEW_WIDTH, maxScale: PREVIEW_MAX_SCALE,
+  });
+  if (scale <= 0) return;
+  iframe.style.zoom = String(scale);
+  const note = document.querySelector('.preview-note');
+  if (note) note.textContent = `Preview at ${Math.round(scale * 100)} percent, as it lands in Outlook. Click any text to edit it.`;
+}
+
+// Bound once: fitPreview finds the preview afresh on every call.
+window.addEventListener('resize', debounce(fitPreview, 150));
 
 
 /**
@@ -932,109 +967,6 @@ function flashItem(doc, section, item) {
   setTimeout(() => els.forEach((el) => el.classList.remove('ec-edit-flash')), 600);
 }
 
-/** PDF flyers become a PNG in the browser (first page) so email clients can
- *  show them; pdf.js loads lazily from the CDN only when a PDF arrives. */
-async function pdfFirstPageToPng(file) {
-  const pdfjs = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
-  pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
-  const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
-  const page = await doc.getPage(1);
-  const scale = 1200 / page.getViewport({ scale: 1 }).width;
-  const viewport = page.getViewport({ scale });
-  const canvas = document.createElement('canvas');
-  canvas.width = Math.round(viewport.width);
-  canvas.height = Math.round(viewport.height);
-  // intent 'print' keeps the raster off requestAnimationFrame, which browsers
-  // pause in a background tab; otherwise switching tabs mid-upload leaves the
-  // conversion stuck on "Converting the PDF" until you come back.
-  await page.render({ canvasContext: canvas.getContext('2d'), viewport, intent: 'print' }).promise;
-  return new Promise((resolve, reject) =>
-    canvas.toBlob(b => (b ? resolve(b) : reject(new Error("Couldn't convert that PDF."))), 'image/png'));
-}
-
-const IMAGE_EXTS = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp' };
-
-/** Upload one picture (PNG/JPG/GIF/WebP, or a PDF's first page) → public URL. */
-async function uploadItemImage(file, onStatus) {
-  let blob = file;
-  let ext = IMAGE_EXTS[file.type];
-  if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
-    onStatus('Converting the PDF…');
-    blob = await pdfFirstPageToPng(file);
-    ext = 'png';
-  }
-  if (!ext) throw new Error("Use a PNG, JPG, or PDF.");
-  if (blob.size > 2.5 * 1024 * 1024) throw new Error('Too big. Keep it under 2.5 MB.');
-  onStatus('Uploading…');
-  const b64 = await new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result).split(',')[1] ?? '');
-    r.onerror = () => reject(new Error("Couldn't read that file."));
-    r.readAsDataURL(blob);
-  });
-  const res = await fetch(`${DESK_URL}/api/newsletter-image`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: file.name, type: ext, file: b64 }),
-  });
-  const data = await res.json();
-  if (!data.ok) throw new Error(data.error || 'upload failed');
-  return data.url;
-}
-
-/** The picture control: Add (or Replace) + Remove; the value is a URL the
- *  templates render. The button hides while a file is in flight. */
-function buildImageControl(initial, onChange) {
-  const wrap = el('div', 'img-upload');
-  const fileInput = el('input');
-  fileInput.type = 'file';
-  fileInput.accept = '.png,.jpg,.jpeg,.gif,.webp,.pdf';
-  fileInput.hidden = true;
-  const pick = button('', 'ghost-btn media-add', { onClick: () => fileInput.click() });
-  const removeBtn = button('Remove media', 'edit-card-revert', { onClick: () => {
-    value = '';
-    onChange('');
-    setStatus('');
-    sync();
-  } });
-  const status = el('span', 'pull-status');
-  status.setAttribute('role', 'status');    // read aloud as it changes
-  status.setAttribute('aria-live', 'polite');
-  let value = initial || '';
-  const sync = () => {
-    pick.textContent = value ? 'Replace media' : 'Add media';
-    removeBtn.hidden = !value;
-  };
-  const setStatus = (msg, busy = false) => {
-    if (busy && msg) status.replaceChildren(dotsLoader(true), loadingLabel(msg));
-    else status.textContent = msg;
-  };
-  fileInput.addEventListener('change', async () => {
-    const file = fileInput.files[0];
-    if (!file) return;
-    pick.hidden = true;   // gone while uploading; no double-clicks
-    removeBtn.hidden = true;
-    try {
-      value = await uploadItemImage(file, msg => setStatus(msg, true));
-      onChange(value);
-      setStatus('Added.');
-    } catch (err) {
-      setStatus(err.message);
-    }
-    fileInput.value = '';
-    pick.hidden = false;
-    sync();
-  });
-  sync();
-  wrap.append(pick, removeBtn, status, fileInput);
-  return {
-    el: wrap,
-    get: () => value,
-    set: (v) => { value = v || ''; setStatus(''); sync(); },
-    focus: () => pick.focus(),
-  };
-}
-
 /** Sections whose templates render an item picture (bullet lists don't). */
 const IMAGE_SECTIONS = new Set(['research', 'spotlight', 'events', 'opportunities']);
 
@@ -1161,7 +1093,7 @@ function buildRichEditor(initialMd, onChange, { labelledBy = '' } = {}) {
   linkInput.placeholder = 'https://';
   linkInput.setAttribute('aria-label', 'Link address');
   const applyBtn = button('Apply', 'btn btn-primary rich-link-apply');
-  const cancelLinkBtn = button('Cancel', 'edit-card-revert');
+  const cancelLinkBtn = button('Cancel', 'ghost-btn ghost-btn--muted');
   linkRow.append(linkInput, applyBtn, cancelLinkBtn);
 
   let savedRange = null;
@@ -1321,7 +1253,7 @@ function openItemEditor(refs, iframe) {
 
   // Footer: quiet Use original and Cancel, then Save (commit & close this one card).
   const actions = el('div', 'edit-card-actions');
-  const cancelBtn = button('Cancel', 'edit-card-revert', { onClick: () => {
+  const cancelBtn = button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: () => {
     let changed = false;
     opened.forEach(({ ref, value }, i) => {
       if ((getField(state.issue, ref) ?? '') === value) return;
@@ -1335,7 +1267,7 @@ function openItemEditor(refs, iframe) {
     }
     closeCard(key);
   } });
-  const revertBtn = button(' Use original', 'edit-card-revert', { icon: 'rotate-left', onClick: () => {
+  const revertBtn = button(' Use original', 'ghost-btn ghost-btn--muted', { icon: 'rotate-left', onClick: () => {
     let reverted = 0;
     for (const f of fieldInputs) {
       // No baseline entry (item added after the snapshot, or no snapshot
@@ -1357,7 +1289,7 @@ function openItemEditor(refs, iframe) {
   // not the intro. The desk's word for taking an item out of an issue.
   const itemId = refs[0] && refs[0].item;
   if (itemId) {
-    actions.appendChild(button(' Remove', 'edit-card-delete', { icon: 'trash-can', onClick: (e) => {
+    actions.appendChild(button(' Remove', 'ghost-btn ghost-btn--danger edit-card-delete', { icon: 'trash-can', onClick: (e) => {
       closeCard(key);
       deleteItemWithUndo(itemId, renderEdit, e.detail === 0);
     } }));
@@ -1537,18 +1469,11 @@ function renderEdit() {
     return;
   }
 
-  // Drop any resize listener left over from a previous visit to this step.
-  if (previewResizeHandler) {
-    window.removeEventListener('resize', previewResizeHandler);
-    previewResizeHandler = null;
-  }
-
-  // What the sheet is: its scale, and that it is the editable one.
+  // What the sheet is: its scale, and that it is the editable one. This is
+  // the pre-layout guess; fitPreview corrects it once the iframe loads and
+  // the real width is known.
   const previewNote = el('p', 'preview-note');
-  const sayScale = (scale) => {
-    previewNote.textContent = `Preview at ${Math.round(scale * 100)} percent, as it lands in Outlook. Click any text to edit it.`;
-  };
-  sayScale(PREVIEW_MAX_SCALE);
+  previewNote.textContent = `Preview at ${Math.round(PREVIEW_MAX_SCALE * 100)} percent, as it lands in Outlook. Click any text to edit it.`;
   container.appendChild(previewNote);
 
   const layout = el('div', 'edit-layout');
@@ -1563,33 +1488,6 @@ function renderEdit() {
   // otherwise leave on the newsletter from sub-pixel height rounding.
   iframe.setAttribute('scrolling', 'no');
 
-  function fitPreview() {
-    const doc = iframe.contentDocument;
-    if (!doc || !doc.body) return;
-    // Measure the whole two-column row; the sheet's share is computed by the
-    // helper (which reserves the column, gap, and both sides of stage padding).
-    const layoutWidth = layout.clientWidth;
-    if (!layoutWidth) return; // step not laid out yet; a later refit will run
-    // The column, the gap and the stage's padding are read from the page, not
-    // copied from the stylesheet: a hand-copied number drifts the moment the
-    // CSS changes, and the preview then scales by the wrong amount.
-    const rowStyle = getComputedStyle(layout);
-    const gap = parseFloat(rowStyle.columnGap || rowStyle.gap) || 0;
-    const columnWidth = layout.querySelector('.edit-column')?.getBoundingClientRect().width ?? 0;
-    const wrapStyle = getComputedStyle(wrap);
-    const stagePad = ((parseFloat(wrapStyle.paddingLeft) || 0) + (parseFloat(wrapStyle.paddingRight) || 0)) / 2;
-    iframe.style.zoom = '1';
-    iframe.style.width = PREVIEW_WIDTH + 'px';
-    const contentHeight = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
-    iframe.style.height = contentHeight + 'px';
-    const scale = computePreviewScale({
-      layoutWidth, columnWidth, gap, stagePad,
-      sheetWidth: PREVIEW_WIDTH, maxScale: PREVIEW_MAX_SCALE,
-    });
-    if (scale <= 0) return;
-    iframe.style.zoom = String(scale);
-    sayScale(scale);
-  }
   // Wire click-to-edit and re-fit on every load (fires on each srcdoc set).
   // The rAF refit covers the case where the pane width isn't measurable at the
   // instant load fires (layout not yet flushed); the image listeners re-fit
@@ -1606,9 +1504,6 @@ function renderEdit() {
       });
     }
   });
-
-  previewResizeHandler = debounce(fitPreview, 150);
-  window.addEventListener('resize', previewResizeHandler);
 
   wrap.appendChild(iframe);
   layout.appendChild(wrap);
@@ -1773,7 +1668,7 @@ function renderExport() {
   const archiveSlot = el('span', 'archive-slot');
   const archiveBtn = button('Save to the archive', 'btn btn-secondary export-action-btn');
   archiveSlot.appendChild(archiveBtn);
-  const indexReady = fetch(`${DESK_URL}/builder/newsletters/index.json`, { cache: 'no-store' })
+  const indexReady = fetch('/builder/newsletters/index.json', { cache: 'no-store' })
     .then((res) => (res.ok ? res.json() : null))
     .catch(() => null);
   let savedThisVisit = null;   // a save on this visit puts the date in the archive; the next click asks
@@ -1787,13 +1682,8 @@ function renderExport() {
     saveStatus.append(dotsLoader(true), loadingLabel('Saving…'));
     archiveSlot.appendChild(saveStatus);
     try {
-      const res = await fetch(`${DESK_URL}/api/newsletter-archive`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ issueDate: iso, html: renderNewsletter(state.issue) }),
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'save failed');
+      const data = await postJson('/api/newsletter-archive',
+        { issueDate: iso, html: renderNewsletter(state.issue) }, 'save to the archive');
       // The issue went out: stamped, so a later visit's banner says so.
       state.issue.sentAt = new Date().toISOString();
       saveState(state.issue);
@@ -1806,7 +1696,7 @@ function renderExport() {
       next.append(faIcon('arrow-right'));
       after.replaceChildren(note, next);
     } catch (err) {
-      showExportToast(container, err.message || "Couldn't save to the archive.", 'error');
+      showExportToast(container, plainError(err), 'error');
     } finally {
       archiveSlot.replaceChildren(archiveBtn);
     }

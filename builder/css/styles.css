@@ -207,14 +207,22 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 .note-slot:empty { display: none; }
 .note-slot { margin-top: var(--spacing-03); }
 
-/* Quiet words are ghost buttons: 32px, the link colour, a fill on hover, no underline. */
-.ghost-btn {
+/* Quiet words are ghost buttons: 32px, the link colour, a fill on hover, no
+   underline. .linkish is the same button as drawn by js/item-image.js, the
+   picture control shared with the desk. */
+.ghost-btn, .linkish {
   display: inline-flex; align-items: center; height: 32px; padding: 0 var(--spacing-03);
   border: 0; background: none; color: var(--link-primary);
   font: inherit; letter-spacing: .16px; cursor: pointer; white-space: nowrap;
   transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
 }
-.ghost-btn:hover { color: var(--link-primary-hover); background: var(--background-hover); text-decoration: none; }
+.ghost-btn:hover, .linkish:hover { color: var(--link-primary-hover); background: var(--background-hover); text-decoration: none; }
+/* Muted (Use original, Cancel, Remove media) and red (Remove). */
+.ghost-btn--muted, .linkish.skip-link { color: var(--text-secondary); }
+.ghost-btn--muted:hover, .linkish.skip-link:hover { color: var(--text-primary); }
+.ghost-btn--danger { color: var(--button-danger-secondary); }
+.ghost-btn--danger:hover { color: var(--button-danger-hover); }
+.ghost-btn .fa-solid { margin-right: var(--spacing-02); font-size: .9em; }
 .btn .fa-arrow-right { margin-left: var(--spacing-03); font-size: .85em; }
 .btn .fa-arrow-left { margin-right: var(--spacing-03); font-size: .85em; }
 
@@ -685,8 +693,10 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 }
 .intro-save-btn { margin-top: var(--spacing-03); }
 .img-upload { display: flex; align-items: center; gap: var(--spacing-03); flex-wrap: wrap; }
-.img-upload .pull-status { margin-left: 0; }
 .img-upload .media-add { margin-left: calc(-1 * var(--spacing-03)); }
+.img-status { color: var(--text-secondary); display: inline-flex; align-items: center; gap: var(--spacing-03); }
+/* The preview beside the card already shows the picture. */
+.img-upload .img-thumb { display: none; }
 /* Card footer, desk grammar: Delete far left; Use original · Save on the
    right, with gap and wrap so nothing ever clips. */
 .edit-card-actions {
@@ -697,51 +707,10 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   flex-wrap: wrap;
   margin-top: var(--spacing-02);
 }
-/* Quiet words are ghost buttons: a fill on hover. */
-.edit-card-revert {
-  display: inline-flex; align-items: center; height: 32px;
-  background: none;
-  border: 0;
-  color: var(--text-secondary);
-  font: inherit; letter-spacing: .16px;
-  cursor: pointer;
-  padding: 0 var(--spacing-03);
-  white-space: nowrap;
-}
-.edit-card-revert:hover { color: var(--text-primary); background: var(--background-hover); }
 .edit-card-save { margin-right: calc(-1 * var(--spacing-03)); }   /* the quiet Save sits flush right */
 .edit-card-delete {
-  display: inline-flex; align-items: center; height: 32px;
-  background: none;
-  border: 0;
-  color: var(--button-danger-secondary);
-  font: inherit; letter-spacing: .16px;
-  cursor: pointer;
-  padding: 0 var(--spacing-03);
   margin-right: auto; /* push it to the far left, away from Save */
   margin-left: calc(-1 * var(--spacing-03));
-  white-space: nowrap;
-}
-.edit-card-delete:hover { color: var(--button-danger-hover); background: var(--background-hover); }
-.edit-card-revert .fa-solid, .edit-card-delete .fa-solid,
-.triage-delete-btn .fa-solid { margin-right: var(--spacing-02); font-size: .9em; }
-
-/* Remove on Outline rows: the desk's red quiet word with the trash icon. */
-.triage-delete-btn {
-  display: inline-flex; align-items: center; height: 32px;
-  background: none;
-  border: 0;
-  border-radius: 0;
-  cursor: pointer;
-  font: inherit; letter-spacing: .16px;
-  padding: 0 var(--spacing-03);
-  color: var(--button-danger-secondary);
-  transition: background-color var(--duration-fast-01) var(--ease-productive);
-  white-space: nowrap;
-}
-.triage-delete-btn:hover {
-  color: var(--button-danger-hover);
-  background: var(--background-hover);
 }
 
 /* Bottom Undo toast (delete safety net): Carbon's toast on the inverse ground. */

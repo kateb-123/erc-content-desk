@@ -287,10 +287,8 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Saved [N] of [N] rows, then couldn't reach the sheet."
 "Not a supported file. Use .docx, .md, .txt, .xlsx or .csv."
 "Couldn't convert that PDF."
-"Use a PNG, JPG, or PDF."
 "Too big. Keep it under 2.5 MB."
 "Couldn't read that file."
-"upload failed"
 "Use POST."
 "Use GET."
 "Use GET or POST."
@@ -331,7 +329,7 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Set the issue date on Review first."
 "No issue loaded. Nothing to copy."
 "Copy failed. Check browser permissions."
-"Couldn't save to the archive."
+"The desk couldn't save to the archive right now (server error [N]). Try again in a minute." (the builder's Save to the archive, when the reply is an error page)
 "Couldn't load the archive."
 
 # Empty states

@@ -188,9 +188,6 @@ function seeMore(href) {
 <a href="${esc(h)}" target="_blank" rel="noopener" style="color: #767676; text-decoration: none; font-family: ${FONT_BODY}; font-size: 14px; font-weight: 700;">See more on the ERC website &#8594;</a>
 </td></tr>`;
 }
-/** A section's tail-link URL: the issue may override the registry default; '' turns the row off. */
-const seeMoreUrl = (sec, secReg) => (sec.seeMoreUrl !== undefined ? sec.seeMoreUrl : secReg.seeMoreUrl);
-
 /** A section's items bucketed by group: the registry's order first, then any
  *  group the registry does not name, so nothing is dropped. */
 function groupsInOrder(secReg, items) {
@@ -338,7 +335,7 @@ ${oppMeta}
 
   // See more link for opportunities
   if (!isEvents) {
-    rows += seeMore(seeMoreUrl(sec, secReg));
+    rows += seeMore(secReg.seeMoreUrl);
   } else {
     // closing bottom padding for events last item
     rows += `<tr><td style="height: 22px; font-size: 1px; line-height: 22px;">&nbsp;</td></tr>`;
@@ -385,7 +382,7 @@ ${groupHeading}<table role="presentation" cellspacing="0" cellpadding="0" border
 </td></tr>`;
   }
 
-  rows += seeMore(seeMoreUrl(sec, secReg));
+  rows += seeMore(secReg.seeMoreUrl);
 
   return wrapSection(rows);
 }
@@ -475,7 +472,7 @@ const BUILDERS = {
 // ─── Header / masthead / intro / footer ──────────────────────────────────────
 
 function buildHeader(issue, editable = false) {
-  const imgSrc = issue.headerImageUrl || 'https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/newsletter-masthead.png';
+  const imgSrc = 'https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/newsletter-masthead.png';
   const date = issue.date;
 
   // Build jump-nav dynamically from enabled sections in SECTION_REGISTRY order.
@@ -553,20 +550,17 @@ function buildFooter() {
 </table>`;
 }
 
-/** Inbox preview text: issue.preheader, else the intro's first sentence as plain text. */
+/** Inbox preview text: the intro's first sentence(s), as plain text. */
 function preheader(issue) {
-  let text = String(issue.preheader ?? '').trim();
-  if (!text) {
-    const plain = String(issue.intro ?? '')
-      .replace(MD_LINK, '$1')
-      .replace(/\*\*?([^*]+)\*\*?/g, '$1')
-      .replace(/\s+/g, ' ').trim();
-    // Take whole sentences until there is enough to preview on (a lone "Howdy!" is not a preview).
-    const sentences = plain.match(/[^.!?]+[.!?]+(?=\s|$)/g) || [plain];
-    text = '';
-    for (const sentence of sentences) { text = (text + ' ' + sentence.trim()).trim(); if (text.length >= 60) break; }
-    text = text.slice(0, 140);
-  }
+  const plain = String(issue.intro ?? '')
+    .replace(MD_LINK, '$1')
+    .replace(/\*\*?([^*]+)\*\*?/g, '$1')
+    .replace(/\s+/g, ' ').trim();
+  // Take whole sentences until there is enough to preview on (a lone "Howdy!" is not a preview).
+  const sentences = plain.match(/[^.!?]+[.!?]+(?=\s|$)/g) || [plain];
+  let text = '';
+  for (const sentence of sentences) { text = (text + ' ' + sentence.trim()).trim(); if (text.length >= 60) break; }
+  text = text.slice(0, 140);
   if (!text) return '';
   return `<div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; mso-hide:all;">${esc(text)}${'&#847;&zwnj;&nbsp;'.repeat(40)}</div>`;
 }

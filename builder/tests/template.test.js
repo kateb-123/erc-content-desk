@@ -310,13 +310,13 @@ test('"See more" tail links point at the Policy Exchange by default and never at
   assert.equal(count(html, `href="${POLICY_EXCHANGE}" target="_blank" rel="noopener"`), 3, 'opportunities, policy, headlines');
 });
 
-test('a section can override its "See more" URL, and an empty override drops the row', () => {
+test('a stray sections[].seeMoreUrl from old data is ignored; every "See more" uses the registry default', () => {
   const issue = fullIssue();
   issue.sections.policy.seeMoreUrl = 'https://example.org/policy';
   issue.sections.headlines.seeMoreUrl = '';
   const html = renderNewsletter(issue);
-  assert.ok(html.includes('href="https://example.org/policy"'));
-  assert.equal(count(html, 'See more on the ERC website'), 2, 'headlines row omitted');
+  assert.ok(!html.includes('href="https://example.org/policy"'), 'the per-issue override no longer takes effect');
+  assert.equal(count(html, `href="${POLICY_EXCHANGE}" target="_blank" rel="noopener"`), 3, 'opportunities, policy, headlines all still link to the default');
 });
 
 test('the sheet is 640px wide: masthead and every layout table carry the width attribute for classic Outlook', () => {
@@ -341,16 +341,15 @@ test('the two light grays that failed contrast are replaced', () => {
   assert.ok(!/#9a8a8a/.test(html.slice(0, html.indexOf('</style>'))), 'dark-mode selectors updated too');
 });
 
-test('a hidden preheader follows <body>, from issue.preheader or the intro\'s first sentence', () => {
+test('a hidden preheader follows <body>, built from the intro\'s first sentence; a stray issue.preheader is ignored', () => {
   const issue = fullIssue();
   issue.intro = 'Welcome back, **everyone** — see [the site](https://x.org). Second sentence here.';
-  let html = renderNewsletter(issue);
+  issue.preheader = 'Three briefs & a symposium';
+  const html = renderNewsletter(issue);
   const pre = html.match(/<body[^>]*>\s*<div style="display:none;[^"]*mso-hide:all;">([\s\S]*?)<\/div>/);
   assert.ok(pre, 'preheader div sits right after <body>');
   assert.ok(pre[1].startsWith('Welcome back, everyone — see the site.'), pre[1].slice(0, 80));
-  issue.preheader = 'Three briefs & a symposium';
-  html = renderNewsletter(issue);
-  assert.match(html, /mso-hide:all;">Three briefs &amp; a symposium/);
+  assert.ok(!html.includes('Three briefs &amp; a symposium'), 'the per-issue override no longer takes effect');
 });
 
 test('rgb(80, 0, 0) is only ever a background, so the dark-mode rules cannot repaint the date or tab rows', () => {
@@ -478,12 +477,13 @@ test('item text and the intro end 48px from the right edge of the 640px sheet', 
   assert.match(html, /padding: 16px 48px 0 24px;/, 'the featured-events rule ends at the same edge');
 });
 
-test('the masthead is served from the desk repo; an issue can still override it (Kate, 2026-09-08)', () => {
+test('the masthead is served from the desk repo; a stray issue.headerImageUrl is ignored', () => {
   const html = renderNewsletter(fullIssue());
   assert.ok(html.includes('src="https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/newsletter-masthead.png"'));
   assert.ok(!html.includes('i.ibb.co/tPqcyQw2'));
-  const custom = renderNewsletter({ ...fullIssue(), headerImageUrl: 'https://example.org/banner.png' });
-  assert.ok(custom.includes('src="https://example.org/banner.png"'));
+  const withStray = renderNewsletter({ ...fullIssue(), headerImageUrl: 'https://example.org/banner.png' });
+  assert.ok(!withStray.includes('src="https://example.org/banner.png"'), 'the per-issue override no longer takes effect');
+  assert.ok(withStray.includes('src="https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/newsletter-masthead.png"'));
 });
 
 // ─── Sep 8 amendments (Kate): no stamp border; EdTalk headshots beside the title ──

@@ -48,7 +48,7 @@ export const SECTION_REGISTRY = [
 export function createEmptyIssue() {
   const sections = {};
   for (const s of SECTION_REGISTRY) sections[s.key] = { enabled: false, items: [] };
-  return { date: '', headerImageUrl: '', intro: '', sections };
+  return { date: '', intro: '', sections };
 }
 
 /** Append review-sourced items to an issue. Ids continue the rvw_ sequence. */
