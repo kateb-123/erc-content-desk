@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Newsletter builder</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&amp;family=IBM+Plex+Mono:wght@400&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#ffffff;color:#161616;
+font-family:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+font-size:14px;line-height:20px;letter-spacing:0.16px;}
+a{color:#161616;}a:hover{color:#525252;}
+</style>
+</head>
+<body>
+
+<div style="width: 1280px; height: 900px; box-sizing: border-box; background: #ffffff; display: flex; flex-direction: column;">
+
+<div style="height: 56px; flex: none; border-bottom: 1px solid #c6c6c6; display: flex; align-items: center; padding: 0 40px; gap: 10px;">
+<span style="width: 18px; height: 18px; border: 1px solid #8d8d8d; display: inline-block;"></span>
+<a href="index.html" style="font-weight: 600; text-decoration: none;">ERC Content Desk</a>
+<span style="color: #8d8d8d;">/</span>
+<a href="newsletter.html" style="text-decoration: none;">Newsletter</a>
+<span style="color: #8d8d8d;">/</span>
+<span>Builder</span>
+<span style="margin-left: auto; font-size: 13px; color: #6f6f6f;">Sep 22 issue &middot; draft saved</span>
+</div>
+
+<div style="flex-grow: 1; min-height: 0; padding: 28px 40px 0; display: flex; flex-direction: column; gap: 20px;">
+
+<div style="display: flex; align-items: baseline; gap: 12px;">
+<h1 style="margin: 0; font-size: 26px; line-height: 34px; font-weight: 300; letter-spacing: 0;">Newsletter builder</h1>
+<span style="font-size: 14px; color: #525252;"><span id="stepName">Step 2 of 4</span></span>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-bottom: 1px solid #e0e0e0;">
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 12px 14px 0;">
+<span data-dot="0" style="width: 20px; height: 20px; border-radius: 10px; border: 1px solid #8d8d8d; background: #ffffff; flex: none; display: inline-block;"></span>
+<span data-label="0" style="font-size: 14px; font-weight: 400; color: #6f6f6f;">Pull</span>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 12px 14px 0;">
+<span data-dot="1" style="width: 20px; height: 20px; border-radius: 10px; border: 1px solid #8d8d8d; background: #ffffff; flex: none; display: inline-block;"></span>
+<span data-label="1" style="font-size: 14px; font-weight: 400; color: #6f6f6f;">Arrange</span>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 12px 14px 0;">
+<span data-dot="2" style="width: 20px; height: 20px; border-radius: 10px; border: 1px solid #8d8d8d; background: #ffffff; flex: none; display: inline-block;"></span>
+<span data-label="2" style="font-size: 14px; font-weight: 400; color: #6f6f6f;">Edit</span>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 12px 14px 0;">
+<span data-dot="3" style="width: 20px; height: 20px; border-radius: 10px; border: 1px solid #8d8d8d; background: #ffffff; flex: none; display: inline-block;"></span>
+<span data-label="3" style="font-size: 14px; font-weight: 400; color: #6f6f6f;">Export</span>
+</div>
+</div>
+
+<div style="flex-grow: 1; min-height: 0;">
+
+<div data-panel="0" style="display: none;">
+<div style="display: flex; flex-direction: column; gap: 14px;">
+<div>
+<div style="font-size: 18px; line-height: 24px; font-weight: 600;">Choose what goes in</div>
+<div style="font-size: 13px; color: #525252; margin-top: 2px;">Everything Sort marked for the newsletter and has not been sent yet.</div>
+</div>
+<div style="border: 1px solid #c6c6c6;">
+<div style="padding: 10px 16px; background: #f4f4f4; border-bottom: 1px solid #c6c6c6; display: flex; align-items: center; gap: 12px;">
+<label style="display: inline-flex; align-items: center; gap: 8px; font-size: 12px; letter-spacing: 0.32px; font-weight: 600; color: #525252;"><input type="checkbox" style="width: 16px; height: 16px;">Select all</label>
+<span style="margin-left: auto; font-size: 12px; color: #6f6f6f;">5 available &middot; 3 chosen</span>
+</div>
+<div style="padding: 12px 16px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 14px;"><input type="checkbox" checked style="width: 16px; height: 16px; flex: none;"><span style="flex-grow: 1;"><span style="font-size: 14px; font-weight: 600; display: block;">Four-day school weeks and achievement</span><span style="font-size: 12px; color: #6f6f6f;">Research &middot; Office for Education Policy</span></span></div>
+<div style="padding: 12px 16px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 14px;"><input type="checkbox" checked style="width: 16px; height: 16px; flex: none;"><span style="flex-grow: 1;"><span style="font-size: 14px; font-weight: 600; display: block;">Arkansas teacher pay after LEARNS</span><span style="font-size: 12px; color: #6f6f6f;">Research &middot; ERC</span></span></div>
+<div style="padding: 12px 16px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 14px;"><input type="checkbox" checked style="width: 16px; height: 16px; flex: none;"><span style="flex-grow: 1;"><span style="font-size: 14px; font-weight: 600; display: block;">ERC fall convening</span><span style="font-size: 12px; color: #6f6f6f;">ERC event &middot; Oct 14</span></span></div>
+<div style="padding: 12px 16px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 14px;"><input type="checkbox" style="width: 16px; height: 16px; flex: none;"><span style="flex-grow: 1;"><span style="font-size: 14px; display: block;">Chronic absenteeism in rural districts</span><span style="font-size: 12px; color: #6f6f6f;">Research &middot; Annenberg</span></span></div>
+<div style="padding: 12px 16px; display: flex; align-items: center; gap: 14px;"><input type="checkbox" style="width: 16px; height: 16px; flex: none;"><span style="flex-grow: 1;"><span style="font-size: 14px; display: block;">Postdoc opening, education policy</span><span style="font-size: 12px; color: #6f6f6f;">Opportunity &middot; closes Oct 1</span></span></div>
+</div>
+</div>
+</div>
+
+<div data-panel="1" style="display: none;">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px;">
+<div style="display: flex; flex-direction: column; gap: 14px;">
+<div>
+<div style="font-size: 18px; line-height: 24px; font-weight: 600;">Put them in order</div>
+<div style="font-size: 13px; color: #525252; margin-top: 2px;">Drag to reorder, or move an item into another section.</div>
+</div>
+<div style="font-size: 12px; letter-spacing: 0.32px; font-weight: 600; color: #525252;">Research</div>
+<div style="border: 1px solid #c6c6c6;">
+<div style="padding: 12px 14px; border-bottom: 1px solid #c6c6c6; display: flex; align-items: center; gap: 12px;"><span style="display: flex; flex-direction: column; gap: 2px; flex: none;"><span style="width: 12px; height: 1px; background: #8d8d8d; display: block;"></span><span style="width: 12px; height: 1px; background: #8d8d8d; display: block;"></span><span style="width: 12px; height: 1px; background: #8d8d8d; display: block;"></span></span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #6f6f6f;">01</span><span style="flex-grow: 1; font-size: 14px; font-weight: 600;">Four-day school weeks and achievement</span></div>
+<div style="padding: 12px 14px; display: flex; align-items: center; gap: 12px;"><span style="display: flex; flex-direction: column; gap: 2px; flex: none;"><span style="width: 12px; height: 1px; background: #8d8d8d; display: block;"></span><span style="width: 12px; height: 1px; background: #8d8d8d; display: block;"></span><span style="width: 12px; height: 1px; background: #8d8d8d; display: block;"></span></span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #6f6f6f;">02</span><span style="flex-grow: 1; font-size: 14px; font-weight: 600;">Arkansas teacher pay after LEARNS</span></div>
+</div>
+<div style="font-size: 12px; letter-spacing: 0.32px; font-weight: 600; color: #525252; margin-top: 4px;">Events</div>
+<div style="border: 1px solid #c6c6c6;">
+<div style="padding: 12px 14px; display: flex; align-items: center; gap: 12px;"><span style="display: flex; flex-direction: column; gap: 2px; flex: none;"><span style="width: 12px; height: 1px; background: #8d8d8d; display: block;"></span><span style="width: 12px; height: 1px; background: #8d8d8d; display: block;"></span><span style="width: 12px; height: 1px; background: #8d8d8d; display: block;"></span></span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #6f6f6f;">03</span><span style="flex-grow: 1; font-size: 14px; font-weight: 600;">ERC fall convening</span></div>
+</div>
+</div>
+<div style="border: 1px dashed #c6c6c6; padding: 18px; display: flex; flex-direction: column; gap: 10px; align-self: start;">
+<div style="font-size: 12px; letter-spacing: 0.32px; font-weight: 600; color: #525252;">Sections</div>
+<div style="font-size: 13px; line-height: 18px; color: #6f6f6f;">Research, Events, Opportunities, Headlines. Empty sections are left out of the email.</div>
+<button type="button" style="height: 36px; padding: 0 14px; border: 1px solid #8d8d8d; background: #ffffff; font-family: inherit; font-size: 13px; margin-top: 4px;">Rename sections</button>
+</div>
+</div>
+</div>
+
+<div data-panel="2" style="display: none;">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px;">
+<div style="display: flex; flex-direction: column; gap: 16px;">
+<div>
+<div style="font-size: 18px; line-height: 24px; font-weight: 600;">Write around it</div>
+<div style="font-size: 13px; color: #525252; margin-top: 2px;">The subject line, the opening note, and a blurb per item.</div>
+</div>
+<div><label for="e-subj" style="font-size: 12px; letter-spacing: 0.32px; color: #525252; display: block;">Subject line</label><input id="e-subj" type="text" style="width: 100%; box-sizing: border-box; height: 40px; border: 0; border-bottom: 1px solid #8d8d8d; font-family: inherit; font-size: 14px; margin-top: 8px;"></div>
+<div><label for="e-intro" style="font-size: 12px; letter-spacing: 0.32px; color: #525252; display: block;">Opening note</label><textarea id="e-intro" style="width: 100%; box-sizing: border-box; height: 76px; border: 0; border-bottom: 1px solid #8d8d8d; font-family: inherit; font-size: 14px; margin-top: 8px; resize: vertical;"></textarea></div>
+<div style="border: 1px solid #c6c6c6; padding: 14px;">
+<div style="font-size: 14px; font-weight: 600;">01 &middot; Four-day school weeks and achievement</div>
+<textarea style="width: 100%; box-sizing: border-box; height: 62px; border: 0; border-bottom: 1px solid #8d8d8d; font-family: inherit; font-size: 14px; margin-top: 8px; resize: vertical;">Estimates the effect of four-day school week adoption on math and ELA achievement across 147 rural Arkansas districts.</textarea>
+</div>
+<div style="border: 1px solid #c6c6c6; padding: 14px;">
+<div style="font-size: 14px; font-weight: 600;">02 &middot; Arkansas teacher pay after LEARNS</div>
+<textarea style="width: 100%; box-sizing: border-box; height: 62px; border: 0; border-bottom: 1px solid #8d8d8d; font-family: inherit; font-size: 14px; margin-top: 8px; resize: vertical;"></textarea>
+</div>
+</div>
+<div style="border: 1px solid #c6c6c6; padding: 18px; display: flex; flex-direction: column; gap: 10px; align-self: start;">
+<div style="font-size: 12px; letter-spacing: 0.32px; font-weight: 600; color: #525252;">House style</div>
+<div style="font-size: 13px; line-height: 18px; color: #6f6f6f;">Sentence case. One or two sentences per item. Say what it found, not that it exists.</div>
+</div>
+</div>
+</div>
+
+<div data-panel="3" style="display: none;">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px;">
+<div style="display: flex; flex-direction: column; gap: 14px;">
+<div>
+<div style="font-size: 18px; line-height: 24px; font-weight: 600;">Check it and send</div>
+<div style="font-size: 13px; color: #525252; margin-top: 2px;">This is the email as subscribers will see it.</div>
+</div>
+<div style="border: 1px solid #c6c6c6; padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+<div style="height: 10px; background: #e0e0e0; width: 40%;"></div>
+<div style="height: 22px; background: #f4f4f4; width: 78%; margin-top: 6px;"></div>
+<div style="height: 10px; background: #f4f4f4; width: 92%;"></div>
+<div style="height: 10px; background: #f4f4f4; width: 86%;"></div>
+<div style="height: 1px; background: #e0e0e0; margin: 8px 0;"></div>
+<div style="height: 14px; background: #e0e0e0; width: 24%;"></div>
+<div style="height: 10px; background: #f4f4f4; width: 88%;"></div>
+<div style="height: 10px; background: #f4f4f4; width: 64%;"></div>
+<div style="height: 14px; background: #e0e0e0; width: 20%; margin-top: 8px;"></div>
+<div style="height: 10px; background: #f4f4f4; width: 72%;"></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 16px; align-self: start;">
+<div style="border: 1px solid #c6c6c6; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+<div style="font-size: 12px; letter-spacing: 0.32px; font-weight: 600; color: #525252;">Ready to go</div>
+<div style="font-size: 13px; line-height: 18px; color: #525252;">3 items in 2 sections, to [N] subscribers on the listserv.</div>
+<button type="button" style="height: 40px; padding: 0 14px; border: 1px solid #8d8d8d; background: #ffffff; font-family: inherit; font-size: 13px;">Send a test to myself</button>
+</div>
+<button type="button" style="height: 48px; padding: 0 20px; border: 0; background: #161616; color: #ffffff; font-family: inherit; font-size: 14px;">Send the newsletter</button>
+<button type="button" style="height: 40px; padding: 0 16px; border: 0; background: transparent; font-family: inherit; font-size: 14px; color: #525252; text-align: left;">Download the HTML instead</button>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div style="height: 76px; flex: none; border-top: 1px solid #e0e0e0; display: flex; align-items: center; gap: 8px; padding: 0 40px;">
+<button type="button" id="btnBack" style="height: 48px; padding: 0 20px; border: 0; background: #393939; color: #ffffff; font-family: inherit; font-size: 14px;">Back</button>
+<button type="button" id="btnNext" style="height: 48px; padding: 0 20px; border: 0; background: #161616; color: #ffffff; font-family: inherit; font-size: 14px;"><span id="nextLabel">Next</span></button>
+<span style="margin-left: auto; font-size: 12px; color: #6f6f6f;">3 items chosen</span>
+</div>
+
+</div>
+
+<script>
+(function () {
+  var step = 1;
+  var names = ['Pull', 'Arrange', 'Edit', 'Export'];
+  var dots = document.querySelectorAll('[data-dot]');
+  var labels = document.querySelectorAll('[data-label]');
+  var panels = document.querySelectorAll('[data-panel]');
+  function paint() {
+    for (var i = 0; i < 4; i++) {
+      var on = i <= step;
+      dots[i].style.background = on ? '#161616' : '#ffffff';
+      dots[i].style.borderColor = on ? '#161616' : '#8d8d8d';
+      labels[i].style.color = on ? '#161616' : '#6f6f6f';
+      labels[i].style.fontWeight = i === step ? '600' : '400';
+      panels[i].style.display = i === step ? 'block' : 'none';
+    }
+    document.getElementById('stepName').textContent =
+      'Step ' + (step + 1) + ' of 4 \u2014 ' + names[step];
+    document.getElementById('nextLabel').textContent = step === 3 ? 'Finish' : 'Next';
+  }
+  document.getElementById('btnBack').addEventListener('click', function () {
+    step = Math.max(0, step - 1); paint();
+  });
+  document.getElementById('btnNext').addEventListener('click', function () {
+    step = Math.min(3, step + 1); paint();
+  });
+  paint();
+})();
+</script>
+</body>
+</html>

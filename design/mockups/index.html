@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ERC Content Desk — main page</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&amp;family=IBM+Plex+Mono:wght@400&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#ffffff;color:#161616;
+font-family:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+font-size:14px;line-height:20px;letter-spacing:0.16px;}
+a{color:#161616;}a:hover{color:#525252;}
+</style>
+</head>
+<body>
+
+<div style="width: 1280px; height: 900px; box-sizing: border-box; background: #ffffff; display: flex; flex-direction: column;">
+
+<div style="height: 56px; flex: none; border-bottom: 1px solid #c6c6c6; display: flex; align-items: center; padding: 0 56px;">
+<span style="width: 18px; height: 18px; border: 1px solid #8d8d8d; display: inline-block; margin-right: 10px;"></span>
+<span style="font-weight: 600;">ERC Content Desk</span>
+</div>
+
+<div style="flex-grow: 1; padding: 40px 56px; display: flex; gap: 48px; min-height: 0;">
+
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+<div>
+<h1 style="margin: 0; font-size: 28px; line-height: 36px; font-weight: 300; letter-spacing: 0;">Share something with the ERC</h1>
+<p style="margin: 6px 0 0; font-size: 15px; line-height: 22px; letter-spacing: 0; color: #525252;">It goes into the queue and someone reviews it before it goes out.</p>
+</div>
+
+<div>
+<label for="b-link" style="font-size: 14px; font-weight: 600; display: block;">Paste a link</label>
+<input id="b-link" type="text" placeholder="https://" style="width: 100%; box-sizing: border-box; height: 52px; border: 0; border-bottom: 2px solid #8d8d8d; background: #f4f4f4; font-family: inherit; font-size: 17px; padding: 0 16px; margin-top: 8px;">
+<div style="font-size: 12px; line-height: 16px; color: #6f6f6f; margin-top: 6px;">We will pull the title and description if we can.</div>
+</div>
+
+<div><label for="b-title" style="font-size: 12px; letter-spacing: 0.32px; color: #525252; display: block;">Title</label><input id="b-title" type="text" style="width: 100%; box-sizing: border-box; height: 40px; border: 0; border-bottom: 1px solid #8d8d8d; font-family: inherit; font-size: 14px; margin-top: 8px;"></div>
+
+<div><label for="b-desc" style="font-size: 12px; letter-spacing: 0.32px; color: #525252; display: block;">Description</label><textarea id="b-desc" style="width: 100%; box-sizing: border-box; height: 140px; border: 0; border-bottom: 1px solid #8d8d8d; font-family: inherit; font-size: 14px; margin-top: 8px; resize: vertical;"></textarea>
+<div style="font-size: 12px; line-height: 16px; color: #6f6f6f; margin-top: 6px;">Dates, abstract, the whole announcement. Headlines can skip this.</div></div>
+
+<div>
+<div style="font-size: 12px; letter-spacing: 0.32px; color: #525252;">Type</div>
+<div style="display: flex; margin-top: 8px; border: 1px solid #8d8d8d; width: fit-content;">
+<button type="button" style="height: 40px; padding: 0 14px; border: 0; border-right: 1px solid #8d8d8d; background: #ffffff; font-family: inherit; font-size: 13px;">ERC event</button>
+<button type="button" style="height: 40px; padding: 0 14px; border: 0; border-right: 1px solid #8d8d8d; background: #ffffff; font-family: inherit; font-size: 13px;">Research</button>
+<button type="button" style="height: 40px; padding: 0 14px; border: 0; border-right: 1px solid #8d8d8d; background: #ffffff; font-family: inherit; font-size: 13px;">Event</button>
+<button type="button" style="height: 40px; padding: 0 14px; border: 0; border-right: 1px solid #8d8d8d; background: #ffffff; font-family: inherit; font-size: 13px;">Opportunity</button>
+<button type="button" style="height: 40px; padding: 0 14px; border: 0; background: #ffffff; font-family: inherit; font-size: 13px;">Headline</button>
+</div>
+</div>
+
+<div style="margin-top: auto;"><button type="button" style="height: 48px; padding: 0 20px; border: 0; background: #161616; color: #ffffff; font-family: inherit; font-size: 14px;">Add to the queue</button></div>
+</div>
+
+<div style="width: 360px; flex: none; display: flex; flex-direction: column; gap: 28px;">
+
+<div>
+<div style="font-size: 12px; letter-spacing: 0.32px; font-weight: 600; color: #525252; margin-bottom: 10px;">Desk work</div>
+<div style="border: 1px solid #c6c6c6;">
+<a href="sort.html" style="display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid #c6c6c6; text-decoration: none;">
+<span style="flex-grow: 1;"><span style="font-size: 15px; font-weight: 600; display: block;">Sort content</span><span style="font-size: 12px; color: #6f6f6f;">Review what has come in</span></span>
+<span style="font-size: 20px; font-weight: 300;">15</span>
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#525252" stroke-width="1.5" aria-hidden="true"><path d="M3 8h10"></path><path d="M9 4l4 4-4 4"></path></svg>
+</a>
+<a href="newsletter.html" style="display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid #c6c6c6; text-decoration: none;">
+<span style="flex-grow: 1;"><span style="font-size: 15px; font-weight: 600; display: block;">Newsletter</span><span style="font-size: 12px; color: #6f6f6f;">Next issue Sep 22</span></span>
+<span style="font-size: 20px; font-weight: 300;">2</span>
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#525252" stroke-width="1.5" aria-hidden="true"><path d="M3 8h10"></path><path d="M9 4l4 4-4 4"></path></svg>
+</a>
+<a href="exchange.html" style="display: flex; align-items: center; gap: 12px; padding: 16px; text-decoration: none;">
+<span style="flex-grow: 1;"><span style="font-size: 15px; font-weight: 600; display: block;">Policy Exchange</span><span style="font-size: 12px; color: #6f6f6f;">Publish to the public site</span></span>
+<span style="font-size: 20px; font-weight: 300;">[N]</span>
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#525252" stroke-width="1.5" aria-hidden="true"><path d="M3 8h10"></path><path d="M9 4l4 4-4 4"></path></svg>
+</a>
+</div>
+</div>
+
+<div>
+<div style="font-size: 12px; letter-spacing: 0.32px; font-weight: 600; color: #525252; margin-bottom: 10px;">Recently added</div>
+<div style="border-top: 1px solid #e0e0e0;">
+<div style="padding: 12px 0; border-bottom: 1px solid #e0e0e0;"><div style="font-size: 14px; line-height: 18px;">Four-day school weeks and achievement</div><div style="font-size: 12px; color: #6f6f6f; margin-top: 2px;">Kate &middot; Sep 15</div></div>
+<div style="padding: 12px 0; border-bottom: 1px solid #e0e0e0;"><div style="font-size: 14px; line-height: 18px;">Arkansas teacher pay after LEARNS</div><div style="font-size: 12px; color: #6f6f6f; margin-top: 2px;">[NAME] &middot; Sep 14</div></div>
+<div style="padding: 12px 0; border-bottom: 1px solid #e0e0e0;"><div style="font-size: 14px; line-height: 18px;">Chronic absenteeism in rural districts</div><div style="font-size: 12px; color: #6f6f6f; margin-top: 2px;">[NAME] &middot; Sep 12</div></div>
+<div style="padding: 12px 0;"><div style="font-size: 14px; line-height: 18px;">Principal turnover and school climate</div><div style="font-size: 12px; color: #6f6f6f; margin-top: 2px;">[NAME] &middot; Sep 11</div></div>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</body>
+</html>
