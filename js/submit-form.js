@@ -102,7 +102,7 @@ const todayIso = () => new Date().toISOString().slice(0, 10);
  */
 export function renderSubmitForm(container, {
   onSubmitted, bulk = true, knownLinks = null,
-  doneLine = "Got it. It's in the queue.", pendingLine = '',
+  doneLine = 'Added to the queue.', pendingLine = '',
 } = {}) {
   let selection = { type: '', subtype: '' };
 
@@ -114,26 +114,25 @@ export function renderSubmitForm(container, {
       <div><label for="sf-title">Title</label>
         <input id="sf-title" type="text" autocomplete="off"></div>
       <div><label for="sf-blurb">Description</label>
-        <textarea id="sf-blurb" rows="6" aria-describedby="sf-blurb-help"></textarea>
-        <p class="hint sf-help" id="sf-blurb-help">Dates, abstract, the whole announcement. Headlines can skip this.</p></div>
+        <textarea id="sf-blurb" rows="6"></textarea></div>
       <fieldset class="type-picker"></fieldset>
       <div class="sf-foot">
-        <div class="sf-initials"><label for="sf-submitter">Your initials <span class="hint">(required)</span></label>
+        <div class="sf-initials"><label for="sf-submitter">Your initials</label>
           <input id="sf-submitter" type="text" autocomplete="off"></div>
         <label class="check"><input id="sf-spotlight" type="checkbox">
-          Requesting ERC Spotlight / newsletter feature</label>
+          Spotlight request</label>
         <button type="submit" class="primary submit-btn">Add to the queue</button>
       </div>
       <p class="status" role="status" aria-live="polite"></p>
     </form>
     <details class="bulk-door">
-      <summary><i class="fa-solid fa-chevron-down" aria-hidden="true"></i><span>Have a whole doc or spreadsheet? Add it here. It gets split into items you review first.</span></summary>
+      <summary><i class="fa-solid fa-chevron-down" aria-hidden="true"></i><span>Add a doc or spreadsheet</span></summary>
       <label class="bulk-drop">
         <strong class="bulk-drop-word">Drop a file here</strong> or click to choose one
-        <span class="hint">.docx, .md, .txt, .xlsx or .csv. Items are shown for review before anything is saved.</span>
+        <span class="hint">.docx, .md, .txt, .xlsx or .csv</span>
         <input class="bulk-file sr-only" type="file" accept=".docx,.md,.txt,.xlsx,.csv">
       </label>
-      <p class="bulk-templates">Need a starting point? <a href="/templates/erc-upload-template.docx" download>Word template</a> · <a href="/templates/erc-upload-template.xlsx" download>Spreadsheet template</a></p>
+      <p class="bulk-templates">Templates: <a href="/templates/erc-upload-template.docx" download>Word</a>, <a href="/templates/erc-upload-template.xlsx" download>Spreadsheet</a></p>
       <div class="bulk-review" hidden>
         <div class="bulk-items"></div>
         <button type="button" class="primary bulk-confirm-btn" data-focus="retry">Add all to the queue</button>
@@ -269,9 +268,7 @@ export function renderSubmitForm(container, {
     // "ERC Event" next to "Event" needs a word of difference.
     if (hint) typeBox.append(el('p', 'hint type-hint', hint));
     if (subtypes.length) {
-      const sub = el('span', 'subtype-label', 'Subtype ');   // the reveal gets a name, and says it is required
-      sub.append(el('span', 'hint', '(required)'));
-      typeBox.append(sub);
+      typeBox.append(el('span', 'subtype-label', 'Subtype'));   // the reveal gets a name
       const subRow = el('div', 'pill-row');
       for (const s of subtypes) {
         subRow.append(pill(s.label, s.picked, () => { selection = { ...selection, subtype: s.value }; clearOne(typeBox); renderTypePicker(); }, true));

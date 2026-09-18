@@ -25,7 +25,7 @@
   --line-in: var(--border-subtle-01);  /* hairlines inside a layer */
   --accent: var(--button-primary);
   --accent-deep: var(--button-primary-active);
-  --tint: var(--accent-10);            /* the accent's palest step: ERC and held rows, the stat tiles; the info panel takes the info note's own tint */
+  --tint: var(--accent-10);            /* the accent's palest step: ERC and held rows; the info panel takes the info note's own tint */
   --selected: var(--highlight);        /* the chosen row, the lit menu item: the accent's second step (Sep 17, pick C) */
   --hover: var(--accent-alpha);
   --row-hover: var(--accent-10);
@@ -110,7 +110,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .sf-foot label.check { margin: var(--spacing-06) 0 0; min-height: 40px; display: flex; align-items: center; gap: var(--spacing-03); font-size: 14px; letter-spacing: .16px; color: var(--ink); }
 .submit-form .submit-btn { margin-left: auto; margin-top: var(--spacing-06); height: 48px; padding: 0 var(--spacing-06); }
 /* A field's hint is a helper line under it, not part of the label (f8). */
-.submit-form .sf-help { margin: var(--spacing-02) 0 0; }
+.submit-form .sf-help { margin: var(--spacing-02) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
 /* The one ask before a link already in the queue goes in again (e19): the warning note where the primary was. */
 .submit-form .sf-ask { margin: var(--spacing-05) 0 0; font-size: 14px; line-height: 20px; letter-spacing: .16px; padding: var(--spacing-04) var(--spacing-05); }
 .submit-form .sf-ask:focus { outline: 2px solid var(--focus); outline-offset: -2px; }
@@ -446,12 +446,10 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .table-scroll { overflow-x: auto; }
 
 /* The front page (Kate's wireframes, Sep 17): the share form on the left, a
-   360px column on the right with the three lanes, the newest items and the
-   links to hand out. */
+   360px column on the right with the three lanes and the newest items. */
 .home-page { display: flex; gap: var(--spacing-09); align-items: flex-start; padding: 0 var(--spacing-05); }   /* 56px sides, as the wireframe frames the front page */
 .home-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-06); }
-.home-head h2 { font-size: 28px; line-height: 36px; font-weight: 300; letter-spacing: 0; margin: 0; }   /* the page title, light, as the wireframes draw it */
-.home-head .lede { margin: var(--spacing-02) 0 0; }
+.home-title { font-size: 28px; line-height: 36px; font-weight: 300; letter-spacing: 0; margin: 0; }   /* the page title, light, as the wireframes draw it */
 .home-side { width: 360px; flex: none; display: flex; flex-direction: column; gap: var(--spacing-06); }
 .block-label { font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600; color: var(--muted); margin: 0 0 var(--spacing-03); }
 /* The lanes: a box of three rows, each a link with its count and an arrow. */
@@ -468,24 +466,12 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .lane-sub { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
 .lane-count { font-size: 20px; line-height: 28px; font-weight: 300; }
 .lane .fa-arrow-right { font-size: 12px; color: var(--icon-secondary); }
-/* The newest items and the hand-outs: rows between hairlines. */
-.recent, .handouts { border-top: 1px solid var(--line); }
+/* The newest items: rows between hairlines. */
+.recent { border-top: 1px solid var(--line); }
 .recent-row { padding: var(--spacing-04) 0; border-bottom: 1px solid var(--line); }
 .recent-title { font-size: 14px; line-height: 18px; }
 .recent-meta { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); margin: var(--spacing-01) 0 0; }
 .recent > .recent-meta { padding: var(--spacing-04) 0; }
-.handout-row { display: flex; align-items: center; gap: var(--spacing-03); padding: var(--spacing-02) 0; border-bottom: 1px solid var(--line); }
-.handout-row a { flex: 1 1 auto; min-width: 0; color: var(--ink); text-decoration: none; }
-.handout-row a:hover { text-decoration: underline; }
-.handout-row .fa-arrow-up-right-from-square { font-size: 10px; color: var(--icon-secondary); }
-.copy-btn {
-  flex: none; display: inline-flex; align-items: center; justify-content: center;
-  width: 32px; height: 32px; padding: 0; margin: 0; border: 0; border-radius: 0;
-  background: none; color: var(--icon-secondary); font-size: 12px; line-height: 1; cursor: pointer;
-  transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
-}
-.copy-btn:hover:not(:disabled) { background: var(--row-hover); color: var(--icon-primary); border: 0; }
-.copy-btn .fa-check { color: var(--ok); }
 /* The queue count: a round tag in the accent. */
 .queue-badge {
   display: inline-flex; align-items: center; justify-content: center;

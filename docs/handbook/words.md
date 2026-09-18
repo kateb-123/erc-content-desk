@@ -7,7 +7,7 @@
 "Publish to Exchange"
 "Send to Newsletter"
 "Share something — ERC"
-"Share something with the ERC"
+"Share something with the ERC" (the front page's title since Sep 18, Kate's wireframes; no lede under it)
 "Newsletter builder" (the builder's title since Sep 16; the header's "ERC Newsletter Builder" is gone)
 "Newsletter builder · ERC Content Desk" / "Past newsletters · ERC Content Desk" (the builder's tab titles)
 "Past newsletters"
@@ -32,15 +32,14 @@
 "Type"
 "Date"
 "Description"
-"(paste whatever you have: dates, abstract, the whole announcement; headlines can skip this)"
-"(paste whatever you have — dates, abstract, the whole announcement)"
+"Paste a link" / "We will pull the title and description if we can." (the front page's first field since Sep 18)
 "Link"
-"Requesting ERC Spotlight / newsletter feature"
-"Your initials" (the submit form's label since Sep 16; the error still says "Add your name or initials.")
-"Have a whole doc or spreadsheet? Add it here. It gets split into items you review first."
+"Spotlight request" (the submit form's checkbox since Sep 18; "Requesting ERC Spotlight / newsletter feature" before)
+"Your initials" (the submit form's label since Sep 16, no "(required)" since Sep 18; the error still says "Add your name or initials.")
+"Add a doc or spreadsheet" (the bulk door since Sep 18)
 "Drop a file here or click to choose one"
-".docx, .md, .txt, .xlsx or .csv. Items are shown for review before anything is saved."
-"Need a starting point?"
+".docx, .md, .txt, .xlsx or .csv"
+"Templates: Word, Spreadsheet" (the bulk door's two downloads since Sep 18)
 "Media"
 "(optional — a flyer, PDF, or picture)"
 "Your name"
@@ -195,11 +194,8 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 
 "Build newsletter ↗"
 "Policy Exchange ↗"
-"ERC Content Desk" / "Policy Exchange" / "Newsletter" / "Desk work" (the sidebar's groups, in that order since Sep 16; Desk work folds)
-"Sort" / "Finalize" / "Publish to Exchange" / "Send to Newsletter" (the sidebar's Desk work items; open the pipeline in a new window from the front door; Sort carries the queue count)
-"Show the menu" / "Hide the menu" (the menu button on Desk work's thin strip and the close button in the sidebar, read by screen readers, Sep 16)
-"Next newsletter" / "Newsletter builder" / "Past newsletters" (the sidebar's Newsletter items)
-"Policy Exchange" / "Share an item" / "Listserv sign-up" (the sidebar's Policy Exchange items, each with a copy icon, "Copy the link for [item]", then "Copied")
+"ERC Content Desk" / "Sort content" / "Newsletter" / "Policy Exchange" (the top bar's breadcrumb and lane links since Sep 18; the sidebar and its groups are gone)
+"Sort content" / "Newsletter" / "Next issue [Month D]" / "Policy Exchange" / "Recently added" (the front page's lanes and list since Sep 18)
 "In the queue" / "Next newsletter" / "Exchange updated" / "Last newsletter" (the four stat cards on Home, Sep 16; the first says "[N] waiting", the second "[Mon D]" with "[N] items so far" or "nothing in yet" beside it)
 "Open ↗"
 "Open source ↗"
@@ -227,7 +223,7 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Sent [N] to the [Month D] issue. The builder pulls them from here."
 "Was in the [Month D] issue"
 "For the [Month D] issue"
-"Got it. It's in the queue."
+"Added to the queue." (the submit form's done line since Sep 18)
 "Thank you — the ERC has it."
 "The team reviews every submission before anything is published."
 "✓ Saved"
@@ -414,7 +410,7 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Paste a full http(s) link" (Sort's Change link, a bad paste)
 "Nothing left here." (Finalize's card pane when every keep is deleted)
 "Added [N]. [M] did not go through; they are listed above. Retry, or remove them." and "Retry [M]" (the bulk door)
-"Subtype (required)"
+"Subtype"
 "(opens in a new tab)" (assistive tech only, on every link that leaves the window)
 "Show the text" / "Hide the text" (the bulk review's chevron)
 "Use a PNG, JPG, GIF, WebP or PDF." and "The desk couldn't upload that file (server error [N]). Try again."
