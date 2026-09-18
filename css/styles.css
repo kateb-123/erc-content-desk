@@ -159,37 +159,60 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .bulk-table .field-error { margin-top: var(--spacing-01); }
 .bulk-remove { width: 6.5rem; text-align: right; }
 
-/* Newsletter: the hand-off to the standalone builder */
-.nl-issue { font-size: 14px; color: var(--muted); margin: 0 0 var(--spacing-03); }
-.nl-issue select { width: auto; min-width: 12rem; height: 32px; padding: 0 var(--spacing-07) 0 var(--spacing-03); font: inherit; letter-spacing: .16px; }
-.nl-row { cursor: pointer; }
-.nl-row:hover td { background: var(--row-hover); }
-.nl-check { width: 2rem; }
-.nl-sent { margin: var(--spacing-02) 0 var(--spacing-06); }
-.nl-sent summary { cursor: pointer; color: var(--muted); }
-.nl-sent .queue-table { margin-top: var(--spacing-03); }
-/* Timing on the newsletter pool: events for a later issue dim and sink; the
-   "Send early?" ask is a warning note (Sort's verify loop), so a question
-   about timing looks the same everywhere it appears. */
-.nl-row.nl-later .item-title { color: var(--muted); font-weight: 400; }   /* sunk to the bottom with its note, not dimmed (design audit b11) */
+/* Newsletter's Next issue (Kate's wireframes, Sep 17): what is in the issue
+   and what is ready to add on the left, the issue itself in a 420px column on
+   the right. Items are rows in white boxes with a hairline. */
+.nl-page { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: var(--spacing-06); align-items: start; }
+.nl-main { display: flex; flex-direction: column; gap: var(--spacing-04); min-width: 0; }
+.nl-block-head { display: flex; align-items: center; gap: var(--spacing-04); margin-top: var(--spacing-03); }
+.nl-block-head .block-label { margin: 0; }
+.nl-block-count { margin-left: auto; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
+.nl-section { margin: var(--spacing-02) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600; color: var(--muted); }
+.nl-list { background: var(--layer); border: 1px solid var(--layer-line); }
+.nl-row { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--line-in); }
+.nl-list > .nl-row:first-child { border-top: 0; }
+.nl-row.is-gone { background: var(--layer-01); }
+.nl-row.is-gone .nl-title, .nl-row.is-gone .nl-meta { color: var(--muted); }
+.nl-num { flex: none; width: 20px; font-size: 12px; line-height: 16px; color: var(--text-helper); font-variant-numeric: tabular-nums; }
+.nl-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-01); }
+.nl-title { font-size: 14px; line-height: 18px; font-weight: 600; }
+.nl-list .nl-row:not(.is-gone) .nl-title .badge { font-weight: 400; }
+.nl-list.is-ready .nl-title, .nl-past .nl-title { font-weight: 400; }   /* what is in the issue reads bold, what could be plain */
+.nl-meta { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
+.nl-empty { margin: 0; color: var(--muted); }
+/* "Send early?" on a later issue's event: a warning note, the words bare, the icon on the bubble. */
 .nl-ask {
   display: block; width: fit-content; margin: var(--spacing-02) 0 0;
   font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--ink); background: var(--warn-bg);
   border: 1px solid var(--warn-line); border-left: 3px solid var(--warn-mark); border-radius: 0; padding: var(--spacing-03) var(--spacing-04);
 }
-.nl-ask .alert-mark, .nl-ask .fa-clock { margin-right: var(--spacing-02); color: var(--warn-mark); }
-.nl-ask .alert-word { color: var(--link-primary); }
-.nl-past .badge { margin-left: var(--spacing-01); }
-.nl-past-act { text-align: right; width: 6.5rem; }
-.nl-group-scroll { max-height: 340px; overflow-y: auto; }
-/* The newsletter's folds open with the same chevron as Home's queue (audit round two, f1). */
-.nl-group > summary, .nl-sent > summary, .nl-past > summary { list-style: none; display: flex; align-items: center; gap: var(--spacing-03); cursor: pointer; }
-.nl-group > summary::-webkit-details-marker, .nl-sent > summary::-webkit-details-marker, .nl-past > summary::-webkit-details-marker { display: none; }
-.nl-group > summary .fa-chevron-right, .nl-sent > summary .fa-chevron-right, .nl-past > summary .fa-chevron-right { width: 12px; text-align: center; font-size: 11px; color: var(--icon-secondary); transition: transform var(--duration-fast-01) var(--ease-productive); }
-.nl-group[open] > summary .fa-chevron-right, .nl-sent[open] > summary .fa-chevron-right, .nl-past[open] > summary .fa-chevron-right { transform: rotate(90deg); }
-/* Send and the pick count ride at the foot of the window while the groups scroll (audit round two, e13). */
-.nl-foot { position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center; justify-content: flex-end; gap: var(--spacing-05); padding: var(--spacing-04) 0; margin-top: var(--spacing-05); background: var(--background); border-top: 1px solid var(--line); }
-.nl-foot .nl-picked { color: var(--muted); }
+.nl-ask .fa-clock { margin-right: var(--spacing-02); color: var(--warn-mark); }
+/* What the issue has outrun, folded, with the chevron every fold opens from. */
+.nl-past > summary { list-style: none; display: flex; align-items: center; gap: var(--spacing-03); cursor: pointer; color: var(--muted); margin-bottom: var(--spacing-03); }
+.nl-past > summary::-webkit-details-marker { display: none; }
+.nl-past > summary .fa-chevron-right { width: 12px; text-align: center; font-size: 11px; color: var(--icon-secondary); transition: transform var(--duration-fast-01) var(--ease-productive); }
+.nl-past[open] > summary .fa-chevron-right { transform: rotate(90deg); }
+/* The issue: a white box with its date large, then the builder door and the last issue. */
+.nl-side { display: flex; flex-direction: column; gap: var(--spacing-05); }
+.nl-issue { background: var(--layer); border: 1px solid var(--layer-line); padding: var(--spacing-06); display: flex; flex-direction: column; gap: var(--spacing-02); }
+.nl-issue .block-label { margin: 0 0 var(--spacing-03); }
+.nl-date { margin: 0; font-size: 32px; line-height: 40px; font-weight: 300; }
+.nl-sends { margin: 0; font-size: 14px; color: var(--muted); }
+.nl-others { margin: var(--spacing-03) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
+.nl-others .linkish { height: 24px; padding: 0 var(--spacing-01); font-size: 12px; letter-spacing: .32px; }
+.nl-door { display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 var(--spacing-05); background: var(--button-primary); color: var(--text-on-accent); text-decoration: none; transition: background-color var(--duration-fast-01) var(--ease-productive); }
+.nl-door:hover { background: var(--button-primary-hover); color: var(--text-on-accent); }
+.nl-door:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; box-shadow: inset 0 0 0 3px var(--focus-inset); }
+.nl-last { border-top: 1px solid var(--line); padding-top: var(--spacing-04); }
+.nl-last .block-label { margin: 0 0 var(--spacing-02); }
+.nl-last-date { margin: 0; font-size: 14px; }
+/* Past issues: the archive as one list; each opens the email as it went out. */
+.past-list { max-width: 42rem; }
+.past-row { display: flex; align-items: center; justify-content: space-between; min-height: 48px; padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--line-in); color: var(--ink); text-decoration: none; transition: background-color var(--duration-fast-01) var(--ease-productive); }
+.past-list > .past-row:first-child { border-top: 0; }
+.past-row:hover { background: var(--row-hover); color: var(--ink); }
+.past-row .fa-solid { font-size: 11px; color: var(--icon-secondary); }
+@media (max-width: 1000px) { .nl-page { grid-template-columns: minmax(0, 1fr); } }
 .bulk-door .bulk-status { min-height: 0; margin: 0; }   /* takes no room until it has words */
 
 .status { min-height: 20px; margin: 0; font-size: 14px; position: sticky; top: 0; z-index: 2; background: var(--background); }   /* stays in view down a long list (design audit b3) */
@@ -277,7 +300,6 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
   font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 400; white-space: nowrap;
 }
 /* In the newsletter pool's type cell the badge sits on its own line under the subtype. */
-.nl-table .badge { margin-top: var(--spacing-02); }
 .badge-dupe { background: var(--tag-background-review); color: var(--tag-color-review); }
 .badge-new { background: var(--tag-background-blue); color: var(--tag-color-blue); }
 .alert-word { color: var(--link-primary); }
@@ -444,26 +466,14 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .recent-title { font-size: 14px; line-height: 18px; }
 .recent-meta { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); margin: var(--spacing-01) 0 0; }
 .recent > .recent-meta { padding: var(--spacing-04) 0; }
-/* The queue count: a round tag in the accent. */
-.queue-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-width: 24px; height: 24px; padding: 0 var(--spacing-03);
-  border-radius: var(--radius-tag-md); background: var(--tag-background-blue); color: var(--tag-color-blue);
-  font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600;
-}
 
 /* A small tertiary: the base button at 32px. */
 .mini-btn { height: 32px; padding: 0 var(--spacing-04); white-space: nowrap; }
 
-/* Next issue: a front-door page (Sep 15). The way back sits above the title;
-   Quick add on the lede's right opens the dashed panel with the submit form. */
-.screen-head h2 .queue-badge { vertical-align: middle; margin-left: var(--spacing-03); }
-.screen-head .mini-btn { margin-left: auto; align-self: center; }
-#screen-issue .table-scroll { margin-top: var(--spacing-04); }
-.quick-panel { margin-top: var(--spacing-06); border: 1px solid var(--layer-line);   /* a white box with a hairline; dashed is for drop zones (audit round two, e22) */ border-radius: 0; background: var(--layer-02); padding: var(--spacing-05) var(--spacing-06) var(--spacing-06); }
-.quick-panel h3 { font-size: 16px; line-height: 22px; font-weight: 600; margin: 0 0 var(--spacing-04); }
+/* Quick add's form, under In this issue: a white box with a hairline (dashed is for drop zones, audit round two, e22). */
+.quick-panel { border: 1px solid var(--layer-line);   /* a white box with a hairline; dashed is for drop zones (audit round two, e22) */ border-radius: 0; background: var(--layer-02); padding: var(--spacing-05) var(--spacing-06) var(--spacing-06); }
 
-/* Queue table (Next newsletter's list, until it folds into the Newsletter page) */
+/* Tables: Publish and Finalize's lists, the bulk review */
 .item-title { font-weight: 400; color: var(--ink); }
 
 .queue-head { display: flex; align-items: baseline; justify-content: flex-end; gap: var(--spacing-05); flex-wrap: wrap; margin: 0 0 var(--spacing-04); }
@@ -479,10 +489,6 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .finalize-table th:nth-child(2) { width: auto; }
 .finalize-table th:nth-child(3) { width: 22%; }
 .finalize-table th:nth-child(4) { width: 13%; }
-/* The newsletter pool's tables start with the checkbox column, so the same shift. */
-.nl-table th:nth-child(2) { width: auto; }
-.nl-table th:nth-child(3) { width: 22%; }
-.nl-table th:nth-child(4) { width: 13%; }
 .queue-table .item-source { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin-top: var(--spacing-01); }
 .queue-table td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--line-in); vertical-align: top; color: var(--muted); }
 .queue-table tbody tr:hover td { background-image: linear-gradient(var(--hover), var(--hover)); }

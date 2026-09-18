@@ -1,22 +1,15 @@
 /**
- * What Send to Newsletter knows without a DOM: the heading each type sits
- * under in the pool, and which pool rows wait for an issue and which it has
- * outrun. The headings are the newsletter's own section names, so a pick
- * reads the way the issue will.
+ * The newsletter pool without a DOM: which pool rows wait for an issue and
+ * which it has outrun.
  */
 import { buildPool } from './workflow.js';
 import { eventTiming, deadlineState } from './schedule.js';
 import { isoToShort } from './queue-view.js';
 
-export const GROUP_LABELS = {
-  erc_event: 'ERC events', research: 'New Ed Policy Research', event: 'Events',
-  opportunity: 'Opportunities', headline: 'Headlines',
-};
-
 /** The pool for an issue, split in two: live rows wait to be added; past
  *  rows are what the issue has outrun (an event that happens before it
  *  lands, an opportunity that closes first), each with why and when. One
- *  answer for Send to Newsletter's list and the front page's Newsletter lane. */
+ *  answer for Next issue's Ready to add and the front page's Newsletter lane. */
 export function splitPool(rows, schedule, issue, today) {
   const pool = buildPool(rows);
   const pastEntry = r => {

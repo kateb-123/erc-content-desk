@@ -115,12 +115,9 @@ template and the public Exchange site.
   days"). They are read as tabs: one tab stop, Left and Right move between
   them, Home and End jump (audit round two, Sep 17).
 - **Folds.** Every fold opens from a chevron on its left, pointing right when
-  shut and down when open: the front page's bulk door, Finalize's No rewrite needed, Send to
-  Newsletter's groups, Already sent and Past items. A chevron means a fold and
-  nothing else (audit round two, Sep 17).
-- **Sticky foot.** Send to Newsletter's Send and its "N picked" ride a foot at
-  the bottom of the window, on the page ground under a hairline, while the
-  groups scroll (audit round two, Sep 17).
+  shut and down when open: the front page's bulk door, Finalize's No rewrite
+  needed, Next issue's Past items. A chevron means a fold and nothing else
+  (audit round two, Sep 17).
 - **Notes.** Every panel that speaks is Carbon's inline notification: a
   `--notification-*-background`, a 1px `-border`, a 3px left bar in the
   `--support-*` colour, the matching icon, `--text-primary` words. Info for the
@@ -175,16 +172,17 @@ look, everywhere it appears.
 |---|---|---|---|
 | **Keep and next** (Sort) / **Keep** (Finalize) | ✓ `fa-check` | the primary: the app's fill, the check in its right slot (the ONE per card) | accept into the pipeline and move to the next item / accept the rewrite |
 | **Skip for now** | none | muted ghost button | park it (status stays `circleback` underneath); it sinks to the bottom of Sort's list with a grey Skipped tag, and its card has Keep and next and Delete (Kate, Sep 18) |
-| **Delete** | `fa-trash-can` | red ghost button | trash the ITEM for good (any screen, any time); the row stays listed greyed with Undo for the visit on Sort, the queue, Finalize and Send to Newsletter (design audit, Sep 17) |
+| **Delete** | `fa-trash-can` | red ghost button | trash the ITEM for good (any screen, any time); the row stays listed greyed with Undo for the visit on Sort, Finalize and Next issue's Past items (design audit, Sep 17) |
 | **Edit** | `fa-pen` | ghost button in the link colour | Finalize's inline edit, persists on Save: the fields the type uses, then Link and Media, on the grey edit box; any way out of an edited form holds with "Save or cancel this edit first." Sort's card has no Edit: every field on it is edited in place and saves as you leave it (Kate, Sep 18) |
 | **Use original** | `fa-rotate-left` | muted ghost button | reject the rewrite, keep the Sheet text |
-| **Remove** | `fa-trash-can` | red ghost button | take OUT of the newsletter issue (returns to the pool); shares Delete's icon by Kate's explicit pick; on Next newsletter and in the builder the row stays listed with Undo (Sep 17) |
+| **Remove** | `fa-trash-can` | red ghost button | take OUT of the newsletter issue (returns to the pool); shares Delete's icon by Kate's explicit pick; on Next issue and in the builder the row stays listed with Undo (Sep 17) |
 | **Verify link ↗ → Confirm / Change** | `fa-triangle-exclamation` | warning note, one ask | open the source, then stamp it good or paste a new link; a link that needs no check shows as itself with Change beside it |
 | **View info / Hide info** | none | a word in the link colour beside every screen/step title | opens the tinted instruction panel |
 | **Re-check** | none | a link in Publish's lede | force a fresh hub check |
 | **Add media** → Replace / Remove media | none | a small ghost word under the card's fields, then Replace and the muted Remove word | attach a picture or PDF flyer to any item (Sort's card and Finalize's Edit; newsletter items in the builder), the URL rides the row’s infographic column into the email |
-| **Send early? → Confirm / Cancel** | fa-clock on the note | warning note, one ask (same as Verify link) | picking an event that belongs to a later issue, the words stay bare, the bubble carries the icon |
-| Door buttons (Go to Publish, Send to Newsletter, the receipt's door) | → `fa-arrow-right` | Carbon's tertiary button with the arrow in its right slot (Sep 15, option A; square since Sep 17), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
+| **Add** | none | a small tertiary on each row of Next issue's Ready to add | put the item in the issue; the status line says "Added: title" with Undo (Sep 18) |
+| **Send early? → Confirm / Cancel** | fa-clock on the note | warning note, one ask (same as Verify link) | adding an event that belongs to a later issue, the words stay bare, the bubble carries the icon |
+| Door buttons (Go to Publish, Go to Newsletter, the receipt's door) | → `fa-arrow-right` | Carbon's tertiary button with the arrow in its right slot (Sep 15, option A; square since Sep 17), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
 | **Top bar** (ERC Content Desk / the lane / the page; the two other lanes on the right) | none | a 56px bar under a hairline; crumb links in the ink, lane links quiet | every way around the desk (Kate's wireframes, Sep 17): the brand leads home, a lane opens its page in place, the builder's pages crumb under Newsletter |
 | **Keep the rest (N)** | ✓ `fa-check` | the small dark-grey button, Carbon's secondary (Kate, Sep 17: a sweep across a list is grey, the one decision on a card is the primary), right of Finalize's head while rewrites wait to be checked | keep every rewrite still to check. Sort's Keep the rest went with its sections (Kate, Sep 18: "Drop it") |
 | **Send it to** Newsletter / Policy Exchange | none | two checkboxes on Sort's card | where the item goes once kept (Kate, Sep 18: "Tick = it waits on that page"): ticked for Newsletter it waits in the newsletter's pool at once, for Policy Exchange on Publish; both ticked by default, a spotlight event Newsletter only; ticked for neither, Keep and next is locked |
@@ -227,6 +225,22 @@ two to a row, none until a type is picked; Media; Send it to; then Delete
 far left and Skip for now and Keep and next right. Every field saves as you
 leave it, and a redraw never drops what you are typing. The View info panel,
 the section tabs and Needs a fix are gone (Sep 18).
+
+Newsletter (Kate's wireframes, Sep 17, and her answers, Sep 18;
+`design/mockups/newsletter.png`) is one page with two tabs, Next issue and
+Past issues; it took in Next newsletter, Send to Newsletter and Past
+newsletters. Next issue: on the left, In this issue with Quick add beside it
+and the count at the right, the items by section in the builder's order and
+under its names (numbered, the title at 600, type · source, Remove), then
+Ready to add (what Sort kept with Newsletter ticked, newest first, a later
+issue's events at the bottom saying which issue, each with Add), then the
+Past items fold (what the issue has outrun, with Delete). On the right, a
+420px column: This issue (the date at 32/40 light, "Sends in N days", quiet
+links to the later issues), the builder door (the app's fill, 48px, the
+arrow at the right), and Last issue. Order, the opening note and the email
+preview stay in the builder (her answers); subscribers and open rates are not
+shown (no data). Past issues lists the archive newest first; each opens the
+email as it went out. builder/archive.html now lands on /#past.
 
 Blue means "needs doing", nowhere else on the screen (Kate's palette and her
 pick, Sep 17; the palette's purple read as Halloween beside orange, and

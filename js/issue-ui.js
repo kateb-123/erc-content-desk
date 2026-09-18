@@ -1,172 +1,258 @@
 /**
- * Next newsletter: the issue's current state as a table, with quick add.
- * Reached from the top bar, and from Home's Next newsletter tile. Quick add
- * opens the submit form; what it saves lands in this issue AND in the queue,
- * so Sort sees it too, and the table marks it Not sorted yet until Sort has.
- * Remove takes an item out of the issue; it stays in the queue.
+ * Newsletter's Next issue tab (Kate's wireframes, Sep 17, and her answers,
+ * Sep 18). On the left, what is in the issue, by section the way the email
+ * will read, with Remove and Quick add; under it, what is ready to add, with
+ * Add. On the right, the issue: its date, how far off it is, the builder
+ * door, and the last issue sent. Order, the opening note and the preview stay
+ * in the builder. Merges the old Next newsletter and Send to Newsletter.
  */
-import { dotsLoader } from './icons.js';
-import { isoToShort, partnerFocusKey } from './queue-view.js';
-import { nextIssueDate } from './schedule.js';
-import { issueRows } from './issue-view.js';
+import { dotsLoader, faIcon } from './icons.js';
+import { isoToShort } from './queue-view.js';
+import { issueSections, readyToAdd, sendsIn, lastIssue } from './issue-view.js';
+import { reshareFlags } from './workflow.js';
 import { typeDisplay } from './schema.js';
 import { renderSubmitForm } from './submit-form.js';
-import { titleWithInfo } from './screen-info.js';
+import { newsletterPageHead } from './page-head.js';
 import { el, button, focusKeyIn, restoreFocus, tryAgain, inFlight } from './ui-aids.js';
 
-let quickOpen = false;   // view state: the form stays open across re-renders
-let quickJustOpened = false;   // the panel takes focus once, on the click that opened it
-// Removed, id -> the row as it was: it stays listed, greyed, with Undo, for
-// as long as the screen is open. Leaving the screen clears it, as it does on
-// Finalize, Publish and Send to Newsletter.
+// View state, for as long as the page is open: the issue picked (''= the
+// next one), the quick add form, rows taken out or deleted this visit (they
+// stay listed, greyed, with Undo), and a later event asking "Send early?".
+let issuePick = '';
+let quickOpen = false;
+let quickJustOpened = false;
 const justRemoved = new Map();
+const justDeleted = new Map();
+let askId = null;
 
-/** Arriving at Next newsletter starts fresh: no open quick add, no greyed rows. */
+/** Arriving at Next issue starts fresh. */
 export function resetIssueEntry() {
+  issuePick = '';
   quickOpen = false;
   quickJustOpened = false;
   justRemoved.clear();
+  justDeleted.clear();
+  askId = null;
 }
 
-const INFO = 'Quick add puts an item in this issue and in the queue for Sort at once. Remove takes an item out of this issue; it stays in the queue. Not sorted yet marks an item Sort has not had yet.';
+const title = row => row.headline || row.link || '(untitled)';
+const typeLine = row => [row.type ? typeDisplay(row.type) : 'No type', row.source].filter(Boolean).join(' · ');
 
-function titleCell(row) {
-  const cell = el('td');
-  cell.append(el('span', 'item-title', row.headline || row.link || '(untitled)'));
-  // Straight from quick add: in the issue, and still waiting in Sort's queue.
-  if (row.status === 'new') cell.append(' ', el('span', 'badge', 'Not sorted yet'));
-  else if (row.status === 'circleback') cell.append(' ', el('span', 'badge', 'Skipped'));
-  if (row.source) cell.append(el('span', 'item-source', row.source));
-  return cell;
+/** '2026-09-22' -> 'September 22', the way the desk names an issue on screen. */
+function issueName(iso) {
+  const m = String(iso ?? '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return iso;
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 }
 
-function typeText(row) {
-  return row.type ? typeDisplay(row.type) : 'No type';
+function blockHead(label, count, extra) {
+  const head = el('div', 'nl-block-head');
+  head.append(el('span', 'block-label', label));
+  if (extra) head.append(extra);
+  if (count != null) head.append(el('span', 'nl-block-count', count));
+  return head;
+}
+
+/** One item in the issue: its number, the title and what it is, Remove. */
+function issueRow(row, n, { onRemove }) {
+  const item = el('div', 'nl-row');
+  item.append(el('span', 'nl-num', String(n).padStart(2, '0')));
+  const text = el('span', 'nl-text');
+  const t = el('span', 'nl-title', title(row));
+  // Straight from quick add, the item is in the issue and still in Sort's queue.
+  if (row.status === 'new') t.append(' ', el('span', 'badge', 'Not sorted yet'));
+  else if (row.status === 'circleback') t.append(' ', el('span', 'badge', 'Skipped'));
+  text.append(t, el('span', 'nl-meta', typeLine(row)));
+  item.append(text);
+  const remove = button(' Remove', 'linkish trash-link', {
+    focus: `remove:${row.id}`, icon: 'trash-can',
+    onClick: () => { inFlight(remove, `remove:${row.id}`, 'Removing'); justRemoved.set(row.id, row); onRemove(row); },
+  });
+  item.append(remove);
+  return item;
+}
+
+/** A row taken out (or deleted) this visit: greyed, with its word and Undo. */
+function goneRow(row, word, onUndo, key) {
+  const item = el('div', 'nl-row is-gone');
+  const text = el('span', 'nl-text');
+  text.append(el('span', 'nl-title', title(row)), el('span', 'nl-meta', typeLine(row)));
+  item.append(el('span', 'nl-num'), text, el('span', 'queue-gone', word));
+  const undo = button('Undo', 'linkish', { focus: `undo:${key}`, onClick: () => { inFlight(undo, `undo:${key}`, 'Putting it back'); onUndo(); } });
+  item.append(undo);
+  return item;
+}
+
+/** One item ready to add: the title, what it is and anything timely, Add. An
+ *  event that belongs to a later issue asks "Send early?" first. */
+function readyRow({ row, laterIssue }, { issue, busy, reshare, today, onAdd, rerender }) {
+  const item = el('div', `nl-row${laterIssue ? ' is-later' : ''}`);
+  const text = el('span', 'nl-text');
+  text.append(el('span', 'nl-title', title(row)));
+  const facts = [typeLine(row)];
+  if (row.type === 'event' && row.date) facts.push([isoToShort(row.date, today), row.location].filter(Boolean).join(' · '));
+  if (row.type === 'opportunity' && row.deadline) facts.push(`closes ${isoToShort(row.deadline, today)}`);
+  text.append(el('span', 'nl-meta', facts.join(' · ')));
+  if (laterIssue) text.append(el('span', 'nl-meta', `For the ${issueName(laterIssue)} issue`));
+  if (reshare.has(row.id)) text.append(el('span', 'nl-meta', `Was in the ${issueName(reshare.get(row.id))} issue`));
+  item.append(text);
+  if (askId === row.id) {
+    const ask = el('div', 'nl-ask');
+    ask.append(faIcon('clock'), ' Send early? ');
+    ask.append(button('Confirm', 'linkish alert-word', { focus: `add:${row.id}`, onClick: () => { askId = null; onAdd([row], issue); } }), ' · ',
+      button('Cancel', 'linkish alert-word', { focus: `add:${row.id}`, onClick: () => { askId = null; rerender(); } }));
+    text.append(ask);
+  } else {
+    const add = button('Add', 'mini-btn', { focus: `add:${row.id}`, onClick: () => {
+      if (laterIssue) { askId = row.id; rerender(); return; }
+      add.disabled = true;
+      onAdd([row], issue);
+    } });
+    add.disabled = busy;
+    item.append(add);
+  }
+  return item;
 }
 
 export function renderIssue(container, props) {
-  const { rows, schedule, today, loaded, loadFailed, onQuickAdd, onRemove, onRestore, onRefresh, knownLinks } = props;
-  const issue = nextIssueDate(schedule, today);
-  const when = isoToShort(issue, today);
-  const title = issue ? `Next newsletter, ${when}` : 'Next newsletter';
-  const parts = [];
-
-  // The title with View info beside it, as on every other screen.
-  const head = el('div', 'screen-head');
-  const info = titleWithInfo(title, 'issue', INFO);
-  const h2 = info.row.querySelector('h2');
-  head.append(info.row);
-  parts.push(head, info.panel);
+  const { rows, schedule, today, loaded, loadFailed, busy, archive, onGoTo, onAdd, onRemove, onRestore, onTrash, onRestoreTrashed, onQuickAdd, onRefresh, knownLinks } = props;
+  const rerender = () => renderIssue(container, props);
+  const parts = [newsletterPageHead({ active: 'issue', onGoTo })];
 
   if (!loaded) { container.replaceChildren(...parts, loadFailed ? tryAgain(onRefresh) : dotsLoader()); return; }
+  const upcoming = (schedule ?? []).filter(d => !today || d >= today);
+  const issue = upcoming.includes(issuePick) ? issuePick : (upcoming[0] ?? '');
   if (!issue) {
-    // A dead end said so and nothing else: where the date lives, and a way to look again.
-    const empty = el('p', 'empty', 'No issue date is scheduled yet. Add a date to the Schedule sheet, then refresh. ');
+    const empty = el('p', 'nl-empty', 'No issue date is scheduled yet. Add a date to the Schedule sheet, then refresh. ');
     const again = button('Refresh', '', { onClick: () => { again.disabled = true; onRefresh?.(); } });
     empty.append(again);
     container.replaceChildren(...parts, empty);
     return;
   }
+  const when = isoToShort(issue, today);
+  const sections = issueSections(rows, issue);
+  const inIds = new Set(sections.flatMap(s => s.rows.map(r => r.id)));
+  const removed = [...justRemoved.values()].filter(r => !inIds.has(r.id));
+  const { ready, past } = readyToAdd(rows, schedule, issue, today);
+  const deleted = [...justDeleted.values()].filter(r => rows.find(x => x.id === r.id)?.status === 'trashed');
+  const reshare = reshareFlags(rows, today ?? '');
 
-  const inIssue = issueRows(rows, issue);
-  const removed = [...justRemoved.values()].filter(r => !inIssue.some(x => x.id === r.id));
-  const badge = el('span', 'queue-badge', String(inIssue.length));
-  badge.append(el('span', 'sr-only', ' items'));
-  h2.append(' ', badge);
+  const page = el('div', 'nl-page');
+  const main = el('div', 'nl-main');
 
-  // ── Quick add sits right of the title; no lede, the table says it all. ──
+  // ── In this issue, by section, with Quick add beside the label. ──
   const quick = el('button', 'mini-btn', quickOpen ? 'Close quick add' : 'Quick add');
   quick.type = 'button';
   quick.dataset.focus = 'quick';
   quick.setAttribute('aria-expanded', String(quickOpen));
-  if (quickOpen) quick.setAttribute('aria-controls', 'issue-quick');   // only while the panel is in the page
-  quick.addEventListener('click', () => { quickOpen = !quickOpen; quickJustOpened = quickOpen; renderIssue(container, props); });
-  head.append(quick);
-
-  // Quick add's panel sits right under the head, where the click was, not
-  // below a long table.
+  quick.addEventListener('click', () => { quickOpen = !quickOpen; quickJustOpened = quickOpen; rerender(); });
+  const count = sections.reduce((n, s) => n + s.rows.length, 0);
+  main.append(blockHead('In this issue', `${count} item${count === 1 ? '' : 's'}`, quick));
   let panel = null;
   if (quickOpen) {
+    // Mounted once per opening and kept across redraws, so typing survives.
     panel = container.querySelector('.quick-panel');
     if (!panel) {
       panel = el('section', 'quick-panel');
       panel.id = 'issue-quick';
-      panel.append(el('h3', '', `Add to the ${when} newsletter`));
       const mount = el('div');
       panel.append(mount);
-      // The confirmation names this destination and waits for the stamp, in the panel.
       renderSubmitForm(mount, {
         bulk: false,
         onSubmitted: data => onQuickAdd(data),
         knownLinks,
-        pendingLine: `Adding it to the ${when} newsletter`,
-        doneLine: `In the ${when} newsletter, and in the queue for Sort.`,
+        pendingLine: `Adding it to the ${when} issue`,
+        doneLine: `In the ${when} issue, and in the queue for Sort.`,
       });
     }
-    parts.push(panel);
+    main.append(panel);
+  }
+  if (!count && !removed.length) main.append(el('p', 'nl-empty', 'Nothing in yet.'));
+  let n = 0;
+  for (const section of sections) {
+    main.append(el('p', 'nl-section', section.label));
+    const box = el('div', 'nl-list');
+    for (const row of section.rows) box.append(issueRow(row, ++n, { onRemove }));
+    main.append(box);
+  }
+  if (removed.length) {
+    const box = el('div', 'nl-list');
+    for (const row of removed) box.append(goneRow(row, 'Removed', () => { justRemoved.delete(row.id); onRestore(row); }, row.id));
+    main.append(box);
   }
 
-  // ── The table: what is in. ──
-  if (!inIssue.length && !removed.length) {
-    parts.push(el('p', 'empty', 'Nothing in yet.'));
-  } else {
-    const table = el('table', 'queue-table issue-table');
-    const thead = el('thead');
-    const headRow = el('tr');
-    for (const label of ['Title', 'Type', 'Submitted', '']) headRow.append(el('th', '', label));
-    thead.append(headRow);
-    table.append(thead);
-    const tbody = el('tbody');
-    for (const row of inIssue) {
-      const tr = el('tr');
-      tr.append(titleCell(row));
-      tr.append(el('td', row.type ? '' : 'missing', typeText(row)));
-      tr.append(el('td', '', isoToShort(row.submitted_at, today) || ''));
-      const td = el('td', 'bulk-remove');
-      const remove = button(' Remove', 'linkish trash-link', {
-        focus: `remove:${row.id}`,
-        icon: 'trash-can',
-        onClick: () => { inFlight(remove, `remove:${row.id}`, 'Removing'); justRemoved.set(row.id, row); onRemove(row); },
-      });
-      td.append(remove);
-      tr.append(td);
-      tbody.append(tr);
+  // ── Ready to add. ──
+  main.append(blockHead('Ready to add', String(ready.length)));
+  if (!ready.length) main.append(el('p', 'nl-empty', 'Nothing waiting.'));
+  else {
+    const box = el('div', 'nl-list is-ready');
+    for (const entry of ready) box.append(readyRow(entry, { issue, busy, reshare, today, onAdd, rerender }));
+    main.append(box);
+  }
+  // What the issue has outrun: not addable; the move left is Delete.
+  if (past.length || deleted.length) {
+    const fold = el('details', 'nl-past');
+    const summary = el('summary');
+    summary.append(faIcon('chevron-right'), el('span', '', `Past items (${past.length})`));
+    fold.append(summary);
+    const box = el('div', 'nl-list');
+    for (const { row, why, when: at } of past) {
+      const item = el('div', 'nl-row');
+      const text = el('span', 'nl-text');
+      text.append(el('span', 'nl-title', title(row)), el('span', 'nl-meta', [why, at].filter(Boolean).join(' · ')));
+      const del = button(' Delete', 'linkish trash-link', { focus: `delete:${row.id}`, icon: 'trash-can', onClick: () => { del.disabled = true; justDeleted.set(row.id, row); onTrash(row); } });
+      item.append(el('span', 'nl-num'), text, del);
+      box.append(item);
     }
-    for (const row of removed) {
-      const tr = el('tr', 'queue-row is-deleted');
-      tr.append(titleCell(row));
-      tr.append(el('td', '', typeText(row)));
-      tr.append(el('td', '', isoToShort(row.submitted_at, today) || ''));
-      const td = el('td', 'bulk-remove queue-actions');
-      td.append(el('span', 'queue-gone', 'Removed'));
-      const undo = button('Undo', 'linkish', {
-        focus: `undo:${row.id}`,
-        onClick: () => { inFlight(undo, `undo:${row.id}`, 'Putting it back'); justRemoved.delete(row.id); onRestore?.(row); },
-      });
-      td.append(undo);
-      tr.append(td);
-      tbody.append(tr);
-    }
-    table.append(tbody);
-    const scroll = el('div', 'table-scroll');
-    scroll.append(table);
-    parts.push(scroll);
+    for (const row of deleted) box.append(goneRow(row, 'Deleted', () => { justDeleted.delete(row.id); onRestoreTrashed(row); }, `del:${row.id}`));
+    fold.append(box);
+    if (deleted.length) fold.open = true;
+    main.append(fold);
   }
 
-  // The form is mounted once per opening and left alone across re-renders,
-  // so typing survives a data refresh; focus inside it survives too, and a
-  // table action's focus lands on its partner.
+  // ── The issue: its date, how far off, the builder, the last one sent. ──
+  const side = el('aside', 'nl-side');
+  const box = el('section', 'nl-issue');
+  box.append(el('p', 'block-label', 'This issue'));
+  box.append(el('p', 'nl-date', when), el('p', 'nl-sends', sendsIn(issue, today)));
+  // The other scheduled issues, to stage ahead (an event for its own issue).
+  const others = upcoming.filter(d => d !== issue);
+  if (others.length) {
+    const line = el('p', 'nl-others');
+    line.append(issue === upcoming[0] ? 'Later: ' : 'Also: ');
+    others.forEach((d, i) => {
+      if (i) line.append(' · ');
+      line.append(button(isoToShort(d, today), 'linkish', { focus: `issue:${d}`, onClick: () => { issuePick = d; askId = null; rerender(); } }));
+    });
+    box.append(line);
+  }
+  side.append(box);
+  const door = el('a', 'nl-door', 'Open the builder');
+  door.href = '/builder/';
+  door.append(faIcon('arrow-right'));
+  side.append(door);
+  const last = lastIssue(archive, rows);
+  if (last) {
+    const lastBox = el('section', 'nl-last');
+    lastBox.append(el('p', 'block-label', 'Last issue'), el('p', 'nl-last-date', isoToShort(last.date, today)));
+    if (last.items) lastBox.append(el('p', 'nl-meta', `${last.items} item${last.items === 1 ? '' : 's'}`));
+    side.append(lastBox);
+  }
+
+  page.append(main, side);
+  parts.push(page);
+
+  // A redraw keeps the keyboard's place; focus inside the quick add stays put.
   const active = document.activeElement;
   const inPanel = Boolean(panel?.contains(active));
   const focusKey = inPanel ? null : focusKeyIn(container);
   container.replaceChildren(...parts);
   if (panel && quickJustOpened) {
     quickJustOpened = false;
-    panel.querySelector('#sf-title')?.focus({ preventScroll: true });
-    panel.scrollIntoView({ block: 'nearest' });
+    panel.querySelector('#sf-link')?.focus({ preventScroll: true });
   } else if (inPanel) {
     active.focus({ preventScroll: true });
-  } else if (focusKey !== null && !restoreFocus(container, focusKey, null)) {
-    restoreFocus(container, partnerFocusKey(focusKey, 'remove') || 'quick', h2);
+  } else if (focusKey !== null) {
+    restoreFocus(container, focusKey, container.querySelector('.page-title'));
   }
 }

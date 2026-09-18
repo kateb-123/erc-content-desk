@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 // every page reads its colours through a token it loads. The census walks each
 // page's stylesheets the way the browser does.
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
-const PAGES = ['index.html', 'builder/index.html', 'builder/archive.html'];
+const PAGES = ['index.html', 'builder/index.html'];
 
 /** The stylesheets a page loads, as repo paths in load order, plus its inline styles. */
 function sheetsOf(page) {

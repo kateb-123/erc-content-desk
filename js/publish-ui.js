@@ -2,7 +2,7 @@
  * Publish to Exchange: checked against the LIVE news.csv on arrival, and the
  * report is the page. One fate bar over one table, every row expandable for a
  * last look, the legend filtering it. Publish asks once, then appends to the
- * site; the receipt carries the Send to Newsletter door.
+ * site; the receipt carries the door to the Newsletter page.
  */
 import { readyToPublish } from './workflow.js';
 import { PUBLISH_PAUSED } from './flags.js';
@@ -46,9 +46,9 @@ export function resetPublishAsk() { confirming = false; }
 
 /** The onward door, right of the screen head. */
 function newsletterDoor(onGoTo) {
-  const btn = el('button', 'door', 'Send to Newsletter');
+  const btn = el('button', 'door', 'Go to Newsletter');
   btn.append(faIcon('arrow-right'));
-  btn.addEventListener('click', () => onGoTo('build'));
+  btn.addEventListener('click', () => onGoTo('issue'));
   return btn;
 }
 
@@ -237,9 +237,9 @@ export function renderPublish(container, props) {
     receipt.append(el('p', '', isTrial
       ? 'Nothing went to the live Exchange.'
       : 'The site updates in about a minute.'));
-    const door = el('button', 'door', 'Send to Newsletter ');
+    const door = el('button', 'door', 'Go to Newsletter ');
     door.append(faIcon('arrow-right'));
-    door.addEventListener('click', () => { trialDone = 0; onGoTo('build'); });
+    door.addEventListener('click', () => { trialDone = 0; onGoTo('issue'); });
     receipt.append(door);
     // The saved copy downloads itself on publish; this is here to get it again
     // without republishing (a second click of a download is harmless).

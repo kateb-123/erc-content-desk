@@ -14,7 +14,7 @@ import { safeHref, withScheme } from './links.js';
 import { sortList, oldestWait, readerQueue, isNewToday, needsType, fixReasons, dupeReason, fixContext, keepBlock, nextSelected } from './sort-view.js';
 import { fieldsForType, dateField, finalizeWaiting } from './finalize-view.js';
 import { buildImageControl } from './item-image.js';
-import { sortPageHead } from './sort-head.js';
+import { sortPageHead } from './page-head.js';
 import { faIcon } from './icons.js';
 import { el, button, focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
 

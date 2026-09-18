@@ -5,7 +5,6 @@ import {
   TYPE_ORDER, TYPE_LABELS, TYPE_DISPLAY, typeDisplay, typeIsFlat,
   blankRow, rowToValues, valuesToRow, subtypesFor, isValidType, isValidSubtype,
 } from '../js/schema.js';
-import { GROUP_LABELS } from '../js/newsletter-view.js';
 
 test('the CSV columns match the hub news.csv header exactly, in order', () => {
   assert.deepEqual(CSV_COLUMNS, [
@@ -135,10 +134,4 @@ test('typeDisplay gives the in-app name for every type, in sentence case, and le
   assert.equal(typeDisplay('banana'), 'banana');   // an unknown key shows as itself, never blank
   assert.equal(typeDisplay(''), '');
   assert.equal(TYPE_LABELS.research, 'New Ed Policy Research');   // what the sheet and the bulk parser know is unchanged
-});
-
-// Send to Newsletter folds the pool by type, so every type the desk knows needs
-// a heading: an ERC event with no spotlight request used to land under "undefined".
-test('every type has a newsletter section heading', () => {
-  for (const type of TYPE_ORDER) assert.equal(typeof GROUP_LABELS[type], 'string', type);
 });

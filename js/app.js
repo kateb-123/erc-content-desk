@@ -11,7 +11,7 @@ import { nextIssueDate } from './schedule.js';
 import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
 import { renderPublish, downloadCsv, resetPublishAsk } from './publish-ui.js';
-import { renderNewsletter, resetNewsletterEntry } from './newsletter-ui.js';
+import { renderPast } from './past-ui.js';
 import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToFinalize, canRewrite } from './workflow.js';
 
 
@@ -29,14 +29,14 @@ const state = {
   verifiedIds: new Set(),   // rewrites she has checked this visit (view state)
   reviewTotal: 0,           // size of the current check batch, for "2 of 4" (view state)
   justPublished: 0,         // count from the last publish, until she leaves the screen (view state)
-  justSent: null,           // { issue, ids } from the last newsletter send (view state)
+  archive: null,            // the builder's archive index for Past issues and Last issue: null loading, false unreadable
   publishPreview: null,
   publishedCsv: '',       // the CSV from the last publish, for the receipt's re-download
   rewroteNote: null,
   lastKeepAll: null,        // [{ id, old }] from the last Keep all remaining, until undone or left
 };
 
-const screens = Object.fromEntries(['home', 'issue', 'sort', 'finalize', 'publish', 'build']
+const screens = Object.fromEntries(['home', 'issue', 'past', 'sort', 'finalize', 'publish']
   .map(name => [name, document.querySelector(`#screen-${name}`)]));
 const statusEl = document.querySelector('#desk-status');
 
@@ -278,7 +278,6 @@ function goTo(key) {
   if (key === 'issue' && state.screen !== 'issue') resetIssueEntry();
   if (key === 'finalize' && state.screen !== 'finalize') { resetFinalizeEntry(); state.lastKeepAll = null; }
   // The ticks survive a hop to another screen; only the receipt resets.
-  if (key === 'build' && state.screen !== 'build') state.justSent = null;
   if (key === 'publish' && state.screen !== 'publish') {
     // The check is read-only and CACHED: it runs on first arrival and again
     // only after something changed (persist clears it) or via Re-check.
@@ -407,9 +406,8 @@ async function sendToNewsletter(selectedRows, issue) {
   const ok = await persist(selectedRows.map(r => markNewsletterIssue(r, issue)));
   state.busy = false;
   if (!ok) { render(); return; } // persist already showed the error
-  state.justSent = { issue, ids: selectedRows.map(r => r.id) };
-  resetNewsletterEntry();   // sent: the next pick starts clean
-  setStatus(`Sent ${selectedRows.length} to the newsletter builder.`, 'ok');
+  const name = selectedRows.length === 1 ? (selectedRows[0].headline || selectedRows[0].link || 'this item') : `${selectedRows.length} items`;
+  setStatus(`Added: ${name}`, 'ok', { label: 'Undo', onClick: () => unsendFromNewsletter(selectedRows.map(r => r.id)) });
   render();
 }
 
@@ -419,12 +417,11 @@ async function unsendFromNewsletter(ids) {
   if (!targets.length) return;
   const ok = await persist(targets.map(clearNewsletterIssue));
   if (!ok) return; // persist already showed the error; the stamps stand
-  state.justSent = null;
-  setStatus(`Pulled ${targets.length} back from the newsletter.`, 'ok');
+  setStatus(`Taken out of the issue: ${targets.length === 1 ? (targets[0].headline || targets[0].link || 'this item') : `${targets.length} items`}`, 'ok');
   render();
 }
 
-const SCREEN_ORDER = ['home', 'issue', 'sort', 'finalize', 'publish', 'build'];
+const SCREEN_ORDER = ['home', 'sort', 'finalize', 'issue', 'past', 'publish'];
 // Every screen but the front page has an address (/#sort, /#newsletter,
 // /#exchange, and the old screens' own until they fold into the lanes), so a
 // typed or bookmarked one opens there and a reload stays put.
@@ -483,13 +480,19 @@ function render() {
     });
   } else if (state.screen === 'issue') {
     renderIssue(screens.issue, {
-      ...common, loaded: state.loaded, loadFailed: state.loadFailed,
+      ...common, loaded: state.loaded, loadFailed: state.loadFailed, busy: state.busy, archive: state.archive,
+      onGoTo: goTo,
+      onAdd: sendToNewsletter,
       onQuickAdd: stampSubmitted,
       onRefresh: reload,
       knownLinks: () => state.rows,
       onRemove: row => unsendFromNewsletter([row.id]),
       onRestore: row => persist([row]),   // Undo on Remove: the row as it was, stamp included
+      onTrash: row => persist([trash(row)]),
+      onRestoreTrashed: row => persist([row]),
     });
+  } else if (state.screen === 'past') {
+    renderPast(screens.past, { archive: state.archive, onGoTo: goTo, onRetry: loadArchive });
   } else if (state.screen === 'sort') {
     renderSort(screens.sort, {
       ...common, sortedCount: state.sortedIds.size,
@@ -584,18 +587,23 @@ function render() {
       onPublish: publishNow, onGoTo: goTo,
       onRecheck: () => { state.publishPreview = null; loadPublishPreview(); },
     });
-  } else {
-    renderNewsletter(screens.build, {
-      ...common, busy: state.busy, justSent: state.justSent,
-      onSend: sendToNewsletter,
-      onUnsend: unsendFromNewsletter,
-      onTrash: row => persist([trash(row)]),
-      onRestore: row => persist([row]),
-      onPickMore: () => { state.justSent = null; render(); },   // back to the pool after a send
-    });
   }
   if (switched) focusHeading(screens[state.screen]);
 }
+
+// The builder's archive index: Past issues lists it, Next issue names the
+// last issue from it. Read once per visit, again on Retry.
+async function loadArchive() {
+  state.archive = null;
+  render();
+  try {
+    const res = await fetch('/builder/newsletters/index.json', { cache: 'no-store' });
+    const list = await res.json();
+    state.archive = Array.isArray(list) ? list : false;
+  } catch { state.archive = false; }
+  render();
+}
+loadArchive();
 
 // Back, Forward and a typed address switch screens like a menu pick would.
 window.addEventListener('hashchange', () => {

@@ -18,14 +18,13 @@ test('the breadcrumb: the desk alone on the front page, the desk then the page e
   assert.deepEqual(crumbs('sort'), [{ label: 'ERC Content Desk', href: '/' }, { label: 'Sort content' }]);
   assert.deepEqual(crumbs('exchange'), [{ label: 'ERC Content Desk', href: '/' }, { label: 'Policy Exchange' }]);
   assert.deepEqual(crumbs('builder'), [{ label: 'ERC Content Desk', href: '/' }, { label: 'Newsletter', href: '/#newsletter' }, { label: 'Builder' }]);
-  assert.deepEqual(crumbs('past'), [{ label: 'ERC Content Desk', href: '/' }, { label: 'Newsletter', href: '/#newsletter' }, { label: 'Past issues' }]);
+  assert.deepEqual(crumbs('past'), [{ label: 'ERC Content Desk', href: '/' }, { label: 'Newsletter' }]);   // a tab of Newsletter since Sep 18
 });
 
 test('until their screens fold into the lanes, the old screens crumb under the lane they belong to', () => {
   assert.deepEqual(crumbs('finalize').map(c => c.label), ['ERC Content Desk', 'Sort content']);   // a tab of Sort content since Sep 18
   assert.deepEqual(crumbs('publish').map(c => c.label), ['ERC Content Desk', 'Policy Exchange']);
   assert.deepEqual(crumbs('issue').map(c => c.label), ['ERC Content Desk', 'Newsletter']);
-  assert.deepEqual(crumbs('build').map(c => c.label), ['ERC Content Desk', 'Newsletter', 'Send to Newsletter']);
 });
 
 test('the bar links to the two lanes the page is not in; the front page links to none', () => {
@@ -34,7 +33,7 @@ test('the bar links to the two lanes the page is not in; the front page links to
   assert.deepEqual(laneLinks('finalize').map(l => l.key), ['newsletter', 'exchange']);
   assert.deepEqual(laneLinks('newsletter').map(l => l.key), ['sort', 'exchange']);
   assert.deepEqual(laneLinks('issue').map(l => l.key), ['sort', 'exchange']);
-  assert.deepEqual(laneLinks('build').map(l => l.key), ['sort', 'exchange']);
+  assert.deepEqual(laneLinks('past').map(l => l.key), ['sort', 'exchange']);
   assert.deepEqual(laneLinks('exchange').map(l => l.key), ['sort', 'newsletter']);
   assert.deepEqual(laneLinks('publish').map(l => l.key), ['sort', 'newsletter']);
   assert.deepEqual(laneLinks('builder').map(l => l.key), ['sort', 'exchange']);
@@ -45,7 +44,8 @@ test('an address opens its screen, old addresses still land, anything else is th
   assert.equal(openedScreen('#newsletter'), 'issue');
   assert.equal(openedScreen('#exchange'), 'publish');
   assert.equal(openedScreen('#finalize'), 'finalize');
-  assert.equal(openedScreen('#build'), 'build');
+  assert.equal(openedScreen('#build'), 'issue');   // Send to Newsletter folded into Next issue
+  assert.equal(openedScreen('#past'), 'past');
   assert.equal(openedScreen('#issue'), 'issue');
   assert.equal(openedScreen('#publish'), 'publish');
   assert.equal(openedScreen(''), 'home');
@@ -58,7 +58,7 @@ test('every screen but the front page keeps an address, in the lanes\' names', (
   assert.equal(screenHash('sort'), '#sort');
   assert.equal(screenHash('finalize'), '#finalize');
   assert.equal(screenHash('issue'), '#newsletter');
-  assert.equal(screenHash('build'), '#build');
+  assert.equal(screenHash('past'), '#past');
   assert.equal(screenHash('publish'), '#exchange');
 });
 

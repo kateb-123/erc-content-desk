@@ -21,7 +21,7 @@ test('sr-only and the skip link live in the stylesheet every page loads', () => 
   const shell = read('css/shell.css');
   assert.match(shell, /\.sr-only\s*\{[^}]*clip/);
   assert.match(shell, /\.skip-to-main\s*\{/);
-  for (const page of ['index.html', 'builder/index.html', 'builder/archive.html']) {
+  for (const page of ['index.html', 'builder/index.html']) {
     assert.match(read(page), /css\/shell\.css/, `${page} loads the shell stylesheet`);
     assert.match(read(page), /<header class="topbar">/, `${page} carries the top bar`);
   }

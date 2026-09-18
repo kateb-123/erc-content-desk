@@ -20,14 +20,13 @@ const SCREENS = {
   sort: { lane: 'sort', hash: '#sort' },
   finalize: { lane: 'sort', hash: '#finalize', title: 'Finalize' },   // a tab of Sort content, so no crumb of its own
   issue: { lane: 'newsletter', hash: '#newsletter' },
-  build: { lane: 'newsletter', hash: '#build', page: 'Send to Newsletter' },
+  past: { lane: 'newsletter', hash: '#past', title: 'Past issues' },   // a tab of Newsletter, so no crumb of its own
   publish: { lane: 'exchange', hash: '#exchange' },
   builder: { lane: 'newsletter', hash: null, page: 'Builder', title: 'Newsletter builder' },
-  past: { lane: 'newsletter', hash: null, page: 'Past issues' },
 };
 
 // Old addresses keep landing where they used to.
-const OLD_HASHES = { '#issue': 'issue', '#publish': 'publish' };
+const OLD_HASHES = { '#issue': 'issue', '#publish': 'publish', '#build': 'issue' };   // Send to Newsletter folded into Next issue (Sep 18)
 
 // A lane's own key names a screen too (the lanes become screens as they are built).
 const laneOf = screen => LANES.find(l => l.key === (SCREENS[screen]?.lane ?? screen)) ?? null;

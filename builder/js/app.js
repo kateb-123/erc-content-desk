@@ -1689,8 +1689,8 @@ function renderExport() {
       saveState(state.issue);
       savedThisVisit = { date: iso, label: isoToDisplayDate(iso) };
       const note = inlineNote('success', data.replaced ? 'Saved to the archive, replacing the earlier save.' : 'Saved to the archive.');
-      const open = el('a', '', 'Open Past newsletters');
-      open.href = 'archive.html';
+      const open = el('a', '', 'Open Past issues');
+      open.href = '/#past';
       note.append(open);
       const next = button('Start the next issue', 'btn btn-tertiary', { onClick: startNextIssue });
       next.append(faIcon('arrow-right'));

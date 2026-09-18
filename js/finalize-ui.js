@@ -15,7 +15,7 @@ import { isoToShort } from './queue-view.js';
 import { dotsLoader, faIcon, loadingLabel } from './icons.js';
 import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, finalizeWaiting } from './finalize-view.js';
 import { buildEditForm, holdIfDirty } from './edit-form.js';
-import { sortPageHead } from './sort-head.js';
+import { sortPageHead } from './page-head.js';
 import { el, button, focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
 
 

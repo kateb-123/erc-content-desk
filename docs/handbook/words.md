@@ -454,3 +454,17 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Kept: [title]" / "Skipped: [title]" / "Deleted: [title]", then "Undo" on the status line
 "Nothing to sort." · "All sorted." · "New items are being read." (the card's place when nothing waits)
 Gone on Sep 18 with the section tabs: "Needs a fix" and the section names, "Keep the rest" on Sort, "Undo last", "Go to Finalize", Sort's View info panel and its three hints, "Next: [section]", "Nothing left in this section."
+
+# Newsletter (Kate's wireframes, Sep 18)
+
+"Newsletter" (the page title) · "Next issue" / "Past issues" (its tabs)
+"In this issue" · "Quick add" / "Close quick add" · "[N] items" · the section names as the builder's ("ERC Spotlight", "Upcoming Events", "Opportunities", "New Education Policy Research", "Education Headlines", ...)
+"Not sorted yet" · "Skipped" (tags on an item in the issue) · "Remove" · "Removed" · "Undo"
+"Ready to add" · "Add" · "For the [Month D] issue" · "Was in the [Month D] issue" · "closes [Mon D]" · "Send early? Confirm · Cancel"
+"Nothing in yet." · "Nothing waiting." · "Past items ([N])" · "Before this issue" · "Closes before this issue" · "Delete" · "Deleted"
+"This issue" · "Sends today" / "Sends tomorrow" / "Sends in [N] days" · "Later: [Mon D] · [Mon D]" / "Also: ..." · "Open the builder" · "Last issue" · "[N] items"
+"Added: [title]" / "Added [N] items" then "Undo" · "Taken out of the issue: [title]"
+"In the [Mon D] issue, and in the queue for Sort." · "Adding it to the [Mon D] issue" (Quick add)
+"Couldn't load the archive. Retry" · "Nothing archived yet. Save an issue from the builder's Save & Export step and it appears here." (Past issues)
+"Go to Newsletter" (Publish's door, was "Send to Newsletter") · "Open Past issues" (the builder, after Save to the archive)
+Gone on Sep 18: the Next newsletter and Send to Newsletter screens, "Pick items to send to newsletter", the issue dropdown, the picked count and Send, "Already sent to this issue", "Past newsletters" as a page
