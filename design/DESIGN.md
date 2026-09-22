@@ -202,6 +202,13 @@ look, everywhere it appears.
 | **Download the CSV** → **Download the CSV again** | `fa-download` | the primary in Publish's head, then a ghost word beside the Publish button | the copy of the Adding rows in the hub's own columns, saved before anything is sent (Kate, Sep 22: the CSV comes first); Publish appears only once it has been downloaded, and a changed Adding list asks for a fresh copy. The receipt's Download the CSV again is the whole hub file after the write |
 | **Publish N to the Exchange → Confirm / Cancel** | `fa-triangle-exclamation` on the ask | the primary, then one warning note in its place | the one ask before the append-only write to the public site (design audit b6, Sep 17), at body-01 with the count and "live" in 600; Keep the rest on Finalize gets "Kept N rewrites. Undo" instead of an ask |
 
+The front page is Kate's own (her answer, Sep 22): the title Desk, the lede
+"What waits on each page.", then five cards in a grid of white boxes: Submit
+content (the team's page), Content Sort, Newsletter and Policy Exchange,
+each a name, a line of what it holds and the count as a Lora numeral with an
+arrow, the orange bar on hover; and Documentation, greyed, Forthcoming. The
+top bar shows no lane links there.
+
 The team's page, Submit content at /#team (Kate's sketch and the handoff,
 Sep 22; `design/mockups/submit-content.png`, the handoff itself in
 `design/refresh-sep22/`): the page head, then two columns. Left, the share

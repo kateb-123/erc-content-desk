@@ -454,31 +454,24 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 
 /* The front page (Kate's wireframes, Sep 17): the share form on the left, a
    360px column on the right with the three lanes and the newest items. */
-.home-page { display: flex; gap: var(--spacing-09); align-items: flex-start; padding: 0 var(--spacing-05); }   /* 56px sides, as the wireframe frames the front page */
-.home-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-06); }
 .home-title { font: var(--page-title); letter-spacing: -.2px; margin: 0; }   /* the page title in Lora (Sep 22) */
-.home-side { width: 360px; flex: none; display: flex; flex-direction: column; gap: var(--spacing-06); }
-.block-label { font-size: 12px; line-height: 16px; letter-spacing: 0; font-weight: 600; color: var(--muted); margin: 0 0 var(--spacing-03); }
-/* The lanes: a box of three rows, each a link with its count and an arrow. */
-.lanes { border: 1px solid var(--layer-line); }
-.lane {
-  display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-05);
-  border-bottom: 1px solid var(--layer-line); color: var(--ink); text-decoration: none;
-  transition: background-color var(--duration-fast-01) var(--ease-productive);
+.home-page .lede { margin: var(--spacing-02) 0 0; }
+/* Kate's cards (Sep 22): white boxes in a grid, each a name, what it holds, the count as a Lora numeral, an arrow; the orange bar on hover. */
+.desk-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--spacing-06); margin-top: var(--gap-28); }
+.desk-card {
+  display: flex; align-items: center; gap: var(--spacing-05); min-height: 96px; padding: var(--spacing-06) var(--spacing-06) var(--spacing-06) 21px;
+  background: var(--layer); border: 1px solid var(--layer-line); border-left: 3px solid transparent; border-radius: var(--radius);
+  color: var(--ink); text-decoration: none;
+  transition: background-color var(--duration-fast-01) var(--ease-productive), border-color var(--duration-fast-01) var(--ease-productive);
 }
-.lane:last-child { border-bottom: 0; }
-.lane:hover { background: var(--row-hover); color: var(--ink); }
-.lane-words { flex: 1 1 auto; min-width: 0; }
-.lane-name { display: block; font-size: 16px; line-height: 22px; font-weight: 600; }   /* heading-02 */
-.lane-sub { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
-.lane-count { font-size: 20px; line-height: 28px; font-weight: 300; }
-.lane .fa-arrow-right { font-size: 12px; color: var(--icon-secondary); }
-/* The newest items: rows between hairlines. */
-.recent { border-top: 1px solid var(--line); }
-.recent-row { padding: var(--spacing-04) 0; border-bottom: 1px solid var(--line); }
-.recent-title { font-size: 14px; line-height: 18px; }
-.recent-meta { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); margin: var(--spacing-01) 0 0; }
-.recent > .recent-meta { padding: var(--spacing-04) 0; }
+a.desk-card:hover { background: var(--door-hover); border-left-color: var(--border-interactive); color: var(--ink); }
+.desk-card.is-still { color: var(--muted); }
+.desk-card-words { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-01); }
+.desk-card-name { font: var(--sub-title); letter-spacing: -.1px; }
+.desk-card-sub { font: var(--meta-type); color: var(--text-helper); }
+.desk-card-count { font: var(--numeral); font-size: 28px; line-height: 36px; }
+.desk-card .fa-arrow-right { font-size: 14px; color: var(--icon-secondary); }
+.home-note { margin-top: var(--spacing-05); }
 
 /* A small tertiary: the base button at 32px. */
 .mini-btn { height: 32px; padding: 0 var(--spacing-04); white-space: nowrap; }

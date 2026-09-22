@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { laneCounts, recentlyAdded } from '../js/home-panel.js';
+import { laneCounts, recentlyAdded, deskCards } from '../js/home-panel.js';
 
 // ── The front page's lanes and its Recently added list (Kate's wireframes, Sep 17) ──
 
@@ -42,4 +42,24 @@ test('recentlyAdded: the newest rows first, deleted ones left out, capped at the
   assert.deepEqual(recentlyAdded(rows, 4).map(r => r.id), ['b', 'd', 'a', 'f']);
   assert.deepEqual(recentlyAdded(rows, 2).map(r => r.id), ['b', 'd']);
   assert.deepEqual(recentlyAdded([], 4), []);
+});
+
+// Kate's own page at the root (her answer, Sep 22): cards for the team's page,
+// Content Sort, Newsletter and Policy Exchange with their counts, and a
+// Documentation card that says forthcoming.
+test('deskCards: five cards in order, the counts on the three pages that have work, the next issue under Newsletter', () => {
+  const cards = deskCards({ counts: { sort: 13, newsletter: 8, exchange: 2 }, issue: '2026-09-22', today: '2026-09-18' });
+  assert.deepEqual(cards.map(c => [c.key, c.label, c.href, c.count, c.sub]), [
+    ['team', 'Submit content', '/#team', null, 'The share form, the queue and the quick links, for the team'],
+    ['sort', 'Content Sort', '/#sort', 13, 'Waiting to be sorted'],
+    ['newsletter', 'Newsletter', '/#newsletter', 8, 'Ready to add · next issue Sep 22'],
+    ['exchange', 'Policy Exchange', '/#exchange', 2, 'Publish would add'],
+    ['docs', 'Documentation', null, null, 'Forthcoming'],
+  ]);
+});
+
+test('deskCards: before the rows are in, no counts; with no issue scheduled, Newsletter says so', () => {
+  const cards = deskCards({ counts: null, issue: '', today: '2026-09-18' });
+  assert.deepEqual(cards.map(c => c.count), [null, null, null, null, null]);
+  assert.equal(cards[2].sub, 'Ready to add · no issue scheduled');
 });

@@ -164,6 +164,7 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Go to Publish"
 "Rewrite [N] descriptions"
 "Download the CSV" (Publish's first step, Sep 22) · "Download the CSV again"
+"Desk" · "What waits on each page." · "Waiting to be sorted" · "Ready to add · next issue [date]" / "Ready to add · no issue scheduled" · "Publish would add" · "Documentation" · "Forthcoming" (Kate's page at the root, Sep 22)
 "Content Sort" (the Sort page's name since Sep 22; "Sort content" before) · "Submit content" (the team's page at /#team, Sep 22) · "It lands in the queue and the desk sorts it before it goes out." · "Queue" · "[N] waiting · newest first" · "Nothing waiting." · "Quick links" · "Submit Content to ERC" · "Join listserv" · "ERC Policy Exchange" · "Copy link" / "Copied" · "Desk work"
 "Re-check"
 "Fix in Finalize"

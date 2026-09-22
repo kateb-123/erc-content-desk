@@ -1,5 +1,6 @@
-/** Pure helpers for the front page: the lanes' counts and the newest items. */
+/** Pure helpers for the front page: the lanes' counts, the newest items and Kate's cards. */
 import { readyToPublish } from './workflow.js';
+import { isoToShort } from './queue-view.js';
 import { splitPool } from './newsletter-view.js';
 import { sortList } from './sort-view.js';
 
@@ -21,4 +22,19 @@ export function recentlyAdded(rows, count = 4) {
   return rows.filter(r => r.status !== 'trashed')
     .sort((a, b) => String(b.submitted_at ?? '').localeCompare(String(a.submitted_at ?? '')))
     .slice(0, count);
+}
+
+/** Kate's own page at the root (her answer, Sep 22): a card for the team's
+ *  page, one per lane with the work waiting on it, and Documentation, which
+ *  is forthcoming. `counts` is null until the rows are in. */
+export function deskCards({ counts, issue, today }) {
+  const n = key => (counts ? counts[key] : null);
+  const next = issue ? `next issue ${isoToShort(issue, today)}` : 'no issue scheduled';
+  return [
+    { key: 'team', label: 'Submit content', href: '/#team', count: null, sub: 'The share form, the queue and the quick links, for the team' },
+    { key: 'sort', label: 'Content Sort', href: '/#sort', count: n('sort'), sub: 'Waiting to be sorted' },
+    { key: 'newsletter', label: 'Newsletter', href: '/#newsletter', count: n('newsletter'), sub: `Ready to add · ${next}` },
+    { key: 'exchange', label: 'Policy Exchange', href: '/#exchange', count: n('exchange'), sub: 'Publish would add' },
+    { key: 'docs', label: 'Documentation', href: null, count: null, sub: 'Forthcoming' },
+  ];
 }

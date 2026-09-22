@@ -529,9 +529,7 @@ function render() {
       ...common, loaded: state.loaded, loadFailed: state.loadFailed,
       preview: state.publishPreview,
       onGoTo: goTo,
-      onSubmitted: reload,
       onRefresh: reload,
-      knownLinks: () => state.rows,   // the form is mounted once: it asks for the rows instead of holding a copy
     });
   } else if (state.screen === 'team') {
     renderTeam(screens.team, {
