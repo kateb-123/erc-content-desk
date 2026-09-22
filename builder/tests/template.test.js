@@ -336,7 +336,7 @@ test('the picture stamp names the item so its link has an accessible name', () =
 test('the two light grays that failed contrast are replaced', () => {
   const html = renderNewsletter(fullIssue());
   assert.ok(!/#8F8F8F/i.test(html) && !/#9a8a8a/i.test(html), 'old grays gone');
-  assert.match(html, /color: #767676;[^"]*font-size: 14px; font-weight: 700;">See more/);
+  assert.match(html, /color: #767676;[^"]*font-size: 14px; font-weight: 700;">View more/);
   assert.match(html, /<span style="color:#7A6A6A; font-size:14px;">\(/);
   assert.ok(!/#9a8a8a/.test(html.slice(0, html.indexOf('</style>'))), 'dark-mode selectors updated too');
 });
