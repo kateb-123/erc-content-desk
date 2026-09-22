@@ -5,7 +5,13 @@
  */
 import { isoToShort, bySubmitted } from './queue-view.js';
 import { TYPE_ORDER, isValidSubtype } from './schema.js';
-import { duplicateFlags, linkNeedsCheck } from './workflow.js';
+import { duplicateFlags, linkNeedsCheck, missingFields } from './workflow.js';
+
+// What each field is called on the card; medium is the outlet.
+export const FIELD_LABELS = {
+  headline: 'Title', date: 'Date', source: 'Source', topic: 'Topic', deadline: 'Deadline',
+  authors: 'Authors', time: 'Time', location: 'Location', medium: 'Outlet',
+};
 
 // Newest first, a row with no date last.
 const newestFirst = bySubmitted('desc');
@@ -125,6 +131,13 @@ export function oldestWait(rows, today) {
 
 /** Why the card's Keep and next is locked, in the words of its tooltip; ''
  *  when the row can be kept. A row ticked for neither page has nowhere to go. */
+/** The ask before Keep when the type's fields are still empty (Kate, Sep 22:
+ *  warn and let them keep): "Still missing: Date, Time." or nothing. */
+export function missingLine(row) {
+  const missing = missingFields(row);
+  return missing.length ? `Still missing: ${missing.map(f => FIELD_LABELS[f] ?? f).join(', ')}.` : '';
+}
+
 export function keepBlock(row) {
   if (needsType(row)) return 'Set a type first';
   if (linkNeedsCheck(row)) return 'Check the link first';

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { keptUntyped, readerQueue, sortList, oldestWait, fixReasons, dupeReason, dupeBadgeText, isNewToday, keepBlock, nextSelected, undoWords, withoutRow, adjacentTab } from '../js/sort-view.js';
+import { keptUntyped, readerQueue, sortList, oldestWait, fixReasons, dupeReason, dupeBadgeText, isNewToday, keepBlock, missingLine, nextSelected, undoWords, withoutRow, adjacentTab } from '../js/sort-view.js';
 
 // ── One list, newest first (Kate's wireframes and her answers, Sep 18) ──
 
@@ -170,4 +170,11 @@ test('adjacentTab: Left and Right wrap, Home and End jump, other keys do nothing
   assert.equal(adjacentTab(keys, 'finalize', 'Home'), 'sort');
   assert.equal(adjacentTab(keys, 'sort', 'End'), 'third');
   assert.equal(adjacentTab(keys, 'sort', 'Enter'), null);
+});
+
+test('missingLine names the empty fields the type needs, in the words the card uses; nothing when none are empty', () => {
+  assert.equal(missingLine({ type: 'event', date: '', time: '', location: 'Zoom' }), 'Still missing: Date, Time.');
+  assert.equal(missingLine({ type: 'opportunity' }), 'Still missing: Deadline.');
+  assert.equal(missingLine({ type: 'research', authors: 'Chen' }), '');
+  assert.equal(missingLine({ type: '' }), '');
 });

@@ -451,6 +451,7 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Possible duplicate" · "Type" · "Description" · "Media" · "Send it to" · "ERC Newsletter only"
 "The reader wasn't sure. Check: [fields]." · "The reader wasn't sure. Check the fields."
 "Delete" · "Skip for now" · "Keep and next" · tooltips "Delete (D)", "Skip for now (S)", "Keep and next (K)", or why Keep and next is locked: "Set a type first", "Check the link first"
+"Still missing: [Date, Time, Location, Deadline]." · "Keep anyway" · "Fill it in" (the ask before Keep when the type's fields are empty)
 "Kept: [title]" / "Skipped: [title]" / "Deleted: [title]", then "Undo" on the status line
 "Nothing to sort." · "All sorted." · "New items are being read." (the card's place when nothing waits)
 Gone on Sep 18 with the section tabs: "Needs a fix" and the section names, "Keep the rest" on Sort, "Undo last", "Go to Finalize", Sort's View info panel and its three hints, "Next: [section]", "Nothing left in this section."

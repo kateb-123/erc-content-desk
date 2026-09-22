@@ -7,11 +7,11 @@
  * locked until the type and the link are settled. Rows kept or deleted this
  * visit grey at the bottom of the list with Undo.
  */
-import { linkNeedsCheck, reshareFlags, sendTo, sendToValue } from './workflow.js';
+import { linkNeedsCheck, missingFields, reshareFlags, sendTo, sendToValue } from './workflow.js';
 import { TYPE_ORDER, typeDisplay, subtypesFor, typeIsFlat } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { safeHref, withScheme } from './links.js';
-import { sortList, oldestWait, readerQueue, isNewToday, needsType, fixReasons, dupeReason, fixContext, keepBlock, nextSelected } from './sort-view.js';
+import { sortList, oldestWait, readerQueue, isNewToday, needsType, fixReasons, dupeReason, fixContext, keepBlock, missingLine, nextSelected, FIELD_LABELS } from './sort-view.js';
 import { fieldsForType, dateField, finalizeWaiting } from './finalize-view.js';
 import { buildImageControl } from './item-image.js';
 import { sortPageHead } from './page-head.js';
@@ -26,15 +26,11 @@ let lastIndex = 0;
 let pendingType = null;   // { id, type }
 let linkOpen = false;
 let landOnTitle = false;  // a decision was made: the next card's title takes focus and is read
+let askMissingId = null;  // the row whose Keep is waiting on the missing-fields ask
 let liveOrder = [];       // the live row ids in list order, for the arrow keys
 
 const title = row => row.headline || row.link || '(untitled)';
 
-// What each field is called on the card; medium is the outlet.
-const FIELD_LABELS = {
-  headline: 'Title', date: 'Date', source: 'Source', topic: 'Topic', deadline: 'Deadline',
-  authors: 'Authors', time: 'Time', location: 'Location', medium: 'Outlet',
-};
 
 /** A list row's second line: where it is from, who added it, when. */
 function rowMeta(row, today) {
@@ -290,11 +286,34 @@ function sortCard(row, { props, rerender, ctx, reshare, position, total }) {
     skip.title = 'Skip for now (S)';
     right.append(skip);
   }
-  const keep = button(' Keep and next', 'primary', { focus: 'keep', icon: 'check', onClick: () => { lock(); landOnTitle = true; props.onDecide(row, 'keep'); } });
-  const blocked = keepBlock(row);
-  keep.title = blocked || 'Keep and next (K)';
-  if (blocked) keep.disabled = true;
-  right.append(keep);
+  const doKeep = () => { askMissingId = null; lock(); landOnTitle = true; props.onDecide(row, 'keep'); };
+  const missing = missingLine(row);
+  if (askMissingId === row.id && missing) {
+    // The one ask before Keep (Kate, Sep 22): the fields the type still needs,
+    // then Keep anyway or Fill it in. K keeps anyway, the same as on the button.
+    const ask = el('div', 'card-note-box is-alert card-keep-ask');
+    const h = el('p', 'card-note-head');
+    h.append(faIcon('triangle-exclamation'), missing);
+    const words = el('p', 'card-link-line');
+    words.append(button('Keep anyway', 'linkish alert-word', { focus: 'keep', onClick: doKeep }), ' · ',
+      button('Fill it in', 'linkish alert-word', { focus: 'fill', onClick: () => {
+        askMissingId = null;
+        rerender();
+        const first = missingFields(row)[0];
+        document.querySelector(`.sort-card [data-field="${first}"]`)?.focus();
+      } }));
+    ask.append(h, words);
+    card.append(ask);
+  } else {
+    const keep = button(' Keep and next', 'primary', { focus: 'keep', icon: 'check', onClick: () => {
+      if (missing) { askMissingId = row.id; rerender(); return; }
+      doKeep();
+    } });
+    const blocked = keepBlock(row);
+    keep.title = blocked || 'Keep and next (K)';
+    if (blocked) keep.disabled = true;
+    right.append(keep);
+  }
   acts.append(right);
   card.append(acts);
   return card;
@@ -324,7 +343,7 @@ function listRow(row, { props, rerender, ctx, index }) {
   item.append(text);
   item.addEventListener('click', () => {
     if (row.id === selectedId) return;
-    selectedId = row.id; lastIndex = index; pendingType = null; linkOpen = false;
+    selectedId = row.id; lastIndex = index; pendingType = null; linkOpen = false; askMissingId = null;
     rerender();
   });
   return item;
