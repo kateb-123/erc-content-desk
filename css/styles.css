@@ -437,7 +437,7 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .p-fate-box { margin: var(--spacing-02) 0 var(--spacing-05); }
 .p-fate-bar { display: flex; gap: 2px; height: 8px; border-radius: 0; overflow: hidden; background: var(--layer-accent-01); }
 .p-seg { display: block; min-width: 6px; }
-.p-seg-adding { background: var(--accent); }
+.p-seg-adding { background: var(--interactive); }   /* orange draws the bars (Sep 22); navy is for fills */
 .p-seg-held { background: var(--accent-30); }
 .p-seg-fix { background: var(--tag-background-review); }
 .p-seg-live { background: var(--border-strong-01); }
