@@ -27,6 +27,7 @@ let pendingType = null;   // { id, type }
 let linkOpen = false;
 let landOnTitle = false;  // a decision was made: the next card's title takes focus and is read
 let askMissingId = null;  // the row whose Keep is waiting on the missing-fields ask
+let editDesc = null;      // the row whose description is a field, not prose (the handoff, Sep 22)
 let liveOrder = [];       // the live row ids in list order, for the arrow keys
 
 const title = row => row.headline || row.link || '(untitled)';
@@ -98,76 +99,117 @@ function labelled(text, control, cls = 'card-field') {
 
 // ── The card's parts ──
 
-/** The link: open it, or change it. A link the desk could not read (or
- *  that opened a different item) is a warning note instead: open it, then
- *  Confirm it or Change it. */
-function linkBlock(row, props, rerender) {
+/** The one meta line under the title (the handoff, Sep 22): when, who, then
+ *  the link as its domain with Change beside it. A link that needs a check
+ *  lives in its own question note instead (linkNote). */
+function metaLine(row, props, rerender) {
+  const line = el('p', 'sc-meta');
+  const facts = [isoToShort(row.submitted_at, props.today), row.submitter && `added by ${row.submitter}`].filter(Boolean);
+  line.append(facts.join(' · '));
   const href = safeHref(row.link);
-  const needsCheck = linkNeedsCheck(row);
-  const box = el('div', needsCheck ? 'card-note-box is-alert' : 'card-link');
-  if (needsCheck) {
-    const head = el('p', 'card-note-head');
-    head.append(faIcon('triangle-exclamation'), 'Check the link');
-    box.append(head);
-  }
-  const line = el('p', 'card-link-line');
-  if (needsCheck) line.append(row.link_checked === 'mismatch' ? 'This link may open a different item. ' : "The desk couldn't open this page. ");
-  const after = el('span');
+  if (linkNeedsCheck(row)) return line;   // the note carries the link
+  line.append(facts.length ? ' · ' : '');
   if (href) {
-    const a = el('a', 'source-link', needsCheck ? 'Verify link' : linkText(href));
+    const a = el('a', 'source-link', domainOf(href));
     a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
     a.append(' ', faIcon('arrow-up-right-from-square'), el('span', 'sr-only', ' (opens in a new tab)'));
-    if (needsCheck) {
-      after.hidden = true;
-      a.addEventListener('click', () => { after.hidden = false; });
-    }
     line.append(a);
   } else {
     line.append(el('span', 'card-quiet', 'No link'));
   }
-  if (needsCheck && href) {
+  line.append(' · ', button('Change', 'linkish', { focus: 'link-change', onClick: () => { linkOpen = true; rerender(); } }));
+  return line;
+}
+
+/** The domain, the part a person recognises. */
+const domainOf = href => href.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+
+/** The link question: the desk could not open the page, or it opened a
+ *  different item. Open it, then Confirm it or Change it. */
+function linkNote(row, props, rerender) {
+  const href = safeHref(row.link);
+  const box = el('div', 'card-note-box is-alert');
+  const head = el('p', 'card-note-head');
+  head.append(faIcon('triangle-exclamation'), 'Check the link');
+  box.append(head);
+  const line = el('p', 'card-link-line');
+  line.append(row.link_checked === 'mismatch' ? 'This link may open a different item. ' : "The desk couldn't open this page. ");
+  const after = el('span');
+  if (href) {
+    const a = el('a', 'source-link', 'Verify link');
+    a.href = href; a.target = '_blank'; a.rel = 'noreferrer';
+    a.append(' ', faIcon('arrow-up-right-from-square'), el('span', 'sr-only', ' (opens in a new tab)'));
+    after.hidden = true;
+    a.addEventListener('click', () => { after.hidden = false; });
+    line.append(a);
     after.append(' · ', button('Confirm', 'linkish', { focus: 'link-confirm', onClick: () => props.onVerifyLink(row) }));
+  } else {
+    line.append(el('span', 'card-quiet', 'No link'));
   }
   after.append(' · ', button('Change', 'linkish', { focus: 'link-change', onClick: () => { linkOpen = true; rerender(); } }));
   line.append(after);
   box.append(line);
-  if (linkOpen) {
-    const row2 = el('div', 'card-link-change');
-    const input = el('input');
-    input.type = 'url';
-    input.placeholder = 'https://';
-    input.dataset.focus = 'link-new';
-    input.value = row.link ?? '';
-    const bad = el('p', 'field-error', 'Paste a full http(s) link');
-    bad.hidden = true;
-    const saveLink = () => {
-      const fixed = withScheme(input.value.trim());
-      if (!safeHref(fixed)) { input.classList.add('is-invalid'); input.setAttribute('aria-invalid', 'true'); bad.hidden = false; return; }
-      linkOpen = false;
-      props.onVerifyLink(row, fixed);
-    };
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveLink(); } if (e.key === 'Escape') { linkOpen = false; rerender(); } });
-    row2.append(labelled('New link', input, 'card-field'),
-      button('Save', 'linkish', { focus: 'link-save', onClick: saveLink }),
-      button('Cancel', 'linkish quiet-link', { focus: 'link-cancel', onClick: () => { linkOpen = false; rerender(); } }), bad);
-    box.append(row2);
-  }
   return box;
 }
 
-/** The type as a segmented row, the picked type's subtypes in a smaller row
- *  under it. The subtype pick is the save; a flat type saves on the type. */
+/** The new-link form, under the meta line or the note while Change is open. */
+function linkChange(row, props, rerender) {
+  const row2 = el('div', 'card-link-change');
+  const input = el('input');
+  input.type = 'url';
+  input.placeholder = 'https://';
+  input.dataset.focus = 'link-new';
+  input.value = row.link ?? '';
+  const bad = el('p', 'field-error', 'Paste a full http(s) link');
+  bad.hidden = true;
+  const saveLink = () => {
+    const fixed = withScheme(input.value.trim());
+    if (!safeHref(fixed)) { input.classList.add('is-invalid'); input.setAttribute('aria-invalid', 'true'); bad.hidden = false; return; }
+    linkOpen = false;
+    props.onVerifyLink(row, fixed);
+  };
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveLink(); } if (e.key === 'Escape') { linkOpen = false; rerender(); } });
+  row2.append(labelled('New link', input, 'card-field'),
+    button('Save', 'linkish', { focus: 'link-save', onClick: saveLink }),
+    button('Cancel', 'linkish quiet-link', { focus: 'link-cancel', onClick: () => { linkOpen = false; rerender(); } }), bad);
+  return row2;
+}
+
+/** The description as prose (the handoff, Sep 22): click it or Edit to get
+ *  the field, which saves as you leave it and turns back into prose. */
+function descriptionBlock(row, props, rerender) {
+  const box = el('div', 'sc-desc');
+  box.append(el('span', 'card-field-label', 'Description'));
+  const words = el('div', 'sc-words');
+  if (editDesc === row.id) {
+    const ta = savingField(row, 'blurb', props, { multiline: true });
+    ta.classList.add('sc-desc-edit');
+    ta.addEventListener('blur', () => { editDesc = null; setTimeout(rerender, 0); });
+    box.append(ta);
+    words.append(button('Done', 'linkish', { focus: 'desc-edit', onClick: () => ta.blur() }));
+  } else {
+    const prose = el('p', `sc-prose${row.blurb ? '' : ' is-empty'}`, row.blurb || 'No description yet.');
+    const open = () => { editDesc = row.id; rerender(); document.querySelector('.sort-card .sc-desc-edit')?.focus(); };
+    prose.addEventListener('click', open);
+    box.append(prose);
+    words.append(button('Edit', 'linkish', { focus: 'desc-edit', onClick: open }));
+  }
+  words.append(buildImageControl(row.infographic, value => props.onEditRow(row, { infographic: value })).el);
+  box.append(words);
+  return box;
+}
+
+/** The type as a vertical stack (the handoff, Sep 22), the picked type's
+ *  subtypes as chips under it. The subtype pick is the save; a flat type
+ *  saves on the type. */
 function typeBlock(row, props, rerender) {
   const box = el('fieldset', `card-type${needsType(row) ? ' is-alert' : ''}`);
-  const legend = el('legend');
-  if (needsType(row)) legend.append(faIcon('triangle-exclamation'));
-  legend.append('Type');
-  box.append(legend);
+  box.append(el('legend', '', 'Type'));
   const shown = pendingType?.id === row.id ? pendingType.type : row.type;
-  const segs = el('div', 'pill-row');
+  const stack = el('div', 'type-stack');
   for (const t of TYPE_ORDER) {
     const picked = t === shown;
-    const b = button(typeDisplay(t), `type-word${picked ? ' is-picked' : ''}`, { focus: `type:${t}` });
+    const b = button(typeDisplay(t), `type-opt${picked ? ' is-picked' : ''}`, { focus: `type:${t}` });
     b.setAttribute('aria-pressed', String(picked));
     b.addEventListener('click', () => {
       if (typeIsFlat(t)) { pendingType = null; props.onEditType(row, t, ''); return; }
@@ -175,20 +217,21 @@ function typeBlock(row, props, rerender) {
       pendingType = { id: row.id, type: t };
       rerender();
     });
-    segs.append(b);
+    stack.append(b);
   }
-  box.append(segs);
+  box.append(stack);
   if (shown && !typeIsFlat(shown)) {
-    const subs = el('div', 'pill-row is-sub');
-    subs.setAttribute('aria-label', 'Subtype');
+    box.append(el('span', 'card-field-label sc-sub-label', 'Subtype'));
+    const chips = el('div', 'type-chips');
+    chips.setAttribute('aria-label', 'Subtype');
     for (const sub of subtypesFor(shown)) {
       const picked = row.type === shown && row.subtype === sub;
-      const b = button(sub, `type-word is-small${picked ? ' is-picked' : ''}`, { focus: `sub:${sub}` });
+      const b = button(sub, `type-chip${picked ? ' is-picked' : ''}`, { focus: `sub:${sub}` });
       b.setAttribute('aria-pressed', String(picked));
       b.addEventListener('click', () => { pendingType = null; props.onEditType(row, shown, sub); });
-      subs.append(b);
+      chips.append(b);
     }
-    box.append(subs);
+    box.append(chips);
   }
   return box;
 }
@@ -210,7 +253,9 @@ function sendToBlock(row, props) {
   input.addEventListener('change', () => props.onEditRow(row, {
     send_to: sendToValue({ newsletter: true, exchange: !input.checked }),
   }));
-  wrap.append(input, ' ERC Newsletter only');
+  const lines = el('span', 'check-lines');
+  lines.append(el('span', 'check-name', 'ERC Newsletter only'), el('span', 'check-sub', 'Skips the Policy Exchange'));
+  wrap.append(input, lines);
   line.append(wrap);
   box.append(line);
   return box;
@@ -235,18 +280,22 @@ function cardTags(row, { props, ctx, reshare }) {
 function sortCard(row, { props, rerender, ctx, reshare, position, total }) {
   const card = el('div', 'card sort-card');
   const lock = () => { for (const x of card.querySelectorAll('button, input, textarea')) x.disabled = true; };
+  const left = el('div', 'sc-left');
+  const right = el('div', 'sc-right');
 
-  const top = el('div', 'sort-card-top');
-  top.append(...cardTags(row, { props, ctx, reshare }), el('span', 'sort-card-pos', `${position} of ${total}`));
-  card.append(top);
+  // ── Left: the item as it reads ──
+  const kicker = el('div', 'sc-kicker');
+  const facts = el('span', 'sc-facts');
+  facts.append(el('span', 'sc-source', row.source || row.authors || 'No source'), ...cardTags(row, { props, ctx, reshare }));
+  kicker.append(facts, el('span', 'sort-card-pos', `${position} of ${total}`));
+  left.append(kicker);
 
   const head = savingField(row, 'headline', props);
   head.classList.add('card-title');
   head.setAttribute('aria-label', 'Title');
-  card.append(head);
-  const meta = [isoToShort(row.submitted_at, props.today), row.submitter && `added by ${row.submitter}`].filter(Boolean).join(' · ');
-  if (meta) card.append(el('p', 'sort-card-meta', meta));
-  card.append(linkBlock(row, props, rerender));
+  left.append(head, metaLine(row, props, rerender));
+  if (linkNeedsCheck(row)) left.append(linkNote(row, props, rerender));
+  if (linkOpen) left.append(linkChange(row, props, rerender));
 
   const dupe = dupeReason(row, ctx);
   if (dupe) {
@@ -254,39 +303,24 @@ function sortCard(row, { props, rerender, ctx, reshare, position, total }) {
     const h = el('p', 'card-note-head');
     h.append(faIcon('triangle-exclamation'), 'Possible duplicate');
     note.append(h, el('p', 'card-link-line', dupe));
-    card.append(note);
+    left.append(note);
   }
   if (String(row.needs_review ?? '').trim()) {
     const filled = String(row.auto_filled ?? '').split(',').map(f => f.trim()).filter(Boolean);
-    card.append(el('p', 'card-quiet', filled.length ? `The reader wasn't sure. Check: ${filled.join(', ')}.` : "The reader wasn't sure. Check the fields."));
+    left.append(el('p', 'card-quiet', filled.length ? `The reader wasn't sure. Check: ${filled.join(', ')}.` : "The reader wasn't sure. Check the fields."));
   }
-  if (row.note) card.append(el('p', 'card-quiet', `Note: ${row.note}`));
-
-  card.append(labelled('Description', savingField(row, 'blurb', props, { multiline: true })));
-  card.append(typeBlock(row, props, rerender));
+  if (row.note) left.append(el('p', 'card-quiet', `Note: ${row.note}`));
+  left.append(descriptionBlock(row, props, rerender));
   // The type decides the fields: none until it is picked.
   const grid = el('div', 'card-grid');
   for (const field of row.type ? fieldsForType(row.type).filter(f => f !== 'headline' && f !== 'blurb') : []) {
     grid.append(labelled(FIELD_LABELS[field] ?? field, savingField(row, field, props)));
   }
-  if (grid.childNodes.length) card.append(grid);
-  const media = el('div', 'card-field card-media');
-  media.append(el('span', 'card-field-label', 'Media'));
-  media.append(buildImageControl(row.infographic, value => props.onEditRow(row, { infographic: value })).el);
-  card.append(media);
-  card.append(sendToBlock(row, props));
+  if (grid.childNodes.length) left.append(grid);
 
-  // Delete far left; Skip for now and the one filled Keep and next on the right.
-  const acts = el('div', 'sort-card-acts');
-  const del = button(' Delete', 'linkish trash-link', { focus: 'delete', icon: 'trash-can', onClick: () => { lock(); landOnTitle = true; props.onDecide(row, 'trash'); } });
-  del.title = 'Delete (D)';
-  acts.append(del);
-  const right = el('span', 'sort-card-right');
-  if (row.status !== 'circleback') {
-    const skip = button('Skip for now', 'linkish quiet-link', { focus: 'skip', onClick: () => { lock(); landOnTitle = true; props.onDecide(row, 'circleback'); } });
-    skip.title = 'Skip for now (S)';
-    right.append(skip);
-  }
+  // ── Right: the decisions ──
+  right.append(typeBlock(row, props, rerender), sendToBlock(row, props), el('div', 'sc-spacer'));
+  const stack = el('div', 'sc-decide');
   const doKeep = () => { askMissingId = null; lock(); landOnTitle = true; props.onDecide(row, 'keep'); };
   const missing = missingLine(row);
   if (askMissingId === row.id && missing) {
@@ -304,19 +338,30 @@ function sortCard(row, { props, rerender, ctx, reshare, position, total }) {
         document.querySelector(`.sort-card [data-field="${first}"]`)?.focus();
       } }));
     ask.append(h, words);
-    card.append(ask);
+    stack.append(ask);
   } else {
-    const keep = button(' Keep and next', 'primary', { focus: 'keep', icon: 'check', onClick: () => {
+    const keep = button('Keep and next', 'primary sc-keep', { focus: 'keep', icon: 'check', onClick: () => {
       if (missing) { askMissingId = row.id; rerender(); return; }
       doKeep();
     } });
     const blocked = keepBlock(row);
     keep.title = blocked || 'Keep and next (K)';
     if (blocked) keep.disabled = true;
-    right.append(keep);
+    stack.append(keep);
   }
-  acts.append(right);
-  card.append(acts);
+  if (row.status !== 'circleback') {
+    const skip = button('Skip for now', 'linkish quiet-link sc-skip', { focus: 'skip', onClick: () => { lock(); landOnTitle = true; props.onDecide(row, 'circleback'); } });
+    skip.title = 'Skip for now (S)';
+    stack.append(skip);
+  }
+  right.append(stack);
+  const tools = el('div', 'sc-tools');
+  const del = button(' Delete', 'linkish trash-link', { focus: 'delete', icon: 'trash-can', onClick: () => { lock(); landOnTitle = true; props.onDecide(row, 'trash'); } });
+  del.title = 'Delete (D)';
+  tools.append(del);
+  right.append(tools);
+
+  card.append(left, right);
   return card;
 }
 
@@ -336,16 +381,16 @@ function listRow(row, { props, rerender, ctx, index }) {
     item.append(mark);
   }
   const text = el('span', 'sort-row-text');
-  const titleLine = el('span', 'sort-row-title', title(row));
-  if (ctx.groupTag?.has(row.id)) titleLine.prepend(el('span', 'badge', ctx.groupTag.get(row.id)), ' ');
-  else if (row.status === 'circleback') titleLine.prepend(el('span', 'badge', 'Skipped'), ' ');
-  text.append(titleLine);
+  text.append(el('span', 'sort-row-title', title(row)));
   const meta = rowMeta(row, props.today);
   if (meta) text.append(el('span', 'sort-row-meta', meta));
   item.append(text);
+  // The row's tag sits at its right (the handoff, Sep 22): a group's word, or Skipped.
+  const tag = ctx.groupTag?.get(row.id) ?? (row.status === 'circleback' ? 'Skipped' : '');
+  if (tag) item.append(el('span', 'badge sort-row-tag', tag));
   item.addEventListener('click', () => {
     if (row.id === selectedId) return;
-    selectedId = row.id; lastIndex = index; pendingType = null; linkOpen = false; askMissingId = null;
+    selectedId = row.id; lastIndex = index; pendingType = null; linkOpen = false; askMissingId = null; editDesc = null;
     rerender();
   });
   return item;

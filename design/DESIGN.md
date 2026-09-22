@@ -248,15 +248,20 @@ grey Skipped tag, then the Past and Already live groups (Sep 22), each
 with a Dismiss all, and last, greyed, what was kept or deleted this visit with
 its Undo. A row is the title with source · added by who · when; the chosen
 one sits on the selected layer with its 3px bar and its title at 600. On the
-right the card, kept in view while the list scrolls: the tags (New, Skipped,
-Spotlight requested, External submission, In a past issue) with the position
-("1 of 15") at the right; the title as the heading, edited in place; when
-and by whom; the link (open it, or Change it); a warning note for each
-question (Check the link, Possible duplicate); the description; the type as
-a segmented row with the picked type's subtypes under it (the subtype pick
-is the save, a flat ERC Event saves on the type); the fields the type uses,
-two to a row, none until a type is picked; Media; Send it to; then Delete
-far left and Skip for now and Keep and next right. Every field saves as you
+right the card, kept in view while the list scrolls, one white box split by
+a vertical rule (the handoff, Sep 22). Left, the item as it reads: the
+source as an uppercase label with the fact tags (New, Spotlight requested,
+External submission, In a past issue, Past, Already live) and the position
+("1 of 15") at the right; the title as the heading, edited in place; one
+meta line, when and by whom, then the link as its domain with Change
+beside it; a Globe-blue note for each question (Check the link, Possible
+duplicate); the description as prose, a field while Edit is open, with Edit
+and Add media under it; then the fields the type uses, two to a row. Right,
+the decisions: the type as a stack (the Type label turns blue while there is
+none) with the picked type's subtypes as chips, ERC Newsletter only as one
+box with "Skips the Policy Exchange" under it, then Keep and next full
+width, Skip for now under it, a rule, and Delete. A row's tag (Skipped,
+Past, Already live) sits at the row's right. Every field saves as you
 leave it, and a redraw never drops what you are typing. The View info panel,
 the section tabs and Needs a fix are gone (Sep 18).
 

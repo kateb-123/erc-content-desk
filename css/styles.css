@@ -60,7 +60,7 @@ h2, h3 { font-family: var(--font-sans); letter-spacing: 0; }
 .lede { font: var(--lede-type); color: var(--muted); margin: 0 0 var(--spacing-06); }
 
 /* The micro-label (Sep 22): uppercase 12/16 with .7px tracking, helper grey, over the field. */
-label, .type-picker legend, .subtype-label, .card-field-label, .card-send legend, .f-edit-grid label, .f-edit-media {
+label, .type-picker legend, .subtype-label, .card-field-label, .card-type legend, .card-send legend, .f-edit-grid label, .f-edit-media {
   display: block; font: var(--label-type); font-weight: 500; text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--text-helper);
 }
 label { margin: var(--spacing-05) 0 var(--spacing-03); }
@@ -607,63 +607,100 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .sort-group-head .trash-link { margin-left: auto; }
 .sort-row, .f-list-row {
   display: flex; align-items: flex-start; gap: var(--spacing-03); width: 100%; height: auto; box-sizing: border-box; text-align: left;
-  padding: var(--spacing-04) var(--spacing-05); border: 0; border-top: 1px solid var(--line-in); border-radius: var(--radius); background: transparent;
+  padding: 13px var(--spacing-05) 13px 13px; border: 0; border-top: 1px solid var(--line-in); border-left: 3px solid transparent; border-radius: 0; background: transparent;
   font: inherit; letter-spacing: 0; color: var(--ink); cursor: pointer;
   transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
 .f-list > :first-child { border-top: 0; }
-.sort-row:hover:not(:disabled), .f-list-row:hover:not(:disabled) { border-color: var(--line-in); background: var(--row-hover); color: var(--ink); }
-.sort-row.is-selected, .f-list-row.is-selected { background-color: var(--selected); color: var(--accent-deep); box-shadow: inset 3px 0 0 var(--border-interactive); }
+.sort-row:hover:not(:disabled), .f-list-row:hover:not(:disabled) { border-color: var(--line-in); border-left-color: transparent; background: var(--row-hover); color: var(--ink); }
+.sort-row.is-selected:hover:not(:disabled) { border-left-color: var(--border-interactive); }
+.sort-row.is-selected, .f-list-row.is-selected { background-color: var(--selected); color: var(--accent-deep); border-left-color: var(--border-interactive); }
 .sort-row.is-selected:hover:not(:disabled), .f-list-row.is-selected:hover:not(:disabled) { background: var(--selected); color: var(--accent-deep); }   /* the chosen row keeps its tint under the mouse */
 .sort-row-text, .f-row-text { display: flex; flex-direction: column; gap: var(--spacing-01); min-width: 0; flex: 1 1 auto; }
 .sort-row.is-selected .sort-row-title { font-weight: 600; }
 .sort-row-title .badge, .sort-card-top .badge { margin-right: 0; }
-.sort-row-title, .f-row-title { font-size: 14px; line-height: 18px; font-weight: 400; }
-.sort-row-meta, .f-row-type { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); }
+.sort-row-title, .f-row-title { font: var(--body-type); line-height: 21px; }
+.sort-row-tag { flex: none; margin: 0; }
+.sort-row-meta, .f-row-type { font: var(--meta-type); color: var(--text-helper); }
 /* A row the card has a question about (no type, the link, a duplicate): the triangle before the title. */
-.sort-row .fix-mark, .f-list-row .fix-mark { color: var(--warn-mark); font-size: 12px; margin-top: 3px; flex: none; }
+.sort-row .fix-mark, .f-list-row .fix-mark { color: var(--warn-mark); font-size: 15px; margin-top: 3px; flex: none; }
 .sort-done { display: flex; align-items: flex-start; gap: var(--spacing-03); padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--line-in); background: var(--layer-01); }
 .sort-done .sort-row-title, .sort-done .sort-row-meta { color: var(--muted); }
 .sort-done.is-trashed .sort-row-title { text-decoration: line-through; }
 .sort-done-acts { margin-left: auto; white-space: nowrap; }
-.sort-card { display: flex; flex-direction: column; gap: var(--spacing-05); }
-/* One card rule for Sort and Finalize: the same padding, and in view while a long list scrolls. */
+/* The review card (the handoff, Sep 22): one white box split by a vertical
+   rule, the item as it reads on the left, the decisions on the right. */
 .sort-card, .f-card { padding: var(--spacing-05); box-sizing: border-box; position: sticky; top: calc(20px + var(--spacing-05)); max-height: calc(100vh - 2rem); overflow-y: auto; }
-.sort-card { padding: var(--spacing-06); }
+.sort-card { display: flex; align-items: stretch; padding: 0; }
+.sc-left { flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-08, 18px); padding: var(--spacing-06); }
+.sc-right { flex: 0 1 300px; min-width: 260px; display: flex; flex-direction: column; gap: 22px; padding: var(--spacing-06); border-left: 1px solid var(--line-in); }
+.sc-spacer { flex: 1 1 auto; }
 /* A card taller than the window fades at its foot until the reader scrolls to the end (design audit c3). */
-.sort-card.is-more::after, .f-card.is-more::after { content: ""; position: sticky; bottom: calc(-1 * var(--spacing-05)); display: block; height: 40px; margin: -40px 0 calc(-1 * var(--spacing-05)); flex: none; background: linear-gradient(transparent, var(--layer)); pointer-events: none; }
-.sort-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02); }
-.sort-card-pos { margin-left: auto; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
-/* Every field on the card is edited in place (Kate, Sep 18); the title reads as the card's heading until it is clicked. */
-.sort-card input.card-title { height: auto; padding: var(--spacing-01) 0; font-size: 20px; line-height: 26px; font-weight: 600; background: transparent; border-bottom: 1px solid transparent; }
-.sort-card input.card-title:hover { border-bottom-color: var(--border-strong-01); }
-.sort-card-meta { margin: calc(-1 * var(--spacing-04)) 0 0; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); }
-.card-link-line { margin: 0; font-size: 14px; line-height: 20px; }
-.card-link { margin-top: calc(-1 * var(--spacing-03)); }
-.card-link .source-link { color: var(--muted); }
-.card-link .fa-arrow-up-right-from-square, .card-note-box .fa-arrow-up-right-from-square { font-size: 10px; }
-.card-link-change { display: flex; align-items: flex-end; gap: var(--spacing-04); flex-wrap: wrap; margin-top: var(--spacing-04); }
+.f-card.is-more::after { content: ""; position: sticky; bottom: calc(-1 * var(--spacing-05)); display: block; height: 40px; margin: -40px 0 calc(-1 * var(--spacing-05)); flex: none; background: linear-gradient(transparent, var(--layer)); pointer-events: none; }
+.sc-kicker { display: flex; align-items: baseline; justify-content: space-between; gap: var(--spacing-04); }
+.sc-facts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-03); min-width: 0; }
+.sc-source { font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); }
+.sort-card-pos { flex: none; font: var(--meta-type); color: var(--text-helper); }
+.sc-facts .badge { margin: 0; }
+/* The title is edited in place: borderless, a rule appears under it on hover. */
+.sort-card input.card-title { height: auto; padding: 0; font: var(--card-title); letter-spacing: -.2px; background: transparent; border-bottom: 1px solid transparent; margin: calc(-1 * var(--spacing-03)) 0; }
+.sort-card input.card-title:hover { border-bottom-color: var(--layer-line); }
+.sc-meta { margin: calc(-1 * var(--spacing-03)) 0 0; font: var(--meta-type); color: var(--text-helper); }
+.sc-meta .source-link { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+.sc-meta .fa-arrow-up-right-from-square, .card-note-box .fa-arrow-up-right-from-square { font-size: 11px; }
+.sc-meta .linkish { height: auto; padding: 0; margin: 0; font: inherit; color: var(--muted); }
+.sc-meta .linkish:hover:not(:disabled) { background: none; color: var(--ink); }
+.card-link-line { margin: 0; font: var(--body-sm-type, 400 14px/21px var(--font-sans)); color: var(--muted); }
+.card-link-change { display: flex; align-items: flex-end; gap: var(--spacing-04); flex-wrap: wrap; }
 .card-link-change .card-field { flex: 1 1 260px; }
 .card-link-change .field-error { flex-basis: 100%; }
-/* The card's questions: Carbon's inline warning note, one per question. */
-.card-note-box { padding: var(--spacing-04) var(--spacing-05); border: 1px solid var(--warn-line); border-left: 3px solid var(--warn-mark); background: var(--warn-bg); }
-.card-note-head { margin: 0 0 var(--spacing-02); font-size: 12px; line-height: 16px; letter-spacing: 0; font-weight: 600; color: var(--ink); }
-.card-note-head .fa-solid { margin-right: var(--spacing-02); color: var(--warn-mark); }
-.card-quiet { margin: 0; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); }
-.card-field > label, .card-field-label, .card-type legend, .card-send legend { display: block; margin: 0 0 var(--spacing-03); padding: 0; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); }
+/* The card's questions: the Globe-blue note, one per question, its title at 15/500 and its line under it. */
+.card-note-box { padding: 14px var(--spacing-05); border: 1px solid var(--warn-line); border-left: 3px solid var(--warn-mark); border-radius: var(--radius); background: var(--warn-bg); }
+.card-note-head { margin: 0 0 var(--spacing-01); font: var(--body-type); font-weight: 500; color: var(--ink); }
+.card-note-head .fa-solid { margin-right: var(--spacing-03); color: var(--warn-mark); }
+.card-quiet { margin: 0; font: var(--meta-type); color: var(--muted); }
+/* The description as prose, a field while Edit is open; Edit and Add media under it. */
+.sc-desc { display: flex; flex-direction: column; gap: var(--spacing-03); }
+.sc-prose { margin: 0; padding: 6px 8px 6px 0; font: var(--prose-type, 400 16px/25px var(--font-sans)); color: var(--ink); cursor: text; border-radius: var(--radius); }
+.sc-prose:hover { background: var(--wash-hover); }
+.sc-prose.is-empty { color: var(--text-helper); }
+.sort-card textarea.sc-desc-edit { min-height: 128px; padding: 10px 12px; border: 1px solid var(--wash-line); border-radius: var(--radius); background: var(--wash); font: var(--prose-type, 400 16px/25px var(--font-sans)); }
+.sc-words { display: flex; align-items: center; gap: var(--spacing-05); }
+.sc-words .linkish { height: auto; padding: 0; margin: 0; font: var(--prose-type, 400 16px/25px var(--font-sans)); color: var(--muted); }
+.sc-words .linkish:hover:not(:disabled) { background: none; color: var(--ink); }
+.sc-words .img-upload .media-add { height: auto; padding: 0; margin: 0; font: var(--prose-type, 400 16px/25px var(--font-sans)); }
+.card-field > label, .card-field-label, .card-type legend, .card-send legend { margin: 0 0 var(--spacing-03); padding: 0; }
 .card-type, .card-send { border: 0; padding: 0; margin: 0; min-width: 0; }
-.card-type.is-alert legend { color: var(--warn); font-weight: 600; }
-.card-type.is-alert legend .fa-solid { margin-right: var(--spacing-02); color: var(--warn-mark); }
-.card-type.is-alert > .pill-row:first-of-type { border-color: var(--warn-mark); }
-.pill-row.is-sub { margin-top: var(--spacing-03); }
+.card-type.is-alert legend { color: var(--warn); }
+/* The type as a stack, the subtypes as chips; the picked one fills navy. */
+.type-stack { display: flex; flex-direction: column; gap: 6px; }
+.type-opt, .type-chip {
+  display: inline-flex; align-items: center; justify-content: flex-start; text-align: left;
+  border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer); color: var(--ink); font: var(--body-type); cursor: pointer;
+  transition: background-color var(--duration-fast-01) var(--ease-productive), border-color var(--duration-fast-01) var(--ease-productive);
+}
+.type-opt { height: 38px; padding: 0 var(--spacing-04); width: 100%; }
+.type-chip { height: 32px; padding: 0 var(--spacing-04); font-size: 14px; }
+.type-opt:hover:not(:disabled), .type-chip:hover:not(:disabled) { background: var(--hover); border-color: var(--border-strong-01); color: var(--ink); }
+.type-opt.is-picked, .type-chip.is-picked, .type-opt.is-picked:hover:not(:disabled), .type-chip.is-picked:hover:not(:disabled) { background: var(--button-primary); border-color: var(--button-primary); color: var(--text-on-accent); font-weight: 500; }
+.sc-sub-label { margin-top: var(--spacing-04); }
+.type-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-05) var(--spacing-06); }
-.card-send-line { display: flex; gap: var(--spacing-06); }
-.card-send label.check { display: inline-flex; align-items: center; gap: var(--spacing-03); margin: 0; font-size: 14px; line-height: 20px; letter-spacing: 0; color: var(--ink); cursor: pointer; }
-.card-send input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
-.sort-card-acts { display: flex; align-items: center; gap: var(--spacing-05); border-top: 1px solid var(--line-in); padding-top: var(--spacing-05); }
-.sort-card-right { margin-left: auto; display: flex; align-items: center; gap: var(--spacing-05); }
-.sort-card input:not([type="checkbox"]), .sort-card textarea { background: var(--field-01); }   /* a field on a white card is grey (Carbon's layer model) */
-.sort-card input.card-title { background: transparent; }   /* after the grey fields: the title reads as the heading */
+/* Send it to: the one box beside a two-line label. */
+.card-send label.check { display: flex; align-items: flex-start; gap: var(--spacing-04); margin: 0; cursor: pointer; }
+.card-send input { width: 16px; height: 16px; margin: 3px 0 0; flex: none; accent-color: var(--accent); }
+.check-lines { display: flex; flex-direction: column; }
+.check-name { font: var(--body-type); color: var(--ink); }
+.check-sub { font: var(--meta-type); color: var(--text-helper); }
+/* The decisions: Keep and next full width, Skip for now under it, then a rule and Delete far from the pair. */
+.sc-decide { display: flex; flex-direction: column; gap: var(--spacing-04); }
+.sort-card .sc-keep { width: 100%; height: 48px; justify-content: space-between; padding: 0 var(--spacing-05); }
+.sort-card .sc-keep { flex-direction: row-reverse; }   /* the helper draws the icon first; the check sits at the right */
+.sort-card .sc-keep .fa-solid { position: static; }
+.sort-card .sc-skip { width: 100%; height: 40px; justify-content: flex-start; padding: 0 var(--spacing-04); margin: 0; }
+.sc-tools { border-top: 1px solid var(--line-in); padding-top: 14px; }
+.sc-tools .trash-link { margin: 0; padding: 0 var(--spacing-02); }
+.sort-card input:not([type="checkbox"]):not(.card-title), .sort-card textarea:not(.sc-desc-edit) { background: transparent; }
 .f-edit-card input, .f-edit-card textarea { background: var(--field-02); }   /* a field on the grey edit box is white (Carbon's layer model) */
 @media (max-width: 900px) {
   .sort-split { grid-template-columns: minmax(0, 1fr); }
