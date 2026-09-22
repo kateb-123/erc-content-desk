@@ -109,3 +109,11 @@ test('POST /api/newsletter-image from the desk skips the gate', async () => {
   assert.equal(res.code, 400);
   assert.match(res.body.error, /PNG/);
 });
+
+// The desk's own public pages (/submit and /listserv, Sep 22) are same-origin,
+// so they say so: a body marked public is gated like the hub's pages.
+test('a same-origin request that marks itself public still needs the token', () => {
+  const req = { headers: { origin: 'https://erc-content-desk.vercel.app', host: 'erc-content-desk.vercel.app' }, body: { public: true } };
+  assert.equal(tokenRequired(req), true);
+  assert.equal(tokenRequired({ ...req, body: {} }), false);
+});

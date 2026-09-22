@@ -20,6 +20,7 @@ export const REJECTED = "Couldn't confirm you're a person. Reload the page and t
 export function tokenRequired(req) {
   const origin = String(req.headers?.origin ?? '');
   const host = String(req.headers?.host ?? '');
+  if (req.body?.public === true) return true;   // the desk's own public pages (/submit, /listserv; Sep 22) ask to be gated
   if (isLocalOrigin(origin)) return false;
   return !origin || origin !== `https://${host}`;
 }

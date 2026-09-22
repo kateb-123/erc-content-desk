@@ -15,11 +15,12 @@ import { isoToShort } from './queue-view.js';
 import { LANES } from './shell-view.js';
 import { el, tryAgain } from './ui-aids.js';
 
-/** The three public pages the team shares: the outward share page, the
- *  listserv sign-up, the Policy Exchange itself. */
+/** The three public pages the team shares: the desk's own share page and
+ *  listserv sign-up (standalone since Sep 22; the Exchange keeps its copies),
+ *  and the Policy Exchange itself. */
 export const QUICK_LINKS = [
-  { key: 'share', label: 'Submit Content to ERC', href: 'https://erc-policy-exchange.vercel.app/share/' },
-  { key: 'listserv', label: 'Join listserv', href: 'https://erc-policy-exchange.vercel.app/newsletter/' },
+  { key: 'share', label: 'Submit Content to ERC', href: 'https://erc-content-desk.vercel.app/submit/' },
+  { key: 'listserv', label: 'Join listserv', href: 'https://erc-content-desk.vercel.app/listserv/' },
   { key: 'exchange', label: 'ERC Policy Exchange', href: 'https://erc-policy-exchange.vercel.app/' },
 ];
 

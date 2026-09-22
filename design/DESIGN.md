@@ -340,6 +340,6 @@ thing everywhere (see the vocabulary table).
 - Colour is never the only signal: a status colour ships with its icon and a word.
 - Nothing is "done" without a screenshot from the running sandbox.
 
-## The public /submit page
+## The public pages, /submit and /listserv
 
-Deliberately NOT the desk theme: it wears the ERC's outward maroon, the listserv sign-up's look (Work Sans/Open Sans, white card with the 3px #500000 border and hard offset shadow, uppercase maroon button), because it faces the public alongside the newsletter and the hub. It never links into the desk. Uniformity audits should hold it against the sign-up page, not against the desk tokens.
+Two standalone pages on the desk's own address (Kate, Sep 22: "I want those in addition"), the share form and the listserv sign-up, the same forms as the Policy Exchange's share and sign-up pages, which stay. They post same-origin to /api/submit, /api/newsletter-image and /api/listserv, marked `public: true` so the bot check (Cloudflare Turnstile) gates them like the Exchange's pages; the widget's hostnames in Cloudflare must include the desk's address. Their stylesheet is `css/public.css`. Deliberately NOT the desk theme: it wears the ERC's outward maroon, the listserv sign-up's look (Work Sans/Open Sans, white card with the 3px #500000 border and hard offset shadow, uppercase maroon button), because it faces the public alongside the newsletter and the hub. It never links into the desk. Uniformity audits should hold it against the sign-up page, not against the desk tokens.
