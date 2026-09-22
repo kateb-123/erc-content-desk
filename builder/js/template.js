@@ -180,12 +180,12 @@ function eyebrow(label, first = false) {
 /** Thin divider line */
 const DIVIDER = `<tr><td style="padding: 12px 48px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
 
-/** "See more on the ERC website →" right-justified tail link. Omitted when the section has no URL. */
+/** "View more →" right-justified tail link (Kate, Sep 22: it opens the Policy Exchange, so "the ERC website" was wrong). Omitted when the section has no URL. */
 function seeMore(href) {
   const h = safeItemHref(href);
   if (!h) return '';
   return `<tr><td style="padding: 10px 24px 22px 24px; text-align: right;">
-<a href="${esc(h)}" target="_blank" rel="noopener" style="color: #767676; text-decoration: none; font-family: ${FONT_BODY}; font-size: 14px; font-weight: 700;">See more on the ERC website &#8594;</a>
+<a href="${esc(h)}" target="_blank" rel="noopener" style="color: #767676; text-decoration: none; font-family: ${FONT_BODY}; font-size: 14px; font-weight: 700;">View more &#8594;</a>
 </td></tr>`;
 }
 /** A section's items bucketed by group: the registry's order first, then any

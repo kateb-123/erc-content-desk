@@ -112,11 +112,11 @@ test('headlines render source in parenthesized format', () => {
   assert.match(html, /\(Ed Week\)/, 'Expected headline source to appear wrapped in parentheses');
 });
 
-test('"See more" tail link text appears in output', () => {
+test('"View more" tail link text appears in output (Kate, Sep 22: the links go to the Exchange, not the ERC website)', () => {
   const html = renderNewsletter(issueOf('full-issue.json'));
   assert.ok(
-    html.includes('See more on the ERC website'),
-    'Expected "See more on the ERC website" tail link to appear in output'
+    html.includes('View more &#8594;') && !html.includes('ERC website'),
+    'Expected the "View more" tail link, and no "ERC website" wording'
   );
 });
 
