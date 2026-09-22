@@ -199,20 +199,23 @@ function typeBlock(row, props, rerender) {
 
 /** Where the item goes once kept: the two ticks. */
 function sendToBlock(row, props) {
+  // One box (Kate, Sep 22): unticked, the item goes to the newsletter and the
+  // Exchange both; ticked, the newsletter only, and it never reaches Publish.
+  // A spotlight event comes ticked.
   const box = el('fieldset', 'card-send');
   box.append(el('legend', '', 'Send it to'));
   const now = sendTo(row);
   const line = el('div', 'card-send-line');
-  for (const [key, label] of [['newsletter', 'Newsletter'], ['exchange', 'Policy Exchange']]) {
-    const wrap = el('label', 'check');
-    const input = el('input');
-    input.type = 'checkbox';
-    input.checked = now[key];
-    input.dataset.focus = `send:${key}`;
-    input.addEventListener('change', () => props.onEditRow(row, { send_to: sendToValue({ ...now, [key]: input.checked }) }));
-    wrap.append(input, ` ${label}`);
-    line.append(wrap);
-  }
+  const wrap = el('label', 'check');
+  const input = el('input');
+  input.type = 'checkbox';
+  input.checked = now.newsletter && !now.exchange;
+  input.dataset.focus = 'send:newsletter-only';
+  input.addEventListener('change', () => props.onEditRow(row, {
+    send_to: sendToValue({ newsletter: true, exchange: !input.checked }),
+  }));
+  wrap.append(input, ' ERC Newsletter only');
+  line.append(wrap);
   box.append(line);
   return box;
 }

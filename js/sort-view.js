@@ -5,7 +5,7 @@
  */
 import { isoToShort, bySubmitted } from './queue-view.js';
 import { TYPE_ORDER, isValidSubtype } from './schema.js';
-import { duplicateFlags, linkNeedsCheck, sendTo } from './workflow.js';
+import { duplicateFlags, linkNeedsCheck } from './workflow.js';
 
 // Newest first, a row with no date last.
 const newestFirst = bySubmitted('desc');
@@ -128,8 +128,6 @@ export function oldestWait(rows, today) {
 export function keepBlock(row) {
   if (needsType(row)) return 'Set a type first';
   if (linkNeedsCheck(row)) return 'Check the link first';
-  const to = sendTo(row);
-  if (!to.newsletter && !to.exchange) return 'Tick Newsletter or Policy Exchange';
   return '';
 }
 

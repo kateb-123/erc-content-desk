@@ -123,11 +123,12 @@ test('dupeReason is the duplicate half of fixReasons, and empty when there is no
 
 // ── The card ──
 
-test('keepBlock says why Keep and next is locked: a type first, then the link, then somewhere to send it; nothing when it can be kept', () => {
+test('keepBlock says why Keep and next is locked: a type first, then the link; nothing when it can be kept', () => {
   assert.equal(keepBlock({ type: '', subtype: '', link: 'https://x.org', link_checked: 'ok' }), 'Set a type first');
   assert.equal(keepBlock({ type: 'headline', subtype: 'Texas', link: 'https://x.org', link_checked: 'failed' }), 'Check the link first');
-  assert.equal(keepBlock({ type: 'headline', subtype: 'Texas', link: 'https://x.org', link_checked: 'ok', send_to: 'none' }), 'Tick Newsletter or Policy Exchange');
   assert.equal(keepBlock({ type: 'headline', subtype: 'Texas', link: 'https://x.org', link_checked: 'ok' }), '');
+  // One box, ERC Newsletter only: unticked goes to both, so nowhere is never a state (Kate, Sep 22).
+  assert.equal(keepBlock({ type: 'headline', subtype: 'Texas', link: 'https://x.org', link_checked: 'ok', send_to: 'newsletter' }), '');
 });
 
 test('nextSelected keeps the chosen row while it is live, else takes the row now in its place', () => {

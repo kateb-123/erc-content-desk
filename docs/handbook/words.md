@@ -448,9 +448,9 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "[N] waiting" / "Newest first" (the list's head) · "Skipped" (the tag on a parked row, in the list and on the card)
 "added by [initials]" (a row's second line and the card's meta) · "[N] of [M]" (the card's position)
 "Check the link" · "The desk couldn't open this page." · "This link may open a different item." · "Verify link" · "Confirm" · "Change" · "New link" · "Save" · "Cancel" · "No link"
-"Possible duplicate" · "Type" · "Description" · "Media" · "Send it to" · "Newsletter" · "Policy Exchange"
+"Possible duplicate" · "Type" · "Description" · "Media" · "Send it to" · "ERC Newsletter only"
 "The reader wasn't sure. Check: [fields]." · "The reader wasn't sure. Check the fields."
-"Delete" · "Skip for now" · "Keep and next" · tooltips "Delete (D)", "Skip for now (S)", "Keep and next (K)", or why Keep and next is locked: "Set a type first", "Check the link first", "Tick Newsletter or Policy Exchange"
+"Delete" · "Skip for now" · "Keep and next" · tooltips "Delete (D)", "Skip for now (S)", "Keep and next (K)", or why Keep and next is locked: "Set a type first", "Check the link first"
 "Kept: [title]" / "Skipped: [title]" / "Deleted: [title]", then "Undo" on the status line
 "Nothing to sort." · "All sorted." · "New items are being read." (the card's place when nothing waits)
 Gone on Sep 18 with the section tabs: "Needs a fix" and the section names, "Keep the rest" on Sort, "Undo last", "Go to Finalize", Sort's View info panel and its three hints, "Next: [section]", "Nothing left in this section."
