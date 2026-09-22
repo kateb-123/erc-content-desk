@@ -1,11 +1,11 @@
 /**
- * Temporary operational flags, shared by the frontend and the api routes.
+ * Operational flags, shared by the frontend and the api routes.
  *
- * PUBLISH_PAUSED closes the desk → Exchange door during the team trial: the
- * Publish button runs a mock (a "paused" beat, then a trial receipt) and
- * never calls the endpoint, and /api/publish refuses even if it is hit
- * directly — so a curious click can't push trial content to the live hub. The rest of the desk (submit, Sort, Finalize,
- * Send to Newsletter) works normally. Flip to false and bump the cache-busters
- * to reopen publishing.
+ * PUBLISH_PAUSED closes the desk to Exchange door: the Publish button runs a
+ * mock (a "paused" beat, then a trial receipt) and never calls the endpoint,
+ * and /api/publish refuses even if it is hit directly. It held from the team
+ * trial of Sep 10 until Kate reopened publishing on Sep 22, 2026, after the
+ * old kept pool was scrapped. Flip to true and bump the cache-busters to
+ * pause it again.
  */
-export const PUBLISH_PAUSED = true;
+export const PUBLISH_PAUSED = false;
