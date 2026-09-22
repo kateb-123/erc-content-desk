@@ -18,6 +18,7 @@ import { parseCsv } from './_lib/hub.js';
 export const config = { maxDuration: 300 };
 
 const MAX_TEXT_LENGTH = 200000;
+const MAX_SHEET_ROWS = 500;   // a spreadsheet needs no model call, so it may run long (Kate, Sep 22)
 const MAX_FILE_BYTES = 3 * 1024 * 1024;
 const anthropic = new Anthropic();
 
@@ -61,7 +62,7 @@ export default async function handler(req, res) {
         const sheet = book.Sheets[book.SheetNames[0]];
         matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
       }
-      const { items, warnings } = normalizeBulkItems({ items: rowsToItems(matrix) });
+      const { items, warnings } = normalizeBulkItems({ items: rowsToItems(matrix) }, { max: MAX_SHEET_ROWS, unit: 'rows' });
       return res.status(200).json({ ok: true, items, warnings });
     }
 

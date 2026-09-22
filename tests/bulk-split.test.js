@@ -40,3 +40,20 @@ test('normalizeBulkItems validates vocabulary and drops empty shells', () => {
   assert.equal(items[2].subtype, '');
   assert.equal(warnings.length, 2);
 });
+
+test('a document keeps its first 100 items and says so', () => {
+  const raw = Array.from({ length: 130 }, (_, i) => ({ title: `Item ${i}`, blurb: '', link: '', type: '', subtype: '', original_text: '' }));
+  const { items, warnings } = normalizeBulkItems({ items: raw });
+  assert.equal(items.length, 100);
+  assert.deepEqual(warnings, ['Found 130 items. Keeping the first 100.']);
+});
+
+test('a spreadsheet may go to 500 rows before it is cut', () => {
+  const raw = Array.from({ length: 520 }, (_, i) => ({ title: `Row ${i}`, blurb: '', link: '', type: '', subtype: '', original_text: '' }));
+  const fits = normalizeBulkItems({ items: raw.slice(0, 500) }, { max: 500, unit: 'rows' });
+  assert.equal(fits.items.length, 500);
+  assert.deepEqual(fits.warnings, []);
+  const cut = normalizeBulkItems({ items: raw }, { max: 500, unit: 'rows' });
+  assert.equal(cut.items.length, 500);
+  assert.deepEqual(cut.warnings, ['Found 520 rows. Keeping the first 500.']);
+});

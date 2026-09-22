@@ -6,6 +6,8 @@
  */
 import { TYPES, isValidType, isValidSubtype, subtypesFor } from '../../js/schema.js';
 
+// A document is one model call, which starts truncating past about 100 items;
+// a spreadsheet is parsed row by row, so the endpoint lets it run to 500 (Kate, Sep 22).
 const MAX_ITEMS = 100;
 
 export const BULK_MODEL = 'claude-haiku-4-5';
@@ -55,13 +57,13 @@ export function buildBulkPrompt(text) {
   ].join('\n');
 }
 
-export function normalizeBulkItems(parsed) {
+export function normalizeBulkItems(parsed, { max = MAX_ITEMS, unit = 'items' } = {}) {
   const warnings = [];
   const s = v => String(v ?? '').trim();
   let raw = Array.isArray(parsed?.items) ? parsed.items : [];
-  if (raw.length > MAX_ITEMS) {
-    warnings.push(`Found ${raw.length} items. Keeping the first ${MAX_ITEMS}.`);
-    raw = raw.slice(0, MAX_ITEMS);
+  if (raw.length > max) {
+    warnings.push(`Found ${raw.length} ${unit}. Keeping the first ${max}.`);
+    raw = raw.slice(0, max);
   }
   const items = [];
   for (const it of raw) {
