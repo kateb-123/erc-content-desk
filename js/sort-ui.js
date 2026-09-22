@@ -219,6 +219,7 @@ function sendToBlock(row, props) {
 /** The facts the card's top line carries. */
 function cardTags(row, { props, ctx, reshare }) {
   const out = [];
+  if (ctx.groupTag?.has(row.id)) out.push(el('span', 'badge', ctx.groupTag.get(row.id)));
   if (row.status === 'circleback') out.push(el('span', 'badge', 'Skipped'));
   else if (isNewToday(row, props.today)) out.push(el('span', 'badge badge-new', 'New'));
   if (row.spotlight_request) out.push(el('span', 'badge', 'Spotlight requested'));
@@ -226,7 +227,7 @@ function cardTags(row, { props, ctx, reshare }) {
   if (reshare.has(row.id)) out.push(el('span', 'badge', 'In a past issue'));
   else if (ctx.dupes.has(row.id)) {
     const prior = props.rows.find(r => r.id === ctx.dupes.get(row.id));
-    if (prior?.published_at) out.push(el('span', 'badge', 'Already live'));
+    if (prior?.published_at && !ctx.groupTag?.has(row.id)) out.push(el('span', 'badge', 'Already live'));
   }
   return out;
 }
@@ -336,7 +337,8 @@ function listRow(row, { props, rerender, ctx, index }) {
   }
   const text = el('span', 'sort-row-text');
   const titleLine = el('span', 'sort-row-title', title(row));
-  if (row.status === 'circleback') titleLine.prepend(el('span', 'badge', 'Skipped'), ' ');
+  if (ctx.groupTag?.has(row.id)) titleLine.prepend(el('span', 'badge', ctx.groupTag.get(row.id)), ' ');
+  else if (row.status === 'circleback') titleLine.prepend(el('span', 'badge', 'Skipped'), ' ');
   text.append(titleLine);
   const meta = rowMeta(row, props.today);
   if (meta) text.append(el('span', 'sort-row-meta', meta));
@@ -377,8 +379,9 @@ export function renderSort(container, props) {
   const drafts = readDrafts(container);
   container.replaceChildren();
 
-  const { live, done } = sortList(props.rows, props.sessionDecided);
-  liveOrder = live.map(r => r.id);
+  const { live, past, onHub, done } = sortList(props.rows, props.sessionDecided, { today: props.today, liveLinks: props.liveLinks });
+  const listed = [...live, ...past, ...onHub];   // the card and the keys reach the groups too
+  liveOrder = listed.map(r => r.id);
   const before = selectedId;
   selectedId = nextSelected(liveOrder, selectedId, lastIndex);
   if (selectedId !== before) { pendingType = null; linkOpen = false; }
@@ -386,7 +389,7 @@ export function renderSort(container, props) {
 
   container.append(sortPageHead({
     active: 'sort',
-    counts: { sort: live.length, finalize: finalizeWaiting(props.rows, props.verified) },
+    counts: { sort: listed.length, finalize: finalizeWaiting(props.rows, props.verified) },
     oldestDays: oldestWait(props.rows, props.today),
     onGoTo: props.onGoTo,
   }));
@@ -397,13 +400,26 @@ export function renderSort(container, props) {
   listHead.append(el('span', 'sort-list-count', `${live.length} waiting`), el('span', 'sort-list-order', 'Newest first'));
   list.append(listHead);
   const ctx = fixContext(props.rows, props.today);
+  // The two groups' tags (Kate, Sep 22), read by the row and the card.
+  ctx.groupTag = new Map([...past.map(r => [r.id, 'Past']), ...onHub.map(r => [r.id, 'Already live'])]);
   live.forEach((row, index) => list.append(listRow(row, { props, rerender, ctx, index })));
+  let index = live.length;
+  for (const [key, label, rows] of [['past', 'Past', past], ['live', 'Already live', onHub]]) {
+    if (!rows.length) continue;
+    // A group's head names it and offers one sweep: Dismiss all deletes the lot, with Undo.
+    const head = el('div', 'sort-list-head sort-group-head');
+    head.append(el('span', 'sort-list-count', `${label} · ${rows.length}`));
+    const sweep = button(' Dismiss all', 'linkish trash-link', { focus: `dismiss:${key}`, icon: 'trash-can', onClick: () => { sweep.disabled = true; props.onDismissAll(rows); } });
+    head.append(sweep);
+    list.append(head);
+    for (const row of rows) list.append(listRow(row, { props, rerender, ctx, index: index++ }));
+  }
   for (const row of done) list.append(doneRow(row, props));
   split.append(list);
 
-  const row = live.find(r => r.id === selectedId);
+  const row = listed.find(r => r.id === selectedId);
   const card = row
-    ? sortCard(row, { props, rerender, ctx, reshare: reshareFlags(props.rows, props.today ?? ''), position: lastIndex + 1, total: live.length })
+    ? sortCard(row, { props, rerender, ctx, reshare: reshareFlags(props.rows, props.today ?? ''), position: lastIndex + 1, total: listed.length })
     : el('div', 'sort-pane-empty', emptyWords(props));
   split.append(card);
   container.append(split);

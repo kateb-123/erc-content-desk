@@ -213,6 +213,15 @@ function decide(drawn, action) {
   setStatus(`${DECIDED_WORDS[action] ?? 'Done'}: ${row.headline || row.link || 'this item'}`, 'ok', { label: 'Undo', onClick: undoLast });
 }
 
+/** Dismiss all on one of Sort's groups (Past, Already live; Kate, Sep 22):
+ *  every row in it is deleted in one change, so one Undo brings them all back. */
+function dismissAll(drawn) {
+  const rows = drawn.map(current);
+  for (const row of rows) { state.decidedFrom.set(row.id, row.status); state.sortedIds.add(row.id); }
+  change(rows.map(trash), { decision: true, kind: 'dismiss' });
+  setStatus(`Dismissed ${rows.length}`, 'ok', { label: 'Undo', onClick: undoLast });
+}
+
 /** Undo on one greyed row of Sort's list: back to the queue, in place. */
 function undoRow(row) {
   // Back to what it was: a row kept from Skipped returns to Skipped, not to new.
@@ -540,8 +549,12 @@ function render() {
   } else if (state.screen === 'past') {
     renderPast(screens.past, { archive: state.archive, onGoTo: goTo, onRetry: loadArchive });
   } else if (state.screen === 'sort') {
+    // Sort's Already live group needs the Exchange's links: the same quiet check the front page asks for.
+    if (state.loaded && !state.publishPreview && !laneCheck.inFlight && laneCheck.failedAt !== state.rows) quietPublishCheck();
     renderSort(screens.sort, {
       ...common, sortedCount: state.sortedIds.size,
+      liveLinks: new Set(state.publishPreview?.liveLinks ?? []),
+      onDismissAll: dismissAll,
       onGoTo: goTo,
       sessionDecided: state.sortedIds,
       verified: state.verifiedIds,

@@ -455,6 +455,7 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Still missing: [Date, Time, Location, Deadline]." · "Keep anyway" · "Fill it in" (the ask before Keep when the type's fields are empty)
 "Rewriting" (Finalize's group for rewrites started at Keep and not back yet) · "1 rewrite on its way" / "[N] rewrites on their way"
 "Kept: [title]" / "Skipped: [title]" / "Deleted: [title]", then "Undo" on the status line
+"Past" · "Already live" (Sort's two groups under the skipped rows, Sep 22; the same words as their tags) · "Dismiss all" · "Dismissed [N]" then "Undo" · "Undid: dismissed [N]"
 "Nothing to sort." · "All sorted." · "New items are being read." (the card's place when nothing waits)
 Gone on Sep 18 with the section tabs: "Needs a fix" and the section names, "Keep the rest" on Sort, "Undo last", "Go to Finalize", Sort's View info panel and its three hints, "Next: [section]", "Nothing left in this section."
 

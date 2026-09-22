@@ -187,6 +187,7 @@ look, everywhere it appears.
 | **Top bar** (ERC Content Desk / the lane / the page; the two other lanes on the right) | none | a 56px bar under a hairline; crumb links in the ink, lane links quiet | every way around the desk (Kate's wireframes, Sep 17): the brand leads home, a lane opens its page in place, the builder's pages crumb under Newsletter |
 | **Keep the rest (N)** | ✓ `fa-check` | the small dark-grey button, Carbon's secondary (Kate, Sep 17: a sweep across a list is grey, the one decision on a card is the primary), right of Finalize's head while rewrites wait to be checked | keep every rewrite still to check. Sort's Keep the rest went with its sections (Kate, Sep 18: "Drop it") |
 | **Send it to** ERC Newsletter only | none | one checkbox on Sort's card (Kate, Sep 22; two boxes, Newsletter and Policy Exchange, from Sep 18) | where the item goes once kept: unticked it waits in the newsletter's pool at once AND on Publish, ticked it waits in the newsletter's pool and never reaches Publish; a spotlight event comes ticked. Nowhere is not a state, so Keep and next no longer locks on it |
+| **Dismiss all** | `fa-trash-can` | red ghost word at the right of a group's head on Sort | deletes every row in that group in one change, with one Undo ("Dismissed N. Undo"). The groups (Kate, Sep 22): Past, an event whose date has gone or an opportunity whose deadline has passed, and Already live, a link the live Exchange already has (the same check Publish runs, asked for quietly on arrival); they sit under the skipped rows, each row tagged, and a row in both is Already live |
 | **Undo** (Sort) | none | the status line's word after a decision; a greyed row's own Undo | Keys on Sort (Sep 17): up and down move, K keeps, S skips, D deletes, U undoes; the buttons' tooltips name them. A decision says itself in the status line ("Kept: title. Undo"), the card moves to the next item and takes focus; Undo says what it undid |
 | **Download the CSV** → **Download the CSV again** | `fa-download` | the primary in Publish's head, then a ghost word beside the Publish button | the copy of the Adding rows in the hub's own columns, saved before anything is sent (Kate, Sep 22: the CSV comes first); Publish appears only once it has been downloaded, and a changed Adding list asks for a fresh copy. The receipt's Download the CSV again is the whole hub file after the write |
 | **Publish N to the Exchange → Confirm / Cancel** | `fa-triangle-exclamation` on the ask | the primary, then one warning note in its place | the one ask before the append-only write to the public site (design audit b6, Sep 17), at body-01 with the count and "live" in 600; Keep the rest on Finalize gets "Kept N rewrites. Undo" instead of an ask |
@@ -213,7 +214,8 @@ each with its count; the Sort tab's row says how long the oldest item has
 waited. Sort is one list, 420px, down the left: a grey head ("N waiting",
 "Newest first"), then the waiting items newest first (the kept items that
 lost their type among them), then the skipped ones newest first, each with a
-grey Skipped tag, and last, greyed, what was kept or deleted this visit with
+grey Skipped tag, then the Past and Already live groups (Sep 22), each
+with a Dismiss all, and last, greyed, what was kept or deleted this visit with
 its Undo. A row is the title with source · added by who · when; the chosen
 one sits on the selected layer with its 3px bar and its title at 600. On the
 right the card, kept in view while the list scrolls: the tags (New, Skipped,

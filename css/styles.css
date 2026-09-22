@@ -602,6 +602,8 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .sort-list-head { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-03) var(--spacing-05); background: var(--layer-01); font-size: 12px; line-height: 16px; letter-spacing: .32px; }
 .sort-list-count { font-weight: 600; color: var(--muted); }
 .sort-list-order { margin-left: auto; color: var(--text-helper); }
+.sort-group-head { border-top: 1px solid var(--line-in); }   /* Past and Already live, each with its sweep (Sep 22) */
+.sort-group-head .trash-link { margin-left: auto; }
 .sort-row, .f-list-row {
   display: flex; align-items: flex-start; gap: var(--spacing-03); width: 100%; height: auto; box-sizing: border-box; text-align: left;
   padding: var(--spacing-04) var(--spacing-05); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; background: transparent;

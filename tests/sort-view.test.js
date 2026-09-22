@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { keptUntyped, readerQueue, sortList, oldestWait, fixReasons, dupeReason, dupeBadgeText, isNewToday, keepBlock, missingLine, nextSelected, undoWords, withoutRow, adjacentTab } from '../js/sort-view.js';
+import { keptUntyped, readerQueue, sortList, oldestWait, fixReasons, dupeReason, dupeBadgeText, isNewToday, isPast, keepBlock, missingLine, nextSelected, undoWords, withoutRow, adjacentTab } from '../js/sort-view.js';
 
 // ── One list, newest first (Kate's wireframes and her answers, Sep 18) ──
 
@@ -177,4 +177,36 @@ test('missingLine names the empty fields the type needs, in the words the card u
   assert.equal(missingLine({ type: 'opportunity' }), 'Still missing: Deadline.');
   assert.equal(missingLine({ type: 'research', authors: 'Chen' }), '');
   assert.equal(missingLine({ type: '' }), '');
+});
+
+test('isPast: an event whose date has gone, an opportunity whose deadline has passed; nothing else', () => {
+  assert.equal(isPast({ type: 'event', date: '2026-09-20' }, '2026-09-22'), true);
+  assert.equal(isPast({ type: 'erc_event', date: '2026-09-22' }, '2026-09-22'), false);   // today still counts
+  assert.equal(isPast({ type: 'opportunity', deadline: '2026-09-01' }, '2026-09-22'), true);
+  assert.equal(isPast({ type: 'opportunity', deadline: '' }, '2026-09-22'), false);
+  assert.equal(isPast({ type: 'headline', date: '2026-01-01' }, '2026-09-22'), false);
+  assert.equal(isPast({ type: '', date: '2026-01-01' }, '2026-09-22'), false);
+});
+
+test('sortList gathers past items and items already on the Exchange into their own groups, out of the waiting list (Kate, Sep 22)', () => {
+  const rows = [
+    { id: 'a', status: 'new', type: 'event', date: '2026-09-01', link: 'https://x.org/a', submitted_at: '2026-09-10T00:00:00Z' },
+    { id: 'b', status: 'new', type: 'headline', link: 'https://x.org/live', submitted_at: '2026-09-11T00:00:00Z' },
+    { id: 'c', status: 'new', type: 'research', link: 'https://x.org/c', submitted_at: '2026-09-12T00:00:00Z' },
+    { id: 'd', status: 'circleback', type: 'opportunity', deadline: '2026-09-02', link: 'https://x.org/d', submitted_at: '2026-09-13T00:00:00Z' },
+    { id: 'e', status: 'new', type: 'event', date: '2026-09-01', link: 'https://x.org/live2', submitted_at: '2026-09-14T00:00:00Z' },   // past AND live: live wins
+  ];
+  const out = sortList(rows, new Set(), { today: '2026-09-22', liveLinks: new Set(['https://x.org/live', 'https://x.org/live2']) });
+  assert.deepEqual(out.live.map(r => r.id), ['c']);
+  assert.deepEqual(out.past.map(r => r.id), ['d', 'a']);
+  assert.deepEqual(out.onHub.map(r => r.id), ['e', 'b']);
+  // Without the options nothing changes: no groups, the old list.
+  const plain = sortList(rows, new Set());
+  assert.deepEqual(plain.live.map(r => r.id), ['e', 'c', 'b', 'a', 'd']);
+  assert.deepEqual(plain.past, []);
+  assert.deepEqual(plain.onHub, []);
+});
+
+test('undoWords for a dismissed group counts the items back', () => {
+  assert.equal(undoWords({ kind: 'dismiss', rows: [{ id: 'a' }, { id: 'b' }, { id: 'c' }] }), 'Undid: dismissed 3');
 });

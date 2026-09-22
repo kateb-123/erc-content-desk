@@ -8,7 +8,7 @@ import { readAllRows, updateRows } from './_lib/store.js';
 import { readyToPublish, markPublished } from '../js/workflow.js';
 import { isValidType, isValidSubtype } from '../js/schema.js';
 import { isSafeLink } from '../js/links.js';
-import { fetchHubCsv, putHubCsv, diffAgainstHub, appendRowsToCsv, parseCsv } from './_lib/hub.js';
+import { fetchHubCsv, putHubCsv, diffAgainstHub, appendRowsToCsv, parseCsv, csvLinks } from './_lib/hub.js';
 import { PUBLISH_PAUSED } from '../js/flags.js';
 
 export const config = { maxDuration: 300 };
@@ -44,6 +44,7 @@ export default async function handler(req, res) {
         skipped: skipped.map(label),
         notReady: notReady.map(label),
         hubCount: Math.max(parseCsv(text).length - 1, 0),
+        liveLinks: [...csvLinks(text)],   // Sort's Already live group reads these (Kate, Sep 22)
       });
     }
 

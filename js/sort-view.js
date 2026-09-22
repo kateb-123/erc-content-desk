@@ -107,15 +107,38 @@ export function isNewToday(row, today) {
  * kept or deleted this visit, so a mistake stays in reach. A row skipped this
  * visit is live with the skipped, not greyed.
  */
-export function sortList(rows, sessionDecided = new Set()) {
+/** Already behind us (Kate, Sep 22): an event whose date has gone, an
+ *  opportunity whose deadline has passed. Today still counts. */
+export function isPast(row, today) {
+  if (!today) return false;
+  const t = row?.type;
+  const when = t === 'event' || t === 'erc_event' ? row.date : t === 'opportunity' ? row.deadline : '';
+  const day = String(when ?? '').trim().slice(0, 10);
+  return Boolean(day) && day < today;
+}
+
+/**
+ * The list: waiting items newest first (kept items that lost their type among
+ * them), then the skipped ones, and, given today and the Exchange's links,
+ * two groups pulled out of those (Kate, Sep 22): `past` and `onHub`, each
+ * with its own Dismiss all. A row that is both is on the hub. `done` is what
+ * was kept or deleted this visit, greyed with Undo.
+ */
+export function sortList(rows, sessionDecided = new Set(), { today = '', liveLinks = new Set() } = {}) {
   const waiting = rows.filter(r => r.status === 'new' && !awaitingReader(r));
   const seen = new Set(waiting.map(r => r.id));
-  const live = [...waiting, ...keptUntyped(rows).filter(r => !seen.has(r.id))].sort(newestFirst);
+  const fresh = [...waiting, ...keptUntyped(rows).filter(r => !seen.has(r.id))].sort(newestFirst);
   const skipped = rows.filter(r => r.status === 'circleback' && !awaitingReader(r)).sort(newestFirst);
-  const listed = new Set([...live, ...skipped].map(r => r.id));
+  const all = [...fresh, ...skipped];
+  const onHub = all.filter(r => liveLinks.has(String(r.link ?? '').trim())).sort(newestFirst);
+  const hub = new Set(onHub.map(r => r.id));
+  const past = all.filter(r => !hub.has(r.id) && isPast(r, today)).sort(newestFirst);
+  const grouped = new Set([...hub, ...past.map(r => r.id)]);
+  const live = all.filter(r => !grouped.has(r.id));
+  const listed = new Set([...live, ...past, ...onHub].map(r => r.id));
   const done = rows.filter(r => sessionDecided.has(r.id) && !listed.has(r.id)
     && (r.status === 'kept' || r.status === 'trashed')).sort(newestFirst);
-  return { live: [...live, ...skipped], done };
+  return { live, past, onHub, done };
 }
 
 /** Whole days the oldest waiting row has sat, by the desk's UTC date; null
@@ -161,6 +184,7 @@ export function undoWords(entry) {
   const rows = entry?.rows ?? [];
   const name = rows[0]?.headline || rows[0]?.link || 'this item';
   if (entry?.kind === 'keep-all') return `Undid: kept ${rows.length}`;
+  if (entry?.kind === 'dismiss') return `Undid: dismissed ${rows.length}`;
   if (UNDO_VERBS[entry?.kind]) return `Undid: ${UNDO_VERBS[entry.kind]} ${name}`;
   return `Undid: ${UNDO_NOUNS[entry?.kind] ?? 'the change to'} ${name}`;
 }
