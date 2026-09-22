@@ -703,3 +703,41 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .busy-track { height: 8px; border-radius: 0; background: var(--layer-accent-01); overflow: hidden; margin: var(--spacing-05) 0 var(--spacing-04); }
 .busy-fill { height: 100%; border-radius: 0; background: var(--interactive); transition: width var(--duration-fast-02) var(--ease-standard); }
 .busy-note { color: var(--muted); margin: 0; }
+
+/* ── The team's page, Submit content (Kate's sketch and the design handoff, Sep 22) ── */
+.team-page .page-head { margin: var(--spacing-03) 0 0; }
+.team-page .lede { margin: var(--spacing-02) 0 0; }
+.team-cols { display: flex; gap: var(--spacing-10); align-items: flex-start; flex-wrap: wrap; margin-top: var(--gap-28); }
+.team-main { flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-07); }
+.team-side { flex: 0 1 360px; min-width: 260px; display: flex; flex-direction: column; gap: var(--spacing-07); }
+.form-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--gap-28); }
+.form-box .submit-form { gap: var(--gap-28); }
+/* The queue: the section head, then rows straight on the cream ground, every waiting item in its own scroll. */
+.queue-rows { max-height: 560px; overflow-y: auto; }
+.queue-row { padding: 13px 0; border-bottom: 1px solid var(--line); }
+.queue-title { font: var(--body-type); line-height: 21px; color: var(--ink); }
+.queue-meta { font: var(--meta-type); color: var(--text-helper); margin: var(--spacing-01) 0 0; }
+.queue-rows > .queue-meta { padding: 13px 0; }
+/* The side boxes: Quick links and Desk work, each a white box with its section head. */
+.side-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--spacing-06); }
+.ql-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-05); padding: var(--spacing-06) 0; border-bottom: 1px solid var(--line); }
+.ql-row:last-child { border-bottom: 0; padding-bottom: var(--spacing-02); }
+.ql-words { min-width: 0; }
+.ql-name { font: var(--body-type); font-weight: 500; color: var(--ink); text-decoration: none; }
+.ql-name:hover { color: var(--muted); }
+.ql-name .fa-solid { font-size: 11px; color: var(--icon-secondary); }
+.ql-url { font: var(--meta-type); color: var(--text-helper); overflow-wrap: anywhere; margin-top: var(--spacing-01); }
+.ql-copy { height: 24px; margin: 0; padding: 0; font: var(--meta-type); color: var(--muted); text-decoration: underline; text-underline-offset: 2px; flex: none; }
+.ql-copy:hover:not(:disabled) { background: none; color: var(--ink); }
+/* The doors: a name, the count as a big numeral, an arrow; a 3px orange bar on hover. */
+.door-rows { display: flex; flex-direction: column; }
+.door-row {
+  display: flex; align-items: center; gap: var(--spacing-05); height: 60px; padding: 0 var(--spacing-05) 0 13px;
+  border-left: 3px solid transparent; border-bottom: 1px solid var(--line); color: var(--ink); text-decoration: none;
+  transition: background-color var(--duration-fast-01) var(--ease-productive), border-color var(--duration-fast-01) var(--ease-productive);
+}
+.door-row:last-child { border-bottom: 0; }
+.door-row:hover { background: var(--door-hover); border-left-color: var(--border-interactive); color: var(--ink); }
+.door-name { flex: 1 1 auto; font: var(--body-type); font-weight: 500; }
+.door-count { font: var(--numeral); }
+.door-row .fa-arrow-right { font-size: 14px; color: var(--icon-secondary); }

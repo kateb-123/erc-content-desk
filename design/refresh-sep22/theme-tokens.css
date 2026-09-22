@@ -1,0 +1,94 @@
+/* ERC Content Desk — refreshed theme, Sep 22 2026.
+   Drop-in replacement for the Carbon values in design-system/tokens.css.
+   Same rule as before: this is the ONE file where a colour, size or face is
+   written down. Names keep the desk's existing aliases where they still apply,
+   so the stylesheets mostly need their values changed, not their references.
+
+   What changed from Carbon: the family (IBM Plex Sans -> Archivo + Lora), the
+   page ground (white -> cream), the radius (0 -> 2px), the primary fill (ink ->
+   navy, on the desk as well as the builder), section headers (grey label ->
+   uppercase label over a 2px orange rule), and inner surfaces (grey layers ->
+   an ink wash). Orange still only MARKS, never fills and never carries text.
+   Still no maroon in-app and still no shadows anywhere. */
+
+:root {
+  /* Ground and layers */
+  --page: #f6f3ec;              /* the cream page ground, both apps */
+  --layer: #ffffff;             /* a card, a list, a table: white box */
+  --layer-line: #ded8cd;        /* the box's 1px hairline */
+  --line-in: #e3ddd0;           /* dividers inside a box, the top bar's rule */
+
+  /* Inner surfaces: an ink wash, not a grey layer. Used for the list head,
+     the description field, pills, the quote box and the chosen row. */
+  --wash: rgba(35, 32, 27, .045);
+  --wash-line: rgba(35, 32, 27, .14);
+  --wash-row: rgba(35, 32, 27, .06);   /* the chosen row */
+  --wash-pill: rgba(35, 32, 27, .07);  /* counts, fact tags */
+  --wash-bar: rgba(35, 32, 27, .22);   /* the quote box's left bar */
+  --wash-hover: rgba(35, 32, 27, .035);
+  --hover: #f3f2f0;                    /* quiet button and row hover on white */
+
+  /* Ink */
+  --ink: #23201b;
+  --muted: #6b6156;
+  --helper: #8c8478;
+  --placeholder: #a8a096;
+  --rule-strong: #8c8478;       /* the line under a big field, dashed zones */
+  --dashed: #c4bcae;
+
+  /* Primary: UT Martin navy, 10.4:1 on white, so it fills under a white label */
+  --accent: #1e416b;
+  --accent-hover: #153154;
+  --accent-label: #ffffff;
+  --disabled: #e0dad0;
+  --disabled-label: #a8a096;
+
+  /* The mark: UT System orange. 2.5:1 on white, so it never fills a button and
+     never carries text. It draws the 2px section rules, the lit tab's bar and
+     the 3px bar on a chosen row. */
+  --mark: #ff8200;
+
+  /* Status. Blue means "needs doing" and nothing else. */
+  --needs-doing: #006c93;
+  --needs-doing-fill: #e8f2f6;
+  --needs-doing-line: #006c934d;
+  --danger: #b3123c;
+  --danger-wash: #fbeef2;
+
+  /* Submit page surfaces */
+  --field-on-layer: #f4f1e9;    /* the big link field inside a white box */
+  --dropzone: #faf8f4;
+  --door-hover: #f7f4ed;
+
+  /* Type: two families. Archivo carries the UI, Lora the page title and the
+     big numerals. Weights 400/500/600 (Archivo) and 500 (Lora) only. */
+  --font-sans: Archivo, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: Lora, Georgia, serif;
+
+  /* Type scale: size / line-height / weight / tracking */
+  --page-title: 500 34px/43px var(--font-serif);   /* letter-spacing -.2px */
+  --card-title: 600 21px/28px var(--font-sans);    /* letter-spacing -.2px */
+  --sub-title: 600 20px/27px var(--font-sans);     /* letter-spacing -.1px */
+  --lede: 400 16px/25px var(--font-sans);
+  --prose: 400 16px/25px var(--font-sans);
+  --body: 400 15px/23px var(--font-sans);
+  --body-sm: 400 14px/21px var(--font-sans);
+  --meta: 400 13px/19px var(--font-sans);
+  --label: 600 12px/16px var(--font-sans);         /* uppercase, .7px tracking */
+  --numeral: 500 24px/30px var(--font-serif);
+
+  /* Shape. Square is gone: 2px everywhere, 12px on pills. No shadows. */
+  --radius: 2px;
+  --radius-pill: 12px;
+
+  /* Spacing */
+  --sp-1: 4px;  --sp-2: 6px;  --sp-3: 8px;  --sp-4: 10px;
+  --sp-5: 12px; --sp-6: 14px; --sp-7: 16px; --sp-8: 18px;
+  --sp-9: 20px; --sp-10: 22px; --sp-11: 24px; --sp-12: 28px;
+  --sp-13: 32px; --sp-14: 40px; --sp-15: 56px; --sp-16: 64px; --sp-17: 72px;
+
+  /* Motion, unchanged from Carbon's clock */
+  --ease: cubic-bezier(.2, 0, .38, .9);
+  --dur-colour: 70ms;
+  --dur-move: 110ms;
+}

@@ -202,7 +202,20 @@ look, everywhere it appears.
 | **Download the CSV** → **Download the CSV again** | `fa-download` | the primary in Publish's head, then a ghost word beside the Publish button | the copy of the Adding rows in the hub's own columns, saved before anything is sent (Kate, Sep 22: the CSV comes first); Publish appears only once it has been downloaded, and a changed Adding list asks for a fresh copy. The receipt's Download the CSV again is the whole hub file after the write |
 | **Publish N to the Exchange → Confirm / Cancel** | `fa-triangle-exclamation` on the ask | the primary, then one warning note in its place | the one ask before the append-only write to the public site (design audit b6, Sep 17), at body-01 with the count and "live" in 600; Keep the rest on Finalize gets "Kept N rewrites. Undo" instead of an ask |
 
-The front page (Kate's wireframes, Sep 17; `design/mockups/index.png`) is the
+The team's page, Submit content at /#team (Kate's sketch and the handoff,
+Sep 22; `design/mockups/submit-content.png`, the handoff itself in
+`design/refresh-sep22/`): the page head, then two columns. Left, the share
+form in a white box, then Queue, a section head over the orange rule with
+"N waiting · newest first" and every waiting item as a read-only row in its
+own scroll. Right, two white boxes: Quick links (the public share page, the
+listserv sign-up, the Policy Exchange, each a link that opens in a new tab
+with its address under it and Copy link, which says Copied for two seconds)
+and Desk work (Content Sort and Newsletter as door rows with their counts as
+Lora numerals and an arrow, a 3px orange bar on hover; Newsletter opens in
+its own window). The top bar shows only Policy Exchange on the right. The
+Sort page is Content Sort everywhere since Sep 22.
+
+The front page of Sep 17 to 22 (Kate's wireframes; `design/mockups/index.png`) was the
 share form on the left and a 360px column on the right, 56px in from the
 sides. The form puts the link first as the one big field (52px, on
 `--field-01`, a 2px line under it, "We will pull the title and description if

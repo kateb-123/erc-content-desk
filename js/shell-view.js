@@ -7,7 +7,7 @@ export const DESK = { label: 'ERC Content Desk', href: '/' };
 
 /** The three lanes, in the front page's order. */
 export const LANES = [
-  { key: 'sort', label: 'Sort content', href: '/#sort' },
+  { key: 'sort', label: 'Content Sort', href: '/#sort' },   // Content Sort since Sep 22 (Kate's sketch)
   { key: 'newsletter', label: 'Newsletter', href: '/#newsletter' },
   { key: 'exchange', label: 'Policy Exchange', href: '/#exchange' },
 ];
@@ -17,6 +17,7 @@ export const LANES = [
 // builder's pages sit under Newsletter.
 const SCREENS = {
   home: { lane: null, hash: '' },
+  team: { lane: null, hash: '#team', page: 'Submit content', links: ['exchange'] },   // the team's page (Kate's sketch, Sep 22): its doors carry Sort and Newsletter
   sort: { lane: 'sort', hash: '#sort' },
   finalize: { lane: 'sort', hash: '#finalize', title: 'Finalize' },   // a tab of Sort content, so no crumb of its own
   issue: { lane: 'newsletter', hash: '#newsletter' },
@@ -47,6 +48,8 @@ export function crumbs(screen) {
 /** The lanes the bar links to: the two the page is not in; none on the
  *  front page, which lists all three itself. */
 export function laneLinks(screen) {
+  const own = SCREENS[screen]?.links;
+  if (own) return LANES.filter(l => own.includes(l.key));
   const lane = laneOf(screen);
   if (!lane) return [];
   return LANES.filter(l => l.key !== lane.key);

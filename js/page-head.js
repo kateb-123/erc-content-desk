@@ -47,7 +47,7 @@ export function sortPageHead({ active, counts, oldestDays = null, onGoTo, canLea
     ? (oldestDays === 0 ? 'Oldest came in today' : `Oldest has waited ${oldestDays} day${oldestDays === 1 ? '' : 's'}`)
     : '';
   return pageHead({
-    title: 'Sort content', active, note, onGoTo, canLeave,
+    title: 'Content Sort', active, note, onGoTo, canLeave,
     tabs: [{ key: 'sort', label: 'Sort', count: counts?.sort }, { key: 'finalize', label: 'Finalize', count: counts?.finalize }],
   });
 }

@@ -4,6 +4,7 @@ import { readAllWaiting } from './reader-client.js';
 import { readerQueue, undoWords, withoutRow } from './sort-view.js';
 import { dotsLoader, loadingLabel } from './icons.js';
 import { renderHome } from './home-ui.js';
+import { renderTeam } from './team-ui.js';
 import { renderShell } from './shell-ui.js';
 import { openedScreen, screenHash, pageTitle } from './shell-view.js';
 import { renderIssue, resetIssueEntry } from './issue-ui.js';
@@ -38,7 +39,7 @@ const state = {
   lastKeepAll: null,        // [{ id, old }] from the last Keep all remaining, until undone or left
 };
 
-const screens = Object.fromEntries(['home', 'issue', 'past', 'sort', 'finalize', 'publish']
+const screens = Object.fromEntries(['home', 'team', 'issue', 'past', 'sort', 'finalize', 'publish']
   .map(name => [name, document.querySelector(`#screen-${name}`)]));
 const statusEl = document.querySelector('#desk-status');
 
@@ -475,7 +476,7 @@ async function unsendFromNewsletter(ids) {
   render();
 }
 
-const SCREEN_ORDER = ['home', 'sort', 'finalize', 'issue', 'past', 'publish'];
+const SCREEN_ORDER = ['home', 'team', 'sort', 'finalize', 'issue', 'past', 'publish'];
 // Every screen but the front page has an address (/#sort, /#newsletter,
 // /#exchange, and the old screens' own until they fold into the lanes), so a
 // typed or bookmarked one opens there and a reload stays put.
@@ -531,6 +532,12 @@ function render() {
       onSubmitted: reload,
       onRefresh: reload,
       knownLinks: () => state.rows,   // the form is mounted once: it asks for the rows instead of holding a copy
+    });
+  } else if (state.screen === 'team') {
+    renderTeam(screens.team, {
+      ...common, loaded: state.loaded, loadFailed: state.loadFailed,
+      onGoTo: goTo, onSubmitted: reload, onRefresh: reload,
+      knownLinks: () => state.rows,
     });
   } else if (state.screen === 'issue') {
     renderIssue(screens.issue, {

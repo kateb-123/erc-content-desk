@@ -7,7 +7,7 @@ import { LANES, crumbs, laneLinks, openedScreen, screenHash, pageTitle } from '.
 
 test('the three lanes, in the order the front page lists them', () => {
   assert.deepEqual(LANES.map(l => [l.key, l.label, l.href]), [
-    ['sort', 'Sort content', '/#sort'],
+    ['sort', 'Content Sort', '/#sort'],
     ['newsletter', 'Newsletter', '/#newsletter'],
     ['exchange', 'Policy Exchange', '/#exchange'],
   ]);
@@ -15,20 +15,22 @@ test('the three lanes, in the order the front page lists them', () => {
 
 test('the breadcrumb: the desk alone on the front page, the desk then the page elsewhere, the builder under Newsletter', () => {
   assert.deepEqual(crumbs('home'), [{ label: 'ERC Content Desk', href: '/' }]);
-  assert.deepEqual(crumbs('sort'), [{ label: 'ERC Content Desk', href: '/' }, { label: 'Sort content' }]);
+  assert.deepEqual(crumbs('sort'), [{ label: 'ERC Content Desk', href: '/' }, { label: 'Content Sort' }]);
+  assert.deepEqual(crumbs('team'), [{ label: 'ERC Content Desk', href: '/' }, { label: 'Submit content' }]);   // the team's page (Kate's sketch, Sep 22)
   assert.deepEqual(crumbs('exchange'), [{ label: 'ERC Content Desk', href: '/' }, { label: 'Policy Exchange' }]);
   assert.deepEqual(crumbs('builder'), [{ label: 'ERC Content Desk', href: '/' }, { label: 'Newsletter', href: '/#newsletter' }, { label: 'Builder' }]);
   assert.deepEqual(crumbs('past'), [{ label: 'ERC Content Desk', href: '/' }, { label: 'Newsletter' }]);   // a tab of Newsletter since Sep 18
 });
 
 test('until their screens fold into the lanes, the old screens crumb under the lane they belong to', () => {
-  assert.deepEqual(crumbs('finalize').map(c => c.label), ['ERC Content Desk', 'Sort content']);   // a tab of Sort content since Sep 18
+  assert.deepEqual(crumbs('finalize').map(c => c.label), ['ERC Content Desk', 'Content Sort']);   // a tab of Sort content since Sep 18
   assert.deepEqual(crumbs('publish').map(c => c.label), ['ERC Content Desk', 'Policy Exchange']);
   assert.deepEqual(crumbs('issue').map(c => c.label), ['ERC Content Desk', 'Newsletter']);
 });
 
 test('the bar links to the two lanes the page is not in; the front page links to none', () => {
   assert.deepEqual(laneLinks('home'), []);
+  assert.deepEqual(laneLinks('team').map(l => l.key), ['exchange']);   // the team page's doors carry Sort and Newsletter; the bar keeps the Exchange
   assert.deepEqual(laneLinks('sort').map(l => l.key), ['newsletter', 'exchange']);
   assert.deepEqual(laneLinks('finalize').map(l => l.key), ['newsletter', 'exchange']);
   assert.deepEqual(laneLinks('newsletter').map(l => l.key), ['sort', 'exchange']);
@@ -41,6 +43,7 @@ test('the bar links to the two lanes the page is not in; the front page links to
 
 test('an address opens its screen, old addresses still land, anything else is the front page', () => {
   assert.equal(openedScreen('#sort'), 'sort');
+  assert.equal(openedScreen('#team'), 'team');
   assert.equal(openedScreen('#newsletter'), 'issue');
   assert.equal(openedScreen('#exchange'), 'publish');
   assert.equal(openedScreen('#finalize'), 'finalize');
@@ -56,6 +59,7 @@ test('an address opens its screen, old addresses still land, anything else is th
 test('every screen but the front page keeps an address, in the lanes\' names', () => {
   assert.equal(screenHash('home'), '');
   assert.equal(screenHash('sort'), '#sort');
+  assert.equal(screenHash('team'), '#team');
   assert.equal(screenHash('finalize'), '#finalize');
   assert.equal(screenHash('issue'), '#newsletter');
   assert.equal(screenHash('past'), '#past');
@@ -64,7 +68,8 @@ test('every screen but the front page keeps an address, in the lanes\' names', (
 
 test('the window title names the page, the desk after it', () => {
   assert.equal(pageTitle('home'), 'ERC Content Desk');
-  assert.equal(pageTitle('sort'), 'Sort content · ERC Content Desk');
+  assert.equal(pageTitle('sort'), 'Content Sort · ERC Content Desk');
+  assert.equal(pageTitle('team'), 'Submit content · ERC Content Desk');
   assert.equal(pageTitle('finalize'), 'Finalize · ERC Content Desk');
   assert.equal(pageTitle('publish'), 'Policy Exchange · ERC Content Desk');
   assert.equal(pageTitle('builder'), 'Newsletter builder · ERC Content Desk');
