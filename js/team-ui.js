@@ -15,12 +15,13 @@ import { isoToShort } from './queue-view.js';
 import { LANES } from './shell-view.js';
 import { el, tryAgain } from './ui-aids.js';
 
-/** The three public pages the team shares: the desk's own share page and
- *  listserv sign-up (standalone since Sep 22; the Exchange keeps its copies),
- *  and the Policy Exchange itself. */
+/** The three public pages the team shares, all on the Exchange's address:
+ *  the share page, the listserv sign-up, the Exchange itself. Copies on the
+ *  desk's own address were tried and taken down the same day (Sep 22): the
+ *  desk has no password, and a public page there is a door into it. */
 export const QUICK_LINKS = [
-  { key: 'share', label: 'Submit Content to ERC', href: 'https://erc-content-desk.vercel.app/submit/' },
-  { key: 'listserv', label: 'Join listserv', href: 'https://erc-content-desk.vercel.app/listserv/' },
+  { key: 'share', label: 'Submit Content to ERC', href: 'https://erc-policy-exchange.vercel.app/share/' },
+  { key: 'listserv', label: 'Join listserv', href: 'https://erc-policy-exchange.vercel.app/newsletter/' },
   { key: 'exchange', label: 'ERC Policy Exchange', href: 'https://erc-policy-exchange.vercel.app/' },
 ];
 
