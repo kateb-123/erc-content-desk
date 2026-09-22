@@ -171,6 +171,9 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .nl-list { background: var(--layer); border: 1px solid var(--layer-line); }
 .nl-row { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--line-in); }
 .nl-list > .nl-row:first-child { border-top: 0; }
+.nl-row.is-editing { display: block; }   /* the row opens into the edit form (Sep 22) */
+.nl-row-head { display: flex; align-items: center; gap: var(--spacing-04); margin-bottom: var(--spacing-03); }
+.f-detail-tools { margin-top: var(--spacing-04); }
 .nl-row.is-gone { background: var(--layer-01); }
 .nl-row.is-gone .nl-title, .nl-row.is-gone .nl-meta { color: var(--muted); }
 .nl-num { flex: none; width: 20px; font-size: 12px; line-height: 16px; color: var(--text-helper); font-variant-numeric: tabular-nums; }

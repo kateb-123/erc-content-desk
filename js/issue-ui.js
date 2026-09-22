@@ -13,6 +13,7 @@ import { reshareFlags } from './workflow.js';
 import { typeDisplay } from './schema.js';
 import { renderSubmitForm } from './submit-form.js';
 import { newsletterPageHead } from './page-head.js';
+import { buildEditForm, holdIfDirty } from './edit-form.js';
 import { el, button, focusKeyIn, restoreFocus, tryAgain, inFlight } from './ui-aids.js';
 
 // View state, for as long as the page is open: the issue picked (''= the
@@ -24,6 +25,8 @@ let quickJustOpened = false;
 const justRemoved = new Map();
 const justDeleted = new Map();
 let askId = null;
+let editingId = null;   // the row whose edit form is open (Kate, Sep 22: an edit button on each part of the pipeline)
+let openForm = null;
 
 /** Arriving at Next issue starts fresh. */
 export function resetIssueEntry() {
@@ -53,8 +56,29 @@ function blockHead(label, count, extra) {
   return head;
 }
 
-/** One item in the issue: its number, the title and what it is, Remove. */
-function issueRow(row, n, { onRemove }) {
+/** The row with its edit form open: the title line, then the one edit form, the same as Finalize's. */
+function editingRow(row, n, { onEditRow, rerender }) {
+  const item = el('div', 'nl-row is-editing');
+  const head = el('div', 'nl-row-head');
+  if (n) head.append(el('span', 'nl-num', String(n).padStart(2, '0')));
+  head.append(el('span', 'nl-title', title(row)));
+  item.append(head);
+  openForm = buildEditForm(row, {
+    onSave: changes => { editingId = null; openForm = null; if (Object.keys(changes).length) onEditRow(row, changes); else rerender(); },
+    onCancel: () => { editingId = null; openForm = null; rerender(); },
+  });
+  item.append(openForm.el);
+  return item;
+}
+
+/** The Edit word before a row's own action. */
+function editWord(row, rerender) {
+  return button(' Edit', 'linkish edit-link', { focus: `edit:${row.id}`, icon: 'pen', onClick: () => { editingId = row.id; rerender(); } });
+}
+
+/** One item in the issue: its number, the title and what it is, Edit, Remove. */
+function issueRow(row, n, { onRemove, onEditRow, rerender }) {
+  if (editingId === row.id) return editingRow(row, n, { onEditRow, rerender });
   const item = el('div', 'nl-row');
   item.append(el('span', 'nl-num', String(n).padStart(2, '0')));
   const text = el('span', 'nl-text');
@@ -68,7 +92,7 @@ function issueRow(row, n, { onRemove }) {
     focus: `remove:${row.id}`, icon: 'trash-can',
     onClick: () => { inFlight(remove, `remove:${row.id}`, 'Removing'); justRemoved.set(row.id, row); onRemove(row); },
   });
-  item.append(remove);
+  item.append(editWord(row, rerender), remove);
   return item;
 }
 
@@ -85,7 +109,8 @@ function goneRow(row, word, onUndo, key) {
 
 /** One item ready to add: the title, what it is and anything timely, Add. An
  *  event that belongs to a later issue asks "Send early?" first. */
-function readyRow({ row, laterIssue }, { issue, busy, reshare, today, onAdd, rerender }) {
+function readyRow({ row, laterIssue }, { issue, busy, reshare, today, onAdd, onEditRow, rerender }) {
+  if (editingId === row.id) return editingRow(row, 0, { onEditRow, rerender });
   const item = el('div', `nl-row${laterIssue ? ' is-later' : ''}`);
   const text = el('span', 'nl-text');
   text.append(el('span', 'nl-title', title(row)));
@@ -109,15 +134,17 @@ function readyRow({ row, laterIssue }, { issue, busy, reshare, today, onAdd, rer
       onAdd([row], issue);
     } });
     add.disabled = busy;
-    item.append(add);
+    item.append(editWord(row, rerender), add);
   }
   return item;
 }
 
 export function renderIssue(container, props) {
-  const { rows, schedule, today, loaded, loadFailed, busy, archive, onGoTo, onAdd, onRemove, onRestore, onTrash, onRestoreTrashed, onQuickAdd, onRefresh, knownLinks } = props;
+  const { rows, schedule, today, loaded, loadFailed, busy, archive, onGoTo, onAdd, onRemove, onRestore, onTrash, onRestoreTrashed, onQuickAdd, onRefresh, knownLinks, onEditRow } = props;
   const rerender = () => renderIssue(container, props);
-  const parts = [newsletterPageHead({ active: 'issue', onGoTo })];
+  // An open, edited form holds any way out (the same rule as Finalize).
+  const held = () => holdIfDirty(openForm, container.querySelector('.nl-row.is-editing'));
+  const parts = [newsletterPageHead({ active: 'issue', onGoTo, canLeave: () => !held() })];
 
   if (!loaded) { container.replaceChildren(...parts, loadFailed ? tryAgain(onRefresh) : dotsLoader()); return; }
   const upcoming = (schedule ?? []).filter(d => !today || d >= today);
@@ -172,7 +199,7 @@ export function renderIssue(container, props) {
   for (const section of sections) {
     main.append(el('p', 'nl-section', section.label));
     const box = el('div', 'nl-list');
-    for (const row of section.rows) box.append(issueRow(row, ++n, { onRemove }));
+    for (const row of section.rows) box.append(issueRow(row, ++n, { onRemove, onEditRow, rerender }));
     main.append(box);
   }
   if (removed.length) {
@@ -186,7 +213,7 @@ export function renderIssue(container, props) {
   if (!ready.length) main.append(el('p', 'nl-empty', 'Nothing waiting.'));
   else {
     const box = el('div', 'nl-list is-ready');
-    for (const entry of ready) box.append(readyRow(entry, { issue, busy, reshare, today, onAdd, rerender }));
+    for (const entry of ready) box.append(readyRow(entry, { issue, busy, reshare, today, onAdd, onEditRow, rerender }));
     main.append(box);
   }
   // What the issue has outrun: not addable; the move left is Delete.

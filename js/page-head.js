@@ -53,9 +53,9 @@ export function sortPageHead({ active, counts, oldestDays = null, onGoTo, canLea
 }
 
 /** Newsletter's head: Next issue and Past issues. */
-export function newsletterPageHead({ active, onGoTo }) {
+export function newsletterPageHead({ active, onGoTo, canLeave }) {
   return pageHead({
-    title: 'Newsletter', active, onGoTo,
+    title: 'Newsletter', active, onGoTo, canLeave,
     tabs: [{ key: 'issue', label: 'Next issue' }, { key: 'past', label: 'Past issues' }],
   });
 }

@@ -306,6 +306,15 @@ async function undoLast() {
   noteChange(last.rows);   // restore the rows exactly as they were
 }
 
+/** An edit made downstream (Next issue, Publish; Kate, Sep 22): saved like any
+ *  Sort edit. The Exchange check keys on the link, so it stands unless the
+ *  link changed; an edit after an item is live changes the desk, not the site. */
+function saveEdit(row, changes) {
+  const preview = state.publishPreview;
+  noteChange([{ ...current(row), ...changes }]);
+  if (!('link' in changes) && preview) { state.publishPreview = preview; render(); }
+}
+
 /** A Keep undone: its rewrite, landed or still out, no longer counts. */
 function forgetRewrites(ids) {
   for (const id of ids) { state.rewriteReview.delete(id); state.rewriting.delete(id); }
@@ -523,6 +532,7 @@ function render() {
       onRefresh: reload,
       knownLinks: () => state.rows,
       onRemove: row => unsendFromNewsletter([row.id]),
+      onEditRow: saveEdit,
       onRestore: row => persist([row]),   // Undo on Remove: the row as it was, stamp included
       onTrash: row => persist([trash(row)]),
       onRestoreTrashed: row => persist([row]),
@@ -620,7 +630,7 @@ function render() {
     renderPublish(screens.publish, {
       ...common, preview: state.publishPreview, busy: state.busy,
       justPublished: state.justPublished, publishedCsv: state.publishedCsv,
-      onPublish: publishNow, onGoTo: goTo,
+      onPublish: publishNow, onGoTo: goTo, onEditRow: saveEdit,
       onRecheck: () => { state.publishPreview = null; loadPublishPreview(); },
     });
   }

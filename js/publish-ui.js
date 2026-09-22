@@ -10,6 +10,7 @@ import { hubCsvFilename } from './hub-csv.js';
 import { typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { detailBody } from './finalize-ui.js';
+import { buildEditForm, holdIfDirty } from './edit-form.js';
 import { checkSvg, dotsLoader, faIcon } from './icons.js';
 import { screenHead } from './screen-info.js';
 import { FATES, publishRows, legendItems, filterByFate, fateShares } from './publish-view.js';
@@ -32,6 +33,8 @@ export function downloadCsv(text, when = new Date()) {
 
 // View state only — resets on reload, never persisted.
 let expanded = new Set();
+let editingId = null;   // the open row whose edit form is showing (Kate, Sep 22: an edit button on each part of the pipeline)
+let openForm = null;
 let fateFilter = null;   // the legend's filter; null shows every row
 let celebrated = ''; // which publish already played its confirmation — revisits stay still
 // Team trial (PUBLISH_PAUSED): the Publish button runs a MOCK — a "forthcoming"
@@ -55,7 +58,7 @@ function newsletterDoor(onGoTo) {
 const FATE_CLASS = { adding: 'p-adding', held: 'p-held', fix: 'p-notready', live: 'p-skip' };
 const FATE_LABEL = Object.fromEntries(FATES.map(f => [f.key, f.label]));
 
-function itemRows({ row, fate }, { rerender, onGoTo, today }) {
+function itemRows({ row, fate }, { rerender, onGoTo, today, onEditRow }) {
   const isOpen = expanded.has(row.id);
   const rowClass = ['f-item', FATE_CLASS[fate], isOpen && 'is-open'].filter(Boolean).join(' ');
 
@@ -103,7 +106,19 @@ function itemRows({ row, fate }, { rerender, onGoTo, today }) {
   const detailTr = el('tr', `f-detail-row ${rowClass}`);
   const td = el('td');
   td.colSpan = 5;
-  td.append(detailBody(row, today));
+  if (editingId === row.id) {
+    // The one edit form, the same as Finalize's, in the open row's place.
+    openForm = buildEditForm(row, {
+      onSave: changes => { editingId = null; openForm = null; if (Object.keys(changes).length) onEditRow(row, changes); else rerender(); },
+      onCancel: () => { editingId = null; openForm = null; rerender(); },
+    });
+    td.append(openForm.el);
+  } else {
+    td.append(detailBody(row, today));
+    const tools = el('div', 'f-detail-tools');
+    tools.append(button(' Edit', 'linkish edit-link', { focus: `edit:${row.id}`, icon: 'pen', onClick: () => { editingId = row.id; rerender(); } }));
+    td.append(tools);
+  }
   detailTr.append(td);
   return [tr, detailTr];
 }
@@ -133,8 +148,10 @@ function fateBar(container, list, rerender) {
 }
 
 export function renderPublish(container, props) {
-  const { rows, today, preview, busy, justPublished, onPublish, onGoTo, onRecheck, publishedCsv } = props;
+  const { rows, today, preview, busy, justPublished, onPublish, onGoTo, onRecheck, publishedCsv, onEditRow } = props;
   const rerender = () => renderPublish(container, props);
+  // An open, edited form holds any way out (the same rule as Finalize).
+  const held = () => holdIfDirty(openForm, container.querySelector('.f-detail-row'));
   const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place
   // The mocked receipt stands in for a real one during the trial; trialDone and
   // trialPosting are only ever set inside the PUBLISH_PAUSED arm of the ask.
@@ -270,7 +287,7 @@ export function renderPublish(container, props) {
   thead.append(hr);
   table.append(thead);
   const tbody = el('tbody');
-  for (const item of filterByFate(list, fateFilter)) tbody.append(...itemRows(item, { rerender, onGoTo, today }));
+  for (const item of filterByFate(list, fateFilter)) tbody.append(...itemRows(item, { rerender, onGoTo, today, onEditRow }));
   table.append(tbody);
   const scroll = el('div', 'table-scroll');
   scroll.append(table);
