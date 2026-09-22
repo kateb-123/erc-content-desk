@@ -259,6 +259,8 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 /* The small primary: a screen head's decision and Sort's Keep the rest. Stays
    above button.primary:not(:has(.fa-solid)) so an icon-less one keeps its 16px. */
 .screen-head button.primary { margin-left: auto; align-self: center; height: 32px; padding: 0 var(--spacing-09) 0 var(--spacing-04); }
+.screen-head .p-csv-again { margin-left: auto; align-self: center; }   /* the fresh copy's word, then Publish keeps its place (Sep 22) */
+.screen-head .p-csv-again + button.primary { margin-left: 0; }
 .screen-head button.primary .fa-solid { right: var(--spacing-04); }
 .screen-head .door { margin-left: auto; align-self: center; }
 .screen-head .p-ask { margin-left: auto; align-self: center; font-size: 14px; line-height: 20px; letter-spacing: .16px; padding: var(--spacing-04) var(--spacing-05); }   /* the one ask before Publish, in the button's place (design audit b6), at body-01 (audit round two, e10) */

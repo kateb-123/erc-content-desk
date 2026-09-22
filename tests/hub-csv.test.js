@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { blankRow, CSV_COLUMNS } from '../js/schema.js';
-import { escapeCell, hubRowLine, hubCsvFilename } from '../js/hub-csv.js';
+import { escapeCell, hubRowLine, hubCsvFilename, hubCsvText } from '../js/hub-csv.js';
 
 test('plain values are written bare', () => {
   assert.equal(escapeCell('Teacher pay'), 'Teacher pay');
@@ -33,4 +33,18 @@ test('the saved copy is named for the day it was published, so backups sort', ()
 
 test('hubCsvFilename falls back to a plain name rather than "Invalid Date"', () => {
   assert.equal(hubCsvFilename(new Date('nonsense')), 'erc-exchange.csv');
+});
+
+test('hubCsvText is the header line, then one hub line per row, for the copy downloaded before Publish', () => {
+  const text = hubCsvText([
+    { date: '2026-09-22', headline: 'One, with a comma', link: 'https://x.org/1', type: 'headline', subtype: 'Texas' },
+    { date: '2026-09-23', headline: 'Two', link: 'https://x.org/2', type: 'research', subtype: 'Report' },
+  ]);
+  const lines = text.split('\n');
+  assert.equal(lines[0], CSV_COLUMNS.join(','));
+  assert.equal(lines.length, 4);   // header, two rows, the trailing newline
+  assert.equal(lines[3], '');
+  assert.ok(lines[1].startsWith('2026-09-22,"One, with a comma",https://x.org/1,'));
+  assert.ok(lines[2].startsWith('2026-09-23,Two,https://x.org/2,'));
+  assert.equal(hubCsvText([]), `${CSV_COLUMNS.join(',')}\n`);
 });

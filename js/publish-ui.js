@@ -6,7 +6,7 @@
  */
 import { readyToPublish } from './workflow.js';
 import { PUBLISH_PAUSED } from './flags.js';
-import { hubCsvFilename } from './hub-csv.js';
+import { hubCsvFilename, hubCsvText } from './hub-csv.js';
 import { typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { detailBody } from './finalize-ui.js';
@@ -43,6 +43,7 @@ let celebrated = ''; // which publish already played its confirmation — revisi
 let trialPosting = false; // showing the "posting…" shadow alert
 let trialDone = 0;        // count on the mocked receipt (0 = not yet)
 let confirming = false;   // the one ask before the append-only write
+let csvFor = '';          // the Adding rows (their ids) the CSV was downloaded for; Publish waits on it (Kate, Sep 22)
 
 /** Arriving at Publish never lands on a standing ask. */
 export function resetPublishAsk() { confirming = false; }
@@ -186,13 +187,23 @@ export function renderPublish(container, props) {
   } else if (!candidates.length && !busy) {
     head.append(newsletterDoor(onGoTo));
   } else if (preview && !busy && !trialPosting && adding.length) {
-    // The button only asks (the Send early shape); the ask below replaces it
-    // and its Confirm does the work. It disappears while publishing, and the
-    // status loader takes over.
-    const btn = el('button', 'primary', `Publish ${adding.length} to the Exchange`);
-    btn.dataset.focus = 'publish';
-    btn.addEventListener('click', () => { confirming = true; rerender(); });
-    head.append(btn);
+    // The CSV comes first (Kate, Sep 22): the copy of the Adding rows downloads,
+    // then Publish takes its place. A changed Adding list asks for a fresh copy.
+    const csvKey = adding.map(r => r.id).join(',');
+    const saveCopy = () => downloadCsv(hubCsvText(adding));
+    if (csvFor !== csvKey) {
+      const get = button(' Download the CSV', 'primary', { focus: 'csv', icon: 'download', onClick: () => { saveCopy(); csvFor = csvKey; rerender(); } });
+      head.append(get);
+    } else {
+      // The button only asks (the Send early shape); the ask below replaces it
+      // and its Confirm does the work. It disappears while publishing, and the
+      // status loader takes over.
+      const again = button('Download the CSV again', 'linkish p-csv-again', { focus: 'csv', onClick: saveCopy });
+      const btn = el('button', 'primary', `Publish ${adding.length} to the Exchange`);
+      btn.dataset.focus = 'publish';
+      btn.addEventListener('click', () => { confirming = true; rerender(); });
+      head.append(again, btn);
+    }
   } else if (preview && !busy && !trialPosting) {
     // Nothing to add: the only move left is the newsletter door.
     head.append(newsletterDoor(onGoTo));

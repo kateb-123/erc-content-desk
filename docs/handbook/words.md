@@ -163,6 +163,7 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Go to Finalize"
 "Go to Publish"
 "Rewrite [N] descriptions"
+"Download the CSV" (Publish's first step, Sep 22) · "Download the CSV again"
 "Re-check"
 "Fix in Finalize"
 "Publish [N] to the Exchange"

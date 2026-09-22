@@ -14,6 +14,12 @@ export function hubRowLine(row) {
   return CSV_COLUMNS.map(col => escapeCell(row[col])).join(',');
 }
 
+/** The header line, then one hub line per row: the copy she downloads
+ *  before Publish (Kate, Sep 22: the CSV comes first), the rows being added. */
+export function hubCsvText(rows) {
+  return [CSV_COLUMNS.join(','), ...rows.map(hubRowLine), ''].join('\n');
+}
+
 /** Parse CSV text into rows of cells (quoted commas, doubled quotes, CRLF). */
 export function parseCsv(text) {
   const rows = [];
