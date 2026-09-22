@@ -20,12 +20,12 @@
   --highlight: var(--accent-20);
   --tag-background-blue: var(--accent-20); --tag-color-blue: var(--accent-80);
   --link-inverse: var(--accent-30);   /* the Undo toast's bar and word on the inverse ground */
+  --row-hover: var(--wash-hover); --selected: var(--wash-row);   /* the same wash as the desk (Sep 22) */
 }
 
 body {
   margin: 0;
-  font-family: var(--font-sans);
-  font-size: 14px; line-height: 20px; letter-spacing: .16px;   /* body-01 */
+  font: var(--body-type);   /* 15/23 Archivo (Sep 22) */
   color: var(--text-primary);
   background: var(--background);
   min-height: 100vh;
@@ -50,11 +50,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 }
 
 .builder-head { padding: var(--spacing-06) var(--spacing-07) var(--spacing-05); }   /* 24px under the bar, like the desk */
-.builder-head h1 {
-  font-size: 28px; line-height: 36px; font-weight: 400; letter-spacing: 0;   /* heading-04 */
-  margin: 0;
-  color: var(--text-primary);
-}
+.builder-head h1 { font: var(--page-title); letter-spacing: -.2px; margin: 0; }   /* the page title in Lora (Sep 22) */
 
 /* --- Step indicator nav ----------------------------------- */
 /* Carbon's progress indicator: each step under a hairline that takes the
@@ -83,7 +79,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   display: flex; align-items: center; gap: var(--spacing-03);
   padding: var(--spacing-03) var(--spacing-05) 0 0;
   margin: 0; border: 0; background: none;
-  font: inherit; font-size: 14px; line-height: 18px; letter-spacing: .16px; font-weight: 400;
+  font: inherit; font-size: 14px; line-height: 18px; letter-spacing: 0; font-weight: 400;
   color: var(--text-secondary);
   text-align: left; white-space: nowrap;
   cursor: pointer;
@@ -178,7 +174,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 /* A ghost button's size, pulled left by its own padding so the word sits where it did. */
 .info-toggle {
   display: inline-flex; align-items: center; height: 32px; padding: 0 var(--spacing-03); margin-left: calc(-1 * var(--spacing-03));
-  border: none; background: none; font: inherit; letter-spacing: .16px; color: var(--link-primary); cursor: pointer;
+  border: none; background: none; font: inherit; letter-spacing: 0; color: var(--link-primary); cursor: pointer;
 }
 .info-toggle:hover { color: var(--link-primary-hover); text-decoration: underline; }
 .info-panel {
@@ -216,7 +212,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 .ghost-btn, .linkish {
   display: inline-flex; align-items: center; height: 32px; padding: 0 var(--spacing-03);
   border: 0; background: none; color: var(--link-primary);
-  font: inherit; letter-spacing: .16px; cursor: pointer; white-space: nowrap;
+  font: inherit; letter-spacing: 0; cursor: pointer; white-space: nowrap;
   transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
 }
 .ghost-btn:hover, .linkish:hover { color: var(--link-primary-hover); background: var(--background-hover); text-decoration: none; }
@@ -249,10 +245,10 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
    beside Next, Carbon's classic pair). */
 .btn {
   display: inline-flex; align-items: center; justify-content: space-between; gap: var(--spacing-06);
-  font: inherit; letter-spacing: .16px;
+  font: inherit; letter-spacing: 0;
   height: 40px; padding: 0 var(--spacing-05);
   border: 1px solid transparent;
-  border-radius: 0;
+  border-radius: var(--radius);
   cursor: pointer;
   transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
 }
@@ -296,7 +292,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 .review-table { width: 100%; border-collapse: collapse; margin-top: var(--spacing-05); background: var(--layer-02); border: 1px solid var(--border-subtle-01); }
 .review-table th { text-align: left; font-weight: 600; color: var(--text-primary); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--border-subtle-01); }
 .review-table td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--border-subtle-01); vertical-align: top; }   /* titles in the ink; the sub-line stays secondary */
-.review-table-sub { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-secondary); margin-top: var(--spacing-01); font-weight: 400; }
+.review-table-sub { display: block; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-secondary); margin-top: var(--spacing-01); font-weight: 400; }
 
 /* --- Triage step ------------------------------------------ */
 .triage-meta {
@@ -313,7 +309,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   display: flex;
   flex-direction: column;
   gap: var(--spacing-03);
-  font-size: 12px; line-height: 16px; letter-spacing: .32px;   /* label-01 */
+  font-size: 12px; line-height: 16px; letter-spacing: 0;   /* label-01 */
   font-weight: 400;
   color: var(--text-secondary);
 }
@@ -326,8 +322,8 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   padding: 0 var(--spacing-05);
   border: 0;
   border-bottom: 1px solid var(--border-strong-01);
-  border-radius: 0;
-  font: inherit; letter-spacing: .16px;
+  border-radius: var(--radius);
+  font: inherit; letter-spacing: 0;
   color: var(--text-primary);
   background: var(--field-01);
 }
@@ -338,12 +334,12 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 .triage-field-input:disabled { color: var(--text-disabled); border-bottom-color: transparent; cursor: not-allowed; }
 .triage-field-input:focus, .edit-card-input:focus, .rich-editor:focus-within {
   outline: 2px solid var(--focus);
-  outline-offset: -2px;
+  outline-offset: 2px;
   border-bottom-color: transparent;
 }
 
 /* The sections that hold nothing, named once under the list. */
-.wizard-step .triage-missing { font-size: 12px; line-height: 16px; letter-spacing: .32px; margin-top: var(--spacing-05); }
+.wizard-step .triage-missing { font-size: 12px; line-height: 16px; letter-spacing: 0; margin-top: var(--spacing-05); }
 
 .triage-sections-list {
   display: flex;
@@ -431,7 +427,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 
 /* The toggle's word, On or Off, beside the track as Carbon draws it. */
 .triage-switch-state {
-  font-size: 12px; line-height: 16px; letter-spacing: .32px;
+  font-size: 12px; line-height: 16px; letter-spacing: 0;
   color: var(--text-secondary);
 }
 
@@ -442,13 +438,13 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 }
 
 .triage-switch-label {
-  font-size: 14px; line-height: 18px; letter-spacing: .16px;
+  font-size: 14px; line-height: 18px; letter-spacing: 0;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .triage-section-note {
-  font-size: 12px; line-height: 16px; letter-spacing: .32px;
+  font-size: 12px; line-height: 16px; letter-spacing: 0;
   color: var(--text-helper);
 }
 /* The Featured rule, once under the Events name, in line with the group labels. */
@@ -465,7 +461,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 }
 
 .triage-group-label {
-  font-size: 12px; line-height: 16px; letter-spacing: .32px;
+  font-size: 12px; line-height: 16px; letter-spacing: 0;
   font-weight: 600;
   color: var(--text-secondary);
   margin-top: var(--spacing-03);
@@ -498,7 +494,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   align-items: center;
   min-height: 24px;   /* the box stays 16px; the target is the label */
   gap: var(--spacing-03);
-  font-size: 12px; line-height: 16px; letter-spacing: .32px;
+  font-size: 12px; line-height: 16px; letter-spacing: 0;
   color: var(--text-secondary);
   cursor: pointer;
   white-space: nowrap;
@@ -528,7 +524,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 .triage-reorder-btn {
   background: none;
   border: 0;
-  border-radius: 0;
+  border-radius: var(--radius);
   cursor: pointer;
   font-size: 14px;
   width: 32px; height: 32px;
@@ -551,7 +547,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 /* --- Edit step ("Preview & Edit") ------------------------- */
 
 /* One label-01 line above the stage says what the sheet is. */
-.wizard-step .preview-note { font-size: 12px; line-height: 16px; letter-spacing: .32px; margin-top: var(--spacing-05); }
+.wizard-step .preview-note { font-size: 12px; line-height: 16px; letter-spacing: 0; margin-top: var(--spacing-05); }
 
 .edit-layout {
   display: flex;
@@ -642,7 +638,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 /* Sentence-case field labels, like the desk's edit forms. */
 .edit-card-sublabel {
   display: block;
-  font-size: 12px; line-height: 16px; letter-spacing: .32px;
+  font-size: 12px; line-height: 16px; letter-spacing: 0;
   font-weight: 400;
   color: var(--text-secondary);
   margin-bottom: var(--spacing-03);
@@ -663,7 +659,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   min-width: 32px; height: 32px;
   border: 0;
   background: none;
-  border-radius: 0;
+  border-radius: var(--radius);
   cursor: pointer;
   font: inherit;
   font-weight: 600;
@@ -738,7 +734,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   background: none;
   border: 0;
   color: var(--link-inverse);
-  font: inherit; letter-spacing: .16px;
+  font: inherit; letter-spacing: 0;
   font-weight: 600;
   cursor: pointer;
   padding: var(--spacing-01) var(--spacing-02);
@@ -856,7 +852,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 }
 
 .reorder-section-label {
-  font-size: 12px; line-height: 16px; letter-spacing: .32px;
+  font-size: 12px; line-height: 16px; letter-spacing: 0;
   font-weight: 600;
   color: var(--text-primary);
   margin: var(--spacing-03) 0 var(--spacing-01);
@@ -864,7 +860,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 .reorder-section-label:first-child { margin-top: var(--spacing-02); }
 
 .reorder-group-label {
-  font-size: 12px; line-height: 16px; letter-spacing: .32px;
+  font-size: 12px; line-height: 16px; letter-spacing: 0;
   font-weight: 600;
   color: var(--text-secondary);
   margin: var(--spacing-02) 0 0 var(--spacing-01);
@@ -880,7 +876,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   align-items: center;
   gap: var(--spacing-03);
   padding: var(--spacing-02) var(--spacing-03);
-  font-size: 12px; line-height: 16px; letter-spacing: .32px;
+  font-size: 12px; line-height: 16px; letter-spacing: 0;
   color: var(--text-primary);
   border: 1px solid transparent;
 }
@@ -915,16 +911,16 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 }
 
 /* Edit-column add-on panels (Introduction, Add an item). */
-.addon-hint { font-size: 12px; line-height: 16px; letter-spacing: .32px; }
+.addon-hint { font-size: 12px; line-height: 16px; letter-spacing: 0; }
 .addon-field { display: block; margin-bottom: var(--spacing-03); }
-.addon-field > span { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-secondary); margin-bottom: var(--spacing-03); }
+.addon-field > span { display: block; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-secondary); margin-bottom: var(--spacing-03); }
 .addon-field .triage-field-input { width: 100%; box-sizing: border-box; }
 
 /* One focus ring for every control in the builder: Carbon's 2px ring, drawn inside. */
 button:focus-visible, a:focus-visible, summary:focus-visible, [tabindex]:focus-visible,
 input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--focus);
-  outline-offset: -2px;
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {

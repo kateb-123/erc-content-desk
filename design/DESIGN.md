@@ -7,33 +7,40 @@ screenshot from the running sandbox (`localhost:4173`, serves `/builder/` too)
 matched against them with `scripts/visual-diff.mjs`, approved by Kate before
 deploy.
 
-## The system: IBM Carbon (Sep 17, 2026)
+## The system: the Sep 22 refresh on Carbon's bones
 
-Both apps wear IBM Carbon v11's White theme (Kate, Sep 17, from four pictures
-of Sort at four depths: "A: full Carbon"), with two amendments of the same
-night: cards, lists and tables are white boxes with a hairline instead of
-Carbon's grey tiles, and the chosen things wear the accent's tint ("it's all a
-smidge grey", pick C of four); and each app has its own accent hue. Since
-Kate's palette of Sep 17 (late night) and her picks on the switcher that
-night, the desk wears UT System orange as marks over ink fills and grey lines
-("ink fills, orange marks": the darker orange steps read as burnt orange, and
-a see-through orange button was tried and dropped), the builder UT Martin
-navy, and the status colours are citrine, blue, crimson and slate (the
-palette's purple read as Halloween beside orange); before that the desk had
-its own blue and the builder Carbon's teal ("a different shade of blue,
-lighter, less aggressive", pick G of eight in a switcher; "we just want a
-little variation"). Carbon is a square, one-family system; its rules
-below replace the desk's own radii and fonts of Sep 1 to Sep 16. The tokens live in `css/tokens.css`, the one file
-where a colour, a size or a face is written down; every page loads it first.
-Both apps and the shared top bar read Carbon's own names; each app's `:root`
-maps only its accent ramp onto Carbon's blue tokens. The neutrals come from
-the `ibm-carbon-template` export (tokens.json, Sep 16); the accents and the
-status colours are Kate's palette.
+Both apps wear the refresh Claude Design drew on Sep 22, 2026 from Kate's
+sketch of that morning, on the structure IBM Carbon gave them on Sep 17
+(Kate's picks, Sep 22: the whole desk and the builder at once, navy fills
+everywhere, the Queue an open list). A cream page ground `#f6f3ec` with
+white boxes on it; warm greys for ink, lines and quiet text; Archivo for the
+UI and Lora for page titles and big numerals; 2px corners on buttons, fields
+and boxes, 12px on pills; navy `#1e416b` fills on the desk as on the
+builder, so the two apps no longer differ by accent; uppercase 12px
+micro-labels with .7px tracking, and section headers as a label over a 2px
+orange rule; an ink wash (`rgba(35,32,27,.045)`) for inner surfaces instead
+of Carbon's grey layers. Still binding from the palette of Sep 17: orange
+`#ff8200` only marks (the 2px section rules, the lit tab's bar, the 3px bar on
+a chosen row, the progress bars), it never fills a button and never carries
+text (2.5:1 on white); the status colours are citrine, UT Globe blue for
+"needs doing", crimson and slate; no maroon in-app; no shadows anywhere;
+colour is never the only signal. The tokens live in `css/tokens.css`, the
+one file where a colour, a size or a face is written down; they keep
+Carbon's names with the refresh's values, so the stylesheets read as they
+did. The two drawn screens (the team's Submit content page and Content Sort)
+are recreated to the handoff; every other page takes the same tokens and
+faces.
+
+The Carbon rules of Sep 17 that this replaces: IBM Plex Sans as the one
+family; the white page ground; radius 0; the desk's ink fills with orange
+marks against the builder's navy; grey `#f4f4f4` layers inside cards; no
+uppercase anywhere.
 
 ## Tokens
 
-Carbon names, White theme values. Reference them, never a literal: the census
-allows a hex only in `css/tokens.css`.
+Carbon names, the refresh's values (Sep 22). Reference them, never a literal:
+the census allows a hex only in `css/tokens.css`. The rows below name the
+role; the value is in the file.
 
 | Token | Value | Use |
 |---|---|---|
@@ -68,29 +75,32 @@ template and the public Exchange site.
 
 ## Type
 
-- **IBM Plex Sans**, the one family (Google Fonts), at 300, 400 and 600. Outfit
-  and Karla are gone (Sep 17).
-- The productive scale, letter-spacing included: body-01 14/20 with .16px
-  tracking; label-01 12/16 with .32px for field labels, meta lines, helper text
-  and group labels (sentence case, no uppercase anywhere); heading-02 16/22 600
-  for card titles; heading-03 20/28 600 for section and form titles; heading-04
-  28/36 400 for every page title. Buttons are 14px regular; a lit tab or the
-  current step is 600.
+- **Archivo** at 400, 500 and 600 for the UI; **Lora** at 500 for every page
+  title and the big numerals (a lane's count, the issue date). Both from
+  Google Fonts; IBM Plex Sans is gone (Sep 22).
+- The scale, as `css/tokens.css` writes it: the page title 34/43 Lora with
+  -.2px tracking; a card title 21/28 600; a section title 20/27 600; the lede
+  and prose 16/25; body 15/23; meta 13/19; the micro-label 12/16, uppercase
+  with .7px tracking (field labels at 500 in the helper grey, section labels
+  at 600 in ink); a big numeral 24/30 Lora. Buttons are 15px at 500 on a
+  fill, 400 in an outline; a lit tab is 600.
 - Body copy is left-aligned, never centred or justified. Numbers are digits.
 
 ## Shape
 
-- **Square.** Radius 0 on buttons, fields, tiles, tables, notes, the busy popup
-  and the top bar. The only round things are tags (`--radius-tag-md` 12px at
-  24px tall), the queue count,
-  the toggle and the loader's dots.
-- **White boxes with a hairline** (pick C, Sep 17; Carbon's grey tiles before).
-  A card, a list or a table is `--layer-02` with a 1px `--layer-line` hairline;
-  a box inside a card (Finalize's edit box) is `--layer-01` with no border. Rows
-  divide with `--line-in`, lift to `--accent-10` on hover, and the chosen one
-  sits on `--accent-20` in `--accent-deep` text with a 3px accent bar on the
-  left. Fields are `--field-01` grey on a white card and `--field-02` white on
-  a grey box. The accent's tint means "this one"; grey means "a box".
+- **2px corners** (`--radius`) on buttons, fields, boxes, notes and the busy
+  popup (Sep 22; square from Sep 17 to 22). Bars and the progress tracks stay
+  square. Pills are 12px (`--radius-pill`): tags, counts; the toggle and the
+  loader's dots are round.
+- **White boxes with a hairline on the cream ground.** A card, a list or a
+  table is `--layer-02` white with a 1px `--layer-line` hairline; a box inside
+  a card (Finalize's edit box, a quote box, the list head) is the ink wash
+  `--layer-01` with no border. Rows divide with `--line-in`, lift to
+  `--wash-hover` on hover, and the chosen one sits on `--wash-row` in ink at
+  600 with a 3px orange bar on the left. Fields are transparent with a 1px
+  `--layer-line` rule under them; the one big link field is `--field-01` cream
+  with a 2px `--border-strong-01` rule. Orange means "this one"; the wash
+  means "a surface".
 - **Buttons.** 40px tall (32px in a screen head or a section head, 48px for the
   builder's export trio), 16px side padding, the label left. A primary is the
   app's fill (ink on the desk, navy in the builder) with its icon in a 64px right slot (48px on the small size); with no
@@ -127,8 +137,8 @@ template and the public Exchange site.
   results. An error note that can be retried carries a ghost Retry, and a
   success that ends a task stays (Saved to the archive, with Open Past
   newsletters), never a toast that fades (audit round two, Sep 17).
-- **Focus.** `outline: 2px solid var(--focus); outline-offset: -2px`, no halo;
-  the primary adds a 1px inset white ring so the ring shows on its own fill.
+- **Focus.** `outline: 2px solid var(--focus); outline-offset: 2px`, the ring
+  in ink 2px outside the control, no halo (Sep 22; inside the control before).
 - **Steps.** The builder's wizard is Carbon's progress indicator: four equal
   steps under a hairline, a 20px circle at each one's left; reached steps turn
   the line the accent's, the current step fills its circle and goes 600, a finished one
@@ -288,17 +298,16 @@ thing everywhere (see the vocabulary table).
 
 ## Do not
 
-- No new fonts, icon sets, or UI libraries without approval. IBM Plex Sans is the
-  one family.
+- No new fonts, icon sets, or UI libraries without approval. Archivo and Lora
+  are the two faces (Sep 22).
 - No maroon in-app.
-- No rounded corners but tags, the queue count, the toggle and the loader's dots.
+- No corner but `--radius` 2px, `--radius-pill` 12px on tags and counts, and round on the toggle and the loader's dots.
 - No shadows at all (Kate, Sep 2; Carbon agrees): layers separate things, and
   focus is an outline.
 - No hex outside `css/tokens.css`; no size off the spacing scale.
-- One accent per app, the desk's orange as marks over ink fills and grey
-  lines, the builder's navy fills, and that is the only way the desk and the
-  builder differ (Kate's palette and her picks, Sep 17). Orange is never
-  darkened and never fills a button.
+- Navy fills on both apps and orange as marks on both (Kate, Sep 22: "navy
+  everywhere"); the desk and the builder no longer differ by accent. Orange is
+  never darkened and never fills a button.
 - Colour is never the only signal: a status colour ships with its icon and a word.
 - Nothing is "done" without a screenshot from the running sandbox.
 

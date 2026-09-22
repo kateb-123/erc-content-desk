@@ -7,27 +7,27 @@
 /* The hidden attribute wins over every display rule on either app (the buttons are inline-flex). */
 [hidden] { display: none !important; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-.skip-to-main { position: absolute; left: var(--spacing-05); top: -100px; z-index: 100; height: 40px; padding: 0 var(--spacing-05); display: inline-flex; align-items: center; background: var(--background); color: var(--link-primary); font: inherit; letter-spacing: .16px; text-decoration: none; border: 1px solid var(--border-subtle-01); }
-.skip-to-main:focus { top: var(--spacing-03); outline: 2px solid var(--focus); outline-offset: -2px; }
+.skip-to-main { position: absolute; left: var(--spacing-05); top: -100px; z-index: 100; height: 40px; padding: 0 var(--spacing-05); display: inline-flex; align-items: center; background: var(--background); color: var(--link-primary); font: inherit; letter-spacing: 0; text-decoration: none; border: 1px solid var(--border-subtle-01); border-radius: var(--radius); }
+.skip-to-main:focus { top: var(--spacing-03); outline: 2px solid var(--focus); outline-offset: 2px; }
 
 .topbar, .topbar * { box-sizing: border-box; }
 .topbar {
-  height: 56px; flex: none;
+  height: 60px; flex: none;
   display: flex; align-items: center; gap: var(--spacing-03);
   padding: 0 var(--spacing-08);
-  background: var(--background); border-bottom: 1px solid var(--border-subtle-01);
-  font-family: var(--font-sans); font-size: 14px; line-height: 20px; letter-spacing: .16px; color: var(--text-primary);
+  background: var(--background); border-bottom: 1px solid var(--border-subtle-00);   /* 60px on the cream ground (Sep 22) */
+  font: var(--body-type); color: var(--text-primary);
 }
 .topbar-crumbs { display: flex; align-items: center; gap: var(--spacing-03); min-width: 0; }
 .topbar-crumbs a, .topbar-lanes a { color: var(--text-primary); text-decoration: none; transition: color var(--duration-fast-01) var(--ease-productive); }
 .topbar-crumbs a:hover, .topbar-lanes a:hover { color: var(--text-secondary); }
 .topbar-brand { font-weight: 600; }
-.topbar-sep { color: var(--border-strong-01); }
-.topbar-here { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar-sep { color: var(--dashed); }
+.topbar-here { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-secondary); }
 .topbar-lanes { margin-left: auto; display: flex; align-items: center; gap: var(--spacing-06); }
 .topbar-lanes a { color: var(--text-secondary); }
 .topbar-lanes a:hover { color: var(--text-primary); }
-.topbar a:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; box-shadow: none; }
+.topbar a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; box-shadow: none; }
 
 /* Sliding-dots loader (Kate's pick, Sep 1), the one copy for both apps: six
    dots slide across a track with staggered delays, on the app's own accent

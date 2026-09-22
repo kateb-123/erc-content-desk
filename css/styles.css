@@ -24,11 +24,11 @@
   --line: var(--border-subtle-00);     /* hairlines on the page */
   --line-in: var(--border-subtle-01);  /* hairlines inside a layer */
   --accent: var(--button-primary);
-  --accent-deep: var(--button-primary-active);
-  --tint: var(--accent-10);            /* the accent's palest step: ERC and held rows; the info panel takes the info note's own tint */
-  --selected: var(--highlight);        /* the chosen row, the lit menu item: the accent's second step (Sep 17, pick C) */
-  --hover: var(--accent-alpha);
-  --row-hover: var(--accent-10);
+  --tint: var(--wash);                 /* held rows: the ink wash (Sep 22) */
+  --selected: var(--wash-row);         /* the chosen row: the wash, with the 3px orange bar (Sep 22) */
+  --hover: var(--background-hover);
+  --row-hover: var(--wash-hover);
+  --accent-deep: var(--text-primary);  /* the chosen row's title is ink at 600 (Sep 22) */
   --ok: var(--text-success);           /* success as text */
   --ok-mark: var(--support-success);   /* success as an icon */
   --ok-bg: var(--notification-success-background);
@@ -42,8 +42,7 @@
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  font-family: var(--font-sans);
-  font-size: 14px; line-height: 20px; letter-spacing: .16px;   /* body-01 */
+  font: var(--body-type);   /* 15/23 Archivo (Sep 22) */
   color: var(--ink);
   background: var(--background);
 }
@@ -54,24 +53,33 @@ h2, h3 { font-family: var(--font-sans); letter-spacing: 0; }
 .card {
   background: var(--layer);
   border: 1px solid var(--layer-line);
-  border-radius: 0;
+  border-radius: var(--radius);
   padding: var(--spacing-05);
 }
 
-.lede { color: var(--muted); margin: 0 0 var(--spacing-06); }
+.lede { font: var(--lede-type); color: var(--muted); margin: 0 0 var(--spacing-06); }
 
-/* label-01: 12px with .32px tracking, quiet, over the field. */
-label { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: var(--spacing-05) 0 var(--spacing-03); }
+/* The micro-label (Sep 22): uppercase 12/16 with .7px tracking, helper grey, over the field. */
+label, .type-picker legend, .subtype-label, .card-field-label, .card-send legend, .f-edit-grid label, .f-edit-media {
+  display: block; font: var(--label-type); font-weight: 500; text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--text-helper);
+}
+label { margin: var(--spacing-05) 0 var(--spacing-03); }
+/* A checkbox's label is a sentence beside its box, not a micro-label. */
+label.check { font: var(--body-type); text-transform: none; letter-spacing: 0; color: var(--ink); }
+/* A section header (Sep 22): the label in ink over a 2px orange rule. */
+.section-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 9px; border-bottom: 2px solid var(--border-interactive); }
+.section-label { font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); margin: 0; }
+.section-note { font: var(--meta-type); color: var(--text-helper); }
 
 /* Fields: Carbon's underlined field on the field surface, 40px tall. */
 /* Every text-like input, typed or not (Finalize's edit form makes bare inputs). */
 input:not([type]), input[type="text"], input[type="url"], input[type="search"], input[type="email"], input[type="date"], input[type="number"], textarea, select {
   width: 100%;
-  font: inherit; letter-spacing: .16px;
+  font: inherit; letter-spacing: 0;
   height: 40px; padding: 0 var(--spacing-05);
-  border: 0; border-bottom: 1px solid var(--border-strong-01);
-  border-radius: 0;
-  background: var(--field-02);
+  border: 0; border-bottom: 1px solid var(--layer-line);   /* a bottom rule and nothing else (Sep 22) */
+  border-radius: var(--radius);
+  background: transparent;
   color: inherit;
 }
 input::placeholder, textarea::placeholder { color: var(--text-placeholder); opacity: 1; }
@@ -81,16 +89,16 @@ textarea { resize: vertical; height: auto; min-height: 80px; padding: 11px var(-
    Text-styled buttons (.linkish and friends) opt out below. */
 button {
   display: inline-flex; align-items: center;
-  font: inherit; font-weight: 400; letter-spacing: .16px;
+  font: inherit; font-weight: 400; letter-spacing: 0;
   height: 40px; padding: 0 var(--spacing-05);
   border: 1px solid var(--button-tertiary);
-  border-radius: 0;
+  border-radius: var(--radius);
   background: transparent;
   color: var(--text-in-outline);
   cursor: pointer;
 }
 
-button:hover:not(:disabled) { background: var(--accent); color: var(--text-on-accent); border-color: var(--accent); }
+button:hover:not(:disabled) { background: var(--ink); color: var(--text-on-accent); border-color: var(--ink); }   /* the outline fills ink (Sep 22) */
 button:disabled { cursor: default; color: var(--text-on-color-disabled); border-color: var(--button-disabled); }
 
 /* The share form (Kate's wireframes, Sep 17): the link first, as the one big
@@ -98,8 +106,8 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
    the foot with the initials, the Spotlight ask and Add to the queue. */
 .submit-form { display: flex; flex-direction: column; gap: var(--spacing-06); }
 .submit-form label { margin-top: 0; }
-.sf-link-hero label { font-size: 14px; line-height: 20px; letter-spacing: .16px; font-weight: 600; color: var(--ink); }
-.sf-link-hero input { height: 52px; font-size: 16px; background: var(--field-01); border-bottom-width: 2px; }
+.sf-link-hero label { font-size: 15px; line-height: 23px; letter-spacing: 0; font-weight: 500; text-transform: none; color: var(--ink); }
+.sf-link-hero input { height: 54px; font-size: 17px; background: var(--field-01); border: 1px solid var(--layer-line); border-bottom: 2px solid var(--border-strong-01); }
 .submit-form #sf-blurb { min-height: 140px; }
 /* The foot aligns at the top: the checkbox and the button sit on the input's row
    (24px down, under the label's line) whether or not a message hangs under the
@@ -107,36 +115,36 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .sf-foot { display: flex; align-items: flex-start; gap: var(--spacing-05); flex-wrap: wrap; }
 .sf-foot .sf-initials label { margin-top: 0; }
 .sf-foot .sf-initials input { width: 7rem; }
-.sf-foot label.check { margin: var(--spacing-06) 0 0; min-height: 40px; display: flex; align-items: center; gap: var(--spacing-03); font-size: 14px; letter-spacing: .16px; color: var(--ink); }
+.sf-foot label.check { margin: var(--spacing-06) 0 0; min-height: 40px; display: flex; align-items: center; gap: var(--spacing-03); font-size: 14px; letter-spacing: 0; color: var(--ink); }
 .submit-form .submit-btn { margin-left: auto; margin-top: var(--spacing-06); height: 48px; padding: 0 var(--spacing-06); }
 /* A field's hint is a helper line under it, not part of the label (f8). */
-.submit-form .sf-help { margin: var(--spacing-02) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
+.submit-form .sf-help { margin: var(--spacing-02) 0 0; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
 /* The one ask before a link already in the queue goes in again (e19): the warning note where the primary was. */
-.submit-form .sf-ask { margin: var(--spacing-05) 0 0; font-size: 14px; line-height: 20px; letter-spacing: .16px; padding: var(--spacing-04) var(--spacing-05); }
-.submit-form .sf-ask:focus { outline: 2px solid var(--focus); outline-offset: -2px; }
+.submit-form .sf-ask { margin: var(--spacing-05) 0 0; font-size: 14px; line-height: 20px; letter-spacing: 0; padding: var(--spacing-04) var(--spacing-05); }
+.submit-form .sf-ask:focus { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 /* The type as a segmented row (Kate's wireframes, Sep 17): square words
    joined by hairlines, the picked one filled; the picked type's subtypes as
    a smaller row under it. */
 .type-picker { border: none; padding: 0; margin: 0; }
-.type-picker legend { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); padding: 0; margin-bottom: var(--spacing-03); }
-.pill-row { display: flex; flex-wrap: wrap; width: fit-content; border: 1px solid var(--border-strong-01); }
+.type-picker legend { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); padding: 0; margin-bottom: var(--spacing-03); }
+.pill-row { display: flex; flex-wrap: wrap; width: fit-content; border: 1px solid var(--layer-line); border-radius: var(--radius); overflow: hidden; }
 .type-word {
   display: inline-flex; align-items: center; height: 40px; padding: 0 var(--spacing-04);
-  border: 0; border-right: 1px solid var(--border-strong-01); border-radius: 0;
+  border: 0; border-right: 1px solid var(--layer-line); border-radius: 0;
   background: var(--layer-02); color: var(--ink);
-  font: inherit; letter-spacing: .16px; cursor: pointer;
+  font: inherit; letter-spacing: 0; cursor: pointer;
 }
 .type-word:last-child { border-right: 0; }
 .type-word:hover:not(:disabled) { background: var(--layer-hover-01); color: var(--ink); border-color: var(--border-strong-01); }
-.type-word.is-picked, .type-word.is-picked:hover:not(:disabled) { background: var(--button-primary); border-color: var(--border-strong-01); color: var(--text-on-accent); }
-.type-word.is-small { height: 32px; padding: 0 var(--spacing-03); font-size: 12px; letter-spacing: .32px; }
-.subtype-label { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: var(--spacing-04) 0 var(--spacing-03); }
-.type-hint { margin: var(--spacing-03) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
+.type-word.is-picked, .type-word.is-picked:hover:not(:disabled) { background: var(--button-primary); border-color: var(--button-primary); color: var(--text-on-accent); font-weight: 500; }
+.type-word.is-small { height: 32px; padding: 0 var(--spacing-03); font-size: 12px; letter-spacing: 0; }
+.subtype-label { display: block; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); margin: var(--spacing-04) 0 var(--spacing-03); }
+.type-hint { margin: var(--spacing-03) 0 0; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
 
 /* Bulk "whole doc" door: closed, a hairline row with the chevron opener like the
    queue fold; dashed is for the drop zone alone (audit round two, e22). */
-.bulk-door { margin-top: var(--spacing-06); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; padding: var(--spacing-03) 0 0; background: none; }
+.bulk-door { margin-top: var(--spacing-06); border: 0; border-top: 1px solid var(--line-in); border-radius: var(--radius); padding: var(--spacing-03) 0 0; background: none; }
 .bulk-door summary { list-style: none; display: flex; align-items: center; gap: var(--spacing-03); min-height: 32px; cursor: pointer; color: var(--muted); }
 /* The opener: the queue fold's chevron, turned when open; no native marker. */
 .bulk-door summary::-webkit-details-marker { display: none; }
@@ -146,13 +154,13 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .bulk-door summary:hover .fa-chevron-down { color: var(--icon-primary); }
 /* A file dragged over the intake card lights the door, whether it is open or shut. */
 .bulk-door.is-drag summary { color: var(--link-primary); }
-.bulk-drop { display: block; border: 1px dashed var(--border-strong-01); border-radius: 0; padding: var(--spacing-06) var(--spacing-05); margin: var(--spacing-04) 0 var(--spacing-01); text-align: center; cursor: pointer; background: var(--field-02); color: var(--muted); }
+.bulk-drop { display: block; border: 1px dashed var(--border-strong-01); border-radius: var(--radius); padding: var(--spacing-06) var(--spacing-05); margin: var(--spacing-04) 0 var(--spacing-01); text-align: center; cursor: pointer; background: var(--field-02); color: var(--muted); }
 .bulk-drop strong { color: var(--ink); font-weight: 600; }
-.bulk-drop .hint { display: block; margin-top: var(--spacing-02); font-size: 12px; letter-spacing: .32px; color: var(--text-helper); }
+.bulk-drop .hint { display: block; margin-top: var(--spacing-02); font-size: 12px; letter-spacing: 0; color: var(--text-helper); }
 .bulk-drop.is-drag, .bulk-door.is-drag .bulk-drop { border-color: var(--accent); background: var(--tint); }
 .bulk-drop.is-busy { cursor: default; color: var(--text-helper); }   /* the zone reads its file's name while a split runs (f9) */
-.bulk-drop:focus-within { outline: 2px solid var(--focus); outline-offset: -2px; }   /* the hidden file input is in the tab order (design audit a6) */
-.bulk-templates { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin: var(--spacing-03) 0 0; }
+.bulk-drop:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }   /* the hidden file input is in the tab order (design audit a6) */
+.bulk-templates { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); margin: var(--spacing-03) 0 0; }
 .bulk-templates a { color: var(--link-primary); }
 .bulk-templates a:hover { color: var(--link-primary-hover); }
 .bulk-table { margin: var(--spacing-02) 0 var(--spacing-04); }
@@ -166,8 +174,8 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .nl-main { display: flex; flex-direction: column; gap: var(--spacing-04); min-width: 0; }
 .nl-block-head { display: flex; align-items: center; gap: var(--spacing-04); margin-top: var(--spacing-03); }
 .nl-block-head .block-label { margin: 0; }
-.nl-block-count { margin-left: auto; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
-.nl-section { margin: var(--spacing-02) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600; color: var(--muted); }
+.nl-block-count { margin-left: auto; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
+.nl-section { margin: var(--spacing-02) 0 0; font-size: 12px; line-height: 16px; letter-spacing: 0; font-weight: 600; color: var(--muted); }
 .nl-list { background: var(--layer); border: 1px solid var(--layer-line); }
 .nl-row { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--line-in); }
 .nl-list > .nl-row:first-child { border-top: 0; }
@@ -181,13 +189,13 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .nl-title { font-size: 14px; line-height: 18px; font-weight: 600; }
 .nl-list .nl-row:not(.is-gone) .nl-title .badge { font-weight: 400; }
 .nl-list.is-ready .nl-title, .nl-past .nl-title { font-weight: 400; }   /* what is in the issue reads bold, what could be plain */
-.nl-meta { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
+.nl-meta { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
 .nl-empty { margin: 0; color: var(--muted); }
 /* "Send early?" on a later issue's event: a warning note, the words bare, the icon on the bubble. */
 .nl-ask {
   display: block; width: fit-content; margin: var(--spacing-02) 0 0;
-  font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--ink); background: var(--warn-bg);
-  border: 1px solid var(--warn-line); border-left: 3px solid var(--warn-mark); border-radius: 0; padding: var(--spacing-03) var(--spacing-04);
+  font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--ink); background: var(--warn-bg);
+  border: 1px solid var(--warn-line); border-left: 3px solid var(--warn-mark); border-radius: var(--radius); padding: var(--spacing-03) var(--spacing-04);
 }
 .nl-ask .fa-clock { margin-right: var(--spacing-02); color: var(--warn-mark); }
 /* What the issue has outrun, folded, with the chevron every fold opens from. */
@@ -201,11 +209,11 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .nl-issue .block-label { margin: 0 0 var(--spacing-03); }
 .nl-date { margin: 0; font-size: 32px; line-height: 40px; font-weight: 300; }
 .nl-sends { margin: 0; font-size: 14px; color: var(--muted); }
-.nl-others { margin: var(--spacing-03) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
-.nl-others .linkish { height: 24px; padding: 0 var(--spacing-01); font-size: 12px; letter-spacing: .32px; }
+.nl-others { margin: var(--spacing-03) 0 0; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
+.nl-others .linkish { height: 24px; padding: 0 var(--spacing-01); font-size: 12px; letter-spacing: 0; }
 .nl-door { display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 var(--spacing-05); background: var(--button-primary); color: var(--text-on-accent); text-decoration: none; transition: background-color var(--duration-fast-01) var(--ease-productive); }
 .nl-door:hover { background: var(--button-primary-hover); color: var(--text-on-accent); }
-.nl-door:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; box-shadow: inset 0 0 0 3px var(--focus-inset); }
+.nl-door:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; box-shadow: inset 0 0 0 3px var(--focus-inset); }
 .nl-last { border-top: 1px solid var(--line); padding-top: var(--spacing-04); }
 .nl-last .block-label { margin: 0 0 var(--spacing-02); }
 .nl-last-date { margin: 0; font-size: 14px; }
@@ -229,7 +237,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
    wireframes frame it. The bar's own rules live in css/shell.css, shared with
    the builder's pages, as do the skip link and .sr-only. */
 .desk { display: flex; flex-direction: column; min-height: 100vh; margin: 0; padding: 0; }
-.desk-main { flex: 1 1 auto; min-width: 0; width: 100%; max-width: 1280px; margin: 0 auto; padding: var(--spacing-06) var(--spacing-08) var(--spacing-07); box-sizing: border-box; }
+.desk-main { flex: 1 1 auto; min-width: 0; width: 100%; max-width: 1280px; margin: 0 auto; padding: var(--gap-28) var(--gap-56) var(--gap-72); box-sizing: border-box; }   /* 28 / 56 / 72 (Sep 22) */
 
 /* Doors (Kate, Sep 15, option A): every way onward wears one look, Carbon's
    tertiary button with the arrow in its right slot: Go to Finalize, Go to
@@ -238,22 +246,22 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .door {
   display: inline-flex; align-items: center; justify-content: space-between; gap: var(--spacing-06);
   height: 32px; padding: 0 var(--spacing-04);
-  border: 1px solid var(--button-tertiary); border-radius: 0;
+  border: 1px solid var(--button-tertiary); border-radius: var(--radius);
   background: transparent; color: var(--text-in-outline); text-decoration: none;
-  font: inherit; letter-spacing: .16px; cursor: pointer;
+  font: inherit; letter-spacing: 0; cursor: pointer;
 }
-.door:hover:not(:disabled) { background: var(--accent); color: var(--text-on-accent); border-color: var(--accent); }
+.door:hover:not(:disabled) { background: var(--ink); color: var(--text-on-accent); border-color: var(--ink); }
 .door .fa-arrow-right { font-size: .85em; }
 
 .screen-head { display: flex; align-items: baseline; gap: var(--spacing-05); flex-wrap: wrap; margin: var(--spacing-05) 0 var(--spacing-05); }
-.screen-head h2 { font-size: 28px; line-height: 36px; font-weight: 400; margin: 0; }   /* heading-04 */
+.screen-head h2 { font: var(--page-title); letter-spacing: -.2px; margin: 0; }   /* the page title in Lora (Sep 22) */
 .title-row { display: flex; align-items: baseline; gap: var(--spacing-04); flex-wrap: wrap; }
-.info-toggle { border: none; background: none; padding: 0; height: auto; min-height: 24px; white-space: nowrap; font: inherit; letter-spacing: .16px; color: var(--link-primary); cursor: pointer; }   /* a 24px target that never wraps (audit round two, f2) */
+.info-toggle { border: none; background: none; padding: 0; height: auto; min-height: 24px; white-space: nowrap; font: inherit; letter-spacing: 0; color: var(--link-primary); cursor: pointer; }   /* a 24px target that never wraps (audit round two, f2) */
 .info-toggle:hover:not(:disabled) { border: none; background: none; color: var(--link-primary-hover); text-decoration: underline; }
 /* The info panel is Carbon's inline notification, informational. */
 .info-panel {
   background: var(--notification-info-background); border: 1px solid var(--notification-info-border); border-left: 3px solid var(--support-info);
-  border-radius: 0; padding: var(--spacing-04) var(--spacing-05); margin: var(--spacing-03) 0 var(--spacing-03); color: var(--text-primary); max-width: 46rem;
+  border-radius: var(--radius); padding: var(--spacing-04) var(--spacing-05); margin: var(--spacing-03) 0 var(--spacing-03); color: var(--text-primary); max-width: 46rem;
 }
 /* Header buttons: the screen's decision is a small primary; its door is the tertiary; both sit right. */
 /* The small primary: a screen head's decision and Sort's Keep the rest. Stays
@@ -263,7 +271,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .screen-head .p-csv-again + button.primary { margin-left: 0; }
 .screen-head button.primary .fa-solid { right: var(--spacing-04); }
 .screen-head .door { margin-left: auto; align-self: center; }
-.screen-head .p-ask { margin-left: auto; align-self: center; font-size: 14px; line-height: 20px; letter-spacing: .16px; padding: var(--spacing-04) var(--spacing-05); }   /* the one ask before Publish, in the button's place (design audit b6), at body-01 (audit round two, e10) */
+.screen-head .p-ask { margin-left: auto; align-self: center; font-size: 14px; line-height: 20px; letter-spacing: 0; padding: var(--spacing-04) var(--spacing-05); }   /* the one ask before Publish, in the button's place (design audit b6), at body-01 (audit round two, e10) */
 .screen-head .p-ask strong { font-weight: 600; }
 .nl-ask .linkish { margin: 0; height: 24px; padding: 0 var(--spacing-02); }   /* the words stay clear of the buttons (audit round two, e10) */
 .screen-head .lede { margin: 0 0 var(--spacing-03); flex: 1; }
@@ -302,7 +310,7 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
   display: inline-flex; align-items: center; height: 24px; padding: 0 var(--spacing-03); margin-right: var(--spacing-02);
   border-radius: var(--radius-tag-md); border: 1px solid transparent;
   background: var(--tag-background-gray); color: var(--tag-color-gray);
-  font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 400; white-space: nowrap;
+  font: var(--meta-type); letter-spacing: 0; white-space: nowrap;
 }
 /* In the newsletter pool's type cell the badge sits on its own line under the subtype. */
 .badge-dupe { background: var(--tag-background-review); color: var(--tag-color-review); }
@@ -315,8 +323,8 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
    ones (Skip, Cancel) read as buttons already. */
 .info-toggle, .alert-word, .source-link, .bulk-templates a,
 .linkish:not(:has(.fa-solid)):not(.quiet-link):not(.skip-link) { text-decoration: underline; text-underline-offset: 3px; }
-.card-link-change input.is-invalid { border-bottom-color: var(--err); outline: 2px solid var(--err); outline-offset: -2px; }
-.field-error { margin: var(--spacing-02) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--err); }
+.card-link-change input.is-invalid { border-bottom-color: var(--err); outline: 2px solid var(--err); outline-offset: 2px; }
+.field-error { margin: var(--spacing-02) 0 0; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--err); }
 .load-failed { margin: var(--spacing-05) 0; color: var(--muted); display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; }
 
 .img-upload { display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; }
@@ -332,10 +340,10 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
    muted pair. */
 .linkish {
   display: inline-flex; align-items: center; height: 32px; padding: 0 var(--spacing-03); margin: 0 calc(-1 * var(--spacing-03));
-  border: none; border-radius: 0; background: none; color: var(--link-primary); cursor: pointer; white-space: nowrap;
+  border: none; border-radius: var(--radius); background: none; color: var(--link-primary); cursor: pointer; white-space: nowrap;
   transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
 }
-.linkish:hover:not(:disabled) { background: var(--row-hover); border: none; color: var(--link-primary-hover); }
+.linkish:hover:not(:disabled) { background: var(--hover); border: none; color: var(--link-primary-hover); }
 .linkish .fa-solid { margin-right: var(--spacing-02); font-size: .9em; }
 .linkish.quiet-link, .linkish.skip-link { color: var(--muted); }
 .linkish.quiet-link:hover:not(:disabled), .linkish.skip-link:hover:not(:disabled) { color: var(--ink); }
@@ -350,8 +358,8 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 @media (max-width: 900px) { .f-split { grid-template-columns: minmax(0, 1fr); } }
 .f-group-head {
   display: flex; align-items: center; gap: var(--spacing-03); width: 100%; box-sizing: border-box; margin: 0; height: auto;
-  padding: var(--spacing-03) var(--spacing-05) var(--spacing-02); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; background: none;
-  font: inherit; font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600; color: var(--muted); text-align: left;
+  padding: var(--spacing-03) var(--spacing-05) var(--spacing-02); border: 0; border-top: 1px solid var(--line-in); border-radius: var(--radius); background: none;
+  font: inherit; font-size: 12px; line-height: 16px; letter-spacing: 0; font-weight: 600; color: var(--muted); text-align: left;
 }
 .f-group-head.is-fold { cursor: pointer; }
 .f-group-head.is-fold:hover:not(:disabled) { background: var(--row-hover); border-color: var(--line-in); color: var(--ink); }
@@ -369,11 +377,11 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .f-card .f-verify-actions .quiet-link { margin-left: auto; }
 .f-card .f-verify-actions .trash-link + .primary { margin-left: auto; }
 .f-diff-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-04); margin: var(--spacing-03) 0 0; }
-.f-diff-box { border: 1px solid var(--line-in); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); background: var(--layer-02); }
+.f-diff-box { border: 1px solid var(--line-in); border-radius: var(--radius); padding: var(--spacing-04) var(--spacing-05); background: var(--layer-02); }
 .f-diff-box.is-after { background: var(--tint); border-color: var(--accent-20); }
 .f-diff-box .f-blurb-text, .f-original .f-blurb-text, .sort-card .f-blurb-text { margin: 0; }
-.f-original { border: 1px solid var(--line-in); border-left: 3px solid var(--border-strong-01); background: var(--layer-02); border-radius: 0; padding: var(--spacing-04) var(--spacing-05); margin-top: var(--spacing-03); }
-.f-pane-empty, .sort-pane-empty { border: 1px dashed var(--border-strong-01); border-radius: 0; padding: var(--spacing-08) var(--spacing-05); text-align: center; color: var(--muted); }
+.f-original { border: 1px solid var(--line-in); border-left: 3px solid var(--border-strong-01); background: var(--layer-02); border-radius: var(--radius); padding: var(--spacing-04) var(--spacing-05); margin-top: var(--spacing-03); }
+.f-pane-empty, .sort-pane-empty { border: 1px dashed var(--border-strong-01); border-radius: var(--radius); padding: var(--spacing-08) var(--spacing-05); text-align: center; color: var(--muted); }
 /* Team trial: clicking Publish runs a mock, a ghosted "forthcoming" shadow
    alert during the posting beat, then the normal success receipt. */
 .p-shade { text-align: center; padding: var(--spacing-07) var(--spacing-05) var(--spacing-05); opacity: .7; }
@@ -386,23 +394,23 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .finalize-table th.f-caret, .finalize-table td.f-caret { width: 2rem; padding-right: 0; }
 .finalize-table .chevron-btn { font-size: .8rem; }
 .finalize-table tr.f-detail-row td { border-top: none; padding: var(--spacing-01) var(--spacing-08) var(--spacing-05); }
-.chevron-btn { appearance: none; border: 0; background: transparent; cursor: pointer; height: 32px; width: 32px; padding: 0; justify-content: center; border-radius: 0; display: inline-flex; color: var(--icon-primary); }
+.chevron-btn { appearance: none; border: 0; background: transparent; cursor: pointer; height: 32px; width: 32px; padding: 0; justify-content: center; border-radius: var(--radius); display: inline-flex; color: var(--icon-primary); }
 .chevron-btn:hover:not(:disabled) { background: var(--row-hover); color: var(--icon-primary); border: 0; }
 .f-detail-cols {
   display: grid; grid-template-columns: minmax(160px, 220px) 1fr; gap: var(--spacing-06); align-items: start;
-  background: var(--layer-02); border: 1px solid var(--line-in); border-radius: 0; padding: var(--spacing-05); margin: var(--spacing-01) 0 var(--spacing-02);
+  background: var(--layer-02); border: 1px solid var(--line-in); border-radius: var(--radius); padding: var(--spacing-05); margin: var(--spacing-01) 0 var(--spacing-02);
 }
 .f-facts { margin: 0; display: grid; gap: var(--spacing-03); padding: 0 var(--spacing-05) 0 0; border-right: 1px solid var(--line-in); }
 @media (max-width: 700px) { .f-facts { border-right: none; padding: 0; } }
 @media (max-width: 700px) { .f-detail-cols { grid-template-columns: 1fr; } }
 .f-fact { display: grid; gap: 1px; }
-.f-fact-label { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.f-fact-label { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); }
 .f-fact-value { margin: 0; color: var(--ink); }
-.f-detail-label { margin: 0 0 var(--spacing-02); font: inherit; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.f-detail-label { margin: 0 0 var(--spacing-02); font: inherit; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); }
 .f-blurb-text { margin: 0 0 var(--spacing-03); color: var(--ink); max-width: 60rem; }
 .f-check-title { margin: 0 0 var(--spacing-01); font-size: 16px; line-height: 22px; font-weight: 600; }
 .f-check-source { margin: 0 0 var(--spacing-04); color: var(--muted); }
-.f-diff-label { margin: 0 0 var(--spacing-01); font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.f-diff-label { margin: 0 0 var(--spacing-01); font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); }
 .f-old { margin: 0; color: var(--ink); max-width: 60rem; }
 .f-old .diff-del { text-decoration: line-through; color: var(--warn); }
 .f-blurb-text .diff-add { background: var(--ok-bg); border-radius: 0; padding: 0 2px; }
@@ -410,11 +418,11 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .rewrite-note { margin: 0 0 var(--spacing-03); color: var(--warn); }
 .f-edit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: var(--spacing-03) var(--spacing-04); }
 .f-edit-grid label { margin: 0; }
-.f-edit-card { background: var(--layer-01); border: 0; border-radius: 0; padding: var(--spacing-05); margin: var(--spacing-01) 0 var(--spacing-02); }
+.f-edit-card { background: var(--layer-01); border: 0; border-radius: var(--radius); padding: var(--spacing-05); margin: var(--spacing-01) 0 var(--spacing-02); }
 .sort-card .f-edit-card { margin: 0; }
 .f-edit-grid input, .f-edit-grid textarea { margin-top: var(--spacing-02); }
 .f-edit-wide { grid-column: 1 / -1; }   /* the title, the description and the link read across the box (audit round two, e8) */
-.f-edit-media { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.f-edit-media { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); }
 .f-edit-media .img-upload { margin-top: var(--spacing-02); }
 .f-edit-actions { display: flex; gap: var(--spacing-03); margin-top: var(--spacing-03); }
 
@@ -434,7 +442,7 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .p-seg-fix { background: var(--tag-background-review); }
 .p-seg-live { background: var(--border-strong-01); }
 .p-legend { display: flex; flex-wrap: wrap; gap: var(--spacing-02) var(--spacing-05); margin-top: var(--spacing-03); }
-.p-legend-item { display: inline-flex; align-items: center; gap: var(--spacing-03); height: auto; border: 0; background: none; padding: var(--spacing-01) 0; font: inherit; letter-spacing: .16px; color: var(--muted); cursor: pointer; }
+.p-legend-item { display: inline-flex; align-items: center; gap: var(--spacing-03); height: auto; border: 0; background: none; padding: var(--spacing-01) 0; font: inherit; letter-spacing: 0; color: var(--muted); cursor: pointer; }
 .p-legend-item:hover:not(:disabled) { color: var(--ink); background: none; border: 0; }
 .p-legend-item.is-active { color: var(--ink); font-weight: 600; }
 .p-dot { width: 8px; height: 8px; border-radius: 0; flex: none; }
@@ -448,9 +456,9 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
    360px column on the right with the three lanes and the newest items. */
 .home-page { display: flex; gap: var(--spacing-09); align-items: flex-start; padding: 0 var(--spacing-05); }   /* 56px sides, as the wireframe frames the front page */
 .home-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-06); }
-.home-title { font-size: 28px; line-height: 36px; font-weight: 300; letter-spacing: 0; margin: 0; }   /* the page title, light, as the wireframes draw it */
+.home-title { font: var(--page-title); letter-spacing: -.2px; margin: 0; }   /* the page title in Lora (Sep 22) */
 .home-side { width: 360px; flex: none; display: flex; flex-direction: column; gap: var(--spacing-06); }
-.block-label { font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600; color: var(--muted); margin: 0 0 var(--spacing-03); }
+.block-label { font-size: 12px; line-height: 16px; letter-spacing: 0; font-weight: 600; color: var(--muted); margin: 0 0 var(--spacing-03); }
 /* The lanes: a box of three rows, each a link with its count and an arrow. */
 .lanes { border: 1px solid var(--layer-line); }
 .lane {
@@ -462,21 +470,21 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .lane:hover { background: var(--row-hover); color: var(--ink); }
 .lane-words { flex: 1 1 auto; min-width: 0; }
 .lane-name { display: block; font-size: 16px; line-height: 22px; font-weight: 600; }   /* heading-02 */
-.lane-sub { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
+.lane-sub { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
 .lane-count { font-size: 20px; line-height: 28px; font-weight: 300; }
 .lane .fa-arrow-right { font-size: 12px; color: var(--icon-secondary); }
 /* The newest items: rows between hairlines. */
 .recent { border-top: 1px solid var(--line); }
 .recent-row { padding: var(--spacing-04) 0; border-bottom: 1px solid var(--line); }
 .recent-title { font-size: 14px; line-height: 18px; }
-.recent-meta { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); margin: var(--spacing-01) 0 0; }
+.recent-meta { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); margin: var(--spacing-01) 0 0; }
 .recent > .recent-meta { padding: var(--spacing-04) 0; }
 
 /* A small tertiary: the base button at 32px. */
 .mini-btn { height: 32px; padding: 0 var(--spacing-04); white-space: nowrap; }
 
 /* Quick add's form, under In this issue: a white box with a hairline (dashed is for drop zones, audit round two, e22). */
-.quick-panel { border: 1px solid var(--layer-line);   /* a white box with a hairline; dashed is for drop zones (audit round two, e22) */ border-radius: 0; background: var(--layer-02); padding: var(--spacing-05) var(--spacing-06) var(--spacing-06); }
+.quick-panel { border: 1px solid var(--layer-line);   /* a white box with a hairline; dashed is for drop zones (audit round two, e22) */ border-radius: var(--radius); background: var(--layer-02); padding: var(--spacing-05) var(--spacing-06) var(--spacing-06); }
 
 /* Tables: Publish and Finalize's lists, the bulk review */
 .item-title { font-weight: 400; color: var(--ink); }
@@ -494,7 +502,7 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .finalize-table th:nth-child(2) { width: auto; }
 .finalize-table th:nth-child(3) { width: 22%; }
 .finalize-table th:nth-child(4) { width: 13%; }
-.queue-table .item-source { display: block; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); margin-top: var(--spacing-01); }
+.queue-table .item-source { display: block; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); margin-top: var(--spacing-01); }
 .queue-table td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--line-in); vertical-align: top; color: var(--muted); }
 .queue-table tbody tr:hover td { background-image: linear-gradient(var(--hover), var(--hover)); }
 .queue-table td.missing { color: var(--text-helper); }
@@ -507,17 +515,17 @@ button { transition: border-color var(--duration-fast-01) var(--ease-productive)
 @keyframes rise-in { from { opacity: 0; transform: translateY(4px); } }
 
 /* A field named by a validation message turns red; the status line still lists them all. */
-.submit-form input.is-invalid, .submit-form textarea.is-invalid { border-bottom-color: var(--err); outline: 2px solid var(--err); outline-offset: -2px; }
+.submit-form input.is-invalid, .submit-form textarea.is-invalid { border-bottom-color: var(--err); outline: 2px solid var(--err); outline-offset: 2px; }
 /* The red sits on the pill row the message names, the subtype row when that is what is missing (audit round two, d6). */
 .submit-form .pill-row.is-invalid { border-left: 2px solid var(--err); padding-left: var(--spacing-03); }
 .submit-form .pill-row.is-invalid .type-word:not(.is-picked) { border-color: var(--err); }
 .submit-form input.is-invalid:focus { border-bottom-color: var(--err); outline-color: var(--err); }
 
-/* Focus: Carbon's 2px ring, drawn inside the control, no halo. */
+/* Focus: a 2px ink ring, 2px outside the control, no halo (Sep 22). */
 input:not([type]):focus, input[type="text"]:focus, input[type="url"]:focus, input[type="search"]:focus, input[type="email"]:focus, input[type="date"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
-  outline: 2px solid var(--focus); outline-offset: -2px; border-bottom-color: transparent; box-shadow: none;
+  outline: 2px solid var(--focus); outline-offset: 2px; border-bottom-color: transparent; box-shadow: none;
 }
-button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; box-shadow: none; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; box-shadow: none; }
 button.primary:focus-visible { box-shadow: inset 0 0 0 1px var(--focus-inset); }   /* Carbon's inset ring keeps the focus visible on the fill */
 /* A screen title takes focus on a switch so assistive tech hears it; no ring on a heading or the busy card. */
 h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
@@ -540,7 +548,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 @keyframes check-draw { to { stroke-dashoffset: 0; } }
 .pub-done-anim .door { animation: rise-in var(--duration-fast-02) var(--ease-standard) var(--duration-moderate-02) both; }
 /* Publish report chips + the post-publish receipt (Kate's Direction A). */
-.pub-receipt { background: var(--layer); border: 1px solid var(--layer-line); border-radius: 0; padding: var(--spacing-08) var(--spacing-06); text-align: center; margin-top: var(--spacing-05); }
+.pub-receipt { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--spacing-08) var(--spacing-06); text-align: center; margin-top: var(--spacing-05); }
 .pub-receipt .check-ring { width: 54px; height: 54px; border-radius: var(--radius-round); background: var(--ok-bg); display: inline-flex; align-items: center; justify-content: center; margin-bottom: var(--spacing-04); }
 .pub-receipt .receipt-check { width: 26px; height: 26px; margin: 0; vertical-align: 0; }
 .pub-receipt h3 { font-size: 20px; line-height: 28px; font-weight: 600; margin: 0 0 var(--spacing-02); }
@@ -580,34 +588,34 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 /* A page's head (Kate's wireframes, Sep 17): the title, then its tabs under a
    hairline, a count on each; a fact about the page may sit at the row's right. */
 .page-head { margin: 0 0 var(--spacing-05); }
-.page-title { font-size: 28px; line-height: 36px; font-weight: 300; letter-spacing: 0; margin: 0 0 var(--spacing-05); }
+.page-title { font: var(--page-title); letter-spacing: -.2px; margin: 0 0 var(--spacing-05); }
 .page-tabs { display: flex; align-items: center; gap: var(--spacing-05); border-bottom: 1px solid var(--line); }
 .tabs { display: flex; }
 .tab {
-  display: inline-flex; align-items: center; gap: var(--spacing-03); height: 40px; padding: 0 var(--spacing-05); margin-bottom: -1px;
-  border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; color: var(--muted); font: inherit; letter-spacing: .16px;
+  display: inline-flex; align-items: center; gap: var(--spacing-03); height: 44px; padding: 0 var(--spacing-06); margin-bottom: -1px;
+  border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; color: var(--muted); font: inherit; letter-spacing: 0;
   transition: border-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive);
 }
-.tab:hover:not(:disabled) { background: none; color: var(--ink); border: 0; border-bottom: 2px solid var(--border-strong-01); }
+.tab:hover:not(:disabled) { background: none; color: var(--ink); border: 0; border-bottom: 2px solid transparent; }
 .tab.is-active, .tab.is-active:hover:not(:disabled) { color: var(--ink); font-weight: 600; border-bottom: 2px solid var(--border-interactive); }
-.tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 var(--spacing-03); border-radius: var(--radius-tag-md); background: var(--layer-01); font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 400; }
+.tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 var(--spacing-03); border-radius: var(--radius-tag-md); background: var(--layer-01); font-size: 12px; line-height: 16px; letter-spacing: 0; font-weight: 400; }
 .tab.is-active .tab-count { background: var(--layer-accent-01); }
-.page-tabs-note { margin-left: auto; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
+.page-tabs-note { margin-left: auto; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
 
 /* Sort content's Sort tab (Kate's wireframes, Sep 17): the list, 420px, down
    the left, the chosen item's card on the right, kept in view while the list
    scrolls. Finalize's list and card share the row and card rules. */
 .sort-split { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: var(--spacing-06); align-items: start; }
-.sort-list, .f-list { background: var(--layer); border: 1px solid var(--layer-line); border-radius: 0; overflow: hidden; }
-.sort-list-head { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-03) var(--spacing-05); background: var(--layer-01); font-size: 12px; line-height: 16px; letter-spacing: .32px; }
-.sort-list-count { font-weight: 600; color: var(--muted); }
+.sort-list, .f-list { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); overflow: hidden; }
+.sort-list-head { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-03) var(--spacing-05); background: var(--layer-01); font-size: 12px; line-height: 16px; letter-spacing: 0; }
+.sort-list-count { font: var(--body-type); font-weight: 500; color: var(--ink); }
 .sort-list-order { margin-left: auto; color: var(--text-helper); }
 .sort-group-head { border-top: 1px solid var(--line-in); }   /* Past and Already live, each with its sweep (Sep 22) */
 .sort-group-head .trash-link { margin-left: auto; }
 .sort-row, .f-list-row {
   display: flex; align-items: flex-start; gap: var(--spacing-03); width: 100%; height: auto; box-sizing: border-box; text-align: left;
-  padding: var(--spacing-04) var(--spacing-05); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; background: transparent;
-  font: inherit; letter-spacing: .16px; color: var(--ink); cursor: pointer;
+  padding: var(--spacing-04) var(--spacing-05); border: 0; border-top: 1px solid var(--line-in); border-radius: var(--radius); background: transparent;
+  font: inherit; letter-spacing: 0; color: var(--ink); cursor: pointer;
   transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
 .f-list > :first-child { border-top: 0; }
@@ -618,7 +626,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .sort-row.is-selected .sort-row-title { font-weight: 600; }
 .sort-row-title .badge, .sort-card-top .badge { margin-right: 0; }
 .sort-row-title, .f-row-title { font-size: 14px; line-height: 18px; font-weight: 400; }
-.sort-row-meta, .f-row-type { font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.sort-row-meta, .f-row-type { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); }
 /* A row the card has a question about (no type, the link, a duplicate): the triangle before the title. */
 .sort-row .fix-mark, .f-list-row .fix-mark { color: var(--warn-mark); font-size: 12px; margin-top: 3px; flex: none; }
 .sort-done { display: flex; align-items: flex-start; gap: var(--spacing-03); padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--line-in); background: var(--layer-01); }
@@ -632,11 +640,11 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 /* A card taller than the window fades at its foot until the reader scrolls to the end (design audit c3). */
 .sort-card.is-more::after, .f-card.is-more::after { content: ""; position: sticky; bottom: calc(-1 * var(--spacing-05)); display: block; height: 40px; margin: -40px 0 calc(-1 * var(--spacing-05)); flex: none; background: linear-gradient(transparent, var(--layer)); pointer-events: none; }
 .sort-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02); }
-.sort-card-pos { margin-left: auto; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--text-helper); }
+.sort-card-pos { margin-left: auto; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
 /* Every field on the card is edited in place (Kate, Sep 18); the title reads as the card's heading until it is clicked. */
 .sort-card input.card-title { height: auto; padding: var(--spacing-01) 0; font-size: 20px; line-height: 26px; font-weight: 600; background: transparent; border-bottom: 1px solid transparent; }
 .sort-card input.card-title:hover { border-bottom-color: var(--border-strong-01); }
-.sort-card-meta { margin: calc(-1 * var(--spacing-04)) 0 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.sort-card-meta { margin: calc(-1 * var(--spacing-04)) 0 0; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); }
 .card-link-line { margin: 0; font-size: 14px; line-height: 20px; }
 .card-link { margin-top: calc(-1 * var(--spacing-03)); }
 .card-link .source-link { color: var(--muted); }
@@ -646,10 +654,10 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .card-link-change .field-error { flex-basis: 100%; }
 /* The card's questions: Carbon's inline warning note, one per question. */
 .card-note-box { padding: var(--spacing-04) var(--spacing-05); border: 1px solid var(--warn-line); border-left: 3px solid var(--warn-mark); background: var(--warn-bg); }
-.card-note-head { margin: 0 0 var(--spacing-02); font-size: 12px; line-height: 16px; letter-spacing: .32px; font-weight: 600; color: var(--ink); }
+.card-note-head { margin: 0 0 var(--spacing-02); font-size: 12px; line-height: 16px; letter-spacing: 0; font-weight: 600; color: var(--ink); }
 .card-note-head .fa-solid { margin-right: var(--spacing-02); color: var(--warn-mark); }
-.card-quiet { margin: 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
-.card-field > label, .card-field-label, .card-type legend, .card-send legend { display: block; margin: 0 0 var(--spacing-03); padding: 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.card-quiet { margin: 0; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); }
+.card-field > label, .card-field-label, .card-type legend, .card-send legend { display: block; margin: 0 0 var(--spacing-03); padding: 0; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); }
 .card-type, .card-send { border: 0; padding: 0; margin: 0; min-width: 0; }
 .card-type.is-alert legend { color: var(--warn); font-weight: 600; }
 .card-type.is-alert legend .fa-solid { margin-right: var(--spacing-02); color: var(--warn-mark); }
@@ -657,7 +665,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .pill-row.is-sub { margin-top: var(--spacing-03); }
 .card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-05) var(--spacing-06); }
 .card-send-line { display: flex; gap: var(--spacing-06); }
-.card-send label.check { display: inline-flex; align-items: center; gap: var(--spacing-03); margin: 0; font-size: 14px; line-height: 20px; letter-spacing: .16px; color: var(--ink); cursor: pointer; }
+.card-send label.check { display: inline-flex; align-items: center; gap: var(--spacing-03); margin: 0; font-size: 14px; line-height: 20px; letter-spacing: 0; color: var(--ink); cursor: pointer; }
 .card-send input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
 .sort-card-acts { display: flex; align-items: center; gap: var(--spacing-05); border-top: 1px solid var(--line-in); padding-top: var(--spacing-05); }
 .sort-card-right { margin-left: auto; display: flex; align-items: center; gap: var(--spacing-05); }
@@ -669,7 +677,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
   .sort-card, .f-card { position: static; max-height: none; }
 }
 .queue-row.is-deleted .queue-actions { opacity: 1; }
-.queue-gone { font-size: 12px; letter-spacing: .32px; color: var(--muted); margin-right: var(--spacing-03); }
+.queue-gone { font-size: 12px; letter-spacing: 0; color: var(--muted); margin-right: var(--spacing-03); }
 
 /* The publish receipt's spare-copy link: quiet, under the door button, because
    the download already happened; this is only for getting it again. */
@@ -680,7 +688,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
    it" notes and the source line. Deliberately NOT the warning note: that note is
    a demand (verify the link), these are information; they never block Keep
    (Kate, Sep 9). */
-.item-note, .card-note, .sort-card-source { margin: 0; font-size: 12px; line-height: 16px; letter-spacing: .32px; color: var(--muted); }
+.item-note, .card-note, .sort-card-source { margin: 0; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); }
 .card-note .fa-circle-question { margin-right: var(--spacing-02); color: var(--icon-secondary); }
 
 /* The bulk upload progress popup (Kate, Sep 10: she was clicking around
@@ -688,7 +696,7 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
    Escape, and the dim swallows every click underneath. Carbon's modal: the
    overlay, a square layer, no border. */
 .busy-dim { position: fixed; inset: 0; z-index: 50; background: var(--overlay); display: grid; place-items: center; }
-.busy-card { background: var(--layer); border: 1px solid var(--layer-line); border-radius: 0; padding: var(--spacing-06) var(--spacing-07); width: 380px; max-width: calc(100vw - 2rem); text-align: center; }
+.busy-card { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--spacing-06) var(--spacing-07); width: 380px; max-width: calc(100vw - 2rem); text-align: center; }
 .busy-card h2 { font-size: 20px; line-height: 28px; font-weight: 600; margin: 0; }
 .busy-count { font-size: 16px; line-height: 22px; font-weight: 600; margin: var(--spacing-03) 0 0; }
 .busy-count span { color: var(--muted); font-weight: 400; }
