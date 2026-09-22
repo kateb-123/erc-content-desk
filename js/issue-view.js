@@ -72,3 +72,11 @@ export function lastIssue(index, rows) {
   const items = rows.filter(r => r.newsletter_issue === latest.date && r.status !== 'trashed').length;
   return { date: latest.date, label: latest.label ?? latest.date, file: latest.file ?? `${latest.date}.html`, items };
 }
+
+/** The Schedule tab (Kate, Sep 22): each upcoming send date in order, how
+ *  far off it is, how many items are stamped for it; the first is next. Read
+ *  only: the dates stay on the Sheet's schedule tab. */
+export function scheduleRows(rows, schedule, today) {
+  const upcoming = [...new Set((schedule ?? []).filter(d => isIso(d) && d >= today))].sort();
+  return upcoming.map((date, i) => ({ date, when: sendsIn(date, today), count: issueRows(rows, date).length, next: i === 0 }));
+}

@@ -265,9 +265,13 @@ Past, Already live) sits at the row's right. Every field saves as you
 leave it, and a redraw never drops what you are typing. The View info panel,
 the section tabs and Needs a fix are gone (Sep 18).
 
-Newsletter (Kate's wireframes, Sep 17, and her answers, Sep 18;
-`design/mockups/newsletter.png`) is one page with two tabs, Next issue and
-Past issues; it took in Next newsletter, Send to Newsletter and Past
+Newsletter (Kate's wireframes, Sep 17, and her answers, Sep 18 and 22;
+`design/mockups/newsletter.png`) is the hub, opened in its own window from
+the team page, one page with three tabs, Next issue, Schedule and Past
+issues (Schedule since Sep 22: each upcoming send date as a Lora numeral
+with how far off it is, Next on the first, and how many items are stamped
+for it; a date opens its issue on Next issue; read only, the dates stay on
+the Sheet's schedule tab); it took in Next newsletter, Send to Newsletter and Past
 newsletters. Next issue: on the left, In this issue with Quick add beside it
 and the count at the right, the items by section in the builder's order and
 under its names (numbered, the title at 600, type · source, Remove), then

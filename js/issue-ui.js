@@ -20,6 +20,9 @@ import { el, button, focusKeyIn, restoreFocus, tryAgain, inFlight } from './ui-a
 // next one), the quick add form, rows taken out or deleted this visit (they
 // stay listed, greyed, with Undo), and a later event asking "Send early?".
 let issuePick = '';
+
+/** The Schedule tab hands over a date: Next issue opens on it. */
+export function pickIssue(date) { issuePick = date; askId = null; }
 let quickOpen = false;
 let quickJustOpened = false;
 const justRemoved = new Map();

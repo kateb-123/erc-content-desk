@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { issueRows, issueSections, readyToAdd, sendsIn, lastIssue } from '../js/issue-view.js';
+import { issueRows, issueSections, readyToAdd, sendsIn, lastIssue, scheduleRows } from '../js/issue-view.js';
 
 test('issueRows is what is stamped for the issue, newest submission first', () => {
   const rows = [
@@ -72,4 +72,23 @@ test('lastIssue: the newest archived issue, whatever order the index is in, and 
   assert.deepEqual(lastIssue(index, rows), { date: '2026-08-25', label: 'August 25, 2026', file: '2026-08-25.html', items: 1 });
   assert.equal(lastIssue([], rows), null);
   assert.equal(lastIssue(null, rows), null);
+});
+
+// The Schedule tab (Kate, Sep 22): each upcoming send date with how many items are
+// stamped for it; read only, the dates stay on the Sheet.
+test('scheduleRows: the upcoming send dates in order, each with its count and its distance, the first marked next', () => {
+  const rows = [
+    { id: 'a', status: 'kept', newsletter_issue: '2026-09-22' },
+    { id: 'b', status: 'kept', newsletter_issue: '2026-10-06' },
+    { id: 'c', status: 'kept', newsletter_issue: '2026-09-22' },
+    { id: 'd', status: 'kept', newsletter_issue: '2026-09-08' },   // already sent
+    { id: 'e', status: 'trashed', newsletter_issue: '2026-10-06' },
+  ];
+  const out = scheduleRows(rows, ['2026-10-20', '2026-09-08', '2026-09-22', '2026-10-06'], '2026-09-18');
+  assert.deepEqual(out, [
+    { date: '2026-09-22', when: 'Sends in 4 days', count: 2, next: true },
+    { date: '2026-10-06', when: 'Sends in 18 days', count: 1, next: false },
+    { date: '2026-10-20', when: 'Sends in 32 days', count: 0, next: false },
+  ]);
+  assert.deepEqual(scheduleRows(rows, [], '2026-09-18'), []);
 });

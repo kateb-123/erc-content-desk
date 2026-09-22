@@ -22,6 +22,7 @@ const SCREENS = {
   finalize: { lane: 'sort', hash: '#finalize', title: 'Finalize' },   // a tab of Sort content, so no crumb of its own
   issue: { lane: 'newsletter', hash: '#newsletter' },
   past: { lane: 'newsletter', hash: '#past', title: 'Past issues' },   // a tab of Newsletter, so no crumb of its own
+  schedule: { lane: 'newsletter', hash: '#schedule', title: 'Schedule' },   // the hub's third tab (Kate, Sep 22)
   publish: { lane: 'exchange', hash: '#exchange' },
   builder: { lane: 'newsletter', hash: null, page: 'Builder', title: 'Newsletter builder' },
 };

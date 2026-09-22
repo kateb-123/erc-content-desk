@@ -207,7 +207,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .nl-side { display: flex; flex-direction: column; gap: var(--spacing-05); }
 .nl-issue { background: var(--layer); border: 1px solid var(--layer-line); padding: var(--spacing-06); display: flex; flex-direction: column; gap: var(--spacing-02); }
 .nl-issue .block-label { margin: 0 0 var(--spacing-03); }
-.nl-date { margin: 0; font-size: 32px; line-height: 40px; font-weight: 300; }
+.nl-date { margin: 0; font: var(--numeral); font-size: 32px; line-height: 40px; }   /* the issue date in Lora (Sep 22) */
 .nl-sends { margin: 0; font-size: 14px; color: var(--muted); }
 .nl-others { margin: var(--spacing-03) 0 0; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
 .nl-others .linkish { height: 24px; padding: 0 var(--spacing-01); font-size: 12px; letter-spacing: 0; }
@@ -771,3 +771,17 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .door-name { flex: 1 1 auto; font: var(--body-type); font-weight: 500; }
 .door-count { font: var(--numeral); }
 .door-row .fa-arrow-right { font-size: 14px; color: var(--icon-secondary); }
+
+/* The Later line: the other send dates as words with room between them (Sep 22). */
+.nl-others { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02); margin: 0; font: var(--meta-type); color: var(--text-helper); }
+.nl-others .linkish { height: auto; margin: 0; padding: 0; font: inherit; }
+.nl-others .linkish:hover:not(:disabled) { background: none; }
+/* The Schedule tab: a row per send date, the date as a numeral, how far off, how many stamped. */
+.sched-row { display: flex; align-items: center; gap: var(--spacing-06); width: 100%; height: auto; min-height: 60px; padding: var(--spacing-04) var(--spacing-05); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
+.sched-list > .sched-row:first-child { border-top: 0; }
+.sched-row:hover:not(:disabled) { background: var(--row-hover); border-color: var(--line-in); color: var(--ink); }
+.sched-date { font: var(--numeral); min-width: 96px; }
+.sched-words { display: flex; align-items: center; gap: var(--spacing-03); flex: 1 1 auto; font: var(--body-type); color: var(--muted); }
+.sched-words .badge { margin: 0; }
+.sched-count { font: var(--meta-type); color: var(--text-helper); }
+.sched-note { margin: var(--spacing-04) 0 0; }

@@ -7,12 +7,13 @@ import { renderHome } from './home-ui.js';
 import { renderTeam } from './team-ui.js';
 import { renderShell } from './shell-ui.js';
 import { openedScreen, screenHash, pageTitle } from './shell-view.js';
-import { renderIssue, resetIssueEntry } from './issue-ui.js';
+import { renderIssue, resetIssueEntry, pickIssue } from './issue-ui.js';
 import { nextIssueDate } from './schedule.js';
 import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
 import { renderPublish, downloadCsv, resetPublishAsk } from './publish-ui.js';
 import { renderPast } from './past-ui.js';
+import { renderSchedule } from './schedule-ui.js';
 import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToFinalize, canRewrite } from './workflow.js';
 import { rewriteTargets, landRewrites } from './rewrite-client.js';
 
@@ -39,7 +40,7 @@ const state = {
   lastKeepAll: null,        // [{ id, old }] from the last Keep all remaining, until undone or left
 };
 
-const screens = Object.fromEntries(['home', 'team', 'issue', 'past', 'sort', 'finalize', 'publish']
+const screens = Object.fromEntries(['home', 'team', 'issue', 'schedule', 'past', 'sort', 'finalize', 'publish']
   .map(name => [name, document.querySelector(`#screen-${name}`)]));
 const statusEl = document.querySelector('#desk-status');
 
@@ -289,7 +290,7 @@ async function stampSubmitted(data) {
 function goTo(key) {
   if (key !== state.screen) setStatus('');   // last screen's message doesn't follow
   if (key === 'sort' && state.screen !== 'sort') readBeforeSort();
-  if (key === 'issue' && state.screen !== 'issue') resetIssueEntry();
+  if (key === 'issue' && state.screen !== 'issue' && state.screen !== 'schedule') resetIssueEntry();   // Schedule hands a date over
   if (key === 'finalize' && state.screen !== 'finalize') { resetFinalizeEntry(); state.lastKeepAll = null; }
   // The ticks survive a hop to another screen; only the receipt resets.
   if (key === 'publish' && state.screen !== 'publish') {
@@ -476,7 +477,7 @@ async function unsendFromNewsletter(ids) {
   render();
 }
 
-const SCREEN_ORDER = ['home', 'team', 'sort', 'finalize', 'issue', 'past', 'publish'];
+const SCREEN_ORDER = ['home', 'team', 'sort', 'finalize', 'issue', 'schedule', 'past', 'publish'];
 // Every screen but the front page has an address (/#sort, /#newsletter,
 // /#exchange, and the old screens' own until they fold into the lanes), so a
 // typed or bookmarked one opens there and a reload stays put.
@@ -551,6 +552,8 @@ function render() {
       onTrash: row => persist([trash(row)]),
       onRestoreTrashed: row => persist([row]),
     });
+  } else if (state.screen === 'schedule') {
+    renderSchedule(screens.schedule, { ...common, loaded: state.loaded, onGoTo: goTo, onPick: date => { pickIssue(date); goTo('issue'); } });
   } else if (state.screen === 'past') {
     renderPast(screens.past, { archive: state.archive, onGoTo: goTo, onRetry: loadArchive });
   } else if (state.screen === 'sort') {

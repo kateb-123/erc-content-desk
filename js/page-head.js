@@ -56,6 +56,6 @@ export function sortPageHead({ active, counts, oldestDays = null, onGoTo, canLea
 export function newsletterPageHead({ active, onGoTo, canLeave }) {
   return pageHead({
     title: 'Newsletter', active, onGoTo, canLeave,
-    tabs: [{ key: 'issue', label: 'Next issue' }, { key: 'past', label: 'Past issues' }],
+    tabs: [{ key: 'issue', label: 'Next issue' }, { key: 'schedule', label: 'Schedule' }, { key: 'past', label: 'Past issues' }],   // Schedule since Sep 22
   });
 }
