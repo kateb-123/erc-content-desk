@@ -24,14 +24,22 @@ export function finalizeStage({ pending, checks }) {
  * `verified` are sets of ids: rows still needing a rewrite, rewrites waiting
  * to be checked, and rewrites checked this visit. Empty groups drop out.
  */
-export function finalizeGroups(keeps, { pending, review, verified }) {
+export function finalizeGroups(keeps, { pending, review, verified, rewriting = new Set() }) {
   const groups = [
     { key: 'check', label: 'To check', fold: false, rows: keeps.filter(r => review.has(r.id)) },
-    { key: 'rewrite', label: 'Needs a rewrite', fold: false, rows: keeps.filter(r => pending.has(r.id) && !review.has(r.id)) },
+    // Out for a rewrite since Keep (Kate, Sep 22): listed, so the wait is visible, not a blank.
+    { key: 'rewriting', label: 'Rewriting', fold: false, rows: keeps.filter(r => rewriting.has(r.id) && !review.has(r.id)) },
+    { key: 'rewrite', label: 'Needs a rewrite', fold: false, rows: keeps.filter(r => pending.has(r.id) && !review.has(r.id) && !rewriting.has(r.id)) },
     { key: 'done', label: 'Done', fold: false, rows: keeps.filter(r => verified.has(r.id) && !review.has(r.id) && !pending.has(r.id)) },
-    { key: 'none', label: 'No rewrite needed', fold: true, rows: keeps.filter(r => !review.has(r.id) && !pending.has(r.id) && !verified.has(r.id)) },
+    { key: 'none', label: 'No rewrite needed', fold: true, rows: keeps.filter(r => !review.has(r.id) && !pending.has(r.id) && !verified.has(r.id) && !rewriting.has(r.id)) },
   ];
   return groups.filter(g => g.rows.length);
+}
+
+/** Rewrites started at Keep and not back yet: a quiet count in the lede. */
+export function onTheWay(n) {
+  if (!n) return '';
+  return n === 1 ? '1 rewrite on its way' : `${n} rewrites on their way`;
 }
 
 /** The line under the title and the bar's share. */

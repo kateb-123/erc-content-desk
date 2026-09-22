@@ -54,7 +54,7 @@
 "Filed by the desk from the link/description — check it."
 "Rewrite the descriptions that need an ERC voice, then check each one: Keep saves the rewrite, Use original leaves the text as it was. Click any row on the left to see it, edit it, or delete it. Then go to Publish." (Finalize's info panel, Sep 16)
 "[N] of [M] kept items need an ERC-voice description" / "[D] of [M] rewrites checked" (Finalize's progress line, Sep 16)
-"Needs a rewrite" / "To check" / "Done" / "No rewrite needed" (Finalize's list groups)
+"To check" / "Rewriting" / "Needs a rewrite" / "Done" / "No rewrite needed" (Finalize's list groups; Rewriting holds rewrites started at Keep and not back yet, Sep 22)
 "Abstract"
 "No description yet. Rewrite drafts one from the original text."
 "Source"
@@ -452,6 +452,7 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "The reader wasn't sure. Check: [fields]." · "The reader wasn't sure. Check the fields."
 "Delete" · "Skip for now" · "Keep and next" · tooltips "Delete (D)", "Skip for now (S)", "Keep and next (K)", or why Keep and next is locked: "Set a type first", "Check the link first"
 "Still missing: [Date, Time, Location, Deadline]." · "Keep anyway" · "Fill it in" (the ask before Keep when the type's fields are empty)
+"Rewriting" (Finalize's group for rewrites started at Keep and not back yet) · "1 rewrite on its way" / "[N] rewrites on their way"
 "Kept: [title]" / "Skipped: [title]" / "Deleted: [title]", then "Undo" on the status line
 "Nothing to sort." · "All sorted." · "New items are being read." (the card's place when nothing waits)
 Gone on Sep 18 with the section tabs: "Needs a fix" and the section names, "Keep the rest" on Sort, "Undo last", "Go to Finalize", Sort's View info panel and its three hints, "Next: [section]", "Nothing left in this section."

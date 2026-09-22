@@ -13,6 +13,7 @@ import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
 import { renderPublish, downloadCsv, resetPublishAsk } from './publish-ui.js';
 import { renderPast } from './past-ui.js';
 import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToFinalize, canRewrite } from './workflow.js';
+import { rewriteTargets, landRewrites } from './rewrite-client.js';
 
 
 const state = {
@@ -28,6 +29,7 @@ const state = {
   rewriteReview: new Map(), // id -> the pre-rewrite description, until she checks it (view state)
   verifiedIds: new Set(),   // rewrites she has checked this visit (view state)
   reviewTotal: 0,           // size of the current check batch, for "2 of 4" (view state)
+  rewriting: new Set(),     // ids out for the rewrite that starts at Keep (view state)
   justPublished: 0,         // count from the last publish, until she leaves the screen (view state)
   archive: null,            // the builder's archive index for Past issues and Last issue: null loading, false unreadable
   publishPreview: null,
@@ -205,6 +207,7 @@ function decide(drawn, action) {
     : action === 'trash' ? trash(row)
     : circleback(row);
   change([next], { decision: true, kind: action });   // the list updates now; the write drains behind it
+  if (action === 'keep') rewriteQuietly([row.id]);   // the rewrite starts now, Finalize shows it when it lands
   // The decision in words, for everyone and for a screen reader.
   // Its way back sits on the same line (Sort's Undo last went with the old list head).
   setStatus(`${DECIDED_WORDS[action] ?? 'Done'}: ${row.headline || row.link || 'this item'}`, 'ok', { label: 'Undo', onClick: undoLast });
@@ -219,6 +222,7 @@ function undoRow(row) {
   // The row's own Undo leaves the stack, so Undo last cannot re-apply it.
   state.undoStack = withoutRow(state.undoStack, row.id);
   setStatus(undoWords({ kind: { kept: 'keep', trashed: 'trash', circleback: 'circleback' }[row.status], rows: [row] }), 'ok');
+  forgetRewrites([row.id]);
   noteChange([{ ...row, status: back }]);
 }
 
@@ -298,14 +302,46 @@ async function undoLast() {
     for (const r of last.rows) { state.sortedIds.delete(r.id); state.decidedFrom.delete(r.id); }
   }
   setStatus(undoWords(last), 'ok');   // says what came back, so the effect is never a guess
+  forgetRewrites(last.rows.map(r => r.id));
   noteChange(last.rows);   // restore the rows exactly as they were
+}
+
+/** A Keep undone: its rewrite, landed or still out, no longer counts. */
+function forgetRewrites(ids) {
+  for (const id of ids) { state.rewriteReview.delete(id); state.rewriting.delete(id); }
+  state.reviewTotal = state.rewriteReview.size;
+}
+
+/**
+ * The rewrite that starts at Keep (Kate, Sep 22): ask for these rows once
+ * the keep has landed, and swap the answers in when they come back. Quiet
+ * on purpose: nothing blocks, and a failure leaves Finalize's own Rewrite
+ * button to try again.
+ */
+async function rewriteQuietly(ids) {
+  const wanted = rewriteTargets(state.rows, ids, { review: state.rewriteReview, verified: state.verifiedIds, inFlight: state.rewriting });
+  if (!wanted.length) return;
+  for (const id of wanted) state.rewriting.add(id);
+  render();
+  try {
+    await whenSaved();   // the server reads the rows, so the keep must be there first
+    const data = await postJson('/api/rewrite', { ids: wanted }, 'rewrite the descriptions');
+    const { rows, landed } = landRewrites(state.rows, data.rewrites, { wanted: new Set(wanted), review: state.rewriteReview, verified: state.verifiedIds });
+    for (const { id, old } of landed) state.rewriteReview.set(id, old);
+    state.reviewTotal = state.rewriteReview.size;
+    state.rows = rows;
+  } catch {
+    // Finalize's Rewrite button covers what did not come back.
+  }
+  for (const id of wanted) state.rewriting.delete(id);
+  render();
 }
 
 async function runRewrite() {
   // Scope the request to exactly what Finalize is showing — the server
   // applies the same shared predicate, so the two can never disagree.
   const ids = readyToFinalize(state.rows)
-    .filter(r => canRewrite(r) && !state.rewriteReview.has(r.id))
+    .filter(r => canRewrite(r) && !state.rewriteReview.has(r.id) && !state.rewriting.has(r.id))
     .map(r => r.id);
   if (!ids.length) return;
   state.busy = true;
@@ -516,7 +552,7 @@ function render() {
   } else if (state.screen === 'finalize') {
     renderFinalize(screens.finalize, {
       ...common, review: state.rewriteReview, verified: state.verifiedIds,
-      reviewTotal: state.reviewTotal, busy: state.busy, rewroteNote: state.rewroteNote, lastKeepAll: state.lastKeepAll,
+      reviewTotal: state.reviewTotal, busy: state.busy, rewroteNote: state.rewroteNote, lastKeepAll: state.lastKeepAll, rewriting: state.rewriting,
       onEditRow: (row, changes) => noteChange([{ ...row, ...changes }]),
       onRewrite: runRewrite,
       // Every check decision stamps rewrite_checked so the state survives reload

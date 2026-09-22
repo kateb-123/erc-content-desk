@@ -13,7 +13,7 @@ import { isErc, sortList } from './sort-view.js';
 import { TYPE_ORDER, typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { dotsLoader, faIcon, loadingLabel } from './icons.js';
-import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, finalizeWaiting } from './finalize-view.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, onTheWay, pickSelection, finalizeWaiting } from './finalize-view.js';
 import { buildEditForm, holdIfDirty } from './edit-form.js';
 import { sortPageHead } from './page-head.js';
 import { el, button, focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
@@ -230,7 +230,7 @@ function simpleCard(row, body, { rerender, onEditRow, onTrash }) {
 }
 
 export function renderFinalize(container, props) {
-  const { rows, today, review, verified, reviewTotal, busy, rewroteNote, lastKeepAll, onEditRow, onCheckEdit, onRewrite, onVerifyRewrite, onVerifyAll, onUndoKeepAll, onRevertRewrite, onTrash, onRestore, onGoTo } = props;
+  const { rows, today, review, verified, reviewTotal, busy, rewroteNote, lastKeepAll, rewriting = new Set(), onEditRow, onCheckEdit, onRewrite, onVerifyRewrite, onVerifyAll, onUndoKeepAll, onRevertRewrite, onTrash, onRestore, onGoTo } = props;
   const rerender = () => renderFinalize(container, props);
   const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place
   const held = () => holdIfDirty(openForm, container.querySelector('.f-card'));
@@ -238,13 +238,15 @@ export function renderFinalize(container, props) {
   openForm = null;
   const keeps = standingOrder(readyToFinalize(rows));
   const handled = id => review.has(id) || verified.has(id);
-  const pending = keeps.filter(r => canRewrite(r) && !handled(r.id));
+  const pending = keeps.filter(r => canRewrite(r) && !handled(r.id) && !rewriting.has(r.id));
+  const coming = keeps.filter(r => rewriting.has(r.id) && !handled(r.id)).length;
   const checks = review.size;
   const stage = finalizeStage({ pending: pending.length, checks });
   const groups = finalizeGroups(keeps, {
     pending: new Set(pending.map(r => r.id)),
     review,
     verified,
+    rewriting,
   });
   const toCheck = groups.find(g => g.key === 'check')?.rows ?? [];
 
@@ -268,6 +270,8 @@ export function renderFinalize(container, props) {
   } else if (!keeps.length) lede.textContent = 'No unpublished keeps right now.';
   else if (stage !== 'checking' && rewroteNote && !busy) lede.textContent = rewroteNote;   // an empty rewrite's answer, next to the button
   else lede.textContent = progress.text;
+  // Rewrites started at Keep and still out (Kate, Sep 22): said on the same line, no waiting screen.
+  if (!busy && coming) lede.append(lede.textContent ? ' · ' : '', onTheWay(coming));
   // While rewriting the button is gone entirely: the dots below are the signal.
   if (!busy && stage === 'before') {
     const btn = el('button', 'primary', `Rewrite ${pending.length} description${pending.length === 1 ? '' : 's'}`);

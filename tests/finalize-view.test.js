@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges, fieldsForType, dateField, editFields, editBase, finalizeWaiting } from '../js/finalize-view.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges, fieldsForType, dateField, editFields, editBase, finalizeWaiting, onTheWay } from '../js/finalize-view.js';
 
 const keeps = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }];
 
@@ -109,4 +109,19 @@ test('finalizeWaiting counts the rewrites to do or to check, not the ones checke
   ];
   assert.equal(finalizeWaiting(rows, new Set()), 2);
   assert.equal(finalizeWaiting(rows, new Set(['e2'])), 1);
+});
+
+test('rewrites on their way stand in their own group, before Needs a rewrite', () => {
+  const groups = finalizeGroups(keeps, { pending: new Set(['b']), review: new Set(), verified: new Set(), rewriting: new Set(['a']) });
+  assert.deepEqual(groups.map(g => [g.key, g.label, g.rows.map(r => r.id)]), [
+    ['rewriting', 'Rewriting', ['a']],
+    ['rewrite', 'Needs a rewrite', ['b']],
+    ['none', 'No rewrite needed', ['c', 'd', 'e']],
+  ]);
+});
+
+test('onTheWay says how many rewrites are still coming back, or nothing', () => {
+  assert.equal(onTheWay(0), '');
+  assert.equal(onTheWay(1), '1 rewrite on its way');
+  assert.equal(onTheWay(3), '3 rewrites on their way');
 });
