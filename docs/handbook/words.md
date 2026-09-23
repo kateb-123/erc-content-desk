@@ -167,7 +167,7 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Schedule" (the hub's third tab, Sep 22) · "Next" · "[N] in the issue" / "Nothing in it yet" · "No send dates ahead. Add one on the Sheet's schedule tab." · "Send dates are edited on the Sheet's schedule tab."
 "Desk" · "What waits on each page." · "Waiting to be sorted" · "Ready to add · next issue [date]" / "Ready to add · no issue scheduled" · "Publish would add" · "Documentation" · "Forthcoming" (Kate's page at the root, Sep 22)
 "No source" · "No description yet." · "Edit" / "Done" (the description as prose, Sep 22) · "Subtype" · "Skips the Policy Exchange" (under ERC Newsletter only)
-"Content Sort" (the Sort page's name since Sep 22; "Sort content" before) · "Submit content" (the team's page at /#team, Sep 22) · "It lands in the queue and the desk sorts it before it goes out." · "Queue" · "[N] waiting · newest first" · "Nothing waiting." · "Quick links" · "Submit Content to ERC" · "Join listserv" · "ERC Policy Exchange" · "Copy link" / "Copied" · "Desk work"
+"Content Sort" (the Sort page's name since Sep 22; "Sort content" before) · "Submit content" (the team's page at /#team, Sep 22) · "It lands in the queue and the desk sorts it before it goes out." · "Queue" · "[N] waiting · newest first" · "Nothing waiting." · "Quick links" · "Submit Content to ERC" · "Join listserv" · "ERC Policy Exchange" · "Copy link" / "Copied" · "Last issue Sep 22 · Next Oct 6" (under Join listserv, from the schedule) · "Updated Sep 22" (under the Exchange, the desk's last publish) · "Desk work"
 "Re-check"
 "Fix in Finalize"
 "Publish [N] to the Exchange"

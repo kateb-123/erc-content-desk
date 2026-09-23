@@ -38,3 +38,20 @@ export function deskCards({ counts, issue, today }) {
     { key: 'docs', label: 'Documentation', href: null, count: null, sub: 'Forthcoming' },
   ];
 }
+
+/** The notes under the team page's Quick links (Kate, Sep 22): under the
+ *  Exchange when the desk last wrote to it (the newest published_at, whatever
+ *  became of the row), under the listserv the last issue that went out and
+ *  the next one due, both from the schedule; '' where there is nothing to say.
+ *  On a send day the issue due today is the next one, as on the Schedule tab. */
+export function quickLinkNotes(rows, { schedule, today }) {
+  const published = rows.map(r => String(r.published_at ?? '')).filter(Boolean).sort().at(-1) ?? '';
+  const dates = [...(schedule ?? [])].sort();
+  const next = dates.find(d => d >= today) ?? '';
+  const last = [...dates].reverse().find(d => (next ? d < next : d <= today)) ?? '';
+  return {
+    share: '',
+    listserv: [last && `Last issue ${isoToShort(last, today)}`, next && `Next ${isoToShort(next, today)}`].filter(Boolean).join(' · '),
+    exchange: published ? `Updated ${isoToShort(published, today)}` : '',
+  };
+}

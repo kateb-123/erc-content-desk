@@ -216,7 +216,7 @@ form in a white box, then Queue, a section head over the orange rule with
 "N waiting · newest first" and every waiting item as a read-only row in its
 own scroll. Right, two white boxes: Quick links (the public share page, the
 listserv sign-up, the Policy Exchange, each a link that opens in a new tab
-with its address under it and Copy link, which says Copied for two seconds)
+with its address under it and Copy link, which says Copied for two seconds; under Join listserv the last issue that went out and the next one due, from the schedule, and under the Exchange when the desk last published to it, Kate's ask of Sep 22)
 and Desk work (Content Sort and Newsletter as door rows with their counts as
 Lora numerals and an arrow, a 3px orange bar on hover; Newsletter opens in
 its own window). The top bar shows only Policy Exchange on the right. The

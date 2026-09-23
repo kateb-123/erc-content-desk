@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { laneCounts, recentlyAdded, deskCards } from '../js/home-panel.js';
+import { laneCounts, recentlyAdded, deskCards, quickLinkNotes } from '../js/home-panel.js';
 
 // ── The front page's lanes and its Recently added list (Kate's wireframes, Sep 17) ──
 
@@ -62,4 +62,24 @@ test('deskCards: before the rows are in, no counts; with no issue scheduled, New
   const cards = deskCards({ counts: null, issue: '', today: '2026-09-18' });
   assert.deepEqual(cards.map(c => c.count), [null, null, null, null, null]);
   assert.equal(cards[2].sub, 'Ready to add · no issue scheduled');
+});
+
+// ── The notes under the team page's Quick links (Kate, Sep 22) ──
+
+test('quickLinkNotes: when the desk last wrote to the Exchange, the last issue and the next', () => {
+  const rows = [
+    { published_at: '2026-08-30T16:00:00Z' },
+    { published_at: '2026-09-22T19:05:00Z', status: 'trashed' },   // scrapped later, still the last write
+    { published_at: '' },
+  ];
+  assert.deepEqual(quickLinkNotes(rows, { schedule: ['2026-09-08', '2026-09-22', '2026-10-06'], today: '2026-09-23' }),
+    { share: '', listserv: 'Last issue Sep 22 · Next Oct 6', exchange: 'Updated Sep 22' });
+});
+
+test('quickLinkNotes: on a send day the issue due today is next; with nothing known, nothing is said', () => {
+  assert.deepEqual(quickLinkNotes([], { schedule: ['2026-09-08', '2026-09-22', '2026-10-06'], today: '2026-09-22' }),
+    { share: '', listserv: 'Last issue Sep 8 · Next Sep 22', exchange: '' });
+  assert.deepEqual(quickLinkNotes([], { schedule: ['2026-09-08'], today: '2026-09-22' }),
+    { share: '', listserv: 'Last issue Sep 8', exchange: '' });
+  assert.deepEqual(quickLinkNotes([], { schedule: [], today: '2026-09-22' }), { share: '', listserv: '', exchange: '' });
 });

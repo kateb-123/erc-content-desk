@@ -757,6 +757,8 @@ h2[tabindex="-1"]:focus, .busy-card:focus { outline: none; }
 .ql-name:hover { color: var(--muted); }
 .ql-name .fa-solid { font-size: 11px; color: var(--icon-secondary); }
 .ql-url { font: var(--meta-type); color: var(--text-helper); overflow-wrap: anywhere; margin-top: var(--spacing-01); }
+.ql-note { font: var(--meta-type); color: var(--muted); margin-top: var(--spacing-02); }
+.ql-note:empty { display: none; }
 .ql-copy { height: 24px; margin: 0; padding: 0; font: var(--meta-type); color: var(--muted); text-decoration: underline; text-underline-offset: 2px; flex: none; }
 .ql-copy:hover:not(:disabled) { background: none; color: var(--ink); }
 /* The doors: a name, the count as a big numeral, an arrow; a 3px orange bar on hover. */

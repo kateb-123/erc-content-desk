@@ -8,7 +8,7 @@
  */
 import { renderSubmitForm } from './submit-form.js';
 import { faIcon } from './icons.js';
-import { laneCounts } from './home-panel.js';
+import { laneCounts, quickLinkNotes } from './home-panel.js';
 import { sortList } from './sort-view.js';
 import { nextIssueDate } from './schedule.js';
 import { isoToShort } from './queue-view.js';
@@ -41,7 +41,9 @@ function quickLink(item) {
   const a = el('a', 'ql-name', item.label);
   a.href = item.href; a.target = '_blank'; a.rel = 'noopener';
   a.append(' ', faIcon('arrow-up-right-from-square'));
-  words.append(a, el('div', 'ql-url', shownUrl(item.href)));
+  const note = el('div', 'ql-note');   // filled once the rows are in (quickLinkNotes)
+  note.dataset.key = item.key;
+  words.append(a, el('div', 'ql-url', shownUrl(item.href)), note);
   row.append(words);
   // Copy link writes the address and says so for two seconds; only this row changes.
   const copy = el('button', 'linkish ql-copy', 'Copy link');
@@ -107,6 +109,9 @@ export function renderTeam(container, props) {
   const issue = nextIssueDate(schedule, today);
   const counts = loaded ? laneCounts(rows, { schedule, issue, today, preview: null }) : null;
   for (const a of page.querySelectorAll('.door-row')) a.querySelector('.door-count').textContent = counts ? String(counts[a.dataset.key]) : '';
+  // Under the Quick links: the Exchange's last update, the last issue and the next (Kate, Sep 22).
+  const notes = loaded ? quickLinkNotes(rows, { schedule, today }) : null;
+  for (const n of page.querySelectorAll('.ql-note')) n.textContent = notes ? notes[n.dataset.key] : '';
 
   // The queue, read only: every waiting item, newest first.
   const list = page.querySelector('.queue-rows');
