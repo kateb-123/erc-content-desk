@@ -49,11 +49,6 @@ main { flex: 1 0 auto; width: 100%; max-width: var(--maxw); margin: 0 auto; padd
 .btns { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
 .status { margin: 0; min-height: 1.5em; }
 .status--error { color: var(--error); }
-.dots { display: inline-flex; gap: 5px; vertical-align: middle; margin-right: 8px; }
-.dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--maroon); display: inline-block; animation: pulse 1.2s ease-in-out infinite; }
-.dots i:nth-child(2) { animation-delay: .15s; }
-.dots i:nth-child(3) { animation-delay: .3s; }
-@keyframes pulse { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
 .done { max-width: 820px; padding-bottom: 64px; }
 .done h3 { font-family: var(--head); font-size: 24px; font-weight: 600; color: var(--maroon); margin: 0 0 12px; outline: 0; }
 .done p { margin: 0 0 24px; }
@@ -70,4 +65,4 @@ main { flex: 1 0 auto; width: 100%; max-width: var(--maxw); margin: 0 auto; padd
   .field--full { grid-column: auto; }
   .site-footer__links { flex-direction: column; align-items: flex-start; gap: 12px; }
 }
-@media (prefers-reduced-motion: reduce) { .dots i { animation: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { 

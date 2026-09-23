@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Submit content to the ERC</title>
   <meta name="description" content="Share an event, a paper, an opportunity or a headline with the Texas A&amp;M Education Research Center." />
-  <link rel="icon" href="/assets/erc-logo-maroon.png" />
+  <link rel="icon" href="/assets/erc-mark.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Work+Sans:wght@600;700;900&display=swap" />
-  <link rel="stylesheet" href="/css/public.css?v=1" />
+  <link rel="stylesheet" href="/css/public.css?v=2" />
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit" async defer></script>
 </head>
 <body>
@@ -44,11 +44,6 @@ const el = (tag, cls, text) => {
   if (cls) n.className = cls;
   if (text !== undefined) n.textContent = text;
   return n;
-};
-const dots = () => {
-  const d = el('span', 'dots');
-  d.append(el('i'), el('i'), el('i'));
-  return d;
 };
 const root = document.getElementById('root');
 const withScheme = v => {
@@ -170,8 +165,7 @@ const fileIn = document.getElementById('file');
 const setStat = (msg, kind) => {
   stat.className = `status field--full${kind ? ' status--' + kind : ''}`;
   stat.replaceChildren();
-  if (kind === 'busy' && msg) { stat.append(dots(), document.createTextNode(msg)); }
-  else stat.textContent = msg;
+  stat.textContent = msg;
 };
 const setMedia = (...nodes) => {
   mstat.replaceChildren(...nodes);
@@ -207,13 +201,13 @@ fileIn.addEventListener('change', async () => {
     let blob = file;
     let ext = EXT[file.type];
     if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
-      setMedia(dots(), document.createTextNode('Converting the PDF…'));
+      setMedia(document.createTextNode('Converting the PDF…'));
       blob = await pdfFirstPage(file);
       ext = 'png';
     }
     if (!ext) throw new Error('Use a PNG, JPG, or PDF.');
     if (blob.size > 2.5 * 1024 * 1024) throw new Error('Too big. Keep it under 2.5 MB.');
-    setMedia(dots(), document.createTextNode('Uploading…'));
+    setMedia(document.createTextNode('Uploading…'));
     const b64 = await new Promise((res, rej) => {
       const r = new FileReader();
       r.onload = () => res(String(r.result).split(',')[1] ?? '');
@@ -263,7 +257,8 @@ form.addEventListener('submit', async event => {
 
   const go = document.getElementById('go');
   go.disabled = true;
-  setStat('Sending', 'busy');
+  go.textContent = 'Sending…';   // the button says it; nothing else moves (Kate, Sep 22)
+  setStat('');
   try {
     const resp = await fetch('/api/submit', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -314,6 +309,7 @@ form.addEventListener('submit', async event => {
     setStat(err instanceof TypeError ? "Couldn't reach the server. Check your connection." : err.message, 'error');
   } finally {
     go.disabled = false;
+    go.textContent = 'Submit »';
   }
 });
   </script>

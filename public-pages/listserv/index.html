@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Join the ERC newsletter</title>
   <meta name="description" content="New research, events, opportunities and education news from the Texas A&amp;M Education Research Center, in your inbox." />
-  <link rel="icon" href="/assets/erc-logo-maroon.png" />
+  <link rel="icon" href="/assets/erc-mark.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Work+Sans:wght@600;700;900&display=swap" />
-  <link rel="stylesheet" href="/css/public.css?v=1" />
+  <link rel="stylesheet" href="/css/public.css?v=2" />
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit" async defer></script>
 </head>
 <body>
@@ -44,11 +44,6 @@ const el = (tag, cls, text) => {
   if (cls) n.className = cls;
   if (text !== undefined) n.textContent = text;
   return n;
-};
-const dots = () => {
-  const d = el('span', 'dots');
-  d.append(el('i'), el('i'), el('i'));
-  return d;
 };
 const root = document.getElementById('root');
 root.innerHTML = `
@@ -113,8 +108,7 @@ const stat = document.getElementById('stat');
 const setStat = (msg, kind) => {
   stat.className = `status field--full${kind ? ' status--' + kind : ''}`;
   stat.replaceChildren();
-  if (kind === 'busy' && msg) { stat.append(dots(), document.createTextNode(msg)); }
-  else stat.textContent = msg;
+  stat.textContent = msg;
 };
 
 const doneBox = el('div', 'done');
@@ -133,7 +127,8 @@ form.addEventListener('submit', async event => {
 
   const go = document.getElementById('go');
   go.disabled = true;
-  setStat('Sending', 'busy');
+  go.textContent = 'Sending…';   // the button says it; nothing else moves (Kate, Sep 22)
+  setStat('');
   try {
     const resp = await fetch('/api/listserv', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -156,6 +151,7 @@ form.addEventListener('submit', async event => {
     setStat(err instanceof TypeError ? "Couldn't reach the server. Check your connection." : err.message, 'error');
   } finally {
     go.disabled = false;
+    go.textContent = 'Subscribe »';
   }
 });
   </script>

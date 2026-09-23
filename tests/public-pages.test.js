@@ -96,3 +96,25 @@ test("the desk sends the folder's addresses on to the standalone site", () => {
   const lines = read('.vercelignore').split('\n').map(l => l.trim());
   assert.ok(!lines.includes(`${FOLDER}/`), 'the ignore file would empty the standalone deploy too');
 });
+
+// ── Kate's picks, Sep 22 night: the A&M mark as the tab icon; the button says Sending ──
+
+test('the tab icon is the square A&M mark, on both pages', () => {
+  for (const page of ['submit/index.html', 'listserv/index.html']) {
+    const html = read(`${FOLDER}/${page}`);
+    assert.match(html, /<link rel="icon" href="\/assets\/erc-mark\.png"/, `${page} links the mark`);
+    assert.doesNotMatch(html, /rel="icon" href="\/assets\/erc-logo-maroon\.png"/, `${page} no longer uses the wide logo as its icon`);
+  }
+  const png = readFileSync(new URL(`${FOLDER}/assets/erc-mark.png`, root));
+  const width = png.readUInt32BE(16), height = png.readUInt32BE(20);
+  assert.equal(width, height, 'the mark is square');
+});
+
+test('while the form sends, the button says so and nothing else moves', () => {
+  for (const page of ['submit/index.html', 'listserv/index.html']) {
+    const html = read(`${FOLDER}/${page}`);
+    assert.match(html, /go\.textContent = 'Sending…'/, `${page}: the button reads Sending…`);
+    assert.doesNotMatch(html, /class="dots"|'dots'/, `${page}: no pulsing dots`);
+  }
+  assert.doesNotMatch(read(`${FOLDER}/css/public.css`), /\.dots/);
+});
