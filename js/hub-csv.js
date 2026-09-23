@@ -10,8 +10,23 @@ export function escapeCell(value) {
   return text;
 }
 
+/**
+ * The desk's own types and the Exchange's are not the same list. `erc_event`
+ * exists here so ERC's own events can lead the newsletter; the Exchange has
+ * four sections and no such type, so a row published as `erc_event` lands in
+ * news.csv matching nothing and is unreachable on the site (Sep 22, 2026: six
+ * of them did). Publish it as a plain event carrying the ERC Events subtype,
+ * which the Exchange already prints in maroon beside ERC Research and sorts
+ * first in Quick Search. A subtype she set by hand wins.
+ */
+export function toHubRow(row) {
+  if (row?.type !== 'erc_event') return row;
+  return { ...row, type: 'event', subtype: String(row.subtype ?? '').trim() || 'ERC Events' };
+}
+
 export function hubRowLine(row) {
-  return CSV_COLUMNS.map(col => escapeCell(row[col])).join(',');
+  const hubRow = toHubRow(row);
+  return CSV_COLUMNS.map(col => escapeCell(hubRow[col])).join(',');
 }
 
 /** The header line, then one hub line per row: the copy she downloads

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { blankRow, CSV_COLUMNS } from '../js/schema.js';
-import { escapeCell, hubRowLine, hubCsvFilename, hubCsvText } from '../js/hub-csv.js';
+import { escapeCell, hubRowLine, hubCsvFilename, hubCsvText, toHubRow } from '../js/hub-csv.js';
 
 test('plain values are written bare', () => {
   assert.equal(escapeCell('Teacher pay'), 'Teacher pay');
@@ -47,4 +47,28 @@ test('hubCsvText is the header line, then one hub line per row, for the copy dow
   assert.ok(lines[1].startsWith('2026-09-22,"One, with a comma",https://x.org/1,'));
   assert.ok(lines[2].startsWith('2026-09-23,Two,https://x.org/2,'));
   assert.equal(hubCsvText([]), `${CSV_COLUMNS.join(',')}\n`);
+});
+
+test("ERC's own events publish as events, tagged ERC Events", () => {
+  const row = { ...blankRow(), type: 'erc_event', headline: 'ERC EdTalk with Mark Berends' };
+  const hub = toHubRow(row);
+  assert.equal(hub.type, 'event');
+  assert.equal(hub.subtype, 'ERC Events');
+  // and it reaches the CSV line that way, not as erc_event
+  const cells = hubRowLine(row).split(',');
+  assert.equal(cells[CSV_COLUMNS.indexOf('type')], 'event');
+  assert.equal(cells[CSV_COLUMNS.indexOf('subtype')], 'ERC Events');
+});
+
+test('a subtype she set by hand survives, and other types are untouched', () => {
+  assert.equal(toHubRow({ type: 'erc_event', subtype: 'A&M' }).subtype, 'A&M');
+  const plain = { type: 'event', subtype: 'Webinar-Online' };
+  assert.deepEqual(toHubRow(plain), plain);
+  assert.equal(toHubRow({ type: 'research' }).type, 'research');
+});
+
+test('the copy she downloads matches what the Exchange receives', () => {
+  const text = hubCsvText([{ ...blankRow(), type: 'erc_event', headline: 'ERC PEP Talk' }]);
+  assert.ok(text.includes(',event,ERC Events,'));
+  assert.ok(!text.includes('erc_event'));
 });
