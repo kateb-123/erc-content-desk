@@ -115,7 +115,6 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .sf-foot { display: flex; align-items: flex-start; gap: var(--spacing-05); flex-wrap: wrap; }
 .sf-foot .sf-initials label { margin-top: 0; }
 .sf-foot .sf-initials input { width: 7rem; }
-.sf-foot label.check { margin: var(--spacing-06) 0 0; min-height: 40px; display: flex; align-items: center; gap: var(--spacing-03); font-size: 14px; letter-spacing: 0; color: var(--ink); }
 .submit-form .submit-btn { margin-left: auto; margin-top: var(--spacing-06); height: 48px; padding: 0 var(--spacing-06); }
 /* A field's hint is a helper line under it, not part of the label (f8). */
 .submit-form .sf-help { margin: var(--spacing-02) 0 0; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }

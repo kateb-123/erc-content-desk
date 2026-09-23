@@ -240,7 +240,7 @@ function typeBlock(row, props, rerender) {
 function sendToBlock(row, props) {
   // One box (Kate, Sep 22): unticked, the item goes to the newsletter and the
   // Exchange both; ticked, the newsletter only, and it never reaches Publish.
-  // A spotlight event comes ticked.
+  // A campus event (an Event with the A&M subtype) comes ticked (Kate, Sep 22).
   const box = el('fieldset', 'card-send');
   box.append(el('legend', '', 'Send it to'));
   const now = sendTo(row);
@@ -267,7 +267,6 @@ function cardTags(row, { props, ctx, reshare }) {
   if (ctx.groupTag?.has(row.id)) out.push(el('span', 'badge', ctx.groupTag.get(row.id)));
   if (row.status === 'circleback') out.push(el('span', 'badge', 'Skipped'));
   else if (isNewToday(row, props.today)) out.push(el('span', 'badge badge-new', 'New'));
-  if (row.spotlight_request) out.push(el('span', 'badge', 'Spotlight requested'));
   if (row.submitter_email) out.push(el('span', 'badge', 'External submission'));
   if (reshare.has(row.id)) out.push(el('span', 'badge', 'In a past issue'));
   else if (ctx.dupes.has(row.id)) {

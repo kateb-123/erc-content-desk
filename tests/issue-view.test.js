@@ -24,10 +24,10 @@ test('issueRows leaves out a trashed row even if a stamp survived on it', () => 
 
 // ── The Newsletter page (Kate's wireframes, Sep 17, and her answers, Sep 18) ──
 
-test('issueSections: the issue by section, in the builder\'s order, a spotlight item under ERC Spotlight, an unmapped one under Headlines', () => {
+test('issueSections: the issue by section, in the builder\'s order, an ERC event under ERC Spotlight, an unmapped one under Headlines', () => {
   const rows = [
     { id: 'h', status: 'kept', type: 'headline', subtype: 'Texas', newsletter_issue: '2026-09-22', submitted_at: '2026-09-10T00:00:00Z' },
-    { id: 's', status: 'kept', type: 'event', subtype: 'A&M', spotlight_request: true, newsletter_issue: '2026-09-22' },
+    { id: 's', status: 'kept', type: 'erc_event', subtype: '', newsletter_issue: '2026-09-22' },
     { id: 'o', status: 'kept', type: 'opportunity', subtype: 'Other', newsletter_issue: '2026-09-22' },
     { id: 'u', status: 'new', type: '', newsletter_issue: '2026-09-22', submitted_at: '2026-09-11T00:00:00Z' },
     { id: 'x', status: 'kept', type: 'headline', subtype: 'Texas', newsletter_issue: '2026-10-06' },

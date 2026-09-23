@@ -78,7 +78,6 @@ export function bulkSubmissionBody(item, submitter) {
     link: withScheme(item.link),
     type: item.type || '',        // untyped enters untyped: Sort's Needs a fix catches it
     subtype: item.subtype || '',
-    spotlight: false,
     submitter,
   };
 }
@@ -119,8 +118,6 @@ export function renderSubmitForm(container, {
       <div class="sf-foot">
         <div class="sf-initials"><label for="sf-submitter">Your initials</label>
           <input id="sf-submitter" type="text" autocomplete="off"></div>
-        <label class="check"><input id="sf-spotlight" type="checkbox">
-          Spotlight request</label>
         <button type="submit" class="primary submit-btn">Add to the queue</button>
       </div>
       <p class="status" role="status" aria-live="polite"></p>
@@ -285,7 +282,6 @@ export function renderSubmitForm(container, {
       link: withScheme(form.querySelector('#sf-link').value),
       type: selection.type,
       subtype: selection.subtype,
-      spotlight: form.querySelector('#sf-spotlight').checked,
       submitter: form.querySelector('#sf-submitter').value,
     };
   }

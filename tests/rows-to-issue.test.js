@@ -15,14 +15,15 @@ test('isoToDisplay turns an ISO date into newsletter prose', () => {
   assert.equal(isoToDisplay('not a date'), 'not a date');
 });
 
-test('defaultSection follows the map, spotlight flag wins', () => {
+test('defaultSection follows the map; an ERC event leads, the old spotlight flag moves nothing (Kate, Sep 22)', () => {
   assert.equal(defaultSection(pub({ type: 'research', subtype: 'ERC Research' })), 'research');
   assert.equal(defaultSection(pub({ type: 'event', subtype: 'A&M' })), 'events');
-  assert.equal(defaultSection(pub({ type: 'event', subtype: 'A&M', spotlight_request: true })), 'spotlight');
+  assert.equal(defaultSection(pub({ type: 'event', subtype: 'A&M', spotlight_request: true })), 'events');
+  assert.equal(defaultSection(pub({ type: 'erc_event', subtype: '' })), 'spotlight');
   assert.equal(defaultSection(pub({ type: '', subtype: '' })), '');
 });
 
-test('issueForPull places stamped rows in their default sections, the spotlight flag winning', () => {
+test('issueForPull places stamped rows in their default sections; the old spotlight flag is ignored', () => {
   const issue = issueForPull([
     pub({ id: 'a', type: 'event', subtype: 'Webinar-Online', headline: 'Webinar', link: 'https://x.org', blurb: 'B', date: '2026-09-10', newsletter_issue: '2026-09-01' }),
     pub({ id: 'b', type: 'headline', subtype: 'Texas', headline: 'News', link: 'https://y.org', spotlight_request: true, newsletter_issue: '2026-09-01' }),
@@ -32,8 +33,8 @@ test('issueForPull places stamped rows in their default sections, the spotlight 
   assert.equal(issue.sections.events.items[0].fields.title, 'Webinar');
   assert.equal(issue.sections.events.items[0].group, 'offcampus');
   assert.equal(issue.sections.events.items[0].fields.date, 'September 10, 2026');
-  assert.equal(issue.sections.spotlight.items.length, 1);
-  assert.equal(issue.sections.spotlight.items[0].group, 'thisandthat');
+  assert.equal(issue.sections.spotlight.items.length, 0);
+  assert.deepEqual(issue.sections.headlines.items.map(i => i.fields.title), ['News']);
   assert.equal(issue.sections.policy.enabled, false);
 });
 
@@ -76,8 +77,8 @@ test('issueForPull serves everything stamped for the issue, builder-shaped', () 
   const rows = [
     blankRow({ id: 'a', status: 'kept', headline: 'ERC brief', link: 'https://x.org/a', blurb: 'B.',
       type: 'research', subtype: 'ERC Research', newsletter_issue: '2026-09-01' }),
-    blankRow({ id: 'b', status: 'kept', headline: 'Spotlight event', link: 'https://x.org/b', blurb: 'E.',
-      type: 'event', subtype: 'A&M', spotlight_request: true, newsletter_issue: '2026-09-01' }),
+    blankRow({ id: 'b', status: 'kept', headline: 'ERC event', link: 'https://x.org/b', blurb: 'E.',
+      type: 'erc_event', subtype: '', newsletter_issue: '2026-09-01' }),
     blankRow({ id: 'c', status: 'kept', headline: 'Other issue', link: 'https://x.org/c',
       type: 'headline', subtype: 'Texas', newsletter_issue: '2026-10-06' }),
     blankRow({ id: 'd', status: 'kept', headline: 'Unstamped', link: 'https://x.org/d', type: 'headline', subtype: 'Texas' }),
@@ -87,7 +88,7 @@ test('issueForPull serves everything stamped for the issue, builder-shaped', () 
   assert.equal(issue.date, '2026-09-01');
   assert.deepEqual(issue.sections.research.items.map(i => i.fields.title), ['ERC brief']);
   assert.equal(issue.sections.research.items[0].group, 'brief');
-  assert.deepEqual(issue.sections.spotlight.items.map(i => i.fields.title), ['Spotlight event']);
+  assert.deepEqual(issue.sections.spotlight.items.map(i => i.fields.title), ['ERC event']);
   assert.equal(issue.sections.spotlight.items[0].group, 'events');
   // the untyped-but-stamped row lands visible in Headlines, never dropped
   assert.deepEqual(issue.sections.headlines.items.map(i => i.fields.title), ['Stamped but untyped']);

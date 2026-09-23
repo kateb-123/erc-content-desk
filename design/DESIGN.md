@@ -196,7 +196,7 @@ look, everywhere it appears.
 | Door buttons (Go to Publish, Go to Newsletter, the receipt's door) | → `fa-arrow-right` | Carbon's tertiary button with the arrow in its right slot (Sep 15, option A; square since Sep 17), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
 | **Top bar** (ERC Content Desk / the lane / the page; the two other lanes on the right) | none | a 56px bar under a hairline; crumb links in the ink, lane links quiet | every way around the desk (Kate's wireframes, Sep 17): the brand leads home, a lane opens its page in place, the builder's pages crumb under Newsletter |
 | **Keep the rest (N)** | ✓ `fa-check` | the small dark-grey button, Carbon's secondary (Kate, Sep 17: a sweep across a list is grey, the one decision on a card is the primary), right of Finalize's head while rewrites wait to be checked | keep every rewrite still to check. Sort's Keep the rest went with its sections (Kate, Sep 18: "Drop it") |
-| **Send it to** ERC Newsletter only | none | one checkbox on Sort's card (Kate, Sep 22; two boxes, Newsletter and Policy Exchange, from Sep 18) | where the item goes once kept: unticked it waits in the newsletter's pool at once AND on Publish, ticked it waits in the newsletter's pool and never reaches Publish; a spotlight event comes ticked. Nowhere is not a state, so Keep and next no longer locks on it |
+| **Send it to** ERC Newsletter only | none | one checkbox on Sort's card (Kate, Sep 22; two boxes, Newsletter and Policy Exchange, from Sep 18) | where the item goes once kept: unticked it waits in the newsletter's pool at once AND on Publish, ticked it waits in the newsletter's pool and never reaches Publish; a campus event comes ticked: an Event with the A&M subtype, another unit's, the one thing held off the Exchange by default (Kate, Sep 22); ERC's own events go everywhere, and the old Spotlight request flag moves nothing. Nowhere is not a state, so Keep and next no longer locks on it |
 | **Dismiss all** | `fa-trash-can` | red ghost word at the right of a group's head on Sort | deletes every row in that group in one change, with one Undo ("Dismissed N. Undo"). The groups (Kate, Sep 22): Past, an event whose date has gone or an opportunity whose deadline has passed, and Already live, a link the live Exchange already has (the same check Publish runs, asked for quietly on arrival); they sit under the skipped rows, each row tagged, and a row in both is Already live |
 | **Undo** (Sort) | none | the status line's word after a decision; a greyed row's own Undo | Keys on Sort (Sep 17): up and down move, K keeps, S skips, D deletes, U undoes; the buttons' tooltips name them. A decision says itself in the status line ("Kept: title. Undo"), the card moves to the next item and takes focus; Undo says what it undid |
 | **Download the CSV** → **Download the CSV again** | `fa-download` | the primary in Publish's head, then a ghost word beside the Publish button | the copy of the Adding rows in the hub's own columns, saved before anything is sent (Kate, Sep 22: the CSV comes first); Publish appears only once it has been downloaded, and a changed Adding list asks for a fresh copy. The receipt's Download the CSV again is the whole hub file after the write |
@@ -250,7 +250,7 @@ its Undo. A row is the title with source · added by who · when; the chosen
 one sits on the selected layer with its 3px bar and its title at 600. On the
 right the card, kept in view while the list scrolls, one white box split by
 a vertical rule (the handoff, Sep 22). Left, the item as it reads: the
-source as an uppercase label with the fact tags (New, Spotlight requested,
+source as an uppercase label with the fact tags (New,
 External submission, In a past issue, Past, Already live) and the position
 ("1 of 15") at the right; the title as the heading, edited in place; one
 meta line, when and by whom, then the link as its domain with Change
@@ -292,7 +292,7 @@ question about leads its title with a blue triangle
 (`fa-triangle-exclamation`); a missing type turns the Type label and its row
 blue. Keep and next stays locked in Carbon's disabled grey until the type
 and the link are settled and the item has somewhere to go, and its tooltip
-says which. Spotlight requested is a grey fact tag like External submission.
+says which. The Spotlight request checkbox and its tag went on Sep 22: ERC Spotlight is fed by the ERC event type, and anything else is moved there by hand in the builder.
 
 Placement grammar: tools (Edit) pair with Delete far LEFT of a card footer; the
 decision pair (secondary then primary) sits RIGHT; the position counter sits alone

@@ -18,12 +18,12 @@ const newestFirst = bySubmitted('desc');
 const oldestFirst = bySubmitted('asc');
 
 /**
- * ERC first: a spotlight request of any type, or ERC Research. Broader than
- * workflow.js's newsletterOnly (which is spotlight events only, minus
- * webinars) — don't conflate the two.
+ * ERC's own: an ERC event (hosted or co-hosted by the ERC) or ERC Research,
+ * by type and subtype (Kate, Sep 22; the old spotlight flag counted before).
+ * Whose an item is, not where it goes: that is workflow.js's newsletterOnly.
  */
 export function isErc(row) {
-  return Boolean(row.spotlight_request) || row.subtype === 'ERC Research';
+  return row.type === 'erc_event' || row.subtype === 'ERC Research';
 }
 
 /** Kept rows that still lack a real type: they come BACK to Sort's list,

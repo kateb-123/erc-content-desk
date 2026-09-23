@@ -11,7 +11,7 @@ const laneRows = [
   { id: 'q1', status: 'new' }, { id: 'q2', status: 'circleback' },
   { id: 's1', status: 'kept', type: 'research', newsletter_issue: '2026-09-22' },
   { id: 'w1', status: 'kept', type: 'research', published_at: '2026-09-01T10:00:00Z' },
-  { id: 'w2', status: 'kept', type: 'event', date: '2026-09-30', spotlight_request: true },   // newsletter-only: held off the Exchange
+  { id: 'w2', status: 'kept', type: 'event', subtype: 'A&M', date: '2026-09-30' },   // a campus event: newsletter only, held off the Exchange
   { id: 'p1', status: 'kept', type: 'research' },
   { id: 'p2', status: 'kept', type: 'headline' },
   { id: 't1', status: 'trashed' },

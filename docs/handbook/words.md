@@ -34,7 +34,7 @@
 "Description"
 "Paste a link" / "We will pull the title and description if we can." (the front page's first field since Sep 18)
 "Link"
-"Spotlight request" (the submit form's checkbox since Sep 18; "Requesting ERC Spotlight / newsletter feature" before)
+"Spotlight request" (the submit form's checkbox since Sep 18; "Requesting ERC Spotlight / newsletter feature" before; GONE Sep 22, ERC Spotlight is fed by the ERC event type)
 "Your initials" (the submit form's label since Sep 16, no "(required)" since Sep 18; the error still says "Add your name or initials.")
 "Add a doc or spreadsheet" (the bulk door since Sep 18)
 "Drop a file here or click to choose one"
@@ -354,7 +354,7 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 # Badges
 
 "Not sorted yet" (the Next newsletter page's table: a quick-added item Sort has not had yet)
-"Spotlight requested"
+"Spotlight requested" (gone Sep 22)
 "External submission"
 "In a past issue"
 "Already live"

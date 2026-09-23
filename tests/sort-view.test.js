@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { keptUntyped, readerQueue, sortList, oldestWait, fixReasons, dupeReason, dupeBadgeText, isNewToday, isPast, keepBlock, missingLine, nextSelected, undoWords, withoutRow, adjacentTab } from '../js/sort-view.js';
+import { isErc, keptUntyped, readerQueue, sortList, oldestWait, fixReasons, dupeReason, dupeBadgeText, isNewToday, isPast, keepBlock, missingLine, nextSelected, undoWords, withoutRow, adjacentTab } from '../js/sort-view.js';
 
 // ── One list, newest first (Kate's wireframes and her answers, Sep 18) ──
 
@@ -209,4 +209,13 @@ test('sortList gathers past items and items already on the Exchange into their o
 
 test('undoWords for a dismissed group counts the items back', () => {
   assert.equal(undoWords({ kind: 'dismiss', rows: [{ id: 'a' }, { id: 'b' }, { id: 'c' }] }), 'Undid: dismissed 3');
+});
+
+// ── ERC's own, for Finalize's order (Kate, Sep 22: by type, not the old spotlight flag) ──
+
+test('isErc: an ERC event or ERC Research, whatever the old spotlight flag says', () => {
+  assert.equal(isErc({ type: 'erc_event', subtype: '' }), true);
+  assert.equal(isErc({ type: 'research', subtype: 'ERC Research' }), true);
+  assert.equal(isErc({ type: 'event', subtype: 'A&M', spotlight_request: true }), false);
+  assert.equal(isErc({ type: 'headline', subtype: 'Texas', spotlight_request: true }), false);
 });

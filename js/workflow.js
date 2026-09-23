@@ -78,14 +78,16 @@ export function linkNeedsCheck(row) {
 }
 
 /**
- * Newsletter-only: spotlight events stay off the public Exchange — webinars
- * excepted. Narrower than sort-view.js's isErc (which also counts ERC
- * Research and non-event spotlights) — don't conflate the two.
+ * Newsletter-only by default: the campus rule (Kate, Sep 22). An Event with
+ * the A&M subtype, another campus unit's event, starts held off the public
+ * Exchange; the sorter can untick it. Nothing else is held: ERC's own events
+ * publish there as events tagged ERC Events, webinars and off-campus events
+ * go, and the old spotlight_request flag moves nothing any more (the form's
+ * checkbox went the same day). Not sort-view.js's isErc, which says whose
+ * an item is, not where it goes.
  */
 export function newsletterOnly(row) {
-  // ERC Events publish like any other event, so only a plain spotlight event
-  // is held back.
-  return row.type === 'event' && Boolean(row.spotlight_request) && row.subtype !== 'Webinar-Online';
+  return row.type === 'event' && row.subtype === 'A&M';
 }
 
 /**
@@ -121,7 +123,7 @@ export function needsDescription(row) {
  * Where a row goes (Kate, Sep 18: "Tick = it waits on that page"): its
  * send_to, 'both' | 'newsletter' | 'exchange' | 'none'. A row nobody has
  * ticked (every row kept before Send it to) takes the old routing: both,
- * except a spotlight event (newsletterOnly) and a row stamped into an issue
+ * except a campus event (newsletterOnly) and a row stamped into an issue
  * before it was published (quick add stamps before Sort), which stay off the
  * Exchange.
  */

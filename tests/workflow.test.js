@@ -53,9 +53,10 @@ test('sendTo reads the ticks a row carries', () => {
   assert.deepEqual(sendTo(row({ send_to: 'none' })), { newsletter: false, exchange: false });
 });
 
-test('an untouched row takes the old rule: both, but a spotlight event and a row already stamped unpublished are newsletter only', () => {
+test('an untouched row takes the old rule: both, but a campus event (A&M) and a row already stamped unpublished are newsletter only', () => {
   assert.deepEqual(sendTo(row({ type: 'research' })), { newsletter: true, exchange: true });
-  assert.deepEqual(sendTo(row({ type: 'event', subtype: 'A&M', spotlight_request: true })), { newsletter: true, exchange: false });
+  assert.deepEqual(sendTo(row({ type: 'event', subtype: 'A&M' })), { newsletter: true, exchange: false });
+  assert.deepEqual(sendTo(row({ type: 'event', subtype: 'Off-Campus', spotlight_request: true })), { newsletter: true, exchange: true });   // the old flag moves nothing
   assert.deepEqual(sendTo(row({ type: 'headline', newsletter_issue: '2026-09-22' })), { newsletter: true, exchange: false });   // quick add stamps before Sort
   assert.deepEqual(sendTo(row({ type: 'headline', newsletter_issue: '2026-09-22', published_at: 'x' })), { newsletter: true, exchange: true });
 });
@@ -69,7 +70,8 @@ test('sendToValue writes the ticks back as one word', () => {
 
 test('keep freezes the ticks on the row, so a later stamp or type change never moves it', () => {
   assert.equal(keep(row({ type: 'research' })).send_to, 'both');
-  assert.equal(keep(row({ type: 'event', subtype: 'A&M', spotlight_request: true })).send_to, 'newsletter');
+  assert.equal(keep(row({ type: 'event', subtype: 'A&M' })).send_to, 'newsletter');
+  assert.equal(keep(row({ type: 'event', subtype: 'Off-Campus', spotlight_request: true })).send_to, 'both');
   assert.equal(keep(row({ type: 'research', send_to: 'exchange' })).send_to, 'exchange');
 });
 
@@ -149,11 +151,13 @@ test('linkNeedsCheck: asks only for unread links, never after a human check', ()
   assert.equal(linkNeedsCheck(blankRow({ link: '', link_checked: 'failed' })), false);
 });
 
-test('newsletterOnly holds spotlight events except webinars', () => {
+test('newsletterOnly is the campus rule (Kate, Sep 22): an Event with the A&M subtype, nothing else', () => {
+  assert.equal(newsletterOnly(blankRow({ type: 'event', subtype: 'A&M' })), true);
   assert.equal(newsletterOnly(blankRow({ type: 'event', subtype: 'A&M', spotlight_request: true })), true);
   assert.equal(newsletterOnly(blankRow({ type: 'event', subtype: 'Webinar-Online', spotlight_request: true })), false);
-  assert.equal(newsletterOnly(blankRow({ type: 'event', subtype: 'A&M', spotlight_request: false })), false);
+  assert.equal(newsletterOnly(blankRow({ type: 'event', subtype: 'Off-Campus', spotlight_request: true })), false);
   assert.equal(newsletterOnly(blankRow({ type: 'research', subtype: 'ERC Research', spotlight_request: true })), false);
+  assert.equal(newsletterOnly(blankRow({ type: 'erc_event', subtype: 'A&M' })), false);   // ERC's own events go to the Exchange
 });
 
 test('Finalize takes every kept row still on its way, wherever it is ticked for: not published, not in an issue', () => {

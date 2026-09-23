@@ -29,7 +29,7 @@ export const BOOLEAN_COLUMNS = ['spotlight_request'];
 
 /**
  * Type vocabulary. Every type is hub-eligible in v2 — all keeps publish to
- * the Exchange. ERC Spotlight is a per-row flag (spotlight_request), not a type.
+ * the Exchange. ERC Spotlight is fed by type (an ERC event); spotlight_request is an old flag the desk keeps but no longer reads (Sep 22).
  */
 export const TYPES = {
   opportunity: {

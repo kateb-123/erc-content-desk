@@ -48,9 +48,9 @@ function fieldsFor(row) {
   return fields;
 }
 
-/** Where a row lands by default: the ⭐ flag beats the type map. */
+/** Where a row lands by default: the type map, an ERC event leading under
+ *  ERC Spotlight. The old spotlight_request flag moves nothing (Kate, Sep 22). */
 export function defaultSection(row) {
-  if (row.spotlight_request) return 'spotlight';
   return NEWSLETTER_MAP[`${row.type}|${row.subtype}`]?.[0] ?? '';
 }
 

@@ -34,7 +34,7 @@ export function resetFinalizeEntry() { selectedId = null; noneOpen = false; edit
 
 const oldestFirst = (a, b) => String(a.submitted_at).localeCompare(String(b.submitted_at));
 
-/** ERC spotlight leads, then type order, the untyped, then a type the schema
+/** ERC's own lead (an ERC event, ERC Research), then type order, the untyped, then a type the schema
  *  does not know: the same standing as Sort. The sort is stable, so rows that
  *  rank the same keep the order they came in. */
 const standing = row => (isErc(row) ? 0
