@@ -65,3 +65,16 @@ test('the Queue folds from a chevron, open to start with', () => {
   assert.match(src, /faIcon\(queueOpen \? 'chevron-down' : 'chevron-right'\)/);
   assert.match(src, /aria-expanded/);
 });
+
+// Kate, Sep 23: every row in the box says it is public facing, and the live
+// line (the Exchange's last update) sits under that, not in its place.
+test('every quick link says it is a public facing link', () => {
+  for (const key of ['share', 'listserv', 'exchange']) {
+    assert.match(entry(key), /sub: 'Public facing link'/, key);
+  }
+});
+
+test("a row's own line and its live line are two lines, not one slot", () => {
+  assert.match(src, /el\('div', 'ql-sub', item\.sub \?\? ''\)/);
+  assert.doesNotMatch(src, /dataset\.sub/, 'the live line no longer falls back to the row\'s own');
+});

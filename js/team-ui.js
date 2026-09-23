@@ -23,9 +23,9 @@ import { el, tryAgain } from './ui-aids.js';
  *  having the url displayed"); a row says what it is, or what is happening on
  *  it. The desk's own pages are the buttons under the box. */
 export const QUICK_LINKS = [
-  { key: 'share', label: 'Submit content', href: 'https://erc-share.vercel.app/submit/', icon: 'square-plus', sub: 'The form anyone can use' },
-  { key: 'listserv', label: 'Join listserv', href: 'https://erc-share.vercel.app/listserv/', icon: 'address-book', sub: 'Where people sign up' },
-  { key: 'exchange', label: 'ERC Policy Exchange', href: 'https://erc-policy-exchange.vercel.app/', icon: 'display' },
+  { key: 'share', label: 'Submit content', href: 'https://erc-share.vercel.app/submit/', icon: 'square-plus', sub: 'Public facing link' },
+  { key: 'listserv', label: 'Join listserv', href: 'https://erc-share.vercel.app/listserv/', icon: 'address-book', sub: 'Public facing link' },
+  { key: 'exchange', label: 'ERC Policy Exchange', href: 'https://erc-policy-exchange.vercel.app/', icon: 'display', sub: 'Public facing link' },
 ];
 
 /** The desk's own work, a filled button each (Kate, Sep 23): the Newsletter
@@ -75,12 +75,11 @@ function quickLink(item) {
   const a = el('a', 'ql-name', item.label);
   a.href = item.href; a.target = '_blank'; a.rel = 'noopener';
   a.append(' ', faIcon('arrow-up-right-from-square'));
-  // One line under the name: what is happening on it (quickLinkNotes, filled
-  // once the rows are in), or what it is when there is nothing to report.
-  const note = el('div', 'ql-note', item.sub ?? '');
+  // Under the name: what the row is, then what is happening on it, if
+  // anything (quickLinkNotes, filled once the rows are in).
+  const note = el('div', 'ql-note');
   note.dataset.key = item.key;
-  if (item.sub) note.dataset.sub = item.sub;
-  words.append(a, note);
+  words.append(a, el('div', 'ql-sub', item.sub ?? ''), note);
   left.append(ico, words);
   row.append(left);
   // Copy link writes the address and says so for two seconds; only this row
@@ -157,11 +156,11 @@ export function renderTeam(container, props) {
     const n = counts ? counts[badge.parentElement.dataset.key] : null;
     badge.textContent = n ? String(n) : '';
   }
-  // Under each Quick link: the Exchange's last update, the last issue and the
-  // next, what waits for the newsletter (Kate, Sep 22 and 23). A row with
-  // nothing to report falls back to the line that says what it is.
+  // The live line under each row: the Exchange's last update, the newsletter's
+  // next issue (Kate, Sep 22 and 23). It sits under the row's own line, which
+  // says what the row is, and a row with nothing to report shows none.
   const notes = loaded ? quickLinkNotes(rows, { schedule, today }) : null;
-  for (const n of page.querySelectorAll('.ql-note, .door-note')) n.textContent = (notes && notes[n.dataset.key]) || n.dataset.sub || '';
+  for (const n of page.querySelectorAll('.ql-note, .door-note')) n.textContent = (notes && notes[n.dataset.key]) || '';
 
   // The queue, read only: every waiting item, newest first.
   const list = page.querySelector('.queue-rows');

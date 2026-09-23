@@ -230,12 +230,11 @@ button (Kate's pick C, Sep 23): Quick links, where every link is a row with a
 address. The icons are Kate's set D of Sep 23, each one the thing itself and
 no two alike: a square plus for the share form, an address book for the
 sign-up, a display for the Exchange (her pick from ten, eight of them screens),
-a newspaper for the Newsletter and a stack for Content Sort ("I friggin hate having the url displayed"). That line is what is
-happening on it: under the Exchange when the desk last published to it; under
-Newsletter the next issue and how many items are ready to add. Where there is
-nothing to report the line says what the page is instead, as under the share
-form and the sign-up. The send dates are said once, under Newsletter, and the
-listserv row does not repeat them (Kate, Sep 23). The four are the public
+a newspaper for the Newsletter and a stack for Content Sort ("I friggin hate having the url displayed"). Every row says "Public facing link" under its
+name (Kate, Sep 23), and where the desk knows something about the page a
+second line sits under that: when it last published to the Exchange. The
+Newsletter's next issue is said on its own button, and the send dates are said
+there only, never repeated on the listserv row. The four are the public
 share page, the listserv sign-up, the Policy Exchange and the Newsletter,
 each opening in a new tab, the first three with Copy link, which says Copied
 for two seconds. The Newsletter has none: its address is the desk's, and the
