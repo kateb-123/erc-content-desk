@@ -76,9 +76,12 @@ test("the desk sends the folder's addresses on to the standalone site", () => {
   // Vercel reads .vercelignore at the repository root for EVERY project built
   // from the repo, so ignoring the folder there emptied the standalone deploy
   // too (Sep 22). The desk redirects instead.
+  // Two rules: Vercel's :path* pattern does not match a trailing slash, so
+  // /public-pages/submit/ served the page live (Sep 22); :path(.*) does.
   const cfg = JSON.parse(read('vercel.json'));
   assert.deepEqual(cfg.redirects, [
-    { source: '/public-pages/:path*', destination: 'https://erc-share.vercel.app/:path*', permanent: false },
+    { source: '/public-pages', destination: 'https://erc-share.vercel.app/', permanent: false },
+    { source: '/public-pages/:path(.*)', destination: 'https://erc-share.vercel.app/:path', permanent: false },
   ]);
   const lines = read('.vercelignore').split('\n').map(l => l.trim());
   assert.ok(!lines.includes(`${FOLDER}/`), 'the ignore file would empty the standalone deploy too');

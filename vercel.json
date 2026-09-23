@@ -9,6 +9,7 @@
     }
   ],
   "redirects": [
-    { "source": "/public-pages/:path*", "destination": "https://erc-share.vercel.app/:path*", "permanent": false }
+    { "source": "/public-pages", "destination": "https://erc-share.vercel.app/", "permanent": false },
+    { "source": "/public-pages/:path(.*)", "destination": "https://erc-share.vercel.app/:path", "permanent": false }
   ]
 }
