@@ -23,9 +23,9 @@ import { el, tryAgain } from './ui-aids.js';
  *  having the url displayed"); a row says what it is, or what is happening on
  *  it. The desk's own pages are the buttons under the box. */
 export const QUICK_LINKS = [
-  { key: 'share', label: 'Submit content', href: 'https://erc-share.vercel.app/submit/', icon: 'paper-plane', sub: 'The form anyone can use' },
-  { key: 'listserv', label: 'Join listserv', href: 'https://erc-share.vercel.app/listserv/', icon: 'user-plus', sub: 'Where people sign up' },
-  { key: 'exchange', label: 'ERC Policy Exchange', href: 'https://erc-policy-exchange.vercel.app/', icon: 'globe' },
+  { key: 'share', label: 'Submit content', href: 'https://erc-share.vercel.app/submit/', icon: 'square-plus', sub: 'The form anyone can use' },
+  { key: 'listserv', label: 'Join listserv', href: 'https://erc-share.vercel.app/listserv/', icon: 'address-book', sub: 'Where people sign up' },
+  { key: 'exchange', label: 'ERC Policy Exchange', href: 'https://erc-policy-exchange.vercel.app/', icon: 'display' },
 ];
 
 /** The desk's own work, a filled button each (Kate, Sep 23): the Newsletter
@@ -33,8 +33,8 @@ export const QUICK_LINKS = [
  *  wears a badge; the newsletter's pool is not something to be alerted about,
  *  so it says which issue is next instead (her word, Sep 23). */
 export const DESK_DOORS = [
-  { key: 'newsletter', icon: 'envelope', newWindow: true },
-  { key: 'sort', icon: 'inbox', badge: true },
+  { key: 'newsletter', icon: 'newspaper', newWindow: true },
+  { key: 'sort', icon: 'layer-group', badge: true },
 ];
 
 function sectionHead(label, note) {

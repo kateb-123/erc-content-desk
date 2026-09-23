@@ -227,7 +227,10 @@ row in its own scroll; the head's label is a fold, opening from a chevron on
 its left, and it starts open (Kate, Sep 23). Right, one white box and one
 button (Kate's pick C, Sep 23): Quick links, where every link is a row with a
 32px icon on the quiet surface, its name, and ONE line under it, never its
-address ("I friggin hate having the url displayed"). That line is what is
+address. The icons are Kate's set D of Sep 23, each one the thing itself and
+no two alike: a square plus for the share form, an address book for the
+sign-up, a display for the Exchange (her pick from ten, eight of them screens),
+a newspaper for the Newsletter and a stack for Content Sort ("I friggin hate having the url displayed"). That line is what is
 happening on it: under the Exchange when the desk last published to it; under
 Newsletter the next issue and how many items are ready to add. Where there is
 nothing to report the line says what the page is instead, as under the share

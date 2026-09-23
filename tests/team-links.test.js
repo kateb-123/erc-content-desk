@@ -20,10 +20,14 @@ test('Quick links are the three public pages, and only those', () => {
   assert.doesNotMatch(links, /newsletter/, 'the newsletter is a button, not a quick link');
 });
 
-test('every quick link carries an icon', () => {
-  for (const key of ['share', 'listserv', 'exchange']) {
-    assert.match(entry(key), /icon: '[a-z-]+'/, `${key} has an icon`);
-  }
+// Kate's set D of Sep 23, with the screen for the Exchange: each icon is the
+// thing itself, and no two rows repeat a metaphor.
+test('every row and door carries the icon Kate picked', () => {
+  const icons = { share: 'square-plus', listserv: 'address-book', exchange: 'display' };
+  for (const [key, icon] of Object.entries(icons)) assert.match(entry(key), new RegExp(`icon: '${icon}'`), key);
+  const doors = src.match(/export const DESK_DOORS = \[([\s\S]*?)\];/)[1];
+  assert.match(doors, /key: 'newsletter'[^\n]*icon: 'newspaper'/);
+  assert.match(doors, /key: 'sort'[^\n]*icon: 'layer-group'/);
 });
 
 test('no row shows its address (Kate, Sep 23)', () => {
