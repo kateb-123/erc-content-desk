@@ -2,8 +2,8 @@
  * The team's page, Submit content (Kate's sketch and the design handoff, Sep 22):
  * the share form in a white box on the left with the Queue under it, a fold
  * that opens open; on the right the three public Quick links with Copy link,
- * then the desk's own two as filled buttons, Content Sort in place and the
- * Newsletter in its own window (Kate, Sep 23). The form is mounted once and left alone on re-renders, so
+ * then the desk's own two as filled buttons, the Newsletter in its own window
+ * and Content Sort in place (Kate, Sep 23). The form is mounted once and left alone on re-renders, so
  * typing is never wiped; the queue and the counts redraw.
  */
 import { renderSubmitForm } from './submit-form.js';
@@ -28,12 +28,13 @@ export const QUICK_LINKS = [
   { key: 'exchange', label: 'ERC Policy Exchange', href: 'https://erc-policy-exchange.vercel.app/', icon: 'globe' },
 ];
 
-/** The desk's own work, a filled button each (Kate, Sep 23): Content Sort in
- *  place, the Newsletter in its own window. Each wears its count as a badge,
- *  and the Newsletter says which issue is next under its name. */
+/** The desk's own work, a filled button each (Kate, Sep 23): the Newsletter
+ *  first, in its own window, then Content Sort in place. Only Content Sort
+ *  wears a badge; the newsletter's pool is not something to be alerted about,
+ *  so it says which issue is next instead (her word, Sep 23). */
 export const DESK_DOORS = [
-  { key: 'sort', icon: 'inbox' },
   { key: 'newsletter', icon: 'envelope', newWindow: true },
+  { key: 'sort', icon: 'inbox', badge: true },
 ];
 
 function sectionHead(label, note) {
@@ -109,7 +110,9 @@ function deskDoor(door, onGoTo) {
   const note = el('span', 'door-note');
   note.dataset.key = lane.key;
   words.append(el('span', 'door-name', lane.label), note);
-  a.append(faIcon(door.icon), words, el('span', 'door-count'), faIcon('arrow-right'));
+  a.append(faIcon(door.icon), words);
+  if (door.badge) a.append(el('span', 'door-count'));
+  a.append(faIcon('arrow-right'));
   return a;
 }
 
@@ -149,10 +152,10 @@ export function renderTeam(container, props) {
   // The counts once the rows are in: what waits on each page.
   const issue = nextIssueDate(schedule, today);
   const counts = loaded ? laneCounts(rows, { schedule, issue, today, preview: null }) : null;
-  // A door's badge: the count, and nothing at all when there is none to show.
-  for (const a of page.querySelectorAll('.sort-door')) {
-    const n = counts ? counts[a.dataset.key] : null;
-    a.querySelector('.door-count').textContent = n ? String(n) : '';
+  // A door's badge, where it has one: the count, and nothing at all at zero.
+  for (const badge of page.querySelectorAll('.sort-door .door-count')) {
+    const n = counts ? counts[badge.parentElement.dataset.key] : null;
+    badge.textContent = n ? String(n) : '';
   }
   // Under each Quick link: the Exchange's last update, the last issue and the
   // next, what waits for the newsletter (Kate, Sep 22 and 23). A row with

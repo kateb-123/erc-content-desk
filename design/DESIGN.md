@@ -236,8 +236,12 @@ listserv row does not repeat them (Kate, Sep 23). The four are the public
 share page, the listserv sign-up, the Policy Exchange and the Newsletter,
 each opening in a new tab, the first three with Copy link, which says Copied
 for two seconds. The Newsletter has none: its address is the desk's, and the
-desk is not for handing out. Under the box, Content Sort as the one filled
-button on the page, with its icon, its count as a big numeral and an arrow. The top bar shows only Policy Exchange on the right. The
+desk is not for handing out. Under the box, the desk's own two as filled
+buttons (Kate, Sep 23): the Newsletter first, in its own window, with the next
+issue under its name, then Content Sort in place. Only Content Sort wears a
+badge, a maize pill in navy ink at the button's right ("not 17 but more like an
+alert"), and it is drawn only while something waits; the newsletter's pool is
+not something to be alerted about. The top bar shows only Policy Exchange on the right. The
 Sort page is Content Sort everywhere since Sep 22.
 
 The front page of Sep 17 to 22 (Kate's wireframes; `design/mockups/index.png`) was the

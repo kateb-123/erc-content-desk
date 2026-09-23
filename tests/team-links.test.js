@@ -38,16 +38,21 @@ test('Copy link belongs to the public rows: every quick link has one', () => {
   assert.doesNotMatch(src, /inHouse/, 'nothing in the box needs holding back any more');
 });
 
-test("the desk's own pages are filled buttons, and the Desk work box is gone", () => {
+test("the desk's own pages are filled buttons, the newsletter first", () => {
   const doors = src.match(/export const DESK_DOORS = \[([\s\S]*?)\];/)[1];
-  assert.match(doors, /key: 'sort'/);
+  const order = [...doors.matchAll(/key: '(\w+)'/g)].map(m => m[1]);
+  assert.deepEqual(order, ['newsletter', 'sort'], 'the newsletter sits above Content Sort (Kate, Sep 23)');
   assert.match(doors, /key: 'newsletter'[^\n]*newWindow: true/, 'the newsletter opens in its own window');
   assert.match(src, /el\('a', 'sort-door'\)/);
   assert.doesNotMatch(src, /'Desk work'/);
   assert.doesNotMatch(src, /door-rows/);
 });
 
-test('a door with nothing waiting shows no badge at all', () => {
+test('only Content Sort wears a badge, and none of it at zero', () => {
+  const doors = src.match(/export const DESK_DOORS = \[([\s\S]*?)\];/)[1];
+  assert.match(doors, /key: 'sort'[^\n]*badge: true/);
+  assert.doesNotMatch(doors, /key: 'newsletter'[^\n]*badge/, 'the newsletter has no alert (Kate, Sep 23)');
+  assert.match(src, /if \(door\.badge\) a\.append/);
   assert.match(src, /textContent = n \? String\(n\) : ''/);
 });
 
