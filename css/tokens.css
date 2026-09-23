@@ -1,147 +1,157 @@
 /* The one place a colour, a size or a face is written down. Carbon's names
-   (Sep 17, 2026) with the refresh's values (Claude Design, Kate's picks, Sep
-   22, 2026): a cream ground, warm greys, Archivo for the UI and Lora for page
-   titles and big numerals, 2px corners, navy fills on both apps, uppercase
-   micro-labels over 2px orange rules, an ink wash for inner surfaces. Orange
-   still only marks: it never fills a button and never carries text. No maroon
-   in-app, no shadows anywhere. The status colours and the two accent ramps
-   are Kate's palette of Sep 17. Every page loads this first; each app's :root
-   maps the accent tokens onto its profile below. */
+   (Sep 17, 2026) now carry the values of the U-M Library Design System, which
+   Kate designed the desk into on Sep 23, 2026 (her mockup of all four
+   screens; her pick: the look only, the palette as designed). The system:
+   four ramps at 100 to 500, "when in doubt start with 400"; Mulish for
+   everything and Crimson Text for large titles only; flat white pages with
+   hairline neutral borders; a navy top bar; teal for every interactive thing
+   and maize for the brand rules; 2px corners on inputs, 4px on buttons, cards
+   and notes, 16px on pills; spacing in multiples of 8 plus 2 and 4; a focus
+   ring of 2px maize inside 3px neutral. No maroon in-app: it lives in the
+   newsletter email and on the public pages. Every page loads this first; each
+   app's :root maps the accent tokens onto the ramp below. */
 :root {
-  /* Surfaces: the page, then layers stacked on it. */
-  --background: #f6f3ec;             /* the cream page ground, both apps */
-  --background-hover: #f3f2f0;        /* quiet button and row hover on white */
-  --background-inverse: #3a352e;
-  --layer-01: rgba(35, 32, 27, .045);  /* an inner surface: the ink wash, not a grey layer */
-  --layer-02: #ffffff;
-  --layer-accent-01: rgba(35, 32, 27, .07);   /* pills, counts, table heads */
-  --layer-hover-01: #f3f2f0;
-  --field-01: #f4f1e9;                 /* the big link field inside a white box */
-  --field-02: #ffffff;
-  --overlay: #23201b80;
+  /* ── The system's ramps, under the system's own names ────────────────── */
+  --color-blue-100: #f7f8f9;
+  --color-blue-200: #b2bec9;
+  --color-blue-300: #4c6781;
+  --color-blue-400: #00274c;
+  --color-blue-500: #001324;
 
-  /* Lines: subtle ones divide, strong ones bound a control. */
-  --border-subtle-00: #e3ddd0;         /* dividers inside a box, the top bar's rule */
-  --border-subtle-01: #ded8cd;         /* a box's hairline */
-  --border-strong-01: #8c8478;         /* the line under a big field, an outline button, dashed zones */
-  --border-interactive: #0f62fe;
-  --border-disabled: #e0dad0;
+  --color-maize-100: #fff9e6;
+  --color-maize-200: #ffea9b;
+  --color-maize-300: #ffda50;
+  --color-maize-400: #ffcb05;
+  --color-maize-500: #eaba02;
+
+  --color-teal-100: #e9f2f5;
+  --color-teal-200: #a7cddb;
+  --color-teal-300: #65a8bf;
+  --color-teal-400: #1d7491;
+  --color-teal-500: #106684;
+
+  --color-neutral-100: #e5e9ed;
+  --color-neutral-200: #8a96a1;
+  --color-neutral-300: #637381;
+  --color-neutral-400: #212b36;
+  --color-neutral-500: #06080a;
+
+  /* Secondary ramps: meaning and state only, never decoration. */
+  --color-green-100: #eaf8ee;
+  --color-green-400: #20a848;
+  --color-green-500: #198539;
+  --color-pink-100: #fcebeb;
+  --color-pink-400: #d93838;
+  --color-pink-500: #bf3232;
+  --color-orange-100: #fff1eb;
+  --color-orange-400: #f25f1f;
+  --color-orange-500: #c74e1a;
+
+  /* Surfaces: a flat white page, then layers on it. */
+  --background: #ffffff;
+  --background-hover: var(--color-blue-100);
+  --background-inverse: var(--color-blue-400);
+  --layer-01: var(--color-blue-100);          /* a quiet box inside a card */
+  --layer-02: #ffffff;
+  --layer-accent-01: var(--color-neutral-100);/* pills, counts, table heads, tracks */
+  --layer-hover-01: var(--color-blue-100);
+  --field-01: #ffffff;                        /* fields are white with a 1px rule, both grounds */
+  --field-02: #ffffff;
+  --overlay: #00000040;                       /* the 25% scrim, the only transparency in the system */
+
+  /* Lines: a hairline divides, a stronger one bounds a control. */
+  --border-subtle-00: var(--color-neutral-100);
+  --border-subtle-01: var(--color-neutral-100);
+  --border-strong-01: var(--color-neutral-200);
+  --border-interactive: var(--color-maize-400);  /* the brand rule: section heads, the step indicator */
+  --border-disabled: var(--color-neutral-100);
 
   /* Text and icons. */
-  --text-primary: #23201b;
-  --text-secondary: #6b6156;
-  --text-helper: #8c8478;
-  --text-placeholder: #a8a096;
-  --text-disabled: #a8a096;
+  --text-primary: var(--color-neutral-400);
+  --text-secondary: var(--color-neutral-300);
+  --text-helper: var(--color-neutral-300);
+  --text-placeholder: var(--color-neutral-200);
+  --text-disabled: var(--color-neutral-200);
   --text-on-color: #ffffff;
-  --text-on-color-disabled: #a8a096;
+  --text-on-color-disabled: var(--color-neutral-200);
   --text-inverse: #ffffff;
-  --link-primary: #0f62fe;
-  --link-primary-hover: #0043ce;
-  --link-inverse: #78a9ff;
-  --icon-primary: #23201b;
-  --icon-secondary: #6b6156;
-  --icon-disabled: #a8a096;
+  --link-primary: var(--color-teal-400);      /* links are teal and underlined */
+  --link-primary-hover: var(--color-teal-500);
+  --link-inverse: var(--color-maize-400);     /* a link on the navy ground */
+  --icon-primary: var(--color-neutral-400);
+  --icon-secondary: var(--color-neutral-300);
+  --icon-disabled: var(--color-neutral-200);
 
-  /* Buttons. */
-  --button-primary: #0f62fe;
-  --button-primary-hover: #0050e6;
-  --button-primary-active: #002d9c;
-  --button-secondary: #3a352e;
-  --button-secondary-hover: #2b2722;
-  --button-secondary-active: #4a443c;
-  --button-danger-secondary: #b3123c;   /* the palette's crimson: Delete and Remove */
-  --button-danger-hover: #8f0e30;       /* crimson darkened one step for the hover */
-  --button-disabled: #e0dad0;
+  /* Buttons. Teal fills the primary, navy the secondary, crimson the
+     destructive word. The system defines no pressed state, so the active
+     steps below are one step past the hover. */
+  --button-primary: var(--color-teal-400);
+  --button-primary-hover: var(--color-teal-500);
+  --button-primary-active: #0c5570;
+  --button-secondary: var(--color-blue-400);
+  --button-secondary-hover: var(--color-blue-500);
+  --button-secondary-active: var(--color-blue-500);
+  --button-danger-secondary: var(--color-pink-500);
+  --button-danger-hover: #a62b2b;
+  --button-disabled: var(--color-neutral-100);
 
-  /* Focus and selection. */
-  --focus: #23201b;                    /* the 2px ring is ink, 2px outside the control */
-  --focus-inset: #ffffff;
-  --highlight: #d0e2ff;
-  --interactive: #0f62fe;
-  --toggle-off: #8c8478;
+  /* Focus: 2px maize inside a 3px neutral ring (the system's own). */
+  --focus: var(--color-neutral-400);
+  --focus-inset: var(--color-maize-400);
+  --focus-ring: 0 0 0 2px var(--color-maize-400), 0 0 0 5px var(--color-neutral-400);
+  --highlight: var(--color-teal-100);
+  --interactive: var(--color-teal-400);       /* the progress bars */
+  --toggle-off: var(--color-neutral-200);
 
-  /* Status (Kate's palette, Sep 17): shared by both apps, never forked by the
-     accent. Each role is an icon colour, a note tint and a 30% border; the
-     word beside the icon is text-primary. Published is Alliance citrine, needs
-     review UT's Globe blue (the palette's purple read as Halloween beside
-     orange; the warning yellow before that), an error crimson, information
-     slate (Carbon's blue collided with navy). */
-  --support-error: #b3123c;
-  --support-success: #cedc00;
-  --support-warning: #006c93;
-  --support-info: #3d4a57;
-  --notification-error-background: #fbeef2;
-  --notification-error-border: #b3123c4d;
-  --notification-success-background: #f7f9e0;
-  --notification-success-border: #cedc004d;
-  --notification-warning-background: #e8f2f6;
-  --notification-warning-border: #006c934d;
-  --notification-info-background: #f0f2f4;
-  --notification-info-border: #3d4a574d;
+  /* Status. Each role is an icon colour, a note tint and a 30% border; the
+     word beside the icon is text-primary. The roles keep their meanings from
+     Sep 17 and take the system's colours: published green, needs doing
+     orange, an error crimson, information teal. */
+  --support-error: var(--color-pink-500);
+  --support-success: var(--color-green-400);
+  --support-warning: var(--color-orange-400);
+  --support-info: var(--color-teal-400);
+  --notification-error-background: var(--color-pink-100);
+  --notification-error-border: #bf32324d;
+  --notification-success-background: var(--color-green-100);
+  --notification-success-border: #20a8484d;
+  --notification-warning-background: var(--color-maize-100);
+  --notification-warning-border: #f25f1f4d;
+  --notification-info-background: var(--color-teal-100);
+  --notification-info-border: #1d74914d;
 
-  /* Status as text. Citrine is 1.5:1 on white, so a published WORD takes the
-     dark citrine; the review blue holds as icon and as text alike (5.9:1). */
-  --text-success: #4f5500;
-  --text-warning: #006c93;
+  /* Status as text: the 400 steps are under 4.5:1 on white, so a WORD takes
+     the 500 step. */
+  --text-success: var(--color-green-500);
+  --text-warning: var(--color-orange-500);
 
   /* Tags. */
-  --tag-background-blue: rgba(35, 32, 27, .07);
-  --tag-color-blue: #6b6156;
-  --tag-background-gray: rgba(35, 32, 27, .07);   /* a fact tag: the pill wash */
-  --tag-color-gray: #6b6156;
-  --tag-background-review: #cce4ed;   /* a possible duplicate: needs review, so it wears the review colour */
-  --tag-color-review: #004a66;
+  --tag-background-blue: var(--color-teal-100);
+  --tag-color-blue: var(--color-teal-500);
+  --tag-background-gray: var(--color-neutral-100);
+  --tag-color-gray: var(--color-neutral-400);
+  --tag-background-review: var(--color-maize-100);
+  --tag-color-review: var(--color-orange-500);
 
-  /* The accent ramps, one per app (Kate's palette, Sep 17, late night, then
-     her picks on the switcher): UT System orange for the desk, its brand
-     value #ff8200 at step 50; UT Martin navy for the builder, its brand value
-     #0b2341 at step 80. Each app's :root maps the accent tokens (button, link,
-     focus, interactive, highlight, the New tag, the loader's ramp) to its
-     --accent-NN steps. */
-  --navy-10: #eef1f5;
-  --navy-20: #d8e0ea;
-  --navy-30: #adbdd2;
-  --navy-40: #7691b3;
-  --navy-50: #4d6c96;
-  --navy-60: #1e416b;
-  --navy-70: #153154;
-  --navy-80: #0b2341;
-  --navy-alpha: rgba(30, 65, 107, .06);
-  --orange-10: #fff4ea;
-  --orange-20: #ffdfc7;
-  --orange-30: #ffbd8a;
-  --orange-40: #ffa155;
-  --orange-50: #ff8200;
-  --orange-60: #f27700;
-  --orange-70: #db6b00;
-  --orange-80: #7d3b00;
-  --orange-alpha: rgba(255, 130, 0, .06);
+  /* The accent, one ramp for both apps: teal, the system's interactive
+     colour. Teal 400 is 5.1:1 on white, so it fills, lines, links and marks
+     the chosen row alike. Maize carries no text at 1.4:1: it draws the
+     section rules and the focus ring and nothing else. */
+  --accent-10: var(--color-teal-100);
+  --accent-20: var(--color-teal-200);
+  --accent-30: var(--color-teal-200);
+  --accent-40: var(--color-teal-300);
+  --accent-50: var(--color-teal-400);
+  --accent-60: var(--color-teal-400);
+  --accent-70: var(--color-teal-500);
+  --accent-80: var(--color-teal-500);
+  --accent-alpha: rgba(29, 116, 145, .06);    /* the hover wash on quiet buttons and menu rows */
+  --accent-label: #ffffff;                    /* on a teal fill */
+  --accent-outline-text: var(--color-neutral-400);   /* inside an outline button */
+  --accent-line: var(--color-neutral-200);    /* the outline button's border */
+  --mark: var(--color-maize-400);             /* the brand rule over a section label */
 
-  /* What each ramp can carry. Navy step 60 is 10.4:1 on white, so it fills,
-     lines and links under a white label. Orange never darkens (its deeper
-     steps read as another university's burnt orange: Kate, Sep 17) and at
-     2.5:1 on white the brand value cannot carry text, so on the desk orange
-     MARKS and does not fill: the 3px bars, the tab line, the progress bars
-     and the tints. The desk's fills are ink, its lines and links Carbon's
-     grey ("ink fills, orange marks", her pick of four); steps 60 to 80 are
-     drawn nowhere but the loader's last dots. */
-  --navy-label: #ffffff;                    /* on a navy fill */
-  --navy-fill: var(--navy-60); --navy-fill-hover: var(--navy-70); --navy-fill-active: var(--navy-80);
-  --navy-outline-text: var(--navy-60);      /* inside a navy outline */
-  --navy-line: var(--navy-60);              /* the outline, the focus ring */
-  --navy-mark: var(--navy-60);              /* the 3px bars, the tab line, the progress bars */
-  --navy-link: var(--navy-60);
-  --navy-link-hover: var(--navy-70);
-  --orange-label: #ffffff;                  /* on the navy fill */
-  --orange-fill: var(--navy-60); --orange-fill-hover: var(--navy-70); --orange-fill-active: var(--navy-80);   /* navy fills on the desk too (Kate, Sep 22) */
-  --orange-outline-text: #23201b;
-  --orange-line: #8c8478;                   /* the outline button, which fills ink on hover */
-  --orange-mark: var(--orange-50);
-  --orange-link: #6b6156;
-  --orange-link-hover: #23201b;
-
-  /* Spacing steps: use them for every gap, margin and pad; 10px is a bug. */
+  /* Spacing steps: multiples of 8 plus 2 and 4; 10px is a bug. */
   --spacing-01: 2px;
   --spacing-02: 4px;
   --spacing-03: 8px;
@@ -153,46 +163,49 @@
   --spacing-09: 48px;
   --spacing-10: 64px;
 
-  /* Shape (Sep 22): 2px on buttons, fields and boxes; 12px on pills; round for the toggle and the dots. */
-  --radius: 2px;
-  --radius-pill: 12px;
+  /* Shape: 2px on inputs, 4px on buttons, cards and notes, 16px on pills. */
+  --radius: 4px;
+  --radius-input: 2px;
+  --radius-pill: 16px;
   --radius-round: 9999px;
-  --radius-tag-md: 12px;
+  --radius-tag-md: 16px;
   --radius-tag-lg: 16px;
 
-  /* The ink wash (Sep 22): inner surfaces are the ink at a few percent, so
-     they sit on cream and on white alike: the list head, a quote box, pills,
-     the chosen row. */
-  --wash: rgba(35, 32, 27, .045);
-  --wash-line: rgba(35, 32, 27, .14);
-  --wash-row: rgba(35, 32, 27, .06);
-  --wash-pill: rgba(35, 32, 27, .07);
-  --wash-bar: rgba(35, 32, 27, .22);
-  --wash-hover: rgba(35, 32, 27, .035);
-  --door-hover: #f7f4ed;
-  --dropzone: #faf8f4;
-  --dashed: #c4bcae;                 /* dashed drop zones, the crumb separator */
+  /* Quiet surfaces: the system's neutrals, not a wash. */
+  --wash: var(--color-blue-100);          /* a list head, a quote box, the edit stage */
+  --wash-line: var(--color-neutral-100);
+  --wash-row: var(--color-teal-100);      /* the chosen row, under its teal bar */
+  --wash-pill: var(--color-neutral-100);
+  --wash-bar: var(--color-neutral-200);
+  --wash-hover: var(--color-blue-100);
+  --door-hover: var(--color-blue-100);
+  --dropzone: var(--color-blue-100);
+  --dashed: var(--color-neutral-200);
 
-  /* The page column (Sep 22): 28px under the top bar, 56px sides, 72px under. */
-  --gap-28: 28px;
-  --gap-56: 56px;
-  --gap-72: 72px;
+  /* The page column: 40px gutters on the desktop frame, 16px on mobile. */
+  --gap-28: 32px;
+  --gap-56: 40px;
+  --gap-72: 64px;
+  --page-gutter-mobile: 16px;
 
-  /* Type (Sep 22): Archivo 400/500/600 for the UI, Lora 500 for page titles
-     and big numerals. size / line-height / weight; the label is uppercase with .7px tracking. */
-  --page-title: 500 34px/43px var(--font-serif);
-  --card-title: 600 21px/28px var(--font-sans);
-  --sub-title: 600 20px/27px var(--font-sans);
-  --lede-type: 400 16px/25px var(--font-sans);
-  --body-type: 400 15px/23px var(--font-sans);
-  --meta-type: 400 13px/19px var(--font-sans);
-  --label-type: 600 12px/16px var(--font-sans);
-  --label-tracking: .7px;
-  --numeral: 500 24px/30px var(--font-serif);
-  --font-sans: Archivo, "Helvetica Neue", Arial, sans-serif;
-  --font-serif: Lora, Georgia, serif;   /* page titles and the big numerals */
+  /* Type: Mulish for everything, Crimson Text for large titles only. size /
+     line-height / weight; headings are 1.25, copy 1.5; the eyebrow is 14px
+     bold caps with 1.25px tracking. */
+  --page-title: 700 32px/40px var(--font-sans);
+  --card-title: 600 20px/28px var(--font-sans);
+  --sub-title: 600 18px/26px var(--font-sans);
+  --lede-type: 400 16px/24px var(--font-sans);
+  --body-type: 400 16px/24px var(--font-sans);
+  --body-sm-type: 400 14px/20px var(--font-sans);
+  --prose-type: 400 16px/24px var(--font-sans);
+  --meta-type: 400 14px/20px var(--font-sans);
+  --label-type: 700 14px/18px var(--font-sans);
+  --label-tracking: 1.25px;
+  --numeral: 700 28px/34px var(--font-sans);
+  --font-sans: Mulish, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: "Crimson Text", Georgia, "Times New Roman", serif;
 
-  /* Motion: 70ms for a colour, 110ms for a move, nothing over 240ms. */
+  /* Motion: the system specifies none, so keep it short and quiet. */
   --ease-standard: cubic-bezier(0.2, 0, 0.38, 0.9);
   --ease-productive: cubic-bezier(0, 0, 0.38, 0.9);
   --duration-fast-01: 70ms;

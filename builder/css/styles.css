@@ -1,31 +1,23 @@
 /* ============================================================
-   ERC Newsletter Builder in IBM Carbon: one look across both apps.
+   ERC Newsletter Builder in the U-M Library Design System: one look across
+   both apps.
    ------------------------------------------------------------
-   Every value is a Carbon token from /css/tokens.css, loaded before this
-   file; this :root only maps Carbon's blue tokens onto the builder's navy
-   ramp. The newsletter EMAIL template keeps its own design (maroon lives
-   there and nowhere in-app).
+   Every value is a token from /css/tokens.css, loaded before this file; this
+   :root only names the few the builder reads by its own words. Both apps now
+   share the one teal accent. The newsletter EMAIL template keeps its own
+   design (maroon lives there and nowhere in-app).
    ============================================================ */
 
 :root {
-  /* The accent: navy (Kate's palette and her pick, Sep 17, late night). Carbon's blue tokens are remapped here, the desk does the same with orange as marks; nothing else moves. */
-  --accent-10: var(--navy-10); --accent-20: var(--navy-20); --accent-30: var(--navy-30); --accent-40: var(--navy-40);
-  --accent-50: var(--navy-50); --accent-60: var(--navy-60); --accent-70: var(--navy-70); --accent-80: var(--navy-80);
-  --accent-alpha: var(--navy-alpha);
-  --text-on-accent: var(--navy-label); --text-in-outline: var(--navy-outline-text);   /* the label on a fill, the label inside an outline */
-  --button-primary: var(--navy-fill); --button-primary-hover: var(--navy-fill-hover); --button-primary-active: var(--navy-fill-active);
-  --button-tertiary: var(--navy-line);
-  --link-primary: var(--navy-link); --link-primary-hover: var(--navy-link-hover);
-  --focus: var(--navy-line); --border-interactive: var(--navy-mark); --interactive: var(--navy-mark);
-  --highlight: var(--accent-20);
-  --tag-background-blue: var(--accent-20); --tag-color-blue: var(--accent-80);
-  --link-inverse: var(--accent-30);   /* the Undo toast's bar and word on the inverse ground */
-  --row-hover: var(--wash-hover); --selected: var(--wash-row);   /* the same wash as the desk (Sep 22) */
+  --accent: var(--button-primary);
+  --text-on-accent: var(--accent-label); --text-in-outline: var(--accent-outline-text);   /* the label on a fill, the label inside an outline */
+  --button-tertiary: var(--accent-line);
+  --row-hover: var(--wash-hover); --selected: var(--wash-row);   /* the same surfaces as the desk */
 }
 
 body {
   margin: 0;
-  font: var(--body-type);   /* 15/23 Archivo (Sep 22) */
+  font: var(--body-type);   /* 16/24 Mulish (Sep 23) */
   color: var(--text-primary);
   background: var(--background);
   min-height: 100vh;
@@ -50,7 +42,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 }
 
 .builder-head { padding: var(--spacing-06) var(--spacing-07) var(--spacing-05); }   /* 24px under the bar, like the desk */
-.builder-head h1 { font: var(--page-title); letter-spacing: -.2px; margin: 0; }   /* the page title in Lora (Sep 22) */
+.builder-head h1 { font: var(--page-title); letter-spacing: -.2px; margin: 0; }   /* the page title: 32px Mulish bold */
 
 /* --- Step indicator nav ----------------------------------- */
 /* Carbon's progress indicator: each step under a hairline that takes the
@@ -118,8 +110,8 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   font-weight: 600;
 }
 .step-indicator.active .step-btn::before {
-  background: var(--border-interactive);
-  border-color: var(--border-interactive);
+  background: var(--accent);
+  border-color: var(--accent);
   color: var(--text-on-color);
 }
 
@@ -131,8 +123,8 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   font-family: "Font Awesome 7 Free";
   font-size: 9px;
   font-weight: 900;
-  border-color: var(--border-interactive);
-  color: var(--border-interactive);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 .step-indicator.completed:not(.active) .step-btn:hover::before { border-color: var(--button-primary-active); color: var(--button-primary-active); }
 
@@ -178,7 +170,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 }
 .info-toggle:hover { color: var(--link-primary-hover); text-decoration: underline; }
 .info-panel {
-  background: var(--notification-info-background); border: 1px solid var(--notification-info-border); border-left: 3px solid var(--support-info);
+  background: var(--notification-info-background); border: 1px solid var(--notification-info-border); border-left: 4px solid var(--support-info);
   padding: var(--spacing-04) var(--spacing-05); margin: 0 0 var(--spacing-05); max-width: 46rem;
 }
 .info-panel .note-icon { color: var(--support-info); }
@@ -290,7 +282,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 /* --- Review step ------------------------------------------ */
 /* Review: what's in the issue, as Carbon's data table in a white box. */
 .review-table { width: 100%; border-collapse: collapse; margin-top: var(--spacing-05); background: var(--layer-02); border: 1px solid var(--border-subtle-01); }
-.review-table th { text-align: left; font-weight: 600; color: var(--text-primary); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--border-subtle-01); }
+.review-table th { text-align: left; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--text-primary); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 2px solid var(--mark); }
 .review-table td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--border-subtle-01); vertical-align: top; }   /* titles in the ink; the sub-line stays secondary */
 .review-table-sub { display: block; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-secondary); margin-top: var(--spacing-01); font-weight: 400; }
 
@@ -314,15 +306,15 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   color: var(--text-secondary);
 }
 
-/* Fields: Carbon's underlined field, grey on the white card. One rule for the
-   Outline step's fields and the edit cards'; only the width differs, and the
-   rich editor joins their focus ring. */
+/* Fields: the system's boxed input, white with a 1px neutral rule all round
+   and 2px corners (Sep 23). One rule for the Outline step's fields and the
+   edit cards'; only the width differs, and the rich editor joins their focus
+   ring. */
 .triage-field-input, .edit-card-input {
   height: 40px;
-  padding: 0 var(--spacing-05);
-  border: 0;
-  border-bottom: 1px solid var(--border-strong-01);
-  border-radius: var(--radius);
+  padding: 0 var(--spacing-04);
+  border: 1px solid var(--border-strong-01);
+  border-radius: var(--radius-input);
   font: inherit; letter-spacing: 0;
   color: var(--text-primary);
   background: var(--field-01);
@@ -331,11 +323,11 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 .edit-card-input { width: 100%; box-sizing: border-box; }
 .triage-field-input::placeholder { color: var(--text-placeholder); opacity: 1; }
 /* Locked while the restore banner asks: Carbon's disabled field. */
-.triage-field-input:disabled { color: var(--text-disabled); border-bottom-color: transparent; cursor: not-allowed; }
+.triage-field-input:disabled { color: var(--text-disabled); border-color: var(--border-disabled); cursor: not-allowed; }
 .triage-field-input:focus, .edit-card-input:focus, .rich-editor:focus-within {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-  border-bottom-color: transparent;
+  outline: 2px solid transparent;
+  outline-offset: 0;
+  box-shadow: var(--focus-ring);
 }
 
 /* The sections that hold nothing, named once under the list. */
@@ -421,8 +413,9 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 }
 
 .triage-switch-input:focus-visible + .triage-switch-track {
-  outline: 2px solid var(--focus);
-  outline-offset: 1px;
+  outline: 2px solid transparent;
+  outline-offset: 0;
+  box-shadow: var(--focus-ring);
 }
 
 /* The toggle's word, On or Off, beside the track as Carbon draws it. */
@@ -645,8 +638,8 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 }
 /* --- Rich (WYSIWYG) prose editor --------------------------- */
 .rich-editor {
-  border: 0;
-  border-bottom: 1px solid var(--border-strong-01);
+  border: 1px solid var(--border-strong-01);
+  border-radius: var(--radius-input);
   background: var(--field-01);
   overflow: hidden;
 }
@@ -724,7 +717,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   background: var(--background-inverse);
   color: var(--text-inverse);
   padding: var(--spacing-04) var(--spacing-05);
-  border-left: 3px solid var(--link-inverse);
+  border-left: 4px solid var(--link-inverse);
   opacity: 0;
   transition: opacity var(--duration-fast-02) var(--ease-standard), transform var(--duration-fast-02) var(--ease-standard);
   z-index: 1000;
@@ -800,7 +793,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   margin-bottom: var(--spacing-05);
   background: var(--notification-warning-background);
   border: 1px solid var(--notification-warning-border);
-  border-left: 3px solid var(--support-warning);
+  border-left: 4px solid var(--support-warning);
 }
 
 .restore-banner__msg {
@@ -919,8 +912,9 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 /* One focus ring for every control in the builder: Carbon's 2px ring, drawn inside. */
 button:focus-visible, a:focus-visible, summary:focus-visible, [tabindex]:focus-visible,
 input:focus-visible, select:focus-visible, textarea:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
+  outline: 2px solid transparent;
+  outline-offset: 0;
+  box-shadow: var(--focus-ring);
 }
 
 @media (prefers-reduced-motion: reduce) {

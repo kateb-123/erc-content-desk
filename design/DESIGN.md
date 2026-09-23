@@ -7,107 +7,113 @@ screenshot from the running sandbox (`localhost:4173`, serves `/builder/` too)
 matched against them with `scripts/visual-diff.mjs`, approved by Kate before
 deploy.
 
-## The system: the Sep 22 refresh on Carbon's bones
+## The system: the U-M Library Design System
 
-Both apps wear the refresh Claude Design drew on Sep 22, 2026 from Kate's
-sketch of that morning, on the structure IBM Carbon gave them on Sep 17
-(Kate's picks, Sep 22: the whole desk and the builder at once, navy fills
-everywhere, the Queue an open list). A cream page ground `#f6f3ec` with
-white boxes on it; warm greys for ink, lines and quiet text; Archivo for the
-UI and Lora for page titles and big numerals; 2px corners on buttons, fields
-and boxes, 12px on pills; navy `#1e416b` fills on the desk as on the
-builder, so the two apps no longer differ by accent; uppercase 12px
-micro-labels with .7px tracking, and section headers as a label over a 2px
-orange rule; an ink wash (`rgba(35,32,27,.045)`) for inner surfaces instead
-of Carbon's grey layers. Still binding from the palette of Sep 17: orange
-`#ff8200` only marks (the 2px section rules, the lit tab's bar, the 3px bar on
-a chosen row, the progress bars), it never fills a button and never carries
-text (2.5:1 on white); the status colours are citrine, UT Globe blue for
-"needs doing", crimson and slate; no maroon in-app; no shadows anywhere;
-colour is never the only signal. The tokens live in `css/tokens.css`, the
-one file where a colour, a size or a face is written down; they keep
-Carbon's names with the refresh's values, so the stylesheets read as they
-did. The two drawn screens (the team's Submit content page and Content Sort)
-are recreated to the handoff; every other page takes the same tokens and
-faces.
+Both apps wear the design system Kate brought on Sep 23, 2026: her mockup of
+all four screens built in the **U-M Library Design System**, a UI toolkit
+reconstructed from that library's Figma file. Her pick that day: the look
+only, the palette as designed, the pipeline unchanged. Four ramps at 100 to
+500, "when in doubt, start with 400": blue `#00274c`, maize `#ffcb05`, teal
+`#1d7491`, neutral `#212b36`, with green, pink, indigo and orange for meaning
+and state alone. Flat white pages; a 56px navy top bar carrying the desk's
+name as an eyebrow; white boxes with a 1px neutral hairline; Mulish for
+everything and Crimson Text for large titles only; teal fills the primary
+button, draws every link and marks the chosen row, and maize draws the rule
+under a section label and the table head and the inner focus ring but carries
+no text (1.4:1); 2px corners on fields, 4px on buttons, boxes and notes, 16px
+on pills; spacing in multiples of 8 plus 2 and 4; uppercase 14px bold labels
+with 1.25px tracking. No maroon in-app: it lives in the newsletter email and
+on the public pages, which keep their own outward look. No shadows in either
+app (the system keeps them for floating menus, which neither app has); colour
+is never the only signal. The tokens live in `css/tokens.css`, the one file
+where a colour, a size or a face is written down; they keep Carbon's names
+with the system's values, so the stylesheets read as they did, and the
+system's own ramps are there under its own names (`--color-teal-400` and the
+rest).
 
-The Carbon rules of Sep 17 that this replaces: IBM Plex Sans as the one
-family; the white page ground; radius 0; the desk's ink fills with orange
-marks against the builder's navy; grey `#f4f4f4` layers inside cards; no
-uppercase anywhere.
+Two deliberate departures from the system, both because the desk is denser
+than a library website: an outline button hovers to the quiet surface with a
+darker rule instead of the system's white-then-neutral ring, which would paint
+over its neighbours in a row of controls; and the press step under each fill
+is one shade past the hover, since the system defines none.
+
+The Sep 22 refresh that this replaces: the cream ground `#f6f3ec`; Archivo and
+Lora; the ink wash for inner surfaces; orange `#ff8200` as the only mark;
+ink and navy fills; 2px corners everywhere; 12px micro-labels.
 
 ## Tokens
 
-Carbon names, the refresh's values (Sep 22). Reference them, never a literal:
+Carbon names, the system's values (Sep 23). Reference them, never a literal:
 the census allows a hex only in `css/tokens.css`. The rows below name the
 role; the value is in the file.
 
 | Token | Value | Use |
 |---|---|---|
-| `--background` | `#ffffff` | the page (both apps), the top bar's ground |
-| `--layer-02` / `--border-subtle-01` | `#ffffff` / `#c6c6c6` | a card, a list, a table, the receipt, the busy popup: a white box with a hairline (`--layer`, `--layer-line`; pick C, Sep 17) |
-| `--layer-01` | `#f4f4f4` | a grey box inside a card: Finalize's edit box, decided Sort rows, table header rows, the builder's edit stage |
-| `--layer-accent-01` | `#e0e0e0` | table header rows, progress tracks, the edit stage |
-| `--accent-10` / `--accent-20` | the desk `#fff4ea` / `#ffdfc7`, the builder `#eef1f5` / `#d8e0ea` | row hover and tinted rows (`--row-hover`, `--tint`); the chosen row (`--selected`, in `--accent-deep` text with a 3px `--border-interactive` bar) |
-| `--accent-alpha` | the accent at 6% | the hover wash on quiet buttons and menu rows (`--hover`), layered over any tint |
-| `--field-01` / `--field-02` | `#f4f4f4` / `#ffffff` | fields: white on a layer, grey on the page |
-| `--text-primary` / `--text-secondary` / `--text-helper` / `--text-placeholder` | `#161616` / `#525252` / `#6f6f6f` / `#a8a8a8` | ink (`--ink`), quiet text (`--muted`), helper lines, placeholders (placeholders are decoration, never the only label) |
-| `--border-subtle-00` / `--border-subtle-01` | `#e0e0e0` / `#c6c6c6` | hairlines on the page (`--line`) and inside a layer (`--line-in`); dividers only |
-| `--border-strong-01` | `#8d8d8d` | the line under a field, dashed drop zones, tag outlines: anything interactive holds 3:1 |
-| `--button-primary` / `-hover` / `-active` | the desk ink `#161616` / `#393939` / `#525252` (`--orange-fill`, the fills under orange marks); the builder `#1e416b` / `#153154` / `#0b2341` (`--navy-fill`, `--navy-60/70/80`) | the filled buttons (`--accent`, `--accent-deep`). Each app's `:root` maps Carbon's blue tokens (button, tertiary, link, focus, interactive, highlight, the New tag) to its ramp's profile in tokens.css; IBM blue `#0f62fe` is Carbon's default and appears nowhere on screen. Navy step 60 is 10.4:1 on white, so it fills, lines and links under a white label. Orange never darkens and at 2.5:1 cannot carry text, so on the desk it marks and does not fill: `--orange-mark` (`#ff8200`) draws the 3px bars, the tab line and the progress bars, the fills are ink and the lines and links Carbon's grey `#525252` (`--orange-line`, `--orange-link`); steps 60 to 80 are drawn nowhere but the loader's last dots |
-| `--button-secondary` / `-hover` | `#393939` / `#474747` | the builder's Back, Save to the archive, Download: Carbon's dark grey beside a primary |
-| `--button-disabled` / `--text-on-color-disabled` | `#c6c6c6` / `#8d8d8d` | a locked Keep: full opacity, grey fill |
-| `--link-primary` / `-hover` | the desk grey `#525252` / ink, the builder navy 60 / 70 | links and the quiet action words |
-| `--focus` | the desk grey `#525252`, the builder navy 60 | the 2px focus ring, drawn inside the control |
-| `--support-error` / `--button-danger-secondary` | `#b3123c` | crimson: destructive words (`--err`) and the error note's bar |
-| `--support-success` / `--text-success` | `#cedc00` / `#4f5500` | Alliance citrine as an icon (`--ok-mark`) and the toggle when on / the dark citrine as text (`--ok`), since citrine is 1.5:1 on white |
-| `--support-warning` / `--text-warning` | `#006c93` / `#006c93` | UT's Globe blue, needs doing as an icon, the triangle (`--warn-mark`) and as text (`--warn`); the warning tab. The palette's purple read as Halloween beside orange; Carbon's warning yellow held the job from Sep 15 to Sep 17 |
-| `--support-info` | `#3d4a57` | slate, the info note's bar and icon (Carbon's blue collided with navy) |
-| `--notification-*-background` / `-border` | info `#f0f2f4`, success `#f7f9e0`, warning `#e8f2f6`, error `#fceef2`; the border is the role's colour at 30% | inline notes: the info panel, the fix panel, the link ask, the builder's status boxes; text on them is `--text-primary` |
-| `--tag-background-*` / `--tag-color-*` | gray `#e0e0e0`/`#161616`, blue the accent's 20 under the desk's grey or the builder's navy 80, review `#cce4ed`/`#004a66` | tags: a fact, New, a duplicate (needs review, so it wears the review blue); the queue count |
-| `--accent-30` to `--accent-80` | the app's ramp | the sliding-dots loader; `--accent-30` is Publish's held segment |
-| `--background-inverse` / `--link-inverse` | `#393939` / the accent's step 30 | the builder's Undo toast |
-| `--overlay` | `#16161680` | the dim behind the busy popup and the tutorial |
-| `--spacing-01` to `--spacing-10` | 2, 4, 8, 12, 16, 24, 32, 40, 48, 64px | every gap, pad and margin; 16 is the default; 10px is a bug |
+| `--color-blue-*` / `--color-maize-*` / `--color-teal-*` / `--color-neutral-*` | the system's four ramps at 100 to 500 | the source values; every token below reads one of them |
+| `--background` | `#ffffff` | the page, both apps. The top bar is `--color-blue-400`, the system's dark site header |
+| `--layer-02` / `--border-subtle-01` | `#ffffff` / `#e5e9ed` | a card, a list, a table, the receipt, the busy popup: a white box with a 1px neutral hairline (`--layer`, `--layer-line`) |
+| `--layer-01` | blue 100 `#f7f8f9` | a quiet box inside a card: Finalize's edit box, decided Sort rows, table header rows, the builder's edit stage (`--wash`) |
+| `--layer-accent-01` | neutral 100 `#e5e9ed` | pills, counts, progress tracks |
+| `--accent-10` / `--accent-20` | teal 100 `#e9f2f5` / teal 200 `#a7cddb` | row hover and tinted rows (`--row-hover`, `--tint`); the chosen row is teal 100 (`--selected`) in `--accent-deep` navy with a 4px teal bar |
+| `--accent-alpha` | teal at 6% | the hover wash on quiet buttons and menu rows (`--hover`), layered over any tint |
+| `--field-01` / `--field-02` | `#ffffff` | fields are white on both grounds, boxed by `--border-strong-01` |
+| `--text-primary` / `--text-secondary` / `--text-helper` / `--text-placeholder` | neutral `#212b36` / `#637381` / `#637381` / `#8a96a1` | ink (`--ink`), quiet text (`--muted`), helper lines, placeholders (placeholders are decoration, never the only label) |
+| `--border-subtle-00` / `--border-subtle-01` | neutral 100 `#e5e9ed` | hairlines on the page (`--line`) and inside a layer (`--line-in`); dividers only |
+| `--border-strong-01` | neutral 200 `#8a96a1` | a field's rule, dashed drop zones, tag outlines |
+| `--border-interactive` / `--mark` | maize 400 `#ffcb05` | the brand rule: 2px under a section label and a table head, the builder's reached step line. It never carries text |
+| `--button-primary` / `-hover` / `-active` | teal `#1d7491` / `#106684` / `#0c5570` | the filled buttons (`--accent`), both apps: the two no longer differ by accent. Teal 400 is 5.1:1 on white, so it fills, lines, links and marks alike. The active step is the system's missing press state |
+| `--button-secondary` / `-hover` | blue 400 `#00274c` / blue 500 `#001324` | the builder's Back, Save to the archive, Download: the navy fill beside a teal primary |
+| `--button-disabled` / `--text-on-color-disabled` | neutral 100 `#e5e9ed` / neutral 200 `#8a96a1` | a locked Keep: full opacity, grey fill |
+| `--link-primary` / `-hover` | teal 400 / teal 500 | links and the quiet action words, underlined |
+| `--focus` / `--focus-inset` / `--focus-ring` | neutral 400 / maize 400 / the two as one shadow | the system's ring: 2px maize inside 3px neutral, drawn as a box-shadow so it never moves the page. Programmatic focus (`[tabindex="-1"]`) draws none |
+| `--support-error` / `--button-danger-secondary` | pink 500 `#bf3232` | crimson: destructive words (`--err`) and the error note's bar |
+| `--support-success` / `--text-success` | green 400 `#20a848` / green 500 `#198539` | success as an icon (`--ok-mark`) and the toggle when on / as text (`--ok`), which needs the 500 step for 4.5:1 |
+| `--support-warning` / `--text-warning` | orange 400 `#f25f1f` / orange 500 `#c74e1a` | needs doing as an icon, the triangle (`--warn-mark`), and as text (`--warn`); the warning tab. It was UT's Globe blue from Sep 17 to 23 |
+| `--support-info` | teal 400 `#1d7491` | the info note's bar and icon |
+| `--notification-*-background` / `-border` | info teal 100, success green 100, warning maize 100, error pink 100; the border is the role's colour at 30% | inline notes: the info panel, the fix panel, the link ask, the builder's status boxes; text on them is `--text-primary`, and the left bar is 4px |
+| `--tag-background-*` / `--tag-color-*` | gray neutral 100 / neutral 400, blue teal 100 / teal 500, review maize 100 / orange 500 | tags: a fact, New, a duplicate (needs review, so it wears the review tint); the queue count |
+| `--accent-30` to `--accent-80` | the teal ramp | the sliding-dots loader; `--accent-30` is Publish's held segment |
+| `--background-inverse` / `--link-inverse` | blue 400 `#00274c` / maize 400 | the builder's Undo toast |
+| `--overlay` | `#00000040` | the dim behind the busy popup and the tutorial: the system's 25% scrim, its only transparency |
+| `--spacing-01` to `--spacing-10` | 2, 4, 8, 12, 16, 24, 32, 40, 48, 64px | every gap, pad and margin; 16 is the default; 10px is a bug. Page gutters are 40px (`--gap-56`), 16px on mobile |
 
 Maroon `#500000` is FORBIDDEN in-app; it lives only in the newsletter email
 template and the public Exchange site.
 
 ## Type
 
-- **Archivo** at 400, 500 and 600 for the UI; **Lora** at 500 for every page
-  title and the big numerals (a lane's count, the issue date). Both from
-  Google Fonts; IBM Plex Sans is gone (Sep 22).
-- The scale, as `css/tokens.css` writes it: the page title 34/43 Lora with
-  -.2px tracking; a card title 21/28 600; a section title 20/27 600; the lede
-  and prose 16/25; body 15/23; meta 13/19; the micro-label 12/16, uppercase
-  with .7px tracking (field labels at 500 in the helper grey, section labels
-  at 600 in ink); a big numeral 24/30 Lora. Buttons are 15px at 500 on a
-  fill, 400 in an outline; a lit tab is 600.
+- **Mulish** at 300, 400, 600 and 700 for everything; **Crimson Text** is the
+  system's second family, for large titles only, and the desk draws none yet.
+  Both from Google Fonts; Archivo and Lora are gone (Sep 23).
+- The scale, as `css/tokens.css` writes it: the page title 32/40 at 700; a card
+  title 20/28 600; a section title 18/26 600; the lede, prose and body 16/24;
+  meta 14/20; the label 14/18 at 700, uppercase with 1.25px tracking; a big
+  numeral 28/34 at 700. Headings run at 1.25 line height, copy at 1.5, and
+  prose measures about 60 characters. Buttons are 16px at 700; a lit tab is
+  700 over a 2px teal bar.
 - Body copy is left-aligned, never centred or justified. Numbers are digits.
 
 ## Shape
 
-- **2px corners** (`--radius`) on buttons, fields, boxes, notes and the busy
-  popup (Sep 22; square from Sep 17 to 22). Bars and the progress tracks stay
-  square. Pills are 12px (`--radius-pill`): tags, counts; the toggle and the
+- **4px corners** (`--radius`) on buttons, boxes, notes and the busy popup;
+  **2px** on fields (`--radius-input`). Bars and the progress tracks stay
+  square. Pills are 16px (`--radius-pill`): tags, counts; the toggle and the
   loader's dots are round.
-- **White boxes with a hairline on the cream ground.** A card, a list or a
-  table is `--layer-02` white with a 1px `--layer-line` hairline; a box inside
-  a card (Finalize's edit box, a quote box, the list head) is the ink wash
-  `--layer-01` with no border. Rows divide with `--line-in`, lift to
-  `--wash-hover` on hover, and the chosen one sits on `--wash-row` in ink at
-  600 with a 3px orange bar on the left. Fields are transparent with a 1px
-  `--layer-line` rule under them; the one big link field is `--field-01` cream
-  with a 2px `--border-strong-01` rule. Orange means "this one"; the wash
-  means "a surface".
+- **White boxes with a hairline on a white page.** A card, a list or a table is
+  `--layer-02` white with a 1px `--layer-line` hairline; a box inside a card
+  (Finalize's edit box, a quote box, the list head) is `--layer-01`, the
+  system's blue 100, with no border. Rows divide with `--line-in`, lift to
+  `--wash-hover` on hover, and the chosen one sits on teal 100 in navy at 600
+  with a 4px teal bar on the left. Teal means "this one"; blue 100 means "a
+  surface"; maize means "the brand's rule", and marks nothing that can be
+  chosen.
 - **Buttons.** 40px tall (32px in a screen head or a section head, 48px for the
-  builder's export trio), 16px side padding, the label left. A primary is the
-  app's fill (ink on the desk, navy in the builder) with its icon in a 64px right slot (48px on the small size); with no
-  icon the slot goes. Everything beside a primary is Carbon's tertiary: the
-  outline (grey on the desk, navy in the builder) that fills on hover (Cancel, the doors, Quick add, the builder's Next
-  and Start the next issue). The builder's Back and archive buttons are
-  Carbon's secondary, the dark grey fill. A Save inside an open card whose
+  builder's export trio), 16px side padding, the label left at 700. A primary is
+  the teal fill, the same on both apps, with its icon in a 64px right slot (48px
+  on the small size); with no icon the slot goes. Everything beside a primary is
+  the outline: white with a neutral 200 rule, lifting to blue 100 with a darker
+  rule on hover (Cancel, the doors, Quick add, the builder's Next and Start the
+  next issue). The builder's Back and archive buttons are the navy fill. A Save inside an open card whose
   edits are already live is a ghost word (audit round two, Sep 17).
   Quiet words (Edit, Delete, Skip, Undo, Cancel in a panel) are ghost buttons:
   32px, a `--background-hover` fill on hover. No press scale. On the desk,
@@ -115,8 +121,9 @@ template and the public Exchange site.
   with no icon wears an underline (View info, Change, Verify link, Undo,
   Re-check), so it never reads as text; Edit and Delete carry their icons,
   Skip and Cancel stay muted (design critique, Sep 18).
-- **Fields.** 40px, on the field surface, a `--border-strong-01` line under them
-  and nothing else; the focus ring replaces the line. Labels are label-01 above.
+- **Fields.** 40px, white, boxed by a 1px `--border-strong-01` rule with 2px
+  corners, 12px side padding; the focus ring sits outside it. Labels are the
+  uppercase label above.
 - **Tabs.** A page's tabs (Sort content's Sort and Finalize, Newsletter's Next
   issue and Past issues) sit under its title in one row under a hairline: 40px,
   quiet text with a round count, a 2px `--border-interactive` bar under the lit
@@ -128,8 +135,8 @@ template and the public Exchange site.
   shut and down when open: the front page's bulk door, Finalize's No rewrite
   needed, Next issue's Past items. A chevron means a fold and nothing else
   (audit round two, Sep 17).
-- **Notes.** Every panel that speaks is Carbon's inline notification: a
-  `--notification-*-background`, a 1px `-border`, a 3px left bar in the
+- **Notes.** Every panel that speaks is the system's callout: a
+  `--notification-*-background`, a 1px `-border`, a 4px left bar in the
   `--support-*` colour, the matching icon, `--text-primary` words. Info for the
   View info panel; warning for Sort's card questions (the link, a duplicate),
   Send early?, the builder's restore banner and its Replace the archived issue?
@@ -137,8 +144,10 @@ template and the public Exchange site.
   results. An error note that can be retried carries a ghost Retry, and a
   success that ends a task stays (Saved to the archive, with Open Past
   newsletters), never a toast that fades (audit round two, Sep 17).
-- **Focus.** `outline: 2px solid var(--focus); outline-offset: 2px`, the ring
-  in ink 2px outside the control, no halo (Sep 22; inside the control before).
+- **Focus.** `box-shadow: var(--focus-ring)`, the system's ring: 2px maize
+  inside 3px neutral, drawn as a shadow so it never moves the page (Sep 23; a
+  2px ink outline before). Programmatic focus, which the card takes after a
+  decision, draws no ring.
 - **Steps.** The builder's wizard is Carbon's progress indicator: four equal
   steps under a hairline, a 20px circle at each one's left; reached steps turn
   the line the accent's, the current step fills its circle and goes 600, a finished one
@@ -205,20 +214,20 @@ look, everywhere it appears.
 The front page is Kate's own (her answer, Sep 22): the title Desk, the lede
 "What waits on each page.", then five cards in a grid of white boxes: Submit
 content (the team's page), Content Sort, Newsletter and Policy Exchange,
-each a name, a line of what it holds and the count as a Lora numeral with an
-arrow, the orange bar on hover; and Documentation, greyed, Forthcoming. The
+each a name, a line of what it holds and the count as a big numeral with an
+arrow, the teal bar on hover; and Documentation, greyed, Forthcoming. The
 top bar shows no lane links there.
 
 The team's page, Submit content at /#team (Kate's sketch and the handoff,
 Sep 22; `design/mockups/submit-content.png`, the handoff itself in
 `design/refresh-sep22/`): the page head, then two columns. Left, the share
-form in a white box, then Queue, a section head over the orange rule with
+form in a white box, then Queue, a section head over the maize rule with
 "N waiting · newest first" and every waiting item as a read-only row in its
 own scroll. Right, two white boxes: Quick links (the public share page, the
 listserv sign-up, the Policy Exchange, each a link that opens in a new tab
 with its address under it and Copy link, which says Copied for two seconds; under Join listserv the last issue that went out and the next one due, from the schedule, and under the Exchange when the desk last published to it, Kate's ask of Sep 22)
 and Desk work (Content Sort and Newsletter as door rows with their counts as
-Lora numerals and an arrow, a 3px orange bar on hover; Newsletter opens in
+big numerals and an arrow, a 4px teal bar on hover; Newsletter opens in
 its own window). The top bar shows only Policy Exchange on the right. The
 Sort page is Content Sort everywhere since Sep 22.
 
@@ -268,7 +277,7 @@ the section tabs and Needs a fix are gone (Sep 18).
 Newsletter (Kate's wireframes, Sep 17, and her answers, Sep 18 and 22;
 `design/mockups/newsletter.png`) is the hub, opened in its own window from
 the team page, one page with three tabs, Next issue, Schedule and Past
-issues (Schedule since Sep 22: each upcoming send date as a Lora numeral
+issues (Schedule since Sep 22: each upcoming send date as a big numeral
 with how far off it is, Next on the first, and how many items are stamped
 for it; a date opens its issue on Next issue; read only, the dates stay on
 the Sheet's schedule tab); it took in Next newsletter, Send to Newsletter and Past
@@ -285,12 +294,12 @@ preview stay in the builder (her answers); subscribers and open rates are not
 shown (no data). Past issues lists the archive newest first; each opens the
 email as it went out. builder/archive.html now lands on /#past.
 
-Blue means "needs doing", nowhere else on the screen (Kate's palette and her
-pick, Sep 17; the palette's purple read as Halloween beside orange, and
-Carbon's warning yellow held the job from Sep 15). A row the card has a
-question about leads its title with a blue triangle
-(`fa-triangle-exclamation`); a missing type turns the Type label and its row
-blue. Keep and next stays locked in Carbon's disabled grey until the type
+Orange means "needs doing", nowhere else on the screen (the system's warning
+colour, Sep 23; UT's Globe blue held the job from Sep 17, and Carbon's warning
+yellow before that). A row the card has a question about leads its title with
+an orange triangle (`fa-triangle-exclamation`); a missing type turns the Type
+label and its row orange. It is the only orange on the screen, so it cannot be
+read as an accent. Keep and next stays locked in Carbon's disabled grey until the type
 and the link are settled and the item has somewhere to go, and its tooltip
 says which. The Spotlight request checkbox and its tag went on Sep 22: ERC Spotlight is fed by the ERC event type, and anything else is moved there by hand in the builder.
 
@@ -327,16 +336,18 @@ thing everywhere (see the vocabulary table).
 
 ## Do not
 
-- No new fonts, icon sets, or UI libraries without approval. Archivo and Lora
-  are the two faces (Sep 22).
+- No new fonts, icon sets, or UI libraries without approval. Mulish and Crimson
+  Text are the two faces (Sep 23).
 - No maroon in-app.
-- No corner but `--radius` 2px, `--radius-pill` 12px on tags and counts, and round on the toggle and the loader's dots.
-- No shadows at all (Kate, Sep 2; Carbon agrees): layers separate things, and
-  focus is an outline.
+- No corner but `--radius` 4px, `--radius-input` 2px on fields, `--radius-pill`
+  16px on tags and counts, and round on the toggle and the loader's dots.
+- No shadows at all (Kate, Sep 2; the system keeps them only for floating menus,
+  which neither app has): layers separate things, and focus is a ring.
 - No hex outside `css/tokens.css`; no size off the spacing scale.
-- Navy fills on both apps and orange as marks on both (Kate, Sep 22: "navy
-  everywhere"); the desk and the builder no longer differ by accent. Orange is
-  never darkened and never fills a button.
+- Teal fills on both apps (Sep 23); the desk and the builder no longer differ by
+  accent. Maize is the brand rule and the focus ring and nothing else: at 1.4:1
+  on white it never fills a button, never carries text and never marks what is
+  chosen.
 - Colour is never the only signal: a status colour ships with its icon and a word.
 - Nothing is "done" without a screenshot from the running sandbox.
 

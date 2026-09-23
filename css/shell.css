@@ -8,26 +8,27 @@
 [hidden] { display: none !important; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .skip-to-main { position: absolute; left: var(--spacing-05); top: -100px; z-index: 100; height: 40px; padding: 0 var(--spacing-05); display: inline-flex; align-items: center; background: var(--background); color: var(--link-primary); font: inherit; letter-spacing: 0; text-decoration: none; border: 1px solid var(--border-subtle-01); border-radius: var(--radius); }
-.skip-to-main:focus { top: var(--spacing-03); outline: 2px solid var(--focus); outline-offset: 2px; }
+.skip-to-main:focus { top: var(--spacing-03); outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
 
 .topbar, .topbar * { box-sizing: border-box; }
 .topbar {
-  height: 60px; flex: none;
+  height: 56px; flex: none;
   display: flex; align-items: center; gap: var(--spacing-03);
-  padding: 0 var(--spacing-08);
-  background: var(--background); border-bottom: 1px solid var(--border-subtle-00);   /* 60px on the cream ground (Sep 22) */
-  font: var(--body-type); color: var(--text-primary);
+  padding: 0 var(--gap-56);
+  background: var(--color-blue-400);   /* the system's dark site header (Sep 23) */
+  font: var(--body-type); color: var(--text-inverse);
 }
 .topbar-crumbs { display: flex; align-items: center; gap: var(--spacing-03); min-width: 0; }
-.topbar-crumbs a, .topbar-lanes a { color: var(--text-primary); text-decoration: none; transition: color var(--duration-fast-01) var(--ease-productive); }
-.topbar-crumbs a:hover, .topbar-lanes a:hover { color: var(--text-secondary); }
-.topbar-brand { font-weight: 600; }
-.topbar-sep { color: var(--dashed); }
-.topbar-here { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-secondary); }
+.topbar-crumbs a, .topbar-lanes a { color: var(--text-inverse); text-decoration: none; transition: color var(--duration-fast-01) var(--ease-productive); }
+.topbar-crumbs a:hover, .topbar-lanes a:hover { color: var(--color-maize-400); }
+/* The desk's name is the system's eyebrow: 14px bold caps with its tracking. */
+.topbar-brand { font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); }
+.topbar-sep { color: var(--color-blue-200); }
+.topbar-here { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-blue-200); }
 .topbar-lanes { margin-left: auto; display: flex; align-items: center; gap: var(--spacing-06); }
-.topbar-lanes a { color: var(--text-secondary); }
-.topbar-lanes a:hover { color: var(--text-primary); }
-.topbar a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; box-shadow: none; }
+.topbar-lanes a { color: var(--color-blue-200); }
+.topbar-lanes a:hover { color: var(--color-maize-400); }
+.topbar a:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
 
 /* Sliding-dots loader (Kate's pick, Sep 1), the one copy for both apps: six
    dots slide across a track with staggered delays, on the app's own accent
