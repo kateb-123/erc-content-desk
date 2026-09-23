@@ -66,21 +66,23 @@ test('deskCards: before the rows are in, no counts; with no issue scheduled, New
 
 // ── The notes under the team page's Quick links (Kate, Sep 22) ──
 
-test('quickLinkNotes: when the desk last wrote to the Exchange, the last issue and the next', () => {
+// The send dates say themselves under Newsletter, so the listserv row does not
+// repeat them (Kate, Sep 23: "this doesn't need to go under listserv").
+test('quickLinkNotes: when the desk last wrote to the Exchange, and the newsletter dates', () => {
   const rows = [
     { published_at: '2026-08-30T16:00:00Z' },
     { published_at: '2026-09-22T19:05:00Z', status: 'trashed' },   // scrapped later, still the last write
     { published_at: '' },
   ];
   assert.deepEqual(quickLinkNotes(rows, { schedule: ['2026-09-08', '2026-09-22', '2026-10-06'], today: '2026-09-23' }),
-    { share: '', listserv: 'Last issue Sep 22 · Next Oct 6', exchange: 'Updated Sep 22', newsletter: 'Next issue Oct 6 · nothing ready to add' });
+    { share: '', listserv: '', exchange: 'Updated Sep 22', newsletter: 'Next issue Oct 6 · nothing ready to add' });
 });
 
 test('quickLinkNotes: on a send day the issue due today is next; with nothing known, nothing is said', () => {
   assert.deepEqual(quickLinkNotes([], { schedule: ['2026-09-08', '2026-09-22', '2026-10-06'], today: '2026-09-22' }),
-    { share: '', listserv: 'Last issue Sep 8 · Next Sep 22', exchange: '', newsletter: 'Next issue Sep 22 · nothing ready to add' });
+    { share: '', listserv: '', exchange: '', newsletter: 'Next issue Sep 22 · nothing ready to add' });
   assert.deepEqual(quickLinkNotes([], { schedule: ['2026-09-08'], today: '2026-09-22' }),
-    { share: '', listserv: 'Last issue Sep 8', exchange: '', newsletter: 'nothing ready to add' });
+    { share: '', listserv: '', exchange: '', newsletter: 'nothing ready to add' });
   assert.deepEqual(quickLinkNotes([], { schedule: [], today: '2026-09-22' }), { share: '', listserv: '', exchange: '', newsletter: 'nothing ready to add' });
 });
 

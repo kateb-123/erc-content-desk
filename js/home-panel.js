@@ -39,20 +39,22 @@ export function deskCards({ counts, issue, today }) {
   ];
 }
 
-/** The notes under the team page's Quick links (Kate, Sep 22): under the
- *  Exchange when the desk last wrote to it (the newest published_at, whatever
- *  became of the row), under the listserv the last issue that went out and
- *  the next one due, both from the schedule; '' where there is nothing to say.
- *  On a send day the issue due today is the next one, as on the Schedule tab. */
+/** The lines under the team page's Quick links (Kate, Sep 22 and 23): under
+ *  the Exchange when the desk last wrote to it (the newest published_at,
+ *  whatever became of the row), under the Newsletter the next issue and how
+ *  many items are ready to add; '' where there is nothing to say, and the row
+ *  falls back to the line that says what it is. On a send day the issue due
+ *  today is the next one, as on the Schedule tab. */
 export function quickLinkNotes(rows, { schedule, today }) {
   const published = rows.map(r => String(r.published_at ?? '')).filter(Boolean).sort().at(-1) ?? '';
   const dates = [...(schedule ?? [])].sort();
   const next = dates.find(d => d >= today) ?? '';
-  const last = [...dates].reverse().find(d => (next ? d < next : d <= today)) ?? '';
   const ready = splitPool(rows, schedule, next, today).live.length;
+  // The send dates belong to the Newsletter row, which says them; the listserv
+  // row does not repeat them (Kate, Sep 23).
   return {
     share: '',
-    listserv: [last && `Last issue ${isoToShort(last, today)}`, next && `Next ${isoToShort(next, today)}`].filter(Boolean).join(' · '),
+    listserv: '',
     exchange: published ? `Updated ${isoToShort(published, today)}` : '',
     newsletter: [next && `Next issue ${isoToShort(next, today)}`,
       ready ? `${ready} ready to add` : 'nothing ready to add'].filter(Boolean).join(' · '),

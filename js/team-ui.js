@@ -25,7 +25,7 @@ import { el, tryAgain } from './ui-aids.js';
  *  Sep 23); a row says what it is or what is happening on it instead. */
 export const QUICK_LINKS = [
   { key: 'share', label: 'Submit content', href: 'https://erc-share.vercel.app/submit/', icon: 'paper-plane', sub: 'The form anyone can use' },
-  { key: 'listserv', label: 'Join listserv', href: 'https://erc-share.vercel.app/listserv/', icon: 'user-plus' },
+  { key: 'listserv', label: 'Join listserv', href: 'https://erc-share.vercel.app/listserv/', icon: 'user-plus', sub: 'Where people sign up' },
   { key: 'exchange', label: 'ERC Policy Exchange', href: 'https://erc-policy-exchange.vercel.app/', icon: 'globe' },
   { key: 'newsletter', label: 'Newsletter', href: '/#newsletter', icon: 'envelope', inHouse: true },
 ];

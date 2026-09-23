@@ -228,10 +228,11 @@ its left, and it starts open (Kate, Sep 23). Right, one white box and one
 button (Kate's pick C, Sep 23): Quick links, where every link is a row with a
 32px icon on the quiet surface, its name, and ONE line under it, never its
 address ("I friggin hate having the url displayed"). That line is what is
-happening on it: under Join listserv the last issue and the next one due, from
-the schedule; under the Exchange when the desk last published to it; under
-Newsletter the next issue and how many items are ready to add; and under the
-share page, which has nothing to report, what it is. The four are the public
+happening on it: under the Exchange when the desk last published to it; under
+Newsletter the next issue and how many items are ready to add. Where there is
+nothing to report the line says what the page is instead, as under the share
+form and the sign-up. The send dates are said once, under Newsletter, and the
+listserv row does not repeat them (Kate, Sep 23). The four are the public
 share page, the listserv sign-up, the Policy Exchange and the Newsletter,
 each opening in a new tab, the first three with Copy link, which says Copied
 for two seconds. The Newsletter has none: its address is the desk's, and the
