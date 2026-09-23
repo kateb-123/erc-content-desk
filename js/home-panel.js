@@ -49,9 +49,12 @@ export function quickLinkNotes(rows, { schedule, today }) {
   const dates = [...(schedule ?? [])].sort();
   const next = dates.find(d => d >= today) ?? '';
   const last = [...dates].reverse().find(d => (next ? d < next : d <= today)) ?? '';
+  const ready = splitPool(rows, schedule, next, today).live.length;
   return {
     share: '',
     listserv: [last && `Last issue ${isoToShort(last, today)}`, next && `Next ${isoToShort(next, today)}`].filter(Boolean).join(' · '),
     exchange: published ? `Updated ${isoToShort(published, today)}` : '',
+    newsletter: [next && `Next issue ${isoToShort(next, today)}`,
+      ready ? `${ready} ready to add` : 'nothing ready to add'].filter(Boolean).join(' · '),
   };
 }

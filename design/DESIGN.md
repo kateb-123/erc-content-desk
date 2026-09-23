@@ -222,13 +222,21 @@ The team's page, Submit content at /#team (Kate's sketch and the handoff,
 Sep 22; `design/mockups/submit-content.png`, the handoff itself in
 `design/refresh-sep22/`): the page head, then two columns. Left, the share
 form in a white box, then Queue, a section head over the maize rule with
-"N waiting · newest first" and every waiting item as a read-only row in its
-own scroll. Right, two white boxes: Quick links (the public share page, the
-listserv sign-up, the Policy Exchange, each a link that opens in a new tab
-with its address under it and Copy link, which says Copied for two seconds; under Join listserv the last issue that went out and the next one due, from the schedule, and under the Exchange when the desk last published to it, Kate's ask of Sep 22)
-and Desk work (Content Sort and Newsletter as door rows with their counts as
-big numerals and an arrow, a 4px teal bar on hover; Newsletter opens in
-its own window). The top bar shows only Policy Exchange on the right. The
+"N waiting · newest first" at its right and every waiting item as a read-only
+row in its own scroll; the head's label is a fold, opening from a chevron on
+its left, and it starts open (Kate, Sep 23). Right, one white box and one
+button (Kate's pick C, Sep 23): Quick links, where every link is a row with a
+32px icon on the quiet surface, its name, and ONE line under it, never its
+address ("I friggin hate having the url displayed"). That line is what is
+happening on it: under Join listserv the last issue and the next one due, from
+the schedule; under the Exchange when the desk last published to it; under
+Newsletter the next issue and how many items are ready to add; and under the
+share page, which has nothing to report, what it is. The four are the public
+share page, the listserv sign-up, the Policy Exchange and the Newsletter,
+each opening in a new tab, the first three with Copy link, which says Copied
+for two seconds. The Newsletter has none: its address is the desk's, and the
+desk is not for handing out. Under the box, Content Sort as the one filled
+button on the page, with its icon, its count as a big numeral and an arrow. The top bar shows only Policy Exchange on the right. The
 Sort page is Content Sort everywhere since Sep 22.
 
 The front page of Sep 17 to 22 (Kate's wireframes; `design/mockups/index.png`) was the

@@ -744,31 +744,45 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .queue-title { font: var(--body-type); line-height: 21px; color: var(--ink); }
 .queue-meta { font: var(--meta-type); color: var(--text-helper); margin: var(--spacing-01) 0 0; }
 .queue-rows > .queue-meta { padding: 13px 0; }
-/* The side boxes: Quick links and Desk work, each a white box with its section head. */
+/* Quick links (Kate's pick C, Sep 23): one white box, every link a row with
+   its icon, its name and one line under it; no addresses on the page. */
 .side-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--spacing-06); }
-.ql-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-05); padding: var(--spacing-06) 0; border-bottom: 1px solid var(--line); }
+.ql-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-05); padding: var(--spacing-05) 0; border-bottom: 1px solid var(--line); }
 .ql-row:last-child { border-bottom: 0; padding-bottom: var(--spacing-02); }
-.ql-words { min-width: 0; }
-.ql-name { font: var(--body-type); font-weight: 500; color: var(--ink); text-decoration: none; }
+.ql-left { display: flex; align-items: flex-start; flex: 1 1 auto; min-width: 0; }
+/* The icon sits on the quiet surface, in the accent, at the system's 32px. */
+.ql-ico {
+  flex: none; width: 32px; height: 32px; margin-right: var(--spacing-04);
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius); background: var(--layer-01); color: var(--accent); font-size: 14px;
+}
+.ql-words { flex: 1 1 auto; min-width: 0; }
+.ql-name { font: var(--body-type); font-weight: 600; color: var(--ink); text-decoration: none; }
 .ql-name:hover { color: var(--muted); }
 .ql-name .fa-solid { font-size: 11px; color: var(--icon-secondary); }
-.ql-url { font: var(--meta-type); color: var(--text-helper); overflow-wrap: anywhere; margin-top: var(--spacing-01); }
-.ql-note { font: var(--meta-type); color: var(--muted); margin-top: var(--spacing-02); }
+.ql-note { font: var(--meta-type); color: var(--muted); margin-top: var(--spacing-01); }
 .ql-note:empty { display: none; }
 .ql-copy { height: 24px; margin: 0; padding: 0; font: var(--meta-type); color: var(--muted); text-decoration: underline; text-underline-offset: 2px; flex: none; }
 .ql-copy:hover:not(:disabled) { background: none; color: var(--ink); }
-/* The doors: a name, the count as a big numeral, an arrow; a 4px teal bar on hover. */
-.door-rows { display: flex; flex-direction: column; }
-.door-row {
-  display: flex; align-items: center; gap: var(--spacing-05); height: 60px; padding: 0 var(--spacing-05) 0 13px;
-  border-left: 4px solid transparent; border-bottom: 1px solid var(--line); color: var(--ink); text-decoration: none;
-  transition: background-color var(--duration-fast-01) var(--ease-productive), border-color var(--duration-fast-01) var(--ease-productive);
+/* Content Sort, the page's one piece of work: the filled button under the
+   links, with its count as a big numeral (Kate's pick C, Sep 23). */
+.sort-door {
+  display: flex; align-items: center; gap: var(--spacing-04); height: 56px; padding: 0 var(--spacing-05);
+  border-radius: var(--radius); background: var(--button-primary); color: var(--text-on-color); text-decoration: none;
+  transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
-.door-row:last-child { border-bottom: 0; }
-.door-row:hover { background: var(--door-hover); border-left-color: var(--accent); color: var(--ink); }
-.door-name { flex: 1 1 auto; font: var(--body-type); font-weight: 500; }
-.door-count { font: var(--numeral); }
-.door-row .fa-arrow-right { font-size: 14px; color: var(--icon-secondary); }
+.sort-door:hover { background: var(--button-primary-hover); color: var(--text-on-color); }
+.sort-door .door-name { flex: 1 1 auto; font: var(--body-type); font-weight: 700; }
+.sort-door .door-count { font: var(--numeral); }
+.sort-door .fa-arrow-right { font-size: 14px; }
+/* A section that folds: the chevron and the label are one target, and the
+   chevron points down while it is open, right while it is shut. */
+.fold-toggle {
+  display: inline-flex; align-items: center; gap: var(--spacing-03); height: auto; margin: 0; padding: 0;
+  border: 0; background: none; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit;
+}
+.fold-toggle:hover:not(:disabled) { background: none; color: var(--muted); }
+.fold-toggle .fa-solid { width: 12px; font-size: 11px; color: var(--icon-secondary); }
 
 /* The Later line: the other send dates as words with room between them (Sep 22). */
 .nl-others { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02); margin: 0; font: var(--meta-type); color: var(--text-helper); }

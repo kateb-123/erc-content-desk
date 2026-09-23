@@ -73,13 +73,33 @@ test('quickLinkNotes: when the desk last wrote to the Exchange, the last issue a
     { published_at: '' },
   ];
   assert.deepEqual(quickLinkNotes(rows, { schedule: ['2026-09-08', '2026-09-22', '2026-10-06'], today: '2026-09-23' }),
-    { share: '', listserv: 'Last issue Sep 22 · Next Oct 6', exchange: 'Updated Sep 22' });
+    { share: '', listserv: 'Last issue Sep 22 · Next Oct 6', exchange: 'Updated Sep 22', newsletter: 'Next issue Oct 6 · nothing ready to add' });
 });
 
 test('quickLinkNotes: on a send day the issue due today is next; with nothing known, nothing is said', () => {
   assert.deepEqual(quickLinkNotes([], { schedule: ['2026-09-08', '2026-09-22', '2026-10-06'], today: '2026-09-22' }),
-    { share: '', listserv: 'Last issue Sep 8 · Next Sep 22', exchange: '' });
+    { share: '', listserv: 'Last issue Sep 8 · Next Sep 22', exchange: '', newsletter: 'Next issue Sep 22 · nothing ready to add' });
   assert.deepEqual(quickLinkNotes([], { schedule: ['2026-09-08'], today: '2026-09-22' }),
-    { share: '', listserv: 'Last issue Sep 8', exchange: '' });
-  assert.deepEqual(quickLinkNotes([], { schedule: [], today: '2026-09-22' }), { share: '', listserv: '', exchange: '' });
+    { share: '', listserv: 'Last issue Sep 8', exchange: '', newsletter: 'nothing ready to add' });
+  assert.deepEqual(quickLinkNotes([], { schedule: [], today: '2026-09-22' }), { share: '', listserv: '', exchange: '', newsletter: 'nothing ready to add' });
+});
+
+// ── Kate's pick C, Sep 23: the Newsletter joins the Quick links, so its line
+// says when the next issue goes and how much is waiting for it. ──
+
+test('quickLinkNotes: the newsletter line names the next issue and what waits for it', () => {
+  const rows = [
+    { id: 'w1', status: 'kept', type: 'research' },
+    { id: 'w2', status: 'kept', type: 'headline' },
+    { id: 'i1', status: 'kept', type: 'research', newsletter_issue: '2026-10-06' },   // already in the issue
+    { id: 't1', status: 'trashed' },
+  ];
+  const notes = quickLinkNotes(rows, { schedule: ['2026-09-22', '2026-10-06'], today: '2026-09-23' });
+  assert.equal(notes.newsletter, 'Next issue Oct 6 · 2 ready to add');
+});
+
+test('quickLinkNotes: one waiting item is counted in the singular', () => {
+  const notes = quickLinkNotes([{ id: 'w1', status: 'kept', type: 'research' }],
+    { schedule: ['2026-10-06'], today: '2026-09-23' });
+  assert.equal(notes.newsletter, 'Next issue Oct 6 · 1 ready to add');
 });
