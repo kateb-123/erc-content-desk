@@ -4,6 +4,7 @@
  * type/subtype) plus the bulk "whole doc" door. All DOM work lives inside
  * renderSubmitForm so the pure helpers stay importable under node --test.
  */
+import { todayCentral } from './today.js';
 import { subtypesFor, TYPE_ORDER, typeDisplay } from './schema.js';
 
 /** Picking a type clears the subtype; re-picking the current type is a no-op. */
@@ -86,7 +87,7 @@ export function bulkSubmissionBody(item, submitter) {
  * one plain sentence with the status, never parser noise. */
 const postSubmission = body => postJson('/api/submit', body, 'add that to the queue');
 
-const todayIso = () => new Date().toISOString().slice(0, 10);
+const todayIso = () => todayCentral();
 
 /**
  * Render the shared submit form (single item + bulk door) into container.

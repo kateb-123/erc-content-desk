@@ -16,6 +16,7 @@ import { renderPast } from './past-ui.js';
 import { renderSchedule } from './schedule-ui.js';
 import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToFinalize, canRewrite } from './workflow.js';
 import { rewriteTargets, landRewrites } from './rewrite-client.js';
+import { todayCentral } from './today.js';
 
 
 const state = {
@@ -259,7 +260,7 @@ async function readBeforeSort() {
  *  sits in the issue and in Sort at once ("everything is talking to each
  *  other"). The table marks it Not sorted yet until Sort has had it. */
 async function stampSubmitted(data) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayCentral();
   const issue = nextIssueDate(state.schedule, today);
   const id = data?.id;
   if (!id) { await reload(); return; }   // nothing came back to stamp; the reload shows what landed
@@ -520,7 +521,7 @@ function render() {
     }
     shownScreen = state.screen;
   }
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayCentral();
   const common = { rows: state.rows, schedule: state.schedule, today };
   if (state.screen === 'home') {
     // Policy Exchange's lane counts what Publish would add, which only the live
