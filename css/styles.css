@@ -764,16 +764,26 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .ql-note:empty { display: none; }
 .ql-copy { height: 24px; margin: 0; padding: 0; font: var(--meta-type); color: var(--muted); text-decoration: underline; text-underline-offset: 2px; flex: none; }
 .ql-copy:hover:not(:disabled) { background: none; color: var(--ink); }
-/* Content Sort, the page's one piece of work: the filled button under the
-   links, with its count as a big numeral (Kate's pick C, Sep 23). */
+/* The desk's own pages: a filled button each under the links, with its count
+   as a badge (Kate, Sep 23: "not 17 but more like an alert"). */
 .sort-door {
-  display: flex; align-items: center; gap: var(--spacing-04); height: 56px; padding: 0 var(--spacing-05);
+  display: flex; align-items: center; gap: var(--spacing-04); min-height: 56px; padding: var(--spacing-04) var(--spacing-05);
   border-radius: var(--radius); background: var(--button-primary); color: var(--text-on-color); text-decoration: none;
   transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
 .sort-door:hover { background: var(--button-primary-hover); color: var(--text-on-color); }
-.sort-door .door-name { flex: 1 1 auto; font: var(--body-type); font-weight: 700; }
-.sort-door .door-count { font: var(--numeral); }
+.sort-door .door-words { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.sort-door .door-name { font: var(--body-type); font-weight: 700; }
+.sort-door .door-note { font: var(--meta-type); color: var(--color-teal-100); }
+.sort-door .door-note:empty { display: none; }
+/* The badge: a pill in the maize, the one colour on the desk that means look
+   here, with the navy ink on it. Nothing waiting draws no badge. */
+.sort-door .door-count {
+  flex: none; min-width: 32px; padding: 0 var(--spacing-03); border-radius: var(--radius-pill);
+  background: var(--color-maize-400); color: var(--color-blue-400);
+  font-weight: 700; font-size: 15px; line-height: 24px; text-align: center;
+}
+.sort-door .door-count:empty { display: none; }
 .sort-door .fa-arrow-right { font-size: 14px; }
 /* A section that folds: the chevron and the label are one target, and the
    chevron points down while it is open, right while it is shut. */

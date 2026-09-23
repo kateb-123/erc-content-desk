@@ -49,14 +49,13 @@ export function quickLinkNotes(rows, { schedule, today }) {
   const published = rows.map(r => String(r.published_at ?? '')).filter(Boolean).sort().at(-1) ?? '';
   const dates = [...(schedule ?? [])].sort();
   const next = dates.find(d => d >= today) ?? '';
-  const ready = splitPool(rows, schedule, next, today).live.length;
-  // The send dates belong to the Newsletter row, which says them; the listserv
-  // row does not repeat them (Kate, Sep 23).
+  // The send dates belong to the Newsletter, which says them once; the
+  // listserv row does not repeat them (Kate, Sep 23). How many are ready to
+  // add is the button's own count, not a word in this line.
   return {
     share: '',
     listserv: '',
     exchange: published ? `Updated ${isoToShort(published, today)}` : '',
-    newsletter: [next && `Next issue ${isoToShort(next, today)}`,
-      ready ? `${ready} ready to add` : 'nothing ready to add'].filter(Boolean).join(' · '),
+    newsletter: next ? `Next issue ${isoToShort(next, today)}` : '',
   };
 }

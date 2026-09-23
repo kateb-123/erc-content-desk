@@ -1,9 +1,9 @@
 /**
  * The team's page, Submit content (Kate's sketch and the design handoff, Sep 22):
- * the share form in a white box on the left with the Queue under it, an
- * open list of what is waiting; on the right the three public Quick links
- * with Copy link, and the two doors, Content Sort in place and Newsletter in
- * its own window. The form is mounted once and left alone on re-renders, so
+ * the share form in a white box on the left with the Queue under it, a fold
+ * that opens open; on the right the three public Quick links with Copy link,
+ * then the desk's own two as filled buttons, Content Sort in place and the
+ * Newsletter in its own window (Kate, Sep 23). The form is mounted once and left alone on re-renders, so
  * typing is never wiped; the queue and the counts redraw.
  */
 import { renderSubmitForm } from './submit-form.js';
@@ -15,19 +15,25 @@ import { isoToShort } from './queue-view.js';
 import { LANES } from './shell-view.js';
 import { el, tryAgain } from './ui-aids.js';
 
-/** Everything the page links to, in one list (Kate's pick C, Sep 23). The
- *  three public pages the team shares: the standalone share page and listserv
- *  sign-up at erc-share.vercel.app (public-pages/ in this repo, a Vercel
- *  project of its own since Sep 22; never on the desk's address, which has no
- *  password), and the Exchange itself. Then the Newsletter, the desk's own hub,
- *  which opens in its own window and carries no Copy link: its address is the
- *  desk's, and the desk is not for handing out. No row shows its address (Kate,
- *  Sep 23); a row says what it is or what is happening on it instead. */
+/** Quick links are the three PUBLIC-facing pages and nothing else (Kate,
+ *  Sep 23): the standalone share page and listserv sign-up at
+ *  erc-share.vercel.app (public-pages/ in this repo, a Vercel project of its
+ *  own since Sep 22; never on the desk's address, which has no password), and
+ *  the Exchange itself. No row shows its address (her words: "I friggin hate
+ *  having the url displayed"); a row says what it is, or what is happening on
+ *  it. The desk's own pages are the buttons under the box. */
 export const QUICK_LINKS = [
   { key: 'share', label: 'Submit content', href: 'https://erc-share.vercel.app/submit/', icon: 'paper-plane', sub: 'The form anyone can use' },
   { key: 'listserv', label: 'Join listserv', href: 'https://erc-share.vercel.app/listserv/', icon: 'user-plus', sub: 'Where people sign up' },
   { key: 'exchange', label: 'ERC Policy Exchange', href: 'https://erc-policy-exchange.vercel.app/', icon: 'globe' },
-  { key: 'newsletter', label: 'Newsletter', href: '/#newsletter', icon: 'envelope', inHouse: true },
+];
+
+/** The desk's own work, a filled button each (Kate, Sep 23): Content Sort in
+ *  place, the Newsletter in its own window. Each wears its count as a badge,
+ *  and the Newsletter says which issue is next under its name. */
+export const DESK_DOORS = [
+  { key: 'sort', icon: 'inbox' },
+  { key: 'newsletter', icon: 'envelope', newWindow: true },
 ];
 
 function sectionHead(label, note) {
@@ -66,7 +72,7 @@ function quickLink(item) {
   ico.append(faIcon(item.icon));
   const words = el('div', 'ql-words');
   const a = el('a', 'ql-name', item.label);
-  a.href = item.href; a.target = '_blank'; a.rel = 'noopener';   // the newsletter is its own hub too (Kate, Sep 22)
+  a.href = item.href; a.target = '_blank'; a.rel = 'noopener';
   a.append(' ', faIcon('arrow-up-right-from-square'));
   // One line under the name: what is happening on it (quickLinkNotes, filled
   // once the rows are in), or what it is when there is nothing to report.
@@ -77,30 +83,33 @@ function quickLink(item) {
   left.append(ico, words);
   row.append(left);
   // Copy link writes the address and says so for two seconds; only this row
-  // changes. The desk's own pages have none: their address stays in-house.
-  if (!item.inHouse) {
-    const copy = el('button', 'linkish ql-copy', 'Copy link');
-    copy.type = 'button';
-    copy.dataset.focus = `copy:${item.key}`;
-    copy.addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(item.href); } catch { return; }
-      copy.textContent = 'Copied';
-      setTimeout(() => { copy.textContent = 'Copy link'; }, 2000);
-    });
-    row.append(copy);
-  }
+  // changes. Every row in the box is a public page, so every row has one.
+  const copy = el('button', 'linkish ql-copy', 'Copy link');
+  copy.type = 'button';
+  copy.dataset.focus = `copy:${item.key}`;
+  copy.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(item.href); } catch { return; }
+    copy.textContent = 'Copied';
+    setTimeout(() => { copy.textContent = 'Copy link'; }, 2000);
+  });
+  row.append(copy);
   return row;
 }
 
-/** Content Sort, the one thing on this page that is work rather than a link
- *  (Kate's pick C, Sep 23): its own filled button under the Quick links. */
-function sortDoor(onGoTo) {
-  const lane = LANES.find(l => l.key === 'sort');
+/** A door to the desk's own work: the filled button under the Quick links,
+ *  with the lane's name, whatever is next on it, and its count as a badge. */
+function deskDoor(door, onGoTo) {
+  const lane = LANES.find(l => l.key === door.key);
   const a = el('a', 'sort-door');
   a.href = lane.href;
   a.dataset.key = lane.key;
-  a.addEventListener('click', event => { event.preventDefault(); onGoTo(lane.key); });
-  a.append(faIcon('inbox'), el('span', 'door-name', lane.label), el('span', 'door-count'), faIcon('arrow-right'));
+  if (door.newWindow) { a.target = '_blank'; a.rel = 'noopener'; }   // the newsletter is its own hub (Kate, Sep 22)
+  else a.addEventListener('click', event => { event.preventDefault(); onGoTo(lane.key); });
+  const words = el('span', 'door-words');
+  const note = el('span', 'door-note');
+  note.dataset.key = lane.key;
+  words.append(el('span', 'door-name', lane.label), note);
+  a.append(faIcon(door.icon), words, el('span', 'door-count'), faIcon('arrow-right'));
   return a;
 }
 
@@ -131,7 +140,7 @@ export function renderTeam(container, props) {
     const links = el('section', 'side-box');
     links.append(sectionHead('Quick links'));
     for (const item of QUICK_LINKS) links.append(quickLink(item));
-    side.append(links, sortDoor(onGoTo));
+    side.append(links, ...DESK_DOORS.map(door => deskDoor(door, onGoTo)));
     cols.append(main, side);
     page.append(head, cols);
     container.replaceChildren(page);
@@ -140,12 +149,16 @@ export function renderTeam(container, props) {
   // The counts once the rows are in: what waits on each page.
   const issue = nextIssueDate(schedule, today);
   const counts = loaded ? laneCounts(rows, { schedule, issue, today, preview: null }) : null;
-  for (const a of page.querySelectorAll('.sort-door')) a.querySelector('.door-count').textContent = counts ? String(counts[a.dataset.key]) : '';
+  // A door's badge: the count, and nothing at all when there is none to show.
+  for (const a of page.querySelectorAll('.sort-door')) {
+    const n = counts ? counts[a.dataset.key] : null;
+    a.querySelector('.door-count').textContent = n ? String(n) : '';
+  }
   // Under each Quick link: the Exchange's last update, the last issue and the
   // next, what waits for the newsletter (Kate, Sep 22 and 23). A row with
   // nothing to report falls back to the line that says what it is.
   const notes = loaded ? quickLinkNotes(rows, { schedule, today }) : null;
-  for (const n of page.querySelectorAll('.ql-note')) n.textContent = (notes && notes[n.dataset.key]) || n.dataset.sub || '';
+  for (const n of page.querySelectorAll('.ql-note, .door-note')) n.textContent = (notes && notes[n.dataset.key]) || n.dataset.sub || '';
 
   // The queue, read only: every waiting item, newest first.
   const list = page.querySelector('.queue-rows');
