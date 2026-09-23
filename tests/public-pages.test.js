@@ -36,6 +36,16 @@ test('the sign-up page posts to its own /api, marked public, behind the bot chec
   assert.match(html, /<title>Join the ERC newsletter/);
 });
 
+test('the human check sits above the submit button on both pages (Kate, Sep 22)', () => {
+  for (const page of ['submit/index.html', 'listserv/index.html']) {
+    const html = read(`${FOLDER}/${page}`);
+    const check = html.indexOf('id="cf"');
+    const button = html.indexOf('type="submit"');
+    assert.ok(check > 0 && button > 0, `${page} has both`);
+    assert.ok(check < button, `${page}: the check comes before the button`);
+  }
+});
+
 test('both pages wear the outward look, not the desk theme', () => {
   for (const page of ['submit/index.html', 'listserv/index.html']) {
     const html = read(`${FOLDER}/${page}`);
