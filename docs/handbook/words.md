@@ -476,3 +476,9 @@ Gone on Sep 18 with the section tabs: "Needs a fix" and the section names, "Keep
 "Couldn't load the archive. Retry" · "Nothing archived yet. Save an issue from the builder's Save & Export step and it appears here." (Past issues)
 "Go to Newsletter" (Publish's door, was "Send to Newsletter") · "Open Past issues" (the builder, after Save to the archive)
 Gone on Sep 18: the Next newsletter and Send to Newsletter screens, "Pick items to send to newsletter", the issue dropdown, the picked count and Send, "Already sent to this issue", "Past newsletters" as a page
+
+## Sep 22, 2026, night: plain words (Kate's copy audit, "basic UX responses, not slop")
+The public submit page: "Send the ERC an event, a paper, an opportunity or a headline for the newsletter and the Policy Exchange. We review everything before it goes out." (the lede) · "Description (dates, an abstract, or the whole announcement)" · "Received." over "We review every submission before it goes out." (the done box; was "Thank you. The ERC has it.") · "Something went wrong. Try again." · "The link needs to start with http:// or https://."
+The desk: "Pick a type." (was "Pick a real type.") · "The link needs to start with http:// or https://." · "Filled in from the page. Check: [fields]." / "Filled in from the page. Check the fields." (Sort's card; was "The reader wasn't sure") · "Published. Some rows were not marked as published. Publish again to mark them; nothing goes out twice." · "The rewrite was refused. Edit the descriptions by hand." · "Too many to rewrite at once. Rewrite in smaller batches."
+The builder's step notes: "Order the items with the arrows, mark one event Featured, and turn the research callout on or off." · "Click any text in the preview to edit it on the right. The introduction, Add an item and Reorder items are there too." · "Copy the HTML for Outlook, save the issue to the archive, or download the file."
+The public sign-up's thank-you: being brainstormed.

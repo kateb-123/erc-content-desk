@@ -87,7 +87,7 @@ export default async function handler(req, res) {
       console.error('publish stamping failed', err);
       return res.status(200).json({
         ok: true, published: published.length, skipped: skipped.length, csv: finalCsv,
-        warning: 'Published, but the bookkeeping stamps failed for some rows. Publish again to finish stamping; rows already published are skipped safely.',
+        warning: 'Published. Some rows were not marked as published. Publish again to mark them; nothing goes out twice.',
       });
     }
     return res.status(200).json({

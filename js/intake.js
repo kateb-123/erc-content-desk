@@ -19,8 +19,8 @@ export function validateSubmission(
     errors.push("That email address doesn't look right.");
   }
   if (!s(link)) errors.push('Add a link.');
-  else if (!isSafeLink(link)) errors.push('That link needs to be a normal web link (http or https).');
-  if (s(type) && !isValidType(s(type))) errors.push('Pick a real type.');
+  else if (!isSafeLink(link)) errors.push('The link needs to start with http:// or https://.');
+  if (s(type) && !isValidType(s(type))) errors.push('Pick a type.');
   else if (!s(type) && s(subtype)) errors.push('Pick a type before a subtype.');
   else if (s(type) && !(allowBlankSubtype && !s(subtype)) && !isValidSubtype(s(type), s(subtype))) {
     errors.push('Pick a subtype.');

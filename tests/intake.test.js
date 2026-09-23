@@ -34,7 +34,7 @@ test('type is optional — a blank type validates clean', () => {
 
 test('a non-blank invalid type is still rejected', () => {
   const errors = validateSubmission({ link: 'https://x.org/p', submitter: 'KB', type: 'bogus' });
-  assert.ok(errors.includes('Pick a real type.'));
+  assert.ok(errors.includes('Pick a type.'));
 });
 
 test('missing link is still rejected even with everything else present', () => {
@@ -52,7 +52,7 @@ test('validateSubmission rejects a link that is not http(s)', () => {
     title: 'T', blurb: 'B', link: 'javascript:alert(1)',
     type: 'headline', subtype: 'Texas', submitter: 'KB',
   });
-  assert.ok(errors.some(e => e.includes('web link')));
+  assert.ok(errors.some(e => e.includes('http:// or https://')));
 });
 
 test('validateSubmission still accepts a normal https link', () => {
@@ -151,10 +151,10 @@ test('buildSubmission keeps a separate original_text when one is given, so sprea
 // line still lists them, and the field each one names turns red and takes focus.
 test('fieldFor names the form field a validation message is about', () => {
   assert.equal(fieldFor('Add a link.'), 'link');
-  assert.equal(fieldFor('That link needs to be a normal web link (http or https).'), 'link');
+  assert.equal(fieldFor('The link needs to start with http:// or https://.'), 'link');
   assert.equal(fieldFor('Add your name or initials.'), 'submitter');
   assert.equal(fieldFor('Pick a subtype.'), 'type');
-  assert.equal(fieldFor('Pick a real type.'), 'type');
+  assert.equal(fieldFor('Pick a type.'), 'type');
   assert.equal(fieldFor('Pick a type before a subtype.'), 'type');
   assert.equal(fieldFor("That email address doesn't look right."), 'submitter_email');
   assert.equal(fieldFor('Add your email address.'), 'submitter_email');

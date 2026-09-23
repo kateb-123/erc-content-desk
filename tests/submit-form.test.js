@@ -60,7 +60,7 @@ test('ERC Event is flat: no subtype pills, and the hint that tells it apart from
 
 test('typeRowFor says which pill row a type message is about', () => {
   assert.equal(typeRowFor('Pick a subtype.'), 'subtype');
-  assert.equal(typeRowFor('Pick a real type.'), 'type');
+  assert.equal(typeRowFor('Pick a type.'), 'type');
   assert.equal(typeRowFor('Pick a type before a subtype.'), 'type');
   assert.equal(typeRowFor(''), 'type');
 });

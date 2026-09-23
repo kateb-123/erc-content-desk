@@ -41,10 +41,10 @@ export default async function handler(req, res) {
     });
     const response = await stream.finalMessage();
     if (response.stop_reason === 'refusal') {
-      return res.status(502).json({ ok: false, error: 'Claude declined the rewrite. Edit the blurbs by hand this time.' });
+      return res.status(502).json({ ok: false, error: 'The rewrite was refused. Edit the descriptions by hand.' });
     }
     if (response.stop_reason === 'max_tokens') {
-      return res.status(502).json({ ok: false, error: 'Too many items to rewrite in one go. Publish what you have and rewrite the next batch separately.' });
+      return res.status(502).json({ ok: false, error: 'Too many to rewrite at once. Rewrite in smaller batches.' });
     }
     const text = response.content.find(b => b.type === 'text')?.text ?? '';
     const { rewrites, warnings } = normalizeRewrites(parseModelJson(text, 'rewrite'), candidates);

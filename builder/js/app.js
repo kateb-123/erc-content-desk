@@ -452,7 +452,7 @@ function showUndoToast(message, onUndo, { focusUndo = false } = {}) {
  */
 function renderTriage() {
   const container = openStep('triage', 'Put the issue in order.',
-    'Put the items in order with the arrows, mark one event Featured, and switch the Submit your research callout on or off. The issue builds in this order.');
+    'Order the items with the arrows, mark one event Featured, and turn the research callout on or off.');
 
   const issue = state.issue;
 
@@ -1462,7 +1462,7 @@ function renderEdit() {
   // Drop any card registry from a previous visit (the DOM is rebuilt below).
   openCards.clear();
   const container = openStep('edit', 'Check the issue and change anything in place.',
-    'Click any text in the preview to edit it in a card on the right. The rail also holds the introduction, a one-off Add an item door, and reordering.');
+    'Click any text in the preview to edit it on the right. The introduction, Add an item and Reorder items are there too.');
 
   if (!state.issue) {
     emptyLine(container, 'No issue loaded. Pull from the desk on the Review step first.');
@@ -1636,7 +1636,7 @@ function downloadHtml(container) {
  */
 function renderExport() {
   const container = openStep('export', 'Copy the issue into Outlook, then archive it.',
-    'Copy the finished HTML for Outlook, save the issue to the archive, or download the file. Copy HTML is the one Outlook needs.');
+    'Copy the HTML for Outlook, save the issue to the archive, or download the file.');
 
   // Nothing to export yet: one plain sentence, no buttons.
   if (!state.issue || !countIssueItems(state.issue)) {

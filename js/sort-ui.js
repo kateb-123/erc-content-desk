@@ -306,7 +306,7 @@ function sortCard(row, { props, rerender, ctx, reshare, position, total }) {
   }
   if (String(row.needs_review ?? '').trim()) {
     const filled = String(row.auto_filled ?? '').split(',').map(f => f.trim()).filter(Boolean);
-    left.append(el('p', 'card-quiet', filled.length ? `The reader wasn't sure. Check: ${filled.join(', ')}.` : "The reader wasn't sure. Check the fields."));
+    left.append(el('p', 'card-quiet', filled.length ? `Filled in from the page. Check: ${filled.join(', ')}.` : 'Filled in from the page. Check the fields.'));
   }
   if (row.note) left.append(el('p', 'card-quiet', `Note: ${row.note}`));
   left.append(descriptionBlock(row, props, rerender));
