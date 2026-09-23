@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Join the ERC newsletter</title>
+  <meta name="description" content="New research, events, opportunities and education news from the Texas A&amp;M Education Research Center, in your inbox." />
+  <link rel="icon" href="/assets/erc-logo-maroon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Work+Sans:wght@600;700;900&display=swap" />
+  <link rel="stylesheet" href="/css/public.css?v=1" />
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit" async defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="band">
+    <div class="band__in">
+      <a class="band__name" href="https://erc.cehd.tamu.edu/" target="_blank" rel="noopener">Education Research Center</a>
+      <span class="band__sub">Texas A&amp;M University</span>
+    </div>
+  </header>
+  <main id="main">
+    <div class="section-head">
+      <h1 class="section-head__title" tabindex="-1">Join the ERC newsletter</h1>
+      <p class="section-head__desc">New research, events, opportunities, and education news from the Texas A&amp;M Education Research Center, in your inbox.</p>
+    </div>
+    <div id="root"></div>
+  </main>
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <img class="site-footer__logo" src="/assets/erc-logo-maroon.png" alt="Education Research Center, Texas A&amp;M University" />
+      <div class="site-footer__links">
+        <a class="site-footer__link" href="https://erc.cehd.tamu.edu/" target="_blank" rel="noopener">erc.cehd.tamu.edu</a>
+        <a class="site-footer__link" href="mailto:erc@tamu.edu">erc@tamu.edu</a>
+        <a class="site-footer__link" href="https://erc-policy-exchange.vercel.app/" target="_blank" rel="noopener">ERC Policy Exchange</a>
+        <a class="site-footer__link" href="/submit/">Submit content</a>
+      </div>
+    </div>
+  </footer>
+  <script>
+const el = (tag, cls, text) => {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined) n.textContent = text;
+  return n;
+};
+const dots = () => {
+  const d = el('span', 'dots');
+  d.append(el('i'), el('i'), el('i'));
+  return d;
+};
+const root = document.getElementById('root');
+root.innerHTML = `
+  <form id="f" class="form form--narrow" novalidate>
+    <div class="field">
+      <label for="n">Your name</label>
+      <input id="n" type="text" autocomplete="name">
+    </div>
+    <div class="field">
+      <label for="e">Your email address</label>
+      <input id="e" type="email" autocomplete="email">
+    </div>
+    <div class="btns field--full">
+      <button type="submit" class="btn" id="go">Subscribe »</button>
+    </div>
+    <p class="status field--full" id="stat" aria-live="polite"></p>
+    <div class="cf field--full" id="cf"></div>
+  </form>
+`;
+
+// Bot check (Cloudflare Turnstile). This page is public, so it asks to
+// be gated (public: true); the receiving end refuses the call without
+// a token. Tokens are single-use and expire, so every call takes a fresh
+// one and the widget is reset to produce the next.
+const SITE_KEY = /^(localhost|127\.0\.0\.1)$/.test(location.hostname)
+  ? '1x00000000000000000000AA'   // Cloudflare's test key: always passes
+  : '0x4AAAAAAEtQoqQ0BzahOG4t';
+let widgetId = null;
+let token = '';
+let waiting = [];
+function renderTurnstile() {
+  if (widgetId !== null || !window.turnstile) return;
+  widgetId = turnstile.render('#cf', {
+    sitekey: SITE_KEY,
+    appearance: 'interaction-only',
+    callback: t => { token = t; const w = waiting; waiting = []; w.forEach(fn => fn()); },
+    'error-callback': () => { token = ''; },
+    'expired-callback': () => { token = ''; },
+  });
+}
+window.onTurnstileLoad = renderTurnstile;
+renderTurnstile();
+function takeToken() {
+  return new Promise((resolve, reject) => {
+    const take = () => {
+      const t = token; token = '';
+      setTimeout(() => turnstile.reset(widgetId), 0);
+      resolve(t);
+    };
+    if (token) return take();
+    const onToken = () => { clearTimeout(timer); take(); };
+    const timer = setTimeout(() => {
+      waiting = waiting.filter(fn => fn !== onToken);
+      reject(new Error("Couldn't confirm you're a person. Reload the page and try again."));
+    }, 60000);
+    waiting.push(onToken);
+  });
+}
+
+const form = document.getElementById('f');
+const stat = document.getElementById('stat');
+const setStat = (msg, kind) => {
+  stat.className = `status field--full${kind ? ' status--' + kind : ''}`;
+  stat.replaceChildren();
+  if (kind === 'busy' && msg) { stat.append(dots(), document.createTextNode(msg)); }
+  else stat.textContent = msg;
+};
+
+const doneBox = el('div', 'done');
+doneBox.hidden = true;
+root.append(doneBox);
+
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  const name = document.getElementById('n').value.trim();
+  const email = document.getElementById('e').value.trim();
+  const errors = [];
+  if (!name) errors.push('Add your name.');
+  if (!email) errors.push('Add your email address.');
+  else if (!/^\S+@\S+\.\S+$/.test(email)) errors.push("That email address doesn't look right.");
+  if (errors.length) return setStat(errors.join(' '), 'error');
+
+  const go = document.getElementById('go');
+  go.disabled = true;
+  setStat('Sending', 'busy');
+  try {
+    const resp = await fetch('/api/listserv', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, public: true, turnstile_token: await takeToken() }),
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error((data.errors ?? ['Something went wrong.']).join(' '));
+    form.reset();
+    setStat('');
+    const title = el('h3', '', 'Thank you. You are on the list.');
+    title.tabIndex = -1;
+    doneBox.replaceChildren(title);
+    doneBox.append(el('p', '', 'The next ERC newsletter will come to ' + email + '.'));
+    const back = el('a', 'btn-outline', 'Visit the ERC');
+    back.href = 'https://erc.cehd.tamu.edu/';
+    doneBox.append(back);
+    form.hidden = true; doneBox.hidden = false;
+    title.focus();
+  } catch (err) {
+    setStat(err instanceof TypeError ? "Couldn't reach the server. Check your connection." : err.message, 'error');
+  } finally {
+    go.disabled = false;
+  }
+});
+  </script>
+</body>
+</html>

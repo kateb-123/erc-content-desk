@@ -2,3 +2,4 @@ tests/
 apps-script/
 .superpowers/
 .env.example
+public-pages/

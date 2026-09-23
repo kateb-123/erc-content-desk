@@ -1,0 +1,78 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+
+// The two public pages, the share form and the listserv sign-up, live in
+// public-pages/ and deploy as a Vercel project of their own at their own
+// address (Kate, Sep 22: pick A). They post to their own /api, which that
+// project forwards to the desk server-side, so the desk's address appears
+// nowhere a visitor can read it. The desk's own deployment never serves
+// the folder.
+const root = new URL('../', import.meta.url);
+const read = path => readFileSync(new URL(path, root), 'utf8');
+const FOLDER = 'public-pages';
+
+const walk = dir => readdirSync(dir).flatMap(name => {
+  const p = join(dir, name);
+  return statSync(p).isDirectory() ? walk(p) : [p];
+});
+
+test('the share page posts to its own /api, marked public, behind the bot check', () => {
+  const html = read(`${FOLDER}/submit/index.html`);
+  assert.match(html, /fetch\('\/api\/submit'/);
+  assert.match(html, /fetch\('\/api\/listserv'/);   // the add-me box
+  assert.match(html, /fetch\('\/api\/newsletter-image'/);
+  assert.match(html, /public: true/);
+  assert.match(html, /challenges\.cloudflare\.com\/turnstile/);
+  assert.match(html, /<title>Submit content to the ERC/);
+});
+
+test('the sign-up page posts to its own /api, marked public, behind the bot check', () => {
+  const html = read(`${FOLDER}/listserv/index.html`);
+  assert.match(html, /fetch\('\/api\/listserv'/);
+  assert.match(html, /public: true/);
+  assert.match(html, /challenges\.cloudflare\.com\/turnstile/);
+  assert.match(html, /<title>Join the ERC newsletter/);
+});
+
+test('both pages wear the outward look, not the desk theme', () => {
+  for (const page of ['submit/index.html', 'listserv/index.html']) {
+    const html = read(`${FOLDER}/${page}`);
+    assert.match(html, /css\/public\.css/);
+    assert.doesNotMatch(html, /css\/tokens\.css/);
+  }
+});
+
+test('the folder is self-contained: every root-absolute link resolves inside it', () => {
+  for (const page of ['submit/index.html', 'listserv/index.html']) {
+    const html = read(`${FOLDER}/${page}`);
+    for (const [, target] of html.matchAll(/\b(?:href|src)="(\/[^"]*)"/g)) {
+      const clean = target.replace(/[?#].*$/, '');
+      const file = clean.endsWith('/') ? `${clean}index.html` : clean;
+      assert.ok(existsSync(new URL(`${FOLDER}${file}`, root)), `${page} links to ${target}, missing from ${FOLDER}/`);
+    }
+  }
+});
+
+test('nothing a visitor can read names the desk', () => {
+  const files = walk(new URL(FOLDER, root).pathname).filter(f => !f.endsWith('vercel.json'));
+  assert.ok(files.length >= 3, 'the folder holds the pages');
+  for (const f of files) {
+    if (/\.(png|jpe?g|gif|ico)$/.test(f)) continue;
+    assert.doesNotMatch(readFileSync(f, 'utf8'), /erc-content-desk/, `${f} names the desk`);
+  }
+});
+
+test("the folder's vercel.json forwards /api to the desk server-side, and only that", () => {
+  const cfg = JSON.parse(read(`${FOLDER}/vercel.json`));
+  assert.deepEqual(cfg.rewrites, [
+    { source: '/api/:path*', destination: 'https://erc-content-desk.vercel.app/api/:path*' },
+  ]);
+  assert.equal(cfg.routes, undefined);
+});
+
+test('the desk never deploys the folder', () => {
+  const lines = read('.vercelignore').split('\n').map(l => l.trim());
+  assert.ok(lines.includes(`${FOLDER}/`), `.vercelignore lists ${FOLDER}/`);
+});
