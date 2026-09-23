@@ -7,5 +7,8 @@
         { "key": "Content-Security-Policy", "value": "sandbox" }
       ]
     }
+  ],
+  "redirects": [
+    { "source": "/public-pages/:path*", "destination": "https://erc-share.vercel.app/:path*", "permanent": false }
   ]
 }
