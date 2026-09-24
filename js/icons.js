@@ -27,23 +27,20 @@ export function faIcon(name) {
   return i;
 }
 
-export function dotsLoader(mini = false) {
-  const wrap = document.createElement('div');
-  wrap.className = mini ? 'dots-loader dots-mini' : 'dots-loader';
-  wrap.setAttribute('aria-hidden', 'true');
-  for (let i = 0; i < 6; i += 1) {
-    wrap.append(Object.assign(document.createElement('span'), { className: 'dot' }));
-  }
-  return wrap;
+/** A wait's words end in one ellipsis, however the caller wrote them. */
+export function busyText(message) {
+  return `${String(message ?? '').trim().replace(/(\.\.\.|…)+$/, '')}…`;
 }
 
-/** "Rewriting" + dots that type themselves — for busy status labels. */
-export function loadingLabel(message) {
-  const frag = document.createDocumentFragment();
-  frag.append(message.replace(/…$/, ''));
-  const dots = document.createElement('span');
-  dots.className = 'dots-text';
-  dots.setAttribute('aria-hidden', 'true');
-  frag.append(dots);
-  return frag;
+/**
+ * A wait, in words (Kate, Sep 23: the sliding dots went; her pick of nine was
+ * shimmering words). The words say what is happening, and css/shell.css runs a
+ * soft light across them; reduced motion and forced colours hold them still.
+ */
+export function busyWords(message) {
+  const words = document.createElement('span');
+  words.className = 'busy-words';
+  words.textContent = busyText(message);
+  return words;
 }
+

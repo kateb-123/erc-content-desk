@@ -2,7 +2,7 @@
 import { fetchDesk, saveRows, readNewRows, readReply, postJson, plainError } from './sheet-client.js';
 import { readAllWaiting } from './reader-client.js';
 import { readerQueue, undoWords, withoutRow } from './sort-view.js';
-import { dotsLoader, loadingLabel } from './icons.js';
+import { busyWords } from './icons.js';
 import { renderHome } from './home-ui.js';
 import { renderTeam } from './team-ui.js';
 import { renderShell } from './shell-ui.js';
@@ -55,7 +55,7 @@ function setStatus(message, kind = 'busy', action = null) {
   if (action) message = message.replace(/ Try again in a minute\.$/, '');
   if (kind === 'busy' && message) {
     // Inline, one line tall: a message never moves the page.
-    statusEl.replaceChildren(dotsLoader(true), loadingLabel(message));
+    statusEl.replaceChildren(busyWords(message));
   } else {
     statusEl.textContent = message;
   }

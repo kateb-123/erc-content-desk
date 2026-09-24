@@ -12,7 +12,7 @@ import { readyToFinalize, canRewrite, needsDescription } from './workflow.js';
 import { isErc, sortList } from './sort-view.js';
 import { TYPE_ORDER, typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
-import { dotsLoader, faIcon, loadingLabel } from './icons.js';
+import { busyWords, faIcon } from './icons.js';
 import { finalizeStage, finalizeGroups, finalizeProgress, onTheWay, pickSelection, finalizeWaiting } from './finalize-view.js';
 import { buildEditForm, holdIfDirty } from './edit-form.js';
 import { sortPageHead } from './page-head.js';
@@ -295,11 +295,10 @@ export function renderFinalize(container, props) {
   }
   container.append(head);
   if (busy) {
-    // The wait says what it is: the dots, and words a screen reader hears.
-    container.append(dotsLoader());
+    // The wait says what it is, in words.
     const line = el('p', 'load-line');
     line.setAttribute('role', 'status');
-    line.append(loadingLabel(`Rewriting ${pending.length} description${pending.length === 1 ? '' : 's'}`));
+    line.append(busyWords(`Rewriting ${pending.length} description${pending.length === 1 ? '' : 's'}`));
     container.append(line);
     return;
   }

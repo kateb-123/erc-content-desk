@@ -72,7 +72,7 @@ role; the value is in the file.
 | `--support-info` | teal 400 `#1d7491` | the info note's bar and icon |
 | `--notification-*-background` / `-border` | info teal 100, success green 100, warning maize 100, error pink 100; the border is the role's colour at 30% | inline notes: the info panel, the fix panel, the link ask, the builder's status boxes; text on them is `--text-primary`, and the left bar is 4px |
 | `--tag-background-*` / `--tag-color-*` | gray neutral 100 / neutral 400, blue teal 100 / teal 500, review maize 100 / orange 500 | tags: a fact, New, a duplicate (needs review, so it wears the review tint); the queue count |
-| `--accent-30` to `--accent-80` | the teal ramp | the sliding-dots loader; `--accent-30` is Publish's held segment |
+| `--accent-30` to `--accent-80` | the teal ramp | `--accent-30` is Publish's held segment |
 | `--background-inverse` / `--link-inverse` | blue 400 `#00274c` / maize 400 | the builder's Undo toast |
 | `--overlay` | `#00000040` | the dim behind the busy popup and the tutorial: the system's 25% scrim, its only transparency |
 | `--spacing-01` to `--spacing-10` | 2, 4, 8, 12, 16, 24, 32, 40, 48, 64px | every gap, pad and margin; 16 is the default; 10px is a bug. Page gutters are 40px (`--gap-56`), 16px on mobile |
@@ -181,8 +181,7 @@ template and the public Exchange site.
 ## Icons
 
 Font Awesome 7.3.1 Free via cdnjs; setup in `.font-awesome.md` (read it first).
-FA is for small glyph accents; the hand-drawn inline SVGs (drawn check, sliding-dots
-loader) stay. Icon elements always carry `aria-hidden="true"`.
+FA is for small glyph accents; the hand-drawn inline SVG check stays. Icon elements always carry `aria-hidden="true"`.
 
 ## Action vocabulary (the uniformity contract)
 
@@ -336,9 +335,12 @@ nothing over `--duration-moderate-02` 240ms, and nothing decorative moves.
   Undo; that is what records the decision.
 - Screen switch: ±16px directional slide, 110ms `--ease-standard`.
 - Confirmations: SVG check draws itself, 240ms.
-- Loading: the sliding-dots track on the app's accent ramp (`--accent-30` to
-  `--accent-50`), label under the track with typed trailing dots; mini variant
-  inline in control rows.
+- Loading: shimmering words (Kate, Sep 23, her pick of nine; the sliding dots
+  of Sep 1 are gone, "i hate those so much now"). Every wait says what it is
+  ("Reading 2 new items…", "Adding…", "Checking the live Exchange…") in the
+  quiet grey, and a soft teal light sweeps across the words (`.busy-words`,
+  `busyWords()` in js/icons.js, `busyLine()` in js/ui-aids.js for a panel).
+  Reduced motion and forced colours hold them still as plain words.
 - Blocking progress popup (bulk upload's Add all, Sep 10): page dimmed with
   `--overlay`, a square `--layer-01` card, the count at heading-02, an 8px
   `--interactive` bar on a `--layer-accent-01` track, one muted line under it.

@@ -11,7 +11,7 @@ import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, partitionPulled, count
 // is same-origin: relative fetches, no CORS.
 let pullMessage = ''; // survives the Review re-render after a pull
 import { renderNewsletter, renderProse } from './template.js';
-import { faIcon, dotsLoader, loadingLabel } from '../../js/icons.js';
+import { faIcon, busyWords } from '../../js/icons.js';
 import { el, button } from '../../js/ui-aids.js';
 import { buildImageControl } from '../../js/item-image.js';
 import { readReply, postJson, plainError, fetchDesk, readNewRows, saveRows } from '../../js/sheet-client.js';
@@ -330,7 +330,7 @@ function renderReview() {
   const setPull = (msg, busy = false) => {
     pullMessage = msg;
     pullNote.replaceChildren();
-    if (busy && msg) pullStatus.replaceChildren(dotsLoader(true), loadingLabel(msg));
+    if (busy && msg) pullStatus.replaceChildren(busyWords(msg));
     else pullStatus.textContent = msg;
   };
   pullBtn.addEventListener('click', async () => {
@@ -923,7 +923,7 @@ function buildAddItemPanel(iframe) {
   // that never files the item twice (the row's id stays on it as deskId).
   const toDesk = async (item, sectionKey, label) => {
     addBtn.hidden = true;
-    status.replaceChildren(dotsLoader(true), loadingLabel(`Added to ${label}. Sending it to the desk…`));
+    status.replaceChildren(busyWords(`Added to ${label}. Sending it to the desk…`));
     try {
       await sendItemToDesk(item, { sectionKey, issueIso: displayDateToISO(state.issue?.date || ''), api: DESK });
       status.textContent = `Added to ${label} and to Content Sort's queue.`;
@@ -1788,7 +1788,7 @@ function renderExport() {
   const saveToArchive = async (iso) => {
     archiveSlot.replaceChildren();   // the button (or the ask) is gone while saving; no double-clicks
     const saveStatus = el('span', 'pull-status');
-    saveStatus.append(dotsLoader(true), loadingLabel('Saving…'));
+    saveStatus.append(busyWords('Saving…'));
     archiveSlot.appendChild(saveStatus);
     try {
       const data = await postJson('/api/newsletter-archive',
@@ -1910,7 +1910,7 @@ function showRestoreBanner(saved) {
     discardBtn.hidden = true;
     msg.classList.remove('restore-banner__msg--error');
     msg.removeAttribute('role');
-    msg.replaceChildren(noteIcon('triangle-exclamation'), dotsLoader(true), loadingLabel('Discarding…'));
+    msg.replaceChildren(noteIcon('triangle-exclamation'), busyWords('Discarding…'));
     try {
       const reply = await discardToDesk(saved, {
         send: (body) => postJson('/api/drafts', body, 'keep the draft'),
@@ -1985,7 +1985,7 @@ function discardedRow(entry) {
   const go = async () => {
     row.querySelector('.discarded-error')?.remove();
     const wait = el('span', 'pull-status');
-    wait.append(dotsLoader(true), loadingLabel('Restoring…'));
+    wait.append(busyWords('Restoring…'));
     slot.replaceChildren(wait);
     try {
       // The open draft, if any, is kept like a Discard before it is replaced (Kate, Sep 23).

@@ -3,7 +3,7 @@
  * keyboard's place across a redraw, the load-failed line and the mark an
  * in-flight row action leaves behind.
  */
-import { dotsLoader, faIcon } from './icons.js';
+import { busyWords, faIcon } from './icons.js';
 
 /** The desk's one way to make an element: a tag, a class, its words. */
 export function el(tag, className, text) {
@@ -62,6 +62,14 @@ export function markOverflow(pane) {
   pane.addEventListener('scroll', check, { passive: true });
 }
 
+/** A panel's wait: one line of busy words, announced to assistive tech. */
+export function busyLine(message) {
+  const line = el('p', 'load-line');
+  line.setAttribute('role', 'status');
+  line.append(busyWords(message));
+  return line;
+}
+
 /** When the first load failed: the reason is in the status line; this is the way to try again. */
 export function tryAgain(onRefresh) {
   const box = el('p', 'load-failed');
@@ -80,7 +88,7 @@ export function inFlight(button, key, word) {
   const wait = el('span', 'queue-wait');
   wait.tabIndex = -1;
   wait.dataset.focus = key;
-  wait.append(dotsLoader(true), el('span', 'sr-only', word));
+  wait.append(busyWords(word));
   const had = document.activeElement === button;
   button.replaceWith(wait);
   if (had) wait.focus({ preventScroll: true });

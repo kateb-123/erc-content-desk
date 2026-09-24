@@ -6,7 +6,7 @@
  * door, and the last issue sent. Order, the opening note and the preview stay
  * in the builder. Merges the old Next newsletter and Send to Newsletter.
  */
-import { dotsLoader, faIcon } from './icons.js';
+import { faIcon } from './icons.js';
 import { isoToShort } from './queue-view.js';
 import { issueSections, readyToAdd, sendsIn, lastIssue } from './issue-view.js';
 import { reshareFlags } from './workflow.js';
@@ -14,7 +14,7 @@ import { typeDisplay } from './schema.js';
 import { renderSubmitForm } from './submit-form.js';
 import { newsletterPageHead } from './page-head.js';
 import { buildEditForm, holdIfDirty } from './edit-form.js';
-import { el, button, focusKeyIn, restoreFocus, tryAgain, inFlight } from './ui-aids.js';
+import { el, button, focusKeyIn, restoreFocus, tryAgain, inFlight, busyLine } from './ui-aids.js';
 
 // View state, for as long as the page is open: the issue picked (''= the
 // next one), the quick add form, rows taken out or deleted this visit (they
@@ -149,7 +149,7 @@ export function renderIssue(container, props) {
   const held = () => holdIfDirty(openForm, container.querySelector('.nl-row.is-editing'));
   const parts = [newsletterPageHead({ active: 'issue', onGoTo, canLeave: () => !held() })];
 
-  if (!loaded) { container.replaceChildren(...parts, loadFailed ? tryAgain(onRefresh) : dotsLoader()); return; }
+  if (!loaded) { container.replaceChildren(...parts, loadFailed ? tryAgain(onRefresh) : busyLine('Loading')); return; }
   const upcoming = (schedule ?? []).filter(d => !today || d >= today);
   const issue = upcoming.includes(issuePick) ? issuePick : (upcoming[0] ?? '');
   if (!issue) {

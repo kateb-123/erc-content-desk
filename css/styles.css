@@ -382,7 +382,6 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
    alert during the posting beat, then the normal success receipt. */
 .p-shade { text-align: center; padding: var(--spacing-07) var(--spacing-05) var(--spacing-05); opacity: .7; }
 .p-shade-line { font-weight: 600; font-size: 16px; line-height: 22px; color: var(--muted); margin: 0; }
-.p-shade .dots-loader { margin-top: var(--spacing-05); }
 .finalize-table tr.f-item { cursor: pointer; }
 /* Hover layers on top of a status tint instead of replacing it. */
 .finalize-table tr.f-item:not(.is-open):hover td { background-image: linear-gradient(var(--hover), var(--hover)); }
@@ -565,7 +564,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 
 /* The sliding-dots loader itself is in css/shell.css, the one stylesheet
    every page loads; the desk only sizes it where it sits. */
-.status .dots-loader { margin: 0 var(--spacing-03) 0 0; }   /* inline in the one-line slot (audit round two, e7) */
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

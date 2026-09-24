@@ -8,7 +8,7 @@
  * lives in the `infographic` column, which rides the hub CSV on publish and
  * becomes the newsletter item's picture on pull.
  */
-import { dotsLoader, loadingLabel } from './icons.js';
+import { busyWords } from './icons.js';
 import { jsonInit } from './sheet-client.js';
 
 /** Twice the widest the email shows a picture (552px), so it stays sharp. */
@@ -141,7 +141,7 @@ export function buildImageControl(initial, onChange) {
     if (value) thumb.src = value;
   };
   const setStatus = (msg, busy = false) => {
-    if (busy && msg) status.replaceChildren(dotsLoader(true), loadingLabel(msg));
+    if (busy && msg) status.replaceChildren(busyWords(msg));
     else status.textContent = msg;
   };
   pick.addEventListener('click', () => fileInput.click());

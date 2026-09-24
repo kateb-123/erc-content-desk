@@ -3,9 +3,9 @@
  * to the archive, newest first; each opens the email as it went out. The old
  * Past newsletters page (builder/archive.html) now lands here.
  */
-import { dotsLoader, faIcon } from './icons.js';
+import { faIcon } from './icons.js';
 import { newsletterPageHead } from './page-head.js';
-import { el, button } from './ui-aids.js';
+import { el, button, busyLine } from './ui-aids.js';
 
 const ARCHIVE_DIR = '/builder/newsletters/';
 
@@ -13,7 +13,7 @@ const ARCHIVE_DIR = '/builder/newsletters/';
  *  or false when it could not be read. */
 export function renderPast(container, { archive, onGoTo, onRetry }) {
   const parts = [newsletterPageHead({ active: 'past', onGoTo })];
-  if (archive === null) parts.push(dotsLoader());
+  if (archive === null) parts.push(busyLine('Loading past issues'));
   else if (archive === false) {
     const line = el('p', 'nl-empty', "Couldn't load the archive. ");
     const retry = button('Retry', 'linkish', { onClick: () => { retry.disabled = true; onRetry(); } });

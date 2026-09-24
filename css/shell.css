@@ -30,33 +30,24 @@
 .topbar-lanes a:hover { color: var(--color-maize-400); }
 .topbar a:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
 
-/* Sliding-dots loader (Kate's pick, Sep 1), the one copy for both apps: six
-   dots slide across a track with staggered delays, on the app's own accent
-   ramp. Mini = the inline size for status rows. It lives here because every
-   page loads this file and every page draws it; the desk sizes it for the
-   status line and Publish's shade in css/styles.css. */
-.dots-loader { position: relative; height: var(--dl-s, 20px); width: var(--dl-w, 250px); margin: var(--spacing-06) auto; }
-.dots-loader .dot {
-  position: absolute; height: var(--dl-s, 20px); width: var(--dl-s, 20px);
-  border-radius: var(--radius-round); border: 2px solid var(--background); box-sizing: border-box;
-  animation: dots-slide 3s ease-in-out infinite;
+/* A wait, in words (Kate, Sep 23: the sliding dots went; her pick of nine was
+   shimmering words). The words say what is happening in the quiet grey, and a
+   soft teal light sweeps across them left to right. The one copy for both
+   apps: every page loads this file. */
+.busy-words {
+  color: transparent;
+  background: linear-gradient(90deg, var(--text-secondary) 0%, var(--text-secondary) 40%, var(--color-teal-200) 50%, var(--text-secondary) 60%, var(--text-secondary) 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  animation: busy-sheen 1.8s linear infinite;
 }
-.dots-loader .dot:nth-child(1) { background: var(--accent-30); animation-delay: .5s; }
-.dots-loader .dot:nth-child(2) { background: var(--accent-40); animation-delay: .4s; }
-.dots-loader .dot:nth-child(3) { background: var(--accent-50); animation-delay: .3s; }
-.dots-loader .dot:nth-child(4) { background: var(--accent-60); animation-delay: .2s; }
-.dots-loader .dot:nth-child(5) { background: var(--accent-70); animation-delay: .1s; }
-.dots-loader .dot:nth-child(6) { background: var(--accent-80); animation-delay: 0s; }
-@keyframes dots-slide {
-  15% { transform: translateX(0); }
-  45%, 65% { transform: translateX(calc(var(--dl-w, 250px) - var(--dl-s, 20px))); }
-  95% { transform: translateX(0); }
-}
-.dots-mini { --dl-w: 90px; --dl-s: 10px; display: inline-block; vertical-align: middle; margin: 0 var(--spacing-03) 0 0; }
-/* Busy status labels get trailing dots that type themselves. */
-.dots-text::after { content: ""; animation: dots-text 3s infinite; }
-@keyframes dots-text { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }
+@keyframes busy-sheen { from { background-position: 100% 0; } to { background-position: -150% 0; } }
 
+/* Held still: plain grey words with no light, for reduced motion and in
+   forced colours, where text drawn through a background would vanish. */
 @media (prefers-reduced-motion: reduce) {
-  .dots-loader .dot, .dots-text::after { animation: none; }
+  .busy-words { animation: none; background: none; color: var(--text-secondary); }
+}
+@media (forced-colors: active) {
+  .busy-words { animation: none; background: none; color: CanvasText; }
 }

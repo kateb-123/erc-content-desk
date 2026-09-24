@@ -12,10 +12,10 @@ import { typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { detailBody } from './finalize-ui.js';
 import { buildEditForm, holdIfDirty } from './edit-form.js';
-import { checkSvg, dotsLoader, faIcon } from './icons.js';
+import { checkSvg, faIcon } from './icons.js';
 import { screenHead } from './screen-info.js';
 import { FATES, publishRows, legendItems, filterByFate, fateShares } from './publish-view.js';
-import { el, button, focusKeyIn, restoreFocus } from './ui-aids.js';
+import { el, button, focusKeyIn, restoreFocus, busyLine } from './ui-aids.js';
 
 /** Hand the browser a file. Kate's Chrome puts downloads straight in her Drive,
  *  which is the whole point: publishing leaves a spare copy without a Drive API,
@@ -242,7 +242,7 @@ export function renderPublish(container, props) {
   if (trialPosting) {
     const shade = el('div', 'p-shade');
     shade.append(el('p', 'p-shade-line', 'Publishing paused. Continue in trial mode.'));
-    shade.append(dotsLoader());
+    shade.append(busyLine('Publishing'));
     container.append(shade);
     return;
   }
@@ -280,7 +280,7 @@ export function renderPublish(container, props) {
   }
 
   if (busy && !preview) {
-    container.append(dotsLoader());
+    container.append(busyLine('Checking the live Exchange'));
     return;
   }
   // One bar, one table: every row the check returned, in fate order, the

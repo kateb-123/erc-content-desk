@@ -47,7 +47,7 @@ export function typeChoices(selection) {
 }
 import { validateSubmission, fieldFor } from './intake.js';
 import { withScheme } from './links.js';
-import { checkSvg, dotsLoader, loadingLabel, faIcon } from './icons.js';
+import { checkSvg, busyWords, faIcon } from './icons.js';
 import { runPool } from './pool.js';
 import { openBusyOverlay } from './busy-overlay.js';
 import { postJson, plainError } from './sheet-client.js';
@@ -62,7 +62,7 @@ const BULK_CONCURRENCY = 6;
 function show(target, message, kind) {
   target.className = `status status-${kind}`;
   if (kind === 'busy' && message) {
-    target.replaceChildren(dotsLoader(), loadingLabel(message));
+    target.replaceChildren(busyWords(message));
   } else {
     target.textContent = message;
   }
@@ -218,7 +218,7 @@ export function renderSubmitForm(container, {
     // top of the page; a failure gets its words and a way to try again here.
     const wait = promise => {
       line.className = 'done-line is-busy';
-      line.replaceChildren(dotsLoader(true), loadingLabel(pendingLine));
+      line.replaceChildren(busyWords(pendingLine));
       promise.then(settled, err => {
         line.className = 'done-line is-error';
         line.setAttribute('role', 'alert');
