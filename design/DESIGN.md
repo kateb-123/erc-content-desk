@@ -239,7 +239,7 @@ share page, the listserv sign-up, the Policy Exchange and the Newsletter,
 each opening in a new tab, the first three with Copy link, which says Copied
 for two seconds. The Newsletter has none: its address is the desk's, and the
 desk is not for handing out. Under the box, the desk's own two as filled
-buttons (Kate, Sep 23): the Newsletter first, in its own window, with the next
+buttons (Kate, Sep 23): the Newsletter first, switching in place like Content Sort (her call after the audit), with the next
 issue under its name, then Content Sort in place. Only Content Sort wears a
 badge, a maize pill in navy ink at the button's right ("not 17 but more like an
 alert"), and it is drawn only while something waits; the newsletter's pool is
@@ -290,7 +290,7 @@ leave it, and a redraw never drops what you are typing. The View info panel,
 the section tabs and Needs a fix are gone (Sep 18).
 
 Newsletter (Kate's wireframes, Sep 17, and her answers, Sep 18 and 22;
-`design/mockups/newsletter.png`) is the hub, opened in its own window from
+`design/mockups/newsletter.png`) is the hub, opened in place (since Sep 23; a new window before) from
 the team page, one page with three tabs, Next issue, Schedule and Past
 issues (Schedule since Sep 22: each upcoming send date as a big numeral
 with how far off it is, Next on the first, and how many items are stamped
@@ -369,3 +369,31 @@ thing everywhere (see the vocabulary table).
 ## The public pages
 
 The share form and the listserv sign-up live in `public-pages/`, a Vercel project of their own at an address of their own (Kate's pick A, Sep 22), beside the Policy Exchange's copies at /share/ and /newsletter/. Never on the desk's address: the desk has no password, and a public page on it is a door into it (copies at the desk's /submit and /listserv were built and taken down the same hour on Sep 22; Kate: "I don't want others to backspace from submit and see everything"). The pages post to their own `/api`, which the folder's `vercel.json` forwards to the desk server-side, so the desk's address is written nowhere a visitor can read, and the desk's own deployment sends the folder's addresses on to the standalone site (a redirect in the desk's `vercel.json`; an ignore line would empty the standalone deploy too, since Vercel reads `.vercelignore` at the repository root for every project built from the repo). Each call carries `public: true`, which the bot check honours as "gate me"; the project's hostname must be on the Turnstile widget's list in Cloudflare or the human check will not load. The sandbox serves the folder on port 4174 with the same forward. The public share page is deliberately NOT the desk theme: it wears the ERC's outward maroon, the listserv sign-up's look (Work Sans/Open Sans, white card with the 3px #500000 border and hard offset shadow, uppercase maroon button), because it faces the public alongside the newsletter and the hub. It never links into the desk. Uniformity audits should hold it against the sign-up page, not against the desk tokens.
+
+## After the audit (Sep 23)
+
+Kate's answers to the usability audit, each one decided by her:
+
+- **Today** is College Station's date (`js/today.js`, America/Chicago), never UTC.
+- **Focus** where a list clips what is drawn outside a control (the type
+  picker, the Sort and Finalize list rows) is drawn inside instead: 2px teal,
+  and on the picked, teal-filled type a 2px white line. Everywhere else the
+  maize ring stands.
+- **Warning words on the maize tint** are orange brown `#8f3814`
+  (`--text-warning-on-tint`, 7.3:1); orange 500 stays for warning words on white.
+- **A locked Keep and next** says why on a line tight under it ("Set a type
+  first", "Check the link first"), and its label is `--text-locked` `#4f5d6b`.
+- **The tab icon** is a teal square with a white check, on both apps.
+- **Source on Sort** shows only when it is not the ERC's own: blank or "ERC"
+  shows nothing; "added by" stays.
+- **One name**, "Policy Exchange", for the lane, the page and Finalize's doors.
+- **The builder**: a removed item stays greyed in place with its own Undo until
+  the step is left; the Issue list hides past dates but keeps a draft's own;
+  Discard keeps the draft in the desk's database for 90 days, listed under
+  Recently discarded on the first step with Restore (the `drafts` table, made
+  only by `scripts/ensure-schema.js`, run by hand); an item added by hand
+  goes to Content Sort's queue too, stamped for the issue, "added by the builder".
+- Left as they are, by her word: the front page's counts stay blank while they
+  load, nothing is added for screen readers, and Sort is never laid out for a
+  phone.
+
