@@ -6,8 +6,8 @@
    everything and Crimson Text for large titles only; flat white pages with
    hairline neutral borders; a navy top bar; teal for every interactive thing
    and maize for the brand rules; 2px corners on inputs, 4px on buttons, cards
-   and notes, 16px on pills; spacing in multiples of 8 plus 2 and 4; a focus
-   ring of 2px maize inside 3px neutral. No maroon in-app: it lives in the
+   and notes, 16px on pills; spacing in multiples of 8 plus 2 and 4; a teal
+   focus ring (never yellow, Kate, Sep 23). No maroon in-app: it lives in the
    newsletter email and on the public pages. Every page loads this first; each
    app's :root maps the accent tokens onto the ramp below. */
 :root {
@@ -96,10 +96,12 @@
   --button-danger-hover: #a62b2b;
   --button-disabled: var(--color-neutral-100);
 
-  /* Focus: 2px maize inside a 3px neutral ring (the system's own). */
-  --focus: var(--color-neutral-400);
-  --focus-inset: var(--color-maize-400);
-  --focus-ring: 0 0 0 2px var(--color-maize-400), 0 0 0 5px var(--color-neutral-400);
+  /* Focus: a 2px teal ring standing 2px off the control on a white gap. The
+     system's maize-inside-neutral ring went on Sep 23 (Kate: "i HATE yellow
+     outline"); no focus ring is yellow anywhere. */
+  --focus: var(--color-teal-400);
+  --focus-inset: var(--color-teal-400);
+  --focus-ring: 0 0 0 2px var(--background), 0 0 0 4px var(--color-teal-400);
   --highlight: var(--color-teal-100);
   --interactive: var(--color-teal-400);       /* the progress bars */
   --toggle-off: var(--color-neutral-200);

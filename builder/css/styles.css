@@ -246,7 +246,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 }
 
 .btn:focus-visible {
-  box-shadow: inset 0 0 0 1px var(--focus-inset);   /* the ring itself comes from the global focus rule */
+  box-shadow: var(--focus-ring);   /* the desk's ring: .btn outranks the global rule, so it names it here */
 }
 
 .btn:disabled {

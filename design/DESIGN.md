@@ -19,8 +19,8 @@ and state alone. Flat white pages; a 56px navy top bar carrying the desk's
 name as an eyebrow; white boxes with a 1px neutral hairline; Mulish for
 everything and Crimson Text for large titles only; teal fills the primary
 button, draws every link and marks the chosen row, and maize draws the rule
-under a section label and the table head and the inner focus ring but carries
-no text (1.4:1); 2px corners on fields, 4px on buttons, boxes and notes, 16px
+under a section label and the table head but carries no text (1.4:1) and is
+never a focus ring; 2px corners on fields, 4px on buttons, boxes and notes, 16px
 on pills; spacing in multiples of 8 plus 2 and 4; uppercase 14px bold labels
 with 1.25px tracking. No maroon in-app: it lives in the newsletter email and
 on the public pages, which keep their own outward look. No shadows in either
@@ -144,10 +144,12 @@ template and the public Exchange site.
   results. An error note that can be retried carries a ghost Retry, and a
   success that ends a task stays (Saved to the archive, with Open Past
   newsletters), never a toast that fades (audit round two, Sep 17).
-- **Focus.** `box-shadow: var(--focus-ring)`, the system's ring: 2px maize
-  inside 3px neutral, drawn as a shadow so it never moves the page (Sep 23; a
-  2px ink outline before). Programmatic focus, which the card takes after a
-  decision, draws no ring.
+- **Focus.** `box-shadow: var(--focus-ring)`: a 2px teal ring standing 2px
+  off the control on a white gap, drawn as a shadow so it never moves the
+  page. Never yellow (Kate, Sep 23: "i HATE yellow outline"; the system's
+  maize-inside-neutral ring lasted one day). Where a list clips it, it is drawn
+  inside instead. Programmatic focus, which the card takes after a decision,
+  draws no ring.
 - **Steps.** The builder's wizard is Carbon's progress indicator: four equal
   steps under a hairline, a 20px circle at each one's left; reached steps turn
   the line the accent's, the current step fills its circle and goes 600, a finished one

@@ -83,3 +83,17 @@ test('the tab icon is a teal square with a white check, the same on both apps', 
 test('the picked type shows focus as a white line inside its teal fill', () => {
   assert.match(declsOf('.pill-row .type-word.is-picked:focus-visible'), /box-shadow:\s*inset 0 0 0 2px var\(--text-on-color\)/);
 });
+
+// Kate, Sep 23: "i HATE yellow outline". No focus ring anywhere is maize: the
+// ring is teal, 2px, standing 2px off the control on a white gap.
+test('no focus ring anywhere is yellow', () => {
+  assert.equal(tokens['--focus-ring'], '0 0 0 2px var(--background), 0 0 0 4px var(--color-teal-400)');
+  assert.doesNotMatch(tokens['--focus-inset'] ?? '', /maize/);
+});
+
+test("the builder's buttons show the same ring, not a 1px line in its place", async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../builder/css/styles.css', import.meta.url), 'utf8');
+  const rule = css.match(/\.btn:focus-visible \{([^}]*)\}/)[1];
+  assert.match(rule, /box-shadow:\s*var\(--focus-ring\)/);
+});
