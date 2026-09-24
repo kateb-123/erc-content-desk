@@ -38,3 +38,12 @@ test('nothing from today on and no draft: the list is empty', () => {
 test('a date that is not a date is never offered, since it cannot be told from the past', () => {
   assert.deepEqual(issueDateChoices(['', 'soon', '2026-10-6', '2026-10-06'], TODAY), ['2026-10-06']);
 });
+
+// With past dates hidden (Kate, Sep 23), an empty list can mean every date
+// has passed, so the words say "upcoming", not "scheduled".
+test('an empty Issue list says there are no upcoming issues', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
+  assert.match(src, /'No upcoming issues on the desk'/);
+  assert.doesNotMatch(src, /No issues scheduled on the desk/);
+});

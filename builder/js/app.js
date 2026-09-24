@@ -297,7 +297,7 @@ function renderReview() {
     try {
       const data = await readReply(await fetch('/api/newsletter-pull'), 'load the issues');
       const isos = issueDateChoices([...(data.schedule ?? []), ...Object.keys(data.staged ?? {})], todayCentral(), currentIso);
-      if (!isos.length) { placeholder.textContent = 'No issues scheduled on the desk'; return; }
+      if (!isos.length) { placeholder.textContent = 'No upcoming issues on the desk'; return; }
       dateSelect.replaceChildren(
         ...(currentIso ? [] : [option('', 'Pick an issue…')]),
         ...isos.map((iso) => option(iso, isoToDisplayDate(iso), iso === currentIso)),
