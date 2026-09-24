@@ -17,7 +17,7 @@ import { fieldsForType, dateField, finalizeWaiting } from './finalize-view.js';
 import { buildImageControl } from './item-image.js';
 import { sortPageHead } from './page-head.js';
 import { faIcon } from './icons.js';
-import { el, button, focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
+import { el, button, focusKeyIn, restoreFocus, revealTop } from './ui-aids.js';
 
 // View state: the row the card shows, where it stood (so a decision moves to
 // the row now in its place), a type picked while its subtype is still to
@@ -26,6 +26,7 @@ let selectedId = null;
 let lastIndex = 0;
 let pendingType = null;   // { id, type }
 let linkOpen = false;
+let shownId = null;       // the row the card showed last draw: a new one is brought into view
 let landOnTitle = false;  // a decision was made: the next card's title takes focus and is read
 let askMissingId = null;  // the row whose Keep is waiting on the missing-fields ask
 let editDesc = null;      // the row whose description is a field, not prose (the handoff, Sep 22)
@@ -477,7 +478,9 @@ export function renderSort(container, props) {
     : el('div', 'sort-pane-empty', emptyWords(props));
   split.append(card);
   container.append(split);
-  if (row) markOverflow(card);
+  // One scrollbar, the page's (Kate, Sep 23): a card that changed while out of view comes back into it.
+  if (row && row.id !== shownId) revealTop(card);
+  shownId = row?.id ?? null;
   applyDrafts(container, drafts);
 
   const titleField = container.querySelector('.card-title');

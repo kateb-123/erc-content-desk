@@ -53,13 +53,18 @@ export function restoreFocus(container, key, fallback) {
   return false;
 }
 
-/** A pane that scrolls inside itself shows a fade at its foot until the
- *  reader reaches the bottom, so the buttons below the fold are not a
- * surprise. Measured after layout. */
-export function markOverflow(pane) {
-  const check = () => pane.classList.toggle('is-more', pane.scrollHeight - pane.scrollTop - pane.clientHeight > 4);
-  requestAnimationFrame(check);
-  pane.addEventListener('scroll', check, { passive: true });
+/** How far to scroll so a card's top shows (Kate, Sep 23: one scrollbar on
+ *  Sort, the page's). 0 while the top is in view; otherwise bring it to 16px
+ *  under the window's top. A top in the last 120px counts as out of view:
+ *  the card would start below the fold. */
+export function revealOffset(top, viewportHeight, room = 16) {
+  return top >= 0 && top <= viewportHeight - 120 ? 0 : top - room;
+}
+
+/** Bring a card's top into view when it has scrolled away, in one step. */
+export function revealTop(card) {
+  const by = revealOffset(card.getBoundingClientRect().top, window.innerHeight);
+  if (by) window.scrollBy({ top: by });
 }
 
 /** A panel's wait: one line of busy words, announced to assistive tech. */

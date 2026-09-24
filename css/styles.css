@@ -635,13 +635,12 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .sort-done-acts { margin-left: auto; white-space: nowrap; }
 /* The review card (the handoff, Sep 22): one white box split by a vertical
    rule, the item as it reads on the left, the decisions on the right. */
-.sort-card, .f-card { padding: var(--spacing-05); box-sizing: border-box; position: sticky; top: calc(20px + var(--spacing-05)); max-height: calc(100vh - 2rem); overflow-y: auto; }
+/* One scrollbar, the page's (Kate, Sep 23: "two scrollbars fighting"): the card neither pins nor scrolls inside itself. */
+.sort-card, .f-card { padding: var(--spacing-05); box-sizing: border-box; }
 .sort-card { display: flex; align-items: stretch; padding: 0; }
 .sc-left { flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-08, 18px); padding: var(--spacing-06); }
 .sc-right { flex: 0 1 300px; min-width: 260px; display: flex; flex-direction: column; gap: 22px; padding: var(--spacing-06); border-left: 1px solid var(--line-in); }
 .sc-spacer { flex: 1 1 auto; }
-/* A card taller than the window fades at its foot until the reader scrolls to the end (design audit c3). */
-.f-card.is-more::after { content: ""; position: sticky; bottom: calc(-1 * var(--spacing-05)); display: block; height: 40px; margin: -40px 0 calc(-1 * var(--spacing-05)); flex: none; background: linear-gradient(transparent, var(--layer)); pointer-events: none; }
 .sc-kicker { display: flex; align-items: baseline; justify-content: space-between; gap: var(--spacing-04); }
 .sc-facts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-03); min-width: 0; }
 .sc-source { font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); }
@@ -714,7 +713,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .f-edit-card input, .f-edit-card textarea { background: var(--field-02); }   /* a field on the grey edit box is white (Carbon's layer model) */
 @media (max-width: 900px) {
   .sort-split { grid-template-columns: minmax(0, 1fr); }
-  .sort-card, .f-card { position: static; max-height: none; }
 }
 .queue-row.is-deleted .queue-actions { opacity: 1; }
 .queue-gone { font-size: 12px; letter-spacing: 0; color: var(--muted); margin-right: var(--spacing-03); }

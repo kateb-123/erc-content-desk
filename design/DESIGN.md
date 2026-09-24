@@ -162,8 +162,10 @@ template and the public Exchange site.
   Sep 17); on the desk the status line keeps its one-line slot above it, so a
   message never moves the page.
 - Sort and Finalize share one list row and one card: titles at 14/18 with the
-  source or type under them at label-01, and the card stays in view while the
-  list scrolls.
+  source or type under them at label-01. One scrollbar, the page's (Kate,
+  Sep 23: "two scrollbars fighting"): the card neither pins nor scrolls inside
+  itself, and a card that changes while out of view is brought back to the top
+  of the window.
 - The desk's nav is a top bar across every page (Kate's wireframes, Sep 17;
   the sidebar of Sep 16 to 17 is gone): 56px on the page ground under a
   hairline, 40px sides. On the left a breadcrumb (no mark: the wireframe's

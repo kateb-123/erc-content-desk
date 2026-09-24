@@ -16,13 +16,14 @@ import { busyWords, faIcon } from './icons.js';
 import { finalizeStage, finalizeGroups, finalizeProgress, onTheWay, pickSelection, finalizeWaiting } from './finalize-view.js';
 import { buildEditForm, holdIfDirty } from './edit-form.js';
 import { sortPageHead } from './page-head.js';
-import { el, button, focusKeyIn, restoreFocus, markOverflow } from './ui-aids.js';
+import { el, button, focusKeyIn, restoreFocus, revealTop } from './ui-aids.js';
 
 
 // View state only — resets on reload, never persisted.
 let editingId = null;
 let openForm = null;        // the open edit form, so every way out can hold its typing
 let selectedId = null;      // the row the card shows
+let shownId = null;         // the row the card showed last draw: a new one is brought into view
 let noneOpen = false;       // the No rewrite needed group, folded by default
 // Deleted from this screen since it opened, id -> the row as it was. They stay
 // listed, greyed, with an Undo: a mis-click on the red word
@@ -393,6 +394,8 @@ export function renderFinalize(container, props) {
   }
   container.append(split);
   const card = split.querySelector('.f-card');
-  if (card) markOverflow(card);
+  // One scrollbar, the page's (Kate, Sep 23): a card that changed while out of view comes back into it.
+  if (card && selectedId !== shownId) revealTop(card);
+  shownId = card ? selectedId : null;
   restoreFocus(container, focusKey, card?.querySelector('h3') ?? split.querySelector('.f-pane-empty button'));
 }
