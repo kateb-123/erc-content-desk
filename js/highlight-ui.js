@@ -8,8 +8,12 @@
 import { faIcon } from './icons.js';
 import { buildImageControl } from './item-image.js';
 import { typeDisplay } from './schema.js';
-import { MAX_PICKS, bandAfter, addPick, removePick, movePick, setPhoto, candidates, whenLine } from './highlight-view.js';
+import { MAX_PICKS, bandAfter, addPick, removePick, movePick, setPhoto, candidates, whenLine, sectionFilters, filterCandidates } from './highlight-view.js';
 import { el, button } from './ui-aids.js';
+
+// The Pick from table's filter (Kate, Sep 23: "so we can find events
+// quickly"): the section shown, kept for the visit. View state only.
+let sectionFilter = 'all';
 
 const ORDINAL = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
 const PHOTO_WORDS = { add: 'Add photo', replace: 'Replace photo', remove: 'Remove photo' };
@@ -106,37 +110,70 @@ export function renderHighlights(container, { now, adding, hub, picks, today, on
   cols.append(afterBox);
   container.append(cols);
 
-  // Everything that could go in: the rows going out now, then what is live.
-  const from = el('div', 'hl-from');
-  from.append(el('h4', 'hl-from-label', 'Pick from'));
-  const table = el('table', 'queue-table hl-table');
-  const thead = el('thead');
-  const hr = el('tr');
-  hr.append(el('th', '', 'Title'), el('th', '', 'Section'), el('th', '', 'Photo'), el('th', 'hl-act', ''));
-  thead.append(hr);
-  table.append(thead);
-  const tbody = el('tbody');
-  const at = new Map(picks.map((p, i) => [p.link, i]));
-  for (const item of candidates(ctx)) {
-    const tr = el('tr');
-    const title = el('td');
-    title.append(el('span', 'item-title', item.headline || item.link));
-    const line = [item.from === 'adding' ? 'Adding now' : 'Live', whenLine(item, today), item.source].filter(Boolean).join(' · ');
-    title.append(el('span', 'item-source', line));
-    tr.append(title, el('td', '', item.type ? typeDisplay(item.type) : ''), el('td', '', item.photo ? 'Yes' : 'None'));
-    const act = el('td', 'hl-act');
-    if (at.has(item.link)) act.append(el('span', 'hl-in', `In, ${ORDINAL[at.get(item.link)]}`));
-    else {
-      const add = button('Highlight', 'linkish', { focus: `hl-in:${item.link}`, onClick: () => change(addPick(picks, item.link)) });
-      if (picks.length >= MAX_PICKS) { add.disabled = true; add.title = 'Six is the most'; }
-      act.append(add);
+  container.append(pickFrom());
+
+  // Everything that could go in: the rows going out now, then what is live,
+  // one section at a time when she asks (the legend's own filter idiom). A
+  // filter click redraws this block alone, so the picks above hold still.
+  function pickFrom() {
+    const from = el('div', 'hl-from');
+    from.append(el('h4', 'hl-from-label', 'Pick from'));
+    const all = candidates(ctx);
+    const filters = el('div', 'p-legend hl-filters');
+    filters.setAttribute('role', 'group');
+    filters.setAttribute('aria-label', 'Section');
+    for (const f of sectionFilters(all)) {
+      const b = el('button', `p-legend-item${sectionFilter === f.key ? ' is-active' : ''}`);
+      b.type = 'button';
+      b.dataset.focus = `hl-filter:${f.key}`;
+      b.setAttribute('aria-pressed', String(sectionFilter === f.key));
+      b.append(f.label, el('span', 'hl-filter-count', String(f.count)));
+      b.addEventListener('click', () => {
+        sectionFilter = f.key;
+        const next = pickFrom();
+        from.replaceWith(next);
+        next.querySelector(`[data-focus="hl-filter:${f.key}"]`)?.focus({ preventScroll: true });
+      });
+      filters.append(b);
     }
-    tr.append(act);
-    tbody.append(tr);
+    from.append(filters);
+    const table = el('table', 'queue-table hl-table');
+    const thead = el('thead');
+    const hr = el('tr');
+    hr.append(el('th', '', 'Title'), el('th', '', 'Section'), el('th', '', 'Photo'), el('th', 'hl-act', ''));
+    thead.append(hr);
+    table.append(thead);
+    const tbody = el('tbody');
+    const at = new Map(picks.map((p, i) => [p.link, i]));
+    const shown = filterCandidates(all, sectionFilter);
+    for (const item of shown) {
+      const tr = el('tr');
+      const title = el('td');
+      title.append(el('span', 'item-title', item.headline || item.link));
+      const line = [item.from === 'adding' ? 'Adding now' : 'Live', whenLine(item, today), item.source].filter(Boolean).join(' \u00b7 ');
+      title.append(el('span', 'item-source', line));
+      tr.append(title, el('td', '', item.type ? typeDisplay(item.type) : ''), el('td', '', item.photo ? 'Yes' : 'None'));
+      const act = el('td', 'hl-act');
+      if (at.has(item.link)) act.append(el('span', 'hl-in', `In, ${ORDINAL[at.get(item.link)]}`));
+      else {
+        const add = button('Highlight', 'linkish', { focus: `hl-in:${item.link}`, onClick: () => change(addPick(picks, item.link)) });
+        if (picks.length >= MAX_PICKS) { add.disabled = true; add.title = 'Six is the most'; }
+        act.append(add);
+      }
+      tr.append(act);
+      tbody.append(tr);
+    }
+    if (!shown.length) {
+      const tr = el('tr');
+      const td = el('td', 'hl-none', 'Nothing in this section.');
+      td.colSpan = 4;
+      tr.append(td);
+      tbody.append(tr);
+    }
+    table.append(tbody);
+    const scroll = el('div', 'table-scroll');
+    scroll.append(table);
+    from.append(scroll);
+    return from;
   }
-  table.append(tbody);
-  const scroll = el('div', 'table-scroll');
-  scroll.append(table);
-  from.append(scroll);
-  container.append(from);
 }

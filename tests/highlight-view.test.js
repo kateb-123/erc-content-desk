@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MAX_PICKS, bandAfter, addPick, removePick, movePick, setPhoto, withoutPhoto, candidates, whenLine, samePicks } from '../js/highlight-view.js';
+import { MAX_PICKS, bandAfter, addPick, removePick, movePick, setPhoto, withoutPhoto, candidates, whenLine, samePicks, sectionFilters, filterCandidates } from '../js/highlight-view.js';
 
 // The highlight step on Publish (Kate, Sep 23): her picks for the Exchange's
 // home page, up to six, in her order, each needing a photo. Pure, so
@@ -79,4 +79,19 @@ test('samePicks: the same links in the same order with the same photos, nothing 
   assert.equal(samePicks(a, [a[0]]), false);
   assert.equal(samePicks(a, [a[0], { ...a[1], image: '' }]), false);
   assert.equal(samePicks([], []), true);
+});
+
+test('the Pick from table filters by section, so an event is quick to find (Kate, Sep 23)', () => {
+  const list = candidates({ adding, hub });
+  assert.deepEqual(sectionFilters(list), [
+    { key: 'all', label: 'All', count: 4 },
+    { key: 'research', label: 'Research', count: 2 },
+    { key: 'event', label: 'Events', count: 1 },
+    { key: 'opportunity', label: 'Opportunities', count: 1 },
+    { key: 'headline', label: 'Headlines', count: 0 },
+  ]);
+  assert.deepEqual(filterCandidates(list, 'event').map(c => c.headline), ['ERC workshop']);   // an ERC event counts as an event
+  assert.deepEqual(filterCandidates(list, 'research').map(c => c.headline), ['Brand new', 'NAEP 2026']);
+  assert.equal(filterCandidates(list, 'all').length, 4);
+  assert.equal(filterCandidates(list, 'headline').length, 0);
 });

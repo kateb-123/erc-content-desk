@@ -86,3 +86,18 @@ export function whenLine(item, today = '') {
 export function samePicks(a, b) {
   return a.length === b.length && a.every((p, i) => p.link === b[i].link && (p.image || '') === (b[i].image || ''));
 }
+
+/** The Pick from table's filters (Kate, Sep 23: "so we can find events
+ *  quickly"): every section with how many rows it holds, All first. */
+const SECTIONS = [['research', 'Research'], ['event', 'Events'], ['opportunity', 'Opportunities'], ['headline', 'Headlines']];
+
+export function sectionFilters(list) {
+  return [
+    { key: 'all', label: 'All', count: list.length },
+    ...SECTIONS.map(([key, label]) => ({ key, label, count: list.filter(c => c.type === key).length })),
+  ];
+}
+
+export function filterCandidates(list, key) {
+  return !key || key === 'all' ? list : list.filter(c => c.type === key);
+}

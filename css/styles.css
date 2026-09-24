@@ -886,3 +886,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 /* The ask's line about picks without a photo: a fact, in the note's own words. */
 .p-ask .p-ask-note { margin: var(--spacing-02) 0 0; font-size: 14px; line-height: 20px; letter-spacing: 0; color: var(--text-warning-on-tint); }
 .receipt-highlight { margin: 0; color: var(--muted); }
+/* The Pick from table's section filter (Kate, Sep 23): the legend's own idiom, a count on each. */
+.hl-filters { margin: 0 0 var(--spacing-03); }
+.hl-filter-count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 var(--spacing-02); border-radius: var(--radius-tag-md); background: var(--layer-01); font-size: 12px; line-height: 16px; letter-spacing: 0; font-weight: 400; margin-left: var(--spacing-02); }
+.p-legend-item.is-active .hl-filter-count { background: var(--layer-accent-01); }
+.hl-none { color: var(--muted); }
