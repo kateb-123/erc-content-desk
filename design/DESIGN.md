@@ -403,3 +403,29 @@ Kate's answers to the usability audit, each one decided by her:
   load, nothing is added for screen readers, and Sort is never laid out for a
   phone.
 
+
+## The sign-in and the highlight (Sep 23, evening)
+
+- **The desk password** (Kate: "password protected for just me, Kate"). The
+  front page, Content Sort (both tabs) and Publish draw the sign-in in their
+  place until the session holds; the team's page, the Newsletter and the
+  builder stay open. One sign-in lasts a day on that computer, as an HttpOnly
+  cookie signed by the password (`api/_lib/session.js`; `/api/auth` is
+  answered by `middleware.js` at the edge, since `api/` holds the Hobby
+  plan's twelve functions). The server refuses the Exchange check, the
+  publish and the rewrite without it. Sign out is a quiet word at the top
+  bar's right end while the sign-in holds. The password is `DESK_PASSWORD`
+  on Vercel, set by Kate; unset, the locked pages stay shut and say so.
+- **Publish's ask** carries the password too ("Type the desk password to
+  confirm"): the field, then Confirm and Cancel on one row, a refusal in red
+  under them, and the ask stays until the password is right. Confirm is the
+  one write to the public site, so it is the one place the password is asked
+  twice.
+- **The highlight** (Kate: "if it is in the highlight (hero thing) it needs
+  a photo"). The Exchange's home page shows a few items in a big card; she
+  picks them by hand at Publish, up to six, new or already live, in her
+  order. A pick with no photo gets the warning triangle and "No photo", and
+  Publish still goes ("Ask, then allow"). The picks ride the write to
+  `data/highlights.json` on the Exchange (`docs/exchange-highlights.md`), so
+  `news.csv` stays append-only; her photo for a pick also lands on the row's
+  own picture where the row had none.
