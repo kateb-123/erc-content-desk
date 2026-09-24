@@ -821,3 +821,28 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .sched-words .badge { margin: 0; }
 .sched-count { font: var(--meta-type); color: var(--text-helper); }
 .sched-note { margin: var(--spacing-04) 0 0; }
+
+/* ── The sign-in (Kate, Sep 23): the front page, Content Sort and Publish are hers ── */
+/* The page keeps its title; under the lede, one white box holds the field. */
+.signin-page .page-head { margin: var(--spacing-03) 0 0; }
+.signin-page .lede { margin: var(--spacing-02) 0 var(--spacing-06); }
+.signin-box { width: 400px; max-width: 100%; }
+.signin-box label { margin-top: 0; }
+.signin-box input[type="password"] { width: 100%; font: inherit; letter-spacing: 0; height: 40px; padding: 0 var(--spacing-04); border: 1px solid var(--border-strong-01); border-radius: var(--radius-input); background: var(--field-02); color: inherit; }
+.signin-box input[type="password"]:focus { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
+.signin-box input[aria-invalid="true"] { border-color: var(--err); }
+.signin-box .signin-btn { margin-top: var(--spacing-05); width: 100%; justify-content: center; }
+.signin-box .load-line { margin: var(--spacing-05) 0 0; }
+.signin-help { margin: var(--spacing-04) 0 0; font: var(--meta-type); color: var(--muted); }
+.signin-team { margin: var(--spacing-05) 0 0; font: var(--meta-type); }
+.signin-team a { color: var(--muted); }
+.signin-team a:hover { color: var(--ink); }
+
+/* Publish's ask carries the password (Kate, Sep 23): the words, then the
+   field with Confirm and Cancel on one row, a refusal in red under them. */
+.p-ask .p-ask-words { margin: 0; }
+.p-ask .p-ask-row { display: flex; align-items: center; gap: var(--spacing-03); margin-top: var(--spacing-03); }
+.p-ask input[type="password"] { width: 180px; height: 32px; padding: 0 var(--spacing-03); font: inherit; font-size: 14px; letter-spacing: 0; border: 1px solid var(--border-strong-01); border-radius: var(--radius-input); background: var(--field-02); color: inherit; }
+.p-ask input[type="password"]:focus { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
+.p-ask input[aria-invalid="true"] { border-color: var(--err); }
+.p-ask .field-error { margin-top: var(--spacing-02); }

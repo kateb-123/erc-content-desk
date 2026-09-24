@@ -29,6 +29,11 @@
 .topbar-lanes a { color: var(--color-blue-200); }
 .topbar-lanes a:hover { color: var(--color-maize-400); }
 .topbar a:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
+/* Sign out (Kate, Sep 23): a quiet word at the bar's right end while the
+   desk's sign-in holds, drawn like a lane link. */
+.topbar-signout { height: auto; padding: 0; border: 0; background: none; font: inherit; font-weight: 400; letter-spacing: 0; color: var(--color-blue-200); cursor: pointer; }
+.topbar-signout:hover:not(:disabled) { background: none; border: 0; color: var(--color-maize-400); }
+.topbar-signout:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
 
 /* A wait, in words (Kate, Sep 23: the sliding dots went; her pick of nine was
    shimmering words). The words say what is happening in the quiet grey, and a

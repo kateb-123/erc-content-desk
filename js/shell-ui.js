@@ -27,7 +27,9 @@ function build(header) {
   header.dataset.built = '1';
 }
 
-export function renderShell(header, { screen, onGo } = {}) {
+/** signedIn and onSignOut: the desk's own sign-in (Kate, Sep 23); while it
+ *  holds, Sign out sits at the bar's right end. The builder passes neither. */
+export function renderShell(header, { screen, onGo, signedIn = false, onSignOut } = {}) {
   if (!header) return;
   if (!header.dataset.built) build(header);
   const trail = header.querySelector('.topbar-crumbs');
@@ -47,4 +49,10 @@ export function renderShell(header, { screen, onGo } = {}) {
   trail.replaceChildren(...parts);
   const lanes = header.querySelector('.topbar-lanes');
   lanes.replaceChildren(...laneLinks(screen).map(lane => deskLink(lane.label, lane.href, onGo)));
+  if (signedIn && onSignOut) {
+    const out = el('button', 'topbar-signout', 'Sign out');
+    out.type = 'button';
+    out.addEventListener('click', () => { out.disabled = true; onSignOut(); });
+    lanes.append(out);
+  }
 }

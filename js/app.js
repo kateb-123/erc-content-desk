@@ -17,9 +17,18 @@ import { renderSchedule } from './schedule-ui.js';
 import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToFinalize, canRewrite } from './workflow.js';
 import { rewriteTargets, landRewrites } from './rewrite-client.js';
 import { todayCentral } from './today.js';
+import { sessionStatus, signIn as signInRequest, signOut as signOutRequest } from './auth-client.js';
+import { isLocked, authError, lockedOut, WRONG_PASSWORD } from './auth-view.js';
+import { renderSignIn } from './auth-ui.js';
 
 
 const state = {
+  // The desk's sign-in (Kate, Sep 23): the front page, Content Sort and
+  // Publish are hers. null until /api/auth has answered, then true or false.
+  auth: null,
+  authBusy: false,
+  authError: '',
+  publishError: '',         // Confirm's own refusal (the wrong password), shown on the ask
   rows: [],
   schedule: [],
   screen: 'home',
@@ -290,7 +299,9 @@ async function stampSubmitted(data) {
 
 function goTo(key) {
   if (key !== state.screen) setStatus('');   // last screen's message doesn't follow
-  if (key === 'sort' && state.screen !== 'sort') readBeforeSort();
+  // A locked screen's arrival step waits for the sign-in (arrive runs it then).
+  const may = state.auth === true;
+  if (key === 'sort' && state.screen !== 'sort' && may) readBeforeSort();
   if (key === 'issue' && state.screen !== 'issue' && state.screen !== 'schedule') resetIssueEntry();   // Schedule hands a date over
   if (key === 'finalize' && state.screen !== 'finalize') { resetFinalizeEntry(); state.lastKeepAll = null; }
   // The ticks survive a hop to another screen; only the receipt resets.
@@ -299,9 +310,10 @@ function goTo(key) {
     // only after something changed (persist clears it) or via Re-check.
     state.justPublished = 0;
     state.publishedCsv = '';
+    state.publishError = '';
     resetPublishAsk();
     state.screen = key;
-    if (!state.publishPreview) { loadPublishPreview(); return; }
+    if (!state.publishPreview && may) { loadPublishPreview(); return; }
   }
   state.screen = key;
   render();
@@ -351,11 +363,25 @@ async function rewriteQuietly(ids) {
     for (const { id, old } of landed) state.rewriteReview.set(id, old);
     state.reviewTotal = state.rewriteReview.size;
     state.rows = rows;
-  } catch {
+  } catch (err) {
     // Finalize's Rewrite button covers what did not come back.
+    shutOut(err);
   }
   for (const id of wanted) state.rewriting.delete(id);
   render();
+}
+
+/** A locked route refused the cookie: the session is gone (it lasts a day),
+ *  so the page shows the sign-in in place. True when that is what happened. */
+function shutOut(err) {
+  if (!lockedOut(err)) return false;
+  state.auth = false;
+  state.authError = '';
+  state.busy = false;
+  state.publishPreview = null;
+  setStatus('');
+  render();
+  return true;
 }
 
 async function runRewrite() {
@@ -390,6 +416,7 @@ async function runRewrite() {
     state.rewroteNote = byId.size ? null : (data.warnings?.join(' ') || 'Nothing to rewrite.');
     setStatus('');
   } catch (err) {
+    if (shutOut(err)) return;
     setStatus(plainError(err), 'error');
   }
   state.busy = false;
@@ -406,6 +433,7 @@ async function loadPublishPreview() {
     state.publishPreview = data;
     setStatus('', 'ok');
   } catch (err) {
+    if (shutOut(err)) return;
     setStatus(plainError(err), 'error');
   }
   state.busy = false;
@@ -422,20 +450,24 @@ async function quietPublishCheck() {
     await whenSaved();
     const data = await readReply(await fetch('/api/publish'), 'check the Exchange');
     if (state.rows === rowsAsked || !state.publishPreview) state.publishPreview = data;
-  } catch {
+  } catch (err) {
     laneCheck.failedAt = rowsAsked;
+    if (lockedOut(err)) { laneCheck.inFlight = false; shutOut(err); return; }
   }
   laneCheck.inFlight = false;
   render();
 }
 
-async function publishNow() {
+/** The write, with the password typed again at Confirm and her highlight
+ *  picks for the Exchange's home page (Kate, Sep 23). */
+async function publishNow({ password, highlights }) {
   state.busy = true;
+  state.publishError = '';
   render();
   setStatus('Publishing to the Exchange…');
   await whenSaved();   // every decision must be in the Sheet before the server reads it
   try {
-    const data = await postJson('/api/publish', {}, 'publish');
+    const data = await postJson('/api/publish', { password, highlights }, 'publish');
     state.publishPreview = null;
     state.justPublished = data.published;
     state.publishedCsv = data.csv ?? '';
@@ -449,10 +481,56 @@ async function publishNow() {
     setStatus(data.warning ? data.warning : '', data.warning ? 'note' : 'ok');   // the receipt card is the confirmation
     return;
   } catch (err) {
-    setStatus(plainError(err), 'error');
+    if (shutOut(err)) return;
+    // The wrong password is the ask's own refusal: it says so on the ask and
+    // stays; the status line has nothing to add.
+    if (err.message === WRONG_PASSWORD || /password/i.test(err.message)) { state.publishError = err.message; setStatus(''); }
+    else setStatus(plainError(err), 'error');
   }
   state.busy = false;
   render();
+}
+
+/* ---- The desk's sign-in (Kate, Sep 23) ----------------------------------
+ * The front page, Content Sort and Publish are hers: their screens draw the
+ * sign-in until /api/auth says the cookie holds. A sign-in lasts a day.
+ */
+async function checkSession() {
+  try { state.auth = await sessionStatus(); } catch { state.auth = false; }
+  render();
+  if (state.auth && state.loaded) arrive(state.screen);
+}
+
+async function signInNow(password) {
+  state.authBusy = true;
+  state.authError = '';
+  render();
+  try {
+    await signInRequest(password);
+    state.auth = true;
+  } catch (err) {
+    state.auth = false;
+    state.authError = authError(err);
+  }
+  state.authBusy = false;
+  render();
+  if (state.auth && state.loaded) arrive(state.screen);
+}
+
+async function signOutNow() {
+  try { await signOutRequest(); } catch { /* the cookie lapses on its own within the day */ }
+  state.auth = false;
+  state.publishPreview = null;
+  setStatus('');
+  render();
+}
+
+/** What a screen does on arrival, once the rows are in and the sign-in
+ *  holds: the same steps goTo runs, for a page opened at that address or
+ *  opened by a sign-in. */
+function arrive(screen) {
+  if (screen === 'sort') readBeforeSort();
+  if (screen === 'publish' && !state.publishPreview) loadPublishPreview();
 }
 
 async function sendToNewsletter(selectedRows, issue) {
@@ -497,7 +575,7 @@ function focusHeading(section) {
 
 function render() {
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
-  renderShell(document.querySelector('.topbar'), { screen: state.screen, onGo: goTo });
+  renderShell(document.querySelector('.topbar'), { screen: state.screen, onGo: goTo, signedIn: state.auth === true, onSignOut: signOutNow });
   document.title = pageTitle(state.screen);
   // The top bar's links switch screens in place. Every screen but the front
   // page keeps an address, as a history entry, so Back and a reload land
@@ -523,6 +601,15 @@ function render() {
   }
   const today = todayCentral();
   const common = { rows: state.rows, schedule: state.schedule, today };
+  // A locked screen draws the sign-in until the session is known to hold.
+  if (isLocked(state.screen) && state.auth !== true) {
+    renderSignIn(screens[state.screen], {
+      screen: state.screen, checking: state.auth === null, busy: state.authBusy, error: state.authError,
+      onSignIn: signInNow, onGoTo: goTo,
+    });
+    if (switched) focusHeading(screens[state.screen]);
+    return;
+  }
   if (state.screen === 'home') {
     // Policy Exchange's lane counts what Publish would add, which only the live
     // Exchange check knows: the front page asks for it quietly, once per change.
@@ -651,7 +738,7 @@ function render() {
   } else if (state.screen === 'publish') {
     renderPublish(screens.publish, {
       ...common, preview: state.publishPreview, busy: state.busy,
-      justPublished: state.justPublished, publishedCsv: state.publishedCsv,
+      justPublished: state.justPublished, publishedCsv: state.publishedCsv, publishError: state.publishError,
       onPublish: publishNow, onGoTo: goTo, onEditRow: saveEdit,
       onRecheck: () => { state.publishPreview = null; loadPublishPreview(); },
     });
@@ -689,9 +776,9 @@ document.querySelector('.skip-to-main')?.addEventListener('click', event => {
 });
 
 render();   // the shell paints before the first fetch, not after it
+checkSession();   // beside the first read: whichever answers last runs the arrival step
 reload().then(() => {
   // A page opened at a screen's address runs that screen's arrival step once
-  // the rows are in, the way goTo would have.
-  if (openedAt === 'sort') readBeforeSort();
-  if (openedAt === 'publish' && !state.publishPreview) loadPublishPreview();
+  // the rows are in and the sign-in holds, the way goTo would have.
+  if (state.auth === true) arrive(openedAt);
 });

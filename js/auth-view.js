@@ -21,6 +21,16 @@ export function signInLine(screen) {
   return `Sign in to open ${lane ? lane.label : 'the desk'}.`;
 }
 
+/** The server's two sentences, word for word (api/_lib/session.js; a test
+ *  holds the two files to the same words): the page acts on them. */
+export const SIGN_IN_FIRST = 'Sign in to the desk first.';
+export const WRONG_PASSWORD = "That's not the password.";
+
+/** A refusal that means the session is gone: the page shows the sign-in. */
+export function lockedOut(err) {
+  return err?.status === 401 || err?.message === SIGN_IN_FIRST;
+}
+
 /** The sentence for a refused sign-in: the server's own where it gave one,
  *  a dropped connection its own, and the bare status otherwise. */
 export function authError(err) {

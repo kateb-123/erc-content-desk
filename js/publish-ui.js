@@ -45,9 +45,12 @@ let trialPosting = false; // showing the "posting…" shadow alert
 let trialDone = 0;        // count on the mocked receipt (0 = not yet)
 let confirming = false;   // the one ask before the append-only write
 let csvFor = '';          // the Adding rows (their ids) the CSV was downloaded for; Publish waits on it (Kate, Sep 22)
+let typedPassword = '';   // what the ask's field holds, kept across a redraw; Confirm sends it and clears it
+let picks = null;         // her highlight picks (Kate, Sep 23), from the check's own until she changes them
+let picksFor = null;      // the preview the picks were taken from
 
 /** Arriving at Publish never lands on a standing ask. */
-export function resetPublishAsk() { confirming = false; }
+export function resetPublishAsk() { confirming = false; typedPassword = ''; }
 
 /** The onward door, right of the screen head. */
 function newsletterDoor(onGoTo) {
@@ -150,8 +153,14 @@ function fateBar(container, list, rerender) {
 }
 
 export function renderPublish(container, props) {
-  const { rows, today, preview, busy, justPublished, onPublish, onGoTo, onRecheck, publishedCsv, onEditRow } = props;
+  const { rows, today, preview, busy, justPublished, onPublish, onGoTo, onRecheck, publishedCsv, onEditRow, publishError = '' } = props;
   const rerender = () => renderPublish(container, props);
+  // A fresh check brings the picks as the Exchange holds them; hers stand
+  // until the check changes under them.
+  if (preview !== picksFor) {
+    picks = (preview?.highlights?.items ?? []).map(i => ({ link: i.link, image: i.image ?? '' }));
+    picksFor = preview;
+  }
   // An open, edited form holds any way out (the same rule as Finalize).
   const held = () => holdIfDirty(openForm, container.querySelector('.f-detail-row'));
   const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place
@@ -211,30 +220,58 @@ export function renderPublish(container, props) {
   }
   if (confirming && adding.length && !busy && !showReceipt) {
     head.querySelector('[data-focus="publish"]')?.remove();
-    const ask = el('div', 'nl-ask p-ask');
+    const ask = el('form', 'nl-ask p-ask');
+    ask.noValidate = true;
     // Body text, the count and "live" in 600: the one ask before the public write reads as a question.
-    ask.append(faIcon('triangle-exclamation'), ' Publish ', el('strong', '', String(adding.length)), ' to the ', el('strong', '', 'live'), ' Exchange? ');
-    const ok = button('Confirm', 'linkish alert-word', {
-      focus: 'publish',
-      onClick: () => {
+    const words = el('p', 'p-ask-words');
+    words.append(faIcon('triangle-exclamation'), ' Publish ', el('strong', '', String(adding.length)), ' to the ', el('strong', '', 'live'), ' Exchange? Type the desk password to confirm.');
+    ask.append(words);
+    // The password, typed again here (Kate, Sep 23): the ask stays until it is right.
+    const row = el('div', 'p-ask-row');
+    const label = el('label', 'sr-only', 'Password');
+    label.htmlFor = 'publish-password';
+    const field = el('input');
+    field.type = 'password';
+    field.id = 'publish-password';
+    field.autocomplete = 'current-password';
+    field.dataset.focus = 'publish-password';
+    field.value = typedPassword;
+    field.setAttribute('aria-label', 'Password');
+    if (publishError) { field.setAttribute('aria-invalid', 'true'); field.setAttribute('aria-describedby', 'publish-error'); }
+    field.addEventListener('input', () => { typedPassword = field.value; ok.disabled = !typedPassword; });
+    const ok = button('Confirm', 'linkish alert-word', { focus: 'publish' });
+    ok.type = 'submit';
+    ok.disabled = !typedPassword;
+    ask.addEventListener('submit', event => {
+      event.preventDefault();
+      if (!typedPassword) { field.focus(); return; }
+      const password = typedPassword;
+      typedPassword = '';
+      ok.disabled = true;
+      if (PUBLISH_PAUSED) {
+        // Trial: no real publish. Show the "forthcoming" alert, then mock success.
         confirming = false;
-        ok.disabled = true;
-        if (PUBLISH_PAUSED) {
-          // Trial: no real publish. Show the "forthcoming" alert, then mock success.
-          const n = adding.length;
-          trialPosting = true;
-          rerender();
-          setTimeout(() => { trialPosting = false; trialDone = n; rerender(); }, 1100);
-        } else {
-          onPublish();
-        }
-      },
+        const n = adding.length;
+        trialPosting = true;
+        rerender();
+        setTimeout(() => { trialPosting = false; trialDone = n; rerender(); }, 1100);
+      } else {
+        // The ask stands while the write runs: a refused password comes back to it.
+        onPublish({ password, highlights: picks });
+      }
     });
     // Cancel goes back on the Publish button the ask replaced.
-    const no = button('Cancel', 'linkish alert-word nl-cancel', { focus: 'publish', onClick: () => { confirming = false; rerender(); } });
-    ask.append(ok, ' \u00b7 ', no);
+    const no = button('Cancel', 'linkish alert-word nl-cancel', { focus: 'publish', onClick: () => { confirming = false; typedPassword = ''; rerender(); } });
+    row.append(label, field, ok, ' \u00b7 ', no);
+    ask.append(row);
+    if (publishError) {
+      const line = el('p', 'field-error', publishError);
+      line.id = 'publish-error';
+      line.setAttribute('role', 'alert');
+      ask.append(line);
+    }
     head.append(ask);
-    queueMicrotask(() => ok.focus({ preventScroll: true }));
+    if (focusKey !== 'publish-password') queueMicrotask(() => field.focus({ preventScroll: true }));
   }
   container.append(head);
 
