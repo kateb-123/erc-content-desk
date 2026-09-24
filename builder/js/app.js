@@ -5,7 +5,7 @@
  * pure logic lives in model.js, template.js, editpath.js and preview.js.
  */
 
-import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, deleteItem, insertItem, partitionPulled, countIssueItems, splitSections, bucketSectionItems, moveWithinBucket } from './model.js';
+import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, partitionPulled, countIssueItems, bucketSectionItems, moveWithinBucket } from './model.js';
 
 // The builder lives INSIDE the desk's project (/builder/), so the desk's API
 // is same-origin: relative fetches, no CORS.
@@ -19,6 +19,7 @@ import { todayCentral } from '../../js/today.js';
 import { saveState, loadState, clearState } from './state.js';
 import { getField, setField } from './editpath.js';
 import { computePreviewScale } from './preview.js';
+import { takeOut, putBack, listedItems, listedSections } from './removals.js';
 import { renderShell } from '../../js/shell-ui.js';
 import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
 import { arrowKeyTarget, normalizeLinkUrl, reorderRowName, movedAnnouncement } from './editing.js';
@@ -165,6 +166,8 @@ const RENDER = { review: renderReview, triage: renderTriage, edit: renderEdit, e
 function goTo(step) {
   const idx = STEPS.indexOf(step);
 
+  // Leaving a step makes its removals final: the greyed rows and their Undo go.
+  if (step !== state.step) settleRemovals();
   state.step = step;
   state.reached = Math.max(state.reached, idx);
 
@@ -393,23 +396,66 @@ function renderReview() {
 }
 
 /**
- * Delete one item from the issue, with a transient Undo toast. Shared by the
- * Outline row's Remove and the Preview & Edit card's Remove. `rerender` rebuilds
- * whichever step is showing so the removal (and any undo) is reflected at once.
- * `fromKeyboard` (a click with detail 0) hands focus to the toast's Undo.
+ * What Remove took out on the step on screen (Kate, Sep 23: the desk's own
+ * pattern). Each item has left the issue already, so the preview and the
+ * saved draft never carry it; it stays listed where it stood, greyed with its
+ * own Undo, until goTo leaves the step and settles it. Kept with the issue it
+ * came out of, so a replaced issue never takes back another issue's item.
+ */
+let removals = { issue: null, waiting: [] };
+function waitingRemovals() {
+  if (removals.issue !== state.issue) removals = { issue: state.issue, waiting: [] };
+  return removals.waiting;
+}
+function settleRemovals() {
+  removals = { issue: null, waiting: [] };
+}
+
+/**
+ * Take one item out of the issue: the Outline row's Remove and the Preview &
+ * Edit card's Remove. `rerender` redraws the step on screen, with the item
+ * greyed in place; `fromKeyboard` (a click with detail 0) hands focus to its Undo.
  */
 let _undoToastTimer = null;
 function deleteItemWithUndo(itemId, rerender, fromKeyboard = false) {
-  const removed = deleteItem(state.issue, itemId);
-  if (!removed) return;
+  if (!takeOut(state.issue, waitingRemovals(), itemId)) return;
   scheduleSave();
   rerender();
-  const title = (removed.item.fields && removed.item.fields.title) || 'item';
-  showUndoToast(`Removed “${title}”`, () => {
-    insertItem(state.issue, removed.sectionKey, removed.index, removed.item);
-    scheduleSave();
-    rerender();
-  }, { focusUndo: fromKeyboard });
+  syncStepNav();
+  if (fromKeyboard) focusInStep(`[data-undo-item="${CSS.escape(itemId)}"]`);
+}
+
+/** A greyed row's Undo: the item goes back into the issue where its row sits.
+ *  From the keyboard, focus goes to the row's Remove, or on Preview & Edit,
+ *  where the card is closed, to the column's title. */
+function undoRemove(itemId, rerender, fromKeyboard = false) {
+  if (!putBack(state.issue, waitingRemovals(), itemId)) return;
+  scheduleSave();
+  rerender();
+  syncStepNav();
+  if (fromKeyboard) focusInStep(`[data-remove-item="${CSS.escape(itemId)}"]`, '.edit-column-title');
+}
+
+/** A removed item's greyed row, drawn as the desk draws Next issue's: its
+ *  title, the word Removed, and its own Undo. */
+function removedRow(item, rowClass, rerender) {
+  const title = item.fields?.title || '(untitled)';
+  const row = el('div', `${rowClass} is-removed`);
+  const undo = ghostButton('Undo');
+  undo.dataset.undoItem = item.id;
+  undo.setAttribute('aria-label', `Undo removing "${title}"`);
+  undo.addEventListener('click', (e) => undoRemove(item.id, rerender, e.detail === 0));
+  // The title is user-derived: textContent only.
+  row.append(el('span', 'removed-title', title), el('span', 'removed-word', 'Removed'), undo);
+  return row;
+}
+
+/** Focus the first match in the step on screen; a visited step's DOM stays
+ *  in the page, hidden, so a bare query could land there. */
+function focusInStep(...selectors) {
+  const step = document.querySelector(`[data-step="${state.step}"]`);
+  const target = selectors.map((sel) => step?.querySelector(sel)).find(Boolean);
+  if (target) target.focus();
 }
 
 /**
@@ -458,15 +504,17 @@ function renderTriage() {
   const issue = state.issue;
 
   // Nothing pulled yet: one line, and no empty section list to puzzle over.
-  if (!issue || !countIssueItems(issue)) {
+  // Items removed on this visit still list, greyed, so the last one out is not lost.
+  if (!issue || (!countIssueItems(issue) && !waitingRemovals().length)) {
     emptyLine(container, 'No issue loaded. Pull from the desk on the Review step first.');
     return;
   }
 
   // ── Sections: only the populated ones are listed; the rest are named once
   //    at the foot. No toggle: a populated section is always included,
-  //    an empty one auto-hides. ───────────────────────────────────────────
-  const { populated, missing } = splitSections(issue);
+  //    an empty one auto-hides. A section whose last item was removed on
+  //    this visit stays listed with its greyed row. ─────────────────────────
+  const { populated, missing } = listedSections(issue, waitingRemovals());
   for (const reg of SECTION_REGISTRY) {
     const sec = issue.sections?.[reg.key];
     if (sec) sec.enabled = (sec.items?.length ?? 0) > 0;
@@ -500,14 +548,23 @@ function renderTriage() {
           'One event is featured; it pins to the top under a Featured heading.'));
       }
 
-      const buckets = bucketSectionItems(reg, items);
+      // The section as listed: its items, and what Remove took out on this
+      // visit greyed where it stood.
+      const waiting = waitingRemovals();
+      const removed = new Set(waiting.map((w) => w.item));
+      const buckets = bucketSectionItems(reg, listedItems(issue, waiting, reg.key));
 
       for (const bucket of buckets) {
         // The label is a registry constant, safe as textContent.
         if (bucket.label) sectionContainer.appendChild(el('div', 'triage-group-label', bucket.label));
 
-        const bucketItems = bucket.items;
-        for (const item of bucketItems) {
+        // The arrows move only what is in the issue; a greyed row stays put.
+        const bucketItems = bucket.items.filter((it) => !removed.has(it));
+        for (const item of bucket.items) {
+          if (removed.has(item)) {
+            sectionContainer.appendChild(removedRow(item, 'triage-event-row', renderTriage));
+            continue;
+          }
           // Index within the full section array (for reorder swaps)
           const secIdx = items.indexOf(item);
           // Position within this bucket (for button enable/disable)
@@ -572,12 +629,13 @@ function renderTriage() {
           reorderGroup.append(upBtn, downBtn);
           evRow.appendChild(reorderGroup);
 
-          // Remove this item from the issue (with Undo), the desk's Remove:
-          // red quiet link with the trash icon, never a bare ✕.
+          // Remove this item from the issue (the row greys in place with its
+          // Undo), the desk's Remove: red quiet link with the trash icon, never a bare ✕.
           const delBtn = button(' Remove', 'ghost-btn ghost-btn--danger', {
             icon: 'trash-can',
             onClick: (e) => deleteItemWithUndo(item.id, renderTriage, e.detail === 0),
           });
+          delBtn.dataset.removeItem = item.id;   // where an Undo from the keyboard hands focus back
           delBtn.setAttribute('aria-label', `Remove "${title}" from the issue`);
           delBtn.title = 'Removes this item from the issue';
           evRow.appendChild(delBtn);
@@ -1520,9 +1578,14 @@ function renderEdit() {
   saveAllBtn.hidden = true;
   colHeader.append(colTitle, saveAllBtn);
 
+  // What Remove took out on this visit waits where its card was, greyed with
+  // its own Undo, until the step is left; the preview already goes without it.
+  const cardList = el('div', 'edit-card-list');
+  cardList.append(...waitingRemovals().map((w) => removedRow(w.item, 'edit-removed-row', renderEdit)));
+
   column.append(
     colHeader,
-    el('div', 'edit-card-list'),
+    cardList,
     el('div', 'edit-column-empty', 'Click any text in the preview on the left. It opens here to edit.'),
     buildIntroPanel(iframe),
     buildAddItemPanel(iframe),

@@ -537,6 +537,32 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   cursor: not-allowed;
 }
 
+/* A removed item stays listed where it stood until the step is left, greyed
+   with its own Undo: the desk's removed row on Next issue (Kate, Sep 23). The
+   Outline greys the row in place; Preview & Edit lists it where its card was. */
+.triage-event-row.is-removed { background: var(--layer-01); }
+.edit-removed-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-03);
+  padding: var(--spacing-02) var(--spacing-02) var(--spacing-02) var(--spacing-04);
+  border: 1px solid var(--border-subtle-01);
+  background: var(--layer-01);
+}
+.removed-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+.removed-word {
+  flex-shrink: 0;
+  font-size: 12px; line-height: 16px; letter-spacing: 0;
+  color: var(--text-secondary);
+}
+
 /* --- Edit step ("Preview & Edit") ------------------------- */
 
 /* One label-01 line above the stage says what the sheet is. */
