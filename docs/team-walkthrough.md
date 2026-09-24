@@ -54,6 +54,8 @@ The desk asks for these. A missing one holds nothing up.
 
 ## Piece 2: Kathy and the newsletter
 
+Who: Kathy builds the issue. Kate curates what goes in.
+
 Pages, no password on either:
 
 - The Newsletter hub: https://erc-content-desk.vercel.app/#newsletter (tabs: Next issue, Schedule, Past issues)
@@ -61,7 +63,7 @@ Pages, no password on either:
 
 ### Where the content comes from
 
-1. The team submits (the page above, or the public share form).
+1. Content comes from the team (the page above, or the public share form) and from Kate, who scrapes and curates.
 2. Kate sorts on Content Sort and keeps an item with ERC Newsletter ticked where it belongs.
 3. The item lands in the hub's Ready to add on Next issue. Add puts it in the issue; Quick add puts something straight in.
 4. The builder pulls what the hub staged for the issue's date.
@@ -70,8 +72,10 @@ Pages, no password on either:
 
 1. Review: pick the issue, Pull from the desk. Pull again any time; only new items are added.
 2. Outline: the sections and the items in order. Remove keeps the row greyed with Undo.
-3. Preview & Edit: the email as it will look. Edit the words and the pictures.
+3. Preview & Edit: the email as it will look. This is for fixes: a typo, a title, a date, the introduction, a picture.
 4. Save & Export: save to the archive, download the HTML for sending.
+
+Make every fix in Preview & Edit, before Save & Export, so the archived issue matches what went out. Do not edit the downloaded HTML.
 
 ### The email's sections, in order
 
@@ -83,9 +87,4 @@ Past issues holds the archive, newest first, back to Nov 2025.
 
 Content Sort, Finalize, Publish and the Exchange's highlight. They are Kate's, behind the password. A guide for them comes later.
 
-## Still open, Kate's calls
-
-- The email: Kate writes it.
-- What time Tuesday the newsletter goes out. The walkthrough says Tuesday.
-- Who builds and sends: Kate, Kathy, or both.
-- The Sep 22 issue was hand-edited outside the builder before sending (the sign-off, the This & That group). If that is the norm, say so in Kathy's piece.
+Kate writes the email that points to this walkthrough.
