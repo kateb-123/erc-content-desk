@@ -43,6 +43,33 @@ These pages are live and public. Send one of these, never the desk's address. Ea
 
 Cut by Kate: "Your item shows in the Queue once Claude has read it. Refresh if it isn't there yet."
 
+## Part 2 as approved
+
+**Where items come from**
+
+1. Kate keeps an item on Content Sort. It waits in Ready to add, on Newsletter, Next issue.
+2. Add puts it in the issue. Quick add puts in something new.
+
+Claude: rewrites each description in the newsletter's voice when Kate keeps an item. Kate checks every rewrite.
+
+If an item is missing from the builder, it hasn't been added to the issue yet.
+
+**Build the issue**
+
+3. Open the builder from Next issue.
+4. Review: pick the issue, then Pull from the desk. Pull again any time; only new items come in.
+5. Outline: put items in order with the arrows. Mark one event Featured. Remove takes an item out.
+6. Preview & Edit: fix typos, titles, dates, the introduction and pictures.
+
+Make every fix here, never in Outlook, so the archive matches what went out.
+
+**Send and archive**
+
+7. Save & Export: Copy HTML, paste it into Outlook, send.
+8. Save to the archive. It shows under Past issues.
+
+Left out: moving an item to another section, which the builder cannot do yet.
+
 ## The facts behind it
 
 ## Piece 1: the team
