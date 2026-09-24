@@ -98,7 +98,8 @@ export function insertItem(issue, sectionKey, index, item) {
 
 /** Split a pulled issue against what the outline already holds (by link, and by
  *  the stable desk_* id so even url-less items never duplicate): keep the new,
- *  count the known. */
+ *  count the known. An item added by hand that went to the desk carries its
+ *  row's id as deskId (Sep 23), and comes back from a pull as desk_<that id>. */
 export function partitionPulled(pulled, existing) {
   const existingLinks = new Set();
   const existingIds = new Set();
@@ -107,6 +108,7 @@ export function partitionPulled(pulled, existing) {
       const url = String(item?.fields?.url ?? '').trim();
       if (url) existingLinks.add(url);
       if (item?.id) existingIds.add(item.id);
+      if (item?.deskId) existingIds.add(`desk_${item.deskId}`);
     }
   }
   let already = 0;

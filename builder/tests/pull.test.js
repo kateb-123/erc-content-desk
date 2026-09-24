@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createEmptyIssue, mergeIssues, partitionPulled, countIssueItems } from '../js/model.js';
+import { issueForPull } from '../../js/rows-to-issue.js';
 
 function issueWith(items, prefix = 't') {
   const issue = createEmptyIssue();
@@ -48,4 +49,22 @@ test('partitionPulled also dedupes by stable id, so url-less items never duplica
   const { pulled: kept, already } = partitionPulled(pulled, base);
   assert.equal(already, 1);
   assert.equal(countIssueItems(kept), 0);
+});
+
+test('an item added by hand that went to the desk is not pulled back a second time (Sep 23)', () => {
+  // The builder's own item, with the desk row id it was given.
+  const base = createEmptyIssue();
+  base.sections.events.items.push({ id: 'misc_k1_1', deskId: 'r42', group: 'offcampus', fields: { title: 'Data talk', url: 'https://x.org/talk' } });
+  base.sections.events.enabled = true;
+  // The desk row as a later pull serves it: stamped for the issue, its link
+  // since changed on Sort, and filed under Headlines for want of a subtype.
+  const rows = [
+    { id: 'r42', newsletter_issue: '2026-10-06', type: 'event', subtype: '', headline: 'Data talk', link: 'https://x.org/talk-page' },
+    { id: 'r43', newsletter_issue: '2026-10-06', type: 'headline', subtype: 'Texas', headline: 'New', link: 'https://x.org/new' },
+  ];
+  const { pulled: kept, already } = partitionPulled(issueForPull(rows, '2026-10-06'), base);
+  assert.equal(already, 1);
+  assert.deepEqual(kept.sections.headlines.items.map(i => i.fields.title), ['New']);
+  mergeIssues(base, kept);
+  assert.equal(countIssueItems(base), 2);
 });
