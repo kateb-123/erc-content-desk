@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   discardBody, discardToDesk, draftIsOpen, replaceAskMessage,
-  discardedTitle, discardedDetail, discardedWhen, withEntry, withoutEntry,
+  discardedTitle, discardedDetail, discardedWhen, withEntry, withoutEntry, restoreOver,
 } from '../js/discarded.js';
 import { createEmptyIssue } from '../js/model.js';
 
@@ -50,8 +50,8 @@ test('a draft is open when it holds items or an introduction; a date alone is no
 });
 
 test('the one-line ask names the open draft before Restore replaces it', () => {
-  assert.equal(replaceAskMessage(issueWith(12)), 'Replace the open draft for September 22, 2026 (12 items)?');
-  assert.equal(replaceAskMessage(issueWith(1, '')), 'Replace the open draft (1 item)?');
+  assert.equal(replaceAskMessage(issueWith(12)), 'Replace the open draft for September 22, 2026 (12 items)? It goes to Recently discarded.');
+  assert.equal(replaceAskMessage(issueWith(1, '')), 'Replace the open draft (1 item)? It goes to Recently discarded.');
 });
 
 test('an entry reads as its issue, then how many items and when it was discarded', () => {
@@ -80,4 +80,35 @@ test('the list keeps newest first: a new entry leads, one restored leaves', () =
   assert.deepEqual(withEntry(null, b), [b]);
   assert.deepEqual(withoutEntry([b, a], 'b'), [a]);
   assert.deepEqual(withoutEntry(null, 'b'), []);
+});
+
+
+// Kate, Sep 23: Restore over an open draft keeps the open one too, for the
+// same 3 months, before it is replaced.
+function restoreIo(log, { keepFails = false } = {}) {
+  return {
+    fetchDraft: async id => { log.push(`fetch ${id}`); return { id, body: { chosen: id } }; },
+    keep: async issue => { log.push(`keep ${issue.date}`); if (keepFails) throw new Error('The desk is down.'); return { draft: { id: 'kept-1' } }; },
+    remove: async id => { log.push(`remove ${id}`); },
+  };
+}
+
+test('restoreOver with nothing open: fetch, take it off the desk, open it; nothing is kept', async () => {
+  const log = [];
+  const out = await restoreOver(null, 'd1', restoreIo(log));
+  assert.deepEqual(log, ['fetch d1', 'remove d1']);
+  assert.deepEqual(out, { body: { chosen: 'd1' }, kept: null });
+});
+
+test('restoreOver with a draft open keeps the open one before the chosen one leaves the desk', async () => {
+  const log = [];
+  const out = await restoreOver(issueWith(3), 'd1', restoreIo(log));
+  assert.deepEqual(log, ['fetch d1', 'keep September 22, 2026', 'remove d1']);
+  assert.deepEqual(out, { body: { chosen: 'd1' }, kept: { draft: { id: 'kept-1' } } });
+});
+
+test('restoreOver stops when the open draft cannot be kept: nothing is replaced or removed', async () => {
+  const log = [];
+  await assert.rejects(restoreOver(issueWith(3), 'd1', restoreIo(log, { keepFails: true })), /The desk is down/);
+  assert.deepEqual(log, ['fetch d1', 'keep September 22, 2026']);
 });

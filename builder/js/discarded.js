@@ -34,11 +34,30 @@ export function draftIsOpen(issue) {
   return countIssueItems(issue) > 0 || Boolean(String(issue?.intro ?? '').trim());
 }
 
-/** The one-line ask before Restore replaces the open draft, naming it. */
+/** The one-line ask before Restore replaces the open draft, naming it and
+ *  saying where it goes (Kate, Sep 23: the replaced draft is kept too). */
 export function replaceAskMessage(open) {
   const date = String(open?.date ?? '').trim();
   const items = itemCount(countIssueItems(open));
-  return date ? `Replace the open draft for ${date} (${items})?` : `Replace the open draft (${items})?`;
+  const ask = date ? `Replace the open draft for ${date} (${items})?` : `Replace the open draft (${items})?`;
+  return `${ask} It goes to Recently discarded.`;
+}
+
+/**
+ * Restore a kept draft (Kate, Sep 23): fetch it first, then, when a draft is
+ * open here, keep that one on the desk the way Discard does, and only then
+ * take the chosen one off the desk. A keep that fails stops everything, so
+ * nothing is replaced and the chosen draft stays listed.
+ * @param {object|null} open  the draft open here, or null
+ * @param {string} id  the kept draft to restore
+ * @param {{ fetchDraft: (id: string) => Promise<{ body: object }>, keep: (issue: object) => Promise<object>, remove: (id: string) => Promise<unknown> }} io
+ * @returns {Promise<{ body: object, kept: object|null }>}
+ */
+export async function restoreOver(open, id, { fetchDraft, keep, remove }) {
+  const chosen = await fetchDraft(id);
+  const kept = open ? await keep(open) : null;
+  await remove(id);
+  return { body: chosen.body, kept };
 }
 
 /** An entry's first line: the issue it was for. */

@@ -25,7 +25,7 @@ import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepSta
 import { arrowKeyTarget, normalizeLinkUrl, reorderRowName, movedAnnouncement } from './editing.js';
 // Kept drafts, and hand-added items that go to the desk (Sep 23).
 import { readAllWaiting } from '../../js/reader-client.js';
-import { discardToDesk, draftIsOpen, replaceAskMessage, discardedTitle, discardedDetail, withEntry, withoutEntry } from './discarded.js';
+import { discardToDesk, draftIsOpen, replaceAskMessage, discardedTitle, discardedDetail, withEntry, withoutEntry, restoreOver } from './discarded.js';
 import { deskSubmission, sendItemToDesk } from './send-to-desk.js';
 
 // ---------------------------------------------------------------------------
@@ -1988,10 +1988,15 @@ function discardedRow(entry) {
     wait.append(dotsLoader(true), loadingLabel('Restoring…'));
     slot.replaceChildren(wait);
     try {
-      const { draft } = await readReply(await fetch(draftUrl(entry.id)), 'restore that draft');
-      await readReply(await fetch(draftUrl(entry.id), { method: 'DELETE' }), 'restore that draft');
+      // The open draft, if any, is kept like a Discard before it is replaced (Kate, Sep 23).
+      const { body, kept } = await restoreOver(draftIsOpen(state.issue) ? state.issue : null, entry.id, {
+        fetchDraft: async (id) => (await readReply(await fetch(draftUrl(id)), 'restore that draft')).draft,
+        keep: (issue) => discardToDesk(issue, { send: (b) => postJson('/api/drafts', b, 'keep the open draft'), clear: clearState }),
+        remove: async (id) => readReply(await fetch(draftUrl(id), { method: 'DELETE' }), 'restore that draft'),
+      });
       discarded = withoutEntry(discarded, entry.id);
-      openDraft(draft.body);
+      if (kept?.draft) discarded = withEntry(discarded, kept.draft);
+      openDraft(body);
     } catch (err) {
       back();
       row.append(quietError(`Couldn't restore it. ${reasonOf(err)}`, go));
