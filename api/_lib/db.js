@@ -16,6 +16,7 @@
 
 import { neon } from '@neondatabase/serverless';
 import { SHEET_COLUMNS, rowToValues, valuesToRow } from '../../js/schema.js';
+import { DRAFTS_SCHEMA } from './drafts.js';
 
 const q = name => `"${name}"`;
 const COLS = SHEET_COLUMNS.map(q).join(', ');
@@ -41,6 +42,8 @@ export function createDb(query) {
     // Odds and ends with no table of their own, e.g. when the schedule copy was
     // last refreshed from the Sheet.
     await query(`CREATE TABLE IF NOT EXISTS meta (key text PRIMARY KEY, value text NOT NULL)`);
+    // The builder's discarded drafts, kept 90 days (Sep 23; api/_lib/drafts.js).
+    await query(DRAFTS_SCHEMA);
   }
 
   async function getMeta(key) {
@@ -105,15 +108,23 @@ export function createDb(query) {
   return { ensureSchema, readAllRows, upsertRows, appendRow, updateRow, readScheduleRows, replaceSchedule, getMeta, setMeta };
 }
 
-/** The production store. Lazy so importing this file never needs the env. */
-let live;
-export function db() {
-  if (!live) {
+/** The production query function, one Neon client for every table. Lazy so
+ *  importing this file never needs the env. */
+let liveSql;
+export function liveQuery() {
+  if (!liveSql) {
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error('DATABASE_URL must be set');
     const sql = neon(url);
-    live = createDb((text, params = []) => sql.query(text, params));
+    liveSql = (text, params = []) => sql.query(text, params);
   }
+  return liveSql;
+}
+
+/** The production store. */
+let live;
+export function db() {
+  if (!live) live = createDb(liveQuery());
   return live;
 }
 
