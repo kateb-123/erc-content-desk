@@ -449,7 +449,9 @@ Kate's answers to the usability audit, each one decided by her:
   photo (the item-image control in photo words), up and down arrows, Remove.
   Under the boxes, Pick from: a table of everything that could go in, the
   rows going out now first, then what is live, each with Highlight as a ghost
-  word or "In, 3rd" once picked. The ask names the picks without a photo
+  word or "In, 3rd" once picked, under a section filter in the legend's own
+  idiom (All, Research, Events, Opportunities, Headlines, a count on each;
+  Kate: "so we can find events quickly"). The ask names the picks without a photo
   ("1 highlight has no photo.") and lets her through ("Ask, then allow").
   With nothing to publish and the picks changed, the primary is Update the
   highlight and the ask says so; the status line answers "Highlight updated:
