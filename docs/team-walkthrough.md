@@ -4,6 +4,47 @@ Brainstormed with Kate on Sep 23, 2026, and checked against the desk's code on S
 
 Use the desk's own words for things: the names below are the ones on screen. Print no date that goes stale: the Newsletter page shows the next issue.
 
+## What Kate decided (Sep 24)
+
+- One page, open on the desk like the team page, two parts. Her email links to it. Claude Design's version is not used: as an email attachment it showed only "This page requires JavaScript", and it got about ten facts wrong.
+- Steps only, not wordy. A recording of the real desk (the sandbox, sample items) shows the steps: it loops, has a pause, and holds still for anyone who turns motion off.
+- Where Claude works in the background is marked with a "Claude:" line, and says it does better with more to go on.
+- Part 1's jobs: send something in right, and give someone outside the right link. The cutoff, where an item shows up and the list of types are cut.
+- Part 2's jobs: where items come from, build an issue, fix things in the right place, send it and archive it.
+- The team form gets an upload for a picture or flyer (a desk change, not built yet).
+
+## Part 1 as approved
+
+**Send something in**
+
+1. Open Submit content: erc-content-desk.vercel.app/#team
+2. Paste the link.
+3. Pick a type and its subtype.
+4. Put the date, time and place, or the deadline, in the Description.
+5. Add a picture or flyer, if there is one.
+6. Add your initials.
+7. Add to the queue.
+
+Claude: reads the link and fills in what you left blank. The more you fill in, the better it does.
+
+Nothing goes public until Kate reviews it.
+
+Many at once: Add a doc or spreadsheet, under the form. The Word and spreadsheet templates are there.
+
+Claude: splits the file into separate items.
+
+**Give someone outside a link**
+
+These pages are live and public. Send one of these, never the desk's address. Each name opens its page; Copy link copies it.
+
+- Submit content (links to https://erc-share.vercel.app/submit/): send this when you want someone outside the team to submit something.
+- Join listserv (https://erc-share.vercel.app/listserv/): send this to someone who wants the newsletter.
+- ERC Policy Exchange (https://erc-policy-exchange.vercel.app/): send this to someone who wants to see what we publish.
+
+Cut by Kate: "Your item shows in the Queue once Claude has read it. Refresh if it isn't there yet."
+
+## The facts behind it
+
 ## Piece 1: the team
 
 Who: everyone at the ERC who sends in content.
