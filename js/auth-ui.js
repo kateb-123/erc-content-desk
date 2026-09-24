@@ -1,8 +1,9 @@
 /**
  * The sign-in (Kate, Sep 23): drawn in a locked screen's place until the
  * session holds. The page keeps its name in the bar and its title; under it,
- * one white box with the password field. A wrong password says so under the
- * field and stays; a sign-in lasts a day on this computer.
+ * one white box with the password field and nothing else to read (Kate:
+ * "you're soooo text heavy"). A wrong password says so under the field and
+ * stays.
  */
 import { signInLine } from './auth-view.js';
 import { el, button, busyLine, focusKeyIn, restoreFocus } from './ui-aids.js';
@@ -22,9 +23,8 @@ export function renderSignIn(container, { screen, checking, busy, error, onSignI
     container.append(page);
     return;
   }
-  page.append(el('p', 'lede', signInLine(screen)));
-
   const box = el('form', 'card signin-box');
+  box.setAttribute('aria-label', signInLine(screen));
   box.noValidate = true;
   const label = el('label', '', 'Password');
   label.htmlFor = 'signin-password';
@@ -52,7 +52,6 @@ export function renderSignIn(container, { screen, checking, busy, error, onSignI
     go.type = 'submit';
     box.append(go);
   }
-  box.append(el('p', 'signin-help', 'One sign-in lasts a day on this computer.'));
   box.addEventListener('submit', event => {
     event.preventDefault();
     if (busy) return;
@@ -64,7 +63,7 @@ export function renderSignIn(container, { screen, checking, busy, error, onSignI
 
   // The team's own page is open: a way there for anyone who landed here.
   const team = el('p', 'signin-team');
-  const a = el('a', '', 'Submit content, the team’s page');
+  const a = el('a', '', 'Submit content');
   a.href = '/#team';
   a.addEventListener('click', event => { event.preventDefault(); onGoTo('team'); });
   team.append(a);

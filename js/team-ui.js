@@ -29,12 +29,15 @@ export const QUICK_LINKS = [
 ];
 
 /** The desk's own work, a filled button each (Kate, Sep 23): the Newsletter
- *  first, then Content Sort, both switching in place. Only Content Sort
- *  wears a badge; the newsletter's pool is not something to be alerted about,
- *  so it says which issue is next instead (her word, Sep 23). */
+ *  first, then Content Sort, then the Policy Exchange (Publish; off the top
+ *  bar and onto the buttons, her word later that day), all switching in
+ *  place. Only Content Sort wears a badge; the newsletter's pool is not
+ *  something to be alerted about, so it says which issue is next instead,
+ *  and the Exchange's count needs a sign-in this page does not have. */
 export const DESK_DOORS = [
   { key: 'newsletter', icon: 'newspaper' },
   { key: 'sort', icon: 'layer-group', badge: true },
+  { key: 'exchange', icon: 'paper-plane' },
 ];
 
 function sectionHead(label, note) {

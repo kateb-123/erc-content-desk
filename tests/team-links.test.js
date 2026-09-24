@@ -29,6 +29,7 @@ test('every row and door carries the icon Kate picked', () => {
   const doors = src.match(/export const DESK_DOORS = \[([\s\S]*?)\];/)[1];
   assert.match(doors, /key: 'newsletter'[^\n]*icon: 'newspaper'/);
   assert.match(doors, /key: 'sort'[^\n]*icon: 'layer-group'/);
+  assert.match(doors, /key: 'exchange'[^\n]*icon: 'paper-plane'/);   // the door to Publish (Kate, Sep 23: off the bar, onto the buttons)
 });
 
 test('no row shows its address (Kate, Sep 23)', () => {
@@ -46,7 +47,7 @@ test('Copy link belongs to the public rows: every quick link has one', () => {
 test("the desk's own pages are filled buttons, the newsletter first", () => {
   const doors = src.match(/export const DESK_DOORS = \[([\s\S]*?)\];/)[1];
   const order = [...doors.matchAll(/key: '(\w+)'/g)].map(m => m[1]);
-  assert.deepEqual(order, ['newsletter', 'sort'], 'the newsletter sits above Content Sort (Kate, Sep 23)');
+  assert.deepEqual(order, ['newsletter', 'sort', 'exchange'], 'the newsletter sits above Content Sort, then the Exchange (Kate, Sep 23)');
   // Kate changed this on Sep 23: the newsletter no longer opens in its own
   // window; it switches in place, the way Content Sort does.
   assert.doesNotMatch(doors, /newWindow/, 'no door opens its own window');
@@ -65,13 +66,14 @@ test('both doors switch in place and land on their own screens', () => {
   const doors = src.match(/export const DESK_DOORS = \[([\s\S]*?)\];/)[1];
   const lands = [...doors.matchAll(/key: '(\w+)'/g)]
     .map(m => openedScreen(new URL(LANES.find(l => l.key === m[1]).href, 'https://desk.example/').hash));
-  assert.deepEqual(lands, ['issue', 'sort']);
+  assert.deepEqual(lands, ['issue', 'sort', 'publish']);
 });
 
 test('only Content Sort wears a badge, and none of it at zero', () => {
   const doors = src.match(/export const DESK_DOORS = \[([\s\S]*?)\];/)[1];
   assert.match(doors, /key: 'sort'[^\n]*badge: true/);
   assert.doesNotMatch(doors, /key: 'newsletter'[^\n]*badge/, 'the newsletter has no alert (Kate, Sep 23)');
+  assert.doesNotMatch(doors, /key: 'exchange'[^\n]*badge/, 'nor does the Exchange: its count needs the sign-in the team page does not have');
   assert.match(src, /if \(door\.badge\) a\.append/);
   assert.match(src, /textContent = n \? String\(n\) : ''/);
 });

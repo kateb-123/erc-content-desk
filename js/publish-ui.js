@@ -224,7 +224,7 @@ export function renderPublish(container, props) {
     ask.noValidate = true;
     // Body text, the count and "live" in 600: the one ask before the public write reads as a question.
     const words = el('p', 'p-ask-words');
-    words.append(faIcon('triangle-exclamation'), ' Publish ', el('strong', '', String(adding.length)), ' to the ', el('strong', '', 'live'), ' Exchange? Type the desk password to confirm.');
+    words.append(faIcon('triangle-exclamation'), ' Publish ', el('strong', '', String(adding.length)), ' to the ', el('strong', '', 'live'), ' Exchange?');
     ask.append(words);
     // The password, typed again here (Kate, Sep 23): the ask stays until it is right.
     const row = el('div', 'p-ask-row');
@@ -236,6 +236,7 @@ export function renderPublish(container, props) {
     field.autocomplete = 'current-password';
     field.dataset.focus = 'publish-password';
     field.value = typedPassword;
+    field.placeholder = 'Password';   // the sr-only label is the label; this is the field saying what it is
     field.setAttribute('aria-label', 'Password');
     if (publishError) { field.setAttribute('aria-invalid', 'true'); field.setAttribute('aria-describedby', 'publish-error'); }
     field.addEventListener('input', () => { typedPassword = field.value; ok.disabled = !typedPassword; });

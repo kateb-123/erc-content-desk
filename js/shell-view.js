@@ -17,7 +17,7 @@ export const LANES = [
 // builder's pages sit under Newsletter.
 const SCREENS = {
   home: { lane: null, hash: '' },
-  team: { lane: null, hash: '#team', page: 'Submit content', links: ['exchange'] },   // the team's page (Kate's sketch, Sep 22): its doors carry Sort and Newsletter
+  team: { lane: null, hash: '#team', page: 'Submit content', links: [] },   // the team's page (Kate's sketch, Sep 22): its doors carry all three lanes, its bar none (Kate, Sep 23)
   sort: { lane: 'sort', hash: '#sort' },
   finalize: { lane: 'sort', hash: '#finalize', title: 'Finalize' },   // a tab of Sort content, so no crumb of its own
   issue: { lane: 'newsletter', hash: '#newsletter' },

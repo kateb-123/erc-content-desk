@@ -31,7 +31,7 @@ test('until their screens fold into the lanes, the old screens crumb under the l
 
 test('the bar links to the two lanes the page is not in; the front page links to none', () => {
   assert.deepEqual(laneLinks('home'), []);
-  assert.deepEqual(laneLinks('team').map(l => l.key), ['exchange']);   // the team page's doors carry Sort and Newsletter; the bar keeps the Exchange
+  assert.deepEqual(laneLinks('team'), []);   // the team page's doors carry all three lanes; its bar shows none (Kate, Sep 23)
   assert.deepEqual(laneLinks('sort').map(l => l.key), ['newsletter', 'exchange']);
   assert.deepEqual(laneLinks('finalize').map(l => l.key), ['newsletter', 'exchange']);
   assert.deepEqual(laneLinks('newsletter').map(l => l.key), ['sort', 'exchange']);

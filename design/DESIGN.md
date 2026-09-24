@@ -246,7 +246,7 @@ buttons (Kate, Sep 23): the Newsletter first, switching in place like Content So
 issue under its name, then Content Sort in place. Only Content Sort wears a
 badge, a maize pill in navy ink at the button's right ("not 17 but more like an
 alert"), and it is drawn only while something waits; the newsletter's pool is
-not something to be alerted about. The top bar shows only Policy Exchange on the right. The
+not something to be alerted about. The top bar shows no lane on the team page; the Exchange is the third button (Kate, Sep 23, evening: "no link to policy exchange in header"). The
 Sort page is Content Sort everywhere since Sep 22.
 
 The front page of Sep 17 to 22 (Kate's wireframes; `design/mockups/index.png`) was the
