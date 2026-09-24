@@ -74,6 +74,7 @@
   --text-disabled: var(--color-neutral-200);
   --text-on-color: #ffffff;
   --text-on-color-disabled: var(--color-neutral-200);
+  --text-locked: #4f5d6b;                     /* the word on a locked Keep and next: 5.5:1 on the disabled grey, where neutral 200 is 2.5:1 */
   --text-inverse: #ffffff;
   --link-primary: var(--color-teal-400);      /* links are teal and underlined */
   --link-primary-hover: var(--color-teal-500);
@@ -124,6 +125,7 @@
      the 500 step. */
   --text-success: var(--color-green-500);
   --text-warning: var(--color-orange-500);
+  --text-warning-on-tint: #8f3814;            /* a warning word ON the maize 100 tint: 7.3:1, where orange 500 is 4.4:1 */
 
   /* Tags. */
   --tag-background-blue: var(--color-teal-100);
@@ -131,7 +133,7 @@
   --tag-background-gray: var(--color-neutral-100);
   --tag-color-gray: var(--color-neutral-400);
   --tag-background-review: var(--color-maize-100);
-  --tag-color-review: var(--color-orange-500);
+  --tag-color-review: var(--text-warning-on-tint);
 
   /* The accent, one ramp for both apps: teal, the system's interactive
      colour. Teal 400 is 5.1:1 on white, so it fills, lines, links and marks

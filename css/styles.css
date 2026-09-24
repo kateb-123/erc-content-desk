@@ -445,7 +445,11 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .publish-table th.p-fate, .publish-table td.p-fate { width: 9.5rem; font-weight: 600; }
 .publish-table tr.p-adding td.p-fate { color: var(--link-primary); }
 .publish-table tr.p-skip td.p-fate { font-weight: 400; }
-.publish-table .p-fate-fix { color: var(--warn); font-weight: 600; text-decoration: underline; }
+/* A Needs a fix row sits on the warning tint, where orange 500 is 4.4:1, so its
+   words are orange brown (usability audit, Kate's pick, Sep 23), the note in
+   its open row with them. */
+.publish-table .p-fate-fix { color: var(--text-warning-on-tint); font-weight: 600; text-decoration: underline; }
+.publish-table tr.p-notready .rewrite-note { color: var(--text-warning-on-tint); }
 .table-scroll { overflow-x: auto; }
 
 /* The front page (Kate's wireframes, Sep 17): the share form on the left, a
@@ -516,6 +520,11 @@ input:not([type]):focus, input[type="text"]:focus, input[type="url"]:focus, inpu
   outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring);
 }
 button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
+/* The type picker and the Sort and Finalize lists clip what is drawn outside a
+   control, so there the ring is drawn inside it, 2px teal and no maize
+   (usability audit, Kate's pick, Sep 23). The transparent outline, the ring
+   under forced colours, moves inside with it. */
+.pill-row .type-word:focus-visible, .sort-list .sort-row:focus-visible, .f-list .f-list-row:focus-visible { outline-offset: -2px; box-shadow: inset 0 0 0 2px var(--color-teal-400); }
 /* A screen title takes focus on a switch so assistive tech hears it; no ring on a heading or the busy card. */
 [tabindex="-1"]:focus, .busy-card:focus { outline: none; box-shadow: none; }
 
@@ -693,6 +702,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .sort-card .sc-keep { width: 100%; height: 48px; justify-content: space-between; padding: 0 var(--spacing-05); }
 .sort-card .sc-keep { flex-direction: row-reverse; }   /* the helper draws the icon first; the check sits at the right */
 .sort-card .sc-keep .fa-solid { position: static; }
+/* Locked, its word is darker than the disabled grey's, 5.5:1 (usability audit,
+   Kate's pick, Sep 23), and the reason sits under it. */
+.sort-card .sc-keep:disabled { color: var(--text-locked); }
+/* The reason sits tight under the button it explains (4px), with the column's 12px to Skip for now below it, so it never reads as Skip's. */
+.sc-keep-why { font: var(--meta-type); color: var(--muted); margin: calc(-1 * var(--spacing-03)) 0 0; }
 .sort-card .sc-skip { width: 100%; height: 40px; justify-content: flex-start; padding: 0 var(--spacing-04); margin: 0; }
 .sc-tools { border-top: 1px solid var(--line-in); padding-top: 14px; }
 .sc-tools .trash-link { margin: 0; padding: 0 var(--spacing-02); }
