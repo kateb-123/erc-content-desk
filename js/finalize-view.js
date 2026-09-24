@@ -4,6 +4,8 @@
  * line and bar, and which row the card on the right shows.
  */
 import { readyToFinalize, canRewrite } from './workflow.js';
+import { hasLocation } from './schema.js';
+import { isoToShort } from './queue-view.js';
 
 /** The Finalize tab's count: kept items whose rewrite is still to do or to
  *  check; `verified` is the ids checked this visit. */
@@ -82,24 +84,42 @@ export function editBase(row) {
 }
 
 /** The fields an edit form shows for a type: a research
- *  item has no time or location, an event no deadline. An unknown or empty
- *  type keeps every field, so nothing is lost on a row the reader could not
- *  place. Order is the form's reading order. */
-export function fieldsForType(type) {
+ *  item has no time or location, an event no deadline, a webinar no location
+ *  (Kate, Sep 23: "there won't be a spot for location"); research and
+ *  headlines carry the publication date the Exchange sorts by. An unknown or
+ *  empty type keeps every field, so nothing is lost on a row the reader could
+ *  not place. Order is the form's reading order. */
+export function fieldsForType(type, subtype = '') {
   const per = {
     event: ['headline', 'date', 'time', 'location', 'source', 'blurb'],
     erc_event: ['headline', 'date', 'time', 'location', 'source', 'blurb'],
     opportunity: ['headline', 'deadline', 'topic', 'source', 'blurb'],
-    research: ['headline', 'authors', 'source', 'topic', 'blurb'],
-    headline: ['headline', 'source', 'blurb'],
+    research: ['headline', 'date', 'authors', 'source', 'topic', 'blurb'],
+    headline: ['headline', 'date', 'source', 'blurb'],
   };
-  return per[type] ?? ['headline', 'date', 'source', 'topic', 'blurb', 'deadline', 'authors', 'time', 'location'];
+  const fields = per[type] ?? ['headline', 'date', 'source', 'topic', 'blurb', 'deadline', 'authors', 'time', 'location'];
+  return per[type] && !hasLocation(type, subtype) ? fields.filter(f => f !== 'location') : fields;
 }
 
 /** One edit form on Sort and Finalize: the type's fields, then the link.
  *  Media is a row of its own on both. */
-export function editFields(type) {
-  return [...fieldsForType(type), 'link'];
+export function editFields(type, subtype = '') {
+  return [...fieldsForType(type, subtype), 'link'];
+}
+
+/** The facts a detail body leads with (Finalize's card, Publish's open row):
+ *  an event's date, time and place (no place for a webinar), an
+ *  opportunity's deadline and topic, a research item's or headline's date;
+ *  the rest reads title, authors and source in the row. Blanks drop out. */
+export function factsFor(row, today) {
+  const per = {
+    event: [['Date', isoToShort(row.date, today)], ['Time', row.time], ['Location', hasLocation(row.type, row.subtype) ? row.location : '']],
+    erc_event: [['Date', isoToShort(row.date, today)], ['Time', row.time], ['Location', hasLocation(row.type, row.subtype) ? row.location : '']],
+    opportunity: [['Deadline', isoToShort(row.deadline, today)], ['Topic', row.topic]],
+    research: [['Date', isoToShort(row.date, today)]],
+    headline: [['Date', isoToShort(row.date, today)]],
+  };
+  return (per[row.type] ?? []).filter(([, v]) => v);
 }
 
 /** Dates and deadlines are date inputs, so a typed "Oct 3" cannot vanish from every meta line. */

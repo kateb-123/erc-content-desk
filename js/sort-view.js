@@ -7,10 +7,10 @@ import { isoToShort, bySubmitted } from './queue-view.js';
 import { TYPE_ORDER, isValidSubtype } from './schema.js';
 import { duplicateFlags, linkNeedsCheck, missingFields } from './workflow.js';
 
-// What each field is called on the card; medium is the outlet.
+// What each field is called on the card.
 export const FIELD_LABELS = {
   headline: 'Title', date: 'Date', source: 'Source', topic: 'Topic', deadline: 'Deadline',
-  authors: 'Authors', time: 'Time', location: 'Location', medium: 'Outlet',
+  authors: 'Authors', time: 'Time', location: 'Location',
 };
 
 // Newest first, a row with no date last.

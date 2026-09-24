@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges, fieldsForType, dateField, editFields, editBase, finalizeWaiting, onTheWay } from '../js/finalize-view.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, pickSelection, editChanges, fieldsForType, factsFor, dateField, editFields, editBase, finalizeWaiting, onTheWay } from '../js/finalize-view.js';
 
 const keeps = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }];
 
@@ -63,9 +63,29 @@ test('fieldsForType: the edit form shows only the fields a type uses (design aud
   assert.deepEqual(fieldsForType('event'), ['headline', 'date', 'time', 'location', 'source', 'blurb']);
   assert.deepEqual(fieldsForType('erc_event'), ['headline', 'date', 'time', 'location', 'source', 'blurb']);
   assert.deepEqual(fieldsForType('opportunity'), ['headline', 'deadline', 'topic', 'source', 'blurb']);
-  assert.deepEqual(fieldsForType('research'), ['headline', 'authors', 'source', 'topic', 'blurb']);
-  assert.deepEqual(fieldsForType('headline'), ['headline', 'source', 'blurb']);
+  // Research and headlines carry the publication date the Exchange sorts by (Kate, Sep 23).
+  assert.deepEqual(fieldsForType('research'), ['headline', 'date', 'authors', 'source', 'topic', 'blurb']);
+  assert.deepEqual(fieldsForType('headline'), ['headline', 'date', 'source', 'blurb']);
   assert.deepEqual(fieldsForType(''), ['headline', 'date', 'source', 'topic', 'blurb', 'deadline', 'authors', 'time', 'location']);
+});
+
+test('a webinar has no location spot (Kate, Sep 23: "if it\'s a webinar, there won\'t be a spot for location")', () => {
+  assert.deepEqual(fieldsForType('event', 'Webinar-Online'), ['headline', 'date', 'time', 'source', 'blurb']);
+  assert.deepEqual(fieldsForType('event', 'Off-Campus'), ['headline', 'date', 'time', 'location', 'source', 'blurb']);
+  assert.deepEqual(fieldsForType('event', 'A&M'), ['headline', 'date', 'time', 'location', 'source', 'blurb']);
+  assert.deepEqual(editFields('event', 'Webinar-Online'), ['headline', 'date', 'time', 'source', 'blurb', 'link']);
+});
+
+test('factsFor: the facts a detail body leads with; a webinar shows no location, research and headlines their date', () => {
+  const today = '2026-09-23';
+  assert.deepEqual(factsFor({ type: 'event', subtype: 'Off-Campus', date: '2026-09-30', time: '3 PM CT', location: 'Rudder' }, today),
+    [['Date', 'Sep 30'], ['Time', '3 PM CT'], ['Location', 'Rudder']]);
+  assert.deepEqual(factsFor({ type: 'event', subtype: 'Webinar-Online', date: '2026-09-30', time: '3 PM CT', location: 'Zoom' }, today),
+    [['Date', 'Sep 30'], ['Time', '3 PM CT']]);
+  assert.deepEqual(factsFor({ type: 'research', date: '2026-09-01' }, today), [['Date', 'Sep 1']]);
+  assert.deepEqual(factsFor({ type: 'headline', date: '2026-08-15' }, today), [['Date', 'Aug 15']]);
+  assert.deepEqual(factsFor({ type: 'research', date: '' }, today), []);
+  assert.deepEqual(factsFor({ type: 'opportunity', deadline: '2026-10-15', topic: 'Pre-K' }, today), [['Deadline', 'Oct 15'], ['Topic', 'Pre-K']]);
 });
 
 test('dateField: dates and deadlines are date inputs, the rest text', () => {
@@ -77,7 +97,7 @@ test('dateField: dates and deadlines are date inputs, the rest text', () => {
 
 // Audit round two, e11: one edit form on Sort and Finalize: the type's fields plus the link.
 test('editFields: the fields for the type, then the link, once', () => {
-  assert.deepEqual(editFields('headline'), ['headline', 'source', 'blurb', 'link']);
+  assert.deepEqual(editFields('headline'), ['headline', 'date', 'source', 'blurb', 'link']);   // the date since Sep 23
   assert.deepEqual(editFields('event'), ['headline', 'date', 'time', 'location', 'source', 'blurb', 'link']);
   assert.equal(editFields('').filter(f => f === 'link').length, 1);
 });

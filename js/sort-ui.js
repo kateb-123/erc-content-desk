@@ -316,7 +316,7 @@ function sortCard(row, { props, rerender, ctx, reshare, position, total }) {
   left.append(descriptionBlock(row, props, rerender));
   // The type decides the fields: none until it is picked.
   const grid = el('div', 'card-grid');
-  for (const field of row.type ? fieldsForType(row.type).filter(f => f !== 'headline' && f !== 'blurb') : []) {
+  for (const field of row.type ? fieldsForType(row.type, row.subtype).filter(f => f !== 'headline' && f !== 'blurb') : []) {
     grid.append(labelled(FIELD_LABELS[field] ?? field, savingField(row, field, props)));
   }
   if (grid.childNodes.length) left.append(grid);

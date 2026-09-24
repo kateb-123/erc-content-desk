@@ -5,7 +5,7 @@
  * (Publish to Exchange) and newsletter_issue (Send to Newsletter). Where a
  * kept row goes is its send_to (Sort's "Send it to", Sep 18).
  */
-import { CSV_COLUMNS, TYPES } from './schema.js';
+import { CSV_COLUMNS, TYPES, hasLocation } from './schema.js';
 
 export function pendingRows(rows) {
   return rows.filter(r => r.status === 'new');
@@ -229,8 +229,9 @@ export function duplicateFlags(rows) {
 export function missingFields(row) {
   const def = TYPES[row?.type];
   if (!def) return [];
-  const wanted = row.type === 'event' || row.type === 'erc_event'
+  const wanted = (row.type === 'event' || row.type === 'erc_event'
     ? ['date', ...def.extraFields]
-    : def.extraFields;
+    : def.extraFields)
+    .filter(f => f !== 'location' || hasLocation(row.type, row.subtype));   // a webinar has no place to miss (Kate, Sep 23)
   return wanted.filter(f => !String(row[f] ?? '').trim());
 }

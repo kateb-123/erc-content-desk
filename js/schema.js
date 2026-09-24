@@ -42,7 +42,9 @@ export const TYPES = {
   },
   headline: {
     subtypes: ['National', 'Texas'],
-    extraFields: ['medium'],
+    // The outlet (medium) is nothing anyone types: the reader fills it, and
+    // Source already names the outlet, so Keep never asks for it (Kate, Sep 23).
+    extraFields: [],
   },
   event: {
     subtypes: ['A&M', 'Off-Campus', 'Webinar-Online'],
@@ -126,6 +128,15 @@ export function valuesToRow(values) {
 
 export function subtypesFor(type) {
   return Object.prototype.hasOwnProperty.call(TYPES, type) ? TYPES[type].subtypes.slice() : [];
+}
+
+/** The one event that happens nowhere: a webinar has no place (Kate, Sep 23:
+ *  "if it's a webinar, there won't be a spot for location"). */
+export const ONLINE_SUBTYPE = 'Webinar-Online';
+
+/** Whether an event of this kind has a place: every event but a webinar. */
+export function hasLocation(type, subtype) {
+  return (type === 'event' || type === 'erc_event') && String(subtype ?? '').trim() !== ONLINE_SUBTYPE;
 }
 
 export function isValidType(type) {

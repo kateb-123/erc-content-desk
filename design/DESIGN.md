@@ -402,6 +402,15 @@ Kate's answers to the usability audit, each one decided by her:
 - Left as they are, by her word: the front page's counts stay blank while they
   load, nothing is added for screen readers, and Sort is never laid out for a
   phone.
+- **The fields a kind of item shows** (Kate, Sep 23, evening: "if it's a
+  webinar, there won't be a spot for location"): a webinar (an Event with the
+  Webinar-Online subtype) has no Location on Sort's card, the edit form, the
+  facts panel or the Keep ask, and none reaches the newsletter or the site
+  (`hasLocation` in `js/schema.js`; the newsletter's group already says
+  online, the Exchange has its tab). Research and headlines have a Date spot
+  (the publication date the Exchange sorts by, which the reader already reads),
+  never required. Keep no longer asks a headline for an Outlet (`medium`),
+  a column nobody types.
 
 
 ## The sign-in and the highlight (Sep 23, evening)

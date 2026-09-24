@@ -22,7 +22,7 @@ const WIDE = new Set(['headline', 'source', 'authors', 'blurb', 'link']);
 /** The form for one row. onSave gets only the fields that changed. */
 export function buildEditForm(row, { onSave, onCancel }) {
   const base = editBase(row);
-  const fields = editFields(row.type);
+  const fields = editFields(row.type, row.subtype);
   let dirty = false;
   const wrap = el('div', 'f-edit-card');
   const grid = el('div', 'f-edit-grid');

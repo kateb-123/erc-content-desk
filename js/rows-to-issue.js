@@ -11,7 +11,7 @@
  */
 
 import { createEmptyIssue } from '../builder/js/model.js';
-import { NEWSLETTER_MAP } from './schema.js';
+import { NEWSLETTER_MAP, hasLocation } from './schema.js';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -42,7 +42,7 @@ function fieldsFor(row) {
   if (row.authors) fields.authors = row.authors;
   if (row.date) fields.date = isoToDisplay(row.date);
   if (row.time) fields.time = row.time;
-  if (row.location) fields.location = row.location;
+  if (row.location && hasLocation(row.type, row.subtype)) fields.location = row.location;   // a webinar's group already says online (Kate, Sep 23)
   if (row.deadline) fields.meta = `Deadline: ${isoToDisplay(row.deadline)}`;
   if (row.infographic) fields.image = row.infographic;
   return fields;

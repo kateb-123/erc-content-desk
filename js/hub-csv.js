@@ -2,7 +2,7 @@
  * One row -> one line of the hub's news.csv. Kept browser-safe and tiny;
  * parsing/merging live server-side in api/_lib/hub.js.
  */
-import { CSV_COLUMNS } from './schema.js';
+import { CSV_COLUMNS, hasLocation } from './schema.js';
 
 export function escapeCell(value) {
   const text = String(value ?? '');
@@ -20,8 +20,12 @@ export function escapeCell(value) {
  * first in Quick Search. A subtype she set by hand wins.
  */
 export function toHubRow(row) {
-  if (row?.type !== 'erc_event') return row;
-  return { ...row, type: 'event', subtype: String(row.subtype ?? '').trim() || 'ERC Events' };
+  let hub = row;
+  if (row?.type === 'erc_event') hub = { ...row, type: 'event', subtype: String(row.subtype ?? '').trim() || 'ERC Events' };
+  // A webinar has no place (Kate, Sep 23): the desk shows no spot for one,
+  // so none it never showed reaches the site.
+  if (hub && !hasLocation(hub.type, hub.subtype) && String(hub.location ?? '') !== '') hub = { ...hub, location: '' };
+  return hub;
 }
 
 export function hubRowLine(row) {

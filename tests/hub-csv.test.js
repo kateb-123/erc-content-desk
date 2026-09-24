@@ -62,7 +62,7 @@ test("ERC's own events publish as events, tagged ERC Events", () => {
 
 test('a subtype she set by hand survives, and other types are untouched', () => {
   assert.equal(toHubRow({ type: 'erc_event', subtype: 'A&M' }).subtype, 'A&M');
-  const plain = { type: 'event', subtype: 'Webinar-Online' };
+  const plain = { type: 'event', subtype: 'Off-Campus', location: 'Austin' };
   assert.deepEqual(toHubRow(plain), plain);
   assert.equal(toHubRow({ type: 'research' }).type, 'research');
 });
@@ -71,4 +71,10 @@ test('the copy she downloads matches what the Exchange receives', () => {
   const text = hubCsvText([{ ...blankRow(), type: 'erc_event', headline: 'ERC PEP Talk' }]);
   assert.ok(text.includes(',event,ERC Events,'));
   assert.ok(!text.includes('erc_event'));
+});
+
+test('a webinar goes to the site with no location: the desk has no spot for one (Kate, Sep 23)', () => {
+  const webinar = { type: 'event', subtype: 'Webinar-Online', location: 'Virtual forum', time: '1:00 PM CT' };
+  assert.deepEqual(toHubRow(webinar), { ...webinar, location: '' });
+  assert.equal(toHubRow({ type: 'erc_event', subtype: 'Webinar-Online', location: 'Zoom' }).location, '');
 });

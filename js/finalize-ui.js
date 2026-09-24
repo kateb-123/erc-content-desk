@@ -13,7 +13,7 @@ import { isErc, sortList } from './sort-view.js';
 import { TYPE_ORDER, typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { busyWords, faIcon } from './icons.js';
-import { finalizeStage, finalizeGroups, finalizeProgress, onTheWay, pickSelection, finalizeWaiting } from './finalize-view.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, onTheWay, pickSelection, finalizeWaiting, factsFor } from './finalize-view.js';
 import { buildEditForm, holdIfDirty } from './edit-form.js';
 import { sortPageHead } from './page-head.js';
 import { el, button, focusKeyIn, restoreFocus, revealTop } from './ui-aids.js';
@@ -88,16 +88,6 @@ function diffPara(toks, baseClass, changeClass) {
   }
   flush();
   return p;
-}
-
-/** The facts that lead the detail body, events and opportunities only:
- *  research reads title/authors/source in the row and Abstract below. */
-function factsFor(row, today) {
-  const per = {
-    event: [['Date', isoToShort(row.date, today)], ['Time', row.time], ['Location', row.location]],
-    opportunity: [['Deadline', isoToShort(row.deadline, today)], ['Topic', row.topic]],
-  };
-  return (per[row.type] ?? []).filter(([, v]) => v);
 }
 
 /** Exchange layout: facts panel in a left column, blurb beside it. Shared

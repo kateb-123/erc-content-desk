@@ -104,3 +104,14 @@ test('stagedCounts tallies stamps per issue', () => {
   ];
   assert.deepEqual(stagedCounts(rows), { '2026-09-01': 2, '2026-10-06': 1 });
 });
+
+test('a webinar pulled into the newsletter carries no location (Kate, Sep 23: the newsletter already says online)', () => {
+  const rows = [
+    blankRow({ id: 'w', status: 'kept', type: 'event', subtype: 'Webinar-Online', headline: 'W', link: 'https://x.org/w', date: '2026-09-30', time: '1 PM CT', location: 'Zoom', newsletter_issue: '2026-10-06' }),
+    blankRow({ id: 'o', status: 'kept', type: 'event', subtype: 'Off-Campus', headline: 'O', link: 'https://x.org/o', date: '2026-09-30', time: '1 PM CT', location: 'Austin', newsletter_issue: '2026-10-06' }),
+  ];
+  const issue = issueForPull(rows, '2026-10-06');
+  const items = issue.sections.events.items;
+  assert.equal(items.find(i => i.fields.title === 'W').fields.location, undefined);
+  assert.equal(items.find(i => i.fields.title === 'O').fields.location, 'Austin');
+});

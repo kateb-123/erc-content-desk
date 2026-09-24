@@ -253,6 +253,12 @@ test('missingFields names the blanks that matter for the row\'s type', () => {
   assert.deepEqual(missingFields({ type: 'opportunity', deadline: '2026-10-15' }), []);
   // A date is load-bearing for events only — research is not flagged for one.
   assert.deepEqual(missingFields({ type: 'research', authors: 'Chen' }), []);
+  // A webinar has no location to miss (Kate, Sep 23); an event still has.
+  assert.deepEqual(missingFields({ type: 'event', subtype: 'Webinar-Online', date: '2026-09-20', time: '3 PM CT' }), []);
+  assert.deepEqual(missingFields({ type: 'event', subtype: 'Off-Campus', date: '2026-09-20', time: '3 PM CT' }), ['location']);
+  // The outlet (medium) is nothing anyone types: a headline needs no field filled.
+  assert.deepEqual(missingFields({ type: 'headline', source: 'Texas Tribune' }), []);
+  assert.deepEqual(missingFields({ type: 'headline' }), []);
 });
 
 test('missingFields says nothing about a row with no type yet', () => {
