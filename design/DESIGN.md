@@ -451,7 +451,11 @@ Kate's answers to the usability audit, each one decided by her:
   rows going out now first, then what is live, each with Highlight as a ghost
   word or "In, 3rd" once picked, under a section filter in the legend's own
   idiom (All, Research, Events, Opportunities, Headlines, a count on each;
-  Kate: "so we can find events quickly"). The ask names the picks without a photo
+  Kate: "so we can find events quickly"). At rest the table holds the rows
+  going out now and the newest 8 live rows a section (Kate, of the whole
+  list: "it's a lot"); a search box at the head's right, by title or source,
+  reaches every row, and a meta line under the table says how many the
+  search would reach. The ask names the picks without a photo
   ("1 highlight has no photo.") and lets her through ("Ask, then allow").
   With nothing to publish and the picks changed, the primary is Update the
   highlight and the ask says so; the status line answers "Highlight updated:

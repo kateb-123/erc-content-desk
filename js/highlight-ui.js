@@ -8,12 +8,13 @@
 import { faIcon } from './icons.js';
 import { buildImageControl } from './item-image.js';
 import { typeDisplay } from './schema.js';
-import { MAX_PICKS, bandAfter, addPick, removePick, movePick, setPhoto, candidates, whenLine, sectionFilters, filterCandidates } from './highlight-view.js';
+import { MAX_PICKS, LIVE_PER_SECTION, bandAfter, addPick, removePick, movePick, setPhoto, candidates, whenLine, sectionFilters, filterCandidates, trimLive, searchCandidates } from './highlight-view.js';
 import { el, button } from './ui-aids.js';
 
-// The Pick from table's filter (Kate, Sep 23: "so we can find events
-// quickly"): the section shown, kept for the visit. View state only.
+// The Pick from table's filter and search (Kate, Sep 23: "so we can find
+// events quickly"; the whole list "is a lot"), kept for the visit. View state only.
 let sectionFilter = 'all';
+let searchTerm = '';
 
 const ORDINAL = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
 const PHOTO_WORDS = { add: 'Add photo', replace: 'Replace photo', remove: 'Remove photo' };
@@ -112,68 +113,87 @@ export function renderHighlights(container, { now, adding, hub, picks, today, on
 
   container.append(pickFrom());
 
-  // Everything that could go in: the rows going out now, then what is live,
-  // one section at a time when she asks (the legend's own filter idiom). A
-  // filter click redraws this block alone, so the picks above hold still.
+  // Everything that could go in: the rows going out now, then the newest few
+  // live rows of each section (Kate, Sep 23: the whole list "is a lot"), one
+  // section at a time when she asks (the legend's own filter idiom), and a
+  // search that reaches every row. Filter and search redraw the rows alone,
+  // so the picks above and the keyboard's place hold still.
   function pickFrom() {
     const from = el('div', 'hl-from');
-    from.append(el('h4', 'hl-from-label', 'Pick from'));
+    const head = el('div', 'hl-from-head');
+    head.append(el('h4', 'hl-from-label', 'Pick from'));
+    const label = el('label', 'sr-only', 'Search by title or source');
+    label.htmlFor = 'hl-search';
+    const search = el('input', 'hl-search');
+    search.type = 'search';
+    search.id = 'hl-search';
+    search.placeholder = 'Search';
+    search.value = searchTerm;
+    search.dataset.focus = 'hl-search';
+    search.addEventListener('input', () => { searchTerm = search.value; redraw(); });
+    head.append(label, search);
+    from.append(head);
     const all = candidates(ctx);
     const filters = el('div', 'p-legend hl-filters');
     filters.setAttribute('role', 'group');
     filters.setAttribute('aria-label', 'Section');
-    for (const f of sectionFilters(all)) {
-      const b = el('button', `p-legend-item${sectionFilter === f.key ? ' is-active' : ''}`);
-      b.type = 'button';
-      b.dataset.focus = `hl-filter:${f.key}`;
-      b.setAttribute('aria-pressed', String(sectionFilter === f.key));
-      b.append(f.label, el('span', 'hl-filter-count', String(f.count)));
-      b.addEventListener('click', () => {
-        sectionFilter = f.key;
-        const next = pickFrom();
-        from.replaceWith(next);
-        next.querySelector(`[data-focus="hl-filter:${f.key}"]`)?.focus({ preventScroll: true });
-      });
-      filters.append(b);
-    }
     from.append(filters);
     const table = el('table', 'queue-table hl-table');
     const thead = el('thead');
     const hr = el('tr');
     hr.append(el('th', '', 'Title'), el('th', '', 'Section'), el('th', '', 'Photo'), el('th', 'hl-act', ''));
     thead.append(hr);
-    table.append(thead);
     const tbody = el('tbody');
-    const at = new Map(picks.map((p, i) => [p.link, i]));
-    const shown = filterCandidates(all, sectionFilter);
-    for (const item of shown) {
-      const tr = el('tr');
-      const title = el('td');
-      title.append(el('span', 'item-title', item.headline || item.link));
-      const line = [item.from === 'adding' ? 'Adding now' : 'Live', whenLine(item, today), item.source].filter(Boolean).join(' \u00b7 ');
-      title.append(el('span', 'item-source', line));
-      tr.append(title, el('td', '', item.type ? typeDisplay(item.type) : ''), el('td', '', item.photo ? 'Yes' : 'None'));
-      const act = el('td', 'hl-act');
-      if (at.has(item.link)) act.append(el('span', 'hl-in', `In, ${ORDINAL[at.get(item.link)]}`));
-      else {
-        const add = button('Highlight', 'linkish', { focus: `hl-in:${item.link}`, onClick: () => change(addPick(picks, item.link)) });
-        if (picks.length >= MAX_PICKS) { add.disabled = true; add.title = 'Six is the most'; }
-        act.append(add);
-      }
-      tr.append(act);
-      tbody.append(tr);
-    }
-    if (!shown.length) {
-      const tr = el('tr');
-      const td = el('td', 'hl-none', 'Nothing in this section.');
-      td.colSpan = 4;
-      tr.append(td);
-      tbody.append(tr);
-    }
-    table.append(tbody);
+    table.append(thead, tbody);
     const scroll = el('div', 'table-scroll');
     scroll.append(table);
-    from.append(scroll);
+    const foot = el('p', 'hl-from-note');
+    from.append(scroll, foot);
+    const at = new Map(picks.map((p, i) => [p.link, i]));
+
+    function redraw() {
+      // The rows in reach: everything, when she is searching; the newest few
+      // a section otherwise.
+      const term = searchTerm.trim();
+      const reach = term ? searchCandidates(all, term) : trimLive(all);
+      filters.replaceChildren(...sectionFilters(reach).map(f => {
+        const b = el('button', `p-legend-item${sectionFilter === f.key ? ' is-active' : ''}`);
+        b.type = 'button';
+        b.dataset.focus = `hl-filter:${f.key}`;
+        b.setAttribute('aria-pressed', String(sectionFilter === f.key));
+        b.append(f.label, el('span', 'hl-filter-count', String(f.count)));
+        b.addEventListener('click', () => { sectionFilter = f.key; redraw(); from.querySelector(`[data-focus="hl-filter:${f.key}"]`)?.focus({ preventScroll: true }); });
+        return b;
+      }));
+      const shown = filterCandidates(reach, sectionFilter);
+      tbody.replaceChildren(...shown.map(item => {
+        const tr = el('tr');
+        const title = el('td');
+        title.append(el('span', 'item-title', item.headline || item.link));
+        const line = [item.from === 'adding' ? 'Adding now' : 'Live', whenLine(item, today), item.source].filter(Boolean).join(' \u00b7 ');
+        title.append(el('span', 'item-source', line));
+        tr.append(title, el('td', '', item.type ? typeDisplay(item.type) : ''), el('td', '', item.photo ? 'Yes' : 'None'));
+        const act = el('td', 'hl-act');
+        if (at.has(item.link)) act.append(el('span', 'hl-in', `In, ${ORDINAL[at.get(item.link)]}`));
+        else {
+          const add = button('Highlight', 'linkish', { focus: `hl-in:${item.link}`, onClick: () => change(addPick(picks, item.link)) });
+          if (picks.length >= MAX_PICKS) { add.disabled = true; add.title = 'Six is the most'; }
+          act.append(add);
+        }
+        tr.append(act);
+        return tr;
+      }));
+      if (!shown.length) {
+        const tr = el('tr');
+        const td = el('td', 'hl-none', term ? 'Nothing matches.' : 'Nothing in this section.');
+        td.colSpan = 4;
+        tr.append(td);
+        tbody.append(tr);
+      }
+      const hidden = all.length - reach.length;
+      foot.textContent = !term && hidden > 0 ? `Newest ${LIVE_PER_SECTION} a section. Search for the ${hidden} older.` : '';
+    }
+    redraw();
     return from;
   }
 }

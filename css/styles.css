@@ -891,3 +891,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hl-filter-count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 var(--spacing-02); border-radius: var(--radius-tag-md); background: var(--layer-01); font-size: 12px; line-height: 16px; letter-spacing: 0; font-weight: 400; margin-left: var(--spacing-02); }
 .p-legend-item.is-active .hl-filter-count { background: var(--layer-accent-01); }
 .hl-none { color: var(--muted); }
+/* Pick from's head: the label, the search at its right; the note under the table says what is out of reach. */
+.hl-from-head { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-05); margin-bottom: var(--spacing-03); }
+.hl-from-head .hl-from-label { margin: 0; }
+.hl-search { width: 240px; height: 32px; }
+.hl-from-note { margin: var(--spacing-03) 0 0; font: var(--meta-type); color: var(--text-helper); }
+.hl-from-note:empty { display: none; }

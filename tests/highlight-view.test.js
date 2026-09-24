@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MAX_PICKS, bandAfter, addPick, removePick, movePick, setPhoto, withoutPhoto, candidates, whenLine, samePicks, sectionFilters, filterCandidates } from '../js/highlight-view.js';
+import { MAX_PICKS, bandAfter, addPick, removePick, movePick, setPhoto, withoutPhoto, candidates, whenLine, samePicks, sectionFilters, filterCandidates, trimLive, searchCandidates } from '../js/highlight-view.js';
 
 // The highlight step on Publish (Kate, Sep 23): her picks for the Exchange's
 // home page, up to six, in her order, each needing a photo. Pure, so
@@ -94,4 +94,20 @@ test('the Pick from table filters by section, so an event is quick to find (Kate
   assert.deepEqual(filterCandidates(list, 'research').map(c => c.headline), ['Brand new', 'NAEP 2026']);
   assert.equal(filterCandidates(list, 'all').length, 4);
   assert.equal(filterCandidates(list, 'headline').length, 0);
+});
+
+test('the table shows the newest few live rows a section, and a search reaches the rest (Kate, Sep 23: "it\'s a lot")', () => {
+  const live = [];
+  for (let i = 0; i < 12; i += 1) live.push({ link: `https://x.org/r${i}`, headline: `Research ${i}`, type: 'research', subtype: 'Report', source: 'RAND', date: `2026-09-${String(28 - i).padStart(2, '0')}`, deadline: '', infographic: '' });
+  for (let i = 0; i < 3; i += 1) live.push({ link: `https://x.org/e${i}`, headline: `Event ${i}`, type: 'event', subtype: 'Off-Campus', source: 'TEA', date: `2026-10-0${i + 1}`, deadline: '', infographic: '' });
+  const list = candidates({ adding, hub: live });
+  const shown = trimLive(list, 8);
+  assert.deepEqual(shown.filter(c => c.from === 'adding').map(c => c.headline), ['Brand new', 'ERC workshop']);   // everything going out now
+  assert.equal(shown.filter(c => c.type === 'research' && c.from === 'live').length, 8);
+  assert.equal(shown.filter(c => c.type === 'event' && c.from === 'live').length, 3);
+  assert.equal(shown.find(c => c.headline === 'Research 0') !== undefined, true);
+  assert.equal(shown.find(c => c.headline === 'Research 8'), undefined);
+  assert.deepEqual(searchCandidates(list, 'research 1').map(c => c.headline), ['Research 1', 'Research 10', 'Research 11']);   // by title, any age
+  assert.deepEqual(searchCandidates(list, 'RAND').length, 13);   // or by source: the twelve live ones and Brand new
+  assert.equal(searchCandidates(list, '  ').length, list.length);   // a blank search is no search
 });

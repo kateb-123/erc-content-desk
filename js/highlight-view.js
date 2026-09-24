@@ -101,3 +101,24 @@ export function sectionFilters(list) {
 export function filterCandidates(list, key) {
   return !key || key === 'all' ? list : list.filter(c => c.type === key);
 }
+
+/** The table at rest (Kate, Sep 23: the live list "is a lot"): everything
+ *  going out now, then only the newest `per` live rows of each section; the
+ *  list arrives newest first, so the first of each section are the newest. */
+export const LIVE_PER_SECTION = 8;
+export function trimLive(list, per = LIVE_PER_SECTION) {
+  const seen = new Map();
+  return list.filter(c => {
+    if (c.from !== 'live') return true;
+    const n = seen.get(c.type) ?? 0;
+    seen.set(c.type, n + 1);
+    return n < per;
+  });
+}
+
+/** A search reaches every row, by title or source; a blank search is no search. */
+export function searchCandidates(list, term) {
+  const q = clean(term).toLowerCase();
+  if (!q) return list;
+  return list.filter(c => `${c.headline} ${c.source}`.toLowerCase().includes(q));
+}
