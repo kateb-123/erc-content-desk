@@ -15,11 +15,12 @@ import { faIcon, dotsLoader, loadingLabel } from '../../js/icons.js';
 import { el, button } from '../../js/ui-aids.js';
 import { buildImageControl } from '../../js/item-image.js';
 import { readReply, postJson, plainError } from '../../js/sheet-client.js';
+import { todayCentral } from '../../js/today.js';
 import { saveState, loadState, clearState } from './state.js';
 import { getField, setField } from './editpath.js';
 import { computePreviewScale } from './preview.js';
 import { renderShell } from '../../js/shell-ui.js';
-import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO } from './wizard.js';
+import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
 import { arrowKeyTarget, normalizeLinkUrl, reorderRowName, movedAnnouncement } from './editing.js';
 
 // ---------------------------------------------------------------------------
@@ -284,16 +285,16 @@ function renderReview() {
   metaSection.append(dateLabel, scheduleNote);
   container.appendChild(metaSection);
 
-  // Fill the dropdown from the desk: scheduled dates plus anything staged.
+  // Fill the dropdown from the desk: scheduled dates plus anything staged,
+  // from College Station's today on. The draft's own date stays even once it
+  // has passed, or dropped off the desk's schedule.
   async function loadSchedule() {
     scheduleNote.replaceChildren();
     if (!currentIso) placeholder.textContent = 'Loading issues…';
     try {
       const data = await readReply(await fetch('/api/newsletter-pull'), 'load the issues');
-      const dates = [...new Set([...(data.schedule ?? []), ...Object.keys(data.staged ?? {})])].sort();
-      if (!dates.length) { placeholder.textContent = currentIso ? isoToDisplayDate(currentIso) : 'No issues scheduled on the desk'; return; }
-      // The saved issue may have dropped off the desk's schedule; it still belongs in the list.
-      const isos = currentIso && !dates.includes(currentIso) ? [...dates, currentIso] : dates;
+      const isos = issueDateChoices([...(data.schedule ?? []), ...Object.keys(data.staged ?? {})], todayCentral(), currentIso);
+      if (!isos.length) { placeholder.textContent = 'No issues scheduled on the desk'; return; }
       dateSelect.replaceChildren(
         ...(currentIso ? [] : [option('', 'Pick an issue…')]),
         ...isos.map((iso) => option(iso, isoToDisplayDate(iso), iso === currentIso)),

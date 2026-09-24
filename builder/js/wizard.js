@@ -75,6 +75,24 @@ export function archiveAskMessage(entry) {
   return `Replace the archived ${label} issue?`;
 }
 
+/** An ISO date: the one shape that can be told from the past. */
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * The dates the Review step's Issue list offers (Kate, Sep 23): the desk's
+ * scheduled dates and any date with staged items, from today on, so an issue
+ * stays listed through its own send day. The draft's own date stays even once
+ * it has passed, so the field is never blank. In order, each once.
+ * @param {string[]} dates - ISO dates: the schedule's and the staged ones
+ * @param {string} today - College Station's today, ISO (todayCentral)
+ * @param {string} [current] - the draft's own ISO date; '' when there is none
+ * @returns {string[]}
+ */
+export function issueDateChoices(dates, today, current = '') {
+  const upcoming = (dates ?? []).filter((d) => ISO_DATE.test(d) && d >= today);
+  return [...new Set(current ? [...upcoming, current] : upcoming)].sort();
+}
+
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
 
