@@ -822,19 +822,20 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .sched-count { font: var(--meta-type); color: var(--text-helper); }
 .sched-note { margin: var(--spacing-04) 0 0; }
 
-/* ── The sign-in (Kate, Sep 23): the front page, Content Sort and Publish are hers ── */
-/* The page keeps its title; under the lede, one white box holds the field. */
-.signin-page .page-head { margin: var(--spacing-03) 0 0; }
-.signin-page .lede { margin: var(--spacing-02) 0 var(--spacing-06); }
-.signin-box { width: 400px; max-width: 100%; }
+/* ── The sign-in (Kate, Sep 23; her pick B): a bare page, one box in the middle ── */
+/* The window's height less the bar and the page's paddings, so the box sits
+   in the middle of what is left; the page never scrolls for it. */
+.signin-page { min-height: calc(100vh - 56px - var(--gap-28) - var(--gap-72) - 20px); display: grid; place-items: center; }
+.signin-middle { width: 400px; max-width: 100%; }
+.signin-box { padding: var(--spacing-06); }
+.signin-title { font: var(--card-title); margin: 0 0 var(--spacing-04); }
 .signin-box label { margin-top: 0; }
 .signin-box input[type="password"] { width: 100%; font: inherit; letter-spacing: 0; height: 40px; padding: 0 var(--spacing-04); border: 1px solid var(--border-strong-01); border-radius: var(--radius-input); background: var(--field-02); color: inherit; }
 .signin-box input[type="password"]:focus { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
 .signin-box input[aria-invalid="true"] { border-color: var(--err); }
 .signin-box .signin-btn { margin-top: var(--spacing-05); width: 100%; justify-content: center; }
 .signin-box .load-line { margin: var(--spacing-05) 0 0; }
-.signin-help { margin: var(--spacing-04) 0 0; font: var(--meta-type); color: var(--muted); }
-.signin-team { margin: var(--spacing-05) 0 0; font: var(--meta-type); }
+.signin-team { margin: var(--spacing-05) 0 0; text-align: center; font: var(--meta-type); }
 .signin-team a { color: var(--muted); }
 .signin-team a:hover { color: var(--ink); }
 
@@ -846,3 +847,42 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .p-ask input[type="password"]:focus { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
 .p-ask input[aria-invalid="true"] { border-color: var(--err); }
 .p-ask .field-error { margin-top: var(--spacing-02); }
+
+/* ── The highlight step on Publish (Kate, Sep 23; her pick A): now and after ── */
+.hl-head { margin-top: var(--spacing-07); }
+.hl-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-06); margin-top: var(--spacing-05); align-items: start; }
+.hl-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--spacing-05); }
+.hl-box h4 { margin: 0 0 var(--spacing-03); font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); }
+.hl-box h4 .hl-note { font: var(--meta-type); text-transform: none; letter-spacing: 0; color: var(--text-helper); margin-left: var(--spacing-03); }
+.hl-list { list-style: none; margin: 0; padding: 0; }
+.hl-row { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-03) 0; border-top: 1px solid var(--line-in); }
+.hl-row:first-child { border-top: 0; }
+.hl-num { flex: none; width: 20px; font-size: 12px; line-height: 16px; color: var(--text-helper); font-variant-numeric: tabular-nums; }
+.hl-thumb { flex: none; width: 48px; height: 32px; object-fit: cover; border: 1px solid var(--line-in); background: var(--layer-01); }
+/* Where a photo is still missing: the triangle, needs doing, in the picture's spot. */
+.hl-nophoto { flex: none; width: 48px; height: 32px; border: 1px dashed var(--border-strong-01); display: grid; place-items: center; color: var(--warn-mark); font-size: 12px; }
+.hl-words { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-01); }
+.hl-title { font-size: 14px; line-height: 18px; font-weight: 600; }
+.hl-meta { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
+.hl-warn { color: var(--text-warning); font-weight: 600; }
+.hl-tools { flex: none; display: flex; align-items: center; gap: var(--spacing-02); }
+.hl-tools .linkish { height: 24px; padding: 0 var(--spacing-02); margin: 0; font-size: 14px; }
+.hl-tools .img-upload { gap: var(--spacing-02); }
+.hl-tools .img-thumb { display: none; }   /* the row shows the picture itself */
+.hl-tools .img-status { font-size: 12px; }
+.hl-tools .img-status:empty { display: none; }
+.hl-arrow { height: 24px; width: 24px; padding: 0; margin: 0; border: 0; background: none; color: var(--icon-secondary); justify-content: center; }
+.hl-arrow .fa-solid { margin: 0; font-size: 11px; }
+.hl-arrow:hover:not(:disabled) { background: var(--hover); border: 0; color: var(--ink); }
+.hl-arrow:disabled { color: var(--layer-accent-01); border: 0; background: none; }
+.hl-empty { margin: 0; color: var(--muted); font: var(--meta-type); }
+.hl-from { margin-top: var(--spacing-06); }
+.hl-from-label { margin: 0 0 var(--spacing-03); font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); }
+.hl-table td { color: var(--ink); }
+.hl-table .item-title { font-size: 14px; line-height: 18px; }
+.hl-table th.hl-act, .hl-table td.hl-act { width: 8rem; text-align: right; }
+.hl-table .linkish { height: 24px; margin: 0; padding: 0 var(--spacing-02); }
+.hl-in { color: var(--muted); font-size: 12px; letter-spacing: 0; }
+/* The ask's line about picks without a photo: a fact, in the note's own words. */
+.p-ask .p-ask-note { margin: var(--spacing-02) 0 0; font-size: 14px; line-height: 20px; letter-spacing: 0; color: var(--text-warning-on-tint); }
+.receipt-highlight { margin: 0; color: var(--muted); }

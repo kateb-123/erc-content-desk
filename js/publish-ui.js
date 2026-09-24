@@ -15,6 +15,8 @@ import { buildEditForm, holdIfDirty } from './edit-form.js';
 import { checkSvg, faIcon } from './icons.js';
 import { screenHead } from './screen-info.js';
 import { FATES, publishRows, legendItems, filterByFate, fateShares } from './publish-view.js';
+import { renderHighlights } from './highlight-ui.js';
+import { withoutPhoto, samePicks } from './highlight-view.js';
 import { el, button, focusKeyIn, restoreFocus, busyLine } from './ui-aids.js';
 
 /** Hand the browser a file. Kate's Chrome puts downloads straight in her Drive,
@@ -153,7 +155,7 @@ function fateBar(container, list, rerender) {
 }
 
 export function renderPublish(container, props) {
-  const { rows, today, preview, busy, justPublished, onPublish, onGoTo, onRecheck, publishedCsv, onEditRow, publishError = '' } = props;
+  const { rows, today, preview, busy, justPublished, justHighlighted, onPublish, onGoTo, onRecheck, publishedCsv, onEditRow, publishError = '' } = props;
   const rerender = () => renderPublish(container, props);
   // A fresh check brings the picks as the Exchange holds them; hers stand
   // until the check changes under them.
@@ -176,6 +178,11 @@ export function renderPublish(container, props) {
   const candidates = readyToPublish(rows);
   const byId = new Map(rows.map(r => [r.id, r]));
   const adding = (preview?.adding ?? []).map(item => byId.get(item.id)).filter(Boolean);
+  // The highlight (Kate, Sep 23): the picks as the Exchange holds them, hers
+  // beside them, and the rows they can be drawn from.
+  const nowPicks = (preview?.highlights?.items ?? []).map(i => ({ link: i.link, image: i.image ?? '' }));
+  const picksChanged = Boolean(preview) && !samePicks(picks ?? [], nowPicks);
+  const hlCtx = { adding, hub: preview?.hub ?? [] };
 
   const { head, lede } = screenHead('Policy Exchange', 'publish',
     'Everything here was checked against the live Exchange on arrival. Publish sends the Adding rows to the site. Spotlight events stay held for the newsletter (webinars excepted); a row that needs a fix waits in Sort; anything already live is left out. Click a colour under the bar to see only those rows.');
@@ -214,18 +221,28 @@ export function renderPublish(container, props) {
       btn.addEventListener('click', () => { confirming = true; rerender(); });
       head.append(again, btn);
     }
+  } else if (preview && !busy && !trialPosting && picksChanged) {
+    // Nothing to add, but the highlight changed: that write stands on its own.
+    const btn = el('button', 'primary', 'Update the highlight');
+    btn.dataset.focus = 'publish';
+    btn.addEventListener('click', () => { confirming = true; rerender(); });
+    head.append(btn);
   } else if (preview && !busy && !trialPosting) {
     // Nothing to add: the only move left is the newsletter door.
     head.append(newsletterDoor(onGoTo));
   }
-  if (confirming && adding.length && !busy && !showReceipt) {
+  if (confirming && (adding.length || picksChanged) && !busy && !showReceipt) {
     head.querySelector('[data-focus="publish"]')?.remove();
     const ask = el('form', 'nl-ask p-ask');
     ask.noValidate = true;
     // Body text, the count and "live" in 600: the one ask before the public write reads as a question.
     const words = el('p', 'p-ask-words');
-    words.append(faIcon('triangle-exclamation'), ' Publish ', el('strong', '', String(adding.length)), ' to the ', el('strong', '', 'live'), ' Exchange?');
+    if (adding.length) words.append(faIcon('triangle-exclamation'), ' Publish ', el('strong', '', String(adding.length)), ' to the ', el('strong', '', 'live'), ' Exchange?');
+    else words.append(faIcon('triangle-exclamation'), ' Update the highlight on the ', el('strong', '', 'live'), ' Exchange?');
     ask.append(words);
+    // A pick with no photo is named here and lets her through (Kate: ask, then allow).
+    const bare = withoutPhoto(picks ?? [], hlCtx).length;
+    if (bare) ask.append(el('p', 'p-ask-note', `${bare} highlight${bare === 1 ? ' has' : 's have'} no photo.`));
     // The password, typed again here (Kate, Sep 23): the ask stays until it is right.
     const row = el('div', 'p-ask-row');
     const label = el('label', 'sr-only', 'Password');
@@ -258,7 +275,7 @@ export function renderPublish(container, props) {
         setTimeout(() => { trialPosting = false; trialDone = n; rerender(); }, 1100);
       } else {
         // The ask stands while the write runs: a refused password comes back to it.
-        onPublish({ password, highlights: picks });
+        onPublish({ password, highlights: picks ?? [] });
       }
     });
     // Cancel goes back on the Publish button the ask replaced.
@@ -304,6 +321,7 @@ export function renderPublish(container, props) {
     receipt.append(el('p', '', isTrial
       ? 'Nothing went to the live Exchange.'
       : 'The site updates in about a minute.'));
+    if (!isTrial && justHighlighted != null) receipt.append(el('p', 'receipt-highlight', `Highlight: ${justHighlighted} item${justHighlighted === 1 ? '' : 's'}.`));
     const door = el('button', 'door', 'Go to Newsletter ');
     door.append(faIcon('arrow-right'));
     door.addEventListener('click', () => { trialDone = 0; onGoTo('issue'); });
@@ -326,7 +344,7 @@ export function renderPublish(container, props) {
   // out of the write; it carries no number anywhere.
   if (!preview) return;
   const list = publishRows(preview, rows);
-  if (!list.length) return;
+  if (!list.length) { highlightStep(); return; }
   if (fateFilter && !list.some(r => r.fate === fateFilter)) fateFilter = null;
   fateBar(container, list, rerender);
 
@@ -342,5 +360,16 @@ export function renderPublish(container, props) {
   const scroll = el('div', 'table-scroll');
   scroll.append(table);
   container.append(scroll);
+  highlightStep();
   restoreFocus(container, focusKey, null);
+
+  // The highlight step (Kate, Sep 23): the picks are view state here; a
+  // change redraws the page and rides the next write.
+  function highlightStep() {
+    if (!preview?.highlights) return;
+    renderHighlights(container, {
+      now: preview.highlights.items ?? [], adding: hlCtx.adding, hub: hlCtx.hub, picks: picks ?? [], today,
+      onChange: next => { picks = next; rerender(); },
+    });
+  }
 }

@@ -81,3 +81,8 @@ export function whenLine(item, today = '') {
   const d = isoToShort(when, today || String(when ?? '').slice(0, 4));   // the year only when it is not this year's
   return item.type === 'opportunity' ? (d ? `closes ${d}` : '') : d;
 }
+
+/** True when nothing about the picks changed: the same links, order and photos. */
+export function samePicks(a, b) {
+  return a.length === b.length && a.every((p, i) => p.link === b[i].link && (p.image || '') === (b[i].image || ''));
+}

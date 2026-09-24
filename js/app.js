@@ -43,6 +43,7 @@ const state = {
   reviewTotal: 0,           // size of the current check batch, for "2 of 4" (view state)
   rewriting: new Set(),     // ids out for the rewrite that starts at Keep (view state)
   justPublished: 0,         // count from the last publish, until she leaves the screen (view state)
+  justHighlighted: null,    // how many the highlight holds after the last write, for the receipt (view state)
   archive: null,            // the builder's archive index for Past issues and Last issue: null loading, false unreadable
   publishPreview: null,
   publishedCsv: '',       // the CSV from the last publish, for the receipt's re-download
@@ -309,6 +310,7 @@ function goTo(key) {
     // The check is read-only and CACHED: it runs on first arrival and again
     // only after something changed (persist clears it) or via Re-check.
     state.justPublished = 0;
+    state.justHighlighted = null;
     state.publishedCsv = '';
     state.publishError = '';
     resetPublishAsk();
@@ -470,8 +472,16 @@ async function publishNow({ password, highlights }) {
     const data = await postJson('/api/publish', { password, highlights }, 'publish');
     state.publishPreview = null;
     state.justPublished = data.published;
+    state.justHighlighted = data.highlighted ?? null;
     state.publishedCsv = data.csv ?? '';
     state.busy = false;
+    if (!data.published) {
+      // Only the highlight changed: no receipt; the page checks again and says so.
+      await reload();
+      await loadPublishPreview();
+      setStatus(`Highlight updated: ${data.highlighted} item${data.highlighted === 1 ? '' : 's'}.`, 'ok');
+      return;
+    }
     // The spare copy saves itself on publish: her browser drops it straight
     // into Drive, so there is no Drive API and nothing to redeploy.
     if (state.publishedCsv) downloadCsv(state.publishedCsv);
@@ -575,7 +585,9 @@ function focusHeading(section) {
 
 function render() {
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
-  renderShell(document.querySelector('.topbar'), { screen: state.screen, onGo: goTo, signedIn: state.auth === true, onSignOut: signOutNow });
+  // A sign-in screen's bar carries the brand alone (Kate's pick B, Sep 23).
+  const locked = isLocked(state.screen) && state.auth !== true;
+  renderShell(document.querySelector('.topbar'), { screen: state.screen, onGo: goTo, signedIn: state.auth === true, onSignOut: signOutNow, bare: locked });
   document.title = pageTitle(state.screen);
   // The top bar's links switch screens in place. Every screen but the front
   // page keeps an address, as a history entry, so Back and a reload land
@@ -602,7 +614,7 @@ function render() {
   const today = todayCentral();
   const common = { rows: state.rows, schedule: state.schedule, today };
   // A locked screen draws the sign-in until the session is known to hold.
-  if (isLocked(state.screen) && state.auth !== true) {
+  if (locked) {
     renderSignIn(screens[state.screen], {
       screen: state.screen, checking: state.auth === null, busy: state.authBusy, error: state.authError,
       onSignIn: signInNow, onGoTo: goTo,
@@ -738,7 +750,7 @@ function render() {
   } else if (state.screen === 'publish') {
     renderPublish(screens.publish, {
       ...common, preview: state.publishPreview, busy: state.busy,
-      justPublished: state.justPublished, publishedCsv: state.publishedCsv, publishError: state.publishError,
+      justPublished: state.justPublished, justHighlighted: state.justHighlighted, publishedCsv: state.publishedCsv, publishError: state.publishError,
       onPublish: publishNow, onGoTo: goTo, onEditRow: saveEdit,
       onRecheck: () => { state.publishPreview = null; loadPublishPreview(); },
     });

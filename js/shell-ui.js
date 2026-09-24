@@ -6,7 +6,7 @@
  * since the screen changes them. On the desk its links switch screens in
  * place; on the builder's pages they are plain links.
  */
-import { crumbs, laneLinks, openedScreen } from './shell-view.js';
+import { DESK, crumbs, laneLinks, openedScreen } from './shell-view.js';
 import { el } from './ui-aids.js';
 
 function deskLink(label, href, onGo) {
@@ -28,12 +28,19 @@ function build(header) {
 }
 
 /** signedIn and onSignOut: the desk's own sign-in (Kate, Sep 23); while it
- *  holds, Sign out sits at the bar's right end. The builder passes neither. */
-export function renderShell(header, { screen, onGo, signedIn = false, onSignOut } = {}) {
+ *  holds, Sign out sits at the bar's right end. `bare` is a sign-in screen's
+ *  bar: the brand alone, nothing to go to. The builder passes none of these. */
+export function renderShell(header, { screen, onGo, signedIn = false, onSignOut, bare = false } = {}) {
   if (!header) return;
   if (!header.dataset.built) build(header);
   const trail = header.querySelector('.topbar-crumbs');
   const parts = [];
+  if (bare) {
+    const brand = el('span', 'topbar-brand topbar-here', DESK.label);
+    trail.replaceChildren(brand);
+    header.querySelector('.topbar-lanes').replaceChildren();
+    return;
+  }
   crumbs(screen).forEach((crumb, i) => {
     if (i) parts.push(el('span', 'topbar-sep', '/'));
     if (crumb.href) {

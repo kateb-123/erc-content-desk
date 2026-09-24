@@ -1,9 +1,9 @@
 /**
- * The sign-in (Kate, Sep 23): drawn in a locked screen's place until the
- * session holds. The page keeps its name in the bar and its title; under it,
- * one white box with the password field and nothing else to read (Kate:
- * "you're soooo text heavy"). A wrong password says so under the field and
- * stays.
+ * The sign-in (Kate, Sep 23; her pick B): a bare page, the brand alone in
+ * the bar, one white box in the middle of the window with the page's name,
+ * the password field and the button, and nothing else to read ("you're
+ * soooo text heavy"). A wrong password says so under the field and stays.
+ * Under the box, the team's own page for anyone who landed here.
  */
 import { signInLine } from './auth-view.js';
 import { el, button, busyLine, focusKeyIn, restoreFocus } from './ui-aids.js';
@@ -14,18 +14,19 @@ export function renderSignIn(container, { screen, checking, busy, error, onSignI
   const focusKey = focusKeyIn(container);
   container.replaceChildren();
   const page = el('div', 'signin-page');
-  const head = el('div', 'page-head');
-  head.append(el('h2', 'page-title', TITLES[screen] ?? 'Desk'));
-  page.append(head);
+  const middle = el('div', 'signin-middle');
+  page.append(middle);
   if (checking) {
     // /api/auth has not answered yet: nothing to ask for until it has.
-    page.append(busyLine('Opening'));
+    middle.append(busyLine('Opening'));
     container.append(page);
     return;
   }
+
   const box = el('form', 'card signin-box');
-  box.setAttribute('aria-label', signInLine(screen));
   box.noValidate = true;
+  box.setAttribute('aria-label', signInLine(screen));
+  box.append(el('h2', 'signin-title', TITLES[screen] ?? 'Desk'));
   const label = el('label', '', 'Password');
   label.htmlFor = 'signin-password';
   const field = el('input');
@@ -59,15 +60,14 @@ export function renderSignIn(container, { screen, checking, busy, error, onSignI
     if (!password) { field.focus(); return; }
     onSignIn(password);
   });
-  page.append(box);
+  middle.append(box);
 
-  // The team's own page is open: a way there for anyone who landed here.
   const team = el('p', 'signin-team');
   const a = el('a', '', 'Submit content');
   a.href = '/#team';
   a.addEventListener('click', event => { event.preventDefault(); onGoTo('team'); });
   team.append(a);
-  page.append(team);
+  middle.append(team);
   container.append(page);
   // The field takes the keyboard on a fresh draw, and keeps it across a redraw.
   if (!restoreFocus(container, focusKey, null) && !busy) field.focus({ preventScroll: true });

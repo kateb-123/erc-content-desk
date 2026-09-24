@@ -409,13 +409,19 @@ Kate's answers to the usability audit, each one decided by her:
 - **The desk password** (Kate: "password protected for just me, Kate"). The
   front page, Content Sort (both tabs) and Publish draw the sign-in in their
   place until the session holds; the team's page, the Newsletter and the
-  builder stay open. One sign-in lasts a day on that computer, as an HttpOnly
-  cookie signed by the password (`api/_lib/session.js`; `/api/auth` is
-  answered by `middleware.js` at the edge, since `api/` holds the Hobby
-  plan's twelve functions). The server refuses the Exchange check, the
-  publish and the rewrite without it. Sign out is a quiet word at the top
-  bar's right end while the sign-in holds. The password is `DESK_PASSWORD`
-  on Vercel, set by Kate; unset, the locked pages stay shut and say so.
+  builder stay open. The sign-in is her pick B: a bare page, the brand alone
+  in the bar, one white box in the middle of the window with the page's name
+  at card-title size, the Password field and the teal Sign in, and nothing
+  else to read ("you're soooo text heavy"); a refusal is the red line under
+  the field, and the ask stays. Under the box, Submit content in the quiet
+  grey, for anyone who landed there. One sign-in lasts a day on that
+  computer, as an HttpOnly cookie signed by the password
+  (`api/_lib/session.js`; `/api/auth` is answered by `middleware.js` at the
+  edge, since `api/` holds the Hobby plan's twelve functions). The server
+  refuses the Exchange check, the publish and the rewrite without it. Sign
+  out is a quiet word at the top bar's right end while the sign-in holds.
+  The password is `DESK_PASSWORD` on Vercel, set by Kate; unset, the locked
+  pages stay shut and say so.
 - **Publish's ask** carries the password too ("Type the desk password to
   confirm"): the field, then Confirm and Cancel on one row, a refusal in red
   under them, and the ask stays until the password is right. Confirm is the
@@ -424,8 +430,21 @@ Kate's answers to the usability audit, each one decided by her:
 - **The highlight** (Kate: "if it is in the highlight (hero thing) it needs
   a photo"). The Exchange's home page shows a few items in a big card; she
   picks them by hand at Publish, up to six, new or already live, in her
-  order. A pick with no photo gets the warning triangle and "No photo", and
-  Publish still goes ("Ask, then allow"). The picks ride the write to
-  `data/highlights.json` on the Exchange (`docs/exchange-highlights.md`), so
-  `news.csv` stays append-only; her photo for a pick also lands on the row's
-  own picture where the row had none.
+  order. Her pick A, under the table: a section head, Highlight, over the
+  maize rule ("Up to 6 · each needs a photo"), then two white boxes side by
+  side, Now (what the home page shows this minute) and After this publish
+  ("n of 6"), each a numbered list with the picture at 48 by 32 on the left
+  and the title over a meta line (type · when · adding now or live); a pick
+  with no photo shows the warning triangle in the picture's spot and "No
+  photo" in the meta. The After box carries the tools: Add photo or Replace
+  photo (the item-image control in photo words), up and down arrows, Remove.
+  Under the boxes, Pick from: a table of everything that could go in, the
+  rows going out now first, then what is live, each with Highlight as a ghost
+  word or "In, 3rd" once picked. The ask names the picks without a photo
+  ("1 highlight has no photo.") and lets her through ("Ask, then allow").
+  With nothing to publish and the picks changed, the primary is Update the
+  highlight and the ask says so; the status line answers "Highlight updated:
+  N items." The picks ride the write to `data/highlights.json` on the
+  Exchange (`docs/exchange-highlights.md`), so `news.csv` stays append-only;
+  her photo for a pick also lands on the row's own picture where the row had
+  none, and the receipt says "Highlight: N items."

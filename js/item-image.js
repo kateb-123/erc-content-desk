@@ -111,8 +111,10 @@ async function uploadItemImage(file, onStatus) {
 }
 
 /** The picture control: Add (or Replace) + Remove media; the value is a
- *  URL. The button hides while a file is in flight, so nothing goes up twice. */
-export function buildImageControl(initial, onChange) {
+ *  URL. The button hides while a file is in flight, so nothing goes up twice.
+ *  `words` renames the three (the highlight step says photo, not media). */
+export function buildImageControl(initial, onChange, { words = {} } = {}) {
+  const say = { add: 'Add media', replace: 'Replace media', remove: 'Remove media', ...words };
   const wrap = document.createElement('div');
   wrap.className = 'img-upload';
   const fileInput = document.createElement('input');
@@ -125,7 +127,7 @@ export function buildImageControl(initial, onChange) {
   const removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'linkish skip-link';
-  removeBtn.textContent = 'Remove media';
+  removeBtn.textContent = say.remove;
   const status = document.createElement('span');
   status.className = 'img-status';
   status.setAttribute('role', 'status');
@@ -135,7 +137,7 @@ export function buildImageControl(initial, onChange) {
   thumb.alt = '';
   let value = initial || '';
   const sync = () => {
-    pick.textContent = value ? 'Replace media' : 'Add media';
+    pick.textContent = value ? say.replace : say.add;
     removeBtn.hidden = !value;
     thumb.hidden = !value;
     if (value) thumb.src = value;

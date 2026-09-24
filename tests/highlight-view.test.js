@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MAX_PICKS, bandAfter, addPick, removePick, movePick, setPhoto, withoutPhoto, candidates, whenLine } from '../js/highlight-view.js';
+import { MAX_PICKS, bandAfter, addPick, removePick, movePick, setPhoto, withoutPhoto, candidates, whenLine, samePicks } from '../js/highlight-view.js';
 
 // The highlight step on Publish (Kate, Sep 23): her picks for the Exchange's
 // home page, up to six, in her order, each needing a photo. Pure, so
@@ -70,4 +70,13 @@ test('whenLine is the date, or the deadline for an opportunity, in short form', 
   assert.equal(whenLine({ type: 'event', date: '2026-09-30', deadline: '' }), 'Sep 30');
   assert.equal(whenLine({ type: 'opportunity', date: '', deadline: '2026-11-01' }), 'closes Nov 1');
   assert.equal(whenLine({ type: 'research', date: '', deadline: '' }), '');
+});
+
+test('samePicks: the same links in the same order with the same photos, nothing else', () => {
+  const a = [{ link: 'https://x.org/a', image: '' }, { link: 'https://x.org/b', image: 'https://img/b.jpg' }];
+  assert.equal(samePicks(a, a.map(p => ({ ...p }))), true);
+  assert.equal(samePicks(a, [a[1], a[0]]), false);
+  assert.equal(samePicks(a, [a[0]]), false);
+  assert.equal(samePicks(a, [a[0], { ...a[1], image: '' }]), false);
+  assert.equal(samePicks([], []), true);
 });
