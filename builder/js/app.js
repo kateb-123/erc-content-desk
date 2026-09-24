@@ -14,7 +14,7 @@ import { renderNewsletter, renderProse } from './template.js';
 import { faIcon, dotsLoader, loadingLabel } from '../../js/icons.js';
 import { el, button } from '../../js/ui-aids.js';
 import { buildImageControl } from '../../js/item-image.js';
-import { readReply, postJson, plainError } from '../../js/sheet-client.js';
+import { readReply, postJson, plainError, fetchDesk, readNewRows, saveRows } from '../../js/sheet-client.js';
 import { todayCentral } from '../../js/today.js';
 import { saveState, loadState, clearState } from './state.js';
 import { getField, setField } from './editpath.js';
@@ -23,6 +23,10 @@ import { takeOut, putBack, listedItems, listedSections } from './removals.js';
 import { renderShell } from '../../js/shell-ui.js';
 import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
 import { arrowKeyTarget, normalizeLinkUrl, reorderRowName, movedAnnouncement } from './editing.js';
+// Kept drafts, and hand-added items that go to the desk (Sep 23).
+import { readAllWaiting } from '../../js/reader-client.js';
+import { discardToDesk, draftIsOpen, replaceAskMessage, discardedTitle, discardedDetail, withEntry, withoutEntry } from './discarded.js';
+import { deskSubmission, sendItemToDesk } from './send-to-desk.js';
 
 // ---------------------------------------------------------------------------
 // State
@@ -363,6 +367,7 @@ function renderReview() {
   });
   pullRow.append(pullBtn, pullStatus);
   container.append(pullRow, pullNote);
+  renderDiscardedDrafts(container);   // Recently discarded (Sep 23): joins the step after the rest has drawn
 
   // ── What's in the issue ──────────────────────────────────────────────────
   const items = [];
@@ -844,11 +849,23 @@ function buildIntroPanel(iframe) {
 
 let miscItemSeq = 0;
 
+/** The desk's four doors, as its own Quick add uses them: file a row, have
+ *  the reader file it, read the rows back, save one. */
+const DESK = {
+  submit: (body) => postJson('/api/submit', body, 'add that to the queue'),
+  read: (id) => readAllWaiting([id], readNewRows),
+  rows: async () => (await fetchDesk()).rows,
+  save: (rows) => saveRows(rows),
+};
+
 /**
  * The one-off door: add a single item by hand, something that never went
  * through the desk. Section and group pickers, the fields the templates
  * render, and an Add button. The item is a first-class citizen afterwards
- * (click-to-edit, reorder, delete).
+ * (click-to-edit, reorder, delete). It goes to the desk too (Kate, Sep 23):
+ * a row in Content Sort's queue, stamped for this issue, so it is checked
+ * against the Policy Exchange like everything else. The item is in the draft
+ * whatever the desk says; the status line says how far it got.
  */
 function buildAddItemPanel(iframe) {
   const { details, body } = railPanel('Add an item');
@@ -898,7 +915,31 @@ function buildAddItemPanel(iframe) {
     imageField.hidden = !IMAGE_SECTIONS.has(key);
   };
 
-  const status = el('p', 'addon-hint');
+  const status = el('p', 'addon-hint addon-status');
+  status.setAttribute('role', 'status');
+  status.setAttribute('aria-live', 'polite');
+
+  // To the desk: Add is gone while it goes, and a failure keeps a Try again
+  // that never files the item twice (the row's id stays on it as deskId).
+  const toDesk = async (item, sectionKey, label) => {
+    addBtn.hidden = true;
+    status.replaceChildren(dotsLoader(true), loadingLabel(`Added to ${label}. Sending it to the desk…`));
+    try {
+      await sendItemToDesk(item, { sectionKey, issueIso: displayDateToISO(state.issue?.date || ''), api: DESK });
+      status.textContent = `Added to ${label} and to Content Sort's queue.`;
+    } catch (err) {
+      console.error('[add an item] the desk did not take it:', err);
+      const again = ghostButton('Try again');
+      again.addEventListener('click', () => toDesk(item, sectionKey, label));
+      status.replaceChildren(item.deskId
+        ? `Added to ${label}. It is in Content Sort's queue, not stamped for the issue. `
+        : `Added to ${label}. It did not reach the desk. `, again);
+    } finally {
+      scheduleSave();   // the desk id rides with the draft, so a pull knows the row
+      addBtn.hidden = false;
+    }
+  };
+
   const addBtn = button('Add to the issue', 'btn btn-secondary', { onClick: () => {
     const title = titleInput.value.trim();
     if (!title) { status.textContent = 'Give it a title first.'; return; }
@@ -927,7 +968,11 @@ function buildAddItemPanel(iframe) {
     refreshEditIframe(iframe);
     for (const input of [titleInput, linkInput, summaryInput, dateInput, timeInput, locationInput, deadlineInput]) input.value = '';
     imageCtl.set('');
-    status.textContent = `Added to ${SECTION_REGISTRY.find((r) => r.key === sectionSelect.value)?.label}.`;
+    const sectionKey = sectionSelect.value;
+    const label = SECTION_REGISTRY.find((r) => r.key === sectionKey)?.label;
+    // The desk takes nothing without a web link.
+    if (!deskSubmission(sectionKey, item)) { status.textContent = `Added to ${label}. Not sent to the desk: it has no link.`; return; }
+    toDesk(item, sectionKey, label);
   } });
 
   body.append(
@@ -1804,11 +1849,31 @@ function startNextIssue() {
 // ---------------------------------------------------------------------------
 
 /**
+ * Make a saved draft the builder's current issue: the banner's Restore and
+ * Recently discarded's alike. Kept in storage, and on to the Outline when it
+ * holds items; one without stays on Review.
+ * @param {object} issue
+ */
+function openDraft(issue) {
+  state.issue = issue;
+  state.baseline = structuredClone(issue);
+  state.reached = 0;
+  pullMessage = '';
+  saveState(issue);
+  goTo(countIssueItems(issue) ? 'triage' : 'review');
+}
+
+/** A failure's own words, without the "try again" a Try again or Retry button beside them already says. */
+function reasonOf(err) {
+  return plainError(err).replace(/\s*Try again in a (minute|moment)\.$/, '');
+}
+
+/**
  * The restore banner: shown when a saved issue exists in localStorage. It
  * sits above the step sections, not inside one, so a redraw of Review never
- * removes it; while it asks, nothing writes storage and the Issue select
- * and Pull are locked. Restore sets state.issue and moves on; Discard clears
- * storage with an Undo.
+ * removes it; while it asks, nothing writes storage and the Issue select,
+ * Pull and Recently discarded's Restore are locked. Restore sets state.issue
+ * and moves on; Discard keeps the draft on the desk (Sep 23), then clears it.
  * @param {object} saved - the issue loaded from storage
  */
 function showRestoreBanner(saved) {
@@ -1834,27 +1899,175 @@ function showRestoreBanner(saved) {
 
   const restoreBtn = button('Restore', 'btn btn-primary restore-banner__btn', { onClick: () => {
     settle();
-    state.issue = saved;
-    state.baseline = structuredClone(saved);
-    // An issue with items goes on to the Outline; one without stays on Review.
-    goTo(countIssueItems(saved) ? 'triage' : 'review');
+    openDraft(saved);
   } });
 
-  const discardBtn = button('Discard', 'btn btn-secondary restore-banner__btn', { onClick: (e) => {
-    settle();
-    clearState();
-    if (state.step === 'review') renderReview();   // unlocks the Issue select and Pull
-    // Gone from storage, not from memory: Undo writes it back and asks again.
-    showUndoToast('Discarded the saved issue', () => {
-      saveState(saved);
-      showRestoreBanner(saved);
-      if (state.step === 'review') renderReview();   // locks them again while it asks
-    }, { focusUndo: e.detail === 0 });
-  } });
+  // Discard sends the draft to the desk, which keeps it 90 days, and only then
+  // clears it here (Kate, Sep 23); Review's Recently discarded is the way back.
+  // A send that fails discards nothing and says so here, with Try again.
+  const discard = async (fromKeyboard) => {
+    restoreBtn.hidden = true;   // in flight: the banner's buttons go, nothing to press twice
+    discardBtn.hidden = true;
+    msg.classList.remove('restore-banner__msg--error');
+    msg.removeAttribute('role');
+    msg.replaceChildren(noteIcon('triangle-exclamation'), dotsLoader(true), loadingLabel('Discarding…'));
+    try {
+      const reply = await discardToDesk(saved, {
+        send: (body) => postJson('/api/drafts', body, 'keep the draft'),
+        clear: clearState,
+      });
+      settle();
+      discarded = withEntry(discarded, reply.draft);
+      focusDiscarded = fromKeyboard ? reply.draft.id : null;
+      if (state.step === 'review') renderReview();   // unlocks the Issue select and Pull; the list leads with it
+      setWizardStatus('Discarded. Recently discarded keeps it for 90 days.');
+    } catch (err) {
+      const retry = ghostButton('Try again');
+      retry.addEventListener('click', (e) => discard(e.detail === 0));
+      msg.classList.add('restore-banner__msg--error');
+      msg.setAttribute('role', 'alert');
+      msg.replaceChildren(noteIcon('circle-exclamation'), `Not discarded. ${reasonOf(err)} `, retry);
+      restoreBtn.hidden = false;   // the draft is still here to restore
+      if (fromKeyboard) retry.focus();
+    }
+  };
+  const discardBtn = button('Discard', 'btn btn-secondary restore-banner__btn', { onClick: (e) => discard(e.detail === 0) });
 
   btnRow.append(restoreBtn, discardBtn);
   banner.append(msg, btnRow);
   home.insertBefore(banner, home.firstChild);
+}
+
+// ---------------------------------------------------------------------------
+// Review: Recently discarded (Kate, Sep 23)
+// ---------------------------------------------------------------------------
+
+/** The list as the desk last gave it, newest first: null until it has loaded once. */
+let discarded = null;
+/** Counts Review's draws, so an answer that comes back late never draws into a page that has moved on. */
+let discardedDraw = 0;
+/** A draft just discarded from the keyboard: its Restore takes focus when the list draws. */
+let focusDiscarded = null;
+
+/** The desk's /api/drafts: one draft, or its removal. */
+const draftUrl = (id) => `/api/drafts?id=${encodeURIComponent(id)}`;
+
+/** A quiet line for what didn't load or go through: the error's icon, its words, Retry. Never an alert. */
+function quietError(words, onRetry) {
+  const line = el('p', 'discarded-error');
+  line.setAttribute('role', 'status');
+  const retry = ghostButton('Retry');
+  retry.addEventListener('click', onRetry);
+  line.append(noteIcon('circle-exclamation'), `${words} `, retry);
+  return line;
+}
+
+/**
+ * One kept draft: its issue, what it holds and when it went, and Restore.
+ * Restore asks first, in one line, when a draft is open here; then takes the
+ * draft off the desk and opens it the way the banner's Restore does.
+ */
+function discardedRow(entry) {
+  const row = el('li', 'discarded-row');
+  const what = el('div', 'discarded-what');
+  what.id = `discarded-${entry.id}`;
+  what.append(el('span', 'discarded-title', discardedTitle(entry)), el('span', 'discarded-sub', discardedDetail(entry)));
+  // Restore, the ask, or the wait, one at a time in the same place.
+  const slot = el('div', 'discarded-act');
+  const restore = ghostButton('Restore');
+  restore.dataset.draft = entry.id;
+  restore.setAttribute('aria-describedby', what.id);
+  restore.disabled = restorePending;   // the banner asks first
+  slot.append(restore);
+  row.append(what, slot);
+
+  const back = () => { slot.replaceChildren(restore); };
+  const go = async () => {
+    row.querySelector('.discarded-error')?.remove();
+    const wait = el('span', 'pull-status');
+    wait.append(dotsLoader(true), loadingLabel('Restoring…'));
+    slot.replaceChildren(wait);
+    try {
+      const { draft } = await readReply(await fetch(draftUrl(entry.id)), 'restore that draft');
+      await readReply(await fetch(draftUrl(entry.id), { method: 'DELETE' }), 'restore that draft');
+      discarded = withoutEntry(discarded, entry.id);
+      openDraft(draft.body);
+    } catch (err) {
+      back();
+      row.append(quietError(`Couldn't restore it. ${reasonOf(err)}`, go));
+      restore.focus({ preventScroll: true });
+    }
+  };
+  restore.addEventListener('click', () => {
+    if (!draftIsOpen(state.issue)) { go(); return; }
+    // The archive ask's shape: a warning note in the button's place, Confirm or Cancel.
+    const ask = inlineNote('warning', replaceAskMessage(state.issue));
+    ask.classList.add('discarded-ask');
+    ask.removeAttribute('aria-live');
+    const ok = ghostButton('Confirm');
+    ok.classList.add('ask-confirm');
+    ok.addEventListener('click', go);
+    const no = ghostButton('Cancel');
+    no.addEventListener('click', () => { back(); restore.focus(); });
+    ask.append(ok, ' · ', no);
+    slot.replaceChildren(ask);
+    queueMicrotask(() => ok.focus({ preventScroll: true }));
+  });
+  return row;
+}
+
+/**
+ * Review's Recently discarded list: what Discard kept on the desk, newest
+ * first, each with Restore. Called once from renderReview, before its last
+ * part draws; the list joins the step after everything else. Nothing at all
+ * while it is empty; the last list known shows at once and the desk's answer
+ * replaces it; a list that can't load is a quiet line with Retry that holds
+ * nothing else up.
+ * @param {HTMLElement} container - the Review step
+ */
+function renderDiscardedDrafts(container) {
+  const draw = ++discardedDraw;
+  const current = () => draw === discardedDraw;
+  const slot = el('div', 'discarded-slot');
+  queueMicrotask(() => { if (current()) container.append(slot); });
+
+  const show = () => {
+    const list = discarded ?? [];
+    const was = slot.querySelector('.discarded');
+    // A redraw keeps the keyboard on the same draft's Restore.
+    const keep = was?.contains(document.activeElement) ? document.activeElement.dataset.draft : null;
+    was?.remove();
+    if (!list.length) return;
+    const box = el('section', 'discarded');
+    box.setAttribute('aria-labelledby', 'discarded-head');
+    const head = el('h3', 'discarded-head', 'Recently discarded');
+    head.id = 'discarded-head';
+    const rows = el('ul', 'discarded-list');
+    rows.append(...list.map(discardedRow));
+    box.append(head, rows);
+    slot.prepend(box);
+    const focusId = focusDiscarded ?? keep;
+    focusDiscarded = null;
+    if (focusId) {
+      const target = box.querySelector(`[data-draft="${CSS.escape(focusId)}"]`);
+      queueMicrotask(() => target?.focus());
+    }
+  };
+  const load = async () => {
+    slot.querySelector('.discarded-error')?.remove();
+    try {
+      const data = await readReply(await fetch('/api/drafts'), 'load the discarded drafts');
+      const fresh = data.drafts ?? [];
+      // The list drawn from memory stays when the desk agrees, so an open ask survives the answer.
+      const same = JSON.stringify(fresh) === JSON.stringify(discarded);
+      discarded = fresh;
+      if (current() && !(same && slot.querySelector('.discarded'))) show();
+    } catch (err) {
+      if (current()) slot.append(quietError(`Recently discarded: ${reasonOf(err)}`, load));
+    }
+  };
+  if (discarded) show();
+  load();
 }
 
 // The desk's top bar: the builder crumbs under Newsletter.

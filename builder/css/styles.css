@@ -946,3 +946,55 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .undo-toast, .export-toast, .triage-switch-track, .triage-switch-track::before, .reorder-panel-summary::before { transition: none; }
 }
+
+/* ============================================================
+   Kept drafts and hand-added items that go to the desk (Sep 23)
+   ------------------------------------------------------------
+   The restore banner's Discard says in its own message area when the desk
+   couldn't keep the draft; Review lists what Discard kept, last on the
+   step; Add an item's status line says how far the item got to the desk.
+   ============================================================ */
+
+/* The banner's message when Discard fails: the error's icon, the words, Try again. */
+.restore-banner__msg--error .note-icon { color: var(--support-error); }
+.restore-banner__msg .ghost-btn, .addon-status .ghost-btn { height: 24px; padding: 0 var(--spacing-02); vertical-align: middle; }
+
+/* Recently discarded: a white box with a hairline, its head like the issue
+   table's (the label over the maize rule), one row per kept draft. */
+.discarded-slot { margin-top: var(--spacing-06); }
+.discarded-slot:empty { display: none; }
+.discarded { background: var(--layer-02); border: 1px solid var(--border-subtle-01); }
+.discarded-head {
+  margin: 0;
+  padding: var(--spacing-03) var(--spacing-05);
+  background: var(--layer-01);
+  border-bottom: 2px solid var(--mark);
+  font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking);
+  color: var(--text-primary);
+}
+.discarded-list { list-style: none; margin: 0; padding: 0; }
+.discarded-row {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-03) var(--spacing-05);
+  padding: var(--spacing-03) var(--spacing-05);
+}
+.discarded-row + .discarded-row { border-top: 1px solid var(--border-subtle-01); }
+.discarded-what { flex: 1 1 16rem; min-width: 0; display: flex; flex-direction: column; }
+.discarded-title { font-weight: 600; color: var(--text-primary); }
+.discarded-sub { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-secondary); margin-top: var(--spacing-01); }
+.discarded-act { display: inline-flex; align-items: center; }
+.discarded-act .ghost-btn { margin-right: calc(-1 * var(--spacing-03)); }   /* Restore sits flush right */
+/* The ask takes a line of its own under the draft it names. */
+.discarded-act:has(.discarded-ask) { flex-basis: 100%; }
+.discarded-act .discarded-ask .ghost-btn { margin-right: calc(-1 * var(--spacing-02)); }
+/* Locked while the restore banner asks: Carbon's disabled word. */
+.discarded-act .ghost-btn:disabled { color: var(--text-disabled); background: none; cursor: not-allowed; }
+
+/* A quiet error: no tint, no alert, the icon in the error's colour, and Retry. */
+.discarded-error { display: flex; align-items: center; flex-wrap: wrap; gap: var(--spacing-02); flex-basis: 100%; }
+.discarded + .discarded-error { margin-top: var(--spacing-03); }
+.discarded-error .note-icon { color: var(--support-error); }
+.discarded-error .ghost-btn { height: 24px; padding: 0 var(--spacing-02); }
+
+/* Add an item's status line sits clear of the button above it. */
+.addon-status { margin-top: var(--spacing-03); }
+.addon-status:empty { display: none; }
