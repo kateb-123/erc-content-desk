@@ -749,9 +749,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 /* ── The team's page, Submit content (Kate's sketch and the design handoff, Sep 22) ── */
 .team-page .page-head { margin: var(--spacing-03) 0 0; }
 .team-page .lede { margin: var(--spacing-02) 0 0; }
-.team-cols { display: flex; gap: var(--spacing-10); align-items: flex-start; flex-wrap: wrap; margin-top: var(--gap-28); }
-.team-main { flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-07); }
-.team-side { flex: 0 1 360px; min-width: 260px; display: flex; flex-direction: column; gap: var(--spacing-07); }
+/* Always two columns (Kate, Sep 23: everyone uses the desk on a computer): the
+   form takes what is left, the side column holds between 300 and 360px. */
+.team-cols { display: flex; gap: var(--spacing-10); align-items: flex-start; flex-wrap: nowrap; margin-top: var(--gap-28); }
+.team-main { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-07); }
+.team-side { flex: 0 1 360px; min-width: 300px; display: flex; flex-direction: column; gap: var(--spacing-07); }
 .form-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--gap-28); }
 .form-box .submit-form { gap: var(--gap-28); }
 /* The queue: the section head, then rows straight on the page, every waiting item in its own scroll. */

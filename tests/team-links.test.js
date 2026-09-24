@@ -94,3 +94,13 @@ test("a row's own line and its live line are two lines, not one slot", () => {
   assert.match(src, /el\('div', 'ql-sub', item\.sub \?\? ''\)/);
   assert.doesNotMatch(src, /dataset\.sub/, 'the live line no longer falls back to the row\'s own');
 });
+
+// Kate, Sep 23: everyone uses the desk on a computer, so the team page is
+// always two columns, never the side column dropped under the form.
+test('the team page keeps its two columns at any laptop width', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../css/styles.css', import.meta.url), 'utf8');
+  const cols = css.match(/\.team-cols \{([^}]*)\}/)[1];
+  assert.match(cols, /flex-wrap:\s*nowrap/);
+  assert.doesNotMatch(cols, /flex-wrap:\s*wrap\b/);
+});
