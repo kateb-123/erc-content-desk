@@ -11,6 +11,7 @@ import {
 } from './_lib/rewrite.js';
 import { parseModelJson } from './_lib/reply-json.js';
 import { readAllRows } from './_lib/store.js';
+import { refuseUnlessSignedIn } from './_lib/session.js';
 
 export const config = { maxDuration: 300 };
 
@@ -20,6 +21,9 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, error: 'Use POST.' });
   }
+  // Content Sort is behind the desk password (Kate, Sep 23), and so is the
+  // model call it makes.
+  if (await refuseUnlessSignedIn(req, res)) return;
   try {
     const all = await readAllRows();
     const ids = Array.isArray(req.body?.ids) ? new Set(req.body.ids) : null;

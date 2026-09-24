@@ -36,18 +36,31 @@ export function appendRowsToCsv(csvText, rows) {
   return [base, ...lines].join('\n') + '\n';
 }
 
-export async function fetchHubCsv() {
-  const res = await getContents({ repo: repo(), path: csvPath(), branch: branch() });
+/** Any file of the Exchange's: its text and sha, or empty with no sha when
+ *  it is not there yet (the highlights file, before the first picks). */
+export async function fetchHubFile(path) {
+  const res = await getContents({ repo: repo(), path, branch: branch() });
+  if (res.status === 404) return { text: '', sha: null };
   if (!res.ok) throw new Error(`GitHub read failed: HTTP ${res.status}`);
   const data = await res.json();
   return { text: Buffer.from(data.content, 'base64').toString('utf8'), sha: data.sha };
 }
 
-export async function putHubCsv(text, sha, message) {
+export async function putHubFile(path, text, sha, message) {
   const res = await putContents({
-    repo: repo(), path: csvPath(), branch: branch(), message, sha,
+    repo: repo(), path, branch: branch(), message, sha,
     base64: Buffer.from(text, 'utf8').toString('base64'),
   });
-  if (res.status === 409) throw Object.assign(new Error('GitHub conflict: hub CSV changed since read'), { conflict: true });
+  if (res.status === 409) throw Object.assign(new Error(`GitHub conflict: ${path} changed since read`), { conflict: true });
   if (!res.ok) throw new Error(`GitHub write failed: HTTP ${res.status}`);
+}
+
+export async function fetchHubCsv() {
+  const file = await fetchHubFile(csvPath());
+  if (file.sha === null) throw new Error('GitHub read failed: HTTP 404');   // the site's list must exist; nothing is ever published onto a missing one
+  return file;
+}
+
+export function putHubCsv(text, sha, message) {
+  return putHubFile(csvPath(), text, sha, message);
 }
