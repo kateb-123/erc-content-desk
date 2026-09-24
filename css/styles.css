@@ -525,6 +525,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
    (usability audit, Kate's pick, Sep 23). The transparent outline, the ring
    under forced colours, moves inside with it. */
 .pill-row .type-word:focus-visible, .sort-list .sort-row:focus-visible, .f-list .f-list-row:focus-visible { outline-offset: -2px; box-shadow: inset 0 0 0 2px var(--color-teal-400); }
+/* The picked type is filled teal, where a teal ring vanishes: there it is a white line inside (Kate, Sep 23). */
+.pill-row .type-word.is-picked:focus-visible { box-shadow: inset 0 0 0 2px var(--text-on-color); }
 /* A screen title takes focus on a switch so assistive tech hears it; no ring on a heading or the busy card. */
 [tabindex="-1"]:focus, .busy-card:focus { outline: none; box-shadow: none; }
 

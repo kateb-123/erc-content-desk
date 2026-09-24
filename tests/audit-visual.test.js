@@ -77,3 +77,9 @@ test('the tab icon is a teal square with a white check, the same on both apps', 
   });
   assert.equal(icons[0], icons[1]);
 });
+
+// Kate, Sep 23: the picked type is filled teal, so the teal ring vanishes on
+// it; there the ring is a 2px white line inside instead.
+test('the picked type shows focus as a white line inside its teal fill', () => {
+  assert.match(declsOf('.pill-row .type-word.is-picked:focus-visible'), /box-shadow:\s*inset 0 0 0 2px var\(--text-on-color\)/);
+});
