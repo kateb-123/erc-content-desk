@@ -4,14 +4,15 @@
  * tag; beside it a card for the chosen item where every field is edited in
  * place, the type is a segmented row, Send it to says where it goes, and
  * Delete, Skip for now and Keep and next decide it. Keep and next stays
- * locked until the type and the link are settled. Rows kept or deleted this
+ * locked, saying why under it, until the type and the link are settled. The
+ * source shows unless it is the ERC. Rows kept or deleted this
  * visit grey at the bottom of the list with Undo.
  */
 import { linkNeedsCheck, missingFields, reshareFlags, sendTo, sendToValue } from './workflow.js';
 import { TYPE_ORDER, typeDisplay, subtypesFor, typeIsFlat } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { safeHref, withScheme } from './links.js';
-import { sortList, oldestWait, readerQueue, isNewToday, needsType, fixReasons, dupeReason, fixContext, keepBlock, missingLine, nextSelected, FIELD_LABELS } from './sort-view.js';
+import { sortList, oldestWait, readerQueue, isNewToday, needsType, fixReasons, dupeReason, fixContext, keepBlock, missingLine, nextSelected, shownSource, FIELD_LABELS } from './sort-view.js';
 import { fieldsForType, dateField, finalizeWaiting } from './finalize-view.js';
 import { buildImageControl } from './item-image.js';
 import { sortPageHead } from './page-head.js';
@@ -33,9 +34,9 @@ let liveOrder = [];       // the live row ids in list order, for the arrow keys
 const title = row => row.headline || row.link || '(untitled)';
 
 
-/** A list row's second line: where it is from, who added it, when. */
+/** A list row's second line: where it is from (outside the ERC), who added it, when. */
 function rowMeta(row, today) {
-  return [row.source || row.authors, row.submitter && `added by ${row.submitter}`, isoToShort(row.submitted_at, today)]
+  return [shownSource(row), row.submitter && `added by ${row.submitter}`, isoToShort(row.submitted_at, today)]
     .filter(Boolean).join(' · ');
 }
 
@@ -285,7 +286,9 @@ function sortCard(row, { props, rerender, ctx, reshare, position, total }) {
   // ── Left: the item as it reads ──
   const kicker = el('div', 'sc-kicker');
   const facts = el('span', 'sc-facts');
-  facts.append(el('span', 'sc-source', row.source || row.authors || 'No source'), ...cardTags(row, { props, ctx, reshare }));
+  const source = shownSource(row);
+  if (source) facts.append(el('span', 'sc-source', source));
+  facts.append(...cardTags(row, { props, ctx, reshare }));
   kicker.append(facts, el('span', 'sort-card-pos', `${position} of ${total}`));
   left.append(kicker);
 
@@ -345,8 +348,15 @@ function sortCard(row, { props, rerender, ctx, reshare, position, total }) {
     } });
     const blocked = keepBlock(row);
     keep.title = blocked || 'Keep and next (K)';
-    if (blocked) keep.disabled = true;
     stack.append(keep);
+    if (blocked) {
+      // Locked, it says why in a line under it, not only in the tooltip (audit, Sep 23).
+      keep.disabled = true;
+      const why = el('p', 'sc-keep-why', blocked);
+      why.id = 'sc-keep-why';
+      keep.setAttribute('aria-describedby', why.id);
+      stack.append(why);
+    }
   }
   if (row.status !== 'circleback') {
     const skip = button('Skip for now', 'linkish quiet-link sc-skip', { focus: 'skip', onClick: () => { lock(); landOnTitle = true; props.onDecide(row, 'circleback'); } });

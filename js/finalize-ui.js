@@ -287,7 +287,7 @@ export function renderFinalize(container, props) {
     });
     head.append(all);
   } else if (!busy && stage === 'plain' && keeps.length) {
-    const btn = el('button', 'door', 'Go to Publish');
+    const btn = el('button', 'door', 'Go to Policy Exchange');
     btn.dataset.focus = 'door';
     btn.append(faIcon('arrow-right'));
     btn.addEventListener('click', () => { if (!held()) onGoTo('publish'); });
@@ -379,7 +379,7 @@ export function renderFinalize(container, props) {
   } else if (!row) {
     const empty = el('div', 'f-pane-empty');
     empty.append(verified.size ? 'Every rewrite is checked. ' : 'Nothing needs a rewrite. ');
-    const go = button('Go to Publish', 'linkish', { focus: 'door-empty', onClick: () => onGoTo('publish') });
+    const go = button('Go to Policy Exchange', 'linkish', { focus: 'door-empty', onClick: () => onGoTo('publish') });
     go.append(' ', faIcon('arrow-right'));
     empty.append(go);
     split.append(empty);

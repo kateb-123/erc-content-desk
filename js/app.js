@@ -375,7 +375,7 @@ async function runRewrite() {
     // /api/rewrite stays read-only, as its own header promises.
     // Only the ids we asked for count: an extra id in the response would
     // otherwise inflate the note and leave a zombie check that locks the
-    // Rewrite and Go to Publish buttons.
+    // Rewrite and Go to Policy Exchange buttons.
     const wanted = new Set(ids);
     const byId = new Map(data.rewrites.filter(r => wanted.has(r.id)).map(r => [r.id, r.blurb]));
     for (const [id] of byId) {

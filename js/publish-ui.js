@@ -1,8 +1,9 @@
 /**
- * Publish to Exchange: checked against the LIVE news.csv on arrival, and the
- * report is the page. One fate bar over one table, every row expandable for a
- * last look, the legend filtering it. Publish asks once, then appends to the
- * site; the receipt carries the door to the Newsletter page.
+ * Policy Exchange (the lane's name since the audit, Sep 23): checked against
+ * the LIVE news.csv on arrival, and the report is the page. One fate bar over
+ * one table, every row expandable for a last look, the legend filtering it.
+ * Publish asks once, then appends to the site; the receipt carries the door
+ * to the Newsletter page.
  */
 import { readyToPublish } from './workflow.js';
 import { PUBLISH_PAUSED } from './flags.js';
@@ -167,7 +168,7 @@ export function renderPublish(container, props) {
   const byId = new Map(rows.map(r => [r.id, r]));
   const adding = (preview?.adding ?? []).map(item => byId.get(item.id)).filter(Boolean);
 
-  const { head, lede } = screenHead('Publish to Exchange', 'publish',
+  const { head, lede } = screenHead('Policy Exchange', 'publish',
     'Everything here was checked against the live Exchange on arrival. Publish sends the Adding rows to the site. Spotlight events stay held for the newsletter (webinars excepted); a row that needs a fix waits in Sort; anything already live is left out. Click a colour under the bar to see only those rows.');
   if (showReceipt) {
     // The receipt card below is the confirmation — the head stays bare.

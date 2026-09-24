@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { LANES, openedScreen } from '../js/shell-view.js';
 
 // The team page's Quick links (Kate, Sep 22, then her pick C of Sep 23 and her
 // split that evening): the three PUBLIC pages, the standalone share page and
@@ -46,10 +47,25 @@ test("the desk's own pages are filled buttons, the newsletter first", () => {
   const doors = src.match(/export const DESK_DOORS = \[([\s\S]*?)\];/)[1];
   const order = [...doors.matchAll(/key: '(\w+)'/g)].map(m => m[1]);
   assert.deepEqual(order, ['newsletter', 'sort'], 'the newsletter sits above Content Sort (Kate, Sep 23)');
-  assert.match(doors, /key: 'newsletter'[^\n]*newWindow: true/, 'the newsletter opens in its own window');
+  // Kate changed this on Sep 23: the newsletter no longer opens in its own
+  // window; it switches in place, the way Content Sort does.
+  assert.doesNotMatch(doors, /newWindow/, 'no door opens its own window');
   assert.match(src, /el\('a', 'sort-door'\)/);
   assert.doesNotMatch(src, /'Desk work'/);
   assert.doesNotMatch(src, /door-rows/);
+});
+
+// Kate, Sep 23: both doors switch screens in place. The newsletter's lane key
+// is not its screen's name ('issue'), so a door goes where its own address
+// goes, the way the front page's cards do.
+test('both doors switch in place and land on their own screens', () => {
+  const door = src.match(/function deskDoor\([\s\S]*?\n\}/)?.[0] ?? '';
+  assert.doesNotMatch(door, /_blank/, 'no door opens a new window');
+  assert.match(door, /onGoTo\(openedScreen\(new URL\(a\.href, location\.href\)\.hash\)\)/);
+  const doors = src.match(/export const DESK_DOORS = \[([\s\S]*?)\];/)[1];
+  const lands = [...doors.matchAll(/key: '(\w+)'/g)]
+    .map(m => openedScreen(new URL(LANES.find(l => l.key === m[1]).href, 'https://desk.example/').hash));
+  assert.deepEqual(lands, ['issue', 'sort']);
 });
 
 test('only Content Sort wears a badge, and none of it at zero', () => {

@@ -26,6 +26,16 @@ export function isErc(row) {
   return row.type === 'erc_event' || row.subtype === 'ERC Research';
 }
 
+/** The source Sort's list row and card show (Kate, Sep 23: "we really only
+ *  need source if it's external"): the source, or the authors when there is
+ *  none; nothing when the source is the ERC itself, or when both are blank.
+ *  A co-host (TXRDC on an ERC event) is not the ERC, so it shows. */
+export function shownSource(row) {
+  const source = String(row?.source ?? '').trim();
+  if (source.toLowerCase() === 'erc') return '';
+  return source || String(row?.authors ?? '').trim();
+}
+
 /** Kept rows that still lack a real type: they come BACK to Sort's list,
  *  because fixing a type belongs here, not at the bottom of Publish.
  *  Setting the type releases them; rows already in an issue stay gone. */

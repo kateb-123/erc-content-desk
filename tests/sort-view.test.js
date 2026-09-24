@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isErc, keptUntyped, readerQueue, sortList, oldestWait, fixReasons, dupeReason, dupeBadgeText, isNewToday, isPast, keepBlock, missingLine, nextSelected, undoWords, withoutRow, adjacentTab } from '../js/sort-view.js';
+import { isErc, keptUntyped, readerQueue, sortList, oldestWait, fixReasons, dupeReason, dupeBadgeText, isNewToday, isPast, keepBlock, missingLine, nextSelected, undoWords, withoutRow, adjacentTab, shownSource } from '../js/sort-view.js';
 
 // ── One list, newest first (Kate's wireframes and her answers, Sep 18) ──
 
@@ -218,4 +218,20 @@ test('isErc: an ERC event or ERC Research, whatever the old spotlight flag says'
   assert.equal(isErc({ type: 'research', subtype: 'ERC Research' }), true);
   assert.equal(isErc({ type: 'event', subtype: 'A&M', spotlight_request: true }), false);
   assert.equal(isErc({ type: 'headline', subtype: 'Texas', spotlight_request: true }), false);
+});
+
+// ── The source, only from outside the ERC (Kate, Sep 23: "we really only need
+// source if it's external"). The list row and the card's label both use it. ──
+
+test('shownSource: the source, or the authors when there is none; nothing for the ERC, or when both are blank', () => {
+  assert.equal(shownSource({ source: 'Brookings', authors: 'Chen' }), 'Brookings');
+  assert.equal(shownSource({ source: '', authors: 'Chen & Patel' }), 'Chen & Patel');   // the fallback the card always had
+  assert.equal(shownSource({ source: '  ', authors: 'Chen' }), 'Chen');
+  assert.equal(shownSource({ source: 'ERC', authors: 'Barnes, Vasquez & Kim' }), '');
+  assert.equal(shownSource({ source: ' erc ' }), '');   // trimmed, any case
+  assert.equal(shownSource({ source: '', authors: '' }), '');
+  assert.equal(shownSource({}), '');
+  // Only the ERC itself: a co-host, or a name that starts with ERC, still shows.
+  assert.equal(shownSource({ source: 'Texas Research Data Center (TXRDC)' }), 'Texas Research Data Center (TXRDC)');
+  assert.equal(shownSource({ source: 'ERC Research' }), 'ERC Research');
 });

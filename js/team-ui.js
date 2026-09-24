@@ -2,8 +2,8 @@
  * The team's page, Submit content (Kate's sketch and the design handoff, Sep 22):
  * the share form in a white box on the left with the Queue under it, a fold
  * that opens open; on the right the three public Quick links with Copy link,
- * then the desk's own two as filled buttons, the Newsletter in its own window
- * and Content Sort in place (Kate, Sep 23). The form is mounted once and left alone on re-renders, so
+ * then the desk's own two as filled buttons, the Newsletter and Content Sort,
+ * each switching in place (Kate, Sep 23). The form is mounted once and left alone on re-renders, so
  * typing is never wiped; the queue and the counts redraw.
  */
 import { renderSubmitForm } from './submit-form.js';
@@ -12,7 +12,7 @@ import { laneCounts, quickLinkNotes } from './home-panel.js';
 import { sortList } from './sort-view.js';
 import { nextIssueDate } from './schedule.js';
 import { isoToShort } from './queue-view.js';
-import { LANES } from './shell-view.js';
+import { LANES, openedScreen } from './shell-view.js';
 import { el, tryAgain } from './ui-aids.js';
 
 /** Quick links are the three PUBLIC-facing pages and nothing else (Kate,
@@ -29,11 +29,11 @@ export const QUICK_LINKS = [
 ];
 
 /** The desk's own work, a filled button each (Kate, Sep 23): the Newsletter
- *  first, in its own window, then Content Sort in place. Only Content Sort
+ *  first, then Content Sort, both switching in place. Only Content Sort
  *  wears a badge; the newsletter's pool is not something to be alerted about,
  *  so it says which issue is next instead (her word, Sep 23). */
 export const DESK_DOORS = [
-  { key: 'newsletter', icon: 'newspaper', newWindow: true },
+  { key: 'newsletter', icon: 'newspaper' },
   { key: 'sort', icon: 'layer-group', badge: true },
 ];
 
@@ -97,14 +97,15 @@ function quickLink(item) {
 }
 
 /** A door to the desk's own work: the filled button under the Quick links,
- *  with the lane's name, whatever is next on it, and its count as a badge. */
+ *  with the lane's name, whatever is next on it, and its count as a badge.
+ *  It switches in place to the screen its address opens, the way the front
+ *  page's cards do: the Newsletter's lane key is not its screen's. */
 function deskDoor(door, onGoTo) {
   const lane = LANES.find(l => l.key === door.key);
   const a = el('a', 'sort-door');
   a.href = lane.href;
   a.dataset.key = lane.key;
-  if (door.newWindow) { a.target = '_blank'; a.rel = 'noopener'; }   // the newsletter is its own hub (Kate, Sep 22)
-  else a.addEventListener('click', event => { event.preventDefault(); onGoTo(lane.key); });
+  a.addEventListener('click', event => { event.preventDefault(); onGoTo(openedScreen(new URL(a.href, location.href).hash)); });
   const words = el('span', 'door-words');
   const note = el('span', 'door-note');
   note.dataset.key = lane.key;
