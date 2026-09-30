@@ -159,6 +159,10 @@ Make every fix in Preview & Edit, before Copy HTML, so the archived issue matche
 
 Past issues holds the archive, newest first, back to Nov 2025.
 
+## The submit-content deck (Sep 30, built)
+
+Part 1 became a deck on the desk's open side, `how-to/submit-content/index.html`, live at /how-to/submit-content/ once pushed. Seven slides, one at a time: the cover on the navy (her pick C of four), Fill in the form with a recording of the real form (`fill-in.webm`, the fake Howdy Policy Trivia Night, taken in the sandbox), Claude is still working, Which type, Bulk upload (her heading; the template, an AI filling it, Add all to the queue), Public links you can share, and Try it (the real form module, its post caught on the page, a practice queue beside it). The words are in the page; tests/how-to.test.js holds the addresses and the desk's own words. Kathy's part is still only words, above.
+
 ## Out of scope for now
 
 Content Sort, Finalize, Publish and the Exchange's highlight. They are Kate's, behind the password. A guide for them comes later.
