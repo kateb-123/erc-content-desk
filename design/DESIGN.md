@@ -377,19 +377,26 @@ thing everywhere (see the vocabulary table).
 The team's how-to lives on the desk's open side at `/how-to/submit-content/`
 (Kate, Sep 30: "it should live in vercel, on the content desk page, for how to
 documents"), a static page beside the app, no password, linked from her email.
-It is a deck, one slide at a time: the left and right arrows, Back and Next
-under the slide, or a swipe move between slides, and without a script the
-slides stack. Her picks: the cover on the navy, the bar's colour extended, with
-the eyebrow's maize rule and a white button (her C of four); steps only, and
-only where the screen does not already say it; a RECORDING of the real form
-being filled in with a practice item (`fill-in.webm`, taken in the sandbox,
-playing muted on its slide with Play and Pause under it, still under reduced
-motion) rather than a drawn copy; "Claude" lines in the info note where Claude
-works in the background; the types named as the form names them; and a last
-slide, Try it, that is the real form module with its post caught on the page
-and a practice queue beside it, so nothing reaches the desk. The stills are
-the desk's own screens at 2x. Sample content is obviously fake, in Aggie
-names (Howdy Policy Trivia Night).
+It was a deck for an afternoon; her calls the same day: "move away from the
+slides a little", a page that SCROLLS with a JUMP MENU at its side (sticky,
+the section in view lit, a chip row on a phone), and under a heading "just
+the slides if needed", never two columns. The cover became a navy band, the
+bar's colour extended, with the eyebrow's maize rule and a white button (her
+C of four). Three sections, hers: Add content, two slides that swipe (Back,
+Next and dots under them, the arrow keys while the slides have focus, a
+swipe on a phone): Add one item and Bulk add items ("the spreadsheet is
+best", its columns are the desk's own; the templates download from the page;
+every item needs a link), each with its steps, one "Claude" info note and a
+RECORDING of the real desk in the sandbox (`fill-in.webm`, `bulk.webm`),
+muted, looping, playing only while on screen and its slide is up, Play and
+Pause under it, still under reduced motion; Which type, the desk's own tabs,
+a tab a type named as the form names it, with its subtypes and the newest
+example of that kind on the Exchange right now, fetched from the Exchange's
+public news.csv at load, so it never goes stale; and Links to share, the team
+page's own Quick links rows, imported from `js/team-ui.js`, Copy link and
+Copied live. No After you click section and no practice form: "they're not
+idiots". Steps only, and only where the screen does not already say it.
+Sample content is obviously fake, in Aggie names (Howdy Policy Trivia Night).
 
 ## The public pages
 

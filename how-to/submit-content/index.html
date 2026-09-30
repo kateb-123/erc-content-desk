@@ -12,288 +12,347 @@
   <link rel="stylesheet" href="/css/styles.css?v=145" />
   <link rel="stylesheet" href="/css/shell.css?v=7" />
   <style>
-    /* The team's how-to (Kate, Sep 30, 2026): a deck, one slide at a time, on
-       the desk's open side. The left and right arrows, Back and Next, or a
-       swipe move between slides. Without a script the slides stack, so a
-       page that cannot run one still reads top to bottom. */
-    html, body { height: 100%; }
-    body { margin: 0; display: flex; flex-direction: column; background: var(--background); color: var(--ink); font: var(--body-type); }
-    .deck { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-    .slide { box-sizing: border-box; padding: var(--spacing-07) var(--gap-56); border-bottom: 1px solid var(--line); }
-    .deck.on .slide { flex: 1 1 auto; min-height: 0; overflow-y: auto; border: 0; display: none; }
-    .deck.on .slide.on { display: grid; align-content: center; }
-    .inner { width: 100%; max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: var(--gap-56); align-items: center; }
-    .inner.solo { grid-template-columns: minmax(0, 760px); justify-content: center; }
-    .eyebrow { display: inline-block; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); padding-bottom: 6px; border-bottom: 2px solid var(--border-interactive); margin: 0 0 var(--spacing-05); }
-    h1 { font: 700 48px/56px var(--font-sans); margin: 0 0 var(--spacing-05); text-wrap: balance; max-width: 16ch; }
-    h2 { font: var(--page-title); margin: 0 0 var(--spacing-05); text-wrap: balance; }
-    .lede { font: 400 20px/30px var(--font-sans); margin: 0 0 var(--spacing-06); max-width: 46ch; color: var(--text-secondary); }
+    /* The team's how-to (Kate, Sep 30, 2026): one page on the desk's open
+       side that scrolls, a jump menu at its side, and under a heading a few
+       slides that swipe. The recordings are the real desk. Nothing here
+       writes to the desk. */
+    body { margin: 0; background: var(--background); color: var(--ink); font: var(--body-type); }
+    a { color: var(--link-primary); }
+    a:hover { color: var(--link-primary-hover); }
     p { margin: 0 0 var(--spacing-05); }
     ol, ul { margin: 0 0 var(--spacing-05); padding-left: 28px; }
     li { margin: 0 0 var(--spacing-03); padding-left: 4px; }
     .quiet { color: var(--text-secondary); }
-    .hint { margin: var(--spacing-06) 0 0; font: var(--meta-type); color: var(--muted); }
-    .open { display: inline-flex; align-items: center; height: 48px; padding: 0 var(--spacing-06); border-radius: var(--radius); font-weight: 700; text-decoration: none; }
-    .open .fa-solid { margin-left: var(--spacing-05); font-size: 14px; }
     .note { padding: var(--spacing-04) var(--spacing-05); background: var(--notification-info-background); border: 1px solid var(--notification-info-border); border-left: 4px solid var(--support-info); border-radius: var(--radius); }
 
-    /* The cover: the bar's navy, the whole slide. */
-    .cover { background: var(--color-blue-400); color: var(--text-inverse); }
-    .cover .eyebrow { color: var(--color-maize-400); border-bottom-color: var(--color-maize-400); }
-    .cover .lede { color: var(--color-blue-100); }
-    .cover .open { background: var(--text-inverse); color: var(--color-blue-400); }
-    .cover .open:hover { background: var(--color-blue-100); }
-    .cover .open:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-blue-400), 0 0 0 4px var(--text-inverse); }
-    .cover .hint { color: var(--color-blue-200); }
+    /* The band: the bar's navy, the page's name on it. */
+    .band { background: var(--color-blue-400); color: var(--text-inverse); padding: var(--gap-56) var(--gap-56) var(--spacing-09); }
+    .band .in { max-width: 1200px; margin: 0 auto; }
+    .eyebrow { display: inline-block; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--color-maize-400); padding-bottom: 6px; border-bottom: 2px solid var(--color-maize-400); margin: 0 0 var(--spacing-05); }
+    .band h1 { font: 700 44px/52px var(--font-sans); margin: 0 0 var(--spacing-04); text-wrap: balance; max-width: 18ch; }
+    .band .lede { font: 400 20px/30px var(--font-sans); color: var(--color-blue-100); margin: 0 0 var(--spacing-06); max-width: 46ch; }
+    .open { display: inline-flex; align-items: center; height: 48px; padding: 0 var(--spacing-06); border-radius: var(--radius); background: var(--text-inverse); color: var(--color-blue-400); font-weight: 700; text-decoration: none; }
+    .open:hover { background: var(--color-blue-100); color: var(--color-blue-400); }
+    .open:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-blue-400), 0 0 0 4px var(--text-inverse); }
+    .open .fa-solid { margin-left: var(--spacing-05); font-size: 14px; }
 
-    /* The pictures and the recording. */
-    .shots { display: grid; gap: var(--spacing-05); justify-items: center; }
-    .shots img, .shots video { display: block; max-width: 100%; height: auto; max-height: calc(100vh - 232px); border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer); }
-    .shots.two img { max-height: calc(50vh - 120px); }
-    .rec { display: grid; gap: var(--spacing-03); justify-items: center; }
-    .rec-tools { display: flex; align-items: center; gap: var(--spacing-04); font: var(--meta-type); color: var(--muted); }
-    .rec-tools .linkish { margin: 0; height: 24px; padding: 0 var(--spacing-02); }
+    /* The page: the jump menu at the side, the sections down the right. */
+    .page { max-width: 1200px; margin: 0 auto; padding: var(--spacing-07) var(--gap-56) var(--gap-72); display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: var(--gap-56); align-items: start; }
+    .jump { position: sticky; top: var(--spacing-07); display: flex; flex-direction: column; gap: var(--spacing-01); }
+    .jump-label { font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); padding-bottom: 6px; border-bottom: 2px solid var(--border-interactive); margin: 0 0 var(--spacing-03); }
+    .jump a { display: block; padding: 6px 12px; border-left: 3px solid transparent; color: var(--text-secondary); text-decoration: none; font-size: 16px; line-height: 24px; }
+    .jump a:hover { color: var(--ink); background: var(--hover); }
+    .jump a.on { color: var(--accent-deep); border-left-color: var(--accent); background: var(--selected); font-weight: 600; }
+    .jump a:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 2px; }
+    .sections { display: flex; flex-direction: column; gap: var(--spacing-09); max-width: 880px; }
+    section { scroll-margin-top: var(--spacing-06); }
+    section h2 { font: var(--page-title); margin: 0 0 var(--spacing-05); }
+    section h3 { font: var(--card-title); margin: 0 0 var(--spacing-04); }
 
-    table.types { width: 100%; border-collapse: collapse; }
-    table.types td { padding: var(--spacing-04) var(--spacing-05) var(--spacing-04) 0; border-top: 1px solid var(--line); vertical-align: top; }
-    table.types tr:last-child td { border-bottom: 1px solid var(--line); }
-    table.types td:first-child { font-weight: 700; white-space: nowrap; }
+    /* Slides: a few under one heading, one at a time, Back and Next under them. */
+    .carousel { display: grid; gap: var(--spacing-05); }
+    .slide { display: none; }
+    .slide.on { display: block; }
+    .rec { display: grid; gap: var(--spacing-03); justify-items: center; margin: var(--spacing-05) 0 0; }
+    .rec video { display: block; width: 100%; max-width: 760px; height: auto; border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer); }
+    .rec figcaption { font: var(--meta-type); color: var(--muted); text-align: center; }
+    .rec-toggle { margin: 0 0 0 var(--spacing-02); height: 24px; padding: 0 var(--spacing-02); }
+    .car-nav { display: flex; align-items: center; justify-content: center; gap: var(--spacing-04); font: var(--meta-type); color: var(--muted); }
+    .car-nav .linkish { margin: 0; height: 24px; padding: 0 var(--spacing-02); }
+    .car-nav .linkish:disabled { color: var(--text-disabled); }
+    .dots { display: inline-flex; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--layer-accent-01); border: 0; padding: 0; margin: 0; cursor: pointer; }
+    .dot.on { background: var(--accent); }
+    .dot:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
-    /* The practice run: the real form, and a queue of its own. */
-    .practice { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; }
-    .deck.on .slide.on:has(.practice) { align-content: start; }   /* the form is tall: its head stays in view, the slide scrolls */
-    .practice .form-box { padding: var(--spacing-06); }
-    .practice-queue { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--spacing-05) var(--spacing-06); }
-    .practice-queue .section-head { margin-bottom: var(--spacing-02); }
-    .practice-queue .queue-row:last-child { border-bottom: 0; }
-    .practice-queue .claude { margin: 0; padding: 13px 0; font: var(--meta-type); color: var(--text-helper); }
+    /* Which type: the desk's tabs, one type at a time. */
+    .type-panel { padding: var(--spacing-05) 0 0; }
+    .type-panel[hidden] { display: none; }
+    .subs { margin: 0 0 var(--spacing-04); }
+    .subs b { font-weight: 600; }
+    .live { display: block; font: var(--meta-type); color: var(--muted); }
+    .live:empty { display: none; }
+    .live a { font-weight: 600; }
 
-    .nav { flex: none; display: none; align-items: center; justify-content: center; gap: var(--spacing-06); height: 72px; border-top: 1px solid var(--line); background: var(--background); }
-    .deck.on ~ .nav { display: flex; }
-    .nav button { margin: 0; }
-    .nav .where { min-width: 56px; text-align: center; font: var(--label-type); letter-spacing: var(--label-tracking); font-variant-numeric: tabular-nums; }
+    .links-box { max-width: 560px; }
+    .links-box .ql-copy { flex: none; margin: 0; height: 24px; }
+    .links-box .ql-copy.is-copied { color: var(--ok); }
 
-    @media (max-width: 760px) {
-      .slide { padding: var(--spacing-05) var(--spacing-05); }
-      .inner, .practice { grid-template-columns: minmax(0, 1fr); gap: var(--spacing-06); }
-      h1 { font-size: 32px; line-height: 40px; }
-      h2 { font-size: 26px; line-height: 32px; }
-      .shots img, .shots video, .shots.two img { max-height: 45vh; }
-      table.types td:first-child { white-space: normal; }
-      .nav { gap: var(--spacing-04); }
+    @media (max-width: 900px) {
+      .band { padding: var(--spacing-07) var(--spacing-05); }
+      .band h1 { font-size: 30px; line-height: 38px; }
+      .page { grid-template-columns: minmax(0, 1fr); padding: 0 var(--spacing-05) var(--spacing-08); gap: var(--spacing-06); }
+      .jump { position: sticky; top: 0; z-index: 1; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; gap: var(--spacing-02); background: var(--background); margin: 0 calc(-1 * var(--spacing-05)); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--line); }
+      .jump-label { display: none; }
+      .jump a { border-left: 0; border-bottom: 2px solid transparent; white-space: nowrap; padding: 4px 8px; }
+      .jump a.on { border-bottom-color: var(--accent); background: none; }
+      section { scroll-margin-top: 56px; }
+      section h2 { font-size: 26px; line-height: 32px; }
+      .page-tabs { overflow-x: auto; }
     }
-    @media (prefers-reduced-motion: no-preference) {
-      .deck.on .slide { transition: opacity var(--duration-fast-02) var(--ease-standard); }
-    }
+    @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
   </style>
 </head>
 <body>
   <header class="topbar"><nav class="topbar-crumbs" aria-label="Breadcrumb"><a class="topbar-brand" href="/#team">ERC Content Desk</a><span class="topbar-sep">/</span><span class="topbar-here">How to</span></nav></header>
 
-  <main class="deck" id="deck">
-    <section class="slide cover" aria-label="1 of 7">
-      <div class="inner solo"><div>
-        <div class="eyebrow">How to</div>
-        <h1>Submit content to the desk</h1>
-        <p class="lede">Send in an event, a paper, an opportunity or a headline. Six slides, then a practice run.</p>
-        <a class="open" href="https://erc-content-desk.vercel.app/#team" target="_blank" rel="noopener">Open Submit content<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
-        <p class="hint">Press the right arrow, or click Next.</p>
-      </div></div>
-    </section>
+  <div class="band"><div class="in">
+    <div class="eyebrow">How to</div>
+    <h1>Submit content to the desk</h1>
+    <p class="lede">Send in an event, a paper, an opportunity or a headline, one at a time or a whole list.</p>
+    <a class="open" href="https://erc-content-desk.vercel.app/#team" target="_blank" rel="noopener">Open Submit content<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+  </div></div>
 
-    <section class="slide" aria-label="2 of 7">
-      <div class="inner">
-        <div>
-          <h2>Fill in the form</h2>
-          <ol>
-            <li>Paste the item's link.</li>
-            <li>Pick a type, then its subtype.</li>
-            <li>Put the date, time and place, or the deadline, in the Description.</li>
-            <li>Add your initials, then click Add to the queue.</li>
-          </ol>
-        </div>
-        <div class="rec">
-          <div class="shots"><video id="fill-in" muted loop playsinline preload="metadata" poster="1-form.png" aria-label="The Submit content form being filled in with a practice event, then added to the queue."><source src="fill-in.webm" type="video/webm" /></video></div>
-          <div class="rec-tools"><span>The form, filled in with a practice event.</span><button type="button" class="linkish" id="rec-toggle">Pause</button></div>
-        </div>
-      </div>
-    </section>
+  <div class="page">
+    <nav class="jump" aria-label="On this page">
+      <div class="jump-label">On this page</div>
+      <a href="#add">Add content</a>
+      <a href="#types">Which type</a>
+      <a href="#links">Links to share</a>
+    </nav>
 
-    <section class="slide" aria-label="3 of 7">
-      <div class="inner">
-        <div>
-          <h2>Claude is still working</h2>
-          <p class="note">After you click Add to the queue, <b>Claude</b> reads the link and fills in what you left blank. The more you fill in, the better it does.</p>
-          <p>For an event or an opportunity, Claude tidies the Description into plain sentences and moves the date, time and place into their own fields. Your text is kept.</p>
-          <p>Your item shows in the Queue once Claude is done. Refresh if it isn't there yet. If it never shows, it still landed: Content Sort reads it.</p>
-          <p class="quiet">Nothing goes public until Kate reviews it.</p>
+    <main class="sections">
+      <section id="add" aria-labelledby="h-add">
+        <h2 id="h-add">Add content</h2>
+        <div class="carousel" data-carousel>
+          <div class="slide on">
+            <h3>Add one item</h3>
+            <ol>
+              <li>Paste the item's link.</li>
+              <li>Pick a type, then its subtype. <a href="#types">Which type</a> says what each is.</li>
+              <li>Put the date, time and place, or the deadline, in the Description.</li>
+              <li>Add your initials, then click Add to the queue.</li>
+            </ol>
+            <p class="note"><b>Claude</b> then reads the link and fills in what you left blank. The more you fill in, the better it does.</p>
+            <figure class="rec">
+              <video muted loop playsinline preload="metadata" poster="1-form.png" aria-label="The Submit content form being filled in with a practice event, then added to the queue."><source src="fill-in.webm" type="video/webm" /></video>
+              <figcaption>The form, filled in with a practice event.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
+            </figure>
+          </div>
+          <div class="slide">
+            <h3>Bulk add items</h3>
+            <p>For a list from a scraper, a newsletter or your notes. <b>The spreadsheet is best:</b> its columns are the desk's own, so nothing is guessed. A Word file goes through Claude, which splits it into items.</p>
+            <ol>
+              <li>Download the <a href="/templates/erc-upload-template.xlsx" download>spreadsheet template</a>, or the <a href="/templates/erc-upload-template.docx" download>Word template</a>.</li>
+              <li>Fill it in, one item per row. Or give an AI your list and the template, and have it fill the template. Every item needs a link.</li>
+              <li>Drop the file on Add a doc or spreadsheet, under the form.</li>
+              <li>Check the list it shows, then click Add to the queue. The button counts the items.</li>
+            </ol>
+            <p class="note"><b>Claude</b> then reads each item's link, as it does for one.</p>
+            <figure class="rec">
+              <video muted loop playsinline preload="metadata" poster="5-bulk-list.png" aria-label="The spreadsheet dropped on Add a doc or spreadsheet: the three items listed, then added to the queue."><source src="bulk.webm" type="video/webm" /></video>
+              <figcaption>The spreadsheet dropped, the items listed, then added.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
+            </figure>
+          </div>
+          <div class="car-nav"><button type="button" class="linkish prev">Back</button><span class="dots"></span><button type="button" class="linkish next">Next</button></div>
         </div>
-        <div class="shots two"><img src="2-added.png" alt="The form after adding: Added to the queue, with Add another." /><img src="3-queue.png" alt="The Queue with the new item at the top." /></div>
-      </div>
-    </section>
+        <p class="quiet" style="margin-top: var(--spacing-05)">Nothing goes public until Kate reviews it.</p>
+      </section>
 
-    <section class="slide" aria-label="4 of 7">
-      <div class="inner solo"><div>
-        <h2>Which type</h2>
-        <table class="types">
-          <tr><td>ERC event</td><td>An event the ERC hosts or co-hosts. No subtype.</td></tr>
-          <tr><td>New research</td><td>A paper or report: Working Paper, Peer-Reviewed or Report. ERC Research when it's ours.</td></tr>
-          <tr><td>Event</td><td>An event that isn't ours: A&amp;M for on campus, Off-Campus, or Webinar-Online.</td></tr>
-          <tr><td>Opportunity</td><td>Funding &amp; Grants, Fellowships &amp; Programs, Call for Proposals, or Other.</td></tr>
-          <tr><td>Headline</td><td>A news story. National or Texas.</td></tr>
-        </table>
-        <p class="quiet" style="margin-top: var(--spacing-05)">Not sure? Pick the closest. Kate can change it.</p>
-      </div></div>
-    </section>
+      <section id="types" aria-labelledby="h-types">
+        <h2 id="h-types">Which type</h2>
+        <div class="page-tabs"><div class="tabs" role="tablist" aria-label="Types" id="type-tabs"></div></div>
+        <div id="type-panels"></div>
+        <p class="quiet">Not sure? Pick the closest. Kate can change it.</p>
+      </section>
 
-    <section class="slide" aria-label="5 of 7">
-      <div class="inner">
-        <div>
-          <h2>Bulk upload</h2>
-          <p class="quiet">For a list from a scraper, a newsletter or your notes.</p>
-          <ol>
-            <li>Download the Word or spreadsheet template, under Add a doc or spreadsheet.</li>
-            <li>Fill it in, one item per row in the spreadsheet or per block in Word. Or have an AI fill it from your list.</li>
-            <li>Drop the file on Add a doc or spreadsheet.</li>
-          </ol>
-          <p class="note">The desk lists the items it found (<b>Claude</b> reads a Word file; a spreadsheet goes row by row). Check them, then add them to the queue. The button counts them.</p>
-          <p class="quiet">Every item needs a link.</p>
-        </div>
-        <div class="shots"><img src="5-bulk.png" alt="Add a doc or spreadsheet, open: drop a file here or click to choose one, with the Word and Spreadsheet templates." /></div>
-      </div>
-    </section>
-
-    <section class="slide" aria-label="6 of 7">
-      <div class="inner">
-        <div>
-          <h2>Public links you can share</h2>
-          <p>These are live and public. Under Quick links, click Copy link next to the one you need. Never send the desk's address.</p>
-          <ul>
-            <li><a href="https://erc-share.vercel.app/submit/" target="_blank" rel="noopener">Submit content</a>: for anyone outside the team to send us an item.</li>
-            <li><a href="https://erc-share.vercel.app/listserv/" target="_blank" rel="noopener">Join listserv</a>: to get the newsletter.</li>
-            <li><a href="https://erc-policy-exchange.vercel.app/" target="_blank" rel="noopener">ERC Policy Exchange</a>: the public site for what Kate publishes.</li>
-          </ul>
-        </div>
-        <div class="shots"><img src="4-links.png" style="max-width: min(360px, 100%)" alt="Quick links on the team page: Submit content, Join listserv and ERC Policy Exchange, each with Copy link." /></div>
-      </div>
-    </section>
-
-    <section class="slide" aria-label="7 of 7">
-      <div class="inner practice">
-        <div>
-          <h2>Try it</h2>
-          <p class="quiet">This form saves nothing. Fill it in the way you would on Submit content.</p>
-          <div class="form-box" id="practice-form"></div>
-        </div>
-        <div class="practice-queue">
-          <div class="section-head"><h3 class="section-label">Your practice queue</h3><span class="section-note" id="practice-count">Nothing yet</span></div>
-          <div class="queue-rows" id="practice-rows"><p class="queue-meta">What you add shows here.</p></div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <nav class="nav" aria-label="Slides">
-    <button type="button" id="back" disabled>Back</button>
-    <span class="where" id="where" aria-live="polite">1 / 7</span>
-    <button type="button" class="primary" id="next">Next</button>
-  </nav>
+      <section id="links" aria-labelledby="h-links">
+        <h2 id="h-links">Links to share</h2>
+        <p>These pages are live and public. Copy link copies the address, here or under Quick links on Submit content. Never send the desk's address.</p>
+        <div class="side-box links-box" id="links-box"></div>
+      </section>
+    </main>
+  </div>
 
   <script type="module">
-    import { renderSubmitForm } from '/js/submit-form.js';
-    import { busyWords } from '/js/icons.js';
+    import { QUICK_LINKS } from '/js/team-ui.js';
+    import { TYPES, TYPE_ORDER, typeDisplay } from '/js/schema.js';
+    import { faIcon } from '/js/icons.js';
     import { el } from '/js/ui-aids.js';
 
-    // ---- The deck ----
-    const deck = document.getElementById('deck');
-    const slides = [...deck.querySelectorAll('.slide')];
-    const back = document.getElementById('back');
-    const next = document.getElementById('next');
-    const where = document.getElementById('where');
-    const video = document.getElementById('fill-in');
     const stillMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let at = 0;
-    function show(i) {
-      at = Math.min(slides.length - 1, Math.max(0, i));
-      slides.forEach((s, n) => { s.classList.toggle('on', n === at); s.setAttribute('aria-hidden', String(n !== at)); if (n === at) s.scrollTop = 0; });
-      back.disabled = at === 0;
-      next.disabled = at === slides.length - 1;
-      where.textContent = `${at + 1} / ${slides.length}`;
-      history.replaceState(null, '', `#${at + 1}`);
-      // The recording plays while its slide is up, unless motion is turned off.
-      if (slides[at].contains(video)) { if (!stillMotion) video.play().catch(() => {}); }
-      else video.pause();
-    }
-    deck.classList.add('on');
-    back.addEventListener('click', () => show(at - 1));
-    next.addEventListener('click', () => show(at + 1));
-    document.addEventListener('keydown', e => {
-      if (e.altKey || e.ctrlKey || e.metaKey) return;
-      const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
-      if (typing && e.key !== 'PageDown' && e.key !== 'PageUp') return;
-      if (['ArrowRight', 'PageDown'].includes(e.key) || (e.key === ' ' && !typing)) { e.preventDefault(); show(at + 1); }
-      else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(at - 1); }
-      else if (e.key === 'Home' && !typing) { e.preventDefault(); show(0); }
-      else if (e.key === 'End' && !typing) { e.preventDefault(); show(slides.length - 1); }
-    });
-    let x0 = null, y0 = null;
-    document.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
-    document.addEventListener('touchend', e => {
-      if (x0 === null) return;
-      const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
-      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) && !e.target.closest('input, textarea')) show(at + (dx < 0 ? 1 : -1));
-      x0 = null;
-    }, { passive: true });
 
-    // ---- The recording's pause ----
-    const toggle = document.getElementById('rec-toggle');
-    const sayState = () => { toggle.textContent = video.paused ? 'Play' : 'Pause'; };
-    toggle.addEventListener('click', () => { if (video.paused) video.play().catch(() => {}); else video.pause(); });
-    video.addEventListener('play', sayState);
-    video.addEventListener('pause', sayState);
-    if (stillMotion) sayState();
-
-    // ---- The practice run: the real form, its post caught here ----
-    const realFetch = window.fetch.bind(window);
-    let lastBody = null;
-    window.fetch = async (url, init = {}) => {
-      const path = typeof url === 'string' ? url : url.url;
-      if (path.endsWith('/api/submit')) {
-        lastBody = JSON.parse(init.body || '{}');
-        await new Promise(r => setTimeout(r, 600));
-        return new Response(JSON.stringify({ ok: true, id: `practice_${Date.now()}` }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    // ---- The jump menu: the section in view is lit ----
+    const jumpLinks = [...document.querySelectorAll('.jump a')];
+    const sections = jumpLinks.map(a => document.querySelector(a.getAttribute('href')));
+    const lit = new IntersectionObserver(entries => {
+      for (const e of entries) if (e.isIntersecting) {
+        const i = sections.indexOf(e.target);
+        jumpLinks.forEach((a, n) => { a.classList.toggle('on', n === i); if (n === i) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
       }
-      return realFetch(url, init);
-    };
-    const rows = document.getElementById('practice-rows');
-    const count = document.getElementById('practice-count');
-    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    let added = 0;
-    // As the Queue does: nothing while Claude reads, then the row, a title and one meta line.
-    function practiceAdd(body) {
-      const reading = el('p', 'claude');
-      reading.append(busyWords('Claude is reading the link'));
-      if (!added) rows.replaceChildren();
-      rows.prepend(reading);
-      setTimeout(() => {
-        const row = el('div', 'queue-row');
-        row.append(el('div', 'queue-title', body.title || body.link));
-        row.append(el('div', 'queue-meta', `${body.submitter ? `added by ${body.submitter} · ` : ''}${today}`));
-        reading.replaceWith(row);
-        added += 1;
-        count.textContent = `${added} waiting · newest first`;
-      }, 3500);
+    }, { rootMargin: '-30% 0px -50% 0px' });
+    sections.forEach(s => lit.observe(s));
+
+    // ---- The recordings: play while on screen and their slide is up, unless motion is off ----
+    const seen = new WeakSet();
+    function settle(v) {
+      const slide = v.closest('.slide');
+      const up = !slide || slide.classList.contains('on');
+      if (seen.has(v) && up && !stillMotion && !v.dataset.held) v.play().catch(() => {});
+      else v.pause();
     }
-    renderSubmitForm(document.getElementById('practice-form'), {
-      bulk: false,
-      onSubmitted: () => {
-        if (!lastBody) return;
-        practiceAdd(lastBody);
-        lastBody = null;
-      },
+    const shown = new IntersectionObserver(entries => {
+      for (const e of entries) { if (e.isIntersecting) seen.add(e.target); else seen.delete(e.target); settle(e.target); }
+    }, { threshold: 0.3 });
+    for (const v of document.querySelectorAll('video')) {
+      shown.observe(v);
+      const toggle = v.closest('figure').querySelector('.rec-toggle');
+      const say = () => { toggle.textContent = v.paused ? 'Play' : 'Pause'; };
+      toggle.addEventListener('click', () => { if (v.paused) { delete v.dataset.held; v.play().catch(() => {}); } else { v.dataset.held = '1'; v.pause(); } });
+      v.addEventListener('play', say);
+      v.addEventListener('pause', say);
+      say();
+    }
+
+    // ---- The slides under a heading: one at a time ----
+    for (const car of document.querySelectorAll('[data-carousel]')) {
+      const slides = [...car.querySelectorAll('.slide')];
+      const prev = car.querySelector('.prev'), next = car.querySelector('.next'), dots = car.querySelector('.dots');
+      let at = 0;
+      const dotEls = slides.map((s, i) => {
+        const d = el('button', 'dot');
+        d.type = 'button';
+        d.setAttribute('aria-label', s.querySelector('h3')?.textContent || `Slide ${i + 1}`);
+        d.addEventListener('click', () => show(i));
+        dots.append(d);
+        return d;
+      });
+      function show(i) {
+        at = Math.min(slides.length - 1, Math.max(0, i));
+        slides.forEach((s, n) => { s.classList.toggle('on', n === at); s.setAttribute('aria-hidden', String(n !== at)); });
+        dotEls.forEach((d, n) => { d.classList.toggle('on', n === at); d.setAttribute('aria-current', String(n === at)); });
+        prev.disabled = at === 0;
+        next.disabled = at === slides.length - 1;
+        for (const v of car.querySelectorAll('video')) settle(v);
+      }
+      prev.addEventListener('click', () => show(at - 1));
+      next.addEventListener('click', () => show(at + 1));
+      car.addEventListener('keydown', e => {
+        if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+        if (e.key === 'ArrowRight') { e.preventDefault(); show(at + 1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); show(at - 1); }
+      });
+      let x0 = null, y0 = null;
+      car.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+      car.addEventListener('touchend', e => {
+        if (x0 === null) return;
+        const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(at + (dx < 0 ? 1 : -1));
+        x0 = null;
+      }, { passive: true });
+      show(0);
+    }
+
+    // ---- Which type: a tab a type, as the form names them ----
+    const ABOUT = {
+      erc_event: 'An event the ERC hosts or co-hosts.',
+      research: 'A paper or report. ERC Research when it is ours.',
+      event: 'An event that is not ours. A&M for on campus.',
+      opportunity: 'Funding, a fellowship, a call for proposals.',
+      headline: 'A news story.',
+    };
+    const KIND = {
+      erc_event: r => r.type === 'event' && r.subtype === 'ERC Events',
+      research: r => r.type === 'research',
+      event: r => r.type === 'event' && TYPES.event.subtypes.includes(r.subtype),
+      opportunity: r => r.type === 'opportunity',
+      headline: r => r.type === 'headline',
+    };
+    const tabs = document.getElementById('type-tabs');
+    const panels = document.getElementById('type-panels');
+    const tabEls = TYPE_ORDER.map((type, i) => {
+      const tab = el('button', `tab${i === 0 ? ' is-active' : ''}`, typeDisplay(type));
+      tab.type = 'button';
+      tab.setAttribute('role', 'tab');
+      tab.id = `tab-${type}`;
+      tab.setAttribute('aria-controls', `panel-${type}`);
+      tab.setAttribute('aria-selected', String(i === 0));
+      tab.tabIndex = i === 0 ? 0 : -1;
+      tabs.append(tab);
+      const panel = el('div', 'type-panel');
+      panel.id = `panel-${type}`;
+      panel.setAttribute('role', 'tabpanel');
+      panel.setAttribute('aria-labelledby', tab.id);
+      panel.hidden = i !== 0;
+      const subs = TYPES[type].subtypes;
+      panel.append(el('p', '', ABOUT[type]));
+      const line = el('p', 'subs');
+      if (subs.length) { line.append('Subtypes: '); subs.forEach((s, n) => { line.append(el('b', '', s)); if (n < subs.length - 1) line.append(', '); }); line.append('.'); }
+      else line.append('No subtype.');
+      panel.append(line);
+      const live = el('span', 'live');
+      live.dataset.live = type;
+      panel.append(live);
+      panels.append(panel);
+      tab.addEventListener('click', () => pick(i));
+      return tab;
+    });
+    function pick(i, focus = false) {
+      tabEls.forEach((t, n) => { t.classList.toggle('is-active', n === i); t.setAttribute('aria-selected', String(n === i)); t.tabIndex = n === i ? 0 : -1; document.getElementById(t.getAttribute('aria-controls')).hidden = n !== i; });
+      if (focus) tabEls[i].focus();
+    }
+    tabs.addEventListener('keydown', e => {
+      const i = tabEls.indexOf(document.activeElement);
+      if (i < 0) return;
+      const moves = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabEls.length - 1 };
+      if (!(e.key in moves)) return;
+      e.preventDefault();
+      pick((moves[e.key] + tabEls.length) % tabEls.length, true);
     });
 
-    show(Math.min(slides.length, Math.max(1, parseInt(location.hash.slice(1), 10) || 1)) - 1);
+    // The newest of each kind on the Exchange right now, from its public list.
+    function parseCsv(text) {
+      const rows = []; let row = [], cell = '', q = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (q) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+        else if (c === '"') q = true;
+        else if (c === ',') { row.push(cell); cell = ''; }
+        else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+        else cell += c;
+      }
+      if (cell || row.length) { row.push(cell); rows.push(row); }
+      const head = rows.shift() ?? [];
+      return rows.filter(r => r.length > 1).map(r => Object.fromEntries(head.map((h, i) => [h, r[i] ?? ''])));
+    }
+    fetch('https://erc-policy-exchange.vercel.app/data/news.csv', { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(text => {
+      if (!text) return;
+      const rows = parseCsv(text).filter(r => r.headline && r.link);
+      for (const [kind, fits] of Object.entries(KIND)) {
+        const spot = document.querySelector(`[data-live="${kind}"]`);
+        const pick = rows.filter(fits).sort((a, b) => String(b.date).localeCompare(String(a.date))).at(0);
+        if (!spot || !pick) continue;
+        const a = el('a', '', pick.headline);
+        a.href = pick.link; a.target = '_blank'; a.rel = 'noopener';
+        spot.append('On the Exchange now: ', a, pick.subtype && kind !== 'erc_event' ? ` (${pick.subtype})` : '');
+      }
+    }).catch(() => {});
+
+    // ---- Links to share: the team page's own rows, Copy link and all ----
+    const WHY = { share: 'For anyone outside the team to send us an item.', listserv: 'To get the newsletter.', exchange: 'The public site for what Kate publishes.' };
+    const box = document.getElementById('links-box');
+    for (const item of QUICK_LINKS) {
+      const row = el('div', 'ql-row');
+      const left = el('div', 'ql-left');
+      const ico = el('span', 'ql-ico');
+      ico.append(faIcon(item.icon));
+      const words = el('div', 'ql-words');
+      const a = el('a', 'ql-name', item.label);
+      a.href = item.href; a.target = '_blank'; a.rel = 'noopener';
+      a.append(' ', faIcon('arrow-up-right-from-square'));
+      words.append(a, el('div', 'ql-sub', WHY[item.key] ?? ''));
+      left.append(ico, words);
+      const copy = el('button', 'linkish ql-copy', 'Copy link');
+      copy.type = 'button';
+      copy.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(item.href); } catch { copy.textContent = 'Could not copy'; setTimeout(() => { copy.textContent = 'Copy link'; }, 2000); return; }
+        copy.textContent = 'Copied';
+        copy.classList.add('is-copied');
+        setTimeout(() => { copy.textContent = 'Copy link'; copy.classList.remove('is-copied'); }, 2000);
+      });
+      row.append(left, copy);
+      box.append(row);
+    }
   </script>
 </body>
 </html>
