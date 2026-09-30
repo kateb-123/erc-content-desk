@@ -26,26 +26,26 @@
     .note { padding: var(--spacing-04) var(--spacing-05); background: var(--notification-info-background); border: 1px solid var(--notification-info-border); border-left: 4px solid var(--support-info); border-radius: var(--radius); }
 
     /* The band: the bar's navy, the page's name on it. */
-    .band { background: var(--color-blue-400); color: var(--text-inverse); padding: var(--spacing-07) var(--gap-56); }
-    .band .in { max-width: 1200px; margin: 0 auto; }
-    .eyebrow { display: inline-block; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--color-maize-400); padding-bottom: 6px; border-bottom: 2px solid var(--color-maize-400); margin: 0 0 var(--spacing-04); }
-    .band h1 { font: var(--page-title); margin: 0 0 var(--spacing-03); text-wrap: balance; max-width: 24ch; }
-    .band .lede { font: var(--lede-type); color: var(--color-blue-100); margin: 0 0 var(--spacing-05); max-width: 52ch; }
+    .band { background: var(--color-blue-400); color: var(--text-inverse); padding: var(--spacing-06) var(--gap-56); }
+    .band .in { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-06); flex-wrap: wrap; }
+    .eyebrow { display: inline-block; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--color-maize-400); padding-bottom: 6px; border-bottom: 2px solid var(--color-maize-400); margin: 0 0 var(--spacing-03); }
+    .band h1 { font: var(--card-title); font-size: 24px; line-height: 32px; margin: 0 0 var(--spacing-01); }
+    .band .lede { font: var(--meta-type); color: var(--color-blue-100); margin: 0; }
     .open { display: inline-flex; align-items: center; height: 40px; padding: 0 var(--spacing-05); border-radius: var(--radius); background: var(--text-inverse); color: var(--color-blue-400); font-weight: 700; text-decoration: none; }
     .open:hover { background: var(--color-blue-100); color: var(--color-blue-400); }
     .open:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-blue-400), 0 0 0 4px var(--text-inverse); }
     .open .fa-solid { margin-left: var(--spacing-05); font-size: 14px; }
 
     /* The page: the jump menu at the side, the sections down the right. */
-    .page { max-width: 1200px; margin: 0 auto; padding: var(--spacing-07) var(--gap-56) var(--gap-72); display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: var(--gap-56); align-items: start; }
-    .jump { position: sticky; top: var(--spacing-07); display: flex; flex-direction: column; gap: var(--spacing-01); }
-    .jump-label { font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); padding-bottom: 6px; border-bottom: 2px solid var(--border-interactive); margin: 0 0 var(--spacing-03); }
-    .jump a { display: block; padding: 6px 12px; border-left: 3px solid transparent; color: var(--text-secondary); text-decoration: none; font-size: 16px; line-height: 24px; }
-    .jump a:hover { color: var(--ink); background: var(--hover); }
-    .jump a.on { color: var(--accent-deep); border-left-color: var(--accent); background: var(--selected); font-weight: 600; }
+    .page { max-width: 1200px; margin: 0 auto; padding: 0 var(--gap-56) var(--gap-72); }
+    .jump { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: var(--spacing-05); background: var(--background); border-bottom: 1px solid var(--line); margin: 0 calc(-1 * var(--gap-56)) var(--spacing-07); padding: 0 var(--gap-56); overflow-x: auto; }
+    .jump-label { font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--text-helper); white-space: nowrap; margin-right: var(--spacing-03); }
+    .jump a { display: block; padding: 11px 0 9px; border-bottom: 2px solid transparent; color: var(--text-secondary); text-decoration: none; font-size: 16px; line-height: 24px; white-space: nowrap; }
+    .jump a:hover { color: var(--ink); }
+    .jump a.on { color: var(--ink); border-bottom-color: var(--accent); font-weight: 700; }
     .jump a:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 2px; }
-    .sections { display: flex; flex-direction: column; gap: var(--spacing-09); max-width: 880px; }
-    section { scroll-margin-top: var(--spacing-06); }
+    .sections { display: flex; flex-direction: column; gap: var(--spacing-09); }
+    section { scroll-margin-top: 72px; }
     section h2 { font: var(--page-title); margin: 0 0 var(--spacing-05); }
     section h3 { font: var(--card-title); margin: 0 0 var(--spacing-04); }
 
@@ -83,11 +83,9 @@
     @media (max-width: 900px) {
       .band { padding: var(--spacing-07) var(--spacing-05); }
       .band h1 { font-size: 26px; line-height: 32px; }
-      .page { grid-template-columns: minmax(0, 1fr); padding: 0 var(--spacing-05) var(--spacing-08); gap: var(--spacing-06); }
-      .jump { position: sticky; top: 0; z-index: 1; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; gap: var(--spacing-02); background: var(--background); margin: 0 calc(-1 * var(--spacing-05)); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--line); }
+      .page { padding: 0 var(--spacing-05) var(--spacing-08); }
+      .jump { margin: 0 calc(-1 * var(--spacing-05)) var(--spacing-06); padding: 0 var(--spacing-05); gap: var(--spacing-04); }
       .jump-label { display: none; }
-      .jump a { border-left: 0; border-bottom: 2px solid transparent; white-space: nowrap; padding: 4px 8px; }
-      .jump a.on { border-bottom-color: var(--accent); background: none; }
       section { scroll-margin-top: 56px; }
       section h2 { font-size: 26px; line-height: 32px; }
       .page-tabs { overflow-x: auto; }
@@ -100,9 +98,11 @@
   <header class="topbar"><nav class="topbar-crumbs" aria-label="Breadcrumb"><a class="topbar-brand" href="/#team">ERC Content Desk</a><span class="topbar-sep">/</span><span class="topbar-here">How to</span></nav></header>
 
   <div class="band"><div class="in">
-    <div class="eyebrow">How to</div>
-    <h1>Submit content to the desk</h1>
-    <p class="lede">Send in an event, a paper, an opportunity or a headline, one at a time or a whole list.</p>
+    <div>
+      <div class="eyebrow">How to</div>
+      <h1>Submit content to the desk</h1>
+      <p class="lede">An event, a paper, an opportunity or a headline, one at a time or a whole list.</p>
+    </div>
     <a class="open" href="https://erc-content-desk.vercel.app/#team" target="_blank" rel="noopener">Open Submit content<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
   </div></div>
 

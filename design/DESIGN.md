@@ -380,11 +380,13 @@ The team's how-to lives on the desk's open side at `/how-to/submit-content/`
 (Kate, Sep 30: "it should live in vercel, on the content desk page, for how to
 documents"), a static page beside the app, no password, linked from her email.
 It was a deck for an afternoon; her calls the same day: "move away from the
-slides a little", a page that SCROLLS with a JUMP MENU at its side (sticky,
-the section in view lit, a chip row on a phone), and under a heading "just
-the slides if needed", never two columns. The cover became a navy band, the
-bar's colour extended, with the eyebrow's maize rule and a white button (her
-C of four). Three sections, hers: Add content, two slides under the desk's own
+slides a little", a page that SCROLLS with a JUMP MENU (sticky, the section
+in view lit; it began at the page's side and moved to a row under the band
+when she found the page "scrunched and not 1 column": the content is ONE
+COLUMN, 1120px wide), and under a heading "just the slides if needed". The
+cover became a navy band, the bar's colour extended, with the eyebrow's
+maize rule and a white button (her C of four), then one row 140px tall,
+the words left and the button right ("header is still too big", twice). Three sections, hers: Add content, two slides under the desk's own
 tabs, Add one item and Bulk add items (her wireframe answers: named tabs
 above, not Back and Next; each slide a white box in two columns, the words
 in the left third and the recording in the right two thirds, "the words
