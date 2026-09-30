@@ -382,14 +382,17 @@ slides a little", a page that SCROLLS with a JUMP MENU at its side (sticky,
 the section in view lit, a chip row on a phone), and under a heading "just
 the slides if needed", never two columns. The cover became a navy band, the
 bar's colour extended, with the eyebrow's maize rule and a white button (her
-C of four). Three sections, hers: Add content, two slides that swipe (Back,
-Next and dots under them, the arrow keys while the slides have focus, a
-swipe on a phone): Add one item and Bulk add items ("the spreadsheet is
-best", its columns are the desk's own; the templates download from the page;
-every item needs a link), each with its steps, one "Claude" info note and a
-RECORDING of the real desk in the sandbox (`fill-in.webm`, `bulk.webm`),
-muted, looping, playing only while on screen and its slide is up, Play and
-Pause under it, still under reduced motion; Which type, the desk's own tabs,
+C of four). Three sections, hers: Add content, two slides under the desk's own
+tabs, Add one item and Bulk add items (her wireframe answers: named tabs
+above, not Back and Next; each slide a white box in two columns, the words
+in the left third and the recording in the right two thirds, "the words
+column wider" than her first 1:3; the Claude note under the steps; "the
+spreadsheet is best", its columns are the desk's own; the templates download
+from the page; every item needs a link), each with its steps, one "Claude"
+info note and a RECORDING of the real desk in the sandbox (`fill-in.webm`,
+`bulk.webm`), muted, looping, playing only while on screen and its slide is
+up, Play and Pause under it, still under reduced motion, a swipe on a phone
+moving between the slides; Which type, the desk's own tabs,
 a tab a type named as the form names it, with its subtypes and the newest
 example of that kind on the Exchange right now, fetched from the Exchange's
 public news.csv at load, so it never goes stale; and Links to share, the team

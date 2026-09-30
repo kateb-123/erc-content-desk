@@ -49,21 +49,16 @@
     section h2 { font: var(--page-title); margin: 0 0 var(--spacing-05); }
     section h3 { font: var(--card-title); margin: 0 0 var(--spacing-04); }
 
-    /* Slides: a few under one heading, one at a time, Back and Next under them. */
-    .carousel { display: grid; gap: var(--spacing-05); }
+    /* Slides under a heading: named tabs above, one slide at a time, the
+       words in the left third and the recording in the right two thirds. */
     .slide { display: none; }
-    .slide.on { display: block; }
-    .rec { display: grid; gap: var(--spacing-03); justify-items: center; margin: var(--spacing-05) 0 0; }
-    .rec video { display: block; width: 100%; max-width: 760px; height: auto; border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer); }
-    .rec figcaption { font: var(--meta-type); color: var(--muted); text-align: center; }
+    .slide.on { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--spacing-07); align-items: start; margin-top: var(--spacing-05); padding: var(--spacing-06); background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); }
+    .slide ol { padding-left: 24px; }
+    .slide .note { margin-top: var(--spacing-05); }
+    .rec { display: grid; gap: var(--spacing-03); margin: 0; min-width: 0; }
+    .rec video { display: block; width: 100%; height: auto; border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer-01); }
+    .rec figcaption { font: var(--meta-type); color: var(--muted); }
     .rec-toggle { margin: 0 0 0 var(--spacing-02); height: 24px; padding: 0 var(--spacing-02); }
-    .car-nav { display: flex; align-items: center; justify-content: center; gap: var(--spacing-04); font: var(--meta-type); color: var(--muted); }
-    .car-nav .linkish { margin: 0; height: 24px; padding: 0 var(--spacing-02); }
-    .car-nav .linkish:disabled { color: var(--text-disabled); }
-    .dots { display: inline-flex; gap: 6px; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--layer-accent-01); border: 0; padding: 0; margin: 0; cursor: pointer; }
-    .dot.on { background: var(--accent); }
-    .dot:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
     /* Which type: the desk's tabs, one type at a time. */
     .type-panel { padding: var(--spacing-05) 0 0; }
@@ -89,6 +84,7 @@
       section { scroll-margin-top: 56px; }
       section h2 { font-size: 26px; line-height: 32px; }
       .page-tabs { overflow-x: auto; }
+      .slide.on { grid-template-columns: minmax(0, 1fr); gap: var(--spacing-05); padding: var(--spacing-05); }
     }
     @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
   </style>
@@ -114,8 +110,10 @@
     <main class="sections">
       <section id="add" aria-labelledby="h-add">
         <h2 id="h-add">Add content</h2>
-        <div class="carousel" data-carousel>
-          <div class="slide on">
+        <div class="page-tabs"><div class="tabs" role="tablist" aria-label="Add content" id="add-tabs"></div></div>
+        <div id="add-slides">
+          <div class="slide on" data-tab="Add one item">
+            <div>
             <h3>Add one item</h3>
             <ol>
               <li>Paste the item's link.</li>
@@ -124,12 +122,14 @@
               <li>Add your initials, then click Add to the queue.</li>
             </ol>
             <p class="note"><b>Claude</b> then reads the link and fills in what you left blank. The more you fill in, the better it does.</p>
+            </div>
             <figure class="rec">
               <video muted loop playsinline preload="metadata" poster="1-form.png" aria-label="The Submit content form being filled in with a practice event, then added to the queue."><source src="fill-in.webm" type="video/webm" /></video>
               <figcaption>The form, filled in with a practice event.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
             </figure>
           </div>
-          <div class="slide">
+          <div class="slide" data-tab="Bulk add items">
+            <div>
             <h3>Bulk add items</h3>
             <p>For a list from a scraper, a newsletter or your notes. <b>The spreadsheet is best:</b> its columns are the desk's own, so nothing is guessed. A Word file goes through Claude, which splits it into items.</p>
             <ol>
@@ -139,12 +139,12 @@
               <li>Check the list it shows, then click Add to the queue. The button counts the items.</li>
             </ol>
             <p class="note"><b>Claude</b> then reads each item's link, as it does for one.</p>
+            </div>
             <figure class="rec">
               <video muted loop playsinline preload="metadata" poster="5-bulk-list.png" aria-label="The spreadsheet dropped on Add a doc or spreadsheet: the three items listed, then added to the queue."><source src="bulk.webm" type="video/webm" /></video>
               <figcaption>The spreadsheet dropped, the items listed, then added.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
             </figure>
           </div>
-          <div class="car-nav"><button type="button" class="linkish prev">Back</button><span class="dots"></span><button type="button" class="linkish next">Next</button></div>
         </div>
         <p class="quiet" style="margin-top: var(--spacing-05)">Nothing goes public until Kate reviews it.</p>
       </section>
@@ -204,44 +204,49 @@
       say();
     }
 
-    // ---- The slides under a heading: one at a time ----
-    for (const car of document.querySelectorAll('[data-carousel]')) {
-      const slides = [...car.querySelectorAll('.slide')];
-      const prev = car.querySelector('.prev'), next = car.querySelector('.next'), dots = car.querySelector('.dots');
-      let at = 0;
-      const dotEls = slides.map((s, i) => {
-        const d = el('button', 'dot');
-        d.type = 'button';
-        d.setAttribute('aria-label', s.querySelector('h3')?.textContent || `Slide ${i + 1}`);
-        d.addEventListener('click', () => show(i));
-        dots.append(d);
-        return d;
+    // ---- Tabs, the desk's own: one tab stop, Left and Right move, Home and End jump ----
+    function tabSet(list, panels, name) {
+      const tabs = panels.map((panel, i) => {
+        const tab = el('button', `tab${i === 0 ? ' is-active' : ''}`, panel.dataset.tab);
+        tab.type = 'button';
+        tab.setAttribute('role', 'tab');
+        tab.id = `${name}-tab-${i}`;
+        panel.id ||= `${name}-panel-${i}`;
+        tab.setAttribute('aria-controls', panel.id);
+        panel.setAttribute('role', 'tabpanel');
+        panel.setAttribute('aria-labelledby', tab.id);
+        tab.addEventListener('click', () => pick(i));
+        list.append(tab);
+        return tab;
       });
-      function show(i) {
-        at = Math.min(slides.length - 1, Math.max(0, i));
-        slides.forEach((s, n) => { s.classList.toggle('on', n === at); s.setAttribute('aria-hidden', String(n !== at)); });
-        dotEls.forEach((d, n) => { d.classList.toggle('on', n === at); d.setAttribute('aria-current', String(n === at)); });
-        prev.disabled = at === 0;
-        next.disabled = at === slides.length - 1;
-        for (const v of car.querySelectorAll('video')) settle(v);
+      function pick(i, focus = false) {
+        tabs.forEach((t, n) => { t.classList.toggle('is-active', n === i); t.setAttribute('aria-selected', String(n === i)); t.tabIndex = n === i ? 0 : -1; });
+        panels.forEach((p, n) => { if (p.classList.contains('slide')) p.classList.toggle('on', n === i); else p.hidden = n !== i; });
+        for (const v of document.querySelectorAll('video')) settle(v);
+        if (focus) tabs[i].focus();
       }
-      prev.addEventListener('click', () => show(at - 1));
-      next.addEventListener('click', () => show(at + 1));
-      car.addEventListener('keydown', e => {
-        if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
-        if (e.key === 'ArrowRight') { e.preventDefault(); show(at + 1); }
-        if (e.key === 'ArrowLeft') { e.preventDefault(); show(at - 1); }
+      list.addEventListener('keydown', e => {
+        const i = tabs.indexOf(document.activeElement);
+        if (i < 0) return;
+        const moves = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 };
+        if (!(e.key in moves)) return;
+        e.preventDefault();
+        pick((moves[e.key] + tabs.length) % tabs.length, true);
       });
-      let x0 = null, y0 = null;
-      car.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
-      car.addEventListener('touchend', e => {
+      // A swipe on a phone moves too.
+      let x0 = null, y0 = null, at = () => tabs.findIndex(t => t.classList.contains('is-active'));
+      const box = panels[0].parentElement;
+      box.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+      box.addEventListener('touchend', e => {
         if (x0 === null) return;
         const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
-        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(at + (dx < 0 ? 1 : -1));
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) pick(Math.min(tabs.length - 1, Math.max(0, at() + (dx < 0 ? 1 : -1))));
         x0 = null;
       }, { passive: true });
-      show(0);
+      pick(0);
+      return pick;
     }
+    tabSet(document.getElementById('add-tabs'), [...document.querySelectorAll('#add-slides .slide')], 'add');
 
     // ---- Which type: a tab a type, as the form names them ----
     const ABOUT = {
@@ -258,22 +263,9 @@
       opportunity: r => r.type === 'opportunity',
       headline: r => r.type === 'headline',
     };
-    const tabs = document.getElementById('type-tabs');
-    const panels = document.getElementById('type-panels');
-    const tabEls = TYPE_ORDER.map((type, i) => {
-      const tab = el('button', `tab${i === 0 ? ' is-active' : ''}`, typeDisplay(type));
-      tab.type = 'button';
-      tab.setAttribute('role', 'tab');
-      tab.id = `tab-${type}`;
-      tab.setAttribute('aria-controls', `panel-${type}`);
-      tab.setAttribute('aria-selected', String(i === 0));
-      tab.tabIndex = i === 0 ? 0 : -1;
-      tabs.append(tab);
+    const typePanels = TYPE_ORDER.map(type => {
       const panel = el('div', 'type-panel');
-      panel.id = `panel-${type}`;
-      panel.setAttribute('role', 'tabpanel');
-      panel.setAttribute('aria-labelledby', tab.id);
-      panel.hidden = i !== 0;
+      panel.dataset.tab = typeDisplay(type);
       const subs = TYPES[type].subtypes;
       panel.append(el('p', '', ABOUT[type]));
       const line = el('p', 'subs');
@@ -283,22 +275,10 @@
       const live = el('span', 'live');
       live.dataset.live = type;
       panel.append(live);
-      panels.append(panel);
-      tab.addEventListener('click', () => pick(i));
-      return tab;
+      document.getElementById('type-panels').append(panel);
+      return panel;
     });
-    function pick(i, focus = false) {
-      tabEls.forEach((t, n) => { t.classList.toggle('is-active', n === i); t.setAttribute('aria-selected', String(n === i)); t.tabIndex = n === i ? 0 : -1; document.getElementById(t.getAttribute('aria-controls')).hidden = n !== i; });
-      if (focus) tabEls[i].focus();
-    }
-    tabs.addEventListener('keydown', e => {
-      const i = tabEls.indexOf(document.activeElement);
-      if (i < 0) return;
-      const moves = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabEls.length - 1 };
-      if (!(e.key in moves)) return;
-      e.preventDefault();
-      pick((moves[e.key] + tabEls.length) % tabEls.length, true);
-    });
+    tabSet(document.getElementById('type-tabs'), typePanels, 'type');
 
     // The newest of each kind on the Exchange right now, from its public list.
     function parseCsv(text) {
