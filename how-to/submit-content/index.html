@@ -60,14 +60,21 @@
     .rec figcaption { font: var(--meta-type); color: var(--muted); }
     .rec-toggle { margin: 0 0 0 var(--spacing-02); height: 24px; padding: 0 var(--spacing-02); }
 
-    /* Which type: the desk's tabs, one type at a time. */
-    .type-panel { padding: var(--spacing-05) 0 0; }
-    .type-panel[hidden] { display: none; }
-    .subs { margin: 0 0 var(--spacing-04); }
-    .subs b { font-weight: 600; }
-    .live { display: block; font: var(--meta-type); color: var(--muted); }
-    .live:empty { display: none; }
-    .live a { font-weight: 600; }
+    /* Item types: a row per type, then a row per subtype under it, each with
+       its own line and the newest example of its kind on the Exchange. */
+    table.types { width: 100%; border-collapse: collapse; }
+    table.types th { text-align: left; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); padding: 0 var(--spacing-05) 9px 0; border-bottom: 2px solid var(--border-interactive); }
+    table.types td { padding: var(--spacing-04) var(--spacing-05) var(--spacing-04) 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+    table.types td:first-child { font-weight: 700; white-space: nowrap; }
+    table.types td:last-child { padding-right: 0; }
+    table.types tr.type td { padding-top: var(--spacing-05); border-bottom: 0; }
+    table.types tr.sub td { border-bottom: 0; padding: 4px var(--spacing-05) 4px 0; color: var(--text-secondary); }
+    table.types tr.sub td:first-child { font-weight: 400; padding-left: var(--spacing-06); color: var(--ink); }
+    table.types tr.sub td:first-child::before { content: ''; display: inline-block; width: 12px; height: 12px; margin-right: 8px; border-left: 1px solid var(--border-strong-01); border-bottom: 1px solid var(--border-strong-01); vertical-align: 1px; }
+    table.types tr.last td { border-bottom: 1px solid var(--line); padding-bottom: var(--spacing-05); }
+    table.types .live { font: var(--meta-type); }
+    table.types .live a { font-weight: 600; }
+    .types-wrap { width: 100%; overflow-x: auto; }
 
     .links-box { max-width: 560px; }
     .links-box .ql-copy { flex: none; margin: 0; height: 24px; }
@@ -151,9 +158,11 @@
 
       <section id="types" aria-labelledby="h-types">
         <h2 id="h-types">Item types</h2>
-        <div class="page-tabs"><div class="tabs" role="tablist" aria-label="Types" id="type-tabs"></div></div>
-        <div id="type-panels"></div>
-        <p class="quiet">Not sure? Pick the closest. It can be changed later.</p>
+        <div class="types-wrap"><table class="types" id="types">
+          <thead><tr><th>Type</th><th>Use it for</th><th>On the Exchange now</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+        <p class="quiet" style="margin-top: var(--spacing-05)">Not sure? Pick the closest. It can be changed later.</p>
       </section>
 
       <section id="links" aria-labelledby="h-links">
@@ -248,37 +257,52 @@
     }
     tabSet(document.getElementById('add-tabs'), [...document.querySelectorAll('#add-slides .slide')], 'add');
 
-    // ---- Which type: a tab a type, as the form names them ----
+    // ---- Item types: the table from the schema, a line for each ----
     const ABOUT = {
-      erc_event: 'An event the ERC hosts or co-hosts.',
-      research: 'A paper or report. ERC Research when it is ours.',
-      event: 'An event that is not ours. A&M for on campus.',
-      opportunity: 'Funding, a fellowship, a call for proposals.',
-      headline: 'A news story.',
+      erc_event: 'Anything the ERC hosts or co-hosts: a talk, a workshop, a convening. No subtype.',
+      research: 'A study worth reading.',
+      event: 'Someone else\u2019s event.',
+      opportunity: 'Money, a program or a deadline.',
+      headline: 'A news story about education policy.',
     };
-    const KIND = {
-      erc_event: r => r.type === 'event' && r.subtype === 'ERC Events',
-      research: r => r.type === 'research',
-      event: r => r.type === 'event' && TYPES.event.subtypes.includes(r.subtype),
-      opportunity: r => r.type === 'opportunity',
-      headline: r => r.type === 'headline',
+    const SUBS = {
+      'Working Paper': 'Not yet peer reviewed: a preprint or a working paper series.',
+      'Peer-Reviewed': 'Published in a journal.',
+      'Report': 'From an agency, a think tank or a research center.',
+      'ERC Research': 'Ours: an ERC brief, paper or report.',
+      'A&M': 'On the Texas A&M campus, another unit\u2019s.',
+      'Off-Campus': 'In person, somewhere else.',
+      'Webinar-Online': 'Online. No place to give.',
+      'Funding & Grants': 'Grants and other money for research.',
+      'Fellowships & Programs': 'Fellowships, training and programs to apply for.',
+      'Call for Proposals': 'A conference or a journal asking for submissions.',
+      'Other': 'Anything else with a deadline.',
+      'National': 'National outlets, federal policy.',
+      'Texas': 'Texas outlets, state policy.',
     };
-    const typePanels = TYPE_ORDER.map(type => {
-      const panel = el('div', 'type-panel');
-      panel.dataset.tab = typeDisplay(type);
+    // Which Exchange rows count as this row's kind (an ERC event lives on the
+    // Exchange as an event tagged ERC Events; a subtype row is its type and subtype).
+    const kindOf = (type, sub) => sub
+      ? r => r.type === type && r.subtype === sub
+      : type === 'erc_event' ? r => r.type === 'event' && r.subtype === 'ERC Events' : r => r.type === type;
+    const tbody = document.querySelector('#types tbody');
+    const liveSpots = [];
+    for (const type of TYPE_ORDER) {
       const subs = TYPES[type].subtypes;
-      panel.append(el('p', '', ABOUT[type]));
-      const line = el('p', 'subs');
-      if (subs.length) { line.append('Subtypes: '); subs.forEach((s, n) => { line.append(el('b', '', s)); if (n < subs.length - 1) line.append(', '); }); line.append('.'); }
-      else line.append('No subtype.');
-      panel.append(line);
+      const tr = el('tr', `type${subs.length ? '' : ' last'}`);
       const live = el('span', 'live');
-      live.dataset.live = type;
-      panel.append(live);
-      document.getElementById('type-panels').append(panel);
-      return panel;
-    });
-    tabSet(document.getElementById('type-tabs'), typePanels, 'type');
+      tr.append(el('td', '', typeDisplay(type)), el('td', '', ABOUT[type]), el('td'));
+      if (!subs.length) { tr.lastChild.append(live); liveSpots.push({ fits: kindOf(type), live }); }
+      tbody.append(tr);
+      subs.forEach((sub, i) => {
+        const row = el('tr', `sub${i === subs.length - 1 ? ' last' : ''}`);
+        const spot = el('span', 'live');
+        row.append(el('td', '', sub), el('td', '', SUBS[sub] ?? ''), el('td'));
+        row.lastChild.append(spot);
+        liveSpots.push({ fits: kindOf(type, sub), live: spot });
+        tbody.append(row);
+      });
+    }
 
     // The newest of each kind on the Exchange right now, from its public list.
     function parseCsv(text) {
@@ -298,13 +322,12 @@
     fetch('https://erc-policy-exchange.vercel.app/data/news.csv', { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(text => {
       if (!text) return;
       const rows = parseCsv(text).filter(r => r.headline && r.link);
-      for (const [kind, fits] of Object.entries(KIND)) {
-        const spot = document.querySelector(`[data-live="${kind}"]`);
+      for (const { fits, live } of liveSpots) {
         const pick = rows.filter(fits).sort((a, b) => String(b.date).localeCompare(String(a.date))).at(0);
-        if (!spot || !pick) continue;
+        if (!pick) continue;
         const a = el('a', '', pick.headline);
         a.href = pick.link; a.target = '_blank'; a.rel = 'noopener';
-        spot.append('On the Exchange now: ', a, pick.subtype && kind !== 'erc_event' ? ` (${pick.subtype})` : '');
+        live.append(a);
       }
     }).catch(() => {});
 

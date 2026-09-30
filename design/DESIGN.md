@@ -392,10 +392,13 @@ from the page; every item needs a link), each with its steps, one "Claude"
 info note and a RECORDING of the real desk in the sandbox (`fill-in.webm`,
 `bulk.webm`), muted, looping, playing only while on screen and its slide is
 up, Play and Pause under it, still under reduced motion, a swipe on a phone
-moving between the slides; Which type, the desk's own tabs,
-a tab a type named as the form names it, with its subtypes and the newest
-example of that kind on the Exchange right now, fetched from the Exchange's
-public news.csv at load, so it never goes stale; and Links to share, the team
+moving between the slides; Item types (her name), one
+table under a maize rule, her pick D of five: a bold row per type named as
+the form names it, then an indented row per subtype, each with a plain line
+under "Use it for" (her: the first lines were "lame") and the newest example
+of its kind on the Exchange right now, fetched from the Exchange's public
+news.csv at load, so it never goes stale; no name on the page ("no mention
+of Kate"); and Links to share, the team
 page's own Quick links rows, imported from `js/team-ui.js`, Copy link and
 Copied live. No After you click section and no practice form: "they're not
 idiots". Steps only, and only where the screen does not already say it.

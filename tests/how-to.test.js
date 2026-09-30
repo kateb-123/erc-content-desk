@@ -34,14 +34,15 @@ test('every type has its line, and the names are drawn from the schema, never re
   assert.doesNotMatch(page, /New Ed Policy Research/, 'the Sheet’s name, never shown on the form');
 });
 
-test('the types come from the schema, a tab each, and the examples from the live Exchange', () => {
+test('the types come from the schema, a row each with its subtypes, and the examples from the live Exchange', () => {
   assert.match(page, /import \{ TYPES, TYPE_ORDER, typeDisplay \} from '\/js\/schema\.js'/);
-  assert.match(page, /role', 'tablist'|role="tablist"/);
+  assert.match(page, /for \(const type of TYPE_ORDER\)/);
+  assert.match(page, /TYPES\[type\]\.subtypes/, 'every subtype row is drawn from the schema');
   assert.match(page, /erc-policy-exchange\.vercel\.app\/data\/news\.csv/);
   assert.doesNotMatch(page, /submit-form\.js|window\.fetch = /, 'no practice form: nothing on the page posts anywhere');
 });
 
 test('the words are the desk’s own and carry no dash', () => {
   assert.doesNotMatch(page, /[–—]/, 'no en or em dash');
-  for (const words of ['Add one item', 'Bulk add items', 'Add to the queue', 'Add a doc or spreadsheet', 'Every item needs a link', 'Copy link', 'Quick links']) assert.ok(page.includes(words), words);
+  for (const words of ['Item types', 'Use it for', 'Add one item', 'Bulk add items', 'Add to the queue', 'Add a doc or spreadsheet', 'Every item needs a link', 'Copy link', 'Quick links']) assert.ok(page.includes(words), words);
 });
