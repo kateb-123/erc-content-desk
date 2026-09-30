@@ -16,7 +16,8 @@ function card(item, onGoTo) {
   box.dataset.key = item.key;
   if (item.href) {
     box.href = item.href;
-    box.addEventListener('click', event => { event.preventDefault(); onGoTo(openedScreen(new URL(box.href, location.href).hash)); });
+    // A screen of the desk switches in place; a page of its own (the how-to) is a plain link.
+    if (item.href.includes('#')) box.addEventListener('click', event => { event.preventDefault(); onGoTo(openedScreen(new URL(box.href, location.href).hash)); });
   }
   const words = el('span', 'desk-card-words');
   words.append(el('span', 'desk-card-name', item.label), el('span', 'desk-card-sub', item.sub));

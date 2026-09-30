@@ -218,7 +218,9 @@ The front page is Kate's own (her answer, Sep 22): the title Desk, the lede
 "What waits on each page.", then five cards in a grid of white boxes: Submit
 content (the team's page), Content Sort, Newsletter and Policy Exchange,
 each a name, a line of what it holds and the count as a big numeral with an
-arrow, the teal bar on hover; and Documentation, greyed, Forthcoming. The
+arrow, the teal bar on hover; and Documentation, which opens the team's
+how-to at /how-to/submit-content/ (Kate, Sep 30; greyed and Forthcoming
+until then). The
 top bar shows no lane links there.
 
 The team's page, Submit content at /#team (Kate's sketch and the handoff,

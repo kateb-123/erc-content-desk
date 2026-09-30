@@ -25,8 +25,8 @@ export function recentlyAdded(rows, count = 4) {
 }
 
 /** Kate's own page at the root (her answer, Sep 22): a card for the team's
- *  page, one per lane with the work waiting on it, and Documentation, which
- *  is forthcoming. `counts` is null until the rows are in. */
+ *  page, one per lane with the work waiting on it, and Documentation, the
+ *  team's how-to (Kate, Sep 30). `counts` is null until the rows are in. */
 export function deskCards({ counts, issue, today }) {
   const n = key => (counts ? counts[key] : null);
   const next = issue ? `next issue ${isoToShort(issue, today)}` : 'no issue scheduled';
@@ -35,7 +35,7 @@ export function deskCards({ counts, issue, today }) {
     { key: 'sort', label: 'Content Sort', href: '/#sort', count: n('sort'), sub: 'Waiting to be sorted' },
     { key: 'newsletter', label: 'Newsletter', href: '/#newsletter', count: n('newsletter'), sub: `Ready to add · ${next}` },
     { key: 'exchange', label: 'Policy Exchange', href: '/#exchange', count: n('exchange'), sub: 'Publish would add' },
-    { key: 'docs', label: 'Documentation', href: null, count: null, sub: 'Forthcoming' },
+    { key: 'docs', label: 'Documentation', href: '/how-to/submit-content/', count: null, sub: 'How to submit content, for the team' },
   ];
 }
 

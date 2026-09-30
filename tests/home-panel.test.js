@@ -46,7 +46,7 @@ test('recentlyAdded: the newest rows first, deleted ones left out, capped at the
 
 // Kate's own page at the root (her answer, Sep 22): cards for the team's page,
 // Content Sort, Newsletter and Policy Exchange with their counts, and a
-// Documentation card that says forthcoming.
+// Documentation card that opens the team's how-to (Kate, Sep 30).
 test('deskCards: five cards in order, the counts on the three pages that have work, the next issue under Newsletter', () => {
   const cards = deskCards({ counts: { sort: 13, newsletter: 8, exchange: 2 }, issue: '2026-09-22', today: '2026-09-18' });
   assert.deepEqual(cards.map(c => [c.key, c.label, c.href, c.count, c.sub]), [
@@ -54,7 +54,7 @@ test('deskCards: five cards in order, the counts on the three pages that have wo
     ['sort', 'Content Sort', '/#sort', 13, 'Waiting to be sorted'],
     ['newsletter', 'Newsletter', '/#newsletter', 8, 'Ready to add · next issue Sep 22'],
     ['exchange', 'Policy Exchange', '/#exchange', 2, 'Publish would add'],
-    ['docs', 'Documentation', null, null, 'Forthcoming'],
+    ['docs', 'Documentation', '/how-to/submit-content/', null, 'How to submit content, for the team'],
   ]);
 });
 
