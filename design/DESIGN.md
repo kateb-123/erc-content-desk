@@ -451,6 +451,13 @@ Kate's answers to the usability audit, each one decided by her:
 
 ## The sign-in and the highlight (Sep 23, evening)
 
+**Sep 30: the sign-in is OFF** (Kate: "turn off the password", her pick of
+"the sign-in only"). Every page opens to anyone with the address; the
+password lives on at one place, Publish's Confirm, the one write to the
+public site. `LOCKED_SCREENS` in `js/auth-view.js` is empty; the sign-in
+screen, `/api/auth` and the session code stay wired, so filling the set
+locks the desk again. The paragraphs below describe the lock as built.
+
 - **The desk password** (Kate: "password protected for just me, Kate"). The
   front page, Content Sort (both tabs) and Publish draw the sign-in in their
   place until the session holds; the team's page, the Newsletter and the

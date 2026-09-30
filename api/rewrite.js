@@ -17,7 +17,6 @@ import {
 import { CARD_SCHEMA, cardItems, buildCardPrompt, normalizeCards } from './_lib/card-words.js';
 import { parseModelJson } from './_lib/reply-json.js';
 import { readAllRows } from './_lib/store.js';
-import { refuseUnlessSignedIn } from './_lib/session.js';
 import { fetchHubCsv } from './_lib/hub.js';
 import { hubRows } from './_lib/highlights.js';
 
@@ -29,9 +28,8 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, error: 'Use POST.' });
   }
-  // Content Sort is behind the desk password (Kate, Sep 23), and so is the
-  // model call it makes.
-  if (await refuseUnlessSignedIn(req, res)) return;
+  // The sign-in is off (Kate, Sep 30), so the model call is open like the
+  // page that makes it.
   try {
     if (Array.isArray(req.body?.card)) return await cardWords(req.body.card, res);
     const all = await readAllRows();

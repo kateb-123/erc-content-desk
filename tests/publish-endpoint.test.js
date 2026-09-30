@@ -6,7 +6,7 @@ import { FEATURED_PATH } from '../api/_lib/highlights.js';
 import { createPublishHandler } from '../api/publish.js';
 
 // /api/publish behind the desk password (Kate, Sep 23): the check and the
-// write both need a signed-in browser, and the write asks for the password
+// write no longer need a signed-in browser (Sep 30); the write asks for the password
 // once more. The write also carries her highlight picks to the Exchange, as
 // the pins of its own data/featured.json (Sep 30), with the card's words.
 
@@ -55,14 +55,17 @@ const handlerOver = (store, hub) => createPublishHandler({
   ...store, hub, session: { secret: SECRET, now: () => NOW }, today: () => '2026-09-23', clock: () => '2026-09-23T20:05:00.000Z',
 });
 
-test('signed out, the check and the write are both refused', async () => {
+// Kate, Sep 30: the sign-in is off. The check answers with no cookie at all;
+// the write still stops at the password, which is asked on Confirm.
+test('with no sign-in, the check answers and the write asks for the password', async () => {
   const handler = handlerOver(desk([]), fakeHub());
-  for (const method of ['GET', 'POST']) {
-    const res = fakeRes();
-    await handler({ method, body: {}, headers: {} }, res);
-    assert.equal(res.code, 401, method);
-    assert.deepEqual(res.body, { ok: false, error: 'Sign in to the desk first.' });
-  }
+  const check = fakeRes();
+  await handler({ method: 'GET', body: {}, headers: {} }, check);
+  assert.equal(check.code, 200);
+  const write = fakeRes();
+  await handler({ method: 'POST', body: {}, headers: {} }, write);
+  assert.equal(write.code, 400);
+  assert.match(write.body.error, /password/);
 });
 
 test('the check answers what it always did, plus the live rows that can be picked and the picks as they stand', async () => {

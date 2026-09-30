@@ -18,7 +18,7 @@ import { isValidType, isValidSubtype } from '../js/schema.js';
 import { isSafeLink } from '../js/links.js';
 import { fetchHubFile, putHubFile, diffAgainstHub, appendRowsToCsv, parseCsv, csvLinks } from './_lib/hub.js';
 import { FEATURED_PATH, hubRows, parseFeatured, nowPicks, nowCards, featuredText, cleanPicks, describePicks, pickable, photoUpdates } from './_lib/highlights.js';
-import { refuseUnlessSignedIn, refuseUnlessPassword } from './_lib/session.js';
+import { refuseUnlessPassword } from './_lib/session.js';
 import { todayCentral } from '../js/today.js';
 import { PUBLISH_PAUSED } from '../js/flags.js';
 
@@ -35,7 +35,8 @@ export function createPublishHandler({
 }) {
   return async function handler(req, res) {
     try {
-      if (await refuseUnlessSignedIn(req, res, session)) return;
+      // The sign-in is off (Kate, Sep 30): the check is open; the write still
+      // asks for the password, below.
       // Team trial: the Exchange door is closed. The GET preview stays open so
       // the desk can still show what would publish; only the write is refused.
       if (req.method === 'POST' && PUBLISH_PAUSED) {

@@ -6,8 +6,15 @@
  */
 import { LANES } from './shell-view.js';
 
-/** The screens behind the password. Finalize is a tab of Content Sort. */
-export const LOCKED_SCREENS = new Set(['home', 'sort', 'finalize', 'publish']);
+/** The screens behind the password. Finalize is a tab of Content Sort.
+ *  Kate, Sep 30: "turn off the password": the set is EMPTY, so no page asks
+ *  for a sign-in; the password lives on at Publish's Confirm, the one write
+ *  to the public site. Put 'home', 'sort', 'finalize' and 'publish' back here
+ *  to lock the desk again: the sign-in screen and /api/auth are still wired. */
+export const LOCKED_SCREENS = new Set([]);
+
+/** Whether any page asks for a sign-in at all. */
+export const SIGN_IN_ON = LOCKED_SCREENS.size > 0;
 
 export function isLocked(screen) {
   return LOCKED_SCREENS.has(screen);

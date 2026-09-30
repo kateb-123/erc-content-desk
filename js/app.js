@@ -18,7 +18,7 @@ import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, wit
 import { rewriteTargets, landRewrites } from './rewrite-client.js';
 import { todayCentral } from './today.js';
 import { sessionStatus, signIn as signInRequest, signOut as signOutRequest } from './auth-client.js';
-import { isLocked, authError, lockedOut, WRONG_PASSWORD } from './auth-view.js';
+import { isLocked, SIGN_IN_ON, authError, lockedOut, WRONG_PASSWORD } from './auth-view.js';
 import { renderSignIn } from './auth-ui.js';
 
 
@@ -301,7 +301,7 @@ async function stampSubmitted(data) {
 function goTo(key) {
   if (key !== state.screen) setStatus('');   // last screen's message doesn't follow
   // A locked screen's arrival step waits for the sign-in (arrive runs it then).
-  const may = state.auth === true;
+  const may = !isLocked(key) || state.auth === true;
   if (key === 'sort' && state.screen !== 'sort' && may) readBeforeSort();
   if (key === 'issue' && state.screen !== 'issue' && state.screen !== 'schedule') resetIssueEntry();   // Schedule hands a date over
   if (key === 'finalize' && state.screen !== 'finalize') { resetFinalizeEntry(); state.lastKeepAll = null; }
@@ -791,9 +791,9 @@ document.querySelector('.skip-to-main')?.addEventListener('click', event => {
 });
 
 render();   // the shell paints before the first fetch, not after it
-checkSession();   // beside the first read: whichever answers last runs the arrival step
+if (SIGN_IN_ON) checkSession();   // beside the first read: whichever answers last runs the arrival step
 reload().then(() => {
   // A page opened at a screen's address runs that screen's arrival step once
   // the rows are in and the sign-in holds, the way goTo would have.
-  if (state.auth === true) arrive(openedAt);
+  if (!isLocked(openedAt) || state.auth === true) arrive(openedAt);
 });
