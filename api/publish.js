@@ -4,8 +4,9 @@
  *                     live rows that can be highlighted and the picks as
  *                     they stand.
  * POST /api/publish — append the new rows, commit, stamp published_at; then
- *                     commit her highlight picks (data/highlights.json) when
- *                     the body carries them.
+ *                     commit her highlight picks as the pins of the Exchange's
+ *                     own data/featured.json when the body carries them, with
+ *                     the card's words (Kate, Sep 30).
  * Never modifies or deletes an existing hub row.
  *
  * Behind the desk password (Kate, Sep 23): both need a signed-in browser,
@@ -16,7 +17,7 @@ import { readyToPublish, markPublished } from '../js/workflow.js';
 import { isValidType, isValidSubtype } from '../js/schema.js';
 import { isSafeLink } from '../js/links.js';
 import { fetchHubFile, putHubFile, diffAgainstHub, appendRowsToCsv, parseCsv, csvLinks } from './_lib/hub.js';
-import { HIGHLIGHTS_PATH, hubRows, parseHighlights, highlightsText, cleanPicks, describePicks, pickable, photoUpdates } from './_lib/highlights.js';
+import { FEATURED_PATH, hubRows, parseFeatured, nowPicks, nowCards, featuredText, cleanPicks, describePicks, pickable, photoUpdates } from './_lib/highlights.js';
 import { refuseUnlessSignedIn, refuseUnlessPassword } from './_lib/session.js';
 import { todayCentral } from '../js/today.js';
 import { PUBLISH_PAUSED } from '../js/flags.js';
@@ -59,10 +60,10 @@ export function createPublishHandler({
       const notReady = candidates.filter(r => !publishable.includes(r));
 
       if (req.method === 'GET') {
-        const [{ text }, picksFile] = await Promise.all([hub.fetchFile(CSV_PATH()), hub.fetchFile(HIGHLIGHTS_PATH)]);
+        const [{ text }, picksFile] = await Promise.all([hub.fetchFile(CSV_PATH()), hub.fetchFile(FEATURED_PATH)]);
         const { newRows, skipped } = diffAgainstHub(text, publishable);
         const live = hubRows(text);
-        const picks = parseHighlights(picksFile.text);
+        const featured = parseFeatured(picksFile.text);
         return res.status(200).json({
           ok: true,
           adding: newRows.map(label),
@@ -71,7 +72,9 @@ export function createPublishHandler({
           hubCount: Math.max(parseCsv(text).length - 1, 0),
           liveLinks: [...csvLinks(text)],   // Sort's Already live group reads these (Kate, Sep 22)
           hub: pickable(live, today()),      // what the Exchange still shows, for the highlight step
-          highlights: { updated: picks.updated, items: describePicks(picks.items, { adding: newRows, hub: live }) },
+          // What the card holds today: the pins within their day, and the
+          // one-off cards made on the Exchange beside them.
+          highlights: { items: describePicks(nowPicks(featured, today()), { adding: newRows, hub: live }), cards: nowCards(featured, today()) },
         });
       }
 
@@ -89,7 +92,7 @@ export function createPublishHandler({
         published = diff.newRows;
         skipped = diff.skipped;
         if (picksGiven) {
-          picks = cleanPicks(req.body.highlights, { adding: published, hub: hubRows(text) });
+          picks = cleanPicks(req.body.highlights, { adding: published, hub: hubRows(text), today: today() });
           // A pick's photo goes on the row before it is written, so the site
           // holds it in the list too.
           const withPhoto = new Map(photoUpdates(picks.items, published).map(r => [r.id, r]));
@@ -112,8 +115,9 @@ export function createPublishHandler({
 
       const now = clock();
       if (picksGiven) {
-        const file = await hub.fetchFile(HIGHLIGHTS_PATH);
-        await hub.putFile(HIGHLIGHTS_PATH, highlightsText(picks.items, now), file.sha,
+        // Her picks become the pins; the Exchange's other lists stay as they are.
+        const file = await hub.fetchFile(FEATURED_PATH);
+        await hub.putFile(FEATURED_PATH, featuredText(parseFeatured(file.text), picks.items), file.sha,
           `Highlight from Content Desk: ${picks.items.length} item(s)`);
       }
 

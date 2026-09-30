@@ -2,12 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { blankRow, CSV_COLUMNS } from '../js/schema.js';
 import { issueToken } from '../api/_lib/session.js';
-import { HIGHLIGHTS_PATH } from '../api/_lib/highlights.js';
+import { FEATURED_PATH } from '../api/_lib/highlights.js';
 import { createPublishHandler } from '../api/publish.js';
 
 // /api/publish behind the desk password (Kate, Sep 23): the check and the
 // write both need a signed-in browser, and the write asks for the password
-// once more. The write also carries her highlight picks to the Exchange.
+// once more. The write also carries her highlight picks to the Exchange, as
+// the pins of its own data/featured.json (Sep 30), with the card's words.
 
 const SECRET = 'correct horse';
 const NOW = Date.parse('2026-09-23T20:00:00.000Z');
@@ -25,9 +26,9 @@ function fakeRes() {
   };
 }
 
-function fakeHub({ csv = LIVE_CSV, highlights = '' } = {}) {
+function fakeHub({ csv = LIVE_CSV, featured = '' } = {}) {
   const puts = [];
-  const files = { 'data/news.csv': { text: csv, sha: 'csv1' }, [HIGHLIGHTS_PATH]: highlights ? { text: highlights, sha: 'hl1' } : { text: '', sha: null } };
+  const files = { 'data/news.csv': { text: csv, sha: 'csv1' }, [FEATURED_PATH]: featured ? { text: featured, sha: 'hl1' } : { text: '', sha: null } };
   return {
     puts,
     fetchFile: async path => files[path] ?? { text: '', sha: null },
@@ -69,7 +70,10 @@ test('the check answers what it always did, plus the live rows that can be picke
     kept({ id: 'a', link: 'https://x.org/new', headline: 'Brand new', type: 'research', subtype: 'Report' }),
     kept({ id: 'd', link: 'https://x.org/naep', headline: 'A repeat', type: 'research', subtype: 'Report' }),
   ];
-  const hub = fakeHub({ highlights: JSON.stringify({ updated: '2026-09-20T00:00:00.000Z', items: [{ link: 'https://x.org/naep', image: '' }, { link: 'https://x.org/gone', image: '' }] }) });
+  const hub = fakeHub({ featured: JSON.stringify({
+    pins: [{ key: 'https://x.org/naep', until: '2026-10-08' }, { key: 'https://x.org/gone', until: '2026-10-08', title: 'Gone', summary: 'Was here.' }, { key: 'https://x.org/old', until: '2026-09-01' }],
+    cards: [{ id: 'c1', headline: 'Howdy Policy Trivia Night', label: 'ERC', until: '2026-10-08' }],
+  }) });
   const res = fakeRes();
   await handlerOver(desk(rows), hub)(await signedReq('GET'), res);
   assert.equal(res.code, 200);
@@ -79,17 +83,18 @@ test('the check answers what it always did, plus the live rows that can be picke
   // Only what the Exchange still shows: the past event is out.
   assert.deepEqual(res.body.hub.map(r => r.link), ['https://x.org/naep']);
   assert.equal(res.body.hub[0].infographic, 'https://img/naep.jpg');
-  assert.equal(res.body.highlights.updated, '2026-09-20T00:00:00.000Z');
-  assert.deepEqual(res.body.highlights.items.map(i => [i.link, i.from, i.headline, i.photo]), [
-    ['https://x.org/naep', 'live', 'NAEP 2026', 'https://img/naep.jpg'],
-    ['https://x.org/gone', 'missing', '', ''],
+  // The pins within their day, as the card holds them; the one past its day is out.
+  assert.deepEqual(res.body.highlights.items.map(i => [i.link, i.from, i.headline, i.photo, i.until, i.summary]), [
+    ['https://x.org/naep', 'live', 'NAEP 2026', 'https://img/naep.jpg', '2026-10-08', ''],
+    ['https://x.org/gone', 'missing', '', '', '2026-10-08', 'Was here.'],
   ]);
+  assert.deepEqual(res.body.highlights.cards, [{ headline: 'Howdy Policy Trivia Night', label: 'ERC', until: '2026-10-08' }]);
 });
 
-test('with no highlights file yet, the check says so plainly', async () => {
+test('with no pins file yet, the check says so plainly', async () => {
   const res = fakeRes();
   await handlerOver(desk([]), fakeHub())(await signedReq('GET'), res);
-  assert.deepEqual(res.body.highlights, { items: [], updated: '' });
+  assert.deepEqual(res.body.highlights, { items: [], cards: [] });
 });
 
 test('the write asks for the password again, in the body', async () => {
@@ -116,8 +121,8 @@ test('the write appends the rows, then commits her picks with their photos, and 
     password: SECRET,
     highlights: [
       { link: 'https://x.org/new', image: 'https://img/mine.jpg' },
-      { link: 'https://x.org/naep', image: '' },
-      { link: 'https://x.org/erc', image: '' },
+      { link: 'https://x.org/naep', image: '', until: '2026-10-20' },
+      { link: 'https://x.org/erc', image: '', title: 'ERC workshop', summary: 'Bring your questions about the data room.' },
       { link: 'https://x.org/nowhere', image: '' },
     ],
   }), res);
@@ -130,14 +135,14 @@ test('the write appends the rows, then commits her picks with their photos, and 
   assert.equal(hub.puts[0].path, 'data/news.csv');
   assert.match(hub.puts[0].text, /https:\/\/x\.org\/new,research,Report,.*https:\/\/img\/mine\.jpg\n/);
   assert.match(hub.puts[0].text, /https:\/\/x\.org\/erc,event,ERC Events,.*https:\/\/img\/erc\.jpg\n/);
-  assert.equal(hub.puts[1].path, HIGHLIGHTS_PATH);
+  assert.equal(hub.puts[1].path, FEATURED_PATH);
   assert.equal(hub.puts[1].sha, null);   // a new file
   assert.match(hub.puts[1].message, /highlight/i);
-  assert.deepEqual(JSON.parse(hub.puts[1].text), { updated: '2026-09-23T20:05:00.000Z', items: [
-    { link: 'https://x.org/new', image: 'https://img/mine.jpg' },
-    { link: 'https://x.org/naep', image: '' },
-    { link: 'https://x.org/erc', image: '' },
-  ] });
+  assert.deepEqual(JSON.parse(hub.puts[1].text), { pins: [
+    { key: 'https://x.org/new', until: '2026-10-07', image: 'https://img/mine.jpg' },
+    { key: 'https://x.org/naep', until: '2026-10-20' },
+    { key: 'https://x.org/erc', until: '2026-09-30', title: 'ERC workshop', summary: 'Bring your questions about the data room.' },
+  ], cards: [], hidden: [], heroes: [] });
   // published_at on both rows, and the photo on the one that had none.
   const a = store.updates.find(r => r.id === 'a');
   assert.equal(a.published_at, '2026-09-23T20:05:00.000Z');
@@ -145,8 +150,8 @@ test('the write appends the rows, then commits her picks with their photos, and 
   assert.equal(store.updates.find(r => r.id === 'b').infographic, 'https://img/erc.jpg');
 });
 
-test('no picks in the body leaves the highlights file alone', async () => {
-  const hub = fakeHub({ highlights: JSON.stringify({ items: [{ link: 'https://x.org/naep' }] }) });
+test('no picks in the body leaves the pins file alone', async () => {
+  const hub = fakeHub({ featured: JSON.stringify({ pins: [{ key: 'https://x.org/naep', until: '2026-10-08' }] }) });
   const res = fakeRes();
   await handlerOver(desk([kept({ id: 'a', link: 'https://x.org/new', type: 'research', subtype: 'Report' })]), hub)(await signedReq('POST', { password: SECRET }), res);
   assert.equal(res.code, 200);
@@ -154,12 +159,12 @@ test('no picks in the body leaves the highlights file alone', async () => {
   assert.equal(res.body.highlighted, undefined);
 });
 
-test('picks can change with nothing new to publish: the file is written on its own', async () => {
-  const hub = fakeHub({ highlights: JSON.stringify({ items: [{ link: 'https://x.org/naep' }] }) });
+test('picks can change with nothing new to publish: the file is written on its own, and the Exchange\'s own lists stay', async () => {
+  const hub = fakeHub({ featured: JSON.stringify({ pins: [{ key: 'https://x.org/naep', until: '2026-10-08' }], cards: [{ id: 'c1', headline: 'Trivia', until: '2026-10-08' }], hidden: ['https://x.org/h'], heroes: [{ key: 'https://x.org/naep', hero: 'plainr' }] }) });
   const res = fakeRes();
   await handlerOver(desk([]), hub)(await signedReq('POST', { password: SECRET, highlights: [] }), res);
   assert.equal(res.code, 200);
   assert.deepEqual(res.body, { ok: true, published: 0, skipped: 0, highlighted: 0 });
-  assert.deepEqual(hub.puts.map(p => [p.path, p.sha]), [[HIGHLIGHTS_PATH, 'hl1']]);
-  assert.deepEqual(JSON.parse(hub.puts[0].text).items, []);
+  assert.deepEqual(hub.puts.map(p => [p.path, p.sha]), [[FEATURED_PATH, 'hl1']]);
+  assert.deepEqual(JSON.parse(hub.puts[0].text), { pins: [], cards: [{ id: 'c1', headline: 'Trivia', until: '2026-10-08' }], hidden: ['https://x.org/h'], heroes: [{ key: 'https://x.org/naep', hero: 'plainr' }] });
 });
