@@ -493,7 +493,25 @@ Kate's answers to the usability audit, each one decided by her:
   ("1 highlight has no photo.") and lets her through ("Ask, then allow").
   With nothing to publish and the picks changed, the primary is Update the
   highlight and the ask says so; the status line answers "Highlight updated:
-  N items." The picks ride the write to `data/highlights.json` on the
-  Exchange (`docs/exchange-highlights.md`), so `news.csv` stays append-only;
-  her photo for a pick also lands on the row's own picture where the row had
-  none, and the receipt says "Highlight: N items."
+  N items." The picks ride the write to the Exchange's own
+  `data/featured.json` as its pins (Sep 30; `docs/exchange-highlights.md`),
+  so `news.csv` stays append-only, and Now reads the same file, so it shows
+  what the card holds this minute, the one-off cards made on the Exchange
+  after the pins; her photo for a pick also lands on the row's own picture
+  where the row had none, and the receipt says "Highlight: N items."
+- **The card's words** (Kate, Sep 30): a pick that is an event, an ERC event
+  or an opportunity gets a summary that fits the New & upcoming card, 180
+  characters or fewer, one or two plain sentences, the invitation first, no
+  lead-in, a book or journal name in stars (the card draws them in italics),
+  and its title as it is unless it ran past 80 characters. The model writes
+  them the moment she presses Highlight (`/api/rewrite` with `card`, the
+  same function as Finalize's rewrite; the rules that fit what comes back
+  are `js/card-words.js`): the row says "Writing the card…" in the busy
+  words, then the summary on a line of its own under the pick, with Edit (the
+  pen) opening Card title and Card summary fields and a count ("85 of 180"),
+  Save and Cancel as quiet words. A pick that was on the Exchange before the
+  desk wrote any words, or whose words did not come, says so with the
+  triangle and a Write the card or Try again word. Research and headlines
+  get none: the card shows them as they are. Every pin carries the day it
+  shows until ("until Oct 8" in the meta): hers from the Exchange, else an
+  event's date, an opportunity's deadline, else two weeks.

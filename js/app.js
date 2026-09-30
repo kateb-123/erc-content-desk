@@ -753,6 +753,9 @@ function render() {
       justPublished: state.justPublished, justHighlighted: state.justHighlighted, publishedCsv: state.publishedCsv, publishError: state.publishError,
       onPublish: publishNow, onGoTo: goTo, onEditRow: saveEdit,
       onRecheck: () => { state.publishPreview = null; loadPublishPreview(); },
+      // The card's words for a highlight pick (Kate, Sep 30): the same call
+      // as Finalize's rewrite, asked by link.
+      cardWords: links => postJson('/api/rewrite', { card: links }, 'write the card'),
     });
   }
   if (switched) focusHeading(screens[state.screen]);

@@ -5,16 +5,28 @@
  * under the two a table of everything that could go in. The picks belong to
  * publish-ui.js; this draws them and hands changes back through onChange.
  */
-import { faIcon } from './icons.js';
+import { faIcon, busyWords } from './icons.js';
 import { buildImageControl } from './item-image.js';
 import { typeDisplay } from './schema.js';
-import { MAX_PICKS, LIVE_PER_SECTION, bandAfter, addPick, removePick, movePick, setPhoto, candidates, whenLine, sectionFilters, filterCandidates, trimLive, searchCandidates } from './highlight-view.js';
+import { isoToShort } from './queue-view.js';
+import { SUMMARY_MAX, TITLE_MAX, wantsCardWords } from './card-words.js';
+import { MAX_PICKS, LIVE_PER_SECTION, bandAfter, addPick, removePick, movePick, setPhoto, setCardWords, candidates, whenLine, sectionFilters, filterCandidates, trimLive, searchCandidates } from './highlight-view.js';
 import { el, button } from './ui-aids.js';
 
 // The Pick from table's filter and search (Kate, Sep 23: "so we can find
 // events quickly"; the whole list "is a lot"), kept for the visit. View state only.
 let sectionFilter = 'all';
 let searchTerm = '';
+// The pick whose card words are open for editing (Kate, Sep 30). View state only.
+let editingCard = '';
+
+/** The card's words as the card draws them: *stars* round a name become italics. */
+function markStars(text) {
+  const frag = document.createDocumentFragment();
+  const parts = String(text ?? '').split(/\*([^*\n]+)\*/);
+  parts.forEach((part, i) => { if (part) frag.append(i % 2 ? el('em', '', part) : document.createTextNode(part)); });
+  return frag;
+}
 
 const ORDINAL = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
 const PHOTO_WORDS = { add: 'Add photo', replace: 'Replace photo', remove: 'Remove photo' };
@@ -25,6 +37,7 @@ function metaLine(item, today) {
 
 /** The picture spot: the photo, or the triangle where one is still missing. */
 function photoSpot(photo) {
+  if (photo === 'card') return el('span', 'hl-thumb hl-thumb--card');
   if (photo) {
     const img = el('img', 'hl-thumb');
     img.src = photo;
@@ -41,13 +54,80 @@ function row(item, n, today, from) {
   const li = el('li', 'hl-row');
   li.append(el('span', 'hl-num', String(n)), photoSpot(item.photo));
   const words = el('div', 'hl-words');
-  words.append(el('span', 'hl-title', item.headline || item.link));
+  // The card shows the pick's own title where it has one (trimmed to fit).
+  const title = el('span', 'hl-title');
+  title.append(markStars(item.title || item.headline || item.link));
+  words.append(title);
   const meta = el('span', 'hl-meta', metaLine(item, today));
-  if (from) meta.append(document.createTextNode(`${meta.textContent ? ' · ' : ''}${from}`));
+  const add = text => meta.append(document.createTextNode(`${meta.textContent ? ' · ' : ''}${text}`));
+  if (from) add(from);
+  if (item.until) add(`until ${isoToShort(item.until, today)}`);
   if (!item.photo) meta.append(document.createTextNode(meta.textContent ? ' · ' : ''), el('span', 'hl-warn', 'No photo'));
   words.append(meta);
   li.append(words);
+  // The card's words (Kate, Sep 30), where the pick has them: a line of
+  // their own under the row, the card's width.
+  if (wantsCardWords(item.type) && item.summary) {
+    const line = el('p', 'hl-card');
+    line.append(markStars(item.summary));
+    li.append(line);
+  }
   return li;
+}
+
+/** The card's words on a pick in the After box: the wait while they are
+ *  written, the words with Edit once they land, the ask when they did not
+ *  come, and the small form while she edits them. */
+function cardWordsOn(li, item, { busy, failed, change, ask, picks }) {
+  const words = li.querySelector('.hl-words');
+  const line = li.querySelector('.hl-card');
+  if (editingCard === item.link) {
+    line?.remove();
+    const form = el('form', 'hl-card-edit');
+    form.noValidate = true;
+    const tLabel = el('label', '', 'Card title');
+    const tField = el('input');
+    tField.type = 'text';
+    tField.maxLength = TITLE_MAX;
+    tField.value = item.title || item.headline;
+    tField.dataset.focus = `hl-card-title:${item.link}`;
+    tLabel.append(tField);
+    const sLabel = el('label', '', 'Card summary');
+    const sField = el('textarea');
+    sField.value = item.summary;
+    sField.dataset.focus = `hl-card-summary:${item.link}`;
+    sLabel.append(sField);
+    const count = el('span', 'hl-count');
+    const recount = () => { const n = sField.value.trim().length; count.textContent = `${n} of ${SUMMARY_MAX}`; count.classList.toggle('is-over', n > SUMMARY_MAX); };
+    sField.addEventListener('input', recount);
+    recount();
+    const tools = el('div', 'hl-card-tools');
+    const save = button('Save', 'linkish', { focus: `hl-card-save:${item.link}` });
+    save.type = 'submit';
+    tools.append(save, ' \u00b7 ', button('Cancel', 'linkish skip-link', { focus: `hl-edit:${item.link}`, onClick: () => { editingCard = ''; change(picks); } }), count);
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      editingCard = '';
+      change(setCardWords(picks, item.link, { title: tField.value, summary: sField.value }), true);
+    });
+    form.append(tLabel, sLabel, tools);
+    li.append(form);
+    queueMicrotask(() => sField.focus({ preventScroll: true }));
+    return;
+  }
+  if (busy) {
+    const wait = el('p', 'hl-card');
+    wait.append(busyWords('Writing the card'));
+    li.append(wait);
+    return;
+  }
+  if (item.summary) return;
+  // No words yet: they did not come, or the pick was on the Exchange before
+  // the desk wrote any. The word asks for them.
+  const none = el('p', 'hl-card is-missing');
+  none.append(faIcon('triangle-exclamation'), failed ? 'The card words did not come. ' : 'No card words yet. ');
+  none.append(button(failed ? 'Try again' : 'Write the card', 'linkish', { focus: `hl-write:${item.link}`, onClick: () => ask([item.link]) }));
+  li.append(none);
 }
 
 function box(title, note) {
@@ -59,14 +139,17 @@ function box(title, note) {
 }
 
 /**
- * props: { now, adding, hub, picks, today, onChange }
- *   now: the picks as the Exchange holds them (the check's own, described)
+ * props: { now, cards, adding, hub, picks, today, cardBusy, cardFailed, onChange, onCardWords }
+ *   now: the picks as the Exchange holds them (the check's own, described);
+ *   cards: the one-off cards made on the Exchange beside them
  *   adding: the desk rows going out; hub: the live rows that can be picked
+ *   cardBusy / cardFailed: the links whose card words are being written / did not come
+ *   onCardWords(links): ask for the card's words again
  */
-export function renderHighlights(container, { now, adding, hub, picks, today, onChange }) {
+export function renderHighlights(container, { now, cards = [], adding, hub, picks, today, cardBusy = new Set(), cardFailed = new Set(), onChange, onCardWords }) {
   const ctx = { adding, hub };
   const after = bandAfter(picks, ctx);
-  const change = next => { if (next !== picks) onChange(next); };
+  const change = (next, always = false) => { if (always || next !== picks) onChange(next); };
 
   const head = el('div', 'section-head hl-head');
   head.append(el('h3', 'section-label', 'Highlight'), el('span', 'section-note', 'Up to 6 · each needs a photo'));
@@ -76,10 +159,12 @@ export function renderHighlights(container, { now, adding, hub, picks, today, on
 
   // Left: what the home page shows this minute.
   const nowBox = box('Now');
-  if (!now.length) nowBox.append(el('p', 'hl-empty', 'No picks yet.'));
+  if (!now.length && !cards.length) nowBox.append(el('p', 'hl-empty', 'No picks: the site shows its own feed.'));
   else {
     const list = el('ol', 'hl-list');
     now.forEach((item, i) => list.append(row(item, i + 1, today)));
+    // The one-off cards made on the Exchange's own door sit after the pins.
+    cards.forEach((card, i) => list.append(row({ headline: card.headline, until: card.until, photo: 'card', cardWords: false }, now.length + i + 1, today, `${card.label} card, made on the Exchange`)));
     nowBox.append(list);
   }
   cols.append(nowBox);
@@ -91,7 +176,11 @@ export function renderHighlights(container, { now, adding, hub, picks, today, on
     const list = el('ol', 'hl-list');
     after.forEach((item, i) => {
       const li = row(item, i + 1, today, item.from === 'adding' ? 'adding now' : item.from === 'live' ? 'live' : 'no longer on the site');
+      if (item.cardWords) cardWordsOn(li, item, { busy: cardBusy.has(item.link), failed: cardFailed.has(item.link), change, ask: onCardWords, picks });
       const tools = el('div', 'hl-tools');
+      if (item.cardWords && item.summary && editingCard !== item.link && !cardBusy.has(item.link)) {
+        tools.append(button(' Edit', 'linkish edit-link', { focus: `hl-edit:${item.link}`, icon: 'pen', onClick: () => { editingCard = item.link; change(picks, true); } }));
+      }
       // Her photo for this pick; the row's own shows when she has none.
       const control = buildImageControl(item.image, value => change(setPhoto(picks, item.link, value)),
         { words: { ...PHOTO_WORDS, add: item.photo ? 'Replace photo' : 'Add photo' } });
@@ -103,11 +192,13 @@ export function renderHighlights(container, { now, adding, hub, picks, today, on
       down.setAttribute('aria-label', 'Move down');
       down.disabled = i === after.length - 1;
       tools.append(up, down, button('Remove', 'linkish skip-link', { focus: `hl-out:${item.link}`, onClick: () => change(removePick(picks, item.link)) }));
-      li.append(tools);
+      // The tools sit beside the words; the card line, when there is one, runs under both.
+      li.querySelector('.hl-words').after(tools);
       list.append(li);
     });
     afterBox.append(list);
   }
+  if (cards.length) afterBox.append(el('p', 'hl-empty', `Plus ${cards.length} card${cards.length === 1 ? '' : 's'} made on the Exchange, which stay${cards.length === 1 ? 's' : ''}.`));
   cols.append(afterBox);
   container.append(cols);
 

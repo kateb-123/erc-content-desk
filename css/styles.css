@@ -855,13 +855,13 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hl-box h4 { margin: 0 0 var(--spacing-03); font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); }
 .hl-box h4 .hl-note { font: var(--meta-type); text-transform: none; letter-spacing: 0; color: var(--text-helper); margin-left: var(--spacing-03); }
 .hl-list { list-style: none; margin: 0; padding: 0; }
-.hl-row { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-03) 0; border-top: 1px solid var(--line-in); }
+.hl-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-04); padding: var(--spacing-03) 0; border-top: 1px solid var(--line-in); }
 .hl-row:first-child { border-top: 0; }
 .hl-num { flex: none; width: 20px; font-size: 12px; line-height: 16px; color: var(--text-helper); font-variant-numeric: tabular-nums; }
 .hl-thumb { flex: none; width: 48px; height: 32px; object-fit: cover; border: 1px solid var(--line-in); background: var(--layer-01); }
 /* Where a photo is still missing: the triangle, needs doing, in the picture's spot. */
 .hl-nophoto { flex: none; width: 48px; height: 32px; border: 1px dashed var(--border-strong-01); display: grid; place-items: center; color: var(--warn-mark); font-size: 12px; }
-.hl-words { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-01); }
+.hl-words { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-01); }
 .hl-title { font-size: 14px; line-height: 18px; font-weight: 600; }
 .hl-meta { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
 .hl-warn { color: var(--text-warning); font-weight: 600; }
@@ -876,6 +876,22 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hl-arrow:hover:not(:disabled) { background: var(--hover); border: 0; color: var(--ink); }
 .hl-arrow:disabled { color: var(--layer-accent-01); border: 0; background: none; }
 .hl-empty { margin: 0; color: var(--muted); font: var(--meta-type); }
+/* The card's words on a pick (Kate, Sep 30): the summary as the card shows it, with its wait, its ask and its edit form. */
+/* One row of the flex box on its own, aligned under the title: past the number (20), the picture (48) and the two gaps. */
+.hl-card, .hl-card-edit { flex: 1 1 100%; margin: 0 0 0 calc(20px + 48px + 2 * var(--spacing-05)); }
+.hl-card { font-size: 14px; line-height: 20px; letter-spacing: 0; color: var(--ink); }
+.hl-card.is-missing { color: var(--text-helper); }
+.hl-card.is-missing .fa-solid { color: var(--warn-mark); margin-right: var(--spacing-02); }
+.hl-card .linkish { height: auto; margin: 0; padding: 0; font-size: 14px; vertical-align: baseline; }
+.hl-card-edit { display: grid; gap: var(--spacing-03); }
+.hl-card-edit label { display: grid; gap: var(--spacing-01); font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); }
+.hl-card-edit input, .hl-card-edit textarea { font: var(--body-type); text-transform: none; letter-spacing: 0; }
+.hl-card-edit textarea { min-height: 64px; }
+.hl-card-tools { display: flex; align-items: center; gap: var(--spacing-02); }
+.hl-card-tools .linkish { height: 24px; margin: 0; padding: 0 var(--spacing-02); }
+.hl-count { margin-left: auto; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); font-variant-numeric: tabular-nums; }
+.hl-count.is-over { color: var(--text-warning); font-weight: 600; }
+.hl-thumb--card { background: var(--layer-01); }
 .hl-from { margin-top: var(--spacing-06); }
 .hl-from-label { margin: 0 0 var(--spacing-03); font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); }
 .hl-table td { color: var(--ink); }

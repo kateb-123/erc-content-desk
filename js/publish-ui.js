@@ -16,7 +16,7 @@ import { checkSvg, faIcon } from './icons.js';
 import { screenHead } from './screen-info.js';
 import { FATES, publishRows, legendItems, filterByFate, fateShares } from './publish-view.js';
 import { renderHighlights } from './highlight-ui.js';
-import { withoutPhoto, samePicks } from './highlight-view.js';
+import { pickOf, withoutPhoto, samePicks, setCardWords, wantingWords } from './highlight-view.js';
 import { el, button, focusKeyIn, restoreFocus, busyLine } from './ui-aids.js';
 
 /** Hand the browser a file. Kate's Chrome puts downloads straight in her Drive,
@@ -50,6 +50,8 @@ let csvFor = '';          // the Adding rows (their ids) the CSV was downloaded 
 let typedPassword = '';   // what the ask's field holds, kept across a redraw; Confirm sends it and clears it
 let picks = null;         // her highlight picks (Kate, Sep 23), from the check's own until she changes them
 let picksFor = null;      // the preview the picks were taken from
+const cardBusy = new Set();    // picks whose card words are being written (Kate, Sep 30)
+const cardFailed = new Set();  // picks whose card words did not come
 
 /** Arriving at Publish never lands on a standing ask. */
 export function resetPublishAsk() { confirming = false; typedPassword = ''; }
@@ -160,8 +162,10 @@ export function renderPublish(container, props) {
   // A fresh check brings the picks as the Exchange holds them; hers stand
   // until the check changes under them.
   if (preview !== picksFor) {
-    picks = (preview?.highlights?.items ?? []).map(i => ({ link: i.link, image: i.image ?? '' }));
+    picks = (preview?.highlights?.items ?? []).map(pickOf);
     picksFor = preview;
+    cardBusy.clear();
+    cardFailed.clear();
   }
   // An open, edited form holds any way out (the same rule as Finalize).
   const held = () => holdIfDirty(openForm, container.querySelector('.f-detail-row'));
@@ -180,7 +184,7 @@ export function renderPublish(container, props) {
   const adding = (preview?.adding ?? []).map(item => byId.get(item.id)).filter(Boolean);
   // The highlight (Kate, Sep 23): the picks as the Exchange holds them, hers
   // beside them, and the rows they can be drawn from.
-  const nowPicks = (preview?.highlights?.items ?? []).map(i => ({ link: i.link, image: i.image ?? '' }));
+  const nowPicks = (preview?.highlights?.items ?? []).map(pickOf);
   const picksChanged = Boolean(preview) && !samePicks(picks ?? [], nowPicks);
   const hlCtx = { adding, hub: preview?.hub ?? [] };
 
@@ -368,8 +372,39 @@ export function renderPublish(container, props) {
   function highlightStep() {
     if (!preview?.highlights) return;
     renderHighlights(container, {
-      now: preview.highlights.items ?? [], adding: hlCtx.adding, hub: hlCtx.hub, picks: picks ?? [], today,
-      onChange: next => { picks = next; rerender(); },
+      now: preview.highlights.items ?? [], cards: preview.highlights.cards ?? [], adding: hlCtx.adding, hub: hlCtx.hub, picks: picks ?? [], today,
+      cardBusy, cardFailed, onCardWords: askCardWords,
+      onChange: next => {
+        // A pick just made that is an event or an opportunity gets its card
+        // words written now (Kate, Sep 30); one that was on the Exchange
+        // before waits for her word.
+        const had = new Set((picks ?? []).map(p => p.link));
+        picks = next;
+        askCardWords(wantingWords(next, hlCtx).filter(link => !had.has(link)));
+        rerender();
+      },
     });
+  }
+
+  /** The model writes the card's words for these picks; they land on the
+   *  picks still there when the answer comes. */
+  async function askCardWords(links) {
+    const wanted = links.filter(link => !cardBusy.has(link));
+    if (!wanted.length || !props.cardWords) return;
+    for (const link of wanted) { cardBusy.add(link); cardFailed.delete(link); }
+    rerender();
+    try {
+      const data = await props.cardWords(wanted);
+      const cards = new Map((data.cards ?? []).map(c => [c.link, c]));
+      for (const link of wanted) {
+        cardBusy.delete(link);
+        const card = cards.get(link);
+        if (card && card.summary) picks = setCardWords(picks ?? [], link, card);
+        else cardFailed.add(link);
+      }
+    } catch {
+      for (const link of wanted) { cardBusy.delete(link); cardFailed.add(link); }
+    }
+    rerender();
   }
 }
