@@ -23,10 +23,10 @@ test('the deck links the team page and the three public pages, and only those ad
   assert.match(page, /import \{ QUICK_LINKS \} from '\/js\/team-ui\.js'/, 'the Links to share rows are the team page’s own');
 });
 
-test('the templates can be downloaded from the page, and the spreadsheet is named best', () => {
+test('the templates can be downloaded from the page, and the spreadsheet is the one to use', () => {
   assert.match(page, /href="\/templates\/erc-upload-template\.xlsx" download/);
   assert.match(page, /href="\/templates\/erc-upload-template\.docx" download/);
-  assert.match(page, /The spreadsheet is best/);
+  assert.match(page, /Use the spreadsheet/);
 });
 
 test('every type has its line, and the names are drawn from the schema, never retyped', () => {
@@ -44,5 +44,5 @@ test('the types come from the schema, a row each with its subtypes, and the exam
 
 test('the words are the desk’s own and carry no dash', () => {
   assert.doesNotMatch(page, /[–—]/, 'no en or em dash');
-  for (const words of ['Item types', 'Use it for', 'Add one item', 'Bulk add items', 'Add to the queue', 'Add a doc or spreadsheet', 'Every item needs a link', 'Copy link', 'Quick links']) assert.ok(page.includes(words), words);
+  for (const words of ['Item types', 'Use it for', 'Add one item', 'Bulk add items', 'Add to the queue', 'Add a doc or spreadsheet', 'Every item needs a link', 'Copy link']) assert.ok(page.includes(words), words);
 });

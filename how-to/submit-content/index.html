@@ -124,11 +124,11 @@
             <h3>Add one item</h3>
             <ol>
               <li>Paste the item's link.</li>
-              <li>Pick a type, then its subtype. <a href="#types">Item types</a> says what each is.</li>
+              <li>Pick a type and a subtype (see <a href="#types">Item types</a>).</li>
               <li>Put the date, time and place, or the deadline, in the Description.</li>
               <li>Add your initials, then click Add to the queue.</li>
             </ol>
-            <p class="note"><b>Claude</b> then reads the link and fills in what you left blank. The more you fill in, the better it does.</p>
+            <p class="note"><b>Claude</b> reads the link and fills in what you left blank. The more you fill in, the better it does.</p>
             </div>
             <figure class="rec">
               <video muted loop playsinline preload="metadata" poster="1-form.png" aria-label="The Submit content form being filled in with a practice event, then added to the queue."><source src="fill-in.webm" type="video/webm" /></video>
@@ -138,14 +138,14 @@
           <div class="slide" data-tab="Bulk add items">
             <div>
             <h3>Bulk add items</h3>
-            <p>For a list from a scraper, a newsletter or your notes. <b>The spreadsheet is best:</b> nothing is guessed.</p>
+            <p>For a list from a scraper, a newsletter or your notes. <b>Use the spreadsheet:</b> it maps straight into the desk.</p>
             <ol>
               <li>Download the <a href="/templates/erc-upload-template.xlsx" download>spreadsheet template</a> (or the <a href="/templates/erc-upload-template.docx" download>Word one</a>).</li>
               <li>One item per row. Every item needs a link. An AI can fill it from your list.</li>
               <li>Drop it on Add a doc or spreadsheet.</li>
               <li>Check the list, then Add to the queue.</li>
             </ol>
-            <p class="note"><b>Claude</b> then reads each link, as for one item.</p>
+            <p class="note"><b>Claude</b> then reads each link.</p>
             </div>
             <figure class="rec">
               <video muted loop playsinline preload="metadata" poster="5-bulk-list.png" aria-label="The spreadsheet dropped on Add a doc or spreadsheet: the three items listed, then added to the queue."><source src="bulk.webm" type="video/webm" /></video>
@@ -153,7 +153,7 @@
             </figure>
           </div>
         </div>
-        <p class="quiet" style="margin-top: var(--spacing-05)">Nothing goes public until it has been reviewed.</p>
+        <p class="quiet" style="margin-top: var(--spacing-05)">Everything is reviewed before it goes out.</p>
       </section>
 
       <section id="types" aria-labelledby="h-types">
@@ -167,7 +167,7 @@
 
       <section id="links" aria-labelledby="h-links">
         <h2 id="h-links">Links to share</h2>
-        <p>These pages are live and public. Copy link copies the address, here or under Quick links on Submit content. Never send the desk's address.</p>
+        <p>These pages are live and public. Copy link copies the address. Never send the desk's address.</p>
         <div class="side-box links-box" id="links-box"></div>
       </section>
     </main>
@@ -259,23 +259,23 @@
 
     // ---- Item types: the table from the schema, a line for each ----
     const ABOUT = {
-      erc_event: 'Anything the ERC hosts or co-hosts: a talk, a workshop, a convening. No subtype.',
-      research: 'A study worth reading.',
+      erc_event: 'Anything the ERC hosts or co-hosts. No subtype.',
+      research: 'A paper or a report.',
       event: 'Someone else\u2019s event.',
-      opportunity: 'Money, a program or a deadline.',
-      headline: 'A news story about education policy.',
+      opportunity: 'Something to apply for.',
+      headline: 'A news story.',
     };
     const SUBS = {
-      'Working Paper': 'Not yet peer reviewed: a preprint or a working paper series.',
+      'Working Paper': 'Not yet peer reviewed.',
       'Peer-Reviewed': 'Published in a journal.',
       'Report': 'From an agency, a think tank or a research center.',
-      'ERC Research': 'Ours: an ERC brief, paper or report.',
-      'A&M': 'On the Texas A&M campus, another unit\u2019s.',
+      'ERC Research': 'The ERC\u2019s own.',
+      'A&M': 'On campus, another unit\u2019s.',
       'Off-Campus': 'In person, somewhere else.',
-      'Webinar-Online': 'Online. No place to give.',
-      'Funding & Grants': 'Grants and other money for research.',
-      'Fellowships & Programs': 'Fellowships, training and programs to apply for.',
-      'Call for Proposals': 'A conference or a journal asking for submissions.',
+      'Webinar-Online': 'Online.',
+      'Funding & Grants': 'Grants and other funding.',
+      'Fellowships & Programs': 'Fellowships, training, programs.',
+      'Call for Proposals': 'Conferences and journals asking for papers.',
       'Other': 'Anything else with a deadline.',
       'National': 'National outlets, federal policy.',
       'Texas': 'Texas outlets, state policy.',
@@ -332,7 +332,7 @@
     }).catch(() => {});
 
     // ---- Links to share: the team page's own rows, Copy link and all ----
-    const WHY = { share: 'For anyone outside the team to send us an item.', listserv: 'To get the newsletter.', exchange: 'The public site for what we publish.' };
+    const WHY = { share: 'For anyone outside the team to send us something.', listserv: 'To get the newsletter.', exchange: 'What we publish.' };
     const box = document.getElementById('links-box');
     for (const item of QUICK_LINKS) {
       const row = el('div', 'ql-row');
