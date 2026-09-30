@@ -33,5 +33,5 @@ test('the practice run is the real form, and its post never leaves the page', ()
 
 test('the words are the desk’s own and carry no dash', () => {
   assert.doesNotMatch(page, /[–—]/, 'no en or em dash');
-  for (const words of ['Add to the queue', 'Add a doc or spreadsheet', 'Add all to the queue', 'Copy link', 'Quick links']) assert.ok(page.includes(words), words);
+  for (const words of ['Add to the queue', 'Add a doc or spreadsheet', 'Every item needs a link', 'Copy link', 'Quick links']) assert.ok(page.includes(words), words);
 });

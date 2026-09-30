@@ -66,8 +66,7 @@
     .practice-queue { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--spacing-05) var(--spacing-06); }
     .practice-queue .section-head { margin-bottom: var(--spacing-02); }
     .practice-queue .queue-row:last-child { border-bottom: 0; }
-    .practice-queue .claude { margin: var(--spacing-02) 0 0; font: var(--meta-type); color: var(--text-helper); }
-    .practice-queue .claude .fa-solid { color: var(--ok-mark); margin-right: var(--spacing-02); }
+    .practice-queue .claude { margin: 0; padding: 13px 0; font: var(--meta-type); color: var(--text-helper); }
 
     .nav { flex: none; display: none; align-items: center; justify-content: center; gap: var(--spacing-06); height: 72px; border-top: 1px solid var(--line); background: var(--background); }
     .deck.on ~ .nav { display: flex; }
@@ -115,7 +114,7 @@
         </div>
         <div class="rec">
           <div class="shots"><video id="fill-in" muted loop playsinline preload="metadata" poster="1-form.png" aria-label="The Submit content form being filled in with a practice event, then added to the queue."><source src="fill-in.webm" type="video/webm" /></video></div>
-          <div class="rec-tools"><span>The real form, filled in with a practice event.</span><button type="button" class="linkish" id="rec-toggle">Pause</button></div>
+          <div class="rec-tools"><span>The form, filled in with a practice event.</span><button type="button" class="linkish" id="rec-toggle">Pause</button></div>
         </div>
       </div>
     </section>
@@ -124,8 +123,9 @@
       <div class="inner">
         <div>
           <h2>Claude is still working</h2>
-          <p class="note">After you click, <b>Claude</b> reads the link and fills in anything you left blank. The more you fill in, the better it does.</p>
-          <p>Your item shows in the Queue once Claude is done. Refresh if it isn't there yet.</p>
+          <p class="note">After you click Add to the queue, <b>Claude</b> reads the link and fills in what you left blank. The more you fill in, the better it does.</p>
+          <p>For an event or an opportunity, Claude tidies the Description into plain sentences and moves the date, time and place into their own fields. Your text is kept.</p>
+          <p>Your item shows in the Queue once Claude is done. Refresh if it isn't there yet. If it never shows, it still landed: Content Sort reads it.</p>
           <p class="quiet">Nothing goes public until Kate reviews it.</p>
         </div>
         <div class="shots two"><img src="2-added.png" alt="The form after adding: Added to the queue, with Add another." /><img src="3-queue.png" alt="The Queue with the new item at the top." /></div>
@@ -137,11 +137,12 @@
         <h2>Which type</h2>
         <table class="types">
           <tr><td>ERC event</td><td>An event the ERC hosts or co-hosts. No subtype.</td></tr>
-          <tr><td>New research</td><td>A paper or report. Working Paper, Peer-Reviewed, Report, or ERC Research for the ERC's own.</td></tr>
-          <tr><td>Event</td><td>Anyone else's event. A&amp;M for on campus, Off-Campus, or Webinar-Online.</td></tr>
-          <tr><td>Opportunity</td><td>Funding, a fellowship or a call. Funding &amp; Grants, Fellowships &amp; Programs, Call for Proposals, or Other.</td></tr>
+          <tr><td>New research</td><td>A paper or report: Working Paper, Peer-Reviewed or Report. ERC Research when it's ours.</td></tr>
+          <tr><td>Event</td><td>An event that isn't ours: A&amp;M for on campus, Off-Campus, or Webinar-Online.</td></tr>
+          <tr><td>Opportunity</td><td>Funding &amp; Grants, Fellowships &amp; Programs, Call for Proposals, or Other.</td></tr>
           <tr><td>Headline</td><td>A news story. National or Texas.</td></tr>
         </table>
+        <p class="quiet" style="margin-top: var(--spacing-05)">Not sure? Pick the closest. Kate can change it.</p>
       </div></div>
     </section>
 
@@ -152,11 +153,11 @@
           <p class="quiet">For a list from a scraper, a newsletter or your notes.</p>
           <ol>
             <li>Download the Word or spreadsheet template, under Add a doc or spreadsheet.</li>
-            <li>Fill it in, one item per row. Or give an AI your list and the template, and ask it to fill the template.</li>
+            <li>Fill it in, one item per row in the spreadsheet or per block in Word. Or have an AI fill it from your list.</li>
             <li>Drop the file on Add a doc or spreadsheet.</li>
           </ol>
-          <p class="note"><b>Claude</b> reads the file and lists the items it found. Check them, then click Add all to the queue.</p>
-          <p class="quiet">Only a title or a link is needed for each item.</p>
+          <p class="note">The desk lists the items it found (<b>Claude</b> reads a Word file; a spreadsheet goes row by row). Check them, then add them to the queue. The button counts them.</p>
+          <p class="quiet">Every item needs a link.</p>
         </div>
         <div class="shots"><img src="5-bulk.png" alt="Add a doc or spreadsheet, open: drop a file here or click to choose one, with the Word and Spreadsheet templates." /></div>
       </div>
@@ -170,7 +171,7 @@
           <ul>
             <li><a href="https://erc-share.vercel.app/submit/" target="_blank" rel="noopener">Submit content</a>: for anyone outside the team to send us an item.</li>
             <li><a href="https://erc-share.vercel.app/listserv/" target="_blank" rel="noopener">Join listserv</a>: to get the newsletter.</li>
-            <li><a href="https://erc-policy-exchange.vercel.app/" target="_blank" rel="noopener">ERC Policy Exchange</a>: the public site with everything we publish.</li>
+            <li><a href="https://erc-policy-exchange.vercel.app/" target="_blank" rel="noopener">ERC Policy Exchange</a>: the public site for what Kate publishes.</li>
           </ul>
         </div>
         <div class="shots"><img src="4-links.png" style="max-width: min(360px, 100%)" alt="Quick links on the team page: Submit content, Join listserv and ERC Policy Exchange, each with Copy link." /></div>
@@ -186,7 +187,7 @@
         </div>
         <div class="practice-queue">
           <div class="section-head"><h3 class="section-label">Your practice queue</h3><span class="section-note" id="practice-count">Nothing yet</span></div>
-          <div class="queue-rows" id="practice-rows"><p class="queue-meta">What you add shows here, the way it would in the Queue.</p></div>
+          <div class="queue-rows" id="practice-rows"><p class="queue-meta">What you add shows here.</p></div>
         </div>
       </div>
     </section>
@@ -200,7 +201,7 @@
 
   <script type="module">
     import { renderSubmitForm } from '/js/submit-form.js';
-    import { busyWords, faIcon } from '/js/icons.js';
+    import { busyWords } from '/js/icons.js';
     import { el } from '/js/ui-aids.js';
 
     // ---- The deck ----
@@ -266,27 +267,28 @@
     };
     const rows = document.getElementById('practice-rows');
     const count = document.getElementById('practice-count');
+    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     let added = 0;
-    function practiceRow(body) {
-      const row = el('div', 'queue-row');
-      row.append(el('div', 'queue-title', body.title || body.link));
-      row.append(el('div', 'queue-meta', `${body.submitter ? `added by ${body.submitter} · ` : ''}just now`));
-      const claude = el('p', 'claude');
-      claude.append(busyWords('Claude is reading the link'));
-      row.append(claude);
+    // As the Queue does: nothing while Claude reads, then the row, a title and one meta line.
+    function practiceAdd(body) {
+      const reading = el('p', 'claude');
+      reading.append(busyWords('Claude is reading the link'));
+      if (!added) rows.replaceChildren();
+      rows.prepend(reading);
       setTimeout(() => {
-        claude.replaceChildren(faIcon('check'), body.title ? 'Read. It waits for Kate on Content Sort.' : 'Read, and the title filled in. It waits for Kate on Content Sort.');
+        const row = el('div', 'queue-row');
+        row.append(el('div', 'queue-title', body.title || body.link));
+        row.append(el('div', 'queue-meta', `${body.submitter ? `added by ${body.submitter} · ` : ''}${today}`));
+        reading.replaceWith(row);
+        added += 1;
+        count.textContent = `${added} waiting · newest first`;
       }, 3500);
-      return row;
     }
     renderSubmitForm(document.getElementById('practice-form'), {
       bulk: false,
       onSubmitted: () => {
         if (!lastBody) return;
-        if (!added) rows.replaceChildren();
-        rows.prepend(practiceRow(lastBody));
-        added += 1;
-        count.textContent = `${added} waiting · newest first`;
+        practiceAdd(lastBody);
         lastBody = null;
       },
     });
