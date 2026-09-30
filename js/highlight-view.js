@@ -4,16 +4,26 @@
  * hand here, up to six, new or already live, in her order. Pure, so
  * node --test can hold it; publish-ui.js draws what these return.
  *
- * A pick is { link, image }: the item by its link, and her upload for it
- * (blank when the item's own picture is the one to show).
+ * A pick is { link, image, until, title, summary }: the item by its link,
+ * her upload for it (blank when the item's own picture is the one to show),
+ * the day it shows until (blank until the server sets one), and the card's
+ * words (Kate, Sep 30), written for an event, an ERC event or an
+ * opportunity by /api/rewrite and edited here by hand; blank on any other
+ * type, whose card shows the item as it is.
  */
 import { toHubRow } from './hub-csv.js';
 import { isoToShort } from './queue-view.js';
+import { wantsCardWords, fitTitle, fitSummary } from './card-words.js';
 
 export const MAX_PICKS = 6;
 
 const clean = v => String(v ?? '').trim();
 const pic = v => (/^https?:\/\//i.test(clean(v)) ? clean(v) : '');
+
+/** A pick as the desk holds it, whatever came in. */
+export function pickOf(entry) {
+  return { link: clean(entry?.link), image: pic(entry?.image), until: clean(entry?.until), title: clean(entry?.title), summary: clean(entry?.summary) };
+}
 
 const fields = row => ({
   headline: clean(row.headline), type: clean(row.type), subtype: clean(row.subtype),
@@ -37,11 +47,14 @@ export function bandAfter(picks, { adding = [], hub = [] }) {
     const link = clean(pick.link);
     const image = pic(pick.image);
     const item = byLink.get(link);
+    const type = item?.type ?? '';
     return {
-      link, image, from: item?.from ?? 'missing',
-      headline: item?.headline ?? '', type: item?.type ?? '', subtype: item?.subtype ?? '',
+      link, image, until: clean(pick.until), from: item?.from ?? 'missing',
+      headline: item?.headline ?? '', type, subtype: item?.subtype ?? '',
       date: item?.date ?? '', deadline: item?.deadline ?? '', source: item?.source ?? '',
       photo: image || item?.own || '', photoIsOwn: Boolean(image),
+      // The card's words: only an event or an opportunity gets them (Kate, Sep 30).
+      cardWords: wantsCardWords(type), title: clean(pick.title), summary: clean(pick.summary),
     };
   });
 }
@@ -49,7 +62,7 @@ export function bandAfter(picks, { adding = [], hub = [] }) {
 export function addPick(picks, link) {
   const key = clean(link);
   if (!key || picks.some(p => p.link === key) || picks.length >= MAX_PICKS) return picks;
-  return [...picks, { link: key, image: '' }];
+  return [...picks, pickOf({ link: key })];
 }
 
 export function removePick(picks, link) {
@@ -70,6 +83,17 @@ export function setPhoto(picks, link, image) {
   return picks.map(p => p.link === clean(link) ? { ...p, image: pic(image) } : p);
 }
 
+/** The card's words land on their pick, fitted; a pick no longer there is left alone. */
+export function setCardWords(picks, link, { title, summary }) {
+  return picks.map(p => p.link === clean(link) ? { ...p, title: fitTitle(title), summary: fitSummary(summary) } : p);
+}
+
+/** The picks whose card still has no words: an event or an opportunity
+ *  with no summary yet, so the desk knows what to ask for. */
+export function wantingWords(picks, ctx) {
+  return bandAfter(picks, ctx).filter(b => b.cardWords && !b.summary).map(b => b.link);
+}
+
 /** The picks the card would show with no picture at all. */
 export function withoutPhoto(picks, ctx) {
   return bandAfter(picks, ctx).filter(b => !b.photo);
@@ -82,9 +106,10 @@ export function whenLine(item, today = '') {
   return item.type === 'opportunity' ? (d ? `closes ${d}` : '') : d;
 }
 
-/** True when nothing about the picks changed: the same links, order and photos. */
+/** True when nothing about the picks changed: the same links, order, photos and card words. */
 export function samePicks(a, b) {
-  return a.length === b.length && a.every((p, i) => p.link === b[i].link && (p.image || '') === (b[i].image || ''));
+  return a.length === b.length && a.every((p, i) => p.link === b[i].link && (p.image || '') === (b[i].image || '')
+    && (p.title || '') === (b[i].title || '') && (p.summary || '') === (b[i].summary || ''));
 }
 
 /** The Pick from table's filters (Kate, Sep 23: "so we can find events

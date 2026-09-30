@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MAX_PICKS, bandAfter, addPick, removePick, movePick, setPhoto, withoutPhoto, candidates, whenLine, samePicks, sectionFilters, filterCandidates, trimLive, searchCandidates } from '../js/highlight-view.js';
+import { MAX_PICKS, pickOf, bandAfter, addPick, removePick, movePick, setPhoto, setCardWords, wantingWords, withoutPhoto, candidates, whenLine, samePicks, sectionFilters, filterCandidates, trimLive, searchCandidates } from '../js/highlight-view.js';
 
 // The highlight step on Publish (Kate, Sep 23): her picks for the Exchange's
 // home page, up to six, in her order, each needing a photo. Pure, so
@@ -24,13 +24,29 @@ test('bandAfter resolves the picks against the rows going out and the live ones,
   ]);
   assert.equal(band[0].type, 'research');
   assert.equal(band[1].photoIsOwn, true);   // her upload, not the row's own
+  assert.equal(band[0].cardWords, false);   // research: the card shows it as it is
+  assert.equal(band[0].summary, '');
+});
+
+test('the card\'s words ride the pick (Kate, Sep 30): an event or an opportunity wants them, fitted; the rest never do', () => {
+  const picks = [pickOf({ link: 'https://x.org/erc' }), pickOf({ link: 'https://x.org/sdp', until: '2026-11-01' }), pickOf({ link: 'https://x.org/naep' })];
+  assert.deepEqual(picks[0], { link: 'https://x.org/erc', image: '', until: '', title: '', summary: '' });
+  assert.deepEqual(wantingWords(picks, { adding, hub }), ['https://x.org/erc', 'https://x.org/sdp']);
+  const set = setCardWords(picks, 'https://x.org/erc', { title: 'ERC workshop', summary: ' Bring your questions about the data room. ' });
+  assert.equal(set[0].summary, 'Bring your questions about the data room.');
+  assert.equal(set[0].title, 'ERC workshop');
+  assert.deepEqual(wantingWords(set, { adding, hub }), ['https://x.org/sdp']);
+  const band = bandAfter(set, { adding, hub });
+  assert.deepEqual(band.map(b => [b.cardWords, b.summary, b.until]), [[true, 'Bring your questions about the data room.', ''], [true, '', '2026-11-01'], [false, '', '']]);
+  assert.ok(setCardWords(set, 'https://x.org/erc', { title: 'x'.repeat(100), summary: 'y'.repeat(300) })[0].summary.length <= 180);
+  assert.deepEqual(setCardWords(set, 'https://x.org/gone', { title: 'a', summary: 'b' }), set);
 });
 
 test('adding a pick appends it once, and the seventh is refused', () => {
   let picks = [];
   picks = addPick(picks, 'https://x.org/naep');
   picks = addPick(picks, 'https://x.org/naep');
-  assert.deepEqual(picks, [{ link: 'https://x.org/naep', image: '' }]);
+  assert.deepEqual(picks, [{ link: 'https://x.org/naep', image: '', until: '', title: '', summary: '' }]);
   for (let i = 0; i < 6; i += 1) picks = addPick(picks, `https://x.org/${i}`);
   assert.equal(picks.length, MAX_PICKS);
   assert.equal(MAX_PICKS, 6);
@@ -72,12 +88,15 @@ test('whenLine is the date, or the deadline for an opportunity, in short form', 
   assert.equal(whenLine({ type: 'research', date: '', deadline: '' }), '');
 });
 
-test('samePicks: the same links in the same order with the same photos, nothing else', () => {
-  const a = [{ link: 'https://x.org/a', image: '' }, { link: 'https://x.org/b', image: 'https://img/b.jpg' }];
+test('samePicks: the same links in the same order with the same photos and card words, nothing else', () => {
+  const a = [{ link: 'https://x.org/a', image: '' }, { link: 'https://x.org/b', image: 'https://img/b.jpg', summary: 'Come along.' }];
   assert.equal(samePicks(a, a.map(p => ({ ...p }))), true);
   assert.equal(samePicks(a, [a[1], a[0]]), false);
   assert.equal(samePicks(a, [a[0]]), false);
   assert.equal(samePicks(a, [a[0], { ...a[1], image: '' }]), false);
+  assert.equal(samePicks(a, [a[0], { ...a[1], summary: 'Come.' }]), false);
+  assert.equal(samePicks(a, [{ ...a[0], title: 'Renamed' }, a[1]]), false);
+  assert.equal(samePicks(a, [{ ...a[0], until: '2026-10-08' }, a[1]]), true);   // the day is the server's to set
   assert.equal(samePicks([], []), true);
 });
 
