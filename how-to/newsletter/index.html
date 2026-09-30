@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>How to build the newsletter · ERC Content Desk</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%231d7491'/%3E%3Cpath d='M9 16.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="/css/tokens.css?v=9" />
+  <link rel="stylesheet" href="/css/styles.css?v=148" />
+  <link rel="stylesheet" href="/css/shell.css?v=7" />
+  <style>
+    /* The newsletter builder's how-to (Sep 30, 2026, evening): the
+       submit how-to's pattern for whoever builds an issue. Three tabs under
+       the band; the middle one has a tab per builder step. Every slide is
+       the steps beside a recording of the real desk. Nothing here writes to
+       the desk. */
+    body { margin: 0; background: var(--background); color: var(--ink); font: var(--body-type); }
+    a { color: var(--link-primary); }
+    a:hover { color: var(--link-primary-hover); }
+    p { margin: 0 0 var(--spacing-05); }
+    ol, ul { margin: 0 0 var(--spacing-05); padding-left: 28px; }
+    li { margin: 0 0 var(--spacing-03); padding-left: 4px; }
+    .quiet { color: var(--text-secondary); }
+
+    /* The band: the bar's navy, the page's name on it. */
+    .band { background: var(--color-blue-400); color: var(--text-inverse); padding: var(--spacing-06) var(--gap-56); }
+    .band .in { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-06); flex-wrap: wrap; }
+    .eyebrow { display: inline-block; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--color-maize-400); padding-bottom: 6px; border-bottom: 2px solid var(--color-maize-400); margin: 0 0 var(--spacing-03); }
+    .band h1 { font: var(--card-title); font-size: 24px; line-height: 32px; margin: 0 0 var(--spacing-01); }
+    .band .lede { font: var(--meta-type); color: var(--color-blue-100); margin: 0; }
+    .open { display: inline-flex; align-items: center; height: 40px; padding: 0 var(--spacing-05); border-radius: var(--radius); background: var(--text-inverse); color: var(--color-blue-400); font-weight: 700; text-decoration: none; }
+    .open:hover { background: var(--color-blue-100); color: var(--color-blue-400); }
+    .open:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-blue-400), 0 0 0 4px var(--text-inverse); }
+    .open .fa-solid { margin-left: var(--spacing-05); font-size: 14px; }
+
+    /* The page: the three tabs, then one pane at a time. */
+    .page { max-width: 1200px; margin: 0 auto; padding: var(--spacing-05) var(--gap-56) var(--gap-72); }
+    .pane[hidden] { display: none; }
+    .pane h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .steps-tabs { margin-top: var(--spacing-05); }
+    .steps-tabs .tab { font-size: 14px; }
+
+    /* A slide: the steps in the left third, the recording in the right two thirds. */
+    .slide { display: none; }
+    .slide.on { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--spacing-07); align-items: start; margin-top: var(--spacing-05); padding: var(--spacing-06); background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); }
+    .slide h3 { font: var(--card-title); margin: 0 0 var(--spacing-04); }
+    .slide ol { padding-left: 24px; }
+    .rec { display: grid; gap: var(--spacing-03); margin: 0; min-width: 0; }
+    .rec video { display: block; width: 100%; height: auto; border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer-01); }
+    .rec figcaption { font: var(--meta-type); color: var(--muted); }
+    .rec-toggle { margin: 0 0 0 var(--spacing-02); height: 24px; padding: 0 var(--spacing-02); }
+
+    @media (max-width: 900px) {
+      .band { padding: var(--spacing-07) var(--spacing-05); }
+      .band h1 { font-size: 26px; line-height: 32px; }
+      .page { padding: var(--spacing-04) var(--spacing-05) var(--spacing-08); }
+      .page-tabs { overflow-x: auto; }
+      .slide.on { grid-template-columns: minmax(0, 1fr); gap: var(--spacing-05); padding: var(--spacing-05); }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar"><nav class="topbar-crumbs" aria-label="Breadcrumb"><a class="topbar-brand" href="/#newsletter">ERC Content Desk</a><span class="topbar-sep">/</span><span class="topbar-here">How to</span></nav></header>
+
+  <div class="band"><div class="in">
+    <div>
+      <div class="eyebrow">How to</div>
+      <h1>Build the newsletter</h1>
+      <p class="lede">From what was kept to what goes out, on Next issue and in the builder.</p>
+    </div>
+    <a class="open" href="https://erc-content-desk.vercel.app/#newsletter" target="_blank" rel="noopener">Open Newsletter<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+  </div></div>
+
+  <main class="page">
+    <div class="page-tabs"><div class="tabs" role="tablist" aria-label="How to build the newsletter" id="part-tabs"></div></div>
+    <div id="parts">
+
+      <section class="pane" data-tab="Where items come from">
+        <h2>Where items come from</h2>
+        <div class="slide on" data-tab="Next issue">
+          <div>
+            <h3>Next issue</h3>
+            <ol>
+              <li>Kept items wait in Ready to add.</li>
+              <li>Add puts one in the issue. Quick add puts in something new.</li>
+              <li>The builder only pulls what is in the issue.</li>
+            </ol>
+          </div>
+          <figure class="rec">
+            <video muted loop playsinline preload="metadata" poster="next-issue.png" aria-label="Next issue: an item added from Ready to add, then one typed in with Quick add."><source src="next-issue.webm" type="video/webm" /></video>
+            <figcaption>An item added from Ready to add, then one by Quick add.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="pane" data-tab="Build the issue">
+        <h2>Build the issue</h2>
+        <div class="page-tabs steps-tabs"><div class="tabs" role="tablist" aria-label="The builder's steps" id="step-tabs"></div></div>
+        <div id="steps">
+          <div class="slide on" data-tab="Review">
+            <div>
+              <h3>Review</h3>
+              <ol>
+                <li>Open the builder from Next issue.</li>
+                <li>Pick the issue, then Pull from the desk.</li>
+                <li>Pull again any time. Only new items come in.</li>
+              </ol>
+            </div>
+            <figure class="rec">
+              <video muted loop playsinline preload="metadata" poster="review.png" aria-label="The builder opened from Next issue, the issue picked, then Pull from the desk."><source src="review.webm" type="video/webm" /></video>
+              <figcaption>The builder opened, the issue picked, the items pulled.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
+            </figure>
+          </div>
+          <div class="slide" data-tab="Outline">
+            <div>
+              <h3>Outline</h3>
+              <ol>
+                <li>Put items in order with the arrows.</li>
+                <li>Mark one event Featured.</li>
+                <li>Remove takes an item out. Undo puts it back.</li>
+              </ol>
+            </div>
+            <figure class="rec">
+              <video muted loop playsinline preload="metadata" poster="outline.png" aria-label="Outline: an item moved with the arrows, an event marked Featured, an item removed."><source src="outline.webm" type="video/webm" /></video>
+              <figcaption>An item moved, an event marked Featured, one removed.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
+            </figure>
+          </div>
+          <div class="slide" data-tab="Preview &amp; Edit">
+            <div>
+              <h3>Preview &amp; Edit</h3>
+              <ol>
+                <li>Fix titles, dates, the introduction and pictures.</li>
+              </ol>
+            </div>
+            <figure class="rec">
+              <video muted loop playsinline preload="metadata" poster="edit.png" aria-label="Preview and Edit: a title clicked in the preview and fixed on the right."><source src="edit.webm" type="video/webm" /></video>
+              <figcaption>A title clicked in the preview, fixed on the right.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
+            </figure>
+          </div>
+        </div>
+        <p class="quiet" style="margin-top: var(--spacing-05)">Every fix in Preview &amp; Edit, never in Outlook, so the archive matches what went out.</p>
+      </section>
+
+      <section class="pane" data-tab="Send and archive">
+        <h2>Send and archive</h2>
+        <div class="slide on" data-tab="Save &amp; Export">
+          <div>
+            <h3>Save &amp; Export</h3>
+            <ol>
+              <li>Copy HTML, paste it into Outlook, send.</li>
+              <li>Save to the archive. It shows under Past issues.</li>
+            </ol>
+          </div>
+          <figure class="rec">
+            <video muted loop playsinline preload="metadata" poster="export.png" aria-label="Save and Export: Copy HTML, then Save to the archive, then the issue under Past issues."><source src="export.webm" type="video/webm" /></video>
+            <figcaption>Copy HTML, then Save to the archive, then Past issues.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
+          </figure>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { el } from '/js/ui-aids.js';
+
+    const stillMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ---- The recordings: play while on screen and their slide and pane are up, unless motion is off ----
+    const seen = new WeakSet();
+    function settle(v) {
+      const slide = v.closest('.slide');
+      const up = (!slide || slide.classList.contains('on')) && !v.closest('[hidden]');
+      if (seen.has(v) && up && !stillMotion && !v.dataset.held) v.play().catch(() => {});
+      else v.pause();
+    }
+    const shown = new IntersectionObserver(entries => {
+      for (const e of entries) { if (e.isIntersecting) seen.add(e.target); else seen.delete(e.target); settle(e.target); }
+    }, { threshold: 0.3 });
+    for (const v of document.querySelectorAll('video')) {
+      shown.observe(v);
+      const toggle = v.closest('figure').querySelector('.rec-toggle');
+      const say = () => { toggle.textContent = v.paused ? 'Play' : 'Pause'; };
+      toggle.addEventListener('click', () => { if (v.paused) { delete v.dataset.held; v.play().catch(() => {}); } else { v.dataset.held = '1'; v.pause(); } });
+      v.addEventListener('play', say);
+      v.addEventListener('pause', say);
+      say();
+    }
+
+    // ---- Tabs, the desk's own: one tab stop, Left and Right move, Home and End jump ----
+    function tabSet(list, panels, name) {
+      const tabs = panels.map((panel, i) => {
+        const tab = el('button', `tab${i === 0 ? ' is-active' : ''}`, panel.dataset.tab);
+        tab.type = 'button';
+        tab.setAttribute('role', 'tab');
+        tab.id = `${name}-tab-${i}`;
+        panel.id ||= `${name}-panel-${i}`;
+        tab.setAttribute('aria-controls', panel.id);
+        panel.setAttribute('role', 'tabpanel');
+        panel.setAttribute('aria-labelledby', tab.id);
+        tab.addEventListener('click', () => pick(i));
+        list.append(tab);
+        return tab;
+      });
+      function pick(i, focus = false) {
+        tabs.forEach((t, n) => { t.classList.toggle('is-active', n === i); t.setAttribute('aria-selected', String(n === i)); t.tabIndex = n === i ? 0 : -1; });
+        panels.forEach((p, n) => { if (p.classList.contains('slide')) p.classList.toggle('on', n === i); else p.hidden = n !== i; });
+        for (const v of document.querySelectorAll('video')) settle(v);
+        if (focus) tabs[i].focus();
+      }
+      list.addEventListener('keydown', e => {
+        const i = tabs.indexOf(document.activeElement);
+        if (i < 0) return;
+        const moves = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 };
+        if (!(e.key in moves)) return;
+        e.preventDefault();
+        pick((moves[e.key] + tabs.length) % tabs.length, true);
+      });
+      // A swipe on a phone moves too. The nearest tab box takes it, so a swipe
+      // across a builder step never also turns the page's tab.
+      let x0 = null, y0 = null, at = () => tabs.findIndex(t => t.classList.contains('is-active'));
+      const box = panels[0].parentElement;
+      box.dataset.swipe = name;
+      box.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+      box.addEventListener('touchend', e => {
+        if (x0 === null) return;
+        const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+        x0 = null;
+        if (e.target.closest('[data-swipe]') !== box) return;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) pick(Math.min(tabs.length - 1, Math.max(0, at() + (dx < 0 ? 1 : -1))));
+      }, { passive: true });
+      pick(0);
+      return pick;
+    }
+    tabSet(document.getElementById('step-tabs'), [...document.querySelectorAll('#steps .slide')], 'step');
+    tabSet(document.getElementById('part-tabs'), [...document.querySelectorAll('#parts .pane')], 'part');
+  </script>
+</body>
+</html>

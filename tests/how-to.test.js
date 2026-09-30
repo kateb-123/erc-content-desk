@@ -46,3 +46,42 @@ test('the words are the desk’s own and carry no dash', () => {
   assert.doesNotMatch(page, /[–—]/, 'no en or em dash');
   for (const words of ['Item types', 'Use it for', 'Add one item', 'Bulk add items', 'Add to the queue', 'Add a doc or spreadsheet', 'Every item needs a link', 'Copy link']) assert.ok(page.includes(words), words);
 });
+
+// ── The newsletter builder's how-to (Kate, Sep 30, 2026, evening): the same
+// pattern for whoever builds an issue, three tabs under the band (Where items
+// come from, Build the issue, Send and archive), the middle one with a tab per
+// builder step, one slide each with a recording of the real desk. No Claude
+// note: the builder never calls it. Linked from Next issue and the front page.
+const nl = readFileSync(new URL('../how-to/newsletter/index.html', import.meta.url), 'utf8');
+const builderPage = readFileSync(new URL('../builder/index.html', import.meta.url), 'utf8');
+const issueUi = readFileSync(new URL('../js/issue-ui.js', import.meta.url), 'utf8');
+
+test('the newsletter how-to opens the Newsletter page and carries no other address', () => {
+  assert.match(nl, /https:\/\/erc-content-desk\.vercel\.app\/#newsletter/);
+  const addresses = new Set(nl.match(/https?:\/\/[^\s"'<)]+/g));
+  const allowed = new Set(['https://erc-content-desk.vercel.app/#newsletter', 'https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css', 'http://www.w3.org/2000/svg']);
+  for (const a of addresses) assert.ok(allowed.has(a), `an address the how-to should not carry: ${a}`);
+  assert.doesNotMatch(nl, /fetch\(|window\.fetch/, 'nothing on the page reads or writes the desk');
+});
+
+test('the newsletter how-to has the three tabs, a tab per builder step named as the builder names it, and the desk’s own words', () => {
+  for (const words of ['Where items come from', 'Build the issue', 'Send and archive', 'Ready to add', 'Quick add', 'Open the builder', 'Pull from the desk', 'Copy HTML', 'Save to the archive', 'Past issues', 'never in Outlook']) assert.ok(nl.includes(words), words);
+  for (const step of ['Review', 'Outline', 'Preview &amp; Edit', 'Save &amp; Export']) {
+    assert.ok(nl.includes(`data-tab="${step}"`), `${step} is a tab`);
+    assert.ok(builderPage.includes(step), `${step} is the builder’s own name for the step`);
+  }
+  assert.doesNotMatch(nl, /[–—]/, 'no en or em dash');
+  assert.doesNotMatch(nl, /Kate|Kathy/, 'no name on a team page');
+  assert.doesNotMatch(nl, /Claude/, 'the builder never calls Claude, so no note');
+});
+
+test('every slide of the newsletter how-to carries a recording of the real desk', () => {
+  const slides = nl.match(/<div class="slide[^"]*" data-tab="[^"]+">/g) ?? [];
+  assert.equal(slides.length, 5, 'five slides: Next issue, then the four builder steps');
+  const videos = nl.match(/<source src="[a-z-]+\.webm" type="video\/webm" \/>/g) ?? [];
+  assert.equal(videos.length, 5, 'a recording on each');
+});
+
+test('Next issue links the newsletter how-to beside Open the builder', () => {
+  assert.match(issueUi, /'\/how-to\/newsletter\/'/);
+});
