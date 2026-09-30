@@ -54,7 +54,12 @@ test('deskCards: five cards in order, the counts on the three pages that have wo
     ['sort', 'Content Sort', '/#sort', 13, 'Waiting to be sorted'],
     ['newsletter', 'Newsletter', '/#newsletter', 8, 'Ready to add · next issue Sep 22'],
     ['exchange', 'Policy Exchange', '/#exchange', 2, 'Publish would add'],
-    ['docs', 'Documentation', '/how-to/submit-content/', null, 'How to submit content, for the team'],
+    ['docs', 'Documentation', '', null, ''],
+  ]);
+  // Documentation is two how-tos on one card (Kate, Sep 30, evening).
+  assert.deepEqual(cards[4].links, [
+    { label: 'How to submit content', href: '/how-to/submit-content/' },
+    { label: 'How to build the newsletter', href: '/how-to/newsletter/' },
   ]);
 });
 

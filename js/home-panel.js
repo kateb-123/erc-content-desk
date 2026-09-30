@@ -35,7 +35,11 @@ export function deskCards({ counts, issue, today }) {
     { key: 'sort', label: 'Content Sort', href: '/#sort', count: n('sort'), sub: 'Waiting to be sorted' },
     { key: 'newsletter', label: 'Newsletter', href: '/#newsletter', count: n('newsletter'), sub: `Ready to add · ${next}` },
     { key: 'exchange', label: 'Policy Exchange', href: '/#exchange', count: n('exchange'), sub: 'Publish would add' },
-    { key: 'docs', label: 'Documentation', href: '/how-to/submit-content/', count: null, sub: 'How to submit content, for the team' },
+    // Two how-tos on one card, each a link of its own (Kate, Sep 30, evening).
+    { key: 'docs', label: 'Documentation', href: '', count: null, sub: '', links: [
+      { label: 'How to submit content', href: '/how-to/submit-content/' },
+      { label: 'How to build the newsletter', href: '/how-to/newsletter/' },
+    ] },
   ];
 }
 

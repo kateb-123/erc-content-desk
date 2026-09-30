@@ -261,6 +261,10 @@ export function renderIssue(container, props) {
   door.href = '/builder/';
   door.append(faIcon('arrow-right'));
   side.append(door);
+  // The how-to for whoever builds the issue (Kate, Sep 30), a quiet link under the door.
+  const howTo = el('a', 'nl-howto', 'How to build an issue');
+  howTo.href = '/how-to/newsletter/';
+  side.append(howTo);
   const last = lastIssue(archive, rows);
   if (last) {
     const lastBox = el('section', 'nl-last');

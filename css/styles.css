@@ -210,6 +210,10 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .nl-door { display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 var(--spacing-05); background: var(--button-primary); color: var(--text-on-accent); text-decoration: none; transition: background-color var(--duration-fast-01) var(--ease-productive); }
 .nl-door:hover { background: var(--button-primary-hover); color: var(--text-on-accent); }
 .nl-door:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
+/* The how-to under the door: a quiet word that acts, so it wears the underline. */
+.nl-howto { display: inline-block; margin-top: var(--spacing-04); font: var(--meta-type); color: var(--text-secondary); text-decoration: underline; }
+.nl-howto:hover { color: var(--ink); }
+.nl-howto:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); border-radius: 2px; }
 .nl-last { border-top: 1px solid var(--line); padding-top: var(--spacing-04); }
 .nl-last .block-label { margin: 0 0 var(--spacing-02); }
 .nl-last-date { margin: 0; font-size: 14px; }
@@ -468,6 +472,10 @@ a.desk-card:hover { background: var(--door-hover); border-left-color: var(--acce
 .desk-card-words { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-01); }
 .desk-card-name { font: var(--sub-title); letter-spacing: -.1px; }
 .desk-card-sub { font: var(--meta-type); color: var(--text-helper); }
+/* Documentation's lines are links of their own; the card itself opens nothing. */
+.desk-card-link { font: var(--meta-type); color: var(--link-primary); text-decoration: underline; align-self: flex-start; }
+.desk-card-link:hover { color: var(--link-primary-hover); }
+.desk-card-link:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); border-radius: 2px; }
 .desk-card-count { font: var(--numeral); font-size: 28px; line-height: 36px; }
 .desk-card .fa-arrow-right { font-size: 14px; color: var(--icon-secondary); }
 .home-note { margin-top: var(--spacing-05); }

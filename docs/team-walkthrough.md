@@ -161,7 +161,19 @@ Past issues holds the archive, newest first, back to Nov 2025.
 
 ## The submit-content deck (Sep 30, built)
 
-Part 1 became a page on the desk's open side, `how-to/submit-content/index.html`, live at /how-to/submit-content/ once pushed. A navy band (her pick C of four), then a jump menu beside three sections: Add content (two slides under named tabs, Add one item and Bulk add items, each a 1:2 box with the steps and a Claude note beside a recording of the real form in the sandbox: `fill-in.webm` and `bulk.webm`, the fake Howdy Policy Trivia Night), Item types (a table: a row per type and a row per subtype, each with a plain line and the newest example of its kind live on the Exchange), and Links to share (the team page's own Quick links rows with Copy link). Her cuts the same day: no two columns, no After you click section, no practice form. The words are in the page; tests/how-to.test.js holds the addresses and the desk's own words. Kathy's part is still only words, above.
+Part 1 became a page on the desk's open side, `how-to/submit-content/index.html`, live at /how-to/submit-content/ once pushed. A navy band (her pick C of four), then a jump menu beside three sections: Add content (two slides under named tabs, Add one item and Bulk add items, each a 1:2 box with the steps and a Claude note beside a recording of the real form in the sandbox: `fill-in.webm` and `bulk.webm`, the fake Howdy Policy Trivia Night), Item types (a table: a row per type and a row per subtype, each with a plain line and the newest example of its kind live on the Exchange), and Links to share (the team page's own Quick links rows with Copy link). Her cuts the same day: no two columns, no After you click section, no practice form. The words are in the page; tests/how-to.test.js holds the addresses and the desk's own words. Kathy's part is the newsletter how-to below.
+
+## The newsletter how-to (Sep 30, evening, built)
+
+Part 2 became its own page, `how-to/newsletter/index.html`, at /how-to/newsletter/, for whoever builds an issue (Kate: Kathy, and whoever covers; no name on the page). Her answers, one at a time: beside the submit how-to, linked from Next issue (a quiet "How to build an issue" under Open the builder) and from the front page's Documentation card, which now lists both how-tos; the three sections as approved; five recordings, one per slide; then "can we do them a tabs?", her pick B: three tabs under the band (Where items come from, Build the issue, Send and archive), the middle one with a tab per builder step (Review, Outline, Preview & Edit), no jump row; Open Newsletter in the band; no Claude note (the builder never calls Claude); the Outlook line under the builder's tabs, outside the slides. The words are the approved Part 2 words trimmed to steps:
+
+- Next issue: Kept items wait in Ready to add. / Add puts one in the issue. Quick add puts in something new. / The builder only pulls what is in the issue.
+- Review: Open the builder from Next issue. / Pick the issue, then Pull from the desk. / Pull again any time. Only new items come in.
+- Outline: Put items in order with the arrows. / Mark one event Featured. / Remove takes an item out. Undo puts it back.
+- Preview & Edit: Fix titles, dates, the introduction and pictures. (Under the tabs: Every fix in Preview & Edit, never in Outlook, so the archive matches what went out.)
+- Save & Export: Copy HTML, paste it into Outlook, send. / Save to the archive. It shows under Past issues.
+
+The recordings were made on a throwaway walk sandbox (port 4183) with seven Aggie items stamped for the Oct 6 issue and three kept unstamped, the fake Howdy Policy Trivia Night typed in with Quick add. The sandbox now keeps a saved issue in memory so Past issues lists it, as live. Tests in tests/how-to.test.js: the one allowed address, the three tabs and the four step names as the builder's own, five slides with five recordings, no dash, no name, no Claude, and the Next issue link.
 
 ## Out of scope for now
 

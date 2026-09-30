@@ -12,15 +12,19 @@ import { openedScreen } from './shell-view.js';
 import { el, tryAgain } from './ui-aids.js';
 
 function card(item, onGoTo) {
-  const box = el(item.href ? 'a' : 'div', `desk-card${item.href ? '' : ' is-still'}`);
+  const live = Boolean(item.href || item.links);
+  const box = el(item.href ? 'a' : 'div', `desk-card${live ? '' : ' is-still'}`);
   box.dataset.key = item.key;
   if (item.href) {
     box.href = item.href;
-    // A screen of the desk switches in place; a page of its own (the how-to) is a plain link.
+    // A screen of the desk switches in place; a page of its own is a plain link.
     if (item.href.includes('#')) box.addEventListener('click', event => { event.preventDefault(); onGoTo(openedScreen(new URL(box.href, location.href).hash)); });
   }
   const words = el('span', 'desk-card-words');
-  words.append(el('span', 'desk-card-name', item.label), el('span', 'desk-card-sub', item.sub));
+  words.append(el('span', 'desk-card-name', item.label));
+  // A card of links (Documentation: the how-tos) carries each as a line of its own.
+  if (item.links) for (const link of item.links) { const a = el('a', 'desk-card-link', link.label); a.href = link.href; words.append(a); }
+  else words.append(el('span', 'desk-card-sub', item.sub));
   box.append(words, el('span', 'desk-card-count'));
   if (item.href) box.append(faIcon('arrow-right'));
   return box;

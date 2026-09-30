@@ -218,9 +218,10 @@ The front page is Kate's own (her answer, Sep 22): the title Desk, the lede
 "What waits on each page.", then five cards in a grid of white boxes: Submit
 content (the team's page), Content Sort, Newsletter and Policy Exchange,
 each a name, a line of what it holds and the count as a big numeral with an
-arrow, the teal bar on hover; and Documentation, which opens the team's
-how-to at /how-to/submit-content/ (Kate, Sep 30; greyed and Forthcoming
-until then). The
+arrow, the teal bar on hover; and Documentation, a still card whose two
+lines are links of their own, How to submit content at
+/how-to/submit-content/ and How to build the newsletter at
+/how-to/newsletter/ (Kate, Sep 30; greyed and Forthcoming until then). The
 top bar shows no lane links there.
 
 The team's page, Submit content at /#team (Kate's sketch and the handoff,
@@ -407,6 +408,28 @@ page's own Quick links rows, imported from `js/team-ui.js`, Copy link and
 Copied live. No After you click section and no practice form: "they're not
 idiots". Steps only, and only where the screen does not already say it.
 Sample content is obviously fake, in Aggie names (Howdy Policy Trivia Night).
+
+## The newsletter how-to (Sep 30, evening)
+
+The second how-to, `/how-to/newsletter/`, for whoever builds an issue
+(Kate: "Kathy, and whoever builds an issue when she is out"; no name on
+the page). The submit page's pattern with her one change, "can we do them
+a tabs?", her pick B of three: no jump row and no scrolling sections, but
+THREE TABS under the band in the desk's own tab idiom, Where items come
+from, Build the issue and Send and archive, and inside Build the issue a
+second, smaller row with a tab per builder step named as the builder names
+it, Review, Outline and Preview & Edit. One slide behind each tab, five in
+all, the steps in the left third and a recording of the real desk in the
+sandbox in the right two thirds (`next-issue.webm`, `review.webm`,
+`outline.webm`, `edit.webm`, `export.webm`, muted, looping, playing only
+while on screen with its tab up), a swipe on a phone moving between the
+tabs of the box it lands in. The band's white button is Open Newsletter,
+to /#newsletter, where an issue starts. No Claude note: the builder never
+calls it (her call, "No Claude note on this page"). The one line outside
+the slides sits under the builder's tabs: "Every fix in Preview & Edit,
+never in Outlook, so the archive matches what went out." Next issue links
+it as a quiet underlined word under Open the builder, "How to build an
+issue", and the front page's Documentation card lists both how-tos.
 
 ## The public pages
 
