@@ -46,6 +46,8 @@
     .jump a:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 2px; }
     .sections { display: flex; flex-direction: column; gap: var(--spacing-09); }
     section { scroll-margin-top: 72px; }
+    /* The last section fills the window, so a jump to it lands with nothing of the section before it in view. */
+    .sections > section:last-child { min-height: calc(100vh - 56px - 72px); }
     section h2 { font: var(--page-title); margin: 0 0 var(--spacing-05); }
     section h3 { font: var(--card-title); margin: 0 0 var(--spacing-04); }
 
