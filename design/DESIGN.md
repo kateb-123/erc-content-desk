@@ -372,6 +372,25 @@ thing everywhere (see the vocabulary table).
 - Colour is never the only signal: a status colour ships with its icon and a word.
 - Nothing is "done" without a screenshot from the running sandbox.
 
+## The how-to deck (Sep 30)
+
+The team's how-to lives on the desk's open side at `/how-to/submit-content/`
+(Kate, Sep 30: "it should live in vercel, on the content desk page, for how to
+documents"), a static page beside the app, no password, linked from her email.
+It is a deck, one slide at a time: the left and right arrows, Back and Next
+under the slide, or a swipe move between slides, and without a script the
+slides stack. Her picks: the cover on the navy, the bar's colour extended, with
+the eyebrow's maize rule and a white button (her C of four); steps only, and
+only where the screen does not already say it; a RECORDING of the real form
+being filled in with a practice item (`fill-in.webm`, taken in the sandbox,
+playing muted on its slide with Play and Pause under it, still under reduced
+motion) rather than a drawn copy; "Claude" lines in the info note where Claude
+works in the background; the types named as the form names them; and a last
+slide, Try it, that is the real form module with its post caught on the page
+and a practice queue beside it, so nothing reaches the desk. The stills are
+the desk's own screens at 2x. Sample content is obviously fake, in Aggie
+names (Howdy Policy Trivia Night).
+
 ## The public pages
 
 The share form and the listserv sign-up live in `public-pages/`, a Vercel project of their own at an address of their own (Kate's pick A, Sep 22), beside the Policy Exchange's copies at /share/ and /newsletter/. Never on the desk's address: the desk has no password, and a public page on it is a door into it (copies at the desk's /submit and /listserv were built and taken down the same hour on Sep 22; Kate: "I don't want others to backspace from submit and see everything"). The pages post to their own `/api`, which the folder's `vercel.json` forwards to the desk server-side, so the desk's address is written nowhere a visitor can read, and the desk's own deployment sends the folder's addresses on to the standalone site (a redirect in the desk's `vercel.json`; an ignore line would empty the standalone deploy too, since Vercel reads `.vercelignore` at the repository root for every project built from the repo). Each call carries `public: true`, which the bot check honours as "gate me"; the project's hostname must be on the Turnstile widget's list in Cloudflare or the human check will not load. The sandbox serves the folder on port 4174 with the same forward. The public share page is deliberately NOT the desk theme: it wears the ERC's outward maroon, the listserv sign-up's look (Work Sans/Open Sans, white card with the 3px #500000 border and hard offset shadow, uppercase maroon button), because it faces the public alongside the newsletter and the hub. It never links into the desk. Uniformity audits should hold it against the sign-up page, not against the desk tokens.

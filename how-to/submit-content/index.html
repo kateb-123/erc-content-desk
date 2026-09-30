@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>How to submit content · ERC Content Desk</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%231d7491'/%3E%3Cpath d='M9 16.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="/css/tokens.css?v=9" />
+  <link rel="stylesheet" href="/css/styles.css?v=145" />
+  <link rel="stylesheet" href="/css/shell.css?v=7" />
+  <style>
+    /* The team's how-to (Kate, Sep 30, 2026): a deck, one slide at a time, on
+       the desk's open side. The left and right arrows, Back and Next, or a
+       swipe move between slides. Without a script the slides stack, so a
+       page that cannot run one still reads top to bottom. */
+    html, body { height: 100%; }
+    body { margin: 0; display: flex; flex-direction: column; background: var(--background); color: var(--ink); font: var(--body-type); }
+    .deck { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+    .slide { box-sizing: border-box; padding: var(--spacing-07) var(--gap-56); border-bottom: 1px solid var(--line); }
+    .deck.on .slide { flex: 1 1 auto; min-height: 0; overflow-y: auto; border: 0; display: none; }
+    .deck.on .slide.on { display: grid; align-content: center; }
+    .inner { width: 100%; max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: var(--gap-56); align-items: center; }
+    .inner.solo { grid-template-columns: minmax(0, 760px); justify-content: center; }
+    .eyebrow { display: inline-block; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); padding-bottom: 6px; border-bottom: 2px solid var(--border-interactive); margin: 0 0 var(--spacing-05); }
+    h1 { font: 700 48px/56px var(--font-sans); margin: 0 0 var(--spacing-05); text-wrap: balance; max-width: 16ch; }
+    h2 { font: var(--page-title); margin: 0 0 var(--spacing-05); text-wrap: balance; }
+    .lede { font: 400 20px/30px var(--font-sans); margin: 0 0 var(--spacing-06); max-width: 46ch; color: var(--text-secondary); }
+    p { margin: 0 0 var(--spacing-05); }
+    ol, ul { margin: 0 0 var(--spacing-05); padding-left: 28px; }
+    li { margin: 0 0 var(--spacing-03); padding-left: 4px; }
+    .quiet { color: var(--text-secondary); }
+    .hint { margin: var(--spacing-06) 0 0; font: var(--meta-type); color: var(--muted); }
+    .open { display: inline-flex; align-items: center; height: 48px; padding: 0 var(--spacing-06); border-radius: var(--radius); font-weight: 700; text-decoration: none; }
+    .open .fa-solid { margin-left: var(--spacing-05); font-size: 14px; }
+    .note { padding: var(--spacing-04) var(--spacing-05); background: var(--notification-info-background); border: 1px solid var(--notification-info-border); border-left: 4px solid var(--support-info); border-radius: var(--radius); }
+
+    /* The cover: the bar's navy, the whole slide. */
+    .cover { background: var(--color-blue-400); color: var(--text-inverse); }
+    .cover .eyebrow { color: var(--color-maize-400); border-bottom-color: var(--color-maize-400); }
+    .cover .lede { color: var(--color-blue-100); }
+    .cover .open { background: var(--text-inverse); color: var(--color-blue-400); }
+    .cover .open:hover { background: var(--color-blue-100); }
+    .cover .open:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-blue-400), 0 0 0 4px var(--text-inverse); }
+    .cover .hint { color: var(--color-blue-200); }
+
+    /* The pictures and the recording. */
+    .shots { display: grid; gap: var(--spacing-05); justify-items: center; }
+    .shots img, .shots video { display: block; max-width: 100%; height: auto; max-height: calc(100vh - 232px); border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer); }
+    .shots.two img { max-height: calc(50vh - 120px); }
+    .rec { display: grid; gap: var(--spacing-03); justify-items: center; }
+    .rec-tools { display: flex; align-items: center; gap: var(--spacing-04); font: var(--meta-type); color: var(--muted); }
+    .rec-tools .linkish { margin: 0; height: 24px; padding: 0 var(--spacing-02); }
+
+    table.types { width: 100%; border-collapse: collapse; }
+    table.types td { padding: var(--spacing-04) var(--spacing-05) var(--spacing-04) 0; border-top: 1px solid var(--line); vertical-align: top; }
+    table.types tr:last-child td { border-bottom: 1px solid var(--line); }
+    table.types td:first-child { font-weight: 700; white-space: nowrap; }
+
+    /* The practice run: the real form, and a queue of its own. */
+    .practice { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; }
+    .deck.on .slide.on:has(.practice) { align-content: start; }   /* the form is tall: its head stays in view, the slide scrolls */
+    .practice .form-box { padding: var(--spacing-06); }
+    .practice-queue { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--spacing-05) var(--spacing-06); }
+    .practice-queue .section-head { margin-bottom: var(--spacing-02); }
+    .practice-queue .queue-row:last-child { border-bottom: 0; }
+    .practice-queue .claude { margin: var(--spacing-02) 0 0; font: var(--meta-type); color: var(--text-helper); }
+    .practice-queue .claude .fa-solid { color: var(--ok-mark); margin-right: var(--spacing-02); }
+
+    .nav { flex: none; display: none; align-items: center; justify-content: center; gap: var(--spacing-06); height: 72px; border-top: 1px solid var(--line); background: var(--background); }
+    .deck.on ~ .nav { display: flex; }
+    .nav button { margin: 0; }
+    .nav .where { min-width: 56px; text-align: center; font: var(--label-type); letter-spacing: var(--label-tracking); font-variant-numeric: tabular-nums; }
+
+    @media (max-width: 760px) {
+      .slide { padding: var(--spacing-05) var(--spacing-05); }
+      .inner, .practice { grid-template-columns: minmax(0, 1fr); gap: var(--spacing-06); }
+      h1 { font-size: 32px; line-height: 40px; }
+      h2 { font-size: 26px; line-height: 32px; }
+      .shots img, .shots video, .shots.two img { max-height: 45vh; }
+      table.types td:first-child { white-space: normal; }
+      .nav { gap: var(--spacing-04); }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .deck.on .slide { transition: opacity var(--duration-fast-02) var(--ease-standard); }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar"><nav class="topbar-crumbs" aria-label="Breadcrumb"><a class="topbar-brand" href="/#team">ERC Content Desk</a><span class="topbar-sep">/</span><span class="topbar-here">How to</span></nav></header>
+
+  <main class="deck" id="deck">
+    <section class="slide cover" aria-label="1 of 7">
+      <div class="inner solo"><div>
+        <div class="eyebrow">How to</div>
+        <h1>Submit content to the desk</h1>
+        <p class="lede">Send in an event, a paper, an opportunity or a headline. Six slides, then a practice run.</p>
+        <a class="open" href="https://erc-content-desk.vercel.app/#team" target="_blank" rel="noopener">Open Submit content<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+        <p class="hint">Press the right arrow, or click Next.</p>
+      </div></div>
+    </section>
+
+    <section class="slide" aria-label="2 of 7">
+      <div class="inner">
+        <div>
+          <h2>Fill in the form</h2>
+          <ol>
+            <li>Paste the item's link.</li>
+            <li>Pick a type, then its subtype.</li>
+            <li>Put the date, time and place, or the deadline, in the Description.</li>
+            <li>Add your initials, then click Add to the queue.</li>
+          </ol>
+        </div>
+        <div class="rec">
+          <div class="shots"><video id="fill-in" muted loop playsinline preload="metadata" poster="1-form.png" aria-label="The Submit content form being filled in with a practice event, then added to the queue."><source src="fill-in.webm" type="video/webm" /></video></div>
+          <div class="rec-tools"><span>The real form, filled in with a practice event.</span><button type="button" class="linkish" id="rec-toggle">Pause</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" aria-label="3 of 7">
+      <div class="inner">
+        <div>
+          <h2>Claude is still working</h2>
+          <p class="note">After you click, <b>Claude</b> reads the link and fills in anything you left blank. The more you fill in, the better it does.</p>
+          <p>Your item shows in the Queue once Claude is done. Refresh if it isn't there yet.</p>
+          <p class="quiet">Nothing goes public until Kate reviews it.</p>
+        </div>
+        <div class="shots two"><img src="2-added.png" alt="The form after adding: Added to the queue, with Add another." /><img src="3-queue.png" alt="The Queue with the new item at the top." /></div>
+      </div>
+    </section>
+
+    <section class="slide" aria-label="4 of 7">
+      <div class="inner solo"><div>
+        <h2>Which type</h2>
+        <table class="types">
+          <tr><td>ERC event</td><td>An event the ERC hosts or co-hosts. No subtype.</td></tr>
+          <tr><td>New research</td><td>A paper or report. Working Paper, Peer-Reviewed, Report, or ERC Research for the ERC's own.</td></tr>
+          <tr><td>Event</td><td>Anyone else's event. A&amp;M for on campus, Off-Campus, or Webinar-Online.</td></tr>
+          <tr><td>Opportunity</td><td>Funding, a fellowship or a call. Funding &amp; Grants, Fellowships &amp; Programs, Call for Proposals, or Other.</td></tr>
+          <tr><td>Headline</td><td>A news story. National or Texas.</td></tr>
+        </table>
+      </div></div>
+    </section>
+
+    <section class="slide" aria-label="5 of 7">
+      <div class="inner">
+        <div>
+          <h2>Bulk upload</h2>
+          <p class="quiet">For a list from a scraper, a newsletter or your notes.</p>
+          <ol>
+            <li>Download the Word or spreadsheet template, under Add a doc or spreadsheet.</li>
+            <li>Fill it in, one item per row. Or give an AI your list and the template, and ask it to fill the template.</li>
+            <li>Drop the file on Add a doc or spreadsheet.</li>
+          </ol>
+          <p class="note"><b>Claude</b> reads the file and lists the items it found. Check them, then click Add all to the queue.</p>
+          <p class="quiet">Only a title or a link is needed for each item.</p>
+        </div>
+        <div class="shots"><img src="5-bulk.png" alt="Add a doc or spreadsheet, open: drop a file here or click to choose one, with the Word and Spreadsheet templates." /></div>
+      </div>
+    </section>
+
+    <section class="slide" aria-label="6 of 7">
+      <div class="inner">
+        <div>
+          <h2>Public links you can share</h2>
+          <p>These are live and public. Under Quick links, click Copy link next to the one you need. Never send the desk's address.</p>
+          <ul>
+            <li><a href="https://erc-share.vercel.app/submit/" target="_blank" rel="noopener">Submit content</a>: for anyone outside the team to send us an item.</li>
+            <li><a href="https://erc-share.vercel.app/listserv/" target="_blank" rel="noopener">Join listserv</a>: to get the newsletter.</li>
+            <li><a href="https://erc-policy-exchange.vercel.app/" target="_blank" rel="noopener">ERC Policy Exchange</a>: the public site with everything we publish.</li>
+          </ul>
+        </div>
+        <div class="shots"><img src="4-links.png" style="max-width: min(360px, 100%)" alt="Quick links on the team page: Submit content, Join listserv and ERC Policy Exchange, each with Copy link." /></div>
+      </div>
+    </section>
+
+    <section class="slide" aria-label="7 of 7">
+      <div class="inner practice">
+        <div>
+          <h2>Try it</h2>
+          <p class="quiet">This form saves nothing. Fill it in the way you would on Submit content.</p>
+          <div class="form-box" id="practice-form"></div>
+        </div>
+        <div class="practice-queue">
+          <div class="section-head"><h3 class="section-label">Your practice queue</h3><span class="section-note" id="practice-count">Nothing yet</span></div>
+          <div class="queue-rows" id="practice-rows"><p class="queue-meta">What you add shows here, the way it would in the Queue.</p></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="nav" aria-label="Slides">
+    <button type="button" id="back" disabled>Back</button>
+    <span class="where" id="where" aria-live="polite">1 / 7</span>
+    <button type="button" class="primary" id="next">Next</button>
+  </nav>
+
+  <script type="module">
+    import { renderSubmitForm } from '/js/submit-form.js';
+    import { busyWords, faIcon } from '/js/icons.js';
+    import { el } from '/js/ui-aids.js';
+
+    // ---- The deck ----
+    const deck = document.getElementById('deck');
+    const slides = [...deck.querySelectorAll('.slide')];
+    const back = document.getElementById('back');
+    const next = document.getElementById('next');
+    const where = document.getElementById('where');
+    const video = document.getElementById('fill-in');
+    const stillMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let at = 0;
+    function show(i) {
+      at = Math.min(slides.length - 1, Math.max(0, i));
+      slides.forEach((s, n) => { s.classList.toggle('on', n === at); s.setAttribute('aria-hidden', String(n !== at)); if (n === at) s.scrollTop = 0; });
+      back.disabled = at === 0;
+      next.disabled = at === slides.length - 1;
+      where.textContent = `${at + 1} / ${slides.length}`;
+      history.replaceState(null, '', `#${at + 1}`);
+      // The recording plays while its slide is up, unless motion is turned off.
+      if (slides[at].contains(video)) { if (!stillMotion) video.play().catch(() => {}); }
+      else video.pause();
+    }
+    deck.classList.add('on');
+    back.addEventListener('click', () => show(at - 1));
+    next.addEventListener('click', () => show(at + 1));
+    document.addEventListener('keydown', e => {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
+      if (typing && e.key !== 'PageDown' && e.key !== 'PageUp') return;
+      if (['ArrowRight', 'PageDown'].includes(e.key) || (e.key === ' ' && !typing)) { e.preventDefault(); show(at + 1); }
+      else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(at - 1); }
+      else if (e.key === 'Home' && !typing) { e.preventDefault(); show(0); }
+      else if (e.key === 'End' && !typing) { e.preventDefault(); show(slides.length - 1); }
+    });
+    let x0 = null, y0 = null;
+    document.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+    document.addEventListener('touchend', e => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) && !e.target.closest('input, textarea')) show(at + (dx < 0 ? 1 : -1));
+      x0 = null;
+    }, { passive: true });
+
+    // ---- The recording's pause ----
+    const toggle = document.getElementById('rec-toggle');
+    const sayState = () => { toggle.textContent = video.paused ? 'Play' : 'Pause'; };
+    toggle.addEventListener('click', () => { if (video.paused) video.play().catch(() => {}); else video.pause(); });
+    video.addEventListener('play', sayState);
+    video.addEventListener('pause', sayState);
+    if (stillMotion) sayState();
+
+    // ---- The practice run: the real form, its post caught here ----
+    const realFetch = window.fetch.bind(window);
+    let lastBody = null;
+    window.fetch = async (url, init = {}) => {
+      const path = typeof url === 'string' ? url : url.url;
+      if (path.endsWith('/api/submit')) {
+        lastBody = JSON.parse(init.body || '{}');
+        await new Promise(r => setTimeout(r, 600));
+        return new Response(JSON.stringify({ ok: true, id: `practice_${Date.now()}` }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      return realFetch(url, init);
+    };
+    const rows = document.getElementById('practice-rows');
+    const count = document.getElementById('practice-count');
+    let added = 0;
+    function practiceRow(body) {
+      const row = el('div', 'queue-row');
+      row.append(el('div', 'queue-title', body.title || body.link));
+      row.append(el('div', 'queue-meta', `${body.submitter ? `added by ${body.submitter} · ` : ''}just now`));
+      const claude = el('p', 'claude');
+      claude.append(busyWords('Claude is reading the link'));
+      row.append(claude);
+      setTimeout(() => {
+        claude.replaceChildren(faIcon('check'), body.title ? 'Read. It waits for Kate on Content Sort.' : 'Read, and the title filled in. It waits for Kate on Content Sort.');
+      }, 3500);
+      return row;
+    }
+    renderSubmitForm(document.getElementById('practice-form'), {
+      bulk: false,
+      onSubmitted: () => {
+        if (!lastBody) return;
+        if (!added) rows.replaceChildren();
+        rows.prepend(practiceRow(lastBody));
+        added += 1;
+        count.textContent = `${added} waiting · newest first`;
+        lastBody = null;
+      },
+    });
+
+    show(Math.min(slides.length, Math.max(1, parseInt(location.hash.slice(1), 10) || 1)) - 1);
+  </script>
+</body>
+</html>
