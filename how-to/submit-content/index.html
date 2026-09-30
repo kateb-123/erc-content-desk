@@ -26,12 +26,12 @@
     .note { padding: var(--spacing-04) var(--spacing-05); background: var(--notification-info-background); border: 1px solid var(--notification-info-border); border-left: 4px solid var(--support-info); border-radius: var(--radius); }
 
     /* The band: the bar's navy, the page's name on it. */
-    .band { background: var(--color-blue-400); color: var(--text-inverse); padding: var(--gap-56) var(--gap-56) var(--spacing-09); }
+    .band { background: var(--color-blue-400); color: var(--text-inverse); padding: var(--spacing-07) var(--gap-56); }
     .band .in { max-width: 1200px; margin: 0 auto; }
-    .eyebrow { display: inline-block; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--color-maize-400); padding-bottom: 6px; border-bottom: 2px solid var(--color-maize-400); margin: 0 0 var(--spacing-05); }
-    .band h1 { font: 700 44px/52px var(--font-sans); margin: 0 0 var(--spacing-04); text-wrap: balance; max-width: 18ch; }
-    .band .lede { font: 400 20px/30px var(--font-sans); color: var(--color-blue-100); margin: 0 0 var(--spacing-06); max-width: 46ch; }
-    .open { display: inline-flex; align-items: center; height: 48px; padding: 0 var(--spacing-06); border-radius: var(--radius); background: var(--text-inverse); color: var(--color-blue-400); font-weight: 700; text-decoration: none; }
+    .eyebrow { display: inline-block; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--color-maize-400); padding-bottom: 6px; border-bottom: 2px solid var(--color-maize-400); margin: 0 0 var(--spacing-04); }
+    .band h1 { font: var(--page-title); margin: 0 0 var(--spacing-03); text-wrap: balance; max-width: 24ch; }
+    .band .lede { font: var(--lede-type); color: var(--color-blue-100); margin: 0 0 var(--spacing-05); max-width: 52ch; }
+    .open { display: inline-flex; align-items: center; height: 40px; padding: 0 var(--spacing-05); border-radius: var(--radius); background: var(--text-inverse); color: var(--color-blue-400); font-weight: 700; text-decoration: none; }
     .open:hover { background: var(--color-blue-100); color: var(--color-blue-400); }
     .open:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-blue-400), 0 0 0 4px var(--text-inverse); }
     .open .fa-solid { margin-left: var(--spacing-05); font-size: 14px; }
@@ -75,7 +75,7 @@
 
     @media (max-width: 900px) {
       .band { padding: var(--spacing-07) var(--spacing-05); }
-      .band h1 { font-size: 30px; line-height: 38px; }
+      .band h1 { font-size: 26px; line-height: 32px; }
       .page { grid-template-columns: minmax(0, 1fr); padding: 0 var(--spacing-05) var(--spacing-08); gap: var(--spacing-06); }
       .jump { position: sticky; top: 0; z-index: 1; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; gap: var(--spacing-02); background: var(--background); margin: 0 calc(-1 * var(--spacing-05)); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--line); }
       .jump-label { display: none; }
@@ -103,7 +103,7 @@
     <nav class="jump" aria-label="On this page">
       <div class="jump-label">On this page</div>
       <a href="#add">Add content</a>
-      <a href="#types">Which type</a>
+      <a href="#types">Item types</a>
       <a href="#links">Links to share</a>
     </nav>
 
@@ -117,7 +117,7 @@
             <h3>Add one item</h3>
             <ol>
               <li>Paste the item's link.</li>
-              <li>Pick a type, then its subtype. <a href="#types">Which type</a> says what each is.</li>
+              <li>Pick a type, then its subtype. <a href="#types">Item types</a> says what each is.</li>
               <li>Put the date, time and place, or the deadline, in the Description.</li>
               <li>Add your initials, then click Add to the queue.</li>
             </ol>
@@ -131,14 +131,14 @@
           <div class="slide" data-tab="Bulk add items">
             <div>
             <h3>Bulk add items</h3>
-            <p>For a list from a scraper, a newsletter or your notes. <b>The spreadsheet is best:</b> its columns are the desk's own, so nothing is guessed. A Word file goes through Claude, which splits it into items.</p>
+            <p>For a list from a scraper, a newsletter or your notes. <b>The spreadsheet is best:</b> nothing is guessed.</p>
             <ol>
-              <li>Download the <a href="/templates/erc-upload-template.xlsx" download>spreadsheet template</a>, or the <a href="/templates/erc-upload-template.docx" download>Word template</a>.</li>
-              <li>Fill it in, one item per row. Or give an AI your list and the template, and have it fill the template. Every item needs a link.</li>
-              <li>Drop the file on Add a doc or spreadsheet, under the form.</li>
-              <li>Check the list it shows, then click Add to the queue. The button counts the items.</li>
+              <li>Download the <a href="/templates/erc-upload-template.xlsx" download>spreadsheet template</a> (or the <a href="/templates/erc-upload-template.docx" download>Word one</a>).</li>
+              <li>One item per row. Every item needs a link. An AI can fill it from your list.</li>
+              <li>Drop it on Add a doc or spreadsheet.</li>
+              <li>Check the list, then Add to the queue.</li>
             </ol>
-            <p class="note"><b>Claude</b> then reads each item's link, as it does for one.</p>
+            <p class="note"><b>Claude</b> then reads each link, as for one item.</p>
             </div>
             <figure class="rec">
               <video muted loop playsinline preload="metadata" poster="5-bulk-list.png" aria-label="The spreadsheet dropped on Add a doc or spreadsheet: the three items listed, then added to the queue."><source src="bulk.webm" type="video/webm" /></video>
@@ -146,14 +146,14 @@
             </figure>
           </div>
         </div>
-        <p class="quiet" style="margin-top: var(--spacing-05)">Nothing goes public until Kate reviews it.</p>
+        <p class="quiet" style="margin-top: var(--spacing-05)">Nothing goes public until it has been reviewed.</p>
       </section>
 
       <section id="types" aria-labelledby="h-types">
-        <h2 id="h-types">Which type</h2>
+        <h2 id="h-types">Item types</h2>
         <div class="page-tabs"><div class="tabs" role="tablist" aria-label="Types" id="type-tabs"></div></div>
         <div id="type-panels"></div>
-        <p class="quiet">Not sure? Pick the closest. Kate can change it.</p>
+        <p class="quiet">Not sure? Pick the closest. It can be changed later.</p>
       </section>
 
       <section id="links" aria-labelledby="h-links">
@@ -309,7 +309,7 @@
     }).catch(() => {});
 
     // ---- Links to share: the team page's own rows, Copy link and all ----
-    const WHY = { share: 'For anyone outside the team to send us an item.', listserv: 'To get the newsletter.', exchange: 'The public site for what Kate publishes.' };
+    const WHY = { share: 'For anyone outside the team to send us an item.', listserv: 'To get the newsletter.', exchange: 'The public site for what we publish.' };
     const box = document.getElementById('links-box');
     for (const item of QUICK_LINKS) {
       const row = el('div', 'ql-row');
