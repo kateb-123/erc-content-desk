@@ -13,7 +13,7 @@
 "Past newsletters"
 "Review"
 "Outline"
-"Preview & Edit"
+"Preview & Tweak" (the third step since Oct 5, 2026; "Preview & Edit" before)
 "Save & Export"
 "Add to the queue"
 "Next newsletter, [Mon D]" (the Next newsletter page's title, with the count badge)
@@ -109,20 +109,19 @@
 "Pick an issue…"
 "Item"
 "Section"
-"Order the items with the arrows, mark one event Featured, and pick the layout: the Submit your research callout, the contents strip, and which items show a description or a picture." (Outline's info panel since Oct 2026; "Put the items in order with the arrows, mark one event Featured, and switch the Submit your research callout on or off." before)
+"Order the items with the arrows, mark one event Featured, and pick the layout: the Submit your research callout, the contents strip, and which items show a description or a picture." (Outline's info panel Oct 2 to 5, 2026; replaced the same week by the table's line below)
 "Sections"
 "Featured Research"
 "Featured"
 Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; straight quotes, like the arrows' Move "[title]" up)
 "One event is featured; it pins to the top under a Featured heading." (the note under Events on Outline, Sep 17; was a tooltip on every row)
 "Removes this item from the issue"
-"Layout" (the Outline's layout block, Oct 2026)
-"Submit your research callout" · "Maroon block" / "Light gray box" / "Dotted rule" / "None" (its four styles, a segmented row; the On/Off switch and "Show this callout in the newsletter for this issue" are gone)
-"Contents strip under the masthead" (a checkbox, on by default)
-"Reset layout options" / "Every layout option back to its default" (the quiet word and its tooltip; shown only once something differs)
-"Description" (each item's checkbox in Research, Spotlight, Events and Opportunities, when it has a summary) · Show the description of "[title]" (its name for a screen reader)
-"Picture" · "None" / "Stamp" / "Headshot" (the picture's layout, a small segmented row, when the description is on and the item has a photo) · Picture for "[title]"
-"Picture URL" · "https://" · "a photo, not a flyer" · "A photo, not a flyer. Upload one from Preview & Edit instead, if you like." (the field for an item with a description on and no photo; accepted only as http:// or https://)
+The Outline as a table (Oct 5, 2026): "Item" · "Featured" · "Order" (the column heads) · "[N]" or "[N] of [M]" beside a section's name · "Feature" / "Featured" (the one radio per event) · Move "[title]" up / down · "Move to…" / Move "[title]" to another group (shows on hover; a menu of every section's groups, the current one greyed) · "(no group)" · Moved "[title]" to [Section], [Group]. (the status line) · "Undo" / Put "[title]" back · "[N] of [M] items in the issue." · "Not in this issue: [sections]."
+"What goes out, in the order it goes out. Each section and group is as the email prints it. Hover a row for Move to…; the look is chosen on the next step, on the email itself." (Outline's info panel, Oct 5)
+Preview & Tweak's look controls (Oct 5, 2026), all redrawing the email at once:
+"Layout" (a fold in the rail) · "Submit your research callout" · "Maroon block" / "Light gray box" / "Dotted rule" / "None" (four swatches, each a drawing of the result; the same four open when the callout is clicked in the email) · "Contents strip under the masthead" (a checkbox, on by default) · "Click the callout or any picture in the email to change it there. Descriptions show or hide from their card." · "Reset layout options" / "Every layout option back to its default" (shown only once something differs)
+"Picture" · "None" / "Stamp" / "Headshot" (three swatches: in the popover when a picture is clicked in the email, and under Media in the item's card once it has a photo and shows its description)
+"Show the description in the email" (the checkbox under Description in an item's card, in Research, Spotlight, Events and Opportunities)
 "Click any text in the preview to edit it in a card on the right. The rail also holds the introduction, a one-off Add an item door, and reordering."
 "Editing"
 "Introduction"

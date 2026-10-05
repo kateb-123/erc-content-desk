@@ -86,6 +86,32 @@ export function deleteItem(issue, itemId) {
   return null;
 }
 
+/**
+ * Move one item to another group, in its own section or another: the Outline's
+ * Move to… (Kate, Oct 5), for an item the desk filed under the wrong type.
+ * The item joins the end of the target section's list; a featured event
+ * stops being featured when it leaves Events. Returns true when it moved.
+ */
+export function moveItemToGroup(issue, itemId, sectionKey, groupKey) {
+  const target = issue.sections?.[sectionKey];
+  const reg = SECTION_REGISTRY.find((s) => s.key === sectionKey);
+  if (!target || !reg || !reg.groups.some((g) => g.key === groupKey)) return false;
+  for (const fromKey of Object.keys(issue.sections)) {
+    const items = issue.sections[fromKey].items;
+    const index = items.findIndex((it) => it.id === itemId);
+    if (index === -1) continue;
+    const [item] = items.splice(index, 1);
+    item.group = groupKey;
+    if (fromKey !== 'events' || groupKey !== 'featured') delete item.featured;
+    if (sectionKey === 'events' && groupKey === 'featured') { target.items.forEach((ev) => { ev.featured = false; }); item.featured = true; }
+    target.items.push(item);
+    target.enabled = true;
+    issue.sections[fromKey].enabled = items.length > 0;
+    return true;
+  }
+  return false;
+}
+
 /** Re-insert a previously deleted item at its original spot (the Undo path). */
 export function insertItem(issue, sectionKey, index, item) {
   const sec = issue.sections[sectionKey];

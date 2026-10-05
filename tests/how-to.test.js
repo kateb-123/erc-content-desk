@@ -66,7 +66,7 @@ test('the newsletter how-to opens the Newsletter page and carries no other addre
 
 test('the newsletter how-to has the three tabs, a tab per builder step named as the builder names it, and the desk’s own words', () => {
   for (const words of ['Where items come from', 'Build the issue', 'Send and archive', 'Ready to add', 'Quick add', 'Open the builder', 'Pull from the desk', 'Copy HTML', 'Save to the archive', 'Past issues', 'never in Outlook']) assert.ok(nl.includes(words), words);
-  for (const step of ['Review', 'Outline', 'Preview &amp; Edit', 'Save &amp; Export']) {
+  for (const step of ['Review', 'Outline', 'Preview &amp; Tweak', 'Save &amp; Export']) {
     assert.ok(nl.includes(`data-tab="${step}"`), `${step} is a tab`);
     assert.ok(builderPage.includes(step), `${step} is the builder’s own name for the step`);
   }

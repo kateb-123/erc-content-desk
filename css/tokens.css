@@ -216,3 +216,17 @@
   --duration-fast-02: 110ms;
   --duration-moderate-02: 240ms;
 }
+
+/* The newsletter email's own colours, for the builder's swatches: small drawings of the
+   email, the one place in-app that wears them (Oct 5, 2026). */
+:root {
+  --mail-maroon: #500000;
+  --mail-maroon-light: #732F2F;
+  --mail-ink: #202020;
+  --mail-body: #3E3E3E;
+  --mail-ivory: #E9E4DC;
+  --mail-gray-100: #F6F6F6;
+  --mail-gray-300: #D1D1D1;
+  --mail-white: #ffffff;
+  --mail-menu-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}

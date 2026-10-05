@@ -5,7 +5,7 @@
  * pure logic lives in model.js, template.js, editpath.js and preview.js.
  */
 
-import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, partitionPulled, countIssueItems, bucketSectionItems, moveWithinBucket } from './model.js';
+import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, partitionPulled, countIssueItems, bucketSectionItems, moveWithinBucket, moveItemToGroup } from './model.js';
 
 // The builder lives INSIDE the desk's project (/builder/), so the desk's API
 // is same-origin: relative fetches, no CORS.
@@ -24,7 +24,7 @@ import { renderShell } from '../../js/shell-ui.js';
 import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
 import { arrowKeyTarget, normalizeLinkUrl, reorderRowName, movedAnnouncement } from './editing.js';
 // The per-issue layout options the Outline sets (Claude Design handoff, Oct 2026).
-import { CALLOUT_CHOICES, PICTURE_CHOICES, setCallout, setNav, itemOptions, setDescription, setPictureStyle, acceptPictureUrl, resetOptions, hasCustomOptions } from './options.js';
+import { CALLOUT_CHOICES, PICTURE_CHOICES, DESCRIBED_SECTIONS, setCallout, setNav, itemOptions, setDescription, setPictureStyle, resetOptions, hasCustomOptions } from './options.js';
 import { layoutOf } from './template.js';
 // Kept drafts, and hand-added items that go to the desk (Sep 23).
 import { readAllWaiting } from '../../js/reader-client.js';
@@ -506,333 +506,235 @@ function showUndoToast(message, onUndo, { focusUndo = false } = {}) {
  * Called each time the wizard navigates to the 'triage' step.
  */
 /**
- * A segmented row of words, one picked: the desk's type picker, small. The
- * group is named for a screen reader by `name`; each word is a radio.
- * @param {string} name
- * @param {Array<{key: string, label: string}>} choices
- * @param {string} picked
- * @param {(key: string) => void} onPick
+ * A small floating menu beside a control, closed by a click elsewhere or
+ * Escape. One open at a time. `build(menu)` fills it.
  */
-function segmentedRow(name, choices, picked, onPick) {
-  const row = el('div', 'triage-seg');
-  row.setAttribute('role', 'radiogroup');
-  row.setAttribute('aria-label', name);
-  const words = choices.map((c) => {
-    const w = button(c.label, 'triage-seg-word', { onClick: () => { onPick(c.key); words.forEach((x) => x.setPicked(x.dataset.key === c.key)); } });
-    w.type = 'button';
-    w.dataset.key = c.key;
-    w.setAttribute('role', 'radio');
-    w.setPicked = (on) => { w.classList.toggle('is-picked', on); w.setAttribute('aria-checked', String(on)); };
-    w.setPicked(c.key === picked);
-    row.appendChild(w);
-    return w;
-  });
-  return row;
+let openMenu = null;
+function closeMenu() {
+  if (!openMenu) return;
+  openMenu.el.remove();
+  openMenu.anchor.classList.remove('is-open');
+  openMenu = null;
+}
+document.addEventListener('click', (e) => {
+  if (openMenu && !openMenu.el.contains(e.target) && !openMenu.anchor.contains(e.target)) closeMenu();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+function showMenu(anchor, className, build, rect = anchor.getBoundingClientRect()) {
+  if (openMenu && openMenu.anchor === anchor) { closeMenu(); return null; }
+  closeMenu();
+  const menu = el('div', className);
+  build(menu);
+  document.body.appendChild(menu);
+  const left = Math.max(8, Math.min(rect.left + window.scrollX, window.innerWidth - menu.offsetWidth - 8));
+  const below = rect.bottom + 6 + menu.offsetHeight <= window.innerHeight;
+  menu.style.left = `${left}px`;
+  menu.style.top = below ? `${rect.bottom + window.scrollY + 6}px` : `${Math.max(window.scrollY + 8, rect.top + window.scrollY - menu.offsetHeight - 6)}px`;
+  anchor.classList.add('is-open');
+  openMenu = { el: menu, anchor };
+  return menu;
+}
+
+// ---------------------------------------------------------------------------
+// Outline step: the issue as a table (Kate, Oct 5)
+// ---------------------------------------------------------------------------
+
+/** An item's one-line meta, as the Outline prints it under the title. */
+function outlineMeta(sectionKey, f) {
+  if (sectionKey === 'research') return f.authors || '';
+  return f.meta || [f.date, f.time, f.location].filter(Boolean).join(' | ') || f.source || '';
 }
 
 /**
- * The Outline's Layout block: the Submit your research callout's style, the
- * contents strip, and Reset. Each choice writes the issue and saves; the
- * Preview & Edit step draws the result.
+ * The Outline: what goes out, in the order it goes out. One row per item
+ * under its section and group as the email prints them: the title as its
+ * link with the meta line under it, Featured for events, the order arrows,
+ * Remove with Undo, and Move to… on hover for an item the desk filed in the
+ * wrong group. The look is chosen on Preview & Tweak, on the email itself.
  */
-function buildLayoutBlock(issue, onChange) {
-  const block = el('div', 'triage-layout');
-  block.appendChild(el('div', 'triage-layout-title', 'Layout'));
-
-  const calloutRow = el('div', 'triage-layout-row');
-  const calloutLabel = el('span', 'triage-switch-label', 'Submit your research callout');
-  calloutLabel.id = 'layout-callout-label';
-  const seg = segmentedRow('Submit your research callout', CALLOUT_CHOICES, layoutOf(issue).callout, (key) => {
-    setCallout(issue, key);
-    onChange();
-    syncReset();
-  });
-  calloutRow.append(calloutLabel, seg);
-  block.appendChild(calloutRow);
-
-  // The contents strip, as the Featured checkbox is drawn: a box and its words.
-  const navLabel = el('label', 'triage-featured-label triage-layout-check');
-  const navCb = el('input', 'triage-featured-cb');
-  navCb.type = 'checkbox';
-  navCb.checked = layoutOf(issue).nav;
-  navCb.addEventListener('change', () => { setNav(issue, navCb.checked); onChange(); syncReset(); });
-  navLabel.append(navCb, ' Contents strip under the masthead');
-  block.appendChild(navLabel);
-
-  // Reset: every option back to its default, then the step redraws.
-  const resetBtn = button(' Reset layout options', 'ghost-btn ghost-btn--muted triage-reset-btn', { icon: 'rotate-left', onClick: () => {
-    resetOptions(issue);
-    scheduleSave();
-    renderTriage();
-  } });
-  resetBtn.title = 'Every layout option back to its default';
-  const syncReset = () => { resetBtn.hidden = !hasCustomOptions(issue); };
-  syncReset();
-  block.appendChild(resetBtn);
-  return block;
-}
-
-/**
- * An item's own options, under its row: the Description checkbox, and with
- * it on, the Picture control (when the item has a photo) or a field for a
- * photo's address (when it has none). Only items with a summary in Research,
- * Spotlight, Events and Opportunities get this row.
- * @returns {HTMLElement|null}
- */
-function buildItemOptions(reg, item, rerender, onChange) {
-  const o = itemOptions(reg.key, item);
-  if (!o.hasDescription) return null;
-  const title = (item.fields && item.fields.title) || 'item';
-  const row = el('div', 'triage-item-options');
-
-  const descLabel = el('label', 'triage-featured-label');
-  const descCb = el('input', 'triage-featured-cb');
-  descCb.type = 'checkbox';
-  descCb.checked = o.descriptionOn;
-  descCb.setAttribute('aria-label', `Show the description of "${title}"`);
-  descCb.addEventListener('change', () => { setDescription(item, descCb.checked); onChange(); rerender(); });
-  descLabel.append(descCb, ' Description');
-  row.appendChild(descLabel);
-
-  if (o.descriptionOn && o.hasPicture) {
-    const picLabel = el('span', 'triage-item-options-label', 'Picture');
-    const seg = segmentedRow(`Picture for "${title}"`, PICTURE_CHOICES, o.pictureStyle, (key) => {
-      setPictureStyle(item, key);
-      onChange();
-    });
-    seg.classList.add('is-small');
-    row.append(picLabel, seg);
-  } else if (o.descriptionOn) {
-    // No photo yet: paste one's address here, or upload one from Preview & Edit.
-    const urlLabel = el('label', 'triage-item-options-label', 'Picture URL');
-    const urlInput = el('input', 'triage-field-input triage-picture-url');
-    urlInput.type = 'url';
-    urlInput.placeholder = 'https://';
-    urlInput.title = 'A photo, not a flyer. Upload one from Preview & Edit instead, if you like.';
-    const inputId = `picture-url-${item.id}`;
-    urlInput.id = inputId;
-    urlLabel.htmlFor = inputId;
-    const hint = el('span', 'triage-section-note', 'a photo, not a flyer');
-    const commit = () => {
-      const url = acceptPictureUrl(urlInput.value);
-      if (!url) { urlInput.classList.toggle('is-invalid', urlInput.value.trim() !== ''); return; }
-      item.fields.image = url;
-      onChange();
-      rerender();
-    };
-    urlInput.addEventListener('change', commit);
-    urlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); commit(); } });
-    row.append(urlLabel, urlInput, hint);
-  }
-  return row;
-}
-
 function renderTriage() {
   const container = openStep('triage', 'Put the issue in order.',
-    'Order the items with the arrows, mark one event Featured, and pick the layout: the Submit your research callout, the contents strip, and which items show a description or a picture.');
+    'What goes out, in the order it goes out. Each section and group is as the email prints it. Hover a row for Move to…; the look is chosen on the next step, on the email itself.');
 
   const issue = state.issue;
 
-  // Nothing pulled yet: one line, and no empty section list to puzzle over.
+  // Nothing pulled yet: one line, and no empty table to puzzle over.
   // Items removed on this visit still list, greyed, so the last one out is not lost.
   if (!issue || (!countIssueItems(issue) && !waitingRemovals().length)) {
     emptyLine(container, 'No issue loaded. Pull from the desk on the Review step first.');
     return;
   }
 
-  // The step as the handoff draws it (Oct 2026): the options panel on the
-  // left, the live email on the right, redrawn on every change. The panes
-  // are Preview & Edit's, so they size and scroll the same way.
-  const previewNote = el('p', 'preview-note');
-  previewNote.textContent = `Preview at ${Math.round(PREVIEW_MAX_SCALE * 100)} percent, as it lands in Outlook.`;
-  container.appendChild(previewNote);
-
-  const layout = el('div', 'edit-layout outline-layout');
-  const column = el('div', 'edit-column outline-column');
-  const wrap = el('div', 'edit-preview-wrap');
-  const iframe = el('iframe', 'edit-preview-iframe');
-  iframe.setAttribute('title', 'Newsletter preview');
-  iframe.setAttribute('scrolling', 'no');
-  iframe.addEventListener('load', () => {
-    fitPreview();
-    requestAnimationFrame(fitPreview);
-    const doc = iframe.contentDocument;
-    if (doc) [...doc.images].forEach((img) => { if (!img.complete) img.addEventListener('load', fitPreview, { once: true }); });
-  });
-  wrap.appendChild(iframe);
-
-  // Every choice saves and redraws the email; the panel redraws itself where it must.
-  const refreshPreview = () => { iframe.srcdoc = renderNewsletter(issue); };
-  const changed = () => { scheduleSave(); refreshPreview(); };
-
-  column.appendChild(buildLayoutBlock(issue, changed));
-  column.appendChild(el('div', 'outline-eyebrow', 'Sections and items'));
-  column.appendChild(el('p', 'triage-section-note outline-help',
-    'Remove anything to leave it out. Description and picture choices appear on items that have a summary, in Research, Spotlight, Events and Opportunities.'));
-
-  // ── Sections: only the populated ones are listed; the rest are named once
-  //    at the foot. No toggle: a populated section is always included,
-  //    an empty one auto-hides. A section whose last item was removed on
-  //    this visit stays listed with its greyed row. ─────────────────────────
+  // Only the populated sections are listed; the rest are named once at the
+  // foot. A populated section is always included, an empty one auto-hides.
   const { populated, missing } = listedSections(issue, waitingRemovals());
   for (const reg of SECTION_REGISTRY) {
     const sec = issue.sections?.[reg.key];
     if (sec) sec.enabled = (sec.items?.length ?? 0) > 0;
   }
 
-  const sectionsList = el('div', 'triage-sections-list');
+  const table = el('table', 'outline-table');
+  const thead = el('thead');
+  const hr = el('tr');
+  for (const [text, cls] of [['Item', ''], ['Featured', ''], ['Order', 'r'], ['', 'r']]) {
+    const th = el('th', cls, text);
+    th.scope = 'col';
+    hr.appendChild(th);
+  }
+  thead.appendChild(hr);
+  table.appendChild(thead);
+  const tbody = el('tbody');
+  table.appendChild(tbody);
+
+  const waiting = waitingRemovals();
+  const removed = new Set(waiting.map((w) => w.item));
+  let inIssue = 0, listed = 0;
 
   for (const reg of populated) {
     const secData = issue.sections[reg.key];
     const items = secData.items;
-    // Section name, with item count (e.g. "ERC Spotlight (2)")
-    const row = el('div', 'triage-section-row');
-    row.appendChild(el('span', 'triage-section-name', `${reg.label} (${items.length})`));
-    sectionsList.appendChild(row);
+    const rows = listedItems(issue, waiting, reg.key);
+    const live = rows.filter((it) => !removed.has(it));
+    listed += rows.length; inIssue += live.length;
 
-    // Every populated section lists its items with reorder controls: grouped
-    // (under group labels) where the section defines groups, flat otherwise
-    // (e.g. Featured Research). Only Events also shows the featured toggle.
-    const sectionContainer = el('div', 'triage-grouped-section');
+    // The section row: its name and count.
+    const sr = el('tr', 'outline-section');
+    const std = el('td');
+    std.colSpan = 4;
+    std.appendChild(el('span', 'outline-section-name', reg.label));
+    std.appendChild(el('span', 'outline-section-count', live.length === rows.length ? String(rows.length) : `${live.length} of ${rows.length}`));
+    sr.appendChild(std);
+    tbody.appendChild(sr);
 
-    const renderSectionItems = () => {
-      // Remember which arrow had focus, so the rebuild can hand it back.
-      const focused = document.activeElement;
-      const memo = focused && sectionContainer.contains(focused) && focused.dataset.moveItem
-        ? { item: focused.dataset.moveItem, dir: focused.dataset.moveDir } : null;
-      sectionContainer.innerHTML = '';
+    // Featured events pin under Featured Events, as the email prints them.
+    const groupKeyOf = (it) => (reg.key === 'events' && it.featured ? 'featured' : it.group);
+    const buckets = bucketSectionItems(reg, rows.map((it) => (reg.key === 'events' && it.featured ? { ...it, group: 'featured', __item: it } : it)))
+      .map((b) => ({ ...b, items: b.items.map((it) => it.__item || it) }));
 
-      // The one rule for Featured, printed once under the section's name.
-      if (reg.key === 'events') {
-        sectionContainer.appendChild(el('div', 'triage-section-note',
-          'One event is featured; it pins to the top under a Featured heading.'));
+    for (const bucket of buckets) {
+      if (bucket.label) {
+        const gr = el('tr', 'outline-group');
+        const gtd = el('td', '', bucket.label);
+        gtd.colSpan = 4;
+        gr.appendChild(gtd);
+        tbody.appendChild(gr);
       }
+      const bucketLive = bucket.items.filter((it) => !removed.has(it));
+      for (const item of bucket.items) {
+        const f = item.fields || {};
+        const title = f.title || '(untitled)';
+        const tr = el('tr', 'outline-item' + (removed.has(item) ? ' is-removed' : ''));
+        tr.dataset.item = item.id;
 
-      // The section as listed: its items, and what Remove took out on this
-      // visit greyed where it stood.
-      const waiting = waitingRemovals();
-      const removed = new Set(waiting.map((w) => w.item));
-      const buckets = bucketSectionItems(reg, listedItems(issue, waiting, reg.key));
+        // Item: the title as its link, the meta line, and Move to… on hover.
+        const td1 = el('td', 'outline-item-cell');
+        const href = normalizeLinkUrl(f.url || '');
+        const link = href ? el('a', 'outline-title', title) : el('span', 'outline-title', title);
+        if (href) { link.href = href; link.target = '_blank'; link.rel = 'noopener'; }
+        td1.appendChild(link);
+        const meta = outlineMeta(reg.key, f);
+        if (meta) td1.appendChild(el('span', 'outline-meta', meta));
+        if (!removed.has(item)) {
+          const mv = button('Move to…', 'ghost-btn outline-move');
+          mv.setAttribute('aria-label', `Move "${title}" to another group`);
+          mv.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showMenu(mv, 'outline-menu', (menu) => {
+              for (const r2 of SECTION_REGISTRY) {
+                menu.appendChild(el('div', 'outline-menu-head', r2.label));
+                for (const g2 of r2.groups) {
+                  const here = r2.key === reg.key && g2.key === groupKeyOf(item);
+                  const b = button(g2.label || '(no group)', 'outline-menu-item' + (here ? ' is-current' : ''));
+                  if (here) b.disabled = true;
+                  else b.addEventListener('click', () => {
+                    moveItemToGroup(issue, item.id, r2.key, g2.key);
+                    closeMenu();
+                    scheduleSave();
+                    renderTriage();
+                    setWizardStatus(`Moved "${title}" to ${r2.label}${g2.label ? `, ${g2.label}` : ''}.`);
+                  });
+                  menu.appendChild(b);
+                }
+              }
+            });
+          });
+          td1.appendChild(mv);
+        }
 
-      for (const bucket of buckets) {
-        // The label is a registry constant, safe as textContent.
-        if (bucket.label) sectionContainer.appendChild(el('div', 'triage-group-label', bucket.label));
+        // Featured: events only, one radio across the section.
+        const td2 = el('td');
+        if (reg.key === 'events' && !removed.has(item)) {
+          const lab = el('label', 'outline-featured' + (item.featured ? ' is-on' : ''));
+          const rb = el('input');
+          rb.type = 'radio';
+          rb.name = 'outline-featured';
+          rb.checked = !!item.featured;
+          rb.setAttribute('aria-label', `Feature "${title}"`);
+          rb.addEventListener('change', () => {
+            items.forEach((ev) => { ev.featured = false; });
+            item.featured = true;
+            scheduleSave();
+            renderTriage();
+          });
+          lab.append(rb, item.featured ? ' Featured' : ' Feature');
+          td2.appendChild(lab);
+        }
 
-        // The arrows move only what is in the issue; a greyed row stays put.
-        const bucketItems = bucket.items.filter((it) => !removed.has(it));
-        for (const item of bucket.items) {
-          if (removed.has(item)) {
-            sectionContainer.appendChild(removedRow(item, 'triage-event-row', renderTriage));
-            continue;
-          }
-          // Index within the full section array (for reorder swaps)
-          const secIdx = items.indexOf(item);
-          // Position within this bucket (for button enable/disable)
-          const grpIdx = bucketItems.indexOf(item);
-          const title = (item.fields && item.fields.title) || 'item';
-
-          const evRow = el('div', 'triage-event-row');
-
-          // Title (user-derived, textContent only)
-          const titleSpan = el('span', 'triage-event-title', (item.fields && item.fields.title) || '(untitled)');
-
-          // The two arrows differ only in their word, glyph and move.
-          const arrow = (dir, glyph, disabled, onClick) => {
-            const btn = button('', 'triage-reorder-btn', { icon: glyph, onClick });
+        // Order: the arrows, within the group.
+        const td3 = el('td', 'r');
+        if (!removed.has(item)) {
+          const k = bucketLive.indexOf(item);
+          const arrow = (dir, glyph, disabled, other) => {
+            const btn = button('', 'triage-reorder-btn', { icon: glyph, onClick: () => {
+              const a = items.indexOf(item), b = items.indexOf(other);
+              if (a < 0 || b < 0) return;
+              [items[a], items[b]] = [items[b], items[a]];
+              scheduleSave();
+              renderTriage();
+              const again = document.querySelector(`[data-move-item="${CSS.escape(item.id)}"][data-move-dir="${dir}"]`);
+              if (again && !again.disabled) again.focus();
+            } });
             btn.setAttribute('aria-label', `Move "${title}" ${dir}`);
             btn.dataset.moveItem = item.id;
             btn.dataset.moveDir = dir;
             btn.disabled = disabled;
             return btn;
           };
-          const upBtn = arrow('up', 'arrow-up', grpIdx === 0, () => {
-            if (secIdx > 0) {
-              [items[secIdx - 1], items[secIdx]] = [items[secIdx], items[secIdx - 1]];
-              renderSectionItems();
-              changed();
-            }
-          });
-          const downBtn = arrow('down', 'arrow-down', grpIdx === bucketItems.length - 1, () => {
-            if (secIdx < items.length - 1) {
-              [items[secIdx], items[secIdx + 1]] = [items[secIdx + 1], items[secIdx]];
-              renderSectionItems();
-              changed();
-            }
-          });
+          const group = el('div', 'triage-reorder-group');
+          group.append(arrow('up', 'arrow-up', k === 0, bucketLive[k - 1]), arrow('down', 'arrow-down', k === bucketLive.length - 1, bucketLive[k + 1]));
+          td3.appendChild(group);
+        }
 
-          evRow.appendChild(titleSpan);
-
-          // Featured toggle, events section only. The rule sits once under
-          // the section's name, not on every row.
-          if (reg.key === 'events') {
-            const featLabel = el('label', 'triage-featured-label');
-
-            const featCb = el('input', 'triage-featured-cb');
-            featCb.type = 'checkbox';
-            featCb.setAttribute('aria-label', `Feature "${title}"`);
-            featCb.checked = !!item.featured;
-            featCb.addEventListener('change', () => {
-              const wasFeatured = item.featured;
-              // Exclusive: clear all, then set if newly checked
-              items.forEach((ev) => { ev.featured = false; });
-              if (!wasFeatured) item.featured = true;
-              renderSectionItems();
-              changed();
-            });
-
-            featLabel.append(featCb, ' Featured');
-            evRow.appendChild(featLabel);
-          }
-
-          // Reorder arrows, grouped so the pair stays together at the row's right.
-          const reorderGroup = el('div', 'triage-reorder-group');
-          reorderGroup.append(upBtn, downBtn);
-          evRow.appendChild(reorderGroup);
-
-          // Remove this item from the issue (the row greys in place with its
-          // Undo), the desk's Remove: red quiet link with the trash icon, never a bare ✕.
+        // Remove, or Undo on a removed row (the desk's greyed row).
+        const td4 = el('td', 'r');
+        if (removed.has(item)) {
+          const undo = button('Undo', 'ghost-btn outline-undo', { onClick: (e) => undoRemove(item.id, renderTriage, e.detail === 0) });
+          undo.setAttribute('aria-label', `Put "${title}" back`);
+          td4.appendChild(undo);
+        } else {
           const delBtn = button(' Remove', 'ghost-btn ghost-btn--danger', {
             icon: 'trash-can',
             onClick: (e) => deleteItemWithUndo(item.id, renderTriage, e.detail === 0),
           });
-          delBtn.dataset.removeItem = item.id;   // where an Undo from the keyboard hands focus back
+          delBtn.dataset.removeItem = item.id;
           delBtn.setAttribute('aria-label', `Remove "${title}" from the issue`);
           delBtn.title = 'Removes this item from the issue';
-          evRow.appendChild(delBtn);
-
-          sectionContainer.appendChild(evRow);
-
-          // The item's description and picture choices, under its row.
-          const options = buildItemOptions(reg, item, renderSectionItems, changed);
-          if (options) sectionContainer.appendChild(options);
+          td4.appendChild(delBtn);
         }
-      }
 
-      if (memo) {
-        const same = sectionContainer.querySelector(`[data-move-item="${CSS.escape(memo.item)}"][data-move-dir="${memo.dir}"]`);
-        const other = sectionContainer.querySelector(`[data-move-item="${CSS.escape(memo.item)}"]:not([data-move-dir="${memo.dir}"])`);
-        const target = same && !same.disabled ? same : other;
-        if (target && !target.disabled) target.focus();
+        tr.append(td1, td2, td3, td4);
+        tbody.appendChild(tr);
       }
-    };
-
-    renderSectionItems();
-    sectionsList.appendChild(sectionContainer);
+    }
   }
 
-  column.appendChild(sectionsList);
-
-  if (missing.length) {
-    column.appendChild(el('p', 'triage-missing', `Not in this issue: ${missing.join(', ')}.`));
-  }
-
-  layout.append(column, wrap);
-  container.appendChild(layout);
-  refreshPreview();
+  container.appendChild(table);
+  const foot = el('p', 'triage-missing', `${inIssue} of ${listed} ${listed === 1 ? 'item' : 'items'} in the issue.` + (missing.length ? ` Not in this issue: ${missing.join(', ')}.` : ''));
+  container.appendChild(foot);
 }
 
 // ---------------------------------------------------------------------------
-// Edit step ("Preview & Edit")
+// Edit step ("Preview & Tweak")
 // ---------------------------------------------------------------------------
 
 /**
@@ -1160,8 +1062,30 @@ function wireIframeEditing(iframe) {
   // Click listener: open an editor for the whole item the clicked field
   // belongs to (all of its fields at once), not just the one piece clicked.
   doc.addEventListener('click', (e) => {
+    // The look, chosen on the email itself (Kate, Oct 5): the callout and
+    // any picture open a popover of swatches instead of a card.
+    const submit = e.target.closest('a[href*="forms.office.com"]');
+    const calloutCell = submit && submit.closest('td[style*="padding:26px 48px 28px 24px"], td[style*="padding:22px 24px 24px 24px"], td[style*="padding:20px 22px 22px 22px"]');
+    if (calloutCell) {
+      e.preventDefault();
+      e.stopPropagation();
+      tweakPopover(iframe, calloutCell, 'Submit your research callout', CALLOUT_CHOICES, layoutOf(state.issue).callout, (key) => { setCallout(state.issue, key); afterTweak(iframe); });
+      return;
+    }
+    const picture = e.target.closest('img[data-edit-field="image"]');
+    if (picture) {
+      e.preventDefault();
+      e.stopPropagation();
+      const item = state.issue.sections?.[picture.dataset.editSection]?.items?.find((i) => i.id === picture.dataset.editItem);
+      if (item) {
+        const o = itemOptions(picture.dataset.editSection, item);
+        tweakPopover(iframe, picture.closest('a') || picture, 'Picture', PICTURE_CHOICES, o.pictureStyle, (key) => { setPictureStyle(item, key); afterTweak(iframe); });
+      }
+      return;
+    }
+
     const target = e.target.closest('[data-edit-field]');
-    if (!target) return;
+    if (!target) { closeMenu(); return; }
 
     // Prevent link navigation from firing
     if (e.target.closest('a')) {
@@ -1459,17 +1383,41 @@ function openItemEditor(refs, iframe) {
       debouncedPreview();
     };
 
+    // The item this card edits, for the look controls under its fields.
+    const cardItem = ref.item ? state.issue.sections?.[ref.section]?.items?.find((i) => i.id === ref.item) : null;
+
     // Each kind of field hands back the same handle, so the card wires them alike.
     let ctl;
     if (ref.field === 'image') {
-      ctl = buildImageControl(getField(state.issue, ref) ?? '', onEdit);
+      ctl = buildImageControl(getField(state.issue, ref) ?? '', (value) => { onEdit(value); refreshLook(); });
       ctl.el.setAttribute('role', 'group');
       ctl.el.setAttribute('aria-labelledby', sub.id);
+      // Picture: None, Stamp or Headshot, as swatches, once the item has a photo and shows its description.
+      const look = el('div', 'layout-row card-look');
+      const refreshLook = () => {
+        look.replaceChildren();
+        const o = cardItem ? itemOptions(ref.section, cardItem) : null;
+        if (!o || !o.hasPicture) return;
+        look.appendChild(el('span', 'edit-card-sublabel look', 'Picture'));
+        look.appendChild(swatchRow(PICTURE_CHOICES, o.pictureStyle, (key) => { setPictureStyle(cardItem, key); scheduleSave(); debouncedPreview(); refreshLook(); }));
+      };
+      refreshLook();
+      group.appendChild(look);
     } else if (isLong) {
       // Prose fields get a WYSIWYG editor (bold / italic / link) that stores
       // markdown. Live-renders as the newsletter does (via renderProse).
       const rich = buildRichEditor(getField(state.issue, ref) ?? '', onEdit, { labelledBy: sub.id });
       ctl = { el: rich.el, set: rich.setMd, focus: rich.focus };
+      // Description: shown or hidden in the email, for the sections that draw one.
+      if (ref.field === 'summary' && cardItem && DESCRIBED_SECTIONS.has(ref.section)) {
+        const check = el('label', 'layout-check card-look');
+        const cb = el('input');
+        cb.type = 'checkbox';
+        cb.checked = itemOptions(ref.section, cardItem).descriptionOn;
+        cb.addEventListener('change', () => { setDescription(cardItem, cb.checked); scheduleSave(); refreshEditIframe(iframe); });
+        check.append(cb, ' Show the description in the email');
+        group.appendChild(check);
+      }
     } else {
       const inputEl = el('input', 'edit-card-input');
       inputEl.type = 'text';
@@ -1694,11 +1642,89 @@ function buildReorderPanel(iframe) {
  * The editable HTML has data-edit-* hooks for click-to-edit.
  * Called each time the wizard navigates to 'edit'.
  */
+/**
+ * A row of swatches, one on: each is a small drawing of the result, with its
+ * word under it. `choices` are {key, label}; `swKey` maps a key to its drawing.
+ */
+function swatchRow(choices, current, onPick) {
+  const row = el('div', 'swatch-row');
+  row.setAttribute('role', 'radiogroup');
+  for (const c of choices) {
+    const drawing = c.key === 'none' && choices === PICTURE_CHOICES ? 'nopic' : c.key;
+    const b = button('', `swatch sw-${drawing}` + (c.key === current ? ' is-on' : ''));
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(c.key === current));
+    b.append(el('span', 'pic'), el('span', '', c.label));
+    b.addEventListener('click', () => onPick(c.key));
+    row.appendChild(b);
+  }
+  return row;
+}
+
+/**
+ * The popover of swatches beside something clicked in the preview: its
+ * rectangle is read inside the iframe and mapped out through the iframe's
+ * zoom, so the card lands next to the thing on the page.
+ */
+function tweakPopover(iframe, target, title, choices, current, onPick) {
+  const zoom = parseFloat(iframe.style.zoom) || 1;
+  const outer = iframe.getBoundingClientRect();
+  const r = target.getBoundingClientRect();
+  const rect = { left: outer.left + r.left * zoom, right: outer.left + r.right * zoom, top: outer.top + r.top * zoom, bottom: outer.top + r.bottom * zoom };
+  target.classList.add('ec-edit-flash');
+  setTimeout(() => target.classList.remove('ec-edit-flash'), 600);
+  showMenu(target, 'tweak-pop', (menu) => {
+    menu.appendChild(el('span', 'tweak-pop-title', title));
+    menu.appendChild(swatchRow(choices, current, (key) => { onPick(key); closeMenu(); }));
+  }, rect);
+}
+
+/** After a choice made on the email: save, redraw, and keep the rail's Layout fold in step. */
+function afterTweak(iframe) {
+  scheduleSave();
+  refreshEditIframe(iframe);
+  document.querySelector('.layout-panel-body')?.dispatchEvent(new CustomEvent('layout-changed'));
+}
+
+/**
+ * The rail's Layout fold: the callout's style as swatches (also reachable by
+ * clicking the callout in the email), the contents strip, and Reset. Here
+ * because a callout set to None cannot be clicked back on the email.
+ */
+function buildLayoutPanel(iframe) {
+  const { details, body } = railPanel('Layout');
+  body.classList.add('layout-panel-body');
+  const draw = () => {
+    body.replaceChildren();
+    const issue = state.issue;
+    const callout = el('div', 'layout-row');
+    callout.appendChild(el('span', 'layout-row-label', 'Submit your research callout'));
+    callout.appendChild(swatchRow(CALLOUT_CHOICES, layoutOf(issue).callout, (key) => { setCallout(issue, key); scheduleSave(); refreshEditIframe(iframe); draw(); }));
+    body.appendChild(callout);
+    const nav = el('label', 'layout-check');
+    const cb = el('input');
+    cb.type = 'checkbox';
+    cb.checked = layoutOf(issue).nav;
+    cb.addEventListener('change', () => { setNav(issue, cb.checked); scheduleSave(); refreshEditIframe(iframe); draw(); });
+    nav.append(cb, ' Contents strip under the masthead');
+    body.appendChild(nav);
+    body.appendChild(el('p', 'triage-section-note', 'Click the callout or any picture in the email to change it there. Descriptions show or hide from their card.'));
+    if (hasCustomOptions(issue)) {
+      const reset = button(' Reset layout options', 'ghost-btn ghost-btn--muted layout-reset', { icon: 'rotate-left', onClick: () => { resetOptions(issue); scheduleSave(); refreshEditIframe(iframe); draw(); } });
+      reset.title = 'Every layout option back to its default';
+      body.appendChild(reset);
+    }
+  };
+  body.addEventListener('layout-changed', draw);
+  draw();
+  return details;
+}
+
 function renderEdit() {
   // Drop any card registry from a previous visit (the DOM is rebuilt below).
   openCards.clear();
-  const container = openStep('edit', 'Check the issue and change anything in place.',
-    'Click any text in the preview to edit it on the right. The introduction, Add an item and Reorder items are there too.');
+  const container = openStep('edit', 'Check the issue and tweak anything in place.',
+    'Click any text in the preview to edit it on the right. Click the Submit callout or a picture to change its look. The introduction, Layout, Add an item and Reorder items are in the rail too.');
 
   if (!state.issue) {
     emptyLine(container, 'No issue loaded. Pull from the desk on the Review step first.');
@@ -1765,6 +1791,7 @@ function renderEdit() {
     cardList,
     el('div', 'edit-column-empty', 'Click any text in the preview on the left. It opens here to edit.'),
     buildIntroPanel(iframe),
+    buildLayoutPanel(iframe),
     buildAddItemPanel(iframe),
     buildReorderPanel(iframe),
   );
