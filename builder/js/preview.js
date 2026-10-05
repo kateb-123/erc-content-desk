@@ -11,11 +11,11 @@
  * @param {number} o.columnWidth  - width of the persistent edit column (px)
  * @param {number} o.gap          - flex gap between preview and column (px)
  * @param {number} o.stagePad     - horizontal padding on ONE side of the stage (px)
- * @param {number} [o.sheetWidth=705] - true newsletter width (px)
+ * @param {number} [o.sheetWidth=640] - true newsletter width (px)
  * @param {number} [o.maxScale=0.95]  - never scale larger than this
  * @returns {number} scale factor, or 0 if there isn't measurable room yet
  */
-export function computePreviewScale({ layoutWidth, columnWidth, gap, stagePad, sheetWidth = 705, maxScale = 0.95 }) {
+export function computePreviewScale({ layoutWidth, columnWidth, gap, stagePad, sheetWidth = 640, maxScale = 0.95 }) {
   const available = layoutWidth - columnWidth - gap - stagePad * 2;
   if (available <= 0) return 0;
   return Math.min(maxScale, available / sheetWidth);

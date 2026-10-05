@@ -23,6 +23,9 @@ import { takeOut, putBack, listedItems, listedSections } from './removals.js';
 import { renderShell } from '../../js/shell-ui.js';
 import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
 import { arrowKeyTarget, normalizeLinkUrl, reorderRowName, movedAnnouncement } from './editing.js';
+// The per-issue layout options the Outline sets (Claude Design handoff, Oct 2026).
+import { CALLOUT_CHOICES, PICTURE_CHOICES, setCallout, setNav, itemOptions, setDescription, setPictureStyle, acceptPictureUrl, resetOptions, hasCustomOptions } from './options.js';
+import { layoutOf } from './template.js';
 // Kept drafts, and hand-added items that go to the desk (Sep 23).
 import { readAllWaiting } from '../../js/reader-client.js';
 import { discardToDesk, draftIsOpen, replaceAskMessage, discardedTitle, discardedDetail, withEntry, withoutEntry, restoreOver } from './discarded.js';
@@ -502,9 +505,131 @@ function showUndoToast(message, onUndo, { focusUndo = false } = {}) {
  * Render the triage step UI from `state.issue`.
  * Called each time the wizard navigates to the 'triage' step.
  */
+/**
+ * A segmented row of words, one picked: the desk's type picker, small. The
+ * group is named for a screen reader by `name`; each word is a radio.
+ * @param {string} name
+ * @param {Array<{key: string, label: string}>} choices
+ * @param {string} picked
+ * @param {(key: string) => void} onPick
+ */
+function segmentedRow(name, choices, picked, onPick) {
+  const row = el('div', 'triage-seg');
+  row.setAttribute('role', 'radiogroup');
+  row.setAttribute('aria-label', name);
+  const words = choices.map((c) => {
+    const w = button(c.label, 'triage-seg-word', { onClick: () => { onPick(c.key); words.forEach((x) => x.setPicked(x.dataset.key === c.key)); } });
+    w.type = 'button';
+    w.dataset.key = c.key;
+    w.setAttribute('role', 'radio');
+    w.setPicked = (on) => { w.classList.toggle('is-picked', on); w.setAttribute('aria-checked', String(on)); };
+    w.setPicked(c.key === picked);
+    row.appendChild(w);
+    return w;
+  });
+  return row;
+}
+
+/**
+ * The Outline's Layout block: the Submit your research callout's style, the
+ * contents strip, and Reset. Each choice writes the issue and saves; the
+ * Preview & Edit step draws the result.
+ */
+function buildLayoutBlock(issue, onChange) {
+  const block = el('div', 'triage-layout');
+  block.appendChild(el('div', 'triage-layout-title', 'Layout'));
+
+  const calloutRow = el('div', 'triage-layout-row');
+  const calloutLabel = el('span', 'triage-switch-label', 'Submit your research callout');
+  calloutLabel.id = 'layout-callout-label';
+  const seg = segmentedRow('Submit your research callout', CALLOUT_CHOICES, layoutOf(issue).callout, (key) => {
+    setCallout(issue, key);
+    onChange();
+    syncReset();
+  });
+  calloutRow.append(calloutLabel, seg);
+  block.appendChild(calloutRow);
+
+  // The contents strip, as the Featured checkbox is drawn: a box and its words.
+  const navLabel = el('label', 'triage-featured-label triage-layout-check');
+  const navCb = el('input', 'triage-featured-cb');
+  navCb.type = 'checkbox';
+  navCb.checked = layoutOf(issue).nav;
+  navCb.addEventListener('change', () => { setNav(issue, navCb.checked); onChange(); syncReset(); });
+  navLabel.append(navCb, ' Contents strip under the masthead');
+  block.appendChild(navLabel);
+
+  // Reset: every option back to its default, then the step redraws.
+  const resetBtn = button(' Reset layout options', 'ghost-btn ghost-btn--muted triage-reset-btn', { icon: 'rotate-left', onClick: () => {
+    resetOptions(issue);
+    scheduleSave();
+    renderTriage();
+  } });
+  resetBtn.title = 'Every layout option back to its default';
+  const syncReset = () => { resetBtn.hidden = !hasCustomOptions(issue); };
+  syncReset();
+  block.appendChild(resetBtn);
+  return block;
+}
+
+/**
+ * An item's own options, under its row: the Description checkbox, and with
+ * it on, the Picture control (when the item has a photo) or a field for a
+ * photo's address (when it has none). Only items with a summary in Research,
+ * Spotlight, Events and Opportunities get this row.
+ * @returns {HTMLElement|null}
+ */
+function buildItemOptions(reg, item, rerender, onChange) {
+  const o = itemOptions(reg.key, item);
+  if (!o.hasDescription) return null;
+  const title = (item.fields && item.fields.title) || 'item';
+  const row = el('div', 'triage-item-options');
+
+  const descLabel = el('label', 'triage-featured-label');
+  const descCb = el('input', 'triage-featured-cb');
+  descCb.type = 'checkbox';
+  descCb.checked = o.descriptionOn;
+  descCb.setAttribute('aria-label', `Show the description of "${title}"`);
+  descCb.addEventListener('change', () => { setDescription(item, descCb.checked); onChange(); rerender(); });
+  descLabel.append(descCb, ' Description');
+  row.appendChild(descLabel);
+
+  if (o.descriptionOn && o.hasPicture) {
+    const picLabel = el('span', 'triage-item-options-label', 'Picture');
+    const seg = segmentedRow(`Picture for "${title}"`, PICTURE_CHOICES, o.pictureStyle, (key) => {
+      setPictureStyle(item, key);
+      onChange();
+    });
+    seg.classList.add('is-small');
+    row.append(picLabel, seg);
+  } else if (o.descriptionOn) {
+    // No photo yet: paste one's address here, or upload one from Preview & Edit.
+    const urlLabel = el('label', 'triage-item-options-label', 'Picture URL');
+    const urlInput = el('input', 'triage-field-input triage-picture-url');
+    urlInput.type = 'url';
+    urlInput.placeholder = 'https://';
+    urlInput.title = 'A photo, not a flyer. Upload one from Preview & Edit instead, if you like.';
+    const inputId = `picture-url-${item.id}`;
+    urlInput.id = inputId;
+    urlLabel.htmlFor = inputId;
+    const hint = el('span', 'triage-section-note', 'a photo, not a flyer');
+    const commit = () => {
+      const url = acceptPictureUrl(urlInput.value);
+      if (!url) { urlInput.classList.toggle('is-invalid', urlInput.value.trim() !== ''); return; }
+      item.fields.image = url;
+      onChange();
+      rerender();
+    };
+    urlInput.addEventListener('change', commit);
+    urlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); commit(); } });
+    row.append(urlLabel, urlInput, hint);
+  }
+  return row;
+}
+
 function renderTriage() {
   const container = openStep('triage', 'Put the issue in order.',
-    'Order the items with the arrows, mark one event Featured, and turn the research callout on or off.');
+    'Order the items with the arrows, mark one event Featured, and pick the layout: the Submit your research callout, the contents strip, and which items show a description or a picture.');
 
   const issue = state.issue;
 
@@ -514,6 +639,36 @@ function renderTriage() {
     emptyLine(container, 'No issue loaded. Pull from the desk on the Review step first.');
     return;
   }
+
+  // The step as the handoff draws it (Oct 2026): the options panel on the
+  // left, the live email on the right, redrawn on every change. The panes
+  // are Preview & Edit's, so they size and scroll the same way.
+  const previewNote = el('p', 'preview-note');
+  previewNote.textContent = `Preview at ${Math.round(PREVIEW_MAX_SCALE * 100)} percent, as it lands in Outlook.`;
+  container.appendChild(previewNote);
+
+  const layout = el('div', 'edit-layout outline-layout');
+  const column = el('div', 'edit-column outline-column');
+  const wrap = el('div', 'edit-preview-wrap');
+  const iframe = el('iframe', 'edit-preview-iframe');
+  iframe.setAttribute('title', 'Newsletter preview');
+  iframe.setAttribute('scrolling', 'no');
+  iframe.addEventListener('load', () => {
+    fitPreview();
+    requestAnimationFrame(fitPreview);
+    const doc = iframe.contentDocument;
+    if (doc) [...doc.images].forEach((img) => { if (!img.complete) img.addEventListener('load', fitPreview, { once: true }); });
+  });
+  wrap.appendChild(iframe);
+
+  // Every choice saves and redraws the email; the panel redraws itself where it must.
+  const refreshPreview = () => { iframe.srcdoc = renderNewsletter(issue); };
+  const changed = () => { scheduleSave(); refreshPreview(); };
+
+  column.appendChild(buildLayoutBlock(issue, changed));
+  column.appendChild(el('div', 'outline-eyebrow', 'Sections and items'));
+  column.appendChild(el('p', 'triage-section-note outline-help',
+    'Remove anything to leave it out. Description and picture choices appear on items that have a summary, in Research, Spotlight, Events and Opportunities.'));
 
   // ── Sections: only the populated ones are listed; the rest are named once
   //    at the foot. No toggle: a populated section is always included,
@@ -594,14 +749,14 @@ function renderTriage() {
             if (secIdx > 0) {
               [items[secIdx - 1], items[secIdx]] = [items[secIdx], items[secIdx - 1]];
               renderSectionItems();
-              scheduleSave();
+              changed();
             }
           });
           const downBtn = arrow('down', 'arrow-down', grpIdx === bucketItems.length - 1, () => {
             if (secIdx < items.length - 1) {
               [items[secIdx], items[secIdx + 1]] = [items[secIdx + 1], items[secIdx]];
               renderSectionItems();
-              scheduleSave();
+              changed();
             }
           });
 
@@ -622,7 +777,7 @@ function renderTriage() {
               items.forEach((ev) => { ev.featured = false; });
               if (!wasFeatured) item.featured = true;
               renderSectionItems();
-              scheduleSave();
+              changed();
             });
 
             featLabel.append(featCb, ' Featured');
@@ -646,6 +801,10 @@ function renderTriage() {
           evRow.appendChild(delBtn);
 
           sectionContainer.appendChild(evRow);
+
+          // The item's description and picture choices, under its row.
+          const options = buildItemOptions(reg, item, renderSectionItems, changed);
+          if (options) sectionContainer.appendChild(options);
         }
       }
 
@@ -659,48 +818,17 @@ function renderTriage() {
 
     renderSectionItems();
     sectionsList.appendChild(sectionContainer);
-
-    // ERC Research: optional "Submit your research" callout, a trailing
-    // on/off switch beneath the research items.
-    if (reg.key === 'research') {
-      const subRow = el('div', 'triage-switch-row');
-
-      // The visible words are the switch's label, so a screen reader names it.
-      const subName = el('label', 'triage-switch-label', 'Submit your research callout');
-      subName.htmlFor = 'submit-callout-switch';
-
-      const switchLine = el('div', 'triage-switch-line');
-
-      const sw = el('label', 'triage-switch');
-      sw.title = 'Show this callout in the newsletter for this issue';
-      const subCb = el('input', 'triage-switch-input');
-      subCb.type = 'checkbox';
-      subCb.id = 'submit-callout-switch';
-      subCb.setAttribute('role', 'switch');
-      subCb.checked = secData.showSubmit !== false;
-      subCb.setAttribute('aria-checked', String(subCb.checked));
-      sw.append(subCb, el('span', 'triage-switch-track'));
-
-      const stateLabel = el('span', 'triage-switch-state', subCb.checked ? 'On' : 'Off');
-
-      subCb.addEventListener('change', () => {
-        secData.showSubmit = subCb.checked;
-        subCb.setAttribute('aria-checked', String(subCb.checked));
-        stateLabel.textContent = subCb.checked ? 'On' : 'Off';
-        scheduleSave();
-      });
-
-      switchLine.append(sw, stateLabel);
-      subRow.append(subName, switchLine);
-      sectionsList.appendChild(subRow);
-    }
   }
 
-  container.appendChild(sectionsList);
+  column.appendChild(sectionsList);
 
   if (missing.length) {
-    container.appendChild(el('p', 'triage-missing', `Not in this issue: ${missing.join(', ')}.`));
+    column.appendChild(el('p', 'triage-missing', `Not in this issue: ${missing.join(', ')}.`));
   }
+
+  layout.append(column, wrap);
+  container.appendChild(layout);
+  refreshPreview();
 }
 
 // ---------------------------------------------------------------------------
@@ -753,7 +881,7 @@ function firstField(card) {
 }
 
 /** True newsletter width (px). The preview is scaled down to fit narrower panes. */
-const PREVIEW_WIDTH = 705;
+const PREVIEW_WIDTH = 640;
 
 /** Cap the preview at 95% of true size; scales down on narrow windows so the
     edit column always fits and there's never a horizontal scrollbar. */
@@ -767,9 +895,12 @@ const PREVIEW_MAX_SCALE = 0.95;
  * Silently no-ops when `.edit-layout` isn't on screen: a different step is
  * showing, or Edit has never been rendered yet.
  */
+/** Every two-pane stage on the page (Outline's and Preview & Edit's); a hidden one measures nothing and is left alone. */
 function fitPreview() {
-  const layout = document.querySelector('.edit-layout');
-  if (!layout) return;
+  document.querySelectorAll('.edit-layout').forEach(fitLayout);
+}
+
+function fitLayout(layout) {
   const iframe = layout.querySelector('.edit-preview-iframe');
   const wrap = layout.querySelector('.edit-preview-wrap');
   const doc = iframe && iframe.contentDocument;
@@ -796,8 +927,9 @@ function fitPreview() {
   });
   if (scale <= 0) return;
   iframe.style.zoom = String(scale);
-  const note = document.querySelector('.preview-note');
-  if (note) note.textContent = `Preview at ${Math.round(scale * 100)} percent, as it lands in Outlook. Click any text to edit it.`;
+  const note = layout.closest('.wizard-step')?.querySelector('.preview-note');
+  const tail = layout.classList.contains('outline-layout') ? '' : ' Click any text to edit it.';
+  if (note) note.textContent = `Preview at ${Math.round(scale * 100)} percent, as it lands in Outlook.${tail}`;
 }
 
 // Bound once: fitPreview finds the preview afresh on every call.

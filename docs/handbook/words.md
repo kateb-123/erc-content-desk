@@ -109,15 +109,20 @@
 "Pick an issue…"
 "Item"
 "Section"
-"Put the items in order with the arrows, mark one event Featured, and switch the Submit your research callout on or off. The issue builds in this order." (Outline's info panel, Sep 17; it used to describe drag-and-drop sections that never existed)
+"Order the items with the arrows, mark one event Featured, and pick the layout: the Submit your research callout, the contents strip, and which items show a description or a picture." (Outline's info panel since Oct 2026; "Put the items in order with the arrows, mark one event Featured, and switch the Submit your research callout on or off." before)
 "Sections"
 "Featured Research"
 "Featured"
 Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; straight quotes, like the arrows' Move "[title]" up)
 "One event is featured; it pins to the top under a Featured heading." (the note under Events on Outline, Sep 17; was a tooltip on every row)
 "Removes this item from the issue"
-"Submit your research callout"
-"Show this callout in the newsletter for this issue"
+"Layout" (the Outline's layout block, Oct 2026)
+"Submit your research callout" · "Maroon block" / "Light gray box" / "Dotted rule" / "None" (its four styles, a segmented row; the On/Off switch and "Show this callout in the newsletter for this issue" are gone)
+"Contents strip under the masthead" (a checkbox, on by default)
+"Reset layout options" / "Every layout option back to its default" (the quiet word and its tooltip; shown only once something differs)
+"Description" (each item's checkbox in Research, Spotlight, Events and Opportunities, when it has a summary) · Show the description of "[title]" (its name for a screen reader)
+"Picture" · "None" / "Stamp" / "Headshot" (the picture's layout, a small segmented row, when the description is on and the item has a photo) · Picture for "[title]"
+"Picture URL" · "https://" · "a photo, not a flyer" · "A photo, not a flyer. Upload one from Preview & Edit instead, if you like." (the field for an item with a description on and no photo; accepted only as http:// or https://)
 "Click any text in the preview to edit it in a card on the right. The rail also holds the introduction, a one-off Add an item door, and reordering."
 "Editing"
 "Introduction"
@@ -388,7 +393,7 @@ Feature "[title]" (the Featured checkbox's name for a screen reader, Sep 17; str
 "Email"
 "See more on the ERC website →"
 "Picture: [title]"
-"Submit Your Research for an ERC Research Brief →"
+"Submit your research for an ERC Research Brief" · "Working on research that could reach a broader audience? Share a recent publication or working paper and the ERC will consider it for a research brief or other public-facing product." · "Submit your research »" (the email's callout since the Stacked Blocks look, Oct 2026; "Submit Your Research for an ERC Research Brief →" before) · "View more »" (the tail links; "View more →" before)
 "Working on research that could reach a broader audience? The ERC is accepting submissions for a research brief or other public-facing product — share a recent publication or working paper."
 
 "Keep the rest (N)"
@@ -480,5 +485,5 @@ Gone on Sep 18: the Next newsletter and Send to Newsletter screens, "Pick items 
 ## Sep 22, 2026, night: plain words (Kate's copy audit, "basic UX responses, not slop")
 The public submit page: "Send the ERC an event, a paper, an opportunity or a headline for the newsletter and the Policy Exchange. We review everything before it goes out." (the lede) · "Description (dates, an abstract, or the whole announcement)" · "Received." over "We review every submission before it goes out." (the done box; was "Thank you. The ERC has it.") · "Something went wrong. Try again." · "The link needs to start with http:// or https://."
 The desk: "Pick a type." (was "Pick a real type.") · "The link needs to start with http:// or https://." · "Filled in from the page. Check: [fields]." / "Filled in from the page. Check the fields." (Sort's card; was "The reader wasn't sure") · "Published. Some rows were not marked as published. Publish again to mark them; nothing goes out twice." · "The rewrite was refused. Edit the descriptions by hand." · "Too many to rewrite at once. Rewrite in smaller batches."
-The builder's step notes: "Order the items with the arrows, mark one event Featured, and turn the research callout on or off." · "Click any text in the preview to edit it on the right. The introduction, Add an item and Reorder items are there too." · "Copy the HTML for Outlook, save the issue to the archive, or download the file."
+The builder's step notes: "Order the items with the arrows, mark one event Featured, and pick the layout: the Submit your research callout, the contents strip, and which items show a description or a picture." (Oct 2026; "… and turn the research callout on or off." before) · "Click any text in the preview to edit it on the right. The introduction, Add an item and Reorder items are there too." · "Copy the HTML for Outlook, save the issue to the archive, or download the file."
 The public sign-up's thank-you: being brainstormed.

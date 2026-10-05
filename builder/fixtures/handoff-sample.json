@@ -1,0 +1,392 @@
+{
+  "date": "September 22, 2026",
+  "intro": "Howdy all! With September well underway, we hope everyone is finding their groove this semester.\n\nWe have another great discussion lined up **this Friday**: ERC Steering Committee member Dr. John Williams III is taking on our latest PEP Talk. He’ll explore critical questions about discipline, literacy, and opportunity for Black boys.\n\nThanks for tuning in!\n\nWant to feature something in an upcoming newsletter? [**Let us know here!**](https://erc-policy-exchange.vercel.app/share/)",
+  "sections": {
+    "research": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "fake_1",
+          "group": "brief",
+          "fields": {
+            "title": "Howdy, Neighbor: Do Peer Mentors Keep First-Year Aggies on Track?",
+            "authors": "Reagan Holleman & Marisol Vega",
+            "summary": "Can a sophomore with a clipboard change a freshman's trajectory? Among 12,000 first-year students at a large Texas university, those matched with a trained peer mentor during their first semester were 6 percentage points more likely to return for year two. Gains were largest for first-generation students and students from rural high schools, a low-cost program with outsized staying power.",
+            "url": "https://example.com/erc/briefs/peer-mentors-retention",
+            "image": "https://picsum.photos/id/1027/400/500"
+          }
+        },
+        {
+          "id": "fake_2",
+          "group": "brief",
+          "fields": {
+            "title": "Miles from Aggieland: Distance to Dual-Credit Programs in Rural Texas",
+            "authors": "Priya Natarajan & Sam Okafor",
+            "summary": "For students in the Brazos Valley's smallest towns, the nearest dual-credit partner campus can be an hour away. Tracking 90,000 fictional high schoolers, this brief shows each additional 15 minutes of drive time cuts dual-credit enrollment by 9 percent, and that a modest travel stipend closes most of the gap.",
+            "url": "https://example.com/erc/briefs/dual-credit-distance"
+          }
+        },
+        {
+          "id": "fake_3",
+          "group": "report",
+          "fields": {
+            "title": "Maroon and White and Certified All Over: Alternative Teacher Certification in Texas",
+            "authors": "Kate Sample, Andy Fictional & Brenden Placeholder",
+            "summary": "This report evaluates a statewide alternative certification pathway serving 3,200 fictional candidates. Completers were as likely as traditionally certified peers to remain in teaching after three years, and more likely to teach in high-need rural districts, though early-career observation scores lagged in the first year before catching up.",
+            "url": "https://example.com/erc/reports/alt-certification-evaluation"
+          }
+        }
+      ]
+    },
+    "spotlight": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "fake_4",
+          "group": "programs",
+          "fields": {
+            "title": "ERC Graduate Research Fellows: Fall 2026 Cohort",
+            "meta": "Applications due August 1, 2026 | Faculty & students apply separately",
+            "summary": "The ERC pairs doctoral students with faculty mentors for a year-long research collaboration: real administrative data, real analysis, real publications. Designed to supplement, not replace, existing assistantships.",
+            "url": "https://example.com/erc/programs/graduate-fellows"
+          }
+        },
+        {
+          "id": "desk_930c09d3-7d96-4142-9c8e-d80d4939aaa2",
+          "group": "events",
+          "fields": {
+            "title": "ERC PEP Talk with John Williams III",
+            "url": "https://docs.google.com/forms/d/e/1FAIpQLSevYpp2ofCFOQsMNmWfWr8kPs9xJPvBVbaYykDYW665yg9nPg/viewform",
+            "summary": "Please join the ERC and the [**Program in Education in Policy**](https://pep.tamu.edu/) for the first PEP Talk of the academic year, featuring **Dr. John Williams III. **Attendees may join via Zoom.\n\nCome hungry; lunch and refreshments will be provided!",
+            "source": "ERC",
+            "authors": "John Williams III",
+            "date": "September 25, 2026",
+            "time": "11:30 AM CT",
+            "location": "Rudder 701",
+            "image": "https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/img-20260922-268d96f9.jpg"
+          }
+        },
+        {
+          "id": "fake_5",
+          "group": "events",
+          "fields": {
+            "title": "ERC EdTalk: Dr. Rowan Vale on Rural School Finance",
+            "date": "October 8, 2026",
+            "time": "11:30 AM CT",
+            "location": "Rudder Tower 707",
+            "summary": "Dr. Vale studies how small districts stretch a dollar: what happens to course offerings, staffing, and facilities when enrollment falls and the formula does not follow. This talk previews a new paper on 140 fictional rural districts and what the next legislative session could change.\n\nLunch will be provided. RSVP by October 6.",
+            "url": "https://example.com/erc/events/edtalk-rural-finance",
+            "image": "https://picsum.photos/id/1011/400/500"
+          }
+        },
+        {
+          "id": "desk_a83cd046-4881-40ca-b125-86fa368b9124",
+          "group": "thisandthat",
+          "fields": {
+            "title": "Resource Spotlight: Federal Data at Texas A&M",
+            "url": "https://forms.gle/8AHBTTGeDaoJY6wm7",
+            "image": "https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/img-20260922-35480108.jpg",
+            "summary": "Thank you to Dr. Mary Campbell, Director of the **[Texas Research Data Center (TXRDC)](https://liberalarts.tamu.edu/txrdc/)**, for joining us for our first talk of the semester.\n\nThe TXRDC works with the U.S. Census Bureau to host a secure lab at Texas A&M where approved researchers can use restricted-access federal data. For education researchers, that means versions of the American Community Survey, Current Population Survey, and decennial census with larger samples, finer geography, more detailed variables, and links between datasets that public files don't allow. Texas A&M leads the TXRDC Consortium, so our researchers can run funded projects at reduced lab fees, and in many cases the fees are waived.\n\nCurious whether your project is a fit? Dr. Campbell and Dr. Karin Johnson will cover what data are available and how to apply for access at an informational session this Thursday. Details below under Upcoming Events."
+          }
+        }
+      ]
+    },
+    "events": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "fake_6",
+          "group": "featured",
+          "fields": {
+            "title": "Civil Discourse Symposium: Talking Across the Aisle About Schools",
+            "date": "October 14, 2026",
+            "time": "2:00 PM CT",
+            "location": "MSC 2400",
+            "summary": "A half-day of panels on how school boards, legislators, and researchers argue productively about evidence. ERC faculty join a panel on what administrative data can and cannot settle. Open to students, staff, and the public.",
+            "url": "https://example.com/tamu/events/civil-discourse-symposium"
+          }
+        },
+        {
+          "id": "desk_07a57f72-2f56-4270-9f0e-37bc4d9aba12",
+          "group": "offcampus",
+          "fields": {
+            "title": "AI, Memory, and Student Privacy in K–12 Education",
+            "url": "https://www.aei.org/events/ai-memory-and-student-privacy-in-k-12-education",
+            "summary": "Education-specific artificial intelligence (AI) tools ask teachers and students to submit personal information that the models then \"remember\" to improve results. Experts in AI technology, data sharing, and education discuss who owns and controls those memories, whether they can be edited or transferred, and how states are handling the complexities. Hosted by the American Enterprise Institute (AEI).",
+            "source": "AEI events",
+            "date": "September 24, 2026",
+            "time": "2:15pm CT",
+            "location": "Virtual"
+          }
+        },
+        {
+          "id": "desk_9ab230bd-c9b1-45d4-afcc-f8f43229fba0",
+          "group": "offcampus",
+          "fields": {
+            "title": "What Schools Need to Know About the Federal Education Freedom Tax Credit",
+            "url": "https://www.edweek.org/events/webinar/what-schools-need-to-know-about-the-federal-education-freedom-tax-credit",
+            "summary": "Cecilia Retelle Zywicki, CEO of LearningSpring, walks through the federal Education Freedom Tax Credit (EFTC), which launches January 1, 2027 and lets eligible taxpayers redirect $1,700 of federal tax liability to Scholarship Granting Organizations. Funds support K-12 students in public, private, faith-based, and charter settings through scholarships and academic services, with guidance for school and district leaders on preparing.",
+            "source": "EdWeek",
+            "date": "September 30, 2026",
+            "time": "1:00 PM CT",
+            "location": "Virtual"
+          }
+        },
+        {
+          "id": "desk_49647f89-d3e2-4173-8dcc-4ccceaeb5770",
+          "group": "offcampus",
+          "fields": {
+            "title": "Portraits of Progress: How States Can Reduce Chronic Absenteeism",
+            "url": "https://www.aei.org/events/portraits-of-progress-how-states-can-reduce-chronic-absenteeism",
+            "summary": "Chronic absenteeism remains above pre-pandemic levels, though rates are declining modestly nationwide. The American Enterprise Institute's (AEI) Nat Malkus reports the latest numbers, then Iowa Department of Education Director McKenzie Snow and Rhode Island Education Commissioner Angélica Infante-Green discuss the policies driving outsize progress in their states. Cohosted with Attendance Works and the Education Trust; audience Q&A follows.",
+            "source": "AEI events",
+            "date": "October 1, 2026",
+            "time": "10:00AM CT",
+            "location": "Online Event"
+          }
+        },
+        {
+          "id": "desk_dcb0b844-47f9-461a-80c1-f521466c401e",
+          "group": "tamu",
+          "fields": {
+            "title": "Unlearning to Teach Mathematics",
+            "url": "https://tamucehd.qualtrics.com/jfe/form/SV_72slDhZgDmby2sS",
+            "summary": "Dr. Deborah Loewenberg Ball opens the Curtis D. Robert Distinguished Speaker Series in STEM Education Research with a talk on how future teachers' prior experiences shape their assumptions about teaching and learning, and how teacher preparation can support unlearning and rebuilding those understandings. Organized by Dr. Jinfa Cai and Dr. Trina Davis.",
+            "source": "CEHD",
+            "authors": "Deborah Loewenberg Ball",
+            "date": "September 23, 2026",
+            "time": "1:30 PM CT",
+            "location": "Harrington Tower 303"
+          }
+        },
+        {
+          "id": "sent_txrdc",
+          "group": "tamu",
+          "fields": {
+            "title": "TXRDC Informational Session",
+            "url": "https://forms.gle/8AHBTTGeDaoJY6wm7",
+            "date": "September 24, 2026",
+            "time": "3:00 to 4:00 PM CT",
+            "location": "Zoom"
+          }
+        }
+      ]
+    },
+    "opportunities": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "desk_99e3773e-f205-450f-ac22-c1f0914228f0",
+          "group": "funding",
+          "fields": {
+            "title": "Advanced Technological Education (ATE)",
+            "url": "https://www.nsf.gov/funding/opportunities/ate-advanced-technological-education/nsf24-584",
+            "summary": "The National Science Foundation's Advanced Technological Education (ATE) program funds technician education for high-technology fields, with a focus on two-year institutions of higher education and partnerships spanning grades 7-12 and beyond. Full proposals are due October 1, 2026, under program guidelines NSF 24-584.",
+            "source": "NSF",
+            "meta": "Deadline: October 1, 2026"
+          }
+        },
+        {
+          "id": "fake_7",
+          "group": "fellowships",
+          "fields": {
+            "title": "Just Education Policy Institute 2027",
+            "meta": "Deadline: September 15, 2026 | Doctoral students & postdocs",
+            "url": "https://example.com/fellowships/just-education-policy"
+          }
+        },
+        {
+          "id": "fake_8",
+          "group": "fellowships",
+          "fields": {
+            "title": "Causal Inference Bootcamp for Education Researchers",
+            "meta": "Apply by August 8, 2026 | Week-long intensive, College Station",
+            "url": "https://example.com/training/causal-inference-bootcamp"
+          }
+        },
+        {
+          "id": "fake_9",
+          "group": "calls",
+          "fields": {
+            "title": "Special Issue: Community Colleges and the Texas Workforce (Journal of Made-Up Findings)",
+            "meta": "Manuscript deadline: November 1, 2026",
+            "url": "https://example.com/calls/community-colleges-workforce"
+          }
+        },
+        {
+          "id": "fake_10",
+          "group": "misc",
+          "fields": {
+            "title": "Student Reviewers Wanted: Journal of Made-Up Findings",
+            "meta": "Rolling | Doctoral students",
+            "url": "https://example.com/misc/student-reviewers"
+          }
+        }
+      ]
+    },
+    "policy": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "desk_e59f1300-a05c-4b20-8e84-37abcde3e553",
+          "group": "working",
+          "fields": {
+            "title": "Off the Books: School-Based Informal Diversion and Student and Community Outcomes",
+            "url": "https://edworkingpapers.com/ai26-1578",
+            "summary": "Efforts to reduce school-based arrest may reshape policing beyond school doors, yet their downstream effects are largely unknown. We study a New York City policy that encouraged informal diversion in place of arrest, using a difference-in-differences strategy. The probability of a juvenile crime record near a school fell by 6.9 percentage points---concentrated among misdemeanor offenses and… more →",
+            "source": "EdWorkingPapers",
+            "authors": "Jo R. King, Luis A. Rodriguez, Morgan Fleming",
+            "date": "September 15, 2026"
+          }
+        },
+        {
+          "id": "desk_f5a181ee-d26f-4f55-a825-e09055e6bbfd",
+          "group": "working",
+          "fields": {
+            "title": "Superintendent (In)Stability and Student Achievement in the United States",
+            "url": "https://edworkingpapers.com/ai26-1585",
+            "summary": "Superintendents shape conditions for teaching and learning, yet the limited studies of their impact—concentrated in a few states and focused on superintendent turnover—find small or null effects on student achievement. Using more than 37,000 district-year records from national superintendents and student achievement datasets, and drawing on organizational learning and managerial succession… more →",
+            "source": "EdWorkingPapers",
+            "authors": "Rachel S. White",
+            "date": "September 13, 2026"
+          }
+        },
+        {
+          "id": "desk_c7c99c83-9b7f-4c4c-97f7-e1402fad6650",
+          "group": "peer",
+          "fields": {
+            "title": "Unequal Foundations: Racial Disparities in School Building Conditions in New York State",
+            "url": "https://doi.org/10.3102/0013189x261481800",
+            "summary": "School infrastructure is a critical yet often overlooked factor shaping student health, learning, and well-being. This study examines racial disparities in public school building conditions across New York State using building inspection data linked to demographic and fiscal data. Schools serving more students of color are significantly more likely to have poor overall conditions, inadequate ventilation, mold exposure, and reduced access to athletic fields, gymnasiums, and health offices. A Kitagawa-Oaxaca-Blinder decomposition shows that local property taxes are the largest contributor to racial gaps in building quality, while progressive state building aid helps reduce these disparities. These findings highlight persistent infrastructure inequities and the need for targeted investments to ensure all students have access to safe and healthy learning environments.",
+            "source": "Educational Researcher",
+            "authors": "Sodiq Ambali, Miyeun Jung, Lucy C. Sorensen",
+            "date": "September 10, 2026"
+          }
+        },
+        {
+          "id": "desk_11e50ee4-e6ad-4dab-8e56-36164246f11a",
+          "group": "working",
+          "fields": {
+            "title": "The Post-Pandemic “Attendance Crisis” in Historical Perspective",
+            "url": "https://edworkingpapers.com/ai26-1574",
+            "summary": "School attendance rates in the United States are lower now than prior to the COVID-19 pandemic. This rise in absenteeism has often been characterized as a crisis; but whether it amounts to a broader breakdown in norms depends on the historical baseline against which it is judged. The recent decline in attendance rates represents a small setback within a much longer trajectory of increasing school… more →",
+            "source": "EdWorkingPapers",
+            "authors": "Jeremy Singer",
+            "date": "September 9, 2026"
+          }
+        },
+        {
+          "id": "fake_11",
+          "group": "misc",
+          "fields": {
+            "title": "AI in PK-12 Classrooms: A Practitioner's Field Guide",
+            "source": "Fictional Research & Policy Review",
+            "url": "https://example.com/misc/ai-pk12-field-guide"
+          }
+        }
+      ]
+    },
+    "headlines": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "desk_5f8b7b53-d311-4cca-8d00-7ac818057034",
+          "group": "federal",
+          "fields": {
+            "title": "The emerging fight against grade inflation in K-12 classrooms",
+            "url": "https://hechingerreport.org/the-emerging-fight-against-grade-inflation-in-k-12-classrooms",
+            "summary": "Each spring, Patrick Kelly hears the same complaint from teachers in his state of South Carolina: Too many students, particularly in high school, stop doing any schoolwork. Students know they can pass their classes anyway because of school policies known as “grade floors.” Schools adopted grade floors — which require teachers to give students minimum […] The post The emerging fight against grade inflation in K-12 classrooms appeared first on The Hechinger Report .",
+            "source": "Hechinger Report",
+            "date": "September 21, 2026"
+          }
+        },
+        {
+          "id": "desk_c403a0b6-bffb-4b65-b90f-e277ea8781e8",
+          "group": "federal",
+          "fields": {
+            "title": "1 in 4 elementary school teachers say students use devices for main lessons",
+            "url": "https://www.k12dive.com/news/1-in-4-elementary-school-teachers-say-students-use-devices-for-main-lessons/830828",
+            "summary": "Almost all elementary teachers say students use devices in the classroom, and two-thirds of teachers overall would support going paper-based instead.",
+            "source": "K-12 Dive",
+            "date": "September 21, 2026"
+          }
+        },
+        {
+          "id": "desk_d4f8edff-b220-4ea2-bb89-43550d426325",
+          "group": "federal",
+          "fields": {
+            "title": "Evicted Students Miss Class and Fall Behind. Tulsa Schools Want to Change That",
+            "url": "https://www.the74million.org/article/evicted-students-miss-class-and-fall-behind-tulsa-schools-want-to-change-that",
+            "summary": "This article was published with The 19th, a nonprofit newsroom covering gender, politics, policy and power. Tulsa, Oklahoma With her long, wavy hair pulled back in a ponytail, the young mom sat alone outside courtroom 6 at the Tulsa County Family Center for Juvenile Justic, checking her phone and anxiously waiting for a court official to […]",
+            "source": "The 74 Million",
+            "authors": "Linda Jacobson",
+            "date": "September 16, 2026"
+          }
+        },
+        {
+          "id": "desk_a6097722-a21d-4bcc-8173-f133e64897a6",
+          "group": "federal",
+          "fields": {
+            "title": "50-State Comparison: State K-3 Policies",
+            "url": "https://www.ecs.org/50-state-comparison-state-k-3-policies-2026",
+            "summary": "Following a high-quality early care and education experience, the kindergarten-through-third-grade years set the foundation upon which future learning builds. Strengthening this early elementary school continuum creates opportunities for later success. […] The post 50-State Comparison: State K-3 Policies appeared first on Education Commission of the States .",
+            "source": "Education Commission of the States",
+            "authors": "Adrienne Fischer, Erin Whinnery, Heena Kuwayama",
+            "date": "September 15, 2026"
+          }
+        },
+        {
+          "id": "desk_f698a61a-699b-4a35-8bfe-dd770e633aca",
+          "group": "federal",
+          "fields": {
+            "title": "Addressing Classroom Screen Time Beyond Cell Phones",
+            "url": "https://www.ecs.org/addressing-classroom-screen-time-beyond-cell-phones",
+            "summary": "Screen time, and the role schools can play in limiting it, has been a serious concern for many parents, educators and policymakers in recent years. A 2024 survey by the […] The post Addressing Classroom Screen Time Beyond Cell Phones appeared first on Education Commission of the States .",
+            "source": "Education Commission of the States",
+            "authors": "Heena Kuwayama",
+            "date": "September 10, 2026"
+          }
+        },
+        {
+          "id": "fake_12",
+          "group": "texas",
+          "fields": {
+            "title": "Texas education savings account program posts first-year enrollment numbers",
+            "source": "The Sample Tribune",
+            "url": "https://example.com/news/texas-esa-year-one"
+          }
+        },
+        {
+          "id": "fake_13",
+          "group": "texas",
+          "fields": {
+            "title": "Aggieland-area districts pilot four-day school weeks",
+            "source": "Brazos Valley Bugle",
+            "url": "https://example.com/news/four-day-weeks"
+          }
+        }
+      ]
+    },
+    "misc": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "fake_14",
+          "group": "misc",
+          "fields": {
+            "title": "ERC reader survey: two minutes on what you want from this newsletter",
+            "url": "https://example.com/erc/reader-survey"
+          }
+        },
+        {
+          "id": "fake_15",
+          "group": "misc",
+          "fields": {
+            "title": "The ERC Policy Exchange has a new Highlights page",
+            "url": "https://erc-policy-exchange.vercel.app/"
+          }
+        }
+      ]
+    }
+  }
+}

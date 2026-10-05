@@ -198,6 +198,15 @@ function buildSections(issue) {
 
 const summaryAllowed = (def, gkey) => !def.summaryGroups || def.summaryGroups.includes(gkey);
 
+/** Whether a group shows descriptions by default: Research and Spotlight do,
+ *  Events only under Featured Events, Opportunities never. The Outline asks
+ *  this so its checkbox starts where the email would. */
+export function summaryDefault(sectionKey, groupKey) {
+  const email = EMAIL[sectionKey];
+  if (!email) return false;
+  return !email.summaryGroups || email.summaryGroups.includes(groupKey);
+}
+
 /** Whether an item shows its description: the builder's choice, else the group's default. */
 function showsSummary(def, gkey, fields) {
   if (!fields.summary) return false;
@@ -207,11 +216,17 @@ function showsSummary(def, gkey, fields) {
 
 const isEdTalk = (title) => /^ERC EdTalk/i.test(String(title ?? '').trim());
 
+/** The picture layout an item gets when nothing was chosen: a headshot for an
+ *  "ERC EdTalk", a stamp otherwise. */
+export function pictureDefault(title) {
+  return isEdTalk(title) ? 'headshot' : 'stamp';
+}
+
 /** The picture's width: 160 for a headshot, 96 for a stamp, 0 for none. */
 function pictureWidth(fields, sumOk) {
   const src = safeItemHref(fields.image);
   if (!sumOk || !src) return 0;
-  const style = PICTURE_STYLES.includes(fields.pictureStyle) ? fields.pictureStyle : (isEdTalk(fields.title) ? 'headshot' : 'stamp');
+  const style = PICTURE_STYLES.includes(fields.pictureStyle) ? fields.pictureStyle : pictureDefault(fields.title);
   return style === 'none' ? 0 : style === 'headshot' ? 160 : 96;
 }
 
