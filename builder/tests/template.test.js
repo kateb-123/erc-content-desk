@@ -1,16 +1,18 @@
-// newsletter-builder/tests/template.test.js
+// builder/tests/template.test.js: the Stacked Blocks email (Claude Design handoff, Oct 2026).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { renderNewsletter, renderProse } from '../js/template.js';
+import { renderNewsletter, renderProse, navLinks, layoutOf, URLS } from '../js/template.js';
 import { createEmptyIssue, SECTION_REGISTRY, POLICY_EXCHANGE_URL } from '../js/model.js';
 
-// Parsed once from the hand-written issues the builder used to import; parsed
-// again on every call because these tests edit the issue they get back.
 const issueOf = file =>
   JSON.parse(readFileSync(new URL(`../fixtures/${file}`, import.meta.url), 'utf8'));
+const fullIssue = () => issueOf('full-issue.json');
+const count = (html, needle) => html.split(needle).length - 1;
+const body = html => html.slice(html.indexOf('<body'));
+/** The 640px white panels, in order. */
+const panels = html => body(html).split('background-color:#ffffff;"><tbody>').length - 1;
 
-// One tamu event and nothing else: the smallest issue that renders a section.
 const sparseIssue = () => {
   const issue = createEmptyIssue();
   issue.date = 'June 16, 2026';
@@ -22,392 +24,40 @@ const sparseIssue = () => {
   return issue;
 };
 
-test('render includes date, fonts, and a file-tab section header', () => {
-  const html = renderNewsletter(issueOf('full-issue.json'));
-  assert.match(html, /June 16, 2026/);
-  assert.match(html, /Trebuchet MS/);
-  assert.match(html, /border-radius:\s*8px 8px 0 0/); // file-tab corner
+// ─── Panels and the page ─────────────────────────────────────────────────────
+
+test('every part of the email is its own 640px white panel on the gray page, 12px apart', () => {
+  const html = renderNewsletter(fullIssue());
+  // header, intro, six sections, the callout, the footer: ten sheets, nine gaps
+  assert.equal(panels(html), 10);
+  assert.equal(count(html, 'height:12px; font-size:1px; line-height:12px;'), 9, 'a 12px gap between each pair of panels');
+  assert.match(html, /height:24px;[^<]*<\/td><\/tr><\/tbody><\/table><\/td><\/tr><\/tbody><\/table><\/div>/, 'a 24px gap after the last panel');
+  assert.match(html, /<div lang="en" style="background-color:#EAEAEA; margin:0px;">/);
+  assert.ok(!/border-radius/.test(html) && !/box-shadow/.test(html), 'no corners, no shadows');
 });
 
-test('disabled/empty section is omitted from output', () => {
+test('section panels open with a 4px maroon rule and an uppercase maroon heading that carries the anchor', () => {
+  const html = renderNewsletter(fullIssue());
+  assert.match(html, /<tr><td style="height:4px; background-color:#500000; font-size:0; line-height:0; padding:0;">&nbsp;<\/td><\/tr>\n<tr><td style="padding:20px 24px 0 24px;"><h2 style="margin:0; font-family:'Trebuchet MS'[^"]*text-transform:uppercase; color:#500000;"><a name="research" id="research"[^>]*><\/a>ERC Research<\/h2>/);
+  assert.ok(!/border-bottom: 3px solid/.test(html), 'the file-tab is gone');
+});
+
+test('group labels are Verdana 12px uppercase in the light maroon, 18px under the heading and 30px below a group', () => {
+  const html = renderNewsletter(issueOf('sample-real.json'));
+  assert.match(html, /<tr><td style="padding:18px 24px 0 24px;"><h3 style="margin:0; font-family:Verdana[^"]*font-size:12px;[^"]*text-transform:uppercase; color:#732F2F;">Research Brief<\/h3>/);
+  assert.ok((html.match(/padding:30px 24px 0 24px;"><h3/g) || []).length >= 3, 'later groups sit 30px down');
+  assert.ok(!/#913B3B/.test(html), 'the old eyebrow brick is gone');
+});
+
+test('disabled or empty sections render nothing and leave the contents strip', () => {
   const html = renderNewsletter(sparseIssue());
-  assert.ok(!/This &amp; That/i.test(html)); // no spotlight/This & That group in the sparse issue
+  assert.ok(!/This &amp; That/i.test(html));
+  assert.ok(!/href="#spotlight"/.test(html));
+  assert.match(html, /href="#events"/);
+  assert.equal(panels(html), 4, 'header, intro, events, footer');
 });
 
-test('Submit callout shows by default and is omitted when showSubmit is false', () => {
-  const marker = 'Submit Your Research for an ERC Research Brief';
-  const issue = issueOf('full-issue.json');
-  assert.ok(renderNewsletter(issue).includes(marker), 'callout should show by default');
-  issue.sections.research.showSubmit = false;
-  assert.ok(!renderNewsletter(issue).includes(marker), 'callout should be omitted when toggled off');
-});
-
-test('renderProse renders bold and italic, escaping the rest', () => {
-  const html = renderProse('A **bold** and *italic* & <x>.');
-  assert.match(html, /<strong>bold<\/strong>/);
-  assert.match(html, /<em>italic<\/em>/);
-  assert.match(html, /&amp;/);
-  assert.match(html, /&lt;x&gt;/);
-  assert.doesNotMatch(html, /data-edit/);
-});
-
-test('renderProse linkifies markdown links and escapes the rest', () => {
-  const html = renderProse('See [Cape Verde](https://x.org/cv) & <b>more</b>.');
-  assert.match(html, /<a href="https:\/\/x\.org\/cv" target="_blank" rel="noopener"[^>]*>Cape Verde<\/a>/);
-  assert.match(html, /&amp;/);       // bare & escaped
-  assert.match(html, /&lt;b&gt;/);   // stray HTML escaped, not rendered
-  assert.doesNotMatch(html, /data-edit/);
-});
-
-test('renderProse keeps trailing parenthesis in a link href (e.g. Wikipedia links)', () => {
-  const html = renderProse('See [Cape Verde](https://en.wikipedia.org/wiki/Cape_Verde_(country)) today.');
-  assert.ok(html.includes('href="https://en.wikipedia.org/wiki/Cape_Verde_(country)"'));
-  assert.ok(!html.includes('</a>)'), 'no dangling ) leaking into body text after the link');
-});
-
-test('renderProse only emits an anchor for safe URL schemes; unsafe schemes render as plain text', () => {
-  const html = renderProse('Click [here](javascript:alert(1)) now');
-  assert.ok(!html.includes('<a '), 'should not emit an anchor for a javascript: href');
-  assert.ok(!html.includes('javascript:'), 'should not leak the javascript: scheme into output');
-  assert.ok(html.includes('here'), 'label text should still render');
-});
-
-test('featured event renders under a FEATURED eyebrow', () => {
-  const issue = issueOf('full-issue.json');
-  const ev = issue.sections.events.items.find(Boolean);
-  ev.group = 'featured';
-  ev.featured = true;
-  const html = renderNewsletter(issue);
-  assert.match(html, /FEATURED/i);
-});
-
-test('all user text is escaped (no raw angle brackets injected)', () => {
-  const issue = issueOf('full-issue.json');
-  issue.sections.headlines.items[0].fields.title = 'A < B & C';
-  const html = renderNewsletter(issue);
-  assert.match(html, /A &lt; B &amp; C/);
-});
-
-// ─── Regression tests (Fix 1 + Fix 2) ────────────────────────────────────────
-
-test('footer contains ERC horizontal lockup image URL', () => {
-  const html = renderNewsletter(issueOf('full-issue.json'));
-  assert.ok(
-    html.includes('https://i.ibb.co/JjQWyZq3/ERC-Horizontal-White-Text-narrow.png'),
-    'Expected footer ERC lockup image URL to appear in output'
-  );
-});
-
-test('eyebrow group label uses maroon color #913B3B', () => {
-  const html = renderNewsletter(issueOf('full-issue.json'));
-  assert.ok(
-    html.includes('#913B3B'),
-    'Expected eyebrow group label to use maroon #913B3B'
-  );
-});
-
-test('headlines render source in parenthesized format', () => {
-  const html = renderNewsletter(issueOf('full-issue.json'));
-  // full-issue.md has a Federal headline with source "Ed Week"
-  assert.match(html, /\(Ed Week\)/, 'Expected headline source to appear wrapped in parentheses');
-});
-
-test('"View more" tail link text appears in output (Kate, Sep 22: the links go to the Exchange, not the ERC website)', () => {
-  const html = renderNewsletter(issueOf('full-issue.json'));
-  assert.ok(
-    html.includes('View more &#8594;') && !html.includes('ERC website'),
-    'Expected the "View more" tail link, and no "ERC website" wording'
-  );
-});
-
-test('spotlight renders between research and events with all three groups', () => {
-  const html = renderNewsletter(issueOf('full-issue.json'));
-  const iSpot = html.indexOf('ERC Spotlight');
-  const iResearch = html.indexOf('ERC Research');
-  const iEvents = html.indexOf('Upcoming Events');
-  assert.ok(iResearch < iSpot && iSpot < iEvents, 'spotlight sits between research and events');
-  assert.match(html, /Programs &amp; Opportunities/);
-  assert.match(html, /This &amp; That/i);
-});
-
-test('spotlight is a jump-nav target', () => {
-  const html = renderNewsletter(issueOf('full-issue.json'));
-  assert.match(html, /#spotlight/);
-});
-
-test('jump-nav contains anchor for the events section', () => {
-  const html = renderNewsletter(issueOf('full-issue.json'));
-  assert.ok(
-    html.includes('href="#events"'),
-    'Jump-nav must contain href="#events" for the enabled events section'
-  );
-});
-
-test('export output has no edit hooks; editable output does', () => {
-  const i = issueOf('full-issue.json');
-  assert.ok(!/data-edit-/.test(renderNewsletter(i)));            // default = clean export
-  assert.match(renderNewsletter(i, { editable: true }), /data-edit-field="title"/);
-});
-
-test('ungrouped research item falls back under the Research Brief group', () => {
-  const issue = createEmptyIssue();
-  issue.sections.research.enabled = true;
-  issue.sections.research.items = [
-    { id: 'itm_x', group: '', fields: { title: 'Untagged', summary: 's' } },
-  ];
-  const html = renderNewsletter(issue);
-  assert.ok(html.includes('Research Brief'), 'expected the Research Brief eyebrow label');
-  assert.ok(html.includes('Untagged'), 'expected the ungrouped item title to render');
-});
-
-test('research renders Brief and Report as separate labeled subgroups', () => {
-  const issue = createEmptyIssue();
-  issue.sections.research.enabled = true;
-  issue.sections.research.items = [
-    { id: 'itm_1', group: 'brief',  fields: { title: 'B-One', summary: 'x' } },
-    { id: 'itm_2', group: 'report', fields: { title: 'R-One', summary: 'y' } },
-  ];
-  const html = renderNewsletter(issue);
-  const iBriefLabel = html.indexOf('Research Brief');
-  const iReportLabel = html.indexOf('Report');
-  const iBOne = html.indexOf('B-One');
-  const iROne = html.indexOf('R-One');
-  assert.ok(iBriefLabel !== -1 && iReportLabel !== -1, 'both group labels present');
-  assert.ok(iBriefLabel < iBOne && iBOne < iReportLabel, 'Brief group precedes Report group');
-  assert.ok(iReportLabel < iROne, 'Report label precedes its item');
-});
-
-test('the Miscellaneous section renders with only its section band, no group heading', () => {
-  const issue = createEmptyIssue();
-  issue.sections.misc.items.push({ id: 'm1', group: 'misc', fields: { title: 'A one-off thing', url: 'https://x.org/misc' } });
-  issue.sections.misc.enabled = true;
-  const html = renderNewsletter(issue);
-  assert.ok(html.includes('Miscellaneous'));
-  assert.ok(html.includes('A one-off thing'));
-  assert.ok(!html.includes('letter-spacing: 1.1px;"></p>')); // no empty group label
-});
-
-// ─── Item media: the stamp (spec 2026-09-02-newsletter-media-layout, Decision) ──
-
-const FLYER = 'https://raw.githubusercontent.com/erc/media/main/flyer.png';
-function mediaIssue() {
-  const issue = createEmptyIssue();
-  const oppGroup = SECTION_REGISTRY.find(s => s.key === 'opportunities').groups[0].key;
-  issue.sections.research.enabled = true;
-  issue.sections.research.items = [
-    { id: 'r1', group: 'brief', fields: { title: 'First blurb', summary: 'A summary. ' + 'Four lines of blurb beside the picture, enough to earn a stamp. '.repeat(4), image: FLYER } },
-    { id: 'r2', group: 'brief', fields: { title: 'Second blurb', summary: 'Another summary. ' + 'Four lines of blurb beside the picture, enough to earn a stamp. '.repeat(4), image: FLYER } },
-    { id: 'r3', group: 'brief', fields: { title: 'Brief sans summary', authors: 'A. Author', image: FLYER } },
-  ];
-  issue.sections.spotlight.enabled = true;
-  issue.sections.spotlight.items = [
-    { id: 's1', group: 'events', fields: { title: 'Spotlight short', date: 'May 1', location: 'Room 1', image: FLYER } },
-  ];
-  issue.sections.events.enabled = true;
-  issue.sections.events.items = [
-    { id: 'e1', group: 'tamu', fields: { title: 'Regular event', date: 'May 2', summary: 'Only featured events show this.', image: FLYER } },
-  ];
-  issue.sections.opportunities.enabled = true;
-  issue.sections.opportunities.items = [
-    { id: 'o1', group: oppGroup, fields: { title: 'Short one', meta: 'Deadline: soon', image: FLYER } },
-  ];
-  return issue;
-}
-const stampPositions = html => [...html.matchAll(/<img src="https:\/\/raw\.githubusercontent\.com[^"]*flyer\.png"/g)].map(m => m.index);
-
-const stampWidth = (html, title) => {
-  const seg = html.slice(html.indexOf(title));
-  const nextTitle = seg.indexOf('<p style="margin:0 0 4px', 1); // the next item's title paragraph
-  const scope = nextTitle > 0 ? seg.slice(0, nextTitle) : seg;
-  const m = scope.match(/<img src="[^"]+flyer\.png" alt="[^"]*" width="(\d+)"/);
-  return m ? Number(m[1]) : null;
-};
-
-test('a stamp links to the full picture, with no link text', () => {
-  const html = renderNewsletter(mediaIssue());
-  assert.match(html, new RegExp(`<a href="${FLYER}" target="_blank" rel="noopener"[^>]*><img src="${FLYER}" alt="[^"]*" width="\\d+"[^>]*><\\/a>`), 'the anchor holds the image and nothing else');
-  assert.ok(!/View flyer/.test(html), 'no "View flyer" text');
-});
-
-test('the stamp sits under the title, beside the authors and blurb', () => {
-  const html = renderNewsletter(mediaIssue());
-  const title = html.indexOf('First blurb');
-  const stamp = html.indexOf(`<img src="${FLYER}`);
-  const blurb = html.indexOf('A summary.');
-  assert.ok(title < stamp && stamp < blurb, 'title, then picture, then the text beside it');
-  const between = html.slice(title, stamp);
-  assert.match(between, /<\/p>\s*<table role="presentation"/, 'the title paragraph closes before the two-cell row opens');
-  assert.ok(!/<p[^>]*>[^<]*First blurb/.test(html.slice(stamp)), 'the title is not inside the row');
-});
-
-test('the stamp is sized from the text beside it: short text, no stamp; medium text, a smaller stamp; long text, 96px', () => {
-  const issue = mediaIssue();
-  const items = issue.sections.research.items;
-  items[0].fields.summary = 'One line.';
-  items[1].fields.summary = 'About two hundred and fifty characters of blurb, so that the paragraph wraps to four lines in the column beside the picture, which leaves room for a medium-sized stamp but not the full ninety-six pixels. '.padEnd(250, 'More words. ');
-  items[2].fields = { title: 'Long blurb', authors: 'A. Author', summary: 'x'.repeat(0) + 'A long blurb. '.repeat(40), image: FLYER };
-  const html = renderNewsletter(issue);
-  assert.equal(stampWidth(html, 'First blurb'), null, 'one line of text: no picture, it would stand taller');
-  const mid = stampWidth(html, 'Second blurb');
-  assert.ok(mid >= 40 && mid < 96, `medium text gets a medium stamp, got ${mid}`);
-  assert.equal(stampWidth(html, 'Long blurb'), 96, 'ceiling');
-});
-
-test('the stamp cell is the picture plus one 14px gutter, no border, whatever the stamp width (Kate, 2026-09-08)', () => {
-  const html = renderNewsletter(mediaIssue());
-  const cells = [...html.matchAll(/<td valign="top" width="(\d+)" style="width:\d+px; vertical-align:top; padding:2px 0 0 0;"><a [^>]*><img [^>]*width="(\d+)"/g)];
-  assert.ok(cells.length >= 2);
-  for (const [, cell, img] of cells) assert.equal(Number(cell), Number(img) + 14);
-  assert.ok(!/border:1px solid #e6e2dd/.test(html) && !/border-radius:3px/.test(html), 'no hairline, no rounded corners');
-  assert.ok(!/padding:2px 14px 0 0/.test(html), 'gutter is not double-counted as padding');
-});
-
-test('items without a blurb render no picture, in every media section', () => {
-  const html = renderNewsletter(mediaIssue());
-  assert.equal(stampPositions(html).length, 2, 'only the two blurb items carry a stamp');
-  assert.ok(!/width="36"/.test(html), 'no small stamp');
-  for (const title of ['Brief sans summary', 'Spotlight short', 'Regular event', 'Short one']) {
-    const i = html.indexOf(title);
-    assert.ok(i > 0, `${title} rendered`);
-    assert.ok(!/flyer\.png/.test(html.slice(i - 700, i + 400)), `${title} has no picture near it`);
-  }
-});
-
-
-test('no text cell is justified or hyphenated', () => {
-  const html = renderNewsletter(mediaIssue());
-  assert.ok(!/text-align:\s*justify/.test(html));
-  assert.ok(!/hyphens:\s*auto/.test(html));
-});
-
-test('item without a picture, or with an unsafe picture URL, renders no stamp', () => {
-  const issue = mediaIssue();
-  issue.sections.research.items[0].fields.image = 'javascript:alert(1)';
-  delete issue.sections.research.items[1].fields.image;
-  delete issue.sections.opportunities.items[0].fields.image;
-  const html = renderNewsletter(issue);
-  assert.equal(stampPositions(html).length, 0);
-  assert.ok(!/javascript:/.test(html));
-  assert.ok(!/alt="Picture:/.test(html), 'no stamp markup at all');
-});
-
-test('editable render tags the stamp for click-to-edit; export carries no hooks', () => {
-  const issue = mediaIssue();
-  assert.match(renderNewsletter(issue, { editable: true }), /<img [^>]*data-edit-field="image"/);
-  assert.ok(!/data-edit-/.test(renderNewsletter(issue)));
-});
-
-// ─── Audit fixes (2026-09-03): the 18 no-decision items ──────────────────────
-// Read from the source, not retyped: the address moved once already (GitHub
-// Pages -> Vercel) and a hardcoded copy here just goes stale silently.
-const POLICY_EXCHANGE = POLICY_EXCHANGE_URL;
-const fullIssue = () => issueOf('full-issue.json');
-const count = (html, needle) => html.split(needle).length - 1;
-
-test('"See more" tail links point at the Policy Exchange by default and never at "#"', () => {
-  const html = renderNewsletter(fullIssue());
-  assert.ok(!/href="#"/.test(html), 'no placeholder hrefs');
-  assert.equal(count(html, `href="${POLICY_EXCHANGE}" target="_blank" rel="noopener"`), 3, 'opportunities, policy, headlines');
-});
-
-test('a stray sections[].seeMoreUrl from old data is ignored; every "See more" uses the registry default', () => {
-  const issue = fullIssue();
-  issue.sections.policy.seeMoreUrl = 'https://example.org/policy';
-  issue.sections.headlines.seeMoreUrl = '';
-  const html = renderNewsletter(issue);
-  assert.ok(!html.includes('href="https://example.org/policy"'), 'the per-issue override no longer takes effect');
-  assert.equal(count(html, `href="${POLICY_EXCHANGE}" target="_blank" rel="noopener"`), 3, 'opportunities, policy, headlines all still link to the default');
-});
-
-test('the sheet is 640px wide: masthead and every layout table carry the width attribute for classic Outlook', () => {
-  const html = renderNewsletter(fullIssue());
-  assert.ok(!/\b705\b/.test(html), 'no 705 left anywhere');
-  assert.match(html, /<img width="640"[^>]*alt="Education Research Center Newsletter"[^>]*max-width: 640px/);
-  const tables = html.match(/<table[^>]*width: 640px[^>]*>/g) || [];
-  assert.ok(tables.length > 5, 'sample has several 640px tables');
-  for (const t of tables) assert.match(t, /width="640"/, t.slice(0, 120));
-});
-
-test('the picture stamp names the item so its link has an accessible name', () => {
-  const html = renderNewsletter(mediaIssue());
-  assert.match(html, /<img src="[^"]+flyer\.png" alt="Picture: First blurb" width="\d+"/);
-});
-
-test('the two light grays that failed contrast are replaced', () => {
-  const html = renderNewsletter(fullIssue());
-  assert.ok(!/#8F8F8F/i.test(html) && !/#9a8a8a/i.test(html), 'old grays gone');
-  assert.match(html, /color: #767676;[^"]*font-size: 14px; font-weight: 700;">View more/);
-  assert.match(html, /<span style="color:#7A6A6A; font-size:14px;">\(/);
-  assert.ok(!/#9a8a8a/.test(html.slice(0, html.indexOf('</style>'))), 'dark-mode selectors updated too');
-});
-
-test('a hidden preheader follows <body>, built from the intro\'s first sentence; a stray issue.preheader is ignored', () => {
-  const issue = fullIssue();
-  issue.intro = 'Welcome back, **everyone** — see [the site](https://x.org). Second sentence here.';
-  issue.preheader = 'Three briefs & a symposium';
-  const html = renderNewsletter(issue);
-  const pre = html.match(/<body[^>]*>\s*<div style="display:none;[^"]*mso-hide:all;">([\s\S]*?)<\/div>/);
-  assert.ok(pre, 'preheader div sits right after <body>');
-  assert.ok(pre[1].startsWith('Welcome back, everyone — see the site.'), pre[1].slice(0, 80));
-  assert.ok(!html.includes('Three briefs &amp; a symposium'), 'the per-issue override no longer takes effect');
-});
-
-test('rgb(80, 0, 0) is only ever a background, so the dark-mode rules cannot repaint the date or tab rows', () => {
-  const html = renderNewsletter(fullIssue());
-  const uses = html.slice(html.indexOf('</style>')).match(/[a-z-]+: rgb\(80, 0, 0\)/g) || [];
-  assert.ok(uses.length > 0);
-  for (const u of uses) assert.equal(u, 'background-color: rgb(80, 0, 0)');
-  assert.match(html, /border-bottom: 3px solid #500000;/);
-});
-
-test('footer cell sets white text so blocked-image alt text stays readable on maroon', () => {
-  const html = renderNewsletter(fullIssue());
-  assert.match(html, /<td align="center" style="[^"]*color:#ffffff;[^"]*padding: 26px 24px 24px;/);
-});
-
-test('jump nav carries no label; the section links stand alone (Kate, 2026-09-08)', () => {
-  const html = renderNewsletter(fullIssue());
-  assert.ok(!html.includes('In this issue'));
-  assert.match(html, /<a href="#research"[^>]*>ERC Research<\/a> &nbsp;\|&nbsp; <a href="#spotlight"/);
-});
-
-test('the mailing-list link has one name in the header and the footer', () => {
-  const html = renderNewsletter(fullIssue());
-  assert.equal(count(html, '>Join the mailing list</a>'), 2);
-  assert.ok(!/Listserv|Join Mailing List/.test(html));
-});
-
-test('document declares its language and a doctype, and every new-tab link is noopener', () => {
-  const html = renderNewsletter(fullIssue());
-  assert.ok(html.startsWith('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"'));
-  assert.match(html, /<html lang="en"/);
-  assert.match(html, /<div lang="en" style="background-color: rgb\(234, 234, 234\)/);
-  assert.equal(count(html, 'target="_blank"'), count(html, 'target="_blank" rel="noopener"'));
-});
-
-test('footer icons are hidden from assistive tech', () => {
-  const html = renderNewsletter(fullIssue());
-  const svgs = html.match(/<svg[^>]*>/g) || [];
-  assert.equal(svgs.length, 3);
-  for (const s of svgs) assert.match(s, /aria-hidden="true" focusable="false"/);
-});
-
-test('sections are h2 and group eyebrows are h3, with no visual change', () => {
-  const html = renderNewsletter(fullIssue());
-  assert.ok(!/<h3 id=/.test(html) && !/<h1/.test(html));
-  assert.match(html, /<h2 id="research" style="margin:0; font-family: Verdana/);
-  assert.match(html, /<h3 style="margin:0; font-family: Verdana[^"]*text-transform: uppercase;[^"]*">Research Brief<\/h3>/);
-  assert.match(html, /<h3 style="margin:0 0 9px; font-family: Verdana[^"]*">Working Papers<\/h3>/);
-});
-
-test('meta and author lines carry a line-height like every other paragraph', () => {
-  const html = renderNewsletter(fullIssue());
-  const metas = html.match(/<p style="[^"]*color: #5C5C5C;"/g) || [];
-  assert.ok(metas.length >= 4);
-  for (const m of metas) assert.match(m, /line-height: 1\.4;/, m);
-});
-
-test('an item with no title is skipped, and a section left with nothing renders no tab and no spacer', () => {
+test('an item with no title is skipped, and a section left with nothing renders no panel', () => {
   const issue = createEmptyIssue();
   issue.sections.research.enabled = true;
   issue.sections.research.items = [
@@ -419,27 +69,370 @@ test('an item with no title is skipped, and a section left with nothing renders 
   const html = renderNewsletter(issue);
   assert.ok(!/Headless\./.test(html) && !/<a href="https:\/\/example\.org\/x"[^>]*><\/a>/.test(html));
   assert.ok(html.includes('Real one'));
-  assert.ok(!/>Opportunities<\/h2>/.test(html) && !/href="#opportunities"/.test(html), 'empty section and its nav entry gone');
-  assert.equal(count(html, '<!-- spacer -->'), 2, 'one spacer before the one real section, one before the footer');
+  assert.ok(!/>Opportunities<\/h2>/.test(html) && !/href="#opportunities"/.test(html));
 });
 
-test('a two-paragraph blurb renders as two paragraphs', () => {
+// ─── Header and intro ────────────────────────────────────────────────────────
+
+test('the header panel: maroon date, gray utility links, linked masthead, gray contents strip', () => {
+  const html = renderNewsletter(fullIssue());
+  assert.match(html, /font-size:15px; line-height:1.4; font-weight:700; color:#500000;">June 16, 2026</);
+  assert.match(html, /<a href="https:\/\/erc\.cehd\.tamu\.edu\/" target="_blank" rel="noopener" style="color:#535353; text-decoration:none;">Website<\/a><span style="padding:0 8px; color:#A7A7A7;">&#183;<\/span>/);
+  assert.match(html, /<a href="https:\/\/erc\.cehd\.tamu\.edu\/"[^>]*><img width="640" src="https:\/\/raw\.githubusercontent\.com\/kateb-123\/erc-content-desk\/main\/builder\/images\/newsletter-masthead\.png" alt="Education Research Center Newsletter"/);
+  assert.match(html, /background-color:#F6F6F6; padding:10px 16px 11px 16px; text-align:center;[^"]*font-size:13px;[^"]*color:#535353;"><a href="#research" style="color:#535353; text-decoration:none;">Research<\/a>&nbsp;<span style="padding:0 4px; color:#A7A7A7;">&#183;<\/span>&nbsp;<a href="#spotlight"/);
+  assert.ok(!html.includes('In this issue'));
+});
+
+test('the contents strip stays on one line when it fits and splits into two balanced lines when it does not', () => {
+  const six = [['research', 'Research'], ['spotlight', 'Spotlight'], ['events', 'Events'], ['opportunities', 'Opportunities'], ['policy', 'Policy Research'], ['news', 'Headlines']]
+    .map(([anchor, short]) => ({ anchor, short }));
+  assert.ok(!navLinks(six).includes('<br>'), 'six labels fit');
+  const seven = [...six, { anchor: 'misc', short: 'Miscellaneous' }];
+  assert.ok(!navLinks(seven).includes('<br>'), 'all seven sections still fit by the estimate (593px)');
+  const eight = [...seven, { anchor: 'survey', short: 'Reader Survey' }];
+  const out = navLinks(eight);
+  assert.equal(count(out, '<br>'), 1);
+  const [a, b] = out.split('<br>');
+  assert.ok(a.endsWith('</a>') && b.startsWith('<a '), 'no line starts or ends on a separator');
+  assert.match(a, /Opportunities<\/a>$/, 'four on the first line, four on the second: the balanced split');
+  assert.ok(!/Policy Research/.test(out), 'a label never breaks inside');
+  assert.match(out, /Policy&nbsp;Research/);
+});
+
+test('issue.layout.nav=false drops the contents strip; the export keeps jump links and the editable preview draws words', () => {
   const issue = fullIssue();
-  issue.sections.research.items[0].fields.summary = 'First paragraph.\n\nSecond paragraph.';
+  assert.match(renderNewsletter(issue), /href="#events"/);
+  const editable = renderNewsletter(issue, { editable: true });
+  assert.ok(!/href="#events"/.test(editable));
+  assert.match(editable, /<span style="color:#535353;">Events<\/span>/);
+  issue.layout = { nav: false };
   const html = renderNewsletter(issue);
-  assert.match(html, /<p style="margin:0 0 8px; line-height: 1\.5;[^"]*">First paragraph\.<\/p>\s*<p style="margin:0; line-height: 1\.5;[^"]*">Second paragraph\.<\/p>/);
+  assert.ok(!/href="#events"/.test(html) && !/background-color:#F6F6F6; padding:10px 16px/.test(html));
+});
+
+test('the intro is its own panel; a last paragraph starting "Want to feature" becomes the standing line under a hairline', () => {
+  const issue = fullIssue();
+  issue.intro = 'Howdy all! First.\n\nSecond **bold** here.\n\nWant to feature something? [Let us know](https://x.org/share)!';
+  const html = renderNewsletter(issue);
+  assert.match(html, /padding:26px 48px 0 24px;"><p style="margin:0 0 14px; font-family:'Trebuchet MS'[^"]*font-size:15px; line-height:1.55; color:#202020;">Howdy all! First\.<\/p><p style="margin:0 0 0px;[^"]*">Second <strong>bold<\/strong> here\.<\/p><div style="border-top:1px solid #EAEAEA; margin:18px 0 0;[^"]*">&nbsp;<\/div><p style="margin:14px 0 0;[^"]*color:#535353;">Want to feature something\? <a href="https:\/\/x\.org\/share"[^>]*>Let us know<\/a>!<\/p>/);
+  const ed = renderNewsletter(issue, { editable: true });
+  assert.equal(count(ed, 'data-edit-field="intro"'), 3, 'every intro paragraph, the standing line included, carries the hook');
+  issue.intro = '';
+  assert.equal(panels(renderNewsletter(issue)), 9, 'no intro, no intro panel');
+});
+
+test('a hidden preheader follows <body>, built from the intro\'s first paragraph as plain words', () => {
+  const issue = fullIssue();
+  issue.intro = 'Welcome back, **everyone** — see [the site](https://x.org).\n\nSecond paragraph.';
+  const html = renderNewsletter(issue);
+  const pre = html.match(/<body[^>]*>\s*<div style="display:none;[^"]*mso-hide:all;">([\s\S]*?)<\/div>/);
+  assert.ok(pre, 'preheader div sits right after <body>');
+  assert.ok(pre[1].startsWith('Welcome back, everyone — see the site.'), pre[1].slice(0, 80));
+  assert.ok(!pre[1].includes('Second paragraph'));
+});
+
+// ─── Items ───────────────────────────────────────────────────────────────────
+
+test('an item is its title (the dark link, no underline), a gray meta line and the description', () => {
+  const issue = createEmptyIssue();
+  issue.sections.spotlight.enabled = true;
+  issue.sections.spotlight.items = [{ id: 's1', group: 'events', fields: { title: 'A Talk', url: 'https://x.org/t', date: 'Oct 8, 2026', time: '11:30 AM', location: 'Rudder 707', summary: 'First.\n\nSecond.' } }];
+  const html = renderNewsletter(issue);
+  assert.match(html, /<tr><td style="padding:10px 48px 0 40px;"><p style="margin:0 0 4px; font-family:'Trebuchet MS'[^"]*font-size:16px; line-height:1.3; font-weight:700; color:#202020;"><a href="https:\/\/x\.org\/t" target="_blank" rel="noopener" style="color:#202020; text-decoration:none;">A Talk<\/a><\/p><p style="margin:0 0 8px;[^"]*font-size:14px; line-height:1.4; color:#535353;">Oct 8, 2026 \| 11:30 AM \| Rudder 707<\/p><p style="margin:0 0 8px;[^"]*font-size:14px; line-height:1.5; color:#3E3E3E;">First\.<\/p><p style="margin:0 0 0px;[^"]*">Second\.<\/p>/);
+});
+
+test('item spacing: 10px for the first in a group, 16px between two without descriptions, 22px otherwise; brief event groups get hairlines', () => {
+  const issue = createEmptyIssue();
+  issue.sections.opportunities.enabled = true;
+  issue.sections.opportunities.items = [
+    { id: 'o1', group: 'funding', fields: { title: 'One', meta: 'Deadline: soon' } },
+    { id: 'o2', group: 'funding', fields: { title: 'Two', meta: 'Deadline: later' } },
+  ];
+  issue.sections.spotlight.enabled = true;
+  issue.sections.spotlight.items = [
+    { id: 's1', group: 'events', fields: { title: 'Talk A', summary: 'Words.' } },
+    { id: 's2', group: 'events', fields: { title: 'Talk B', summary: 'Words.' } },
+  ];
+  issue.sections.events.enabled = true;
+  issue.sections.events.items = [
+    { id: 'e1', group: 'tamu', fields: { title: 'Ev A', date: 'May 1' } },
+    { id: 'e2', group: 'tamu', fields: { title: 'Ev B', date: 'May 2' } },
+  ];
+  const html = renderNewsletter(issue);
+  assert.match(html, /padding:16px 48px 0 40px;"><p[^>]*><span[^>]*>Two<\/span>/, 'tight');
+  assert.match(html, /padding:22px 48px 0 40px;"><p[^>]*><a[^>]*>Talk B<\/a>|padding:22px 48px 0 40px;"><p[^>]*><span[^>]*>Talk B<\/span>/, 'with descriptions');
+  assert.match(html, /<tr><td style="padding:12px 48px 0 40px;"><div style="border-top:1px solid #EAEAEA;[^"]*">&nbsp;<\/div><\/td><\/tr>\n<tr><td style="padding:12px 48px 0 40px;"><p[^>]*><span[^>]*>Ev B<\/span>/, 'hairline then 12px');
+});
+
+test('descriptions show by default in Research and Spotlight, only for Featured Events, never for Opportunities', () => {
+  const issue = createEmptyIssue();
+  const item = (id, group, extra = {}) => ({ id, group, fields: { title: id, summary: `About ${id}.`, ...extra } });
+  issue.sections.research.enabled = true; issue.sections.research.items = [item('r1', 'brief')];
+  issue.sections.spotlight.enabled = true; issue.sections.spotlight.items = [item('s1', 'programs')];
+  issue.sections.events.enabled = true; issue.sections.events.items = [item('f1', 'featured'), item('e1', 'tamu'), item('e2', 'offcampus')];
+  issue.sections.opportunities.enabled = true; issue.sections.opportunities.items = [item('o1', 'funding', { meta: 'Deadline: soon' })];
+  const html = renderNewsletter(issue);
+  for (const id of ['r1', 's1', 'f1']) assert.ok(html.includes(`About ${id}.`), `${id} shows its description`);
+  for (const id of ['e1', 'e2', 'o1']) assert.ok(!html.includes(`About ${id}.`), `${id} hides its description`);
+});
+
+test('fields.showSummary overrides the group default both ways', () => {
+  const issue = createEmptyIssue();
+  issue.sections.events.enabled = true;
+  issue.sections.events.items = [{ id: 'e1', group: 'tamu', fields: { title: 'Math', summary: 'Shown on request.', showSummary: true } }];
+  issue.sections.research.enabled = true;
+  issue.sections.research.items = [{ id: 'r1', group: 'brief', fields: { title: 'Brief', summary: 'Hidden on request.', showSummary: false } }];
+  const html = renderNewsletter(issue);
+  assert.ok(html.includes('Shown on request.'));
+  assert.ok(!html.includes('Hidden on request.'));
+});
+
+test('a featured event pins under Featured Events with its description, whatever group it was filed in', () => {
+  const issue = fullIssue();
+  const ev = issue.sections.events.items[1];
+  ev.featured = true;
+  ev.fields.summary = 'The one event that keeps its description.';
+  const html = renderNewsletter(issue);
+  const iFeat = html.indexOf('>Featured Events</h3>');
+  const iTitle = html.indexOf(ev.fields.title);
+  const iNext = html.indexOf('>Texas A&amp;M</h3>');
+  assert.ok(iFeat > 0 && iFeat < iTitle && iTitle < iNext, 'under the Featured label, before the next group');
+  assert.ok(html.includes('The one event that keeps its description.'));
+});
+
+test('research: the author line is the meta line, and an unknown group folds into Research Brief before Report', () => {
+  const issue = createEmptyIssue();
+  issue.sections.research.enabled = true;
+  issue.sections.research.items = [
+    { id: 'itm_2', group: 'report', fields: { title: 'R-One', authors: 'A & B', summary: 'y' } },
+    { id: 'itm_x', group: '', fields: { title: 'Untagged', summary: 's' } },
+  ];
+  const html = renderNewsletter(issue);
+  const iBrief = html.indexOf('>Research Brief</h3>'), iReport = html.indexOf('>Report</h3>');
+  assert.ok(iBrief > 0 && iBrief < html.indexOf('Untagged') && html.indexOf('Untagged') < iReport && iReport < html.indexOf('R-One'));
+  assert.match(html, /R-One<\/a><\/p>|R-One<\/span><\/p>/);
+  assert.match(html, /<p style="margin:0 0 8px;[^"]*color:#535353;">A &amp; B<\/p>/);
+});
+
+test('the Miscellaneous section renders its one list with no group label', () => {
+  const issue = createEmptyIssue();
+  issue.sections.misc.items.push({ id: 'm1', group: 'misc', fields: { title: 'A one-off thing', url: 'https://x.org/misc' } });
+  issue.sections.misc.enabled = true;
+  const html = renderNewsletter(issue);
+  assert.match(html, />Miscellaneous<\/h2>/);
+  assert.ok(!/<h3/.test(body(html)), 'no group label');
+  assert.match(html, /<tr><td style="padding:18px 48px 0 40px;"><table role="presentation"[^>]*><tbody><tr><td style="vertical-align:top; padding:0px 0 0px 0;"><p/);
+  assert.ok(!/View more/.test(html), 'no tail link');
+});
+
+// ─── Digests ─────────────────────────────────────────────────────────────────
+
+test('digests are one-line entries divided by hairlines, no bullets; headlines add the source in gray', () => {
+  const html = renderNewsletter(issueOf('sample-real.json'));
+  assert.ok(!/&#8226;/.test(html), 'no bullet glyphs');
+  assert.match(html, /<tr><td style="vertical-align:top; padding:9px 0 9px 0; border-top:1px solid #EAEAEA;"><p style="margin:0 0 0px; font-family:'Trebuchet MS'[^"]*font-size:14px; line-height:1.45; color:#202020;">/);
+  assert.match(html, /<\/a> <span style="color:#626262;">\([^<]+\)<\/span>/);
+  assert.match(renderNewsletter(fullIssue()), /\(Ed Week\)<\/span>/);
+  assert.match(html, /padding:10px 48px 0 40px;"><table/, 'the list sits 10px under its label');
+});
+
+test('"View more »" ends Opportunities, Policy Research and Headlines and points at the Policy Exchange; a stray per-issue URL is ignored', () => {
+  const issue = fullIssue();
+  issue.sections.policy.seeMoreUrl = 'https://example.org/policy';
+  const html = renderNewsletter(issue);
+  assert.ok(!/href="#"/.test(html));
+  assert.equal(count(html, `<a href="${POLICY_EXCHANGE_URL}" target="_blank" rel="noopener" style="font-family:'Trebuchet MS','Segoe UI',Tahoma,sans-serif; font-size:14px; line-height:1.4; font-weight:700; color:#500000; text-decoration:none;">View more &#187;</a>`), 3);
+  assert.ok(!html.includes('https://example.org/policy'));
+  assert.ok(!/ERC website|&#8594;/.test(html));
+});
+
+// ─── Pictures ────────────────────────────────────────────────────────────────
+
+const PHOTO = 'https://raw.githubusercontent.com/erc/media/main/photo.jpg';
+function mediaIssue() {
+  const issue = createEmptyIssue();
+  issue.sections.research.enabled = true;
+  issue.sections.research.items = [
+    { id: 'r1', group: 'brief', fields: { title: 'First blurb', authors: 'A. Author', summary: 'A summary.', image: PHOTO } },
+    { id: 'r2', group: 'brief', fields: { title: 'Brief sans summary', authors: 'A. Author', image: PHOTO } },
+  ];
+  issue.sections.spotlight.enabled = true;
+  issue.sections.spotlight.items = [
+    { id: 's1', group: 'events', fields: { title: 'ERC EdTalk: Dr. Vale', date: 'Oct 8', summary: 'A talk.', image: PHOTO, url: 'https://x.org/edtalk' } },
+    { id: 's2', group: 'events', fields: { title: 'Brown Bag', date: 'Oct 9', summary: 'A lunch.', image: PHOTO } },
+  ];
+  issue.sections.events.enabled = true;
+  issue.sections.events.items = [
+    { id: 'e1', group: 'tamu', fields: { title: 'Regular event', date: 'May 2', summary: 'Hidden by default.', image: PHOTO } },
+  ];
+  return issue;
+}
+const pictures = html => [...html.matchAll(/<img src="https:\/\/raw\.githubusercontent\.com[^"]*photo\.jpg" alt="Picture: ([^"]*)" width="(\d+)"/g)].map(m => [m[1], Number(m[2])]);
+
+test('a stamp is 96px wide under the title and meta, beside the description, in a 112px column; it links to the item', () => {
+  const html = renderNewsletter(mediaIssue());
+  const i = html.indexOf('First blurb');
+  const seg = html.slice(i, html.indexOf('Brief sans summary'));
+  assert.match(seg, /A\. Author<\/p><table role="presentation"[^>]*width="100%"[^>]*><tbody><tr><td valign="top" width="112" style="width:112px; vertical-align:top; padding:4px 0 0 0;"><a href="https:\/\/raw\.githubusercontent\.com\/erc\/media\/main\/photo\.jpg" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="[^"]*photo\.jpg" alt="Picture: First blurb" width="96" style="width:96px; max-width:96px; height:auto; display:block; border:0;"><\/a><\/td><td valign="top" style="vertical-align:top;"><p[^>]*>A summary\.<\/p>/);
+  const brownBag = html.slice(html.indexOf('Brown Bag'));
+  assert.match(brownBag, /width="96"/, 'other spotlight events get the stamp');
+});
+
+test('an "ERC EdTalk" item gets a 160px headshot beside the title, meta and description, linked to the item URL', () => {
+  const html = renderNewsletter(mediaIssue());
+  const i = html.indexOf('<td valign="top" width="176"');
+  assert.ok(i > 0, 'a 176px column');
+  const seg = html.slice(i, html.indexOf('Brown Bag'));
+  assert.match(seg, /padding:3px 0 0 0;"><a href="https:\/\/x\.org\/edtalk"[^>]*><img src="[^"]*photo\.jpg" alt="Picture: ERC EdTalk: Dr\. Vale" width="160"/);
+  assert.match(seg, /<td valign="top" style="vertical-align:top;"><p[^>]*><a[^>]*>ERC EdTalk: Dr\. Vale<\/a><\/p><p[^>]*>Oct 8<\/p><p[^>]*>A talk\.<\/p>/);
+});
+
+test('fields.pictureStyle picks the layout: headshot on any item, stamp on an EdTalk, none keeps the picture out', () => {
+  const issue = mediaIssue();
+  issue.sections.research.items[0].fields.pictureStyle = 'headshot';
+  issue.sections.spotlight.items[0].fields.pictureStyle = 'stamp';
+  issue.sections.spotlight.items[1].fields.pictureStyle = 'none';
+  const html = renderNewsletter(issue);
+  const got = Object.fromEntries(pictures(html));
+  assert.equal(got['First blurb'], 160);
+  assert.equal(got['ERC EdTalk: Dr. Vale'], 96);
+  assert.ok(!('Brown Bag' in got));
+});
+
+test('no description, no picture: items without a summary, or with it hidden, render none', () => {
+  const html = renderNewsletter(mediaIssue());
+  const names = pictures(html).map(([n]) => n);
+  assert.deepEqual(names, ['First blurb', 'ERC EdTalk: Dr. Vale', 'Brown Bag']);
+  const issue = mediaIssue();
+  issue.sections.research.items[0].fields.showSummary = false;
+  assert.ok(!pictures(renderNewsletter(issue)).some(([n]) => n === 'First blurb'));
+});
+
+test('an unsafe picture URL renders no picture and leaks no scheme', () => {
+  const issue = mediaIssue();
+  issue.sections.research.items[0].fields.image = 'javascript:alert(1)';
+  const html = renderNewsletter(issue);
+  assert.ok(!/javascript:/.test(html));
+  assert.ok(!pictures(html).some(([n]) => n === 'First blurb'));
+});
+
+// ─── The callout ─────────────────────────────────────────────────────────────
+
+const CALLOUT = 'Submit your research for an ERC Research Brief';
+test('the callout is a maroon panel between Research and Spotlight by default, with the white button', () => {
+  const html = renderNewsletter(fullIssue());
+  const i = html.indexOf(CALLOUT);
+  assert.ok(i > 0);
+  assert.ok(html.lastIndexOf('>ERC Research</h2>', i) > 0 && html.indexOf('>ERC Spotlight</h2>', i) > i);
+  const panel = html.slice(html.lastIndexOf('<table align="center" width="640"', i), i);
+  assert.match(panel, /background-color:#ffffff;"><tbody>\n<tr><td style="background-color:#500000; padding:26px 48px 28px 24px;"><p style="[^"]*font-size:18px;[^"]*color:#ffffff;">$/);
+  assert.match(html.slice(i), /^[^<]*<\/p><p style="margin:0 0 18px;[^"]*color:#E9E4DC;">Working on research[^<]*<\/p><table[^>]*><tbody><tr><td style="background-color:#ffffff; padding:11px 20px 12px 20px;"><a href="https:\/\/forms\.office\.com[^"]*"[^>]*text-transform:uppercase; color:#500000;[^"]*">Submit your research &#187;<\/a>/);
+  assert.equal(count(html, 'height:12px; font-size:1px; line-height:12px;'), 9, 'the panel adds a gap like any other');
+});
+
+test('issue.layout.callout gray and dotted sit inside the Research panel before its closing spacer; none removes it; the old showSubmit=false still means none', () => {
+  const issue = fullIssue();
+  issue.layout = { callout: 'gray' };
+  let html = renderNewsletter(issue);
+  assert.match(html, /<tr><td style="padding:28px 24px 0 24px;"><table[^>]*><tbody><tr><td style="background-color:#F6F6F6; padding:22px 24px 24px 24px;"><p style="margin:0 0 8px;[^"]*color:#202020;">Submit your research[\s\S]*?<td style="background-color:#500000; padding:11px 20px 12px 20px;"><a[^>]*color:#ffffff;[\s\S]*?<\/td><\/tr>\n<tr><td style="height:26px;[^"]*">&nbsp;<\/td><\/tr>\n<\/tbody><\/table>/);
+  assert.equal(panels(html), 9, 'the callout no longer stands in its own panel');
+  issue.layout = { callout: 'dotted' };
+  html = renderNewsletter(issue);
+  assert.match(html, /border:2px dotted #732F2F; padding:20px 22px 22px 22px;"><p style="margin:0 0 8px;[^"]*color:#500000;">Submit your research/);
+  issue.layout = { callout: 'none' };
+  assert.ok(!renderNewsletter(issue).includes(CALLOUT));
+  delete issue.layout;
+  issue.sections.research.showSubmit = false;
+  assert.ok(!renderNewsletter(issue).includes(CALLOUT));
+  assert.deepEqual(layoutOf(issue), { callout: 'none', nav: true });
+  assert.deepEqual(layoutOf({ layout: { callout: 'weird', nav: 0 } }), { callout: 'maroon', nav: true });
+});
+
+test('no Research section, no callout', () => {
+  const html = renderNewsletter(sparseIssue());
+  assert.ok(!html.includes(CALLOUT));
+});
+
+// ─── Footer and document ─────────────────────────────────────────────────────
+
+test('the footer: lockup, hairline, white text links with cream dots, the date at right; no icons', () => {
+  const html = renderNewsletter(fullIssue());
+  assert.match(html, /<tr><td style="background-color:#500000; padding:28px 24px 20px 24px;"><img width="190" height="50" src="https:\/\/i\.ibb\.co\/JjQWyZq3\/ERC-Horizontal-White-Text-narrow\.png" alt="Texas A&amp;M University Education Research Center"/);
+  assert.match(html, /<div style="border-top:1px solid #732F2F;[^"]*">&nbsp;<\/div><\/td><\/tr>/);
+  assert.match(html, /font-weight:700; color:#ffffff;"><a href="https:\/\/erc\.cehd\.tamu\.edu\/"[^>]*>Website<\/a> <span style="padding:0 6px; font-weight:400; color:#D6D3C4;">&#183;<\/span> <a href="mailto:erc@tamu\.edu"[^>]*>Email<\/a> <span[^>]*>&#183;<\/span> <a href="https:\/\/erc-policy-exchange\.vercel\.app\/newsletter\/"[^>]*>Join&nbsp;the&nbsp;mailing&nbsp;list<\/a><\/td><td align="right" style="text-align:right;[^"]*font-size:13px;[^"]*color:#D6D3C4; white-space:nowrap;">June 16, 2026<\/td>/);
+  assert.ok(!/<svg/.test(html));
+  assert.equal(count(html, '>Join the mailing list</a>'), 1, 'the header has the plain one; the footer keeps its words together');
+});
+
+test('document declares its language and a doctype, pins its colours for dark mode, and every new-tab link is noopener', () => {
+  const html = renderNewsletter(fullIssue());
+  assert.ok(html.startsWith('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"'));
+  assert.match(html, /<html lang="en"/);
+  assert.match(html, /<title>ERC Newsletter \| June 16, 2026<\/title>/);
+  const style = html.slice(0, html.indexOf('</style>'));
+  assert.match(style, /\[data-ogsc\] \[style\*="background-color:#ffffff"\] \{ background-color:#ffffff !important; \}/);
+  assert.match(style, /@media \(prefers-color-scheme: dark\)/);
+  assert.match(style, /\[style\*=" color:#202020"\] \{ color:#202020 !important; \}/);
+  assert.equal(count(html, 'target="_blank"'), count(html, 'target="_blank" rel="noopener"'));
+  assert.ok(!/rgb\(/.test(html), 'hex throughout, so the guards match');
+});
+
+test('all user text is escaped (no raw angle brackets injected)', () => {
+  const issue = fullIssue();
+  issue.sections.headlines.items[0].fields.title = 'A < B & C';
+  const html = renderNewsletter(issue);
+  assert.match(html, /A &lt; B &amp; C/);
+});
+
+test('export output has no edit hooks; the editable preview hooks title, meta, description, authors, image and intro', () => {
+  const issue = mediaIssue();
+  issue.intro = 'Hello.';
+  issue.sections.opportunities.enabled = true;
+  issue.sections.opportunities.items = [{ id: 'o1', group: 'funding', fields: { title: 'Grant', meta: 'Deadline: soon' } }];
+  assert.ok(!/data-edit-/.test(renderNewsletter(issue)));
+  const ed = renderNewsletter(issue, { editable: true });
+  for (const f of ['title', 'summary', 'authors', 'image', 'intro', 'meta', 'date']) assert.match(ed, new RegExp(`data-edit-field="${f}"`), f);
+  assert.match(ed, /<img [^>]*data-edit-section="research" data-edit-item="r1" data-edit-field="image"/);
+  assert.match(ed, /<span data-edit-section="spotlight" data-edit-item="s1" data-edit-field="date">Oct 8<\/span>/);
+});
+
+// ─── Prose and links ─────────────────────────────────────────────────────────
+
+test('renderProse renders bold and italic, escaping the rest, with no hooks', () => {
+  const html = renderProse('A **bold** and *italic* & <x>.');
+  assert.match(html, /<strong>bold<\/strong>/);
+  assert.match(html, /<em>italic<\/em>/);
+  assert.match(html, /&amp;/);
+  assert.match(html, /&lt;x&gt;/);
+  assert.doesNotMatch(html, /data-edit/);
+});
+
+test('renderProse links are maroon, bold and underlined; the rest is escaped', () => {
+  const html = renderProse('See [Cape Verde](https://x.org/cv) & <b>more</b>.');
+  assert.match(html, /<a href="https:\/\/x\.org\/cv" target="_blank" rel="noopener" style="color:#500000; font-weight:700; text-decoration:underline;">Cape Verde<\/a>/);
+  assert.match(html, /&amp;/);
+  assert.match(html, /&lt;b&gt;/);
+});
+
+test('renderProse keeps trailing parenthesis in a link href (e.g. Wikipedia links)', () => {
+  const html = renderProse('See [Cape Verde](https://en.wikipedia.org/wiki/Cape_Verde_(country)) today.');
+  assert.ok(html.includes('href="https://en.wikipedia.org/wiki/Cape_Verde_(country)"'));
+  assert.ok(!html.includes('</a>)'));
+});
+
+test('renderProse only emits an anchor for safe URL schemes; unsafe schemes render as plain text', () => {
+  const html = renderProse('Click [here](javascript:alert(1)) now');
+  assert.ok(!html.includes('<a ') && !html.includes('javascript:') && html.includes('here'));
 });
 
 test('emphasis that spans a markdown link renders as one bold run', () => {
   const html = renderProse('**see [x](https://a.b) now** and *[y](https://c.d)*');
   assert.match(html, /<strong>see <a href="https:\/\/a\.b"[^>]*>x<\/a> now<\/strong>/);
   assert.match(html, /<em><a href="https:\/\/c\.d"[^>]*>y<\/a><\/em>/);
-  assert.ok(!/\*/.test(html), 'no stray asterisks');
+  assert.ok(!/\*/.test(html));
 });
 
-// ─── Link hygiene: scheme-less URLs and the export check ─────────────────────
-
-test('a URL typed without a scheme is linked as https', () => {
+test('a URL typed without a scheme is linked as https; a word or an unsafe scheme is no link', () => {
   const issue = createEmptyIssue();
   issue.sections.research.enabled = true;
   issue.sections.research.items = [
@@ -455,88 +448,9 @@ test('a URL typed without a scheme is linked as https', () => {
   assert.match(html, /<span[^>]*>Word<\/span>/);
 });
 
-// ─── Spacing and measure (Kate, 2026-09-03: items 1 and 2 of the open list) ──
-test('items in a group sit closer together than the next group label', () => {
-  const html = renderNewsletter(issueOf('sample-real.json')); // several items per group
-  assert.ok(!/padding: 24px 24px 0 24px;/.test(html), 'old 24px eyebrow gap gone');
-  assert.ok((html.match(/padding: 32px 24px 0 24px;/g) || []).length >= 2, 'later group labels sit 32px below the last item');
-  assert.match(html, /padding: 18px 24px 0 24px;/, 'first label under a tab keeps 18px');
-  const dividers = html.match(/<td style="padding: \d+px 48px 0 40px;"><div style="border-top/g) || [];
-  assert.ok(dividers.length >= 3);
-  for (const d of dividers) assert.match(d, /padding: 12px 48px/, d);
-  assert.ok(!/padding: 1[46]px 48px 0 40px;">\n<p/.test(html), 'items after a divider start 12px below it');
-});
-
-test('item text and the intro end 48px from the right edge of the 640px sheet', () => {
-  const issue = fullIssue();
-  issue.sections.events.items[0].group = 'featured'; // so the featured-events rule renders
-  const html = renderNewsletter(issue);
-  assert.ok(!/padding: \d+px (24|80)px 0 40px;/.test(html), 'no item cell still uses the old right padding');
-  assert.ok((html.match(/padding: \d+px 48px 0 40px;/g) || []).length >= 8, 'item cells use the 48px right padding');
-  assert.match(html, /padding: 24px 48px 30px 24px;/, 'intro cell too');
-  assert.match(html, /padding: 16px 48px 0 24px;/, 'the featured-events rule ends at the same edge');
-});
-
-test('the masthead is served from the desk repo; a stray issue.headerImageUrl is ignored', () => {
-  const html = renderNewsletter(fullIssue());
-  assert.ok(html.includes('src="https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/newsletter-masthead.png"'));
-  assert.ok(!html.includes('i.ibb.co/tPqcyQw2'));
-  const withStray = renderNewsletter({ ...fullIssue(), headerImageUrl: 'https://example.org/banner.png' });
-  assert.ok(!withStray.includes('src="https://example.org/banner.png"'), 'the per-issue override no longer takes effect');
-  assert.ok(withStray.includes('src="https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/newsletter-masthead.png"'));
-});
-
-// ─── Sep 8 amendments (Kate): no stamp border; EdTalk headshots beside the title ──
-const EDTALK_BLURB = 'Join us for an ERC EdTalk with Dr. Melanie Kinskey, "Supporting Teachers to Integrate Socioscientific Issues in Elementary Science."\n\nPlease RSVP soon so we can plan seating and catering. The form also lets you join our listserv and, for hybrid events, indicate that you will attend via Zoom; we will send the link to those who select it.';
-function edtalkIssue(summary = EDTALK_BLURB, title = 'ERC EdTalk with Dr. Melanie Kinskey') {
-  const issue = createEmptyIssue();
-  issue.sections.spotlight.enabled = true;
-  issue.sections.spotlight.items = [
-    { id: 's1', group: 'events', fields: { title, date: 'Sep 11, 2026', time: '11:30am', location: 'Rudder 401', summary, image: FLYER } },
-  ];
-  return issue;
-}
-const widthOf = html => { const m = html.match(/flyer\.png" alt="[^"]*" width="(\d+)"/); return m ? Number(m[1]) : null; };
-const rowOf = html => { const i = html.indexOf('<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"'); return i < 0 ? '' : html.slice(i, html.indexOf('</table>', i)); };
-
-test('an EdTalk headshot sits beside the title as well as the text, up to 160px wide', () => {
-  const html = renderNewsletter(edtalkIssue());
-  const stamp = html.indexOf(`<img src="${FLYER}`);
-  const title = html.indexOf('ERC EdTalk with Dr. Melanie Kinskey');
-  assert.ok(stamp > 0 && stamp < title, 'picture first, then the title inside the text cell');
-  assert.match(rowOf(html), /ERC EdTalk with Dr\. Melanie Kinskey/, 'the title lives in the two-cell row');
-  assert.equal(widthOf(html), 160, 'the Kinskey text is tall enough for the full 160');
-  assert.match(html, /<td valign="top" width="174" style="width:174px;/, 'cell = 160 + 14, no border to count');
-});
-
-test('an EdTalk with less text gets a smaller headshot; with no blurb, none at all', () => {
-  const w = widthOf(renderNewsletter(edtalkIssue('One sentence about the talk.')));
-  assert.ok(w >= 40 && w < 160, `title + date line + one line of blurb: a small headshot, got ${w}`);
-  const none = renderNewsletter(edtalkIssue(''));
-  assert.equal(stampPositions(none).length, 0, 'no blurb, no picture (the Sep 3 rule stands)');
-  assert.match(none, /ERC EdTalk with Dr\. Melanie Kinskey/);
-});
-
-test('other spotlight events keep the title above the picture and the 96px ceiling', () => {
-  const html = renderNewsletter(edtalkIssue(EDTALK_BLURB, 'Brown Bag with Dr. Melanie Kinskey'));
-  const stamp = html.indexOf(`<img src="${FLYER}`);
-  const title = html.indexOf('Brown Bag with Dr. Melanie Kinskey');
-  assert.ok(title > 0 && title < stamp, 'title first, then the picture');
-  assert.equal(widthOf(html), 96);
-});
-
-test('an editable EdTalk render keeps the title and picture hooks inside the row', () => {
-  const html = renderNewsletter(edtalkIssue(), { editable: true });
-  assert.match(rowOf(html), /<img [^>]*data-edit-field="image"/);
-  assert.match(rowOf(html), /data-edit-field="title"/);
-});
-
-test('the editable preview draws the jump links without an href, so nothing looks clickable that goes nowhere (f18)', () => {
-  const issue = createEmptyIssue();
-  issue.sections.events.items.push({ id: 'e1', group: 'tamu', fields: { title: 'A', url: 'https://x.org/a' } });
-  issue.sections.events.enabled = true;
-  const editable = renderNewsletter(issue, { editable: true });
-  assert.ok(!/href="#events"/.test(editable), 'no jump href in the editable preview');
-  assert.match(editable, />Events<\/span>/, 'the nav word still shows');
-  assert.match(renderNewsletter(issue), /href="#events"/, 'the export keeps its jump links');
+test('the standing links are the ones the handoff names', () => {
+  assert.equal(URLS.site, 'https://erc.cehd.tamu.edu/');
+  assert.equal(URLS.join, 'https://erc-policy-exchange.vercel.app/newsletter/');
+  assert.equal(POLICY_EXCHANGE_URL, 'https://erc-policy-exchange.vercel.app/');
+  assert.equal(SECTION_REGISTRY.length, 7);
 });

@@ -1,21 +1,74 @@
 /**
- * template.js: HTML renderer for the ERC Newsletter.
- * Table-and-inline-style email markup, so it survives Outlook. The maroon
- * lives here and nowhere in-app.
+ * template.js: HTML renderer for the ERC Newsletter, the Stacked Blocks look
+ * (Claude Design handoff, Oct 2026). Every part of the email is its own 640px
+ * white panel on the gray page: header, intro, one per section, the maroon
+ * callout, the footer. Table-and-inline-style email markup, so it survives
+ * Outlook. The maroon lives here and nowhere in-app.
+ *
+ * Per-issue options the builder writes:
+ *   issue.layout.callout   'maroon' | 'gray' | 'dotted' | 'none'   (default maroon)
+ *   issue.layout.nav       false hides the contents strip             (default on)
+ *   fields.showSummary     true | false overrides the group's description default
+ *   fields.pictureStyle    'stamp' | 'headshot' | 'none'              (default by title)
  */
 
 import { SECTION_REGISTRY } from './model.js';
 
-// ─── Escape helper ─────────────────────────────────────────────────────────────
+// ─── Tokens (Aggie UX) ───────────────────────────────────────────────────────
+
+const MASTHEAD = 'https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/newsletter-masthead.png';
+const LOCKUP = 'https://i.ibb.co/JjQWyZq3/ERC-Horizontal-White-Text-narrow.png';
+export const URLS = {
+  site: 'https://erc.cehd.tamu.edu/',
+  join: 'https://erc-policy-exchange.vercel.app/newsletter/',
+  email: 'mailto:erc@tamu.edu',
+  submit: 'https://forms.office.com/Pages/ResponsePage.aspx?id=44HzaNpGuUe6V28yK48NoV5eaARTlZdIspuMdxu3p_lUQkwwS0pRMzgzTlE2MktPRjZCRDcwUDgxRS4u',
+};
+
+const C = {
+  maroon: '#500000', maroonDark: '#3C0000', maroonLight: '#732F2F', white: '#ffffff',
+  g100: '#F6F6F6', g200: '#EAEAEA', g300: '#D1D1D1', g400: '#A7A7A7', g600: '#626262', g700: '#535353', g800: '#3E3E3E', g900: '#202020',
+  cream: '#D6D3C4', ivory: '#E9E4DC',
+};
+
+const SANS = "'Trebuchet MS','Segoe UI',Tahoma,sans-serif";
+const LABEL = 'Verdana,Geneva,Tahoma,sans-serif';
+
+const T = {
+  title: `font-family:${SANS}; font-size:16px; line-height:1.3; font-weight:700;`,
+  meta: `font-family:${SANS}; font-size:14px; line-height:1.4; color:${C.g700};`,
+  body: `font-family:${SANS}; font-size:14px; line-height:1.5; color:${C.g800};`,
+  digest: `font-family:${SANS}; font-size:14px; line-height:1.45; color:${C.g900};`,
+  label: `font-family:${LABEL}; font-size:12px; line-height:1.4; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:${C.maroonLight};`,
+  hair: `1px solid ${C.g200}`,
+  tail: `font-family:${SANS}; font-size:14px; line-height:1.4; font-weight:700; color:${C.maroon};`,
+};
+
+/** The option values the renderer understands; anything else falls to the default. */
+export const CALLOUT_STYLES = ['maroon', 'gray', 'dotted', 'none'];
+export const PICTURE_STYLES = ['stamp', 'headshot', 'none'];
+
+/** The email's heading, contents-strip label, and which groups show a description, per section. */
+const EMAIL = {
+  research:      { heading: 'ERC Research',                 short: 'Research',        summaryGroups: null },
+  spotlight:     { heading: 'ERC Spotlight',                short: 'Spotlight',       summaryGroups: null },
+  events:        { heading: 'Upcoming Events',              short: 'Events',          summaryGroups: ['featured'] },
+  opportunities: { heading: 'Opportunities',                short: 'Opportunities',   summaryGroups: [] },
+  policy:        { heading: 'New Education Policy Research', short: 'Policy Research', summaryGroups: null },
+  headlines:     { heading: 'Education Headlines',          short: 'Headlines',       summaryGroups: null },
+  misc:          { heading: 'Miscellaneous',                short: 'Miscellaneous',   summaryGroups: null },
+};
+const DIGEST_KINDS = new Set(['grouped-digest']);
+
+// ─── Text ────────────────────────────────────────────────────────────────────
+
 function esc(s) {
-  return String(s || '')
+  return String(s ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
-
-// ─── Prose helper ──────────────────────────────────────────────────────────────
 
 const SAFE_HREF_SCHEME = /^(https?:|mailto:|#|\/)/i;
 
@@ -38,15 +91,15 @@ function normalizeHref(url) {
   return SCHEME_LESS.test(trimmed) && !/^[a-z][a-z0-9+.-]*:/i.test(trimmed) ? `https://${trimmed}` : trimmed;
 }
 
-/**
- * Applies **bold** and *italic* to ALREADY-ESCAPED text. Run after esc() so the
- * markers (`*`) survive escaping and can't corrupt generated tag/attribute HTML.
- */
+/** Applies **bold** and *italic* to ALREADY-ESCAPED text. */
 function applyEmphasis(escaped) {
   return escaped
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
     .replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
 }
+
+/** Inline links in prose: maroon, bold, underlined (the system's link). */
+const LINK = `color:${C.maroon}; font-weight:700; text-decoration:underline;`;
 
 /**
  * Escapes all text, converting [label](href) markdown links into a maroon
@@ -54,8 +107,6 @@ function applyEmphasis(escaped) {
  */
 export function renderProse(text) {
   if (!text) return '';
-  // Swap links out for tokens, style the whole run, then put the anchors back,
-  // so **bold [across](url) a link** stays one bold run.
   const links = [];
   const tokenized = String(text).replace(MD_LINK, (m, label, href) => { links.push({ label, href }); return `\u0000${links.length - 1}\u0000`; });
   return applyEmphasis(esc(tokenized)).replace(/\u0000(\d+)\u0000/g, (m, i) => {
@@ -63,24 +114,17 @@ export function renderProse(text) {
     const inner = applyEmphasis(esc(label));
     const safe = safeItemHref(href);
     return safe
-      ? `<a href="${esc(safe)}" target="_blank" rel="noopener" style="color: #500000; text-decoration: underline;">${inner}</a>`
+      ? `<a href="${esc(safe)}" target="_blank" rel="noopener" style="${LINK}">${inner}</a>`
       : inner;
   });
 }
 
-/** A blurb as one or more paragraphs (blank line = paragraph break), in the body style. */
-function proseParas(text, attrs = '') {
-  const paras = String(text ?? '').split(/\n\s*\n+/).map(t => t.trim()).filter(Boolean);
-  return paras.map((t, i) => `<p style="margin:${i < paras.length - 1 ? '0 0 8px' : '0'}; line-height: 1.5; font-family: ${FONT_BODY}; font-size: 14px; color: #404040;"${attrs}>${renderProse(t)}</p>`).join('\n');
-}
+/** Markdown to plain words, for the hidden preheader. */
+const plain = (md) => String(md ?? '').replace(MD_LINK, '$1').replace(/\*\*?([^*]+)\*\*?/g, '$1').replace(/\s+/g, ' ').trim();
 
-// ─── Edit-hook helper ─────────────────────────────────────────────────────────
+const splitParas = (md) => String(md ?? '').split(/\n\s*\n+/).map((s) => s.trim()).filter(Boolean);
 
-/**
- * Returns data-edit-* attribute string when editable=true, else ''.
- * Omits data-edit-item when itemId is null/undefined (intro case).
- * All attribute VALUES are esc()'d.
- */
+/** Returns data-edit-* attribute string when editable=true, else ''. */
 function editAttrs(section, itemId, field, editable) {
   if (!editable) return '';
   const secAttr = ` data-edit-section="${esc(section)}"`;
@@ -89,118 +133,158 @@ function editAttrs(section, itemId, field, editable) {
   return secAttr + itemAttr + fieldAttr;
 }
 
-// ─── Item media: the stamp ───────────────────────────────────────────────────
-// Spec: docs/superpowers/specs/2026-09-02-newsletter-media-layout.md (Decision, as revised).
+// ─── Layout pieces ───────────────────────────────────────────────────────────
 
-/** The stamp: at most 96px wide, never taller than the text beside it. Pictures
- *  are photos, so a portrait headshot (4:5, 1.25× taller than wide) is the
- *  tallest shape assumed; wider photos come out shorter. Dropped below 40px.
- *  EdTalk headshots sit beside the title too and may reach 160px. No border
- *  on any stamp. */
-const STAMP = { max: 96, edtalkMax: 160, min: 40, gutter: 14, ratio: 1.25 };
-/** EdTalk items are recognised by their title ("ERC EdTalk with …"). */
-const isEdTalk = title => /\bEdTalks?\b/i.test(title || '');
-/** The item text column: 640px sheet, 40px indent, 48px right padding. */
-const ITEM_COLUMN = 640 - 40 - 48;
+const row = (inner, td = '') => `<tr><td style="${td}">${inner}</td></tr>`;
+const spacer = (h) => `<tr><td style="height:${h}px; font-size:1px; line-height:${h}px;">&nbsp;</td></tr>`;
+const tbl = (inner, w = '100%') => `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="${w}" style="width:${typeof w === 'number' ? w + 'px' : w}; border-collapse:collapse;"><tbody>${inner}</tbody></table>`;
+const rule = (border, pad = '0 24px') => row(`<div style="border-top:${border}; font-size:1px; line-height:1px;">&nbsp;</div>`, `padding:${pad};`);
+const twoCol = (left, right, leftW, top = 2) => tbl(`<tr><td valign="top" width="${leftW}" style="width:${leftW}px; vertical-align:top; padding:${top}px 0 0 0;">${left}</td><td valign="top" style="vertical-align:top;">${right}</td></tr>`);
+const p = (style, html, mb = 0, attrs = '') => `<p style="margin:0 0 ${mb}px; ${style}"${attrs}>${html}</p>`;
+const paras = (style, md, gap, attrs = '') => { const l = splitParas(md); return l.map((t, i) => p(style, renderProse(t), i < l.length - 1 ? gap : 0, attrs)).join(''); };
+const button = (label, href, bg, fg) => `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"><tbody><tr><td style="background-color:${bg}; padding:11px 20px 12px 20px;"><a href="${href}" target="_blank" rel="noopener" style="display:inline-block; font-family:${SANS}; font-size:14px; line-height:1.2; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; color:${fg}; text-decoration:none; white-space:nowrap;">${label}</a></td></tr></tbody></table>`;
 
-/** Estimated height (px) of the paragraphs beside a stamp: lines × line-height
- *  plus bottom margins, at the narrowest text column a stamp can leave. */
-function textHeight(rest, maxW = STAMP.max) {
-  const cpl = (ITEM_COLUMN - (maxW + STAMP.gutter)) / 6.3; // ~14px Trebuchet MS
-  let h = 0;
-  for (const m of rest.matchAll(/<p([^>]*)>([\s\S]*?)<\/p>/g)) {
-    const text = m[2].replace(/<[^>]+>/g, '').replace(/&[^;\s]+;/g, 'x');
-    const isTitle = /font-size: 16px/.test(m[1]); // bold 16px title: fewer characters per line
-    const lines = Math.max(1, Math.ceil(text.length / (isTitle ? cpl * 0.8 : cpl)));
-    const lineHeight = isTitle ? 20.8 : /line-height: 1\.5/.test(m[1]) ? 21 : 19.6;
-    const margin = Number((m[1].match(/margin:0 0 (\d+)px/) || [0, 0])[1]);
-    h += lines * lineHeight + margin;
-  }
-  return h;
-}
-
-/**
- * Sets an item's picture as a small "stamp" under the title, to the left of
- * the authors/meta and blurb: a two-cell table, the picture never cropped,
- * linking to the full-size picture. The stamp is sized from the text beside
- * it so it never stands taller than that text (96px at most, none below
- * 40px). Items without a blurb, without a picture, or with an unsafe URL
- * render title and text exactly as before. Pictures are photos, never flyers.
- * With `titleInline` (EdTalks) the title moves into the text cell, so the
- * headshot stands beside title, date line and blurb, up to 160px.
- */
-function withStamp(title, rest, fields, sectionKey, itemId, editable, hasBlurb, { titleInline = false } = {}) {
-  const src = safeItemHref(fields.image);
-  const maxW = titleInline ? STAMP.edtalkMax : STAMP.max;
-  const beside = titleInline ? `${title}\n${rest}` : rest;
-  const w = src && hasBlurb ? Math.min(maxW, Math.floor(textHeight(beside, maxW) / STAMP.ratio)) : 0;
-  if (w < STAMP.min) return `${title}\n${rest}`;
-  const cellW = w + STAMP.gutter; // picture + one gutter, in the cell width only, so Word and browser box models agree
-  const img = `<a href="${esc(src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="Picture: ${esc(fields.title || '')}" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:0;"${editAttrs(sectionKey, itemId, 'image', editable)}></a>`;
-  const row = `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="width:100%;"><tbody><tr><td valign="top" width="${cellW}" style="width:${cellW}px; vertical-align:top; padding:2px 0 0 0;">${img}</td><td valign="top" style="vertical-align:top;">\n${beside}\n</td></tr></tbody></table>`;
-  return titleInline ? row : `${title}\n${row}`;
-}
+// ─── Data ────────────────────────────────────────────────────────────────────
 
 /** Items that can render: a title is the one field every item needs. */
-const titled = items => (items || []).filter(i => String(i?.fields?.title ?? '').trim());
+const titled = (items) => (items || []).filter((i) => String(i?.fields?.title ?? '').trim());
 
-/** A section renders when it is switched on and holds a titled item. The
- *  jump-nav and the section loop read this one rule, so they cannot disagree. */
-const renders = sec => !!sec?.enabled && titled(sec.items).length > 0;
+/** The anchor a section heading emits and the contents strip links to. Headlines
+ *  is the one section whose anchor is not its key. */
+const anchorIdForSection = (key) => (key === 'headlines' ? 'news' : key);
 
-/** The anchor a section header emits and the jump-nav links to. Headlines is the
- *  one section whose anchor is not its key. */
-const anchorIdForSection = key => (key === 'headlines' ? 'news' : key);
-
-// ─── Common snippets ──────────────────────────────────────────────────────────
-
-const FONT_BODY = "'Trebuchet MS', 'Segoe UI', Tahoma, sans-serif";
-const FONT_HEAD = 'Verdana, Geneva, Tahoma, sans-serif';
-
-/** 14px spacer row between section tables (the sheet is 640px wide) */
-const SPACER_14 = `<!-- spacer --><table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 640px; margin: 0 auto; background-color: rgb(255, 255, 255);"><tbody><tr><td style="height: 14px; font-size: 1px; line-height: 14px;">&nbsp;</td></tr></tbody></table>`;
-
-/** File-tab section header */
-function sectionHeader(id, label) {
-  return `<tr><td style="padding: 16px 24px 0 8px; border-bottom: 3px solid #500000;">
-<table role="presentation" cellspacing="0" cellpadding="0" border="0"><tbody><tr><td style="background-color: rgb(80, 0, 0); padding: 7px 16px 8px 16px; border-radius: 8px 8px 0 0;">
-<h2 id="${esc(id)}" style="margin:0; font-family: ${FONT_HEAD}; font-size: 16px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px;"><a name="${esc(id)}" style="text-decoration:none;color:inherit;"></a>${esc(label)}</h2>
-</td></tr></tbody></table>
-</td></tr>`;
+/** An item's group as the email draws it: a featured event pins under Featured
+ *  Events; a research item with an unknown group folds into Research Brief. */
+function groupOf(secKey, item) {
+  const g = item.group || '';
+  if (secKey === 'events' && item.featured) return 'featured';
+  if (secKey === 'research') return ['brief', 'report'].includes(g) ? g : 'brief';
+  if (secKey === 'misc') return 'misc';
+  return g;
 }
 
-/** Eyebrow group label: the first group's top padding is 18px, the rest 32px. */
-function eyebrow(label, first = false) {
-  const topPad = first ? '18px' : '32px';
-  return `<tr><td style="padding: ${topPad} 24px 0 24px;">
-<h3 style="margin:0; font-family: ${FONT_HEAD}; font-size: 13px; font-weight: 700; color: #913B3B; text-transform: uppercase; letter-spacing: 1.1px;">${esc(label)}</h3>
-</td></tr>`;
-}
-
-/** Thin divider line */
-const DIVIDER = `<tr><td style="padding: 12px 48px 0 40px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
-
-/** "View more →" right-justified tail link (Kate, Sep 22: it opens the Policy Exchange, so "the ERC website" was wrong). Omitted when the section has no URL. */
-function seeMore(href) {
-  const h = safeItemHref(href);
-  if (!h) return '';
-  return `<tr><td style="padding: 10px 24px 22px 24px; text-align: right;">
-<a href="${esc(h)}" target="_blank" rel="noopener" style="color: #767676; text-decoration: none; font-family: ${FONT_BODY}; font-size: 14px; font-weight: 700;">View more &#8594;</a>
-</td></tr>`;
-}
 /** A section's items bucketed by group: the registry's order first, then any
  *  group the registry does not name, so nothing is dropped. */
 function groupsInOrder(secReg, items) {
-  const order = secReg.groups.map(g => g.key);
+  const order = secReg.groups.map((g) => g.key);
   const byGroup = {};
   for (const item of items) {
-    const gk = item.group || '';
+    const gk = groupOf(secReg.key, item);
     (byGroup[gk] = byGroup[gk] || []).push(item);
   }
-  const keys = order.filter(gk => byGroup[gk]);
+  const keys = order.filter((gk) => byGroup[gk]);
   for (const gk of Object.keys(byGroup)) if (!order.includes(gk)) keys.push(gk);
-  return keys.map(key => ({ key, label: secReg.groups.find(g => g.key === key)?.label ?? key, items: byGroup[key] }));
+  return keys.map((key) => ({ key, label: secReg.groups.find((g) => g.key === key)?.label ?? key, items: byGroup[key] }));
 }
+
+/** The sections that render, in registry order, each with its groups. */
+function buildSections(issue) {
+  const out = [];
+  for (const secReg of SECTION_REGISTRY) {
+    const sec = issue?.sections?.[secReg.key];
+    if (!sec || !sec.enabled) continue;
+    const items = titled(sec.items);
+    if (!items.length) continue;
+    const email = EMAIL[secReg.key] || { heading: secReg.label, short: secReg.navLabel ?? secReg.label, summaryGroups: null };
+    out.push({
+      key: secReg.key, anchor: anchorIdForSection(secReg.key), heading: email.heading, short: email.short,
+      kind: DIGEST_KINDS.has(secReg.kind) ? 'digest' : 'full', showSource: secReg.key === 'headlines',
+      tailUrl: safeItemHref(secReg.seeMoreUrl), summaryGroups: email.summaryGroups,
+      groups: groupsInOrder(secReg, items),
+    });
+  }
+  return out;
+}
+
+const summaryAllowed = (def, gkey) => !def.summaryGroups || def.summaryGroups.includes(gkey);
+
+/** Whether an item shows its description: the builder's choice, else the group's default. */
+function showsSummary(def, gkey, fields) {
+  if (!fields.summary) return false;
+  const choice = fields.showSummary;
+  return (typeof choice === 'boolean' ? choice : summaryAllowed(def, gkey));
+}
+
+const isEdTalk = (title) => /^ERC EdTalk/i.test(String(title ?? '').trim());
+
+/** The picture's width: 160 for a headshot, 96 for a stamp, 0 for none. */
+function pictureWidth(fields, sumOk) {
+  const src = safeItemHref(fields.image);
+  if (!sumOk || !src) return 0;
+  const style = PICTURE_STYLES.includes(fields.pictureStyle) ? fields.pictureStyle : (isEdTalk(fields.title) ? 'headshot' : 'stamp');
+  return style === 'none' ? 0 : style === 'headshot' ? 160 : 96;
+}
+
+/** The layout options, normalised: an unknown callout falls to maroon; the old
+ *  research.showSubmit=false switch still means no callout. */
+export function layoutOf(issue) {
+  const l = issue?.layout || {};
+  let callout = CALLOUT_STYLES.includes(l.callout) ? l.callout : 'maroon';
+  if (l.callout == null && issue?.sections?.research?.showSubmit === false) callout = 'none';
+  return { callout, nav: l.nav !== false };
+}
+
+// ─── Header, intro ───────────────────────────────────────────────────────────
+
+const uLink = (href, t, color) => `<a href="${href}" target="_blank" rel="noopener" style="color:${color}; text-decoration:none;">${t}</a>`;
+const utility = () => `${uLink(URLS.site, 'Website', C.g700)}<span style="padding:0 8px; color:${C.g400};">&#183;</span>${uLink(URLS.join, 'Join the mailing list', C.g700)}`;
+const masthead = () => row(`<a href="${URLS.site}" target="_blank" rel="noopener" style="display:block; line-height:0; text-decoration:none;"><img width="640" src="${MASTHEAD}" alt="Education Research Center Newsletter" style="width:640px; max-width:640px; height:auto; display:block; border:0;"></a>`, 'padding:0;');
+
+/**
+ * Contents strip: one line when it fits; otherwise two balanced lines split at
+ * a <br>, so no line ever ends or starts on a separator. Widths are estimated
+ * (6.4px a character, 21px a separator) only to choose the split.
+ * In the editable preview the links go nowhere, so they are drawn as words.
+ */
+export function navLinks(nav, editable = false) {
+  const sepHtml = `<span style="padding:0 4px; color:${C.g400};">&#183;</span>`;
+  const link = (s) => {
+    const words = esc(s.short).replace(/ /g, '&nbsp;');
+    return editable
+      ? `<span style="color:${C.g700};">${words}</span>`
+      : `<a href="#${s.anchor}" style="color:${C.g700}; text-decoration:none;">${words}</a>`;
+  };
+  const line = (items) => items.map(link).join(`&nbsp;${sepHtml}&nbsp;`);
+  const w = (items) => items.reduce((a, s) => a + s.short.length * 6.4, 0) + (items.length - 1) * 21;
+  if (nav.length < 2 || w(nav) <= 600) return line(nav);
+  let best = 1, bestW = Infinity;
+  for (let k = 1; k < nav.length; k++) { const m = Math.max(w(nav.slice(0, k)), w(nav.slice(k))); if (m < bestW) { bestW = m; best = k; } }
+  return line(nav.slice(0, best)) + '<br>' + line(nav.slice(best));
+}
+
+function headerRows(issue, nav, showNav, editable) {
+  const date = esc(issue.date || '');
+  const rows = [
+    row(tbl(`<tr><td style="font-family:${SANS}; font-size:15px; line-height:1.4; font-weight:700; color:${C.maroon};">${date}</td><td align="right" style="text-align:right; font-family:${SANS}; font-size:14px; line-height:1.4; color:${C.g700};">${utility()}</td></tr>`), 'padding:14px 24px 12px 24px;'),
+    masthead(),
+  ];
+  if (showNav && nav.length) rows.push(row(navLinks(nav, editable), `background-color:${C.g100}; padding:10px 16px 11px 16px; text-align:center; font-family:${SANS}; font-size:13px; line-height:1.7; font-weight:700; color:${C.g700};`));
+  return rows;
+}
+
+function introRows(issue, editable) {
+  const list = splitParas(issue.intro);
+  if (!list.length) return [];
+  const hook = editAttrs('intro', null, 'intro', editable);
+  const standing = /^want to feature/i.test(list[list.length - 1] || '') ? list.pop() : null;
+  const bodyStyle = `font-family:${SANS}; font-size:15px; line-height:1.55; color:${C.g900};`;
+  const body = list.map((t, i) => p(bodyStyle, renderProse(t), i < list.length - 1 ? 14 : 0, hook)).join('');
+  const standingHtml = standing
+    ? `<div style="border-top:${T.hair}; margin:18px 0 0; font-size:1px; line-height:1px;">&nbsp;</div><p style="margin:14px 0 0; font-family:${SANS}; font-size:15px; line-height:1.5; color:${C.g700};"${hook}>${renderProse(standing)}</p>`
+    : '';
+  return [row(body + standingHtml, 'padding:26px 48px 0 24px;'), spacer(26)];
+}
+
+// ─── Sections ────────────────────────────────────────────────────────────────
+
+function sectionHeadRows(def) {
+  const anchor = `<a name="${def.anchor}" id="${def.anchor}" style="text-decoration:none; color:inherit;"></a>`;
+  return [
+    row('&nbsp;', `height:4px; background-color:${C.maroon}; font-size:0; line-height:0; padding:0;`),
+    row(`<h2 style="margin:0; font-family:${SANS}; font-size:18px; line-height:1.3; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:${C.maroon};">${anchor}${esc(def.heading)}</h2>`, 'padding:20px 24px 0 24px;'),
+  ];
+}
+const labelRow = (text, pt) => row(`<h3 style="margin:0; ${T.label}">${esc(text)}</h3>`, `padding:${pt}px 24px 0 24px;`);
 
 /** An item's title: a link to its source, or a plain span when the url is
  *  missing or unsafe. Either way it carries the edit hook. */
@@ -208,431 +292,176 @@ function titleLink(sectionKey, item, editable) {
   const hooks = editAttrs(sectionKey, item.id, 'title', editable);
   const href = safeItemHref(item.fields.url);
   return href
-    ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:#202020;text-decoration:none;"${hooks}>${esc(item.fields.title)}</a>`
+    ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:${C.g900}; text-decoration:none;"${hooks}>${esc(item.fields.title)}</a>`
     : `<span${hooks}>${esc(item.fields.title)}</span>`;
 }
 
-// ─── Per-kind builders ────────────────────────────────────────────────────────
-
-/**
- * Builds the ERC Research section (kind: briefs).
- * Groups items under their research group eyebrow (Research Brief, then Report);
- * followed by compact Submit callout.
- */
-function buildBriefs(secReg, sec, editable = false) {
-  const items = titled(sec.items);
-  let rows = sectionHeader(anchorIdForSection(secReg.key), 'ERC Research');
-
-  // Unlike the other kinds, a brief with an unknown group folds into Research Brief.
-  const groupOrder = secReg.groups.map(g => g.key);
-  const byGroup = {};
-  for (const item of items) {
-    const gk = groupOrder.includes(item.group) ? item.group : 'brief';
-    (byGroup[gk] = byGroup[gk] || []).push(item);
+/** The meta line's words and hooks: authors in Research; else fields.meta, else
+ *  date | time | location (each hooked in the editable preview). */
+function metaLine(def, item, mb, editable) {
+  const f = item.fields;
+  const style = T.meta;
+  if (def.key === 'research') {
+    return f.authors ? p(style, esc(f.authors), mb, editAttrs('research', item.id, 'authors', editable)) : '';
   }
-  const present = groupOrder.filter(gk => byGroup[gk]);
+  if (f.meta) return p(style, esc(f.meta), mb, editAttrs(def.key, item.id, 'meta', editable));
+  const parts = ['date', 'time', 'location'].filter((k) => f[k]);
+  if (!parts.length) return '';
+  const content = editable
+    ? parts.map((k) => `<span${editAttrs(def.key, item.id, k, editable)}>${esc(f[k])}</span>`).join(' | ')
+    : parts.map((k) => esc(f[k])).join(' | ');
+  return p(style, content, mb);
+}
 
-  let firstGroup = true;
-  for (const gk of present) {
-    const groupDef = secReg.groups.find(g => g.key === gk);
-    rows += eyebrow(groupDef.label, firstGroup);
-    firstGroup = false;
-    const items = byGroup[gk];
-    items.forEach((item, i) => {
-      const { fields } = item;
-      const topPad = i === 0 ? '13px' : '12px';
-      const title = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink(secReg.key, item, editable)}</p>`;
-      const rest = `${fields.authors ? `<p style="margin:0 0 8px; line-height: 1.4; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs('research', item.id, 'authors', editable)}>${esc(fields.authors)}</p>` : ''}
-${fields.summary ? proseParas(fields.summary, editAttrs('research', item.id, 'summary', editable)) : ''}`;
-      rows += `
-<tr><td style="padding: ${topPad} 48px 0 40px;">
-${withStamp(title, rest, fields, 'research', item.id, editable, !!fields.summary)}
-</td></tr>`;
-      if (i < items.length - 1) rows += DIVIDER;
+/** One item: title (the link), meta line, description; the picture as a 96px
+ *  stamp beside the description, or a 160px headshot beside the whole item. */
+function itemHtml(it, def, g, editable) {
+  const f = it.fields;
+  const sumOk = showsSummary(def, g.key, f);
+  const w = pictureWidth(f, sumOk);
+  const hasMeta = def.key === 'research' ? !!f.authors : !!(f.meta || f.date || f.time || f.location);
+  const title = (mb) => p(`${T.title} color:${C.g900};`, titleLink(def.key, it, editable), mb);
+  const meta = (mb) => metaLine(def, it, mb, editable);
+  const body = sumOk ? paras(T.body, f.summary, 8, editAttrs(def.key, it.id, 'summary', editable)) : '';
+  const src = safeItemHref(f.image);
+  const stamp = w ? `<a href="${esc(safeItemHref(f.url) || src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="${esc('Picture: ' + (f.title || ''))}" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:0;"${editAttrs(def.key, it.id, 'image', editable)}></a>` : '';
+  if (!w) return title(hasMeta || sumOk ? 4 : 0) + meta(sumOk ? 8 : 0) + body;
+  if (w === 160) return twoCol(stamp, title(4) + meta(8) + body, 176, 3);
+  return title(4) + meta(8) + twoCol(stamp, body, 112, 4);
+}
+
+function fullRows(def, editable) {
+  const rows = [];
+  def.groups.forEach((g, gi) => {
+    const shows = (it) => showsSummary(def, g.key, it.fields);
+    const brief = def.key === 'events' && !summaryAllowed(def, g.key);
+    if (g.label) rows.push(labelRow(g.label, gi === 0 ? 18 : 30));
+    g.items.forEach((it, ii) => {
+      if (ii && brief) rows.push(rule(T.hair, '12px 48px 0 40px'));
+      const tight = ii && !shows(it) && !shows(g.items[ii - 1]);
+      const pt = ii === 0 ? 10 : brief ? 12 : tight ? 16 : 22;
+      rows.push(row(itemHtml(it, def, g, editable), `padding:${pt}px 48px 0 40px;`));
     });
-  }
-
-  // Submit callout: optional, toggled per issue on the Outline step (renderTriage), default on.
-  if (sec.showSubmit !== false) {
-    rows += `
-<tr><td style="padding: 20px 24px 22px 24px;">
-<table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width:80%; background-color:#f6f6f6; margin:0 auto;"><tbody><tr><td style="padding: 14px 22px;">
-<p style="margin:0 0 5px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 14px; font-weight: 700;"><a href="https://forms.office.com/Pages/ResponsePage.aspx?id=44HzaNpGuUe6V28yK48NoV5eaARTlZdIspuMdxu3p_lUQkwwS0pRMzgzTlE2MktPRjZCRDcwUDgxRS4u" target="_blank" rel="noopener" style="color: #500000; text-decoration: none;">Submit Your Research for an ERC Research Brief &#8594;</a></p>
-<p style="margin:0; line-height: 1.5; font-family: ${FONT_BODY}; font-size: 13px; color: #404040;">Working on research that could reach a broader audience? The ERC is accepting submissions for a research brief or other public-facing product &#8212; share a recent publication or working paper.</p>
-</td></tr></tbody></table>
-</td></tr>`;
-  }
-
-  return wrapSection(rows);
-}
-
-/**
- * Builds grouped-list sections (events, opportunities).
- * Events: featured group gets a description; others title+meta only.
- * Opportunities: title+meta only for all groups.
- */
-function buildGroupedList(secReg, sec, editable = false) {
-  const items = titled(sec.items);
-
-  const isEvents = secReg.key === 'events';
-
-  let rows = sectionHeader(anchorIdForSection(secReg.key), secReg.label);
-
-  let firstGroup = true;
-
-  for (const group of groupsInOrder(secReg, items)) {
-    rows += eyebrow(group.label, firstGroup);
-    firstGroup = false;
-
-    const isFeaturedGroup = group.key === 'featured';
-
-    group.items.forEach((item, i) => {
-      const { fields, featured } = item;
-      const topPad = i === 0 ? '7px' : '12px';
-      const sectionKey = secReg.key;
-
-      // Build meta line: date | time | location
-      const metaParts = [fields.date, fields.time, fields.location].filter(Boolean);
-      const metaLine = metaParts.length
-        ? `<p style="margin:0 0 5px; line-height: 1.4; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs(sectionKey, item.id, 'meta', editable)}>${metaParts.map(esc).join(' | ')}</p>`
-        : '';
-
-      // Description only for featured events
-      const descLine = (isFeaturedGroup || featured) && fields.summary
-        ? proseParas(fields.summary, editAttrs(sectionKey, item.id, 'summary', editable))
-        : '';
-
-      // For opportunities: use fields.meta as the meta line
-      const oppMeta = !isEvents && fields.meta
-        ? `<p style="margin:0; line-height: 1.4; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;"${editAttrs(sectionKey, item.id, 'meta', editable)}>${esc(fields.meta)}</p>`
-        : '';
-
-      // Divider between items within same group (the featured group uses the section divider)
-      const needsItemDivider = isEvents && i < group.items.length - 1;
-
-      const title = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink(sectionKey, item, editable)}</p>`;
-      if (isEvents) {
-        const rest = `${metaLine}
-${descLine}`;
-        rows += `<tr><td style="padding: ${topPad} 48px 0 40px;">
-${withStamp(title, rest, fields, sectionKey, item.id, editable, descLine !== '', { titleInline: isEdTalk(fields.title) })}
-</td></tr>`;
-        if (needsItemDivider) rows += DIVIDER;
-      } else {
-        // No stamp without a blurb, and an opportunity never carries one.
-        rows += `<tr><td style="padding: ${topPad} 48px 0 40px;">
-${title}
-${oppMeta}
-</td></tr>`;
-      }
-    });
-
-    // After featured group in events: add a section-level divider
-    if (isFeaturedGroup && isEvents) {
-      rows += `<tr><td style="padding: 16px 48px 0 24px;"><div style="border-top: 1px solid #e6e2dd; line-height: 1px; font-size: 1px;">&nbsp;</div></td></tr>`;
-    }
-  }
-
-  // See more link for opportunities
-  if (!isEvents) {
-    rows += seeMore(secReg.seeMoreUrl);
-  } else {
-    // closing bottom padding for events last item
-    rows += `<tr><td style="height: 22px; font-size: 1px; line-height: 22px;">&nbsp;</td></tr>`;
-  }
-
-  return wrapSection(rows);
-}
-
-/**
- * Builds digest sections (policy, headlines): grouped bullet lists.
- * Policy: title link only. Headlines: title + (Source) inline.
- */
-function buildGroupedDigest(secReg, sec, editable = false) {
-  const items = titled(sec.items);
-
-  const isHeadlines = secReg.key === 'headlines';
-
-  let rows = sectionHeader(anchorIdForSection(secReg.key), secReg.label);
-
-  for (const group of groupsInOrder(secReg, items)) {
-    const groupHeading = group.label
-      ? `<h3 style="margin:0 0 9px; font-family: ${FONT_HEAD}; font-size: 13px; font-weight: 700; color: #913B3B; text-transform: uppercase; letter-spacing: 1.1px;">${esc(group.label)}</h3>\n`
-      : '';
-    rows += `<tr><td style="padding: 18px 24px 0 24px;">
-${groupHeading}<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width:100%;"><tbody>`;
-
-    group.items.forEach((item, i) => {
-      const { fields } = item;
-      const isLast = i === group.items.length - 1;
-      const bottomPad = isLast ? '0' : '7px';
-
-      // Headlines: append (Source) after the title link
-      const sourcePart = isHeadlines && fields.source
-        ? ` <span style="color:#7A6A6A; font-size:14px;">(${esc(fields.source)})</span>`
-        : '';
-
-      rows += `<tr>
-<td style="vertical-align:top; width:14px; padding:0 8px ${bottomPad} 16px;"><span style="font-family:${FONT_BODY}; font-size:14px; line-height:1.4; color:#202020;">&#8226;</span></td>
-<td style="vertical-align:top; padding:0 0 ${bottomPad} 0;"><p style="margin:0; line-height:1.4; font-family:${FONT_BODY}; font-size:14px;">${titleLink(secReg.key, item, editable)}${sourcePart}</p></td>
-</tr>`;
-    });
-
-    rows += `</tbody></table>
-</td></tr>`;
-  }
-
-  rows += seeMore(secReg.seeMoreUrl);
-
-  return wrapSection(rows);
-}
-
-/**
- * Builds the ERC Spotlight section (kind: spotlight).
- * Groups: programs, events, thisandthat, in registry order; only groups present in items.
- * All groups: bold title link + meta (or date | time | location) + optional summary.
- */
-function buildSpotlight(secReg, sec, editable = false) {
-  const items = titled(sec.items);
-
-  let rows = sectionHeader(anchorIdForSection(secReg.key), 'ERC Spotlight');
-
-  let firstGroup = true;
-
-  for (const group of groupsInOrder(secReg, items)) {
-    rows += eyebrow(group.label, firstGroup);
-    firstGroup = false;
-
-    // All spotlight groups render the same: bold title link + meta (or
-    // date | time | location) + optional summary.
-    group.items.forEach((item, i) => {
-        const { fields } = item;
-        const topPad = i === 0 ? '7px' : '12px';
-
-        // Meta: use fields.meta if present (hook the meta field); otherwise
-        // build from date | time | location and hook EACH sub-field so clicking
-        // edits the value actually shown (not a phantom empty `meta`).
-        const metaStyle = `margin:0 0 5px; line-height: 1.4; font-family: ${FONT_BODY}; font-size: 14px; color: #5C5C5C;`;
-        let metaLine = '';
-        if (fields.meta) {
-          metaLine = `<p style="${metaStyle}"${editAttrs('spotlight', item.id, 'meta', editable)}>${esc(fields.meta)}</p>`;
-        } else {
-          const subParts = [
-            fields.date ? `<span${editAttrs('spotlight', item.id, 'date', editable)}>${esc(fields.date)}</span>` : '',
-            fields.time ? `<span${editAttrs('spotlight', item.id, 'time', editable)}>${esc(fields.time)}</span>` : '',
-            fields.location ? `<span${editAttrs('spotlight', item.id, 'location', editable)}>${esc(fields.location)}</span>` : '',
-          ].filter(Boolean);
-          if (subParts.length) {
-            // editable: clickable spans; export: plain joined text (no spans/hooks)
-            const plain = [fields.date, fields.time, fields.location].filter(Boolean).map(esc).join(' | ');
-            const content = editable ? subParts.join(' | ') : plain;
-            metaLine = `<p style="${metaStyle}">${content}</p>`;
-          }
-        }
-
-        const summaryLine = fields.summary
-          ? proseParas(fields.summary, editAttrs('spotlight', item.id, 'summary', editable))
-          : '';
-
-        const title = `<p style="margin:0 0 4px; line-height: 1.3; font-family: ${FONT_BODY}; font-size: 16px; font-weight: 700; color: #202020;">${titleLink(secReg.key, item, editable)}</p>`;
-
-        const rest = `${metaLine}
-${summaryLine}`;
-        rows += `<tr><td style="padding: ${topPad} 48px 0 40px;">
-${withStamp(title, rest, fields, 'spotlight', item.id, editable, summaryLine !== '', { titleInline: isEdTalk(fields.title) })}
-</td></tr>`;
-
-        if (i < group.items.length - 1) rows += DIVIDER;
-      });
-  }
-
-  // Closing bottom padding
-  rows += `<tr><td style="height: 22px; font-size: 1px; line-height: 22px;">&nbsp;</td></tr>`;
-
-  return wrapSection(rows);
-}
-
-/** Wraps section rows in the standard 640px centered white table */
-function wrapSection(rows) {
-  return `<table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 640px; margin: 0 auto; background-color: rgb(255, 255, 255);">
-<tbody>
-${rows}
-</tbody>
-</table>`;
-}
-
-/** Which builder draws each registry kind. */
-const BUILDERS = {
-  'briefs': buildBriefs,
-  'grouped-list': buildGroupedList,
-  'grouped-digest': buildGroupedDigest,
-  'spotlight': buildSpotlight,
-};
-
-// ─── Header / masthead / intro / footer ──────────────────────────────────────
-
-function buildHeader(issue, editable = false) {
-  const imgSrc = 'https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/newsletter-masthead.png';
-  const date = issue.date;
-
-  // Build jump-nav dynamically from enabled sections in SECTION_REGISTRY order.
-  // Only sections that are enabled AND have items appear: the same guard the builders use.
-  const navLinks = SECTION_REGISTRY
-    .filter(secReg => renders(issue.sections[secReg.key]))
-    .map(secReg => {
-      const anchor = anchorIdForSection(secReg.key);
-      const navText = secReg.navLabel ?? secReg.label;
-      // In the editable preview the jump links go nowhere, so they are drawn
-      // as plain words rather than links that look clickable.
-      if (editable) return `<span style="color: rgb(83, 83, 83); font-weight: 700;">${esc(navText)}</span>`;
-      return `<a href="#${anchor}" style="color: rgb(83, 83, 83); text-decoration: none; font-weight: 700;">${esc(navText)}</a>`;
-    });
-  const navHtml = navLinks.join(' &nbsp;|&nbsp; ');
-
-  return `<table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 640px; margin: 0 auto; background-color: rgb(255, 255, 255);">
-<tbody>
-<tr>
-<td align="left" width="50%" style="padding: 15px 15px; font-family: ${FONT_BODY}; font-size: 15px; font-weight: 700; color: #500000;">${esc(date)}</td>
-<td align="right" width="50%" style="padding: 15px 15px; font-family: ${FONT_BODY}; font-size: 15px; color: rgb(97, 30, 30);">
-<a href="https://erc.cehd.tamu.edu/" target="_blank" rel="noopener" style="color: rgb(97, 30, 30); text-decoration: none; padding: 0 5px;">Website</a><span style="color: #202020;"> | </span><a href="https://erc-policy-exchange.vercel.app/newsletter/" target="_blank" rel="noopener" style="color: rgb(97, 30, 30); text-decoration: none; padding: 0 5px;">Join the mailing list</a>
-</td>
-</tr>
-<tr>
-<td colspan="2" align="center" style="padding: 0;">
-<img width="640" src="${esc(imgSrc)}" alt="Education Research Center Newsletter" style="width: 100%; max-width: 640px; height: auto; display: block; border: 0;">
-</td>
-</tr>
-<tr>
-<td colspan="2" style="background-color: #f6f6f6; padding: 9px 15px;">
-<p style="text-align: center; line-height: 1.7; margin: 0px; font-family: ${FONT_BODY}; font-size: 14px; color: #202020;">${navHtml}</p>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="padding: 24px 48px 30px 24px;">
-${buildIntro(issue.intro, editable)}
-</td>
-</tr>
-</tbody>
-</table>`;
-}
-
-function buildIntro(introText, editable = false) {
-  if (!introText) return '';
-  const paras = introText.split(/\n\n+/).filter(Boolean);
-  const styled = paras.map((p, i) => {
-    const margin = i < paras.length - 1 ? 'margin: 0px 0px 12px;' : 'margin: 0px;';
-    return `<p style="text-align: left; line-height: 1.5; ${margin} font-family: ${FONT_BODY}; font-size: 14px; color: #202020;"${editAttrs('intro', null, 'intro', editable)}>${renderProse(p.trim())}</p>`;
   });
-  return styled.join('\n');
+  return rows;
 }
 
-function buildFooter() {
-  return `<table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 640px; margin: 0 auto; background-color: rgb(80, 0, 0);">
-<tbody>
-<tr>
-<td align="center" style="color:#ffffff; padding: 26px 24px 24px; text-align: center;">
-<img width="190" height="50" src="https://i.ibb.co/JjQWyZq3/ERC-Horizontal-White-Text-narrow.png" alt="Texas A&amp;M University Education Research Center" style="color:#ffffff; height: 50px; width: auto; max-width: 100%; display: inline-block; border: 0;">
-<p style="line-height: 1.45; margin: 16px 0 0; text-align: center; font-family: ${FONT_BODY}; font-size: 13px;">
-<span style="white-space: nowrap;">
-<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><a href="https://erc.cehd.tamu.edu/" target="_blank" rel="noopener" style="color: #ffffff; text-decoration: none; font-weight: 700; font-family: ${FONT_BODY}; font-size: 13px; vertical-align: middle;">Website</a>
-</span>
-<span style="color: rgba(255,255,255,0.4); padding: 0 12px;">&#183;</span>
-<span style="white-space: nowrap;">
-<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:erc@tamu.edu" style="color: #ffffff; text-decoration: none; font-weight: 700; font-family: ${FONT_BODY}; font-size: 13px; vertical-align: middle;">Email</a>
-</span>
-<span style="color: rgba(255,255,255,0.4); padding: 0 12px;">&#183;</span>
-<span style="white-space: nowrap;">
-<svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg><a href="https://erc-policy-exchange.vercel.app/newsletter/" target="_blank" rel="noopener" style="color: #ffffff; text-decoration: none; font-weight: 700; font-family: ${FONT_BODY}; font-size: 13px; vertical-align: middle;">Join the mailing list</a>
-</span>
-</p></td>
-</tr>
-</tbody>
-</table>`;
+function digestList(items, def, editable) {
+  const n = items.length;
+  const text = (it) => {
+    const f = it.fields;
+    const src = def.showSource && f.source ? ` <span style="color:${C.g600};">(${esc(f.source)})</span>` : '';
+    return p(T.digest, titleLink(def.key, it, editable) + src);
+  };
+  return tbl(items.map((it, i) =>
+    `<tr><td style="vertical-align:top; padding:${i ? 9 : 0}px 0 ${i === n - 1 ? 0 : 9}px 0;${i ? ` border-top:${T.hair};` : ''}">${text(it)}</td></tr>`).join(''));
+}
+function digestRows(def, editable) {
+  const rows = [];
+  def.groups.forEach((g, gi) => {
+    const top = gi === 0 ? 18 : 30;
+    if (g.label) rows.push(labelRow(g.label, top));
+    rows.push(row(digestList(g.items, def, editable), `padding:${g.label ? 10 : top}px 48px 0 40px;`));
+  });
+  return rows;
 }
 
-/** Inbox preview text: the intro's first sentence(s), as plain text. */
+const tailRow = (href) => row(`<a href="${esc(href)}" target="_blank" rel="noopener" style="${T.tail} text-decoration:none;">View more &#187;</a>`, 'padding:18px 48px 0 40px;');
+
+function sectionRows(def, editable) {
+  const rows = [...sectionHeadRows(def)];
+  rows.push(...(def.kind === 'digest' ? digestRows(def, editable) : fullRows(def, editable)));
+  if (def.tailUrl) rows.push(tailRow(def.tailUrl));
+  rows.push(spacer(26));
+  return rows;
+}
+
+// ─── The callout ─────────────────────────────────────────────────────────────
+
+const CALLOUT_TITLE = 'Submit your research for an ERC Research Brief';
+const CALLOUT_TEXT = 'Working on research that could reach a broader audience? Share a recent publication or working paper and the ERC will consider it for a research brief or other public-facing product.';
+function calloutRows(cs) {
+  const inner = (titleStyle, textColor, btnBg, btnFg) =>
+    p(titleStyle, CALLOUT_TITLE, 8) + p(`font-family:${SANS}; font-size:15px; line-height:1.5; color:${textColor};`, CALLOUT_TEXT, 18) + button('Submit your research &#187;', URLS.submit, btnBg, btnFg);
+  const box = (td, titleColor) => [row(tbl(`<tr><td style="${td}">${inner(`font-family:${SANS}; font-size:18px; line-height:1.3; font-weight:700; color:${titleColor};`, C.g800, C.maroon, C.white)}</td></tr>`), 'padding:28px 24px 0 24px;')];
+  if (cs === 'gray') return box(`background-color:${C.g100}; padding:22px 24px 24px 24px;`, C.g900);
+  if (cs === 'dotted') return box(`border:2px dotted ${C.maroonLight}; padding:20px 22px 22px 22px;`, C.maroon);
+  return [row(inner(`font-family:${SANS}; font-size:18px; line-height:1.3; font-weight:700; color:${C.white};`, C.ivory, C.white, C.maroon), `background-color:${C.maroon}; padding:26px 48px 28px 24px;`)];
+}
+
+// ─── Footer, preheader, document ─────────────────────────────────────────────
+
+function footerRows(issue) {
+  const link = (href, t) => `<a href="${href}" target="_blank" rel="noopener" style="color:${C.white}; text-decoration:none;">${t}</a>`;
+  const dot = ` <span style="padding:0 6px; font-weight:400; color:${C.cream};">&#183;</span> `;
+  return [
+    row(`<img width="190" height="50" src="${LOCKUP}" alt="Texas A&amp;M University Education Research Center" style="width:190px; height:50px; display:block; border:0;">`, `background-color:${C.maroon}; padding:28px 24px 20px 24px;`),
+    row(`<div style="border-top:1px solid ${C.maroonLight}; font-size:1px; line-height:1px;">&nbsp;</div>`, `background-color:${C.maroon}; padding:0 24px;`),
+    row(tbl(`<tr><td style="font-family:${SANS}; font-size:14px; line-height:1.5; font-weight:700; color:${C.white};">${link(URLS.site, 'Website')}${dot}${link(URLS.email, 'Email')}${dot}${link(URLS.join, 'Join&nbsp;the&nbsp;mailing&nbsp;list')}</td><td align="right" style="text-align:right; font-family:${SANS}; font-size:13px; line-height:1.5; color:${C.cream}; white-space:nowrap;">${esc(issue.date || '')}</td></tr>`), `background-color:${C.maroon}; padding:14px 24px 24px 24px;`),
+  ];
+}
+
 function preheader(issue) {
-  const plain = String(issue.intro ?? '')
-    .replace(MD_LINK, '$1')
-    .replace(/\*\*?([^*]+)\*\*?/g, '$1')
-    .replace(/\s+/g, ' ').trim();
-  // Take whole sentences until there is enough to preview on (a lone "Howdy!" is not a preview).
-  const sentences = plain.match(/[^.!?]+[.!?]+(?=\s|$)/g) || [plain];
-  let text = '';
-  for (const sentence of sentences) { text = (text + ' ' + sentence.trim()).trim(); if (text.length >= 60) break; }
-  text = text.slice(0, 140);
-  if (!text) return '';
-  return `<div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; mso-hide:all;">${esc(text)}${'&#847;&zwnj;&nbsp;'.repeat(40)}</div>`;
+  const first = plain(splitParas(issue.intro)[0] || '');
+  if (!first) return '';
+  return `<div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; mso-hide:all;">${esc(first)}${'&#847;&zwnj;&nbsp;'.repeat(40)}</div>`;
 }
 
-// ─── Main entry point ─────────────────────────────────────────────────────────
-
-export function renderNewsletter(issue, opts = {}) {
+/** The email's body: the stacked panels on the gray page. */
+export function renderBody(issue, opts = {}) {
   const editable = opts.editable === true;
-  const parts = [];
+  const { callout, nav: showNav } = layoutOf(issue);
+  const secs = buildSections(issue);
+  const nav = secs.map((s) => ({ anchor: s.anchor, short: s.short }));
+  const parts = [headerRows(issue, nav, showNav, editable)];
+  const intro = introRows(issue, editable);
+  if (intro.length) parts.push(intro);
+  for (const def of secs) {
+    const rows = sectionRows(def, editable);
+    if (def.key !== 'research' || callout === 'none') { parts.push(rows); continue; }
+    const c = calloutRows(callout);
+    // Gray and dotted sit inside the Research panel, before its closing spacer; the maroon block stands alone.
+    if (callout !== 'maroon') { rows.splice(rows.length - 1, 0, ...c); parts.push(rows); }
+    else parts.push(rows, c);
+  }
+  parts.push(footerRows(issue));
+  const sheet = (rows) => `<table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width:640px; margin:0 auto; background-color:${C.white};"><tbody>\n${rows.join('\n')}\n</tbody></table>`;
+  const gap = (h) => `<table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width:640px; margin:0 auto;"><tbody>${spacer(h)}</tbody></table>`;
+  const inner = parts.map(sheet).join(gap(12)) + gap(24);
+  return preheader(issue) +
+    `<div lang="en" style="background-color:${C.g200}; margin:0px;">` +
+    `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:${C.g200}; width:100%;"><tbody><tr><td>${inner}</td></tr></tbody></table></div>`;
+}
 
-  // Outer wrapper + head
-  parts.push(`<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+// Dark-mode guards: every background and text colour the email uses, pinned.
+const BGS = [C.white, C.g100, C.g200, C.maroon, C.maroonDark, C.g900];
+const INKS = [C.g900, C.g800, C.g700, C.g600, C.maroon, C.maroonLight, C.white, C.cream, C.ivory, C.g300, C.g400];
+function guards() {
+  const bg = (sel) => BGS.map((c) => `${sel}[style*="background-color:${c}"] { background-color:${c} !important; }`).join('\n  ');
+  const ink = (sel) => INKS.map((c) => `${sel}[style*=" color:${c}"] { color:${c} !important; }`).join('\n  ');
+  return `${bg('[data-ogsc] ')}\n  ${bg('[data-ogsb] ')}\n  ${ink('[data-ogsc] ')}\n  ${ink('[data-ogsb] ')}\n  @media (prefers-color-scheme: dark) {\n  ${bg('')}\n  ${ink('')}\n  }`;
+}
+
+/** The paste-ready document. opts.editable adds the data-edit-* hooks the builder's preview clicks on. */
+export function renderNewsletter(issue, opts = {}) {
+  const title = `ERC Newsletter | ${issue.date || ''}`;
+  return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>ERC Newsletter | ${esc(issue.date)}</title>
+<title>${esc(title)}</title>
 <meta charset="utf-8">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="color-scheme" content="light only">
 <meta name="supported-color-schemes" content="light only">
 <style type="text/css">
-  body { font-size: 16px; word-break: break-word; }
+  body { font-size: 16px; word-break: break-word; margin: 0; }
   P { margin-top:0; margin-bottom:0; }
   :root { color-scheme: light only; supported-color-schemes: light only; }
-  /* ===== Keep the light design legible in dark mode (Outlook.com + Apple/Gmail) ===== */
-  [data-ogsc] table[style*="rgb(255, 255, 255)"], [data-ogsb] table[style*="rgb(255, 255, 255)"] { background-color:#ffffff !important; }
-  [data-ogsc] table[style*="#f6f6f6"], [data-ogsb] table[style*="#f6f6f6"], [data-ogsc] td[style*="#f6f6f6"], [data-ogsb] td[style*="#f6f6f6"] { background-color:#f6f6f6 !important; }
-  [data-ogsc] td[style*="rgb(80, 0, 0)"], [data-ogsb] td[style*="rgb(80, 0, 0)"],
-  [data-ogsc] table[style*="rgb(80, 0, 0)"], [data-ogsb] table[style*="rgb(80, 0, 0)"] { background-color:#500000 !important; }
-  [data-ogsc] p[style*="#202020"], [data-ogsb] p[style*="#202020"],
-  [data-ogsc] a[style*="#202020"], [data-ogsb] a[style*="#202020"] { color:#202020 !important; }
-  [data-ogsc] p[style*="#404040"], [data-ogsb] p[style*="#404040"] { color:#404040 !important; }
-  [data-ogsc] span[style*="#7A6A6A"], [data-ogsb] span[style*="#7A6A6A"] { color:#7A6A6A !important; }
-  @media (prefers-color-scheme: dark) {
-    table[style*="rgb(255, 255, 255)"] { background-color:#ffffff !important; }
-    td[style*="#f6f6f6"], table[style*="#f6f6f6"] { background-color:#f6f6f6 !important; }
-    td[style*="rgb(80, 0, 0)"], table[style*="rgb(80, 0, 0)"] { background-color:#500000 !important; }
-    p[style*="#202020"], a[style*="#202020"] { color:#202020 !important; }
-    p[style*="#404040"] { color:#404040 !important; }
-    span[style*="#7A6A6A"] { color:#7A6A6A !important; }
-  }
+  ${guards()}
 </style>
 </head>
 <body dir="ltr">
-${preheader(issue)}
-<div lang="en" style="background-color: rgb(234, 234, 234); margin: 0px;">
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: rgb(234, 234, 234); width: 100%;">
-<tbody><tr><td>`);
-
-  // Header / masthead / intro
-  parts.push(buildHeader(issue, editable));
-
-  // Sections in SECTION_REGISTRY order; a section that renders nothing leaves no spacer behind.
-  for (const secReg of SECTION_REGISTRY) {
-    const sec = issue.sections[secReg.key];
-    if (!renders(sec)) continue;
-    parts.push(SPACER_14, BUILDERS[secReg.kind](secReg, sec, editable));
-  }
-
-  // Footer spacer (26px before footer per template)
-  parts.push(`<!-- spacer --><table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 640px; margin: 0 auto; background-color: rgb(255, 255, 255);"><tbody><tr><td style="height: 26px; font-size: 1px; line-height: 26px;">&nbsp;</td></tr></tbody></table>`);
-
-  // Footer
-  parts.push(buildFooter());
-
-  // Bottom spacer + close
-  parts.push(`<!-- bottom spacer -->
-<table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 640px; margin: 0 auto;"><tbody><tr><td style="height: 20px; font-size: 1px; line-height: 20px;">&nbsp;</td></tr></tbody></table>
-
-</td></tr></tbody></table>
-</div>
+${renderBody(issue, opts)}
 </body>
-</html>`);
-
-  return parts.join('\n');
+</html>`;
 }
