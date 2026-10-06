@@ -430,31 +430,33 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .edit-toolbar .preview-note:focus { outline: none; }
 .edit-doors { display: flex; gap: var(--spacing-02); }
 .edit-removed-bar { display: flex; flex-direction: column; gap: var(--spacing-02); margin-top: var(--spacing-04); }
-.edit-layout--single { justify-content: center; }
-body.drawer-open .wizard-body { padding-bottom: 50vh; }
+.edit-layout--float { justify-content: flex-start; }
+/* The column at the sheet's right: nothing until a click, then the box,
+   level with the item it edits. */
+.edit-float-col { flex: 0 0 360px; position: relative; align-self: stretch; overflow: visible; max-height: none; top: 0; }
 
+/* The box (Kate, Oct 5): smaller, floating at the sheet's right, level with
+   the item. The look above the words, since it is narrow. */
 .edit-drawer {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
-  height: 46vh; min-height: 320px;
-  background: var(--layer-02); border-top: 1px solid var(--border-subtle-01);
+  position: absolute; left: 0; right: 0; z-index: 30;
+  display: none; flex-direction: column;
+  max-height: calc(100vh - var(--spacing-07));
+  background: var(--layer-02); border: 1px solid var(--border-subtle-01);
   box-shadow: var(--mail-menu-shadow);
-  transform: translateY(100%);
-  transition: transform var(--duration-moderate-02) var(--ease-productive);
 }
-.edit-drawer.is-open { transform: translateY(0); }
-.edit-drawer-inner { max-width: 1200px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
-.drawer-card { display: flex; flex-direction: column; height: 100%; min-height: 0; }
-.drawer-card-head { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-03) var(--spacing-07); border-bottom: 1px solid var(--border-subtle-01); }
-.drawer-card-name { flex: 1; font-size: 16px; line-height: 22px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.drawer-card-body { flex: 1; min-height: 0; overflow: auto; display: grid; grid-template-columns: minmax(300px, 2fr) 3fr; }
-.drawer-card-body:has(> .drawer-fields:only-child), .drawer-card-body:has(> details:only-child) { grid-template-columns: 1fr; }
-.drawer-look { padding: var(--spacing-05) var(--spacing-07); border-right: 1px solid var(--border-subtle-01); }
-.drawer-fields { padding: var(--spacing-05) var(--spacing-07); display: flex; flex-direction: column; gap: var(--spacing-03); }
+.edit-drawer.is-open { display: flex; }
+.edit-drawer-inner { display: flex; flex-direction: column; min-height: 0; }
+.drawer-card { display: flex; flex-direction: column; min-height: 0; }
+.drawer-card-head { display: flex; align-items: center; gap: var(--spacing-03); padding: var(--spacing-03) var(--spacing-04) var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--border-subtle-01); }
+.drawer-card-name { flex: 1; font-size: 14px; line-height: 18px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drawer-card-body { min-height: 0; overflow: auto; display: flex; flex-direction: column; }
+.drawer-look { padding: var(--spacing-04) var(--spacing-05); border-bottom: 1px solid var(--border-subtle-01); }
+.drawer-fields { padding: var(--spacing-04) var(--spacing-05); display: flex; flex-direction: column; gap: var(--spacing-03); }
 .drawer-h4 { margin: 0 0 var(--spacing-03); font-size: 12px; line-height: 16px; letter-spacing: 1.25px; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); }
-.drawer-card-actions { padding: var(--spacing-03) var(--spacing-07); border-top: 1px solid var(--border-subtle-01); margin: 0; }
+.drawer-card-actions { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--border-subtle-01); margin: 0; flex-wrap: wrap; }
 .drawer-card-actions .edit-card-delete { margin-right: auto; }
-/* A fold shown flat in the drawer: no summary to click, just its body. */
-.drawer-card-body > details { padding: var(--spacing-05) var(--spacing-07); border: 0; }
+/* A fold shown flat in the box: no summary to click, just its body. */
+.drawer-card-body > details { padding: var(--spacing-04) var(--spacing-05); border: 0; }
 .drawer-card-body > details > summary { display: none; }
 .drawer-card-body > details > .reorder-panel-body { padding: 0; }
 
@@ -465,7 +467,7 @@ body.drawer-open .wizard-body { padding-bottom: 50vh; }
 .wire.is-on { border-color: var(--button-primary); }
 .wire.is-dim .wire-draw { opacity: .5; }
 .wire:focus-visible { box-shadow: var(--focus-ring); }
-.wire-draw { display: flex; gap: 6px; width: 108px; height: 64px; box-sizing: border-box; padding: 8px; background: var(--mail-white); border: 1px solid var(--border-subtle-01); }
+.wire-draw { display: flex; gap: 6px; width: 96px; height: 58px; box-sizing: border-box; padding: 8px; background: var(--mail-white); border: 1px solid var(--border-subtle-01); }
 .wire-col { display: block; flex: 1; min-width: 0; }
 .wire-beside { display: flex; gap: 5px; margin-top: 4px; }
 .wire-beside .wire-col { flex: 1; }

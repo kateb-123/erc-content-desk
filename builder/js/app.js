@@ -1319,31 +1319,36 @@ function buildRichEditor(initialMd, onChange, { labelledBy = '' } = {}) {
 // The drawer (Kate, Oct 5): the one card, sliding up from the bottom
 // ---------------------------------------------------------------------------
 
-/** The drawer element, made once and kept on the body; what it shows changes. */
-let drawerEl = null;
+/** The floating box (Kate, Oct 5: "push to the right but in a smaller
+ *  floating box"): one per visit to the step, in the column at the sheet's
+ *  right, placed level with the item it edits. What it shows changes. */
 function drawer() {
-  if (drawerEl) return drawerEl;
-  drawerEl = el('div', 'edit-drawer');
-  drawerEl.setAttribute('role', 'dialog');
-  drawerEl.setAttribute('aria-label', 'Editing');
-  drawerEl.appendChild(el('div', 'edit-drawer-inner'));
-  document.body.appendChild(drawerEl);
-  return drawerEl;
+  const col = document.querySelector('[data-step="edit"] .edit-float-col');
+  if (!col) return null;
+  let box = col.querySelector('.edit-drawer');
+  if (box) return box;
+  box = el('div', 'edit-drawer');
+  box.setAttribute('role', 'dialog');
+  box.setAttribute('aria-label', 'Editing');
+  box.appendChild(el('div', 'edit-drawer-inner'));
+  col.appendChild(box);
+  return box;
 }
 
-/** Puts a card in the drawer and slides it up. The page gets room under it. */
-function openDrawer(card) {
+/** Puts a card in the box and shows it, level with `top` (px down the column). */
+function openDrawer(card, top = 0) {
   const d = drawer();
+  if (!d) return;
   d.querySelector('.edit-drawer-inner').replaceChildren(card);
+  d.style.top = `${Math.max(0, Math.round(top))}px`;
   d.classList.add('is-open');
-  document.body.classList.add('drawer-open');
 }
 
-/** Slides the drawer away. Focus goes back to the stage so it never falls off the page. */
+/** Hides the box. Focus goes back to the stage so it never falls off the page. */
 function closeDrawer() {
+  const drawerEl = document.querySelector('[data-step="edit"] .edit-drawer');
   if (!drawerEl) return;
   drawerEl.classList.remove('is-open');
-  document.body.classList.remove('drawer-open');
   drawerEl.querySelector('.edit-drawer-inner').replaceChildren();
   document.querySelectorAll('.edit-preview-iframe').forEach((f) => {
     f.contentDocument?.querySelectorAll('.ec-item-open').forEach((n) => n.classList.remove('ec-item-open'));
@@ -1541,16 +1546,23 @@ function blockOf(doc, section, item) {
   return node ? node.closest('td') : null;
 }
 
-/** Scrolls the page so the block sits in the part of the window the drawer leaves free. */
+/** Where a box should sit to be level with `pageTop` (px from the page top): its offset down the column. */
+function columnOffset(pageTop) {
+  const col = document.querySelector('[data-step="edit"] .edit-float-col');
+  if (!col) return 0;
+  return pageTop - (col.getBoundingClientRect().top + window.scrollY);
+}
+
+/** Puts the box level with the item's block, and brings the item on screen if it is not. */
 function revealAboveDrawer(iframe, block) {
   if (!block) return;
   const zoom = parseFloat(iframe.style.zoom) || 1;
   const outer = iframe.getBoundingClientRect();
   const r = block.getBoundingClientRect();
-  const top = outer.top + r.top * zoom, bottom = outer.top + r.bottom * zoom;
-  const free = window.innerHeight * 0.54 - 16;
-  if (bottom > free) window.scrollBy({ top: Math.min(bottom - free, top - 72), behavior: 'smooth' });
-  else if (top < 72) window.scrollBy({ top: top - 72, behavior: 'smooth' });
+  const top = outer.top + r.top * zoom;
+  const box = document.querySelector('[data-step="edit"] .edit-drawer');
+  if (box) box.style.top = `${Math.max(0, Math.round(columnOffset(top + window.scrollY)))}px`;
+  if (top < 72 || top > window.innerHeight - 160) window.scrollBy({ top: top - 96, behavior: 'smooth' });
 }
 
 /**
@@ -1562,7 +1574,8 @@ function openPanelInDrawer(title, details) {
   details.open = true;
   body.appendChild(details);
   actions.appendChild(button('Done', 'btn btn-primary', { onClick: closeDrawer }));
-  openDrawer(card);
+  // Level with the top of the window, wherever the page is scrolled to.
+  openDrawer(card, columnOffset(window.scrollY + 72));
   requestAnimationFrame(() => firstField(card)?.focus());
 }
 
@@ -1652,7 +1665,7 @@ function buildLayoutPanel(iframe) {
 function renderEdit() {
   closeDrawer();
   const container = openStep('edit', 'Check the issue and tweak anything in place.',
-    'Click any item in the email and its card slides up: how it is laid out, then its words. Click the Submit callout or a picture to change it on the spot. The introduction, the layout and Add an item open from the buttons over the email.');
+    'Click any item in the email and its card opens beside it: how it is laid out, then its words. Click the Submit callout or a picture to change it on the spot. The introduction, the layout and Add an item open from the buttons over the email.');
 
   if (!state.issue) {
     emptyLine(container, 'No issue loaded. Pull from the desk on the Review step first.');
@@ -1697,10 +1710,14 @@ function renderEdit() {
     container.appendChild(bar);
   }
 
-  const layout = el('div', 'edit-layout edit-layout--single');
+  const layout = el('div', 'edit-layout edit-layout--float');
   const wrap = el('div', 'edit-preview-wrap');
   wrap.appendChild(iframe);
-  layout.appendChild(wrap);
+  // The column at the sheet's right where the box floats, level with the
+  // item it edits. Empty until a click; it is an .edit-column so the sheet
+  // leaves it room.
+  const floatCol = el('div', 'edit-column edit-float-col');
+  layout.append(wrap, floatCol);
   container.appendChild(layout);
   iframe.srcdoc = renderNewsletter(state.issue, { editable: true });
 }
