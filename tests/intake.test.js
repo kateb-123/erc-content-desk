@@ -160,3 +160,16 @@ test('fieldFor names the form field a validation message is about', () => {
   assert.equal(fieldFor('Add your email address.'), 'submitter_email');
   assert.equal(fieldFor('Something else entirely.'), '');
 });
+
+// Kate, Oct 6: Quick add on the Newsletter page has a Date field for every
+// type; for an opportunity it is the deadline. Typed, it is the item's own and
+// the reader never writes over it; left blank, the reader reads it off the page.
+test('a typed date or deadline rides the submission; a malformed one is refused', () => {
+  const row = buildSubmission({ ...good, date: '2026-10-02', submittedAt: '2026-10-06T10:00:00Z', id: 'x' });
+  assert.equal(row.date, '2026-10-02');
+  assert.equal(buildSubmission({ ...good, type: 'opportunity', subtype: 'Other', deadline: '2026-10-30' }).deadline, '2026-10-30');
+  assert.equal(buildSubmission(good).date, '', 'nothing typed, nothing set');
+  assert.deepEqual(validateSubmission({ ...good, date: '2026-10-02' }), []);
+  assert.deepEqual(validateSubmission({ ...good, date: 'Oct 2' }), ['The date needs to be a full date.']);
+  assert.deepEqual(validateSubmission({ ...good, deadline: '10/30' }), ['The deadline needs to be a full date.']);
+});

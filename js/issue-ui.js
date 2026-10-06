@@ -189,6 +189,7 @@ export function renderIssue(container, props) {
       panel.append(mount);
       renderSubmitForm(mount, {
         bulk: false,
+        dateField: true,   // Kate, Oct 6: a Date for every type, the deadline for an opportunity
         onSubmitted: data => onQuickAdd(data),
         knownLinks,
         pendingLine: `Adding it to the ${when} issue`,

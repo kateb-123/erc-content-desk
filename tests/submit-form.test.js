@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { pickType, typeChoices, bulkSubmissionBody, typeRowFor, bulkRowProblem, bulkConfirmLabel } from '../js/submit-form.js';
+import { pickType, typeChoices, bulkSubmissionBody, typeRowFor, bulkRowProblem, bulkConfirmLabel, dateFieldFor } from '../js/submit-form.js';
 import { TYPE_ORDER, subtypesFor } from '../js/schema.js';
 
 test('pickType clears the subtype when the type changes', () => {
@@ -81,4 +81,17 @@ test('bulkConfirmLabel: Add N, Retry N after a failed run, and a disabled word w
   assert.equal(bulkConfirmLabel(2, true), 'Retry 2');
   assert.equal(bulkConfirmLabel(0, false), 'Nothing left to add');
   assert.equal(bulkConfirmLabel(0, true), 'Nothing left to add');
+});
+
+// Kate, Oct 6: Quick add's Date field, for every type; an opportunity's date
+// is its deadline, so the field says so and fills that column.
+test('dateFieldFor: Deadline for an opportunity, Date for everything else, Date before a type is picked', () => {
+  assert.deepEqual(dateFieldFor('opportunity'), { field: 'deadline', label: 'Deadline' });
+  for (const t of ['', 'headline', 'research', 'event', 'erc_event']) assert.deepEqual(dateFieldFor(t), { field: 'date', label: 'Date' }, t);
+});
+
+test('Quick add on Next issue asks for the Date field; the team page does not', async () => {
+  const { readFileSync } = await import('node:fs');
+  assert.match(readFileSync(new URL('../js/issue-ui.js', import.meta.url), 'utf8'), /renderSubmitForm\(mount, \{[\s\S]*?dateField: true/);
+  assert.doesNotMatch(readFileSync(new URL('../js/team-ui.js', import.meta.url), 'utf8'), /dateField/);
 });

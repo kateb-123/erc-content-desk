@@ -110,6 +110,8 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
    (24px down, under the label's line) whether or not a message hangs under the
    initials (audit round two, f6). */
 .sf-foot { display: flex; align-items: flex-start; gap: var(--spacing-05); flex-wrap: wrap; }
+/* Quick add's Date field (Oct 6): a date, so a date's width. */
+.sf-date input { width: 12rem; }
 .sf-foot .sf-initials label { margin-top: 0; }
 .sf-foot .sf-initials input { width: 7rem; }
 .submit-form .submit-btn { margin-left: auto; margin-top: var(--spacing-06); height: 48px; padding: 0 var(--spacing-06); }

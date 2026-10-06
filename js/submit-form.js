@@ -7,6 +7,12 @@
 import { todayCentral } from './today.js';
 import { subtypesFor, TYPE_ORDER, typeDisplay } from './schema.js';
 
+/** Quick add's Date field (Kate, Oct 6), for every type: an opportunity's
+ *  date is its deadline, so the field says so and fills that column. */
+export function dateFieldFor(type) {
+  return type === 'opportunity' ? { field: 'deadline', label: 'Deadline' } : { field: 'date', label: 'Date' };
+}
+
 /** Picking a type clears the subtype; re-picking the current type is a no-op. */
 export function pickType(selection, type) {
   return selection.type === type ? selection : { type, subtype: '' };
@@ -101,7 +107,7 @@ const todayIso = () => todayCentral();
  * the queue gets one ask before it is added again.
  */
 export function renderSubmitForm(container, {
-  onSubmitted, bulk = true, knownLinks = null,
+  onSubmitted, bulk = true, knownLinks = null, dateField = false,
   doneLine = 'Added to the queue.', pendingLine = '',
 } = {}) {
   let selection = { type: '', subtype: '' };
@@ -116,6 +122,8 @@ export function renderSubmitForm(container, {
       <div><label for="sf-blurb">Description</label>
         <textarea id="sf-blurb" rows="6"></textarea></div>
       <fieldset class="type-picker"></fieldset>
+      <div class="sf-date" hidden><label for="sf-date">Date</label>
+        <input id="sf-date" type="date"></div>
       <div class="sf-foot">
         <div class="sf-initials"><label for="sf-submitter">Your initials</label>
           <input id="sf-submitter" type="text" autocomplete="off"></div>
@@ -150,7 +158,11 @@ export function renderSubmitForm(container, {
   // Errors land on their fields: the field a message
   // names turns red, says so to assistive tech, and the first one takes focus.
   // The status line under the button still lists them all.
-  const FIELD_EL = { link: '#sf-link', submitter: '#sf-submitter', type: '.type-picker' };
+  const FIELD_EL = { link: '#sf-link', submitter: '#sf-submitter', type: '.type-picker', date: '#sf-date' };
+  // Quick add's Date field (Kate, Oct 6): optional, its label following the type.
+  const dateBox = form.querySelector('.sf-date');
+  dateBox.hidden = !dateField;
+  const syncDate = () => { dateBox.querySelector('label').textContent = dateFieldFor(selection.type).label; };
   const clearOne = node => { node.classList.remove('is-invalid'); node.removeAttribute('aria-invalid'); node.removeAttribute('aria-describedby'); };
   function clearInvalid() {
     for (const sel of Object.values(FIELD_EL)) clearOne(form.querySelector(sel));
@@ -256,6 +268,7 @@ export function renderSubmitForm(container, {
   }
 
   function renderTypePicker() {
+    syncDate();
     const { types, subtypes, hint } = typeChoices(selection);
     const row = el('div', 'pill-row');
     for (const t of types) {
@@ -284,6 +297,7 @@ export function renderSubmitForm(container, {
       type: selection.type,
       subtype: selection.subtype,
       submitter: form.querySelector('#sf-submitter').value,
+      ...(dateField ? { [dateFieldFor(selection.type).field]: form.querySelector('#sf-date').value } : {}),
     };
   }
 

@@ -9,8 +9,10 @@ import { isSafeLink } from './links.js';
 
 const s = v => String(v ?? '').trim();
 
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
 export function validateSubmission(
-  { title, blurb, link, type, subtype, submitter, submitter_email } = {},
+  { title, blurb, link, type, subtype, submitter, submitter_email, date, deadline } = {},
   { allowBlankSubtype = false, requireEmail = false } = {},
 ) {
   const errors = [];
@@ -26,12 +28,15 @@ export function validateSubmission(
     errors.push('Pick a subtype.');
   }
   if (!s(submitter)) errors.push('Add your name or initials.');
+  // Quick add's Date field (Kate, Oct 6): a date input sends YYYY-MM-DD; anything else is refused.
+  if (s(date) && !ISO_DAY.test(s(date))) errors.push('The date needs to be a full date.');
+  if (s(deadline) && !ISO_DAY.test(s(deadline))) errors.push('The deadline needs to be a full date.');
   return errors;
 }
 
 export function buildSubmission({
   title, blurb, link, type, subtype, spotlight, submitter, submitter_email,
-  infographic, original_text, submittedAt, id,
+  infographic, original_text, submittedAt, id, date, deadline,
 } = {}) {
   return blankRow({
     id,
@@ -47,6 +52,8 @@ export function buildSubmission({
     submitter: s(submitter),
     submitter_email: s(submitter_email),
     infographic: s(infographic),
+    date: s(date),
+    deadline: s(deadline),
     submitted_at: submittedAt,
   });
 }
@@ -61,6 +68,7 @@ export function fieldFor(message) {
   if (m.includes('email')) return 'submitter_email';
   if (m.includes('link')) return 'link';
   if (m.includes('name or initials')) return 'submitter';
+  if (m.includes('date') || m.includes('deadline')) return 'date';
   if (m.includes('type')) return 'type';
   return '';
 }
