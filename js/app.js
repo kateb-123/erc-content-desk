@@ -642,11 +642,7 @@ function render() {
     const titles = { listserv: 'Listserv', exchange: 'Policy Exchange' };
     screens[state.screen].replaceChildren(hubHead(titles[state.screen], HUB_LEDES[state.screen]));
   } else if (state.screen === 'team') {
-    renderTeam(screens.team, {
-      ...common, loaded: state.loaded, loadFailed: state.loadFailed,
-      onGoTo: goTo, onSubmitted: reload, onRefresh: reload,
-      knownLinks: () => state.rows,
-    });
+    renderTeam(screens.team, { onSubmitted: reload, knownLinks: () => state.rows });
   } else if (state.screen === 'issue') {
     renderIssue(screens.issue, {
       ...common, loaded: state.loaded, loadFailed: state.loadFailed, busy: state.busy, archive: state.archive,

@@ -1,108 +1,53 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { openedScreen } from '../js/shell-view.js';
+import { PUBLIC_LINKS } from '../js/public-links.js';
 
-// The team page's Quick links (Kate, Sep 22, then her pick C of Sep 23 and her
-// split that evening): the three PUBLIC pages, the standalone share page and
-// listserv sign-up at their own address and the Exchange itself, with the
-// desk's own pages, Content Sort and the Newsletter, as filled buttons under
-// them. team-ui.js touches the DOM, so the links are read from the file.
-const src = readFileSync(new URL('../js/team-ui.js', import.meta.url), 'utf8');
-const entry = key => src.match(new RegExp(`\\{ key: '${key}'[^\\n]*`))?.[0] ?? '';
-const href = key => entry(key).match(/href: '([^']+)'/)?.[1];
+// The public links (Kate, Sep 22, then her pick C of Sep 23): the three PUBLIC
+// pages, the standalone share page and listserv sign-up at their own address
+// and the Exchange itself. Since her drawn map (Oct 6) they are a hub of
+// their own on the front page, in her drawing's order, and the team's how-to
+// draws its Links to share from the same list.
+const links = readFileSync(new URL('../js/public-links.js', import.meta.url), 'utf8');
+const team = readFileSync(new URL('../js/team-ui.js', import.meta.url), 'utf8');
+const home = readFileSync(new URL('../js/home-ui.js', import.meta.url), 'utf8');
 
-test('Quick links are the three public pages, and only those', () => {
-  assert.equal(href('share'), 'https://erc-share.vercel.app/submit/');
-  assert.equal(href('listserv'), 'https://erc-share.vercel.app/listserv/');
-  assert.equal(href('exchange'), 'https://erc-policy-exchange.vercel.app/');
-  const links = src.match(/export const QUICK_LINKS = \[([\s\S]*?)\];/)[1];
-  assert.equal(links.match(/key: '/g).length, 3, 'three rows, nothing of the desk among them');
-  assert.doesNotMatch(links, /newsletter/, 'the newsletter is a button, not a quick link');
+test('the public links are the three public pages, and only those, in her order', () => {
+  assert.deepEqual(PUBLIC_LINKS.map(l => [l.key, l.href]), [
+    ['exchange', 'https://erc-policy-exchange.vercel.app/'],
+    ['share', 'https://erc-share.vercel.app/submit/'],
+    ['listserv', 'https://erc-share.vercel.app/listserv/'],
+  ]);
+  for (const l of PUBLIC_LINKS) assert.doesNotMatch(l.href, /erc-content-desk/, 'nothing of the desk among them');
 });
 
 // Kate's set D of Sep 23, with the screen for the Exchange: each icon is the
-// thing itself, and no two rows repeat a metaphor.
-test('every row and door carries the icon Kate picked', () => {
+// thing itself, and no two rows repeat a metaphor (the how-to draws them).
+test('every public link carries the icon Kate picked, and says it is public facing', () => {
   const icons = { share: 'square-plus', listserv: 'address-book', exchange: 'display' };
-  for (const [key, icon] of Object.entries(icons)) assert.match(entry(key), new RegExp(`icon: '${icon}'`), key);
-  const doors = src.match(/export const DESK_DOORS = \[([\s\S]*?)\];/)[1];
-  assert.match(doors, /key: 'newsletter'[^\n]*icon: 'newspaper'/);
-  assert.match(doors, /key: 'sort'[^\n]*icon: 'layer-group'/);
-  assert.match(doors, /key: 'exchange'[^\n]*icon: 'paper-plane'/);   // the door to Publish (Kate, Sep 23: off the bar, onto the buttons)
-});
-
-test('no row shows its address (Kate, Sep 23)', () => {
-  assert.doesNotMatch(src, /ql-url/, 'the address line is gone');
-  assert.doesNotMatch(src, /shownUrl/, 'and so is the helper that wrote it');
-});
-
-test('Copy link belongs to the public rows: every quick link has one', () => {
-  // The desk's own pages are buttons, so no Copy link can hand out the desk's
-  // address by mistake.
-  assert.match(src, /el\('button', 'linkish ql-copy', 'Copy link'\)/);
-  assert.doesNotMatch(src, /inHouse/, 'nothing in the box needs holding back any more');
-});
-
-test("the desk's own pages are filled buttons, the newsletter first", () => {
-  const doors = src.match(/export const DESK_DOORS = \[([\s\S]*?)\];/)[1];
-  const order = [...doors.matchAll(/key: '(\w+)'/g)].map(m => m[1]);
-  assert.deepEqual(order, ['newsletter', 'sort', 'exchange'], 'the newsletter sits above Content Sort, then the Exchange (Kate, Sep 23)');
-  // Kate changed this on Sep 23: the newsletter no longer opens in its own
-  // window; it switches in place, the way Content Sort does.
-  assert.doesNotMatch(doors, /newWindow/, 'no door opens its own window');
-  assert.match(src, /el\('a', 'sort-door'\)/);
-  assert.doesNotMatch(src, /'Desk work'/);
-  assert.doesNotMatch(src, /door-rows/);
-});
-
-// Kate, Sep 23: both doors switch screens in place. The newsletter's lane key
-// is not its screen's name ('issue'), so a door goes where its own address
-// goes, the way the front page's cards do.
-test('both doors switch in place and land on their own screens', () => {
-  const door = src.match(/function deskDoor\([\s\S]*?\n\}/)?.[0] ?? '';
-  assert.doesNotMatch(door, /_blank/, 'no door opens a new window');
-  assert.match(door, /onGoTo\(openedScreen\(new URL\(a\.href, location\.href\)\.hash\)\)/);
-  const doors = src.match(/export const DESK_DOORS = \[([\s\S]*?)\];/)[1];
-  const lands = [...doors.matchAll(/key: '(\w+)'/g)]
-    .map(m => openedScreen(new URL(src.match(new RegExp(`${m[1]}: \\{[^}]*href: '([^']+)'`))[1], 'https://desk.example/').hash));
-  assert.deepEqual(lands, ['issue', 'sort', 'publish']);
-});
-
-test('only Content Sort wears a badge, and none of it at zero', () => {
-  const doors = src.match(/export const DESK_DOORS = \[([\s\S]*?)\];/)[1];
-  assert.match(doors, /key: 'sort'[^\n]*badge: true/);
-  assert.doesNotMatch(doors, /key: 'newsletter'[^\n]*badge/, 'the newsletter has no alert (Kate, Sep 23)');
-  assert.doesNotMatch(doors, /key: 'exchange'[^\n]*badge/, 'nor does the Exchange: its count needs the sign-in the team page does not have');
-  assert.match(src, /if \(door\.badge\) a\.append/);
-  assert.match(src, /textContent = n \? String\(n\) : ''/);
-});
-
-test('the Queue folds from a chevron, open to start with', () => {
-  assert.match(src, /let queueOpen = true/);
-  assert.match(src, /faIcon\(queueOpen \? 'chevron-down' : 'chevron-right'\)/);
-  assert.match(src, /aria-expanded/);
-});
-
-// Kate, Sep 23: every row in the box says it is public facing, and the live
-// line (the Exchange's last update) sits under that, not in its place.
-test('every quick link says it is a public facing link', () => {
-  for (const key of ['share', 'listserv', 'exchange']) {
-    assert.match(entry(key), /sub: 'Public facing link'/, key);
+  for (const l of PUBLIC_LINKS) {
+    assert.equal(l.icon, icons[l.key], l.key);
+    assert.equal(l.sub, 'Public facing link', l.key);
   }
 });
 
-test("a row's own line and its live line are two lines, not one slot", () => {
-  assert.match(src, /el\('div', 'ql-sub', item\.sub \?\? ''\)/);
-  assert.doesNotMatch(src, /dataset\.sub/, 'the live line no longer falls back to the row\'s own');
+test('no row shows its address (Kate, Sep 23)', () => {
+  for (const src of [links, home]) {
+    assert.doesNotMatch(src, /ql-url/, 'the address line is gone');
+    assert.doesNotMatch(src, /shownUrl/, 'and so is the helper that wrote it');
+  }
 });
 
-// Kate, Sep 23: everyone uses the desk on a computer, so the team page is
-// always two columns, never the side column dropped under the form.
-test('the team page keeps its two columns at any laptop width', async () => {
-  const { readFileSync } = await import('node:fs');
-  const css = readFileSync(new URL('../css/styles.css', import.meta.url), 'utf8');
-  const cols = css.match(/\.team-cols \{([^}]*)\}/)[1];
-  assert.match(cols, /flex-wrap:\s*nowrap/);
-  assert.doesNotMatch(cols, /flex-wrap:\s*wrap\b/);
+test('every public link has Copy link, and the front page card draws it', () => {
+  assert.match(links, /el\('button', 'linkish ql-copy', 'Copy link'\)/);
+  assert.match(links, /copy\.textContent = 'Copied'/);
+  assert.match(home, /copyLinkButton\(link\)/);
+});
+
+// Kate, Oct 6: the Submit content page holds the form and its how-to; the
+// queue and the quick links left it for their own hubs.
+test('the Submit content page is the form and its how-to, nothing else', () => {
+  assert.match(team, /renderSubmitForm\(/);
+  assert.match(team, /'\/how-to\/submit-content\/'/);
+  for (const gone of [/QUICK_LINKS/, /DESK_DOORS/, /queueOpen/, /sort-door/, /team-side/]) assert.doesNotMatch(team, gone);
 });

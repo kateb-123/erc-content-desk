@@ -1,24 +1,10 @@
-/** Pure helpers for the front page: the six hubs' cards, and the counts the team page reads. */
+/** Pure helpers for the front page: the six hubs' cards. */
 import { readyToPublish } from './workflow.js';
 import { isoToShort } from './queue-view.js';
-import { splitPool } from './newsletter-view.js';
 import { sortList } from './sort-view.js';
 import { issueRows, sendsIn } from './issue-view.js';
 import { HUBS } from './shell-view.js';
 import { PUBLIC_LINKS } from './public-links.js';
-
-/** The three lanes' counts, each the work waiting on its page (design
- *  critique, Sep 18): Sort the queue, Newsletter what waits to be added to
- *  the next issue, Policy Exchange what Publish would add. Publish's number
- *  needs the live Exchange check (preview); until it lands, the kept rows
- *  ticked for the Exchange stand in. */
-export function laneCounts(rows, { schedule, issue, today, preview }) {
-  return {
-    sort: sortList(rows).live.length,   // exactly what Sort's list shows
-    newsletter: splitPool(rows, schedule, issue, today).live.length,
-    exchange: preview ? preview.adding.length : readyToPublish(rows).length,
-  };
-}
 
 /** Recently added: the newest rows first, deleted ones left out. */
 export function recentlyAdded(rows, count = 4) {
@@ -68,25 +54,4 @@ export function hubCards({ rows = [], schedule = [], today = '', loaded = false,
     card('links', { copies: PUBLIC_LINKS }),
     card('exchange', { count: loaded ? (preview ? preview.adding.length : readyToPublish(rows).length) : null, sub: 'waiting to publish', foot: hubUpdated ? `Live · updated ${isoToShort(hubUpdated, today)}` : '' }),
   ];
-}
-
-/** The lines under the team page's Quick links (Kate, Sep 22 and 23): under
- *  the Exchange when the desk last wrote to it (the newest published_at,
- *  whatever became of the row), under the Newsletter the next issue and how
- *  many items are ready to add; '' where there is nothing to say, and the row
- *  falls back to the line that says what it is. On a send day the issue due
- *  today is the next one, as on the Schedule tab. */
-export function quickLinkNotes(rows, { schedule, today }) {
-  const published = rows.map(r => String(r.published_at ?? '')).filter(Boolean).sort().at(-1) ?? '';
-  const dates = [...(schedule ?? [])].sort();
-  const next = dates.find(d => d >= today) ?? '';
-  // The send dates belong to the Newsletter, which says them once; the
-  // listserv row does not repeat them (Kate, Sep 23). How many are ready to
-  // add is the button's own count, not a word in this line.
-  return {
-    share: '',
-    listserv: '',
-    exchange: published ? `Updated ${isoToShort(published, today)}` : '',
-    newsletter: next ? `Next issue ${isoToShort(next, today)}` : '',
-  };
 }

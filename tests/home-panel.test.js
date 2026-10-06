@@ -1,34 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { laneCounts, recentlyAdded, hubCards, quickLinkNotes } from '../js/home-panel.js';
+import { recentlyAdded, hubCards } from '../js/home-panel.js';
 
-// ── The front page's lanes and its Recently added list (Kate's wireframes, Sep 17) ──
-
-// Every lane counts the work waiting on its page (design critique, Sep 18):
-// Sort the queue, Newsletter what waits to be added, Policy Exchange what
-// Publish would add.
-const laneRows = [
-  { id: 'q1', status: 'new' }, { id: 'q2', status: 'circleback' },
-  { id: 's1', status: 'kept', type: 'research', newsletter_issue: '2026-09-22' },
-  { id: 'w1', status: 'kept', type: 'research', published_at: '2026-09-01T10:00:00Z' },
-  { id: 'w2', status: 'kept', type: 'event', subtype: 'A&M', date: '2026-09-30' },   // a campus event: newsletter only, held off the Exchange
-  { id: 'p1', status: 'kept', type: 'research' },
-  { id: 'p2', status: 'kept', type: 'headline' },
-  { id: 't1', status: 'trashed' },
-];
-const laneSchedule = ['2026-09-22', '2026-10-06'];
-
-test('laneCounts: Sort counts the queue, Newsletter what waits to be added, Policy Exchange what Publish would add', () => {
-  const preview = { adding: ['p1'], newsletterOnly: ['w2'], notReady: [], skipped: ['p2'] };
-  // Newsletter: w1, w2, and p1, p2 (kept, ticked for both by default, waiting there before they are published).
-  assert.deepEqual(laneCounts(laneRows, { schedule: laneSchedule, issue: '2026-09-22', today: '2026-09-18', preview }),
-    { sort: 2, newsletter: 4, exchange: 1 });
-});
-
-test('laneCounts: before the Exchange check lands, Policy Exchange counts the kept rows it could publish', () => {
-  assert.equal(laneCounts(laneRows, { schedule: laneSchedule, issue: '2026-09-22', today: '2026-09-18', preview: null }).exchange, 2);
-  assert.deepEqual(laneCounts([], { schedule: [], issue: '', today: '2026-09-18', preview: null }), { sort: 0, newsletter: 0, exchange: 0 });
-});
+// ── The newest items (kept from the front page of Sep 17) ──
 
 test('recentlyAdded: the newest rows first, deleted ones left out, capped at the count asked for', () => {
   const rows = [
@@ -113,42 +87,4 @@ test('hubCards: a listserv not set up says so, and one with no sign-ups yet says
   const quiet = hubCards({ rows: [], schedule: [], today: '2026-10-07', loaded: true, preview: null, archive: null, hubUpdated: null, signups: { live: true, waiting: 0, last: '' } });
   assert.equal(quiet[3].foot, 'Live');
   assert.equal(quiet[3].count, 0);
-});
-
-// ── The notes under the team page's Quick links (Kate, Sep 22) ──
-
-// The send dates say themselves under Newsletter, so the listserv row does not
-// repeat them (Kate, Sep 23: "this doesn't need to go under listserv").
-test('quickLinkNotes: when the desk last wrote to the Exchange, and the newsletter dates', () => {
-  const rows = [
-    { published_at: '2026-08-30T16:00:00Z' },
-    { published_at: '2026-09-22T19:05:00Z', status: 'trashed' },   // scrapped later, still the last write
-    { published_at: '' },
-  ];
-  assert.deepEqual(quickLinkNotes(rows, { schedule: ['2026-09-08', '2026-09-22', '2026-10-06'], today: '2026-09-23' }),
-    { share: '', listserv: '', exchange: 'Updated Sep 22', newsletter: 'Next issue Oct 6' });
-});
-
-test('quickLinkNotes: on a send day the issue due today is next; with nothing known, nothing is said', () => {
-  assert.deepEqual(quickLinkNotes([], { schedule: ['2026-09-08', '2026-09-22', '2026-10-06'], today: '2026-09-22' }),
-    { share: '', listserv: '', exchange: '', newsletter: 'Next issue Sep 22' });
-  assert.deepEqual(quickLinkNotes([], { schedule: ['2026-09-08'], today: '2026-09-22' }),
-    { share: '', listserv: '', exchange: '', newsletter: '' });
-  assert.deepEqual(quickLinkNotes([], { schedule: [], today: '2026-09-22' }), { share: '', listserv: '', exchange: '', newsletter: '' });
-});
-
-// ── Kate, Sep 23: the Newsletter is a button of its own, like Content Sort,
-// so its line names the next issue and its count rides the button's badge. ──
-
-test('quickLinkNotes: the newsletter line names the next issue, and leaves the count to the badge', () => {
-  const rows = [
-    { id: 'w1', status: 'kept', type: 'research' },
-    { id: 'i1', status: 'kept', type: 'research', newsletter_issue: '2026-10-06' },
-  ];
-  const notes = quickLinkNotes(rows, { schedule: ['2026-09-22', '2026-10-06'], today: '2026-09-23' });
-  assert.equal(notes.newsletter, 'Next issue Oct 6');
-});
-
-test('quickLinkNotes: with no send date known, the newsletter line says nothing', () => {
-  assert.equal(quickLinkNotes([], { schedule: [], today: '2026-09-23' }).newsletter, '');
 });

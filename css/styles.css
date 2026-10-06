@@ -775,21 +775,14 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 /* ── The team's page, Submit content (Kate's sketch and the design handoff, Sep 22) ── */
 .team-page .page-head { margin: var(--spacing-03) 0 0; }
 .team-page .lede { margin: var(--spacing-02) 0 0; }
-/* Always two columns (Kate, Sep 23: everyone uses the desk on a computer): the
-   form takes what is left, the side column holds between 300 and 360px. */
-.team-cols { display: flex; gap: var(--spacing-10); align-items: flex-start; flex-wrap: nowrap; margin-top: var(--gap-28); }
-.team-main { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-07); }
-.team-side { flex: 0 1 360px; min-width: 300px; display: flex; flex-direction: column; gap: var(--spacing-07); }
-.form-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--gap-28); }
+.team-howto { color: var(--link-primary); text-decoration: underline; }
+.team-howto:hover { color: var(--link-primary-hover); }
+/* One column since Oct 6: the form alone, at a reading width. */
+.form-box { max-width: 840px; margin-top: var(--gap-28); background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--gap-28); }
 .form-box .submit-form { gap: var(--gap-28); }
-/* The queue: the section head, then rows straight on the page, every waiting item in its own scroll. */
-.queue-rows { max-height: 560px; overflow-y: auto; }
-.queue-row { padding: 13px 0; border-bottom: 1px solid var(--line); }
-.queue-title { font: var(--body-type); line-height: 21px; color: var(--ink); }
-.queue-meta { font: var(--meta-type); color: var(--text-helper); margin: var(--spacing-01) 0 0; }
-.queue-rows > .queue-meta { padding: 13px 0; }
 /* Quick links (Kate's pick C, Sep 23): one white box, every link a row with
-   its icon, its name and one line under it; no addresses on the page. */
+   its icon, its name and one line under it; no addresses on the page. The
+   team's how-to draws its Links to share with these since Oct 6. */
 .side-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--spacing-06); }
 .ql-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-05); padding: var(--spacing-05) 0; border-bottom: 1px solid var(--line); }
 .ql-row:last-child { border-bottom: 0; padding-bottom: var(--spacing-02); }
@@ -808,8 +801,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .ql-sub:empty, .ql-note:empty { display: none; }
 .ql-copy { height: 24px; margin: 0; padding: 0; font: var(--meta-type); color: var(--muted); text-decoration: underline; text-underline-offset: 2px; flex: none; }
 .ql-copy:hover:not(:disabled) { background: none; color: var(--ink); }
-/* The desk's own pages: a filled button each under the links, with its count
-   as a badge (Kate, Sep 23: "not 17 but more like an alert"). */
+/* A filled door to a page under a hub: Content Sort from the Content queue,
+   Publish from the Policy Exchange (Oct 6). */
 .sort-door {
   display: flex; align-items: center; gap: var(--spacing-04); min-height: 56px; padding: var(--spacing-04) var(--spacing-05);
   border-radius: var(--radius); background: var(--button-primary); color: var(--text-on-color); text-decoration: none;
@@ -820,14 +813,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .sort-door .door-name { font: var(--body-type); font-weight: 700; }
 .sort-door .door-note { font: var(--meta-type); color: var(--color-teal-100); }
 .sort-door .door-note:empty { display: none; }
-/* The badge: a pill in the maize, the one colour on the desk that means look
-   here, with the navy ink on it. Nothing waiting draws no badge. */
-.sort-door .door-count {
-  flex: none; min-width: 32px; padding: 0 var(--spacing-03); border-radius: var(--radius-pill);
-  background: var(--color-maize-400); color: var(--color-blue-400);
-  font-weight: 700; font-size: 15px; line-height: 24px; text-align: center;
-}
-.sort-door .door-count:empty { display: none; }
 .sort-door .fa-arrow-right { font-size: 14px; }
 /* A section that folds: the chevron and the label are one target, and the
    chevron points down while it is open, right while it is shut. */

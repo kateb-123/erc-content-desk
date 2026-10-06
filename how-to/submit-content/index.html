@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="/css/tokens.css?v=10" />
-  <link rel="stylesheet" href="/css/styles.css?v=150" />
+  <link rel="stylesheet" href="/css/styles.css?v=151" />
   <link rel="stylesheet" href="/css/shell.css?v=7" />
   <style>
     /* The team's how-to (Kate, Sep 30, 2026): one page on the desk's open
@@ -176,7 +176,7 @@
   </div>
 
   <script type="module">
-    import { QUICK_LINKS } from '/js/team-ui.js';
+    import { PUBLIC_LINKS } from '/js/public-links.js';
     import { TYPES, TYPE_ORDER, typeDisplay } from '/js/schema.js';
     import { faIcon } from '/js/icons.js';
     import { el } from '/js/ui-aids.js';
@@ -333,10 +333,10 @@
       }
     }).catch(() => {});
 
-    // ---- Links to share: the team page's own rows, Copy link and all ----
+    // ---- Links to share: the desk's own public links, Copy link and all ----
     const WHY = { share: 'For anyone outside the team to send us something.', listserv: 'To get the newsletter.', exchange: 'What we publish.' };
     const box = document.getElementById('links-box');
-    for (const item of QUICK_LINKS) {
+    for (const item of PUBLIC_LINKS) {
       const row = el('div', 'ql-row');
       const left = el('div', 'ql-left');
       const ico = el('span', 'ql-ico');

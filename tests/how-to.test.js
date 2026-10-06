@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { TYPE_ORDER } from '../js/schema.js';
-import { QUICK_LINKS } from '../js/team-ui.js';
+import { PUBLIC_LINKS } from '../js/public-links.js';
 
 // The team's how-to (Kate, Sep 30, 2026): a deck of slides on the desk's open
 // side, one slide at a time, that shows the real Submit content form being
@@ -13,14 +13,14 @@ const page = readFileSync(new URL('../how-to/submit-content/index.html', import.
 
 test('the deck links the team page and the three public pages, and only those addresses', () => {
   assert.match(page, /https:\/\/erc-content-desk\.vercel\.app\/#team/);
-  // The Links to share rows are drawn from QUICK_LINKS itself, so the three
+  // The Links to share rows are drawn from PUBLIC_LINKS itself, so the three
   // public addresses are never retyped here.
   const words = page.replace('https://erc-policy-exchange.vercel.app/data/news.csv', '');
-  for (const { href } of QUICK_LINKS) assert.ok(!words.includes(href), `${href} retyped on the page`);
+  for (const { href } of PUBLIC_LINKS) assert.ok(!words.includes(href), `${href} retyped on the page`);
   const addresses = new Set(page.match(/https?:\/\/[^\s"'<)]+/g));
-  const allowed = new Set(['https://erc-content-desk.vercel.app/#team', ...QUICK_LINKS.map(l => l.href), 'https://erc-policy-exchange.vercel.app/data/news.csv', 'https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css', 'http://www.w3.org/2000/svg', 'https://example.org/aggie/whoop-webinar', 'https://example.org/aggie/gig-em-grants', 'https://example.org/aggie/reveille-superintendent']);
+  const allowed = new Set(['https://erc-content-desk.vercel.app/#team', ...PUBLIC_LINKS.map(l => l.href), 'https://erc-policy-exchange.vercel.app/data/news.csv', 'https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css', 'http://www.w3.org/2000/svg', 'https://example.org/aggie/whoop-webinar', 'https://example.org/aggie/gig-em-grants', 'https://example.org/aggie/reveille-superintendent']);
   for (const a of addresses) assert.ok(allowed.has(a), `an address the deck should not carry: ${a}`);
-  assert.match(page, /import \{ QUICK_LINKS \} from '\/js\/team-ui\.js'/, 'the Links to share rows are the team page’s own');
+  assert.match(page, /import \{ PUBLIC_LINKS \} from '\/js\/public-links\.js'/, 'the Links to share rows are the desk’s own public links');
 });
 
 test('the templates can be downloaded from the page, and the spreadsheet is the one to use', () => {
