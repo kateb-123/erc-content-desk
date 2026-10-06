@@ -168,17 +168,18 @@ template and the public Exchange site.
   of the window.
 - The desk's nav is a top bar across every page (Kate's wireframes, Sep 17;
   the sidebar of Sep 16 to 17 is gone): 56px on the page ground under a
-  hairline, 40px sides. On the left a breadcrumb (no mark: the wireframe's
-  placeholder square read as a checkbox; the tab icon carries the mark): the desk's name (always a link home), then the lane the page is
-  in, then the page where one stands under its lane (the builder and Past
-  issues under Newsletter). On the right the two other lanes as quiet links
-  (`--text-secondary`, `--text-primary` on hover, no underline); the front
-  page, which lists all three lanes itself, shows none. Links switch screens
-  in place on the desk and are plain links on the builder's pages. The
-  addresses are the lanes' names: /#sort, /#newsletter, /#exchange (the old
-  ones still land). The content sits in a 1280px column, 24px under the bar,
-  the way the wireframes frame it; the desk's status line keeps its one-line
-  slot at the top of that column.
+  hairline, 40px sides. Since the six hubs (Kate, Oct 6, her pick A) it
+  carries the breadcrumb alone: the desk's name (always a link home; no mark,
+  the tab icon carries it), then the hub, then the page where one stands
+  under its hub (Content Sort under Content queue, the builder under
+  Newsletter, Publish under Policy Exchange). Nothing sits on the right but
+  Sign out, while a sign-in holds; the lane links of Sep 17 to Oct 6 are gone.
+  Links switch screens in place on the desk and are plain links on the
+  builder's pages. The addresses: /#team, /#queue, /#sort, /#finalize,
+  /#newsletter, /#schedule, /#past, /#listserv, /#exchange (the hub),
+  /#publish. The content sits in a 1280px column, 24px under the bar, the way
+  the wireframes frame it; the desk's status line keeps its one-line slot at
+  the top of that column.
 
 ## Icons
 
@@ -206,7 +207,7 @@ look, everywhere it appears.
 | **Keep with fields empty → Keep anyway / Fill it in** | `fa-triangle-exclamation` on the note | warning note in the Keep button's place, one ask (Kate, Sep 22: ask, then let them keep) | pressing Keep and next on a typed item whose fields are still empty (an event's date, time or location, an opportunity's deadline) says "Still missing: Date, Location."; Keep anyway keeps it (K does too), Fill it in puts the cursor in the first empty field. Nothing is blocked, since some items have no date yet |
 | **Send early? → Confirm / Cancel** | fa-clock on the note | warning note, one ask (same as Verify link) | adding an event that belongs to a later issue, the words stay bare, the bubble carries the icon |
 | Door buttons (Go to Publish, Go to Newsletter, the receipt's door) | → `fa-arrow-right` | Carbon's tertiary button with the arrow in its right slot (Sep 15, option A; square since Sep 17), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
-| **Top bar** (ERC Content Desk / the lane / the page; the two other lanes on the right) | none | a 56px bar under a hairline; crumb links in the ink, lane links quiet | every way around the desk (Kate's wireframes, Sep 17): the brand leads home, a lane opens its page in place, the builder's pages crumb under Newsletter |
+| **Top bar** (ERC Content Desk / the hub / the page) | none | a 56px bar under a hairline; crumb links in the ink | the way back up (Kate's wireframes, Sep 17; crumbs alone since Oct 6): the brand leads home, a hub's crumb opens its page in place, the builder's pages crumb under Newsletter |
 | **Keep the rest (N)** | ✓ `fa-check` | the small dark-grey button, Carbon's secondary (Kate, Sep 17: a sweep across a list is grey, the one decision on a card is the primary), right of Finalize's head while rewrites wait to be checked | keep every rewrite still to check. Sort's Keep the rest went with its sections (Kate, Sep 18: "Drop it") |
 | **Send it to** ERC Newsletter only | none | one checkbox on Sort's card (Kate, Sep 22; two boxes, Newsletter and Policy Exchange, from Sep 18) | where the item goes once kept: unticked it waits in the newsletter's pool at once AND on Publish, ticked it waits in the newsletter's pool and never reaches Publish; a campus event comes ticked: an Event with the A&M subtype, another unit's, the one thing held off the Exchange by default (Kate, Sep 22); ERC's own events go everywhere, and the old Spotlight request flag moves nothing. Nowhere is not a state, so Keep and next no longer locks on it |
 | **Dismiss all** | `fa-trash-can` | red ghost word at the right of a group's head on Sort | deletes every row in that group in one change, with one Undo ("Dismissed N. Undo"). The groups (Kate, Sep 22): Past, an event whose date has gone or an opportunity whose deadline has passed, and Already live, a link the live Exchange already has (the same check Publish runs, asked for quietly on arrival); they sit under the skipped rows, each row tagged, and a row in both is Already live |
@@ -214,43 +215,26 @@ look, everywhere it appears.
 | **Download the CSV** → **Download the CSV again** | `fa-download` | the primary in Publish's head, then a ghost word beside the Publish button | the copy of the Adding rows in the hub's own columns, saved before anything is sent (Kate, Sep 22: the CSV comes first); Publish appears only once it has been downloaded, and a changed Adding list asks for a fresh copy. The receipt's Download the CSV again is the whole hub file after the write |
 | **Publish N to the Exchange → Confirm / Cancel** | `fa-triangle-exclamation` on the ask | the primary, then one warning note in its place | the one ask before the append-only write to the public site (design audit b6, Sep 17), at body-01 with the count and "live" in 600; Keep the rest on Finalize gets "Kept N rewrites. Undo" instead of an ask |
 
-The front page is Kate's own (her answer, Sep 22): the title Desk, the lede
-"What waits on each page.", then five cards in a grid of white boxes: Submit
-content (the team's page), Content Sort, Newsletter and Policy Exchange,
-each a name, a line of what it holds and the count as a big numeral with an
-arrow, the teal bar on hover; and Documentation, a still card whose two
-lines are links of their own, How to submit content at
-/how-to/submit-content/ and How to build the newsletter at
-/how-to/newsletter/ (Kate, Sep 30; greyed and Forthcoming until then). The
-top bar shows no lane links there.
+The front page is Kate's drawn map (Oct 6; her six hubs, see "The six hubs"
+below): the title Content Desk, the lede "What waits in each hub.", then six
+white cards, three to a row on a laptop, in her order: Submit content,
+Content queue, Newsletter, Listserv, Public links, Policy Exchange. A card is
+its name with the arrow, the count as a big numeral, what it counts, and a
+line at its foot; the teal bar on hover. The name is the card's link,
+stretched over the whole box, so a card's own links (How to submit content,
+Copy link) stay links and never nest. Public links opens nothing: each row is
+a public page, opening in a new tab, with Copy link. Documentation went: each
+how-to sits in its hub. The cards of Sep 22 to Oct 6 (Submit content,
+Content Sort, Newsletter, Policy Exchange and a Documentation card) are gone.
 
-The team's page, Submit content at /#team (Kate's sketch and the handoff,
-Sep 22; `design/mockups/submit-content.png`, the handoff itself in
-`design/refresh-sep22/`): the page head, then two columns. Left, the share
-form in a white box, then Queue, a section head over the maize rule with
-"N waiting · newest first" at its right and every waiting item as a read-only
-row in its own scroll; the head's label is a fold, opening from a chevron on
-its left, and it starts open (Kate, Sep 23). Right, one white box and one
-button (Kate's pick C, Sep 23): Quick links, where every link is a row with a
-32px icon on the quiet surface, its name, and ONE line under it, never its
-address. The icons are Kate's set D of Sep 23, each one the thing itself and
-no two alike: a square plus for the share form, an address book for the
-sign-up, a display for the Exchange (her pick from ten, eight of them screens),
-a newspaper for the Newsletter and a stack for Content Sort ("I friggin hate having the url displayed"). Every row says "Public facing link" under its
-name (Kate, Sep 23), and where the desk knows something about the page a
-second line sits under that: when it last published to the Exchange. The
-Newsletter's next issue is said on its own button, and the send dates are said
-there only, never repeated on the listserv row. The four are the public
-share page, the listserv sign-up, the Policy Exchange and the Newsletter,
-each opening in a new tab, the first three with Copy link, which says Copied
-for two seconds. The Newsletter has none: its address is the desk's, and the
-desk is not for handing out. Under the box, the desk's own two as filled
-buttons (Kate, Sep 23): the Newsletter first, switching in place like Content Sort (her call after the audit), with the next
-issue under its name, then Content Sort in place. Only Content Sort wears a
-badge, a maize pill in navy ink at the button's right ("not 17 but more like an
-alert"), and it is drawn only while something waits; the newsletter's pool is
-not something to be alerted about. The top bar shows no lane on the team page; the Exchange is the third button (Kate, Sep 23, evening: "no link to policy exchange in header"). The
-Sort page is Content Sort everywhere since Sep 22.
+The team's page, Submit content at /#team: since Oct 6 (her answer) the form
+in a white box, at a reading width, with the bulk door, and "How to submit
+content" in the lede, nothing else. Its Queue fold went to the Content queue
+hub, its Quick links to the Public links card (`js/public-links.js`, in her
+drawing's order: the Exchange, Submit content, Join listserv; Kate's set D
+icons stay on the team's how-to, which draws its Links to share from the same
+list; no row ever shows its address), and its filled doors with the top bar's
+lanes. The Sort page is Content Sort everywhere since Sep 22.
 
 The front page of Sep 17 to 22 (Kate's wireframes; `design/mockups/index.png`) was the
 share form on the left and a 360px column on the right, 56px in from the
@@ -429,7 +413,43 @@ calls it (her call, "No Claude note on this page"). The one line outside
 the slides sits under the builder's tabs: "Every fix in Preview & Edit,
 never in Outlook, so the archive matches what went out." Next issue links
 it as a quiet underlined word under Open the builder, "How to build an
-issue", and the front page's Documentation card lists both how-tos.
+issue". The front page's Documentation card listed both how-tos until the
+six hubs (Oct 6); the team's how-to is linked from Submit content now.
+
+## The six hubs (Oct 6)
+
+Kate's hand-drawn map of the desk ("crazy vision", Oct 6, 2026) and her
+answers to nine questions, asked one at a time, then a wireframe: six hubs,
+each a card on the front page and a page of its own. The page heads read the
+same: the hub's name as the title and one line under it.
+
+- **Submit content** (/#team): the form and its how-to (above).
+- **Content queue** (/#queue): everything ever submitted, newest first,
+  deleted items left out, each wearing where it stands: Waiting (the review
+  tint), Kept (grey), In the <date> issue (blue), On the Exchange (green),
+  the word always saying it. A search by title or source. An outside
+  submission (it came with an email) is tagged From outside and shows no name
+  or email: the page is open. On the right, Content Sort's filled door with a
+  lock and how many wait, "Password protected", and How to sort, forthcoming.
+- **Newsletter** (/#newsletter): unchanged (her answer); its status, the
+  next send, how many are in it and the last sent, rides its card.
+- **Listserv** (/#listserv): the sign-up form's status, its last sign-up, its
+  link with Copy link; how many wait to be added, counted since the desk
+  began keeping a copy of each sign-up (her pick: `/api/listserv` keeps one
+  in a `signups` table once the script has taken it, made only by
+  `scripts/ensure-schema.js`, run by hand). Counts and dates only, never a
+  name or an address. Downloading the sign-ups in the listserv's format is
+  forthcoming.
+- **Public links**: the card alone, Copy link on each row.
+- **Policy Exchange** (/#exchange): the site's status (Live, or that it did
+  not answer), when it last changed (`/api/hub-updated`), the live link, how
+  many wait to publish; Publish opens from it as a page of its own,
+  /#publish, titled Publish, the way the builder sits under Newsletter. The
+  code, the handoff and where the logins are kept are forthcoming; the logins
+  themselves never go on a page or in this public repo.
+
+Her red Forthcoming items show as quiet grey lines with a clock, each to be
+built in a round of its own.
 
 ## The public pages
 
@@ -475,11 +495,13 @@ Kate's answers to the usability audit, each one decided by her:
 ## The sign-in and the highlight (Sep 23, evening)
 
 **Sep 30: the sign-in is OFF** (Kate: "turn off the password", her pick of
-"the sign-in only"). Every page opens to anyone with the address; the
-password lives on at one place, Publish's Confirm, the one write to the
-public site. `LOCKED_SCREENS` in `js/auth-view.js` is empty; the sign-in
-screen, `/api/auth` and the session code stay wired, so filling the set
-locks the desk again. The paragraphs below describe the lock as built.
+"the sign-in only"). **Oct 6: Content Sort is locked again, alone** (her
+drawn map: "Sort, password protected (Kate only)", and her pick "Sort only,
+as drawn"): `LOCKED_SCREENS` in `js/auth-view.js` holds sort and finalize;
+every other page opens to anyone with the address, and the password also
+lives on at Publish's Confirm, the one write to the public site. The
+sign-in's way back under its box is the Content queue now. The paragraphs
+below describe the lock as built on Sep 23.
 
 - **The desk password** (Kate: "password protected for just me, Kate"). The
   front page, Content Sort (both tabs) and Publish draw the sign-in in their
