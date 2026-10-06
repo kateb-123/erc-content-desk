@@ -29,12 +29,17 @@ export function sameStart(cut, full) {
 
 /** The description the desk should hold, or null when it is fine as it is:
  *  the tail off, and a research summary the feed cut short swapped for the
- *  page's whole abstract (`description`) when that begins the same way. The
+ *  page's whole abstract: of the page's versions (one, or a list), the
+ *  longest that begins the same way and runs longer than the cut text. The
  *  reader and scripts/fix-cut-abstracts.js both ask this. */
-export function fixedBlurb({ type, blurb }, description = '') {
+export function fixedBlurb({ type, blurb }, versions = []) {
   const tail = cutFeedTail(blurb);
   if (!tail.changed && !tail.cut) return null;
-  const whole = tail.cut && type === 'research' && String(description).length > tail.text.length && sameStart(tail.text, description);
-  const next = whole ? String(description).trim() : tail.text;
+  const whole = tail.cut && type === 'research'
+    ? [].concat(versions).map(v => String(v ?? '').trim())
+      .filter(v => v.length > tail.text.length && sameStart(tail.text, v))
+      .sort((a, b) => b.length - a.length)[0]
+    : '';
+  const next = whole || tail.text;
   return next === String(blurb ?? '').trim() ? null : next;
 }

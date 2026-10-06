@@ -96,18 +96,40 @@ const decode = s => String(s ?? '')
 /** The page's own description tag (or og:description), decoded; '' when it
  *  has none. A paper's page often keeps its whole abstract there (Kate,
  *  Oct 6: "we want those abstracts"). */
+function metaContent(html, name) {
+  for (const tag of String(html ?? '').match(/<meta\b[^>]*>/gi) ?? []) {
+    const key = tag.match(/\b(?:name|property)\s*=\s*["']([^"']+)["']/i)?.[1];
+    if (key?.toLowerCase() !== name) continue;
+    const content = tag.match(/\bcontent\s*=\s*"([^"]*)"/i)?.[1] ?? tag.match(/\bcontent\s*=\s*'([^']*)'/i)?.[1];
+    if (content) return decode(content).replace(/\s+/g, ' ').trim();
+  }
+  return '';
+}
+
 export function pageDescription(html) {
-  const tags = String(html ?? '').match(/<meta\b[^>]*>/gi) ?? [];
-  const find = name => {
-    for (const tag of tags) {
-      const key = tag.match(/\b(?:name|property)\s*=\s*["']([^"']+)["']/i)?.[1];
-      if (key?.toLowerCase() !== name) continue;
-      const content = tag.match(/\bcontent\s*=\s*"([^"]*)"/i)?.[1] ?? tag.match(/\bcontent\s*=\s*'([^']*)'/i)?.[1];
-      if (content) return decode(content).replace(/\s+/g, ' ').trim();
-    }
-    return '';
-  };
-  return find('description') || find('og:description');
+  return metaContent(html, 'description') || metaContent(html, 'og:description');
+}
+
+/** Every version of its abstract a page carries, as text (Kate's dry run,
+ *  Oct 6: on some EdWorkingPapers pages the description tag is a shorter
+ *  summary and the whole abstract is the body block): the body block
+ *  (Drupal's field--name-body) or a block marked abstract, a journal's
+ *  citation_abstract tag, then the description tag. The reader keeps the
+ *  longest that begins the way the item's cut text does. */
+export function pageAbstracts(html) {
+  const src = String(html ?? '');
+  const out = [];
+  // Every such block: a page can carry several (EdWorkingPapers' banner comes first).
+  // Each block is read from its own opening tag to its first closing one, so
+  // one block never swallows the next.
+  for (const open of src.matchAll(/<(div|section)\b[^>]*class\s*=\s*["'][^"']*\b(?:field--name-body|abstract)\b[^"']*["'][^>]*>/gi)) {
+    const from = open.index + open[0].length;
+    const to = src.indexOf(`</${open[1].toLowerCase()}>`, from);
+    const text = decode(pageTextFromHtml(src.slice(from, to === -1 ? undefined : to))).replace(/^abstract\b[:.\s]*/i, '').trim();
+    if (text) out.push(text);
+  }
+  for (const text of [metaContent(src, 'citation_abstract'), pageDescription(src)]) if (text) out.push(text);
+  return [...new Set(out)];
 }
 
 export function truncateForPrompt(text, cap = MAX_PAGE_CHARS) {
@@ -139,7 +161,7 @@ export async function fetchPageText(url, fetchImpl = fetch, lookupImpl) {
   return (await fetchPage(url, fetchImpl, lookupImpl)).text;
 }
 
-const NO_PAGE = { text: '', description: '' };
+const NO_PAGE = { text: '', description: '', abstracts: [] };
 
 /** Best-effort { text, description }: the page's readable text and its own
  *  description tag; both '' on any failure. Follows redirects manually,
@@ -179,7 +201,7 @@ export async function fetchPage(url, fetchImpl = fetch, lookupImpl) {
       const body = await readBodyCapped(res, MAX_RESPONSE_CHARS);
       const html = /html/.test(type);
       const text = html ? pageTextFromHtml(body) : body.replace(/\s+/g, ' ').trim();
-      return { text: truncateForPrompt(text), description: html ? pageDescription(body) : '' };
+      return { text: truncateForPrompt(text), description: html ? pageDescription(body) : '', abstracts: html ? pageAbstracts(body) : [] };
     }
     return NO_PAGE;
   } catch {

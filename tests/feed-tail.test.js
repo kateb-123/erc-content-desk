@@ -32,3 +32,11 @@ test('fixedBlurb: the description the desk should hold, or null when it is fine 
   assert.equal(fixedBlurb({ type: 'event', blurb: cut }, full), 'Special education finance systems rely on observable indicators…');
   assert.equal(fixedBlurb({ type: 'research', blurb: 'A whole abstract.' }, full), null);
 });
+
+test('fixedBlurb: of the page\'s versions, the longest that begins the same way wins', () => {
+  const cut = 'How do changes in immigration policy affect student attendance? We use student-by-day… more →';
+  const short = 'How do changes in immigration policy affect student attendance? We use student-by-day records.';
+  const whole = 'How do changes in immigration policy affect student attendance? We use student-by-day records from a large district and find lasting effects.';
+  assert.equal(fixedBlurb({ type: 'research', blurb: cut }, [short, whole, 'Another paper entirely, much longer than both of these put together, about something else.']), whole);
+  assert.equal(fixedBlurb({ type: 'research', blurb: cut }, short), short);
+});

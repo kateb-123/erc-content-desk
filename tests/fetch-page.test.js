@@ -142,3 +142,18 @@ test('pageDescription: the description tag, either attribute order, entities dec
   assert.equal(pageDescription('<meta property="og:description" content="From the card.">'), 'From the card.');
   assert.equal(pageDescription('<p>No tags</p>'), '');
 });
+
+// Kate's dry run, Oct 6: on some EdWorkingPapers pages the description tag is
+// a shorter summary; the whole abstract is the page's body block (Drupal's
+// field--name-body), and a journal's sits in an "abstract" block or its
+// citation_abstract tag.
+test('pageAbstracts: the body block, an abstract block, citation_abstract, then the description, each as text', async () => {
+  const { pageAbstracts } = await import('../api/_lib/fetch-page.js');
+  const drupal = '<meta name="description" content="Short summary."><div class="clearfix text-formatted field field--name-body field--type-text-with-summary"><p>How do changes in immigration policy affect attendance?</p><p>We find large effects &amp; no spillovers.</p></div><div class="field--name-field-wp-keywords">Keywords</div>';
+  assert.deepEqual(pageAbstracts(drupal), ['How do changes in immigration policy affect attendance? We find large effects & no spillovers.', 'Short summary.']);
+  assert.deepEqual(pageAbstracts('<section class="abstract"><h2>Abstract</h2><p>We study tutoring.</p></section>'), ['We study tutoring.'], 'the block\'s own heading is not the abstract');
+  assert.deepEqual(pageAbstracts('<meta name="citation_abstract" content="A journal abstract.">'), ['A journal abstract.']);
+  assert.deepEqual(pageAbstracts('<div class="field--name-body"><p>Site banner.</p></div><div class="field--name-body"><p>The paper\'s abstract.</p></div>'), ['Site banner.', "The paper's abstract."], 'every block, so the match can pick');
+  assert.deepEqual(pageAbstracts('<div class="field--name-body"><div class="inner">Wrapper.</div><div class="field--name-body"><p>Nested abstract.</p></div></div>'), ['Wrapper.', 'Nested abstract.'], 'a block inside another is still read');
+  assert.deepEqual(pageAbstracts('<p>Nothing marked</p>'), []);
+});

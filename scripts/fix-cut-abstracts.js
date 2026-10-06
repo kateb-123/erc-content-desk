@@ -29,10 +29,10 @@ console.log(`${rows.length} descriptions end in a feed's tail or are cut short.`
 const changed = [];
 let whole = 0;
 for (const row of rows) {
-  const page = row.type === 'research' && row.link ? await fetchPage(row.link) : { description: '' };
-  const next = fixedBlurb(row, page.description);
+  const page = row.type === 'research' && row.link ? await fetchPage(row.link) : { abstracts: [] };
+  const next = fixedBlurb(row, page.abstracts);
   if (next === null) continue;
-  const isWhole = next === page.description.trim();
+  const isWhole = page.abstracts.includes(next);
   if (isWhole) whole += 1;
   changed.push({ ...row, blurb: next });
   console.log(`\n${row.headline}\n  ${isWhole ? 'whole abstract' : 'tail off'} (${next.length} characters): ${next.slice(0, 90)}${next.length > 90 ? '…' : ''}`);

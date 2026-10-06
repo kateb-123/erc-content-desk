@@ -20,12 +20,12 @@ import { doiFromUrl, crossrefText } from './crossref.js';
 
 export async function readRow(row, { fetchPage, extract, lookupDoi }) {
   let pageText = '';
-  let description = '';   // the page's own description tag: a paper's whole abstract, often
+  let abstracts = [];   // the page's versions of its abstract: its body block, its description tag
   if (row.link) {
     try {
       const page = await fetchPage(row.link);
       pageText = typeof page === 'string' ? page : page?.text ?? '';
-      description = typeof page === 'string' ? '' : page?.description ?? '';
+      abstracts = typeof page === 'string' ? [] : page?.abstracts ?? [page?.description ?? ''];
     } catch { pageText = ''; }
     // A publisher that turns the reader away still has a DOI: Crossref knows
     // the title, authors, date, and journal from that alone (F12).
@@ -49,7 +49,7 @@ export async function readRow(row, { fetchPage, extract, lookupDoi }) {
   // A feed's tail ("… more →") never stays; a research summary the feed cut
   // short takes the page's whole abstract when the page's begins the same way
   // (Kate, Oct 6: "we want those abstracts"). What came in stays in original_text.
-  const fixed = fixedBlurb(next, description);
+  const fixed = fixedBlurb(next, abstracts);
   if (fixed !== null) next = { ...next, blurb: fixed };
   return { ...next, needs_review: needsReview ? 'yes' : '', pending_read: '' };
 }
