@@ -21,9 +21,29 @@ export const LOCKED_STEP_MESSAGE = 'Pick an issue and pull from the desk first.'
  * @param {number} itemCount
  * @returns {boolean}
  */
-export function canEnterStep(step, itemCount) {
+export function canEnterStep(step, itemCount, placeholders = 0) {
   if (!STEPS.includes(step)) return false;
-  return step === 'review' || Number(itemCount) > 0;
+  if (step === 'review') return true;
+  if (!(Number(itemCount) > 0)) return false;
+  // Save & Export waits while any item shows a placeholder where its photo
+  // would be (Kate, Oct 5: "don't let it get to 4 without a picture").
+  return step !== 'export' || Number(placeholders) === 0;
+}
+
+/**
+ * Why a step is locked, in words: no issue yet, or photos still to come.
+ * @param {string} step
+ * @param {number} itemCount
+ * @param {number} placeholders
+ * @returns {string}
+ */
+export function lockedMessage(step, itemCount, placeholders = 0) {
+  if (!(Number(itemCount) > 0)) return LOCKED_STEP_MESSAGE;
+  if (step === 'export' && Number(placeholders) > 0) {
+    const n = Number(placeholders);
+    return `${n === 1 ? 'One item shows a placeholder' : `${n} items show a placeholder`} where its photo would be. Add the photo under Media on Preview & Tweak, or pick Title and details, before Save & Export.`;
+  }
+  return LOCKED_STEP_MESSAGE;
 }
 
 /**
@@ -34,9 +54,9 @@ export function canEnterStep(step, itemCount) {
  * @param {{ current: string, reached: number, itemCount: number }} o
  * @returns {'current'|'complete'|'open'|'locked'}
  */
-export function stepState(step, { current, reached, itemCount }) {
+export function stepState(step, { current, reached, itemCount, placeholders = 0 }) {
   if (step === current) return 'current';
-  if (!canEnterStep(step, itemCount)) return 'locked';
+  if (!canEnterStep(step, itemCount, placeholders)) return 'locked';
   const idx = STEPS.indexOf(step);
   return idx < Number(reached) ? 'complete' : 'open';
 }

@@ -89,3 +89,13 @@ test('issue dates read as the archive writes them, no zero padding (f17)', () =>
   assert.equal(displayDateToISO('not a date'), '');
   assert.equal(displayDateToISO(''), '');
 });
+
+test('Save & Export is the one step a placeholder locks; the step row says why (Oct 5)', () => {
+  assert.equal(canEnterStep('export', 5, 0), true);
+  assert.equal(canEnterStep('export', 5, 1), false);
+  assert.equal(canEnterStep('edit', 5, 1), true);
+  assert.equal(canEnterStep('triage', 5, 1), true);
+  assert.equal(stepState('export', { current: 'edit', reached: 2, itemCount: 5, placeholders: 1 }), 'locked');
+  assert.equal(stepState('export', { current: 'edit', reached: 2, itemCount: 5, placeholders: 0 }), 'open');
+  assert.equal(stepState('export', { current: 'edit', reached: 2, itemCount: 5 }), 'open', 'no count given means no placeholders');
+});

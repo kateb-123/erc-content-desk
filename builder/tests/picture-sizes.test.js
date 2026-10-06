@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { PICTURE_SIZES, pictureWidthOf, setPictureWidth, placeholderItems, itemLayouts } from '../js/options.js';
 import { createEmptyIssue, countIssueItems } from '../js/model.js';
 import { renderNewsletter, PICTURE_MIN, PICTURE_MAX } from '../js/template.js';
-import { canEnterStep } from '../js/wizard.js';
+import { canEnterStep, lockedMessage, LOCKED_STEP_MESSAGE } from '../js/wizard.js';
 
 const PHOTO = 'https://x.org/p.jpg';
 const withItem = (fields, section = 'research', group = 'brief') => {
@@ -58,9 +58,19 @@ test('placeholderItems names the items the preview draws a placeholder for, and 
   assert.deepEqual(placeholderItems(issue), [], 'a section that is off counts nothing');
 });
 
-test('a placeholder never blocks the way on: every later step opens on items alone', () => {
-  const { issue } = withItem({ pictureStyle: 'headshot' });
-  for (const step of ['triage', 'edit', 'export']) assert.equal(canEnterStep(step, countIssueItems(issue)), true);
-  assert.ok(!/dashed/.test(renderNewsletter(issue)), 'and the sent email carries no placeholder');
-  assert.deepEqual(itemLayouts('research', issue.sections.research.items[0]).filter((l) => l.on).map((l) => l.key), ['headshot']);
+test('a placeholder keeps Save & Export shut, and nothing else (Kate, Oct 5: "don\'t let it get to 4 without a picture")', () => {
+  const { issue, item } = withItem({ pictureStyle: 'headshot' });
+  const n = () => placeholderItems(issue).length;
+  assert.equal(n(), 1);
+  for (const step of ['triage', 'edit']) assert.equal(canEnterStep(step, countIssueItems(issue), n()), true, `${step} stays open`);
+  assert.equal(canEnterStep('export', countIssueItems(issue), n()), false, 'Save & Export waits for the photo');
+  assert.match(lockedMessage('export', countIssueItems(issue), n()), /^One item shows a placeholder where its photo would be\. Add the photo under Media/);
+  assert.match(lockedMessage('export', 3, 2), /^2 items show a placeholder/);
+  assert.equal(lockedMessage('export', 0, 2), LOCKED_STEP_MESSAGE, 'no issue at all says so first');
+  item.fields.image = PHOTO;
+  assert.equal(canEnterStep('export', countIssueItems(issue), n()), true, 'the photo opens it');
+  delete item.fields.image;
+  itemLayouts('research', item).find((l) => l.key === 'bare').apply();
+  assert.equal(canEnterStep('export', countIssueItems(issue), n()), true, 'so does giving up the picture');
+  assert.ok(!/dashed/.test(renderNewsletter(issue)), 'the sent email never carries a placeholder');
 });

@@ -21,7 +21,7 @@ import { getField, setField } from './editpath.js';
 import { computePreviewScale } from './preview.js';
 import { takeOut, putBack, listedItems, listedSections } from './removals.js';
 import { renderShell } from '../../js/shell-ui.js';
-import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
+import { STEPS, canEnterStep, lockedMessage, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
 import { normalizeLinkUrl } from './editing.js';
 // The per-issue layout options the Outline sets (Claude Design handoff, Oct 2026).
 import { CALLOUT_CHOICES, PICTURE_CHOICES, PICTURE_SIZES, setCallout, setNav, itemOptions, setPictureStyle, itemLayouts, pictureWidthOf, setPictureWidth, placeholderItems, resetOptions, hasCustomOptions } from './options.js';
@@ -142,7 +142,7 @@ const stepIndicators = document.querySelectorAll('[data-nav-step]');
  * an issue arrives on Review.
  */
 function syncStepNav() {
-  const at = { current: state.step, reached: state.reached, itemCount: countIssueItems(state.issue) };
+  const at = { current: state.step, reached: state.reached, itemCount: countIssueItems(state.issue), placeholders: placeholderItems(state.issue).length };
   stepIndicators.forEach((indicator) => {
     const navStep = indicator.dataset.navStep;
     const shows = stepState(navStep, at);
@@ -152,7 +152,7 @@ function syncStepNav() {
     if (shows === 'current') btn.setAttribute('aria-current', 'step');
     else btn.removeAttribute('aria-current');
     // A locked step is greyed, and its title says why.
-    if (shows === 'locked') { btn.setAttribute('aria-disabled', 'true'); btn.title = LOCKED_STEP_MESSAGE; }
+    if (shows === 'locked') { btn.setAttribute('aria-disabled', 'true'); btn.title = lockedMessage(navStep, at.itemCount, at.placeholders); }
     else { btn.removeAttribute('aria-disabled'); btn.removeAttribute('title'); }
   });
 }
@@ -198,7 +198,9 @@ function goTo(step) {
 /** The one gate Next and the step buttons share: with nothing pulled, the later
  *  steps say why on the status line and stay put. */
 function tryGo(step) {
-  if (!canEnterStep(step, countIssueItems(state.issue))) { setWizardStatus(LOCKED_STEP_MESSAGE); return; }
+  const items = countIssueItems(state.issue);
+  const placeholders = placeholderItems(state.issue).length;
+  if (!canEnterStep(step, items, placeholders)) { setWizardStatus(lockedMessage(step, items, placeholders)); return; }
   goTo(step);
 }
 
@@ -843,6 +845,8 @@ window.addEventListener('resize', debounce(fitPreview, 150));
 function refreshEditIframe(iframe) {
   // Re-setting srcdoc triggers the 'load' event, which re-attaches the listener.
   iframe.srcdoc = renderNewsletter(state.issue, { editable: true });
+  // A tweak can lock or free Save & Export (a placeholder, or its photo arriving).
+  syncStepNav();
 }
 
 /** One fold in the edit column's rail: its label, and the empty body to fill. */
@@ -1861,14 +1865,6 @@ function renderExport() {
   if (!state.issue || !countIssueItems(state.issue)) {
     emptyLine(container, 'Nothing to export yet. Pull from the desk on the Review step first.');
     return;
-  }
-
-  // Placeholders never block the way out (Kate, Oct 5); they are named once,
-  // so a photo that was meant to come is not forgotten.
-  const waitingPhotos = placeholderItems(state.issue);
-  if (waitingPhotos.length) {
-    const names = waitingPhotos.map(({ item }) => `"${item.fields?.title || '(untitled)'}"`).join(', ');
-    container.appendChild(inlineNote('warning', `${waitingPhotos.length === 1 ? 'One item shows a placeholder' : `${waitingPhotos.length} items show a placeholder`} where its photo would be: ${names}. The email goes out without the picture unless a photo is added under Media on Preview & Tweak.`));
   }
 
   // Button row. An error toast has no timeout; the next click on the row
