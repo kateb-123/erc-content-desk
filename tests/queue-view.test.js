@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sortRows, isoToShort, queueRows, queueMatch, partnerFocusKey } from '../js/queue-view.js';
+import { sortRows, isoToShort, queueRows, queueMatch, partnerFocusKey, contentQueue } from '../js/queue-view.js';
 
 // Deliberately NOT pre-sorted in any tested order, so an in-place sort or a
 // wrong direction provably fails.
@@ -118,4 +118,56 @@ test('queueRows accepts the snapshot map the queue keeps for Undo', () => {
   const rows = [{ id: 'a', status: 'new' }, { id: 'b', status: 'trashed' }];
   const justDeleted = new Map([['b', { id: 'b', status: 'circleback', newsletter_issue: '2026-09-22' }]]);
   assert.deepEqual(queueRows(rows, justDeleted).map(r => r.id), ['a', 'b']);
+});
+
+// ── The Content queue hub (Kate's drawn map, Oct 6, 2026): everything ever
+// submitted, newest first, each saying where it stands now; deleted items
+// left out; outside submissions tagged From outside, never with their email;
+// a search by title or source. ──
+
+const everything = [
+  { id: 'w1', status: 'new', type: 'event', headline: 'Howdy Policy Trivia Night', submitter: 'KB', submitted_at: '2026-10-06T10:00:00Z' },
+  { id: 'o1', status: 'kept', type: 'research', headline: "Reveille's Guide to School Finance", source: 'Aggie Policy Lab', submitter: 'Ol Sarge', submitter_email: 'sarge@example.org', newsletter_issue: '2026-10-20', submitted_at: '2026-10-05T10:00:00Z' },
+  { id: 'p1', status: 'kept', type: 'research', headline: "Gig 'Em Teacher Pay Study", submitter: 'JM', published_at: '2026-10-02T15:00:00Z', submitted_at: '2026-10-02T10:00:00Z' },
+  { id: 'b1', status: 'kept', type: 'event', headline: 'Midnight Yell Practice for Policy Briefs', published_at: '2026-09-21T15:00:00Z', newsletter_issue: '2026-09-22', submitted_at: '2026-09-20T10:00:00Z' },
+  { id: 'k1', status: 'kept', type: 'opportunity', headline: 'Silver Taps for Old Rubrics', submitted_at: '2026-09-30T10:00:00Z' },
+  { id: 's1', status: 'circleback', type: '', headline: '', link: 'https://example.org/aggie/bonfire-budget', submitted_at: '2026-09-29T10:00:00Z' },
+  { id: 'd1', status: 'trashed', headline: 'Deleted one', submitted_at: '2026-10-07T10:00:00Z' },
+  { id: 'r1', status: 'new', pending_read: 'yes', link: 'https://example.org/aggie/being-read', submitted_at: '2026-10-07T11:00:00Z' },
+];
+
+test('contentQueue: everything but the deleted, newest first, each with where it stands', () => {
+  const list = contentQueue(everything, { today: '2026-10-07' });
+  assert.deepEqual(list.map(e => [e.id, e.where]), [
+    ['r1', ['Waiting']],
+    ['w1', ['Waiting']],
+    ['o1', ['In the Oct 20 issue']],
+    ['p1', ['On the Exchange']],
+    ['k1', ['Kept']],
+    ['s1', ['Waiting']],   // skipped on Sort is still waiting for it
+    ['b1', ['On the Exchange', 'In the Sep 22 issue']],
+  ]);
+});
+
+test('contentQueue: an outside submission is tagged and shows no name or email; the team\'s shows who added it', () => {
+  const list = contentQueue(everything, { today: '2026-10-07' });
+  const outside = list.find(e => e.id === 'o1');
+  assert.equal(outside.outside, true);
+  assert.equal(outside.title, "Reveille's Guide to School Finance");
+  assert.equal(outside.meta, 'New research · Aggie Policy Lab · Oct 5');
+  assert.doesNotMatch(JSON.stringify(outside), /sarge|Sarge/, 'neither the email nor the name');
+  const ours = list.find(e => e.id === 'w1');
+  assert.equal(ours.outside, false);
+  assert.equal(ours.meta, 'Event · added by KB · Oct 6');
+  assert.equal(list.find(e => e.id === 's1').title, 'https://example.org/aggie/bonfire-budget', 'no title yet: the link');
+  assert.equal(list.find(e => e.id === 's1').meta, 'No type · Sep 29');
+});
+
+test('contentQueue: the search finds by title or source, any case, and nothing else', () => {
+  const titles = term => contentQueue(everything, { today: '2026-10-07', term }).map(e => e.id);
+  assert.deepEqual(titles('reveille'), ['o1']);
+  assert.deepEqual(titles('AGGIE POLICY'), ['o1']);
+  assert.deepEqual(titles('bonfire'), ['s1'], 'a row with no title is found by its link');
+  assert.deepEqual(titles('sarge'), [], 'never by a submitter from outside');
+  assert.deepEqual(titles('  '), contentQueue(everything, { today: '2026-10-07' }).map(e => e.id), 'a blank search is no search');
 });

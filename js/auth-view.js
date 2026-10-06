@@ -1,16 +1,14 @@
 /**
- * The sign-in (Kate, Sep 23): the front page, Content Sort and Publish are
- * hers, so they ask for the desk password; the team's page and the
- * Newsletter stay open. Pure rules, so node --test can hold them; the
+ * The sign-in (Kate, Sep 23; since her drawn map of Oct 6, Content Sort
+ * alone): the locked screens ask for the desk password. Pure rules, so node --test can hold them; the
  * screen (auth-ui.js) draws what these say.
  */
 
-/** The screens behind the password. Finalize is a tab of Content Sort.
- *  Kate, Sep 30: "turn off the password": the set is EMPTY, so no page asks
- *  for a sign-in; the password lives on at Publish's Confirm, the one write
- *  to the public site. Put 'home', 'sort', 'finalize' and 'publish' back here
- *  to lock the desk again: the sign-in screen and /api/auth are still wired. */
-export const LOCKED_SCREENS = new Set([]);
+/** The screens behind the password. Kate, Sep 30: "turn off the password";
+ *  then her drawn map (Oct 6): Sort is "password protected (Kate only)", and
+ *  only Sort, with Finalize, its tab. Everything else opens to anyone; the
+ *  password lives on at Publish's Confirm, the one write to the public site. */
+export const LOCKED_SCREENS = new Set(['sort', 'finalize']);
 
 /** Whether any page asks for a sign-in at all. */
 export const SIGN_IN_ON = LOCKED_SCREENS.size > 0;

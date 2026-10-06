@@ -3,7 +3,8 @@
  * the bar, one white box in the middle of the window with the page's name,
  * the password field and the button, and nothing else to read ("you're
  * soooo text heavy"). A wrong password says so under the field and stays.
- * Under the box, the team's own page for anyone who landed here.
+ * Under the box, the way back to the Content queue, which Sort hangs under
+ * (Kate's drawn map, Oct 6), for anyone who landed here.
  */
 import { signInLine } from './auth-view.js';
 import { el, button, busyLine, focusKeyIn, restoreFocus } from './ui-aids.js';
@@ -63,9 +64,9 @@ export function renderSignIn(container, { screen, checking, busy, error, onSignI
   middle.append(box);
 
   const team = el('p', 'signin-team');
-  const a = el('a', '', 'Submit content');
-  a.href = '/#team';
-  a.addEventListener('click', event => { event.preventDefault(); onGoTo('team'); });
+  const a = el('a', '', 'Content queue');
+  a.href = '/#queue';
+  a.addEventListener('click', event => { event.preventDefault(); onGoTo('queue'); });
   team.append(a);
   middle.append(team);
   container.append(page);

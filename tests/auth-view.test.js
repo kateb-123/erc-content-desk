@@ -15,12 +15,13 @@ test('the page and the server use the same two sentences, so the page can act on
 // Kate, Sep 23: the front page, Content Sort (both tabs) and Publish are
 // hers; the team's page and the Newsletter stay open to the team.
 
-// Kate, Sep 30: "turn off the password". The sign-in is off: no screen is
-// locked, and the password lives on only at Publish's Confirm (the one write
-// to the public site). The set stays, empty, so the lock can come back.
-test('no screen is locked: the sign-in is off, every page opens', () => {
-  assert.equal(LOCKED_SCREENS.size, 0);
-  for (const s of ['home', 'sort', 'finalize', 'publish', 'team', 'issue', 'schedule', 'past', 'builder']) assert.equal(isLocked(s), false, s);
+// Kate, Sep 30: "turn off the password"; then her drawn map (Oct 6): Sort is
+// "password protected (Kate only)", and only Sort. Finalize is a tab of it.
+// Everything else opens to anyone; Publish's Confirm still asks the password.
+test('only Content Sort is locked: Sort and its Finalize tab', () => {
+  assert.deepEqual([...LOCKED_SCREENS].sort(), ['finalize', 'sort']);
+  for (const s of ['sort', 'finalize']) assert.equal(isLocked(s), true, s);
+  for (const s of ['home', 'team', 'queue', 'issue', 'schedule', 'past', 'listserv', 'exchange', 'publish', 'builder']) assert.equal(isLocked(s), false, s);
 });
 
 test('the sign-in names the page it opens', () => {

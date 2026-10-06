@@ -96,3 +96,34 @@ export function isoToShort(iso, todayIso) {
   const day = `${name} ${Number(m[3])}`;
   return m[1] === String(todayIso ?? '').slice(0, 4) ? day : `${day}, ${m[1]}`;
 }
+
+/**
+ * The Content queue hub (Kate's drawn map, Oct 6, 2026): everything ever
+ * submitted, newest first, deleted items left out, each saying where it
+ * stands now: Waiting (new or skipped on Sort), Kept, On the Exchange, In
+ * the <date> issue (an item can be both of the last two). An outside
+ * submission (it came with an email, from the public form) is tagged and
+ * shows no name and no email: the page is open. The search reads the title,
+ * the link where there is no title, and the source, any case.
+ * Returns [{ id, title, meta, where: [words], outside }].
+ */
+export function contentQueue(rows, { today = '', term = '' } = {}) {
+  const want = String(term ?? '').trim().toLowerCase();
+  return rows
+    .filter(r => r.status !== 'trashed')
+    .filter(r => !want || [r.headline || r.link, r.source].some(v => String(v ?? '').toLowerCase().includes(want)))
+    .sort(bySubmitted('desc'))
+    .map(r => {
+      const outside = Boolean(String(r.submitter_email ?? '').trim());
+      const where = [];
+      if (r.status === 'new' || r.status === 'circleback') where.push('Waiting');
+      else {
+        if (String(r.published_at ?? '').trim()) where.push('On the Exchange');
+        if (String(r.newsletter_issue ?? '').trim()) where.push(`In the ${isoToShort(r.newsletter_issue, today)} issue`);
+        if (!where.length) where.push('Kept');
+      }
+      const meta = [r.type ? typeDisplay(r.type) : 'No type', String(r.source ?? '').trim(), !outside && r.submitter && `added by ${r.submitter}`, isoToShort(r.submitted_at, today)]
+        .filter(Boolean).join(' · ');
+      return { id: r.id, title: r.headline || r.link || '(untitled)', meta, where, outside };
+    });
+}

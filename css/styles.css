@@ -315,6 +315,10 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 /* In the newsletter pool's type cell the badge sits on its own line under the subtype. */
 .badge-dupe { background: var(--tag-background-review); color: var(--tag-color-review); }
 .badge-new { background: var(--tag-background-blue); color: var(--tag-color-blue); }
+/* Where an item stands on the Content queue (Oct 6): waiting wears the review
+   tint, an issue the blue, the Exchange the green; the word always says it. */
+.badge-waiting { background: var(--tag-background-review); color: var(--tag-color-review); }
+.badge-live { background: var(--notification-success-background); color: var(--text-success); }
 .alert-word { color: var(--link-primary); }
 .alert-word:hover { color: var(--link-primary-hover); }
 /* On the desk links and quiet words are grey (Kate's pick, Sep 17), the grey of
@@ -939,3 +943,30 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hl-search { width: 240px; height: 32px; }
 .hl-from-note { margin: var(--spacing-03) 0 0; font: var(--meta-type); color: var(--text-helper); }
 .hl-from-note:empty { display: none; }
+
+/* ── The hubs (Kate's drawn map, Oct 6, 2026) ───────────────────────────── */
+.hub-head .page-title { margin: 0; }
+.hub-head .lede { margin: var(--spacing-02) 0 0; }
+.hub-head { margin-bottom: var(--gap-28); }
+/* A forthcoming item, in the quiet grey (her red Forthcoming lines). */
+.forthcoming { font: var(--meta-type); color: var(--text-placeholder); margin: var(--spacing-05) 0 0; }
+.forthcoming .fa-solid { font-size: 12px; margin-right: var(--spacing-01); }
+
+/* The Content queue: the list on the left, Content Sort's door on the right. */
+.qh-split { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--spacing-08); align-items: start; }
+.qh-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-05); margin-bottom: var(--spacing-04); }
+.qh-count { font: var(--meta-type); color: var(--text-helper); white-space: nowrap; }
+.qh-search { flex: 0 1 320px; width: 320px; height: 32px; }
+.qh-list { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); }
+.qh-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-05); padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--line-in); }
+.qh-row:first-child { border-top: 0; }
+.qh-words { min-width: 0; }
+.qh-title { font: var(--body-type); font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+.qh-meta { font: var(--meta-type); color: var(--text-helper); margin-top: var(--spacing-01); }
+.qh-outside { margin: 0 0 0 var(--spacing-02); height: 20px; font-size: 12px; vertical-align: 2px; }
+.qh-where { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--spacing-02); flex: none; max-width: 45%; }
+.qh-where .badge { margin: 0; }
+.qh-empty { margin: 0; padding: var(--spacing-05); font: var(--meta-type); color: var(--text-helper); }
+.qh-list > .load-line, .qh-list > .load-failed { margin: 0; padding: var(--spacing-05); }
+.qh-door { width: 100%; }
+.qh-side-note { font: var(--meta-type); color: var(--text-helper); margin: var(--spacing-03) 0 0; }

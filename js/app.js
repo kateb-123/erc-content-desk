@@ -21,6 +21,7 @@ import { sessionStatus, signIn as signInRequest, signOut as signOutRequest } fro
 import { isLocked, SIGN_IN_ON, authError, lockedOut, WRONG_PASSWORD } from './auth-view.js';
 import { renderSignIn } from './auth-ui.js';
 import { hubHead, HUB_LEDES } from './hub-head.js';
+import { renderQueue } from './queue-ui.js';
 
 
 const state = {
@@ -635,8 +636,10 @@ function render() {
       onGoTo: goTo,
       onRefresh: reload,
     });
-  } else if (['queue', 'listserv', 'exchange'].includes(state.screen)) {
-    const titles = { queue: 'Content queue', listserv: 'Listserv', exchange: 'Policy Exchange' };
+  } else if (state.screen === 'queue') {
+    renderQueue(screens.queue, { ...common, loaded: state.loaded, loadFailed: state.loadFailed, onGoTo: goTo, onRefresh: reload });
+  } else if (['listserv', 'exchange'].includes(state.screen)) {
+    const titles = { listserv: 'Listserv', exchange: 'Policy Exchange' };
     screens[state.screen].replaceChildren(hubHead(titles[state.screen], HUB_LEDES[state.screen]));
   } else if (state.screen === 'team') {
     renderTeam(screens.team, {
