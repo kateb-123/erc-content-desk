@@ -14,10 +14,18 @@ test('an item without a summary, or outside the described sections, has one layo
   assert.deepEqual(on(itemLayouts('research', item())), ['bare']);
 });
 
-test('an item with a summary offers four layouts; the picture ones are dim until it has a photo', () => {
+test('an item with a summary offers four layouts; the picture ones say they lack a photo, and still apply with a placeholder', () => {
   const list = itemLayouts('research', item({ summary: 'x' }));
   assert.deepEqual(list.map((l) => [l.key, l.dim]), [['bare', false], ['text', false], ['stamp', true], ['headshot', true]]);
   assert.deepEqual(on(list), ['text'], 'Research shows the description by default, with no picture to show');
+  const noPhoto = item({ summary: 'x' });
+  itemLayouts('research', noPhoto).find((l) => l.key === 'headshot').apply();
+  assert.deepEqual(on(itemLayouts('research', noPhoto)), ['headshot'], 'the choice holds without a photo');
+  const issue = createEmptyIssue();
+  issue.sections.research.enabled = true;
+  issue.sections.research.items = [noPhoto];
+  assert.match(renderNewsletter(issue, { editable: true }), /width:160px; height:200px; border:1px dashed/, 'the preview draws the placeholder');
+  assert.ok(!/dashed|width="160"/.test(renderNewsletter(issue)), 'the email draws nothing until a photo is there');
   const withPhoto = itemLayouts('research', item({ summary: 'x', image: 'https://x.org/p.jpg' }));
   assert.deepEqual(withPhoto.map((l) => l.dim), [false, false, false, false]);
   assert.deepEqual(on(withPhoto), ['stamp'], 'a photo defaults to the stamp');

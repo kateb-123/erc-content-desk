@@ -65,16 +65,19 @@ export function itemOptions(sectionKey, item) {
  * The layouts an item can take, for the card's wireframes (Kate, Oct 5):
  * title and details only; with its description; the description beside a
  * 96px stamp; a 160px headshot beside it all. Each says whether it is the
- * one in force (`on`), whether it needs a photo the item lacks (`dim`), and
- * how to apply it. Items with no summary, or outside the described
- * sections, have only the first.
+ * one in force (`on`), whether the item still lacks the photo it draws
+ * (`dim`, a hint only: the layout applies anyway, and the preview shows a
+ * placeholder until a photo is added; Kate, Oct 5), and how to apply it.
+ * Items with no summary, or outside the described sections, have only the
+ * first.
  * @returns {Array<{key: string, label: string, on: boolean, dim: boolean, apply: () => void}>}
  */
 export function itemLayouts(sectionKey, item) {
   const f = item?.fields || {};
   const o = itemOptions(sectionKey, item);
   const hasPic = !!String(f.image ?? '').trim();
-  const pic = o.descriptionOn && hasPic ? o.pictureStyle : 'none';
+  // With no photo, only a layout chosen by hand counts (the preview draws its placeholder).
+  const pic = !o.descriptionOn ? 'none' : hasPic ? o.pictureStyle : (PICTURE_STYLES.includes(f.pictureStyle) ? f.pictureStyle : 'none');
   const bare = { key: 'bare', label: 'Title and details', on: !o.descriptionOn, dim: false,
     apply: () => { if (!item.fields) item.fields = {}; item.fields.showSummary = false; } };
   if (!o.hasDescription) return [bare];

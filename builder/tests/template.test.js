@@ -308,6 +308,20 @@ test('no description, no picture: items without a summary, or with it hidden, re
   assert.ok(!pictures(renderNewsletter(issue)).some(([n]) => n === 'First blurb'));
 });
 
+test('a picture layout chosen for an item with no photo draws a dashed placeholder in the editable preview only', () => {
+  const issue = createEmptyIssue();
+  issue.sections.spotlight.enabled = true;
+  issue.sections.spotlight.items = [
+    { id: 's1', group: 'events', fields: { title: 'Talk', summary: 'Words.', pictureStyle: 'stamp' } },
+    { id: 's2', group: 'events', fields: { title: 'Other talk', summary: 'Words.' } },
+  ];
+  const preview = renderNewsletter(issue, { editable: true });
+  assert.match(preview, /<td valign="top" width="112"[^>]*><span style="display:block; box-sizing:border-box; width:96px; height:120px; border:1px dashed #A7A7A7;[^"]*" data-edit-section="spotlight" data-edit-item="s1" data-edit-field="image">Photo<\/span>/);
+  assert.equal(count(preview, 'dashed'), 1, 'only the item whose layout was chosen; an unchosen item with no photo draws nothing');
+  const sent = renderNewsletter(issue);
+  assert.ok(!/dashed|width="112"/.test(sent), 'the email never carries the placeholder');
+});
+
 test('an unsafe picture URL renders no picture and leaks no scheme', () => {
   const issue = mediaIssue();
   issue.sections.research.items[0].fields.image = 'javascript:alert(1)';

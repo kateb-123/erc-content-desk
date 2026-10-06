@@ -430,17 +430,16 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .edit-toolbar .preview-note:focus { outline: none; }
 .edit-doors { display: flex; gap: var(--spacing-02); }
 .edit-removed-bar { display: flex; flex-direction: column; gap: var(--spacing-02); margin-top: var(--spacing-04); }
-.edit-layout--float { justify-content: flex-start; }
-/* The column at the sheet's right: nothing until a click, then the box,
-   level with the item it edits. */
-.edit-float-col { flex: 0 0 360px; position: relative; align-self: stretch; overflow: visible; max-height: none; top: 0; }
+/* The stage: the sheet alone, centred; the box hovers over it. */
+.edit-layout--float { position: relative; justify-content: center; }
 
-/* The box (Kate, Oct 5): smaller, floating at the sheet's right, level with
-   the item. The look above the words, since it is narrow. */
+/* The box (Kate, Oct 5): a card that hovers over the sheet's right side,
+   pushed outward so it covers the margin more than the words, level with the
+   item. Wide enough for the look beside the words, so it is not tall. */
 .edit-drawer {
-  position: absolute; left: 0; right: 0; z-index: 30;
+  position: absolute; z-index: 30; width: 560px; max-width: calc(100vw - 32px);
   display: none; flex-direction: column;
-  max-height: calc(100vh - var(--spacing-07));
+  max-height: min(70vh, 640px);
   background: var(--layer-02); border: 1px solid var(--border-subtle-01);
   box-shadow: var(--mail-menu-shadow);
 }
@@ -449,9 +448,11 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .drawer-card { display: flex; flex-direction: column; min-height: 0; }
 .drawer-card-head { display: flex; align-items: center; gap: var(--spacing-03); padding: var(--spacing-03) var(--spacing-04) var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--border-subtle-01); }
 .drawer-card-name { flex: 1; font-size: 14px; line-height: 18px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.drawer-card-body { min-height: 0; overflow: auto; display: flex; flex-direction: column; }
-.drawer-look { padding: var(--spacing-04) var(--spacing-05); border-bottom: 1px solid var(--border-subtle-01); }
-.drawer-fields { padding: var(--spacing-04) var(--spacing-05); display: flex; flex-direction: column; gap: var(--spacing-03); }
+.drawer-card-body { min-height: 0; overflow: auto; display: grid; grid-template-columns: 1fr; }
+.drawer-card-body:has(> .drawer-look) { grid-template-columns: 236px 1fr; }
+.drawer-look { padding: var(--spacing-04) var(--spacing-05); border-right: 1px solid var(--border-subtle-01); }
+.drawer-look .wires { gap: var(--spacing-02); }
+.drawer-fields { padding: var(--spacing-04) var(--spacing-05); display: flex; flex-direction: column; gap: var(--spacing-03); min-width: 0; }
 .drawer-h4 { margin: 0 0 var(--spacing-03); font-size: 12px; line-height: 16px; letter-spacing: 1.25px; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); }
 .drawer-card-actions { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--border-subtle-01); margin: 0; flex-wrap: wrap; }
 .drawer-card-actions .edit-card-delete { margin-right: auto; }

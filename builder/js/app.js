@@ -1323,25 +1323,39 @@ function buildRichEditor(initialMd, onChange, { labelledBy = '' } = {}) {
  *  floating box"): one per visit to the step, in the column at the sheet's
  *  right, placed level with the item it edits. What it shows changes. */
 function drawer() {
-  const col = document.querySelector('[data-step="edit"] .edit-float-col');
-  if (!col) return null;
-  let box = col.querySelector('.edit-drawer');
+  const stage = document.querySelector('[data-step="edit"] .edit-layout--float');
+  if (!stage) return null;
+  let box = stage.querySelector('.edit-drawer');
   if (box) return box;
   box = el('div', 'edit-drawer');
   box.setAttribute('role', 'dialog');
   box.setAttribute('aria-label', 'Editing');
   box.appendChild(el('div', 'edit-drawer-inner'));
-  col.appendChild(box);
+  stage.appendChild(box);
   return box;
 }
 
-/** Puts a card in the box and shows it, level with `top` (px down the column). */
+/**
+ * Puts a card in the box and shows it, level with `top` (px down the stage).
+ * The box hovers over the sheet's right side, pushed outward so it covers
+ * the margin more than the words (Kate, Oct 5: "hover above … but offskewed"),
+ * and never past the window's edge.
+ */
 function openDrawer(card, top = 0) {
   const d = drawer();
   if (!d) return;
   d.querySelector('.edit-drawer-inner').replaceChildren(card);
   d.style.top = `${Math.max(0, Math.round(top))}px`;
   d.classList.add('is-open');
+  const stage = d.parentElement;
+  const sheet = stage.querySelector('.edit-preview-iframe')?.getBoundingClientRect();
+  const sr = stage.getBoundingClientRect();
+  if (sheet) {
+    const overlap = 200;   // how far the box reaches in over the sheet
+    const wanted = sheet.right - sr.left - overlap;
+    const most = window.innerWidth - 16 - d.offsetWidth - sr.left;
+    d.style.left = `${Math.max(0, Math.round(Math.min(wanted, most)))}px`;
+  }
 }
 
 /** Hides the box. Focus goes back to the stage so it never falls off the page. */
@@ -1407,12 +1421,12 @@ function wireframeRow(sectionKey, item, onPick) {
     const b = button('', 'wire' + (l.on ? ' is-on' : '') + (l.dim ? ' is-dim' : ''));
     b.setAttribute('role', 'radio');
     b.setAttribute('aria-checked', String(l.on));
-    if (l.dim) b.title = 'Add a photo first, under Media';
+    if (l.dim) b.title = 'A placeholder until a photo is added, under Media';
     b.append(wireframeEl(l.key, hasPic), el('span', 'wire-label', l.label));
     b.addEventListener('click', () => {
-      if (l.dim) { setWizardStatus('Add a photo first, under Media.'); return; }
       l.apply();
       onPick();
+      if (l.dim) setWizardStatus('The email shows a placeholder until a photo is added, under Media.');
     });
     row.appendChild(b);
   }
@@ -1546,11 +1560,11 @@ function blockOf(doc, section, item) {
   return node ? node.closest('td') : null;
 }
 
-/** Where a box should sit to be level with `pageTop` (px from the page top): its offset down the column. */
+/** Where a box should sit to be level with `pageTop` (px from the page top): its offset down the stage. */
 function columnOffset(pageTop) {
-  const col = document.querySelector('[data-step="edit"] .edit-float-col');
-  if (!col) return 0;
-  return pageTop - (col.getBoundingClientRect().top + window.scrollY);
+  const stage = document.querySelector('[data-step="edit"] .edit-layout--float');
+  if (!stage) return 0;
+  return pageTop - (stage.getBoundingClientRect().top + window.scrollY);
 }
 
 /** Puts the box level with the item's block, and brings the item on screen if it is not. */
@@ -1713,11 +1727,8 @@ function renderEdit() {
   const layout = el('div', 'edit-layout edit-layout--float');
   const wrap = el('div', 'edit-preview-wrap');
   wrap.appendChild(iframe);
-  // The column at the sheet's right where the box floats, level with the
-  // item it edits. Empty until a click; it is an .edit-column so the sheet
-  // leaves it room.
-  const floatCol = el('div', 'edit-column edit-float-col');
-  layout.append(wrap, floatCol);
+  // The box hovers over the stage, level with the item it edits; see openDrawer.
+  layout.appendChild(wrap);
   container.appendChild(layout);
   iframe.srcdoc = renderNewsletter(state.issue, { editable: true });
 }

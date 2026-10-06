@@ -222,12 +222,22 @@ export function pictureDefault(title) {
   return isEdTalk(title) ? 'headshot' : 'stamp';
 }
 
-/** The picture's width: 160 for a headshot, 96 for a stamp, 0 for none. */
-function pictureWidth(fields, sumOk) {
+/** The picture's width: 160 for a headshot, 96 for a stamp, 0 for none. With
+ *  no photo the email draws nothing; the editable preview draws a placeholder
+ *  when a picture layout was chosen, so the choice can be seen (Kate, Oct 5). */
+function pictureWidth(fields, sumOk, editable = false) {
   const src = safeItemHref(fields.image);
-  if (!sumOk || !src) return 0;
-  const style = PICTURE_STYLES.includes(fields.pictureStyle) ? fields.pictureStyle : pictureDefault(fields.title);
+  if (!sumOk) return 0;
+  const chosen = PICTURE_STYLES.includes(fields.pictureStyle);
+  if (!src && !(editable && chosen)) return 0;
+  const style = chosen ? fields.pictureStyle : pictureDefault(fields.title);
   return style === 'none' ? 0 : style === 'headshot' ? 160 : 96;
+}
+
+/** The preview's stand-in for a photo not yet added: a dashed box the size the photo would take. */
+function placeholderPicture(w, sectionKey, itemId, editable) {
+  const h = Math.round(w * 1.25);
+  return `<span style="display:block; box-sizing:border-box; width:${w}px; height:${h}px; border:1px dashed #A7A7A7; background-color:#F6F6F6; color:#626262; font-family:${SANS}; font-size:12px; line-height:${h}px; text-align:center;"${editAttrs(sectionKey, itemId, 'image', editable)}>Photo</span>`;
 }
 
 /** The layout options, normalised: an unknown callout falls to maroon; the old
@@ -333,13 +343,15 @@ function metaLine(def, item, mb, editable) {
 function itemHtml(it, def, g, editable) {
   const f = it.fields;
   const sumOk = showsSummary(def, g.key, f);
-  const w = pictureWidth(f, sumOk);
+  const w = pictureWidth(f, sumOk, editable);
   const hasMeta = def.key === 'research' ? !!f.authors : !!(f.meta || f.date || f.time || f.location);
   const title = (mb) => p(`${T.title} color:${C.g900};`, titleLink(def.key, it, editable), mb);
   const meta = (mb) => metaLine(def, it, mb, editable);
   const body = sumOk ? paras(T.body, f.summary, 8, editAttrs(def.key, it.id, 'summary', editable)) : '';
   const src = safeItemHref(f.image);
-  const stamp = w ? `<a href="${esc(safeItemHref(f.url) || src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="${esc('Picture: ' + (f.title || ''))}" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:0;"${editAttrs(def.key, it.id, 'image', editable)}></a>` : '';
+  const stamp = !w ? ''
+    : !src ? placeholderPicture(w, def.key, it.id, editable)
+    : `<a href="${esc(safeItemHref(f.url) || src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="${esc('Picture: ' + (f.title || ''))}" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:0;"${editAttrs(def.key, it.id, 'image', editable)}></a>`;
   if (!w) return title(hasMeta || sumOk ? 4 : 0) + meta(sumOk ? 8 : 0) + body;
   if (w === 160) return twoCol(stamp, title(4) + meta(8) + body, 176, 3);
   return title(4) + meta(8) + twoCol(stamp, body, 112, 4);
