@@ -422,6 +422,60 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .swatch.sw-headshot .pic::after { content: ""; position: absolute; left: 36px; top: 8px; width: 22px; height: 4px; background: var(--mail-ink); box-shadow: 0 8px 0 -1px var(--mail-body), 0 13px 0 -1px var(--mail-body), 0 18px 0 -1px var(--mail-body); }
 .swatch.sw-nopic .pic::before { content: ""; position: absolute; left: 6px; top: 7px; width: 50px; height: 4px; background: var(--mail-ink); box-shadow: 0 8px 0 -1px var(--mail-body), 0 13px 0 -1px var(--mail-body), 0 18px 0 -1px var(--mail-body); }
 
+/* Preview & Tweak as one column (Kate, Oct 5): the email alone on the stage,
+   three doors over it, and the drawer that slides up from the bottom with
+   the one card: how the item is laid out, then its words. */
+.edit-toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--spacing-05); flex-wrap: wrap; }
+.edit-toolbar .preview-note { margin-top: var(--spacing-03); }
+.edit-toolbar .preview-note:focus { outline: none; }
+.edit-doors { display: flex; gap: var(--spacing-02); }
+.edit-removed-bar { display: flex; flex-direction: column; gap: var(--spacing-02); margin-top: var(--spacing-04); }
+.edit-layout--single { justify-content: center; }
+body.drawer-open .wizard-body { padding-bottom: 50vh; }
+
+.edit-drawer {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  height: 46vh; min-height: 320px;
+  background: var(--layer-02); border-top: 1px solid var(--border-subtle-01);
+  box-shadow: var(--mail-menu-shadow);
+  transform: translateY(100%);
+  transition: transform var(--duration-moderate-02) var(--ease-productive);
+}
+.edit-drawer.is-open { transform: translateY(0); }
+.edit-drawer-inner { max-width: 1200px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
+.drawer-card { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.drawer-card-head { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-03) var(--spacing-07); border-bottom: 1px solid var(--border-subtle-01); }
+.drawer-card-name { flex: 1; font-size: 16px; line-height: 22px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drawer-card-body { flex: 1; min-height: 0; overflow: auto; display: grid; grid-template-columns: minmax(300px, 2fr) 3fr; }
+.drawer-card-body:has(> .drawer-fields:only-child), .drawer-card-body:has(> details:only-child) { grid-template-columns: 1fr; }
+.drawer-look { padding: var(--spacing-05) var(--spacing-07); border-right: 1px solid var(--border-subtle-01); }
+.drawer-fields { padding: var(--spacing-05) var(--spacing-07); display: flex; flex-direction: column; gap: var(--spacing-03); }
+.drawer-h4 { margin: 0 0 var(--spacing-03); font-size: 12px; line-height: 16px; letter-spacing: 1.25px; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); }
+.drawer-card-actions { padding: var(--spacing-03) var(--spacing-07); border-top: 1px solid var(--border-subtle-01); margin: 0; }
+.drawer-card-actions .edit-card-delete { margin-right: auto; }
+/* A fold shown flat in the drawer: no summary to click, just its body. */
+.drawer-card-body > details { padding: var(--spacing-05) var(--spacing-07); border: 0; }
+.drawer-card-body > details > summary { display: none; }
+.drawer-card-body > details > .reorder-panel-body { padding: 0; }
+
+/* The wireframes: the item drawn small in each layout it can take. */
+.wires { display: flex; flex-wrap: wrap; gap: var(--spacing-03); }
+.wire { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-02); padding: var(--spacing-02); border: 2px solid transparent; border-radius: var(--radius); background: none; font: inherit; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-primary); cursor: pointer; }
+.wire:hover { background: var(--accent-10); }
+.wire.is-on { border-color: var(--button-primary); }
+.wire.is-dim .wire-draw { opacity: .5; }
+.wire:focus-visible { box-shadow: var(--focus-ring); }
+.wire-draw { display: flex; gap: 6px; width: 108px; height: 64px; box-sizing: border-box; padding: 8px; background: var(--mail-white); border: 1px solid var(--border-subtle-01); }
+.wire-col { display: block; flex: 1; min-width: 0; }
+.wire-beside { display: flex; gap: 5px; margin-top: 4px; }
+.wire-beside .wire-col { flex: 1; }
+.wire-t { display: block; height: 5px; background: var(--mail-ink); border-radius: 1px; }
+.wire-m { display: block; height: 3px; background: var(--border-strong-01); border-radius: 1px; margin-top: 4px; }
+.wire-l { display: block; height: 3px; background: var(--border-subtle-01); border-radius: 1px; margin-top: 4px; }
+.wire-pic { display: block; flex: 0 0 auto; background: var(--mail-maroon-light); }
+.wire-pic.is-empty { background: var(--mail-white); border: 1px dashed var(--border-strong-01); box-sizing: border-box; }
+.wire-label { text-align: center; }
+
 /* The rail's Layout fold and the card's own look controls. */
 .layout-row { display: flex; flex-direction: column; gap: var(--spacing-03); }
 .layout-row-label, .edit-card-sublabel.look { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-secondary); }

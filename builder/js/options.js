@@ -61,6 +61,34 @@ export function itemOptions(sectionKey, item) {
   return { hasDescription, descriptionOn, hasPicture, pictureStyle };
 }
 
+/**
+ * The layouts an item can take, for the card's wireframes (Kate, Oct 5):
+ * title and details only; with its description; the description beside a
+ * 96px stamp; a 160px headshot beside it all. Each says whether it is the
+ * one in force (`on`), whether it needs a photo the item lacks (`dim`), and
+ * how to apply it. Items with no summary, or outside the described
+ * sections, have only the first.
+ * @returns {Array<{key: string, label: string, on: boolean, dim: boolean, apply: () => void}>}
+ */
+export function itemLayouts(sectionKey, item) {
+  const f = item?.fields || {};
+  const o = itemOptions(sectionKey, item);
+  const hasPic = !!String(f.image ?? '').trim();
+  const pic = o.descriptionOn && hasPic ? o.pictureStyle : 'none';
+  const bare = { key: 'bare', label: 'Title and details', on: !o.descriptionOn, dim: false,
+    apply: () => { if (!item.fields) item.fields = {}; item.fields.showSummary = false; } };
+  if (!o.hasDescription) return [bare];
+  return [
+    bare,
+    { key: 'text', label: 'With description', on: o.descriptionOn && pic === 'none', dim: false,
+      apply: () => { item.fields.showSummary = true; if (hasPic) item.fields.pictureStyle = 'none'; } },
+    { key: 'stamp', label: 'Stamp beside the text', on: o.descriptionOn && pic === 'stamp', dim: !hasPic,
+      apply: () => { item.fields.showSummary = true; item.fields.pictureStyle = 'stamp'; } },
+    { key: 'headshot', label: 'Headshot beside it all', on: o.descriptionOn && pic === 'headshot', dim: !hasPic,
+      apply: () => { item.fields.showSummary = true; item.fields.pictureStyle = 'headshot'; } },
+  ];
+}
+
 /** Turns an item's description on or off for this issue. */
 export function setDescription(item, on) {
   if (!item.fields) item.fields = {};

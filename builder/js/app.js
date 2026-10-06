@@ -5,7 +5,7 @@
  * pure logic lives in model.js, template.js, editpath.js and preview.js.
  */
 
-import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, partitionPulled, countIssueItems, bucketSectionItems, moveWithinBucket, moveItemToGroup } from './model.js';
+import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, partitionPulled, countIssueItems, bucketSectionItems, moveItemToGroup } from './model.js';
 
 // The builder lives INSIDE the desk's project (/builder/), so the desk's API
 // is same-origin: relative fetches, no CORS.
@@ -22,9 +22,9 @@ import { computePreviewScale } from './preview.js';
 import { takeOut, putBack, listedItems, listedSections } from './removals.js';
 import { renderShell } from '../../js/shell-ui.js';
 import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
-import { arrowKeyTarget, normalizeLinkUrl, reorderRowName, movedAnnouncement } from './editing.js';
+import { normalizeLinkUrl } from './editing.js';
 // The per-issue layout options the Outline sets (Claude Design handoff, Oct 2026).
-import { CALLOUT_CHOICES, PICTURE_CHOICES, DESCRIBED_SECTIONS, setCallout, setNav, itemOptions, setDescription, setPictureStyle, resetOptions, hasCustomOptions } from './options.js';
+import { CALLOUT_CHOICES, PICTURE_CHOICES, setCallout, setNav, itemOptions, setPictureStyle, itemLayouts, resetOptions, hasCustomOptions } from './options.js';
 import { layoutOf } from './template.js';
 // Kept drafts, and hand-added items that go to the desk (Sep 23).
 import { readAllWaiting } from '../../js/reader-client.js';
@@ -755,9 +755,13 @@ function editHoverCss() {
    since clicking edits the whole item at once. A translucent fill, not a hard
    outline, so the item reads as one gentle highlight; the matching box-shadow
    pads the fill out a few px and bridges the gaps between fields. */
-.ec-edit-hover {
+.ec-item-hover {
   background-color: ${wash};
-  box-shadow: 0 0 0 4px ${wash};
+  box-shadow: 0 0 0 6px ${wash};
+}
+.ec-item-open {
+  background-color: ${wash};
+  box-shadow: 0 0 0 6px ${wash}, 0 0 0 8px ${tokens.getPropertyValue('--button-primary').trim()};
 }
 .ec-edit-flash {
   background-color: ${chosen};
@@ -766,12 +770,6 @@ function editHoverCss() {
 `;
 }
 
-/**
- * Open editor cards, keyed by item ref ("section::item"). Lets several items
- * be edited at once; re-clicking an open item focuses its card instead of
- * duplicating. @type {Map<string, HTMLElement>}
- */
-const openCards = new Map();
 
 /** Counter behind the edit cards' field ids, so each label points at its own field. */
 let editFieldSeq = 0;
@@ -1032,32 +1030,17 @@ function wireIframeEditing(iframe) {
   style.textContent = editHoverCss();
   (doc.head || doc.documentElement).appendChild(style);
 
-  // Hover affordance: highlight EVERY field of the item under the cursor, so
-  // it's clear the click edits the whole item, not just the piece hovered.
-  let hovered = [];
-  const clearHover = () => {
-    hovered.forEach((el) => el.classList.remove('ec-edit-hover'));
-    hovered = [];
-  };
+  // Hover lights the whole item (the cell that holds it), since the click
+  // opens the whole item in the drawer.
+  let hoveredBlock = null;
+  const clearHover = () => { if (hoveredBlock) hoveredBlock.classList.remove('ec-item-hover'); hoveredBlock = null; };
   doc.addEventListener('mouseover', (e) => {
-    const t = e.target.closest('[data-edit-field]');
-    if (!t) {
-      clearHover();
-      return;
-    }
-    const { editSection: section, editItem: item } = t.dataset;
-    const els = collectItemNodes(doc, section, item);
-    if (els[0] === hovered[0] && els.length === hovered.length) return; // same group
+    const cell = itemCellOf(e.target);
+    if (cell === hoveredBlock) return;
     clearHover();
-    els.forEach((el) => el.classList.add('ec-edit-hover'));
-    hovered = els;
+    if (cell) { cell.classList.add('ec-item-hover'); hoveredBlock = cell; }
   });
-  doc.addEventListener('mouseout', (e) => {
-    const to = e.relatedTarget && e.relatedTarget.closest
-      ? e.relatedTarget.closest('[data-edit-field]')
-      : null;
-    if (!to) clearHover();
-  });
+  doc.addEventListener('mouseleave', clearHover);
 
   // Click listener: open an editor for the whole item the clicked field
   // belongs to (all of its fields at once), not just the one piece clicked.
@@ -1084,23 +1067,27 @@ function wireIframeEditing(iframe) {
       return;
     }
 
-    const target = e.target.closest('[data-edit-field]');
-    if (!target) { closeMenu(); return; }
-
-    // Prevent link navigation from firing
-    if (e.target.closest('a')) {
-      e.preventDefault();
-    }
-
-    const { editSection: section, editItem: item } = target.dataset;
-    if (!section) return;
-
+    const cell = itemCellOf(e.target);
+    if (!cell) { closeMenu(); return; }
+    if (e.target.closest('a')) e.preventDefault();   // the title is a link; the click edits, never navigates
+    const { editSection: section, editItem: item } = cell.querySelector('[data-edit-field]').dataset;
     const refs = collectItemFields(doc, section, item);
-    if (refs.length) {
-      openItemEditor(refs, iframe);
-      flashItem(doc, section, item);
-    }
+    if (!refs.length) return;
+    closeMenu();
+    openItemEditor(refs, iframe);
+    doc.querySelectorAll('.ec-item-open').forEach((n) => n.classList.remove('ec-item-open'));
+    cell.classList.add('ec-item-open');
+    revealAboveDrawer(iframe, cell);
   });
+}
+
+/** The cell that holds the item (or the intro) under a node, if any: the
+ *  click target and the hover highlight are the whole item. */
+function itemCellOf(node) {
+  const cell = node.closest ? node.closest('td') : null;
+  if (!cell) return null;
+  const field = cell.querySelector('[data-edit-field="title"], [data-edit-field="intro"]');
+  return field ? cell : null;
 }
 
 /**
@@ -1157,10 +1144,12 @@ function collectItemFields(doc, section, item) {
     const ti = refs.findIndex((r) => r.field === 'title');
     refs.splice(ti + 1, 0, { section, item, field: 'url' });
   }
-  // Same move for an optional picture: sections that render one get the
-  // field even when it's empty, so a URL can be added from the card.
-  if (seen.has('title') && !seen.has('image') && IMAGE_SECTIONS.has(section)) {
-    refs.push({ section, item, field: 'image' });
+  // Same move for the description and the picture: sections that render
+  // them get the fields even when the email is not showing them (a hidden
+  // description, no photo yet), so the card can always edit or add them.
+  if (seen.has('title') && IMAGE_SECTIONS.has(section)) {
+    if (!seen.has('summary')) refs.push({ section, item, field: 'summary' });
+    if (!seen.has('image')) refs.push({ section, item, field: 'image' });
   }
   return refs;
 }
@@ -1326,51 +1315,142 @@ function buildRichEditor(initialMd, onChange, { labelledBy = '' } = {}) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// The drawer (Kate, Oct 5): the one card, sliding up from the bottom
+// ---------------------------------------------------------------------------
+
+/** The drawer element, made once and kept on the body; what it shows changes. */
+let drawerEl = null;
+function drawer() {
+  if (drawerEl) return drawerEl;
+  drawerEl = el('div', 'edit-drawer');
+  drawerEl.setAttribute('role', 'dialog');
+  drawerEl.setAttribute('aria-label', 'Editing');
+  drawerEl.appendChild(el('div', 'edit-drawer-inner'));
+  document.body.appendChild(drawerEl);
+  return drawerEl;
+}
+
+/** Puts a card in the drawer and slides it up. The page gets room under it. */
+function openDrawer(card) {
+  const d = drawer();
+  d.querySelector('.edit-drawer-inner').replaceChildren(card);
+  d.classList.add('is-open');
+  document.body.classList.add('drawer-open');
+}
+
+/** Slides the drawer away. Focus goes back to the stage so it never falls off the page. */
+function closeDrawer() {
+  if (!drawerEl) return;
+  drawerEl.classList.remove('is-open');
+  document.body.classList.remove('drawer-open');
+  drawerEl.querySelector('.edit-drawer-inner').replaceChildren();
+  document.querySelectorAll('.edit-preview-iframe').forEach((f) => {
+    f.contentDocument?.querySelectorAll('.ec-item-open').forEach((n) => n.classList.remove('ec-item-open'));
+  });
+  const note = document.querySelector('[data-step="edit"] .preview-note');
+  if (note && !note.closest('[hidden]')) note.focus();
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
+
 /**
- * Open (or focus) an editor card for a whole item in the persistent edit
- * column. Multiple cards may be open at once; they stack in open-order. Typing
- * updates the preview live; Save commits + closes the card.
+ * The card's shell: its name across the top with a close, the body the
+ * caller fills, and the actions along the foot.
+ * @returns {{ card: HTMLElement, body: HTMLElement, actions: HTMLElement }}
+ */
+function drawerCard(name) {
+  const card = el('div', 'drawer-card');
+  const head = el('div', 'drawer-card-head');
+  head.appendChild(el('span', 'drawer-card-name', name));
+  const closeBtn = button('', 'edit-card-close', { icon: 'xmark', onClick: closeDrawer });
+  closeBtn.setAttribute('aria-label', 'Close');
+  head.appendChild(closeBtn);
+  const body = el('div', 'drawer-card-body');
+  const actions = el('div', 'edit-card-actions drawer-card-actions');
+  card.append(head, body, actions);
+  return { card, body, actions };
+}
+
+/**
+ * One wireframe: the item drawn small in one of its layouts. A title bar, a
+ * meta line, text lines, and the picture as a block where the layout has one
+ * (dashed when the item has no photo yet).
+ */
+function wireframeEl(key, hasPic) {
+  const w = el('span', 'wire-draw');
+  const col = (...kids) => { const c = el('span', 'wire-col'); c.append(...kids); return c; };
+  const bar = (cls, width) => { const b = el('span', cls); b.style.width = width; return b; };
+  const lines = (n) => Array.from({ length: n }, () => bar('wire-l', '100%'));
+  const pic = (wpx, hpx) => { const p = el('span', 'wire-pic' + (hasPic ? '' : ' is-empty')); p.style.width = `${wpx}px`; p.style.height = `${hpx}px`; return p; };
+  if (key === 'bare') w.append(col(bar('wire-t', '80%'), bar('wire-m', '55%')));
+  else if (key === 'text') w.append(col(bar('wire-t', '80%'), bar('wire-m', '55%'), ...lines(3)));
+  else if (key === 'stamp') {
+    const beside = el('span', 'wire-beside');
+    beside.append(pic(18, 22), col(...lines(3)));
+    w.append(col(bar('wire-t', '80%'), bar('wire-m', '55%'), beside));
+  } else w.append(pic(28, 36), col(bar('wire-t', '90%'), bar('wire-m', '60%'), ...lines(2)));
+  return w;
+}
+
+/** The row of wireframes for an item: pick one and the email redraws. */
+function wireframeRow(sectionKey, item, onPick) {
+  const row = el('div', 'wires');
+  row.setAttribute('role', 'radiogroup');
+  row.setAttribute('aria-label', 'How it is laid out');
+  const hasPic = !!String(item.fields?.image ?? '').trim();
+  for (const l of itemLayouts(sectionKey, item)) {
+    const b = button('', 'wire' + (l.on ? ' is-on' : '') + (l.dim ? ' is-dim' : ''));
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(l.on));
+    if (l.dim) b.title = 'Add a photo first, under Media';
+    b.append(wireframeEl(l.key, hasPic), el('span', 'wire-label', l.label));
+    b.addEventListener('click', () => {
+      if (l.dim) { setWizardStatus('Add a photo first, under Media.'); return; }
+      l.apply();
+      onPick();
+    });
+    row.appendChild(b);
+  }
+  return row;
+}
+
+/**
+ * Open the card for a whole item (or the introduction) in the drawer: how it
+ * is laid out, then its words. Typing updates the email live; Save closes.
  * @param {Array<{section:string,item?:string,field:string}>} refs
  * @param {HTMLIFrameElement} iframe
  */
 function openItemEditor(refs, iframe) {
-  const list = document.querySelector('.edit-card-list');
-  if (!list) return;
-
-  const key = `${refs[0].section}::${refs[0].item || ''}`;
-
-  // Already open → focus + scroll to the existing card, don't duplicate.
-  const existing = openCards.get(key);
-  if (existing) {
-    existing.scrollIntoView({ block: 'nearest' });
-    const first = firstField(existing);
-    if (first) first.focus();
-    return;
-  }
-
-  const card = el('div', 'edit-card');
-  card.setAttribute('role', 'group');
-  // The card's name for a screen reader: the item's title, else the field's.
-  const cardTitle = refs[0].item ? getField(state.issue, { ...refs[0], field: 'title' }) : '';
-  card.setAttribute('aria-label', cardTitle || FIELD_LABELS[refs[0].field]);
-
-  // Header: just a close control (× behaves like Save; edits are live). No
-  // title label; the fields below make it clear which item you're editing.
-  const header = el('div', 'edit-card-header');
-  const closeBtn = button('', 'edit-card-close', { icon: 'xmark', onClick: () => closeCard(key) });
-  closeBtn.setAttribute('aria-label', 'Close editor');
-  header.appendChild(closeBtn);
-  card.appendChild(header);
+  const first = refs[0];
+  const cardItem = first.item ? state.issue.sections?.[first.section]?.items?.find((i) => i.id === first.item) : null;
+  const name = cardItem ? (cardItem.fields?.title || '(untitled)') : FIELD_LABELS[first.field];
+  const { card, body, actions } = drawerCard(name);
+  card.setAttribute('aria-label', name);
 
   // Live preview re-render, debounced so typing doesn't thrash the iframe.
   const debouncedPreview = debounce(() => refreshEditIframe(iframe), 350);
+
+  // The look, first: the item drawn in each layout it can take.
+  let lookCol = null;
+  const drawLook = () => {
+    if (!cardItem || !lookCol) return;
+    lookCol.replaceChildren(el('h4', 'drawer-h4', 'How it is laid out'));
+    lookCol.appendChild(wireframeRow(first.section, cardItem, () => { scheduleSave(); refreshEditIframe(iframe); drawLook(); }));
+  };
+  if (cardItem && IMAGE_SECTIONS.has(first.section)) {
+    lookCol = el('div', 'drawer-look');
+    body.appendChild(lookCol);
+    drawLook();
+  }
+
+  const fieldsCol = el('div', 'drawer-fields');
+  fieldsCol.appendChild(el('h4', 'drawer-h4', cardItem ? 'Its words' : 'The words'));
+  body.appendChild(fieldsCol);
 
   const fieldInputs = [];
   for (const ref of refs) {
     const group = el('div', 'edit-card-group');
     const isLong = ref.field === 'summary' || ref.field === 'intro';
-    // Every field's sublabel names it for a screen reader: a <label for>
-    // on a text field, an id the editor or the media group points at otherwise.
     editFieldSeq += 1;
     const fieldId = `edit-field-${editFieldSeq}`;
     const sub = el(ref.field === 'image' || isLong ? 'span' : 'label', 'edit-card-sublabel', FIELD_LABELS[ref.field]);
@@ -1383,41 +1463,15 @@ function openItemEditor(refs, iframe) {
       debouncedPreview();
     };
 
-    // The item this card edits, for the look controls under its fields.
-    const cardItem = ref.item ? state.issue.sections?.[ref.section]?.items?.find((i) => i.id === ref.item) : null;
-
-    // Each kind of field hands back the same handle, so the card wires them alike.
     let ctl;
     if (ref.field === 'image') {
-      ctl = buildImageControl(getField(state.issue, ref) ?? '', (value) => { onEdit(value); refreshLook(); });
+      // A photo added here lights the picture wireframes.
+      ctl = buildImageControl(getField(state.issue, ref) ?? '', (value) => { onEdit(value); drawLook(); });
       ctl.el.setAttribute('role', 'group');
       ctl.el.setAttribute('aria-labelledby', sub.id);
-      // Picture: None, Stamp or Headshot, as swatches, once the item has a photo and shows its description.
-      const look = el('div', 'layout-row card-look');
-      const refreshLook = () => {
-        look.replaceChildren();
-        const o = cardItem ? itemOptions(ref.section, cardItem) : null;
-        if (!o || !o.hasPicture) return;
-        look.appendChild(el('span', 'edit-card-sublabel look', 'Picture'));
-        look.appendChild(swatchRow(PICTURE_CHOICES, o.pictureStyle, (key) => { setPictureStyle(cardItem, key); scheduleSave(); debouncedPreview(); refreshLook(); }));
-      };
-      refreshLook();
-      group.appendChild(look);
     } else if (isLong) {
-      // Prose fields get a WYSIWYG editor (bold / italic / link) that stores
-      // markdown. Live-renders as the newsletter does (via renderProse).
       const rich = buildRichEditor(getField(state.issue, ref) ?? '', onEdit, { labelledBy: sub.id });
       ctl = { el: rich.el, set: rich.setMd, focus: rich.focus };
-      // Description: shown or hidden in the email, for the sections that draw one.
-      if (ref.field === 'summary' && cardItem && DESCRIBED_SECTIONS.has(ref.section)) {
-        const check = el('label', 'layout-check card-look');
-        const cb = el('input');
-        cb.type = 'checkbox';
-        cb.checked = itemOptions(ref.section, cardItem).descriptionOn;
-        cb.addEventListener('change', () => { setDescription(cardItem, cb.checked); scheduleSave(); refreshEditIframe(iframe); });
-        check.append(cb, ' Show the description in the email');
-        group.appendChild(check);
-      }
     } else {
       const inputEl = el('input', 'edit-card-input');
       inputEl.type = 'text';
@@ -1428,35 +1482,23 @@ function openItemEditor(refs, iframe) {
       ctl = { el: inputEl, set: (v) => { inputEl.value = v; }, focus: () => inputEl.focus() };
     }
     group.appendChild(ctl.el);
-    card.appendChild(group);
+    fieldsCol.appendChild(group);
     fieldInputs.push({ ref, set: ctl.set, focus: ctl.focus });
   }
 
   // What the fields held when the card opened, for Cancel.
   const opened = fieldInputs.map((f) => ({ ref: f.ref, value: getField(state.issue, f.ref) ?? '' }));
 
-  // Footer: quiet Use original and Cancel, then Save (commit & close this one card).
-  const actions = el('div', 'edit-card-actions');
-  const cancelBtn = button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: () => {
-    let changed = false;
-    opened.forEach(({ ref, value }, i) => {
-      if ((getField(state.issue, ref) ?? '') === value) return;
-      setField(state.issue, ref, value);
-      fieldInputs[i].set(value);
-      changed = true;
-    });
-    if (changed) {
-      scheduleSave();
-      refreshEditIframe(iframe);
-    }
-    closeCard(key);
-  } });
+  const itemId = first.item;
+  if (itemId) {
+    actions.appendChild(button(' Remove', 'ghost-btn ghost-btn--danger edit-card-delete', { icon: 'trash-can', onClick: (e) => {
+      closeDrawer();
+      deleteItemWithUndo(itemId, renderEdit, e.detail === 0);
+    } }));
+  }
   const revertBtn = button(' Use original', 'ghost-btn ghost-btn--muted', { icon: 'rotate-left', onClick: () => {
     let reverted = 0;
     for (const f of fieldInputs) {
-      // No baseline entry (item added after the snapshot, or no snapshot
-      // yet) means there is no original; leave the field alone rather
-      // than blanking it.
       const original = getField(state.baseline, f.ref);
       if (original === undefined || original === null) continue;
       f.set(original);
@@ -1466,175 +1508,62 @@ function openItemEditor(refs, iframe) {
     if (!reverted) return;
     scheduleSave();
     refreshEditIframe(iframe);
+    drawLook();
   } });
-  // Edits are live, so Save is a quiet word that closes the card.
-  const saveBtn = button('Save', 'ghost-btn edit-card-save', { onClick: () => closeCard(key) });
-  // Remove this whole item from the issue (with Undo), only for real items,
-  // not the intro. The desk's word for taking an item out of an issue.
-  const itemId = refs[0] && refs[0].item;
-  if (itemId) {
-    actions.appendChild(button(' Remove', 'ghost-btn ghost-btn--danger edit-card-delete', { icon: 'trash-can', onClick: (e) => {
-      closeCard(key);
-      deleteItemWithUndo(itemId, renderEdit, e.detail === 0);
-    } }));
-  }
+  const cancelBtn = button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: () => {
+    let changed = false;
+    opened.forEach(({ ref, value }, i) => {
+      if ((getField(state.issue, ref) ?? '') === value) return;
+      setField(state.issue, ref, value);
+      fieldInputs[i].set(value);
+      changed = true;
+    });
+    if (changed) { scheduleSave(); refreshEditIframe(iframe); }
+    closeDrawer();
+  } });
+  // Edits are live, so Save is the word that closes the drawer.
+  const saveBtn = button('Save', 'btn btn-primary edit-card-save', { onClick: closeDrawer });
   actions.append(revertBtn, cancelBtn, saveBtn);
-  card.appendChild(actions);
 
-  list.appendChild(card);
-  openCards.set(key, card);
-  updateColumnChrome();
-
-  card.scrollIntoView({ block: 'nearest' });
+  openDrawer(card);
   requestAnimationFrame(() => fieldInputs[0] && fieldInputs[0].focus());
 }
 
 /**
- * Close one card (commit is implicit; edits are already live). Focus moves to
- * the next card's first field (the previous card's, failing that), else to the
- * column's title, so it never falls off the page.
+ * The item's block in the preview: the cell that holds its title (or the
+ * intro's cell). Hover and the open state light the whole block, since the
+ * click opens the whole item.
  */
-function closeCard(key) {
-  const card = openCards.get(key);
-  if (!card) return;
-  const neighbour = card.nextElementSibling || card.previousElementSibling;
-  card.remove();
-  openCards.delete(key);
-  updateColumnChrome();
-  const field = neighbour && firstField(neighbour);
-  if (field) { field.focus(); return; }
-  const title = document.querySelector('.edit-column-title');
-  if (title) title.focus();
+function blockOf(doc, section, item) {
+  const node = item
+    ? doc.querySelector(`[data-edit-section="${section}"][data-edit-item="${item}"][data-edit-field="title"]`)
+    : doc.querySelector(`[data-edit-section="${section}"][data-edit-field="intro"]`);
+  return node ? node.closest('td') : null;
 }
 
-/** Save all: close every open card. Does NOT navigate. */
-function closeAllCards() {
-  for (const card of openCards.values()) card.remove();
-  openCards.clear();
-  updateColumnChrome();
-}
-
-/** Show the empty hint when no cards are open; show Save-all when ≥1. */
-function updateColumnChrome() {
-  const empty = document.querySelector('.edit-column-empty');
-  const saveAll = document.querySelector('.edit-saveall-btn');
-  const has = openCards.size > 0;
-  if (empty) empty.hidden = has;
-  if (saveAll) saveAll.hidden = !has;
+/** Scrolls the page so the block sits in the part of the window the drawer leaves free. */
+function revealAboveDrawer(iframe, block) {
+  if (!block) return;
+  const zoom = parseFloat(iframe.style.zoom) || 1;
+  const outer = iframe.getBoundingClientRect();
+  const r = block.getBoundingClientRect();
+  const top = outer.top + r.top * zoom, bottom = outer.top + r.bottom * zoom;
+  const free = window.innerHeight * 0.54 - 16;
+  if (bottom > free) window.scrollBy({ top: Math.min(bottom - free, top - 72), behavior: 'smooth' });
+  else if (top < 72) window.scrollBy({ top: top - 72, behavior: 'smooth' });
 }
 
 /**
- * Build the collapsible drag-to-reorder panel for the edit column. Items are
- * grouped exactly like the Outline step; each row drags within its own group.
- * Dropping reorders the model, live-refreshes the preview, and autosaves.
- * @param {HTMLIFrameElement} iframe - the preview iframe to refresh
- * @returns {HTMLDetailsElement}
+ * The drawer's other cards: the introduction, the layout, and Add an item,
+ * from the buttons over the stage. Each reuses its fold, opened flat.
  */
-function buildReorderPanel(iframe) {
-  const { details, body } = railPanel('Reorder items');
-
-  // One polite region, outside the rebuilt body, says where a row landed.
-  const live = el('div', 'sr-only');
-  live.setAttribute('role', 'status');
-  live.setAttribute('aria-live', 'polite');
-  details.appendChild(live);
-
-  const render = () => {
-    body.innerHTML = '';
-    const hint = el('p', 'addon-hint', 'Drag a row, or focus it and press the arrow keys.');
-    hint.id = 'reorder-hint';
-    body.appendChild(hint);
-    for (const reg of SECTION_REGISTRY) {
-      const sec = state.issue.sections[reg.key];
-      const secItems = (sec && sec.items) || [];
-      if (secItems.length < 1) continue;
-
-      // The section and group labels are registry constants, safe as textContent.
-      body.appendChild(el('div', 'reorder-section-label', reg.label));
-
-      for (const bucket of bucketSectionItems(reg, secItems)) {
-        if (bucket.label) body.appendChild(el('div', 'reorder-group-label', bucket.label));
-
-        // Each bucket is a listbox of named options.
-        const listEl = el('div', 'reorder-list');
-        listEl.setAttribute('role', 'listbox');
-        listEl.setAttribute('aria-label', bucket.label ? `${reg.label}: ${bucket.label}` : reg.label);
-
-        // One move for the drop and the arrow keys alike; the moved row keeps
-        // focus across the rebuild and the live region says where it went.
-        const move = (fromIdx, toIdx, focusId) => {
-          const moved = bucket.items[fromIdx];
-          moveWithinBucket(state.issue.sections[reg.key].items, bucket.items, fromIdx, toIdx);
-          render();
-          refreshEditIframe(iframe);
-          scheduleSave();
-          live.textContent = movedAnnouncement(moved?.fields?.title, toIdx, bucket.items.length);
-          if (!focusId) return;
-          const again = body.querySelector(`.reorder-row[data-item-id="${CSS.escape(focusId)}"]`);
-          if (again) again.focus();
-        };
-
-        bucket.items.forEach((item, idx) => {
-          const rowEl = el('div', 'reorder-row');
-          rowEl.draggable = bucket.items.length > 1;
-          rowEl.dataset.itemId = item.id;
-          rowEl.setAttribute('role', 'option');
-          rowEl.setAttribute('aria-label', reorderRowName(item.fields?.title, idx, bucket.items.length));
-          rowEl.setAttribute('aria-describedby', hint.id);
-          rowEl.tabIndex = 0;
-          if (rowEl.draggable) {
-            rowEl.addEventListener('keydown', (e) => {
-              const to = arrowKeyTarget(e.key, idx, bucket.items.length);
-              if (to === null) return;
-              e.preventDefault();
-              move(idx, to, item.id);
-            });
-          }
-
-          const grip = el('span', 'reorder-grip', '⠿');
-          grip.setAttribute('aria-hidden', 'true');
-          // The title is user-derived: textContent only.
-          rowEl.append(grip, el('span', 'reorder-title', (item.fields && item.fields.title) || '(untitled)'));
-
-          rowEl.addEventListener('dragstart', (e) => {
-            listEl.dataset.dragIdx = String(idx);
-            rowEl.classList.add('reorder-row--dragging');
-            e.dataTransfer.effectAllowed = 'move';
-            // Firefox needs data set for the drag to start at all.
-            e.dataTransfer.setData('text/plain', String(idx));
-          });
-          rowEl.addEventListener('dragend', () => {
-            delete listEl.dataset.dragIdx;
-            listEl.querySelectorAll('.reorder-row--over, .reorder-row--dragging')
-              .forEach((el) => el.classList.remove('reorder-row--over', 'reorder-row--dragging'));
-          });
-          rowEl.addEventListener('dragover', (e) => {
-            // Only rows in the SAME list are valid targets (drag within group).
-            if (listEl.dataset.dragIdx == null) return;
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            if (String(idx) !== listEl.dataset.dragIdx) rowEl.classList.add('reorder-row--over');
-          });
-          rowEl.addEventListener('dragleave', () => {
-            rowEl.classList.remove('reorder-row--over');
-          });
-          rowEl.addEventListener('drop', (e) => {
-            const fromIdx = Number(listEl.dataset.dragIdx);
-            if (!Number.isInteger(fromIdx)) return;
-            e.preventDefault();
-            move(fromIdx, idx);
-          });
-
-          listEl.appendChild(rowEl);
-        });
-
-        body.appendChild(listEl);
-      }
-    }
-  };
-
-  render();
-  return details;
+function openPanelInDrawer(title, details) {
+  const { card, body, actions } = drawerCard(title);
+  details.open = true;
+  body.appendChild(details);
+  actions.appendChild(button('Done', 'btn btn-primary', { onClick: closeDrawer }));
+  openDrawer(card);
+  requestAnimationFrame(() => firstField(card)?.focus());
 }
 
 /**
@@ -1721,40 +1650,18 @@ function buildLayoutPanel(iframe) {
 }
 
 function renderEdit() {
-  // Drop any card registry from a previous visit (the DOM is rebuilt below).
-  openCards.clear();
+  closeDrawer();
   const container = openStep('edit', 'Check the issue and tweak anything in place.',
-    'Click any text in the preview to edit it on the right. Click the Submit callout or a picture to change its look. The introduction, Layout, Add an item and Reorder items are in the rail too.');
+    'Click any item in the email and its card slides up: how it is laid out, then its words. Click the Submit callout or a picture to change it on the spot. The introduction, the layout and Add an item open from the buttons over the email.');
 
   if (!state.issue) {
     emptyLine(container, 'No issue loaded. Pull from the desk on the Review step first.');
     return;
   }
 
-  // What the sheet is: its scale, and that it is the editable one. This is
-  // the pre-layout guess; fitPreview corrects it once the iframe loads and
-  // the real width is known.
-  const previewNote = el('p', 'preview-note');
-  previewNote.textContent = `Preview at ${Math.round(PREVIEW_MAX_SCALE * 100)} percent, as it lands in Outlook. Click any text to edit it.`;
-  container.appendChild(previewNote);
-
-  const layout = el('div', 'edit-layout');
-
-  const wrap = el('div', 'edit-preview-wrap');
-
   const iframe = el('iframe', 'edit-preview-iframe');
-  iframe.setAttribute('title', 'Newsletter preview: click fields to edit');
-  // No inner scrollbar: the iframe is sized to the full content height and the
-  // PAGE owns scrolling, so the only scrollbar is the browser's (outside the
-  // sheet). Suppresses the faint phantom scrollbar the `zoom` transform would
-  // otherwise leave on the newsletter from sub-pixel height rounding.
+  iframe.setAttribute('title', 'Newsletter preview: click an item to edit it');
   iframe.setAttribute('scrolling', 'no');
-
-  // Wire click-to-edit and re-fit on every load (fires on each srcdoc set).
-  // The rAF refit covers the case where the pane width isn't measurable at the
-  // instant load fires (layout not yet flushed); the image listeners re-fit
-  // once the (externally hosted) header banner finishes loading, so the iframe
-  // height matches the final content height and no inner scrollbar appears.
   iframe.addEventListener('load', () => {
     wireIframeEditing(iframe);
     fitPreview();
@@ -1767,36 +1674,33 @@ function renderEdit() {
     }
   });
 
+  // Over the stage: what the sheet is, and the three doors that are not an item.
+  const toolbar = el('div', 'edit-toolbar');
+  const previewNote = el('p', 'preview-note');
+  previewNote.tabIndex = -1;   // where focus lands when the drawer closes
+  previewNote.textContent = `Preview at ${Math.round(PREVIEW_MAX_SCALE * 100)} percent, as it lands in Outlook. Click any item to edit it.`;
+  const doors = el('div', 'edit-doors');
+  doors.append(
+    button(' Introduction', 'ghost-btn', { icon: 'align-left', onClick: () => openPanelInDrawer('Introduction', buildIntroPanel(iframe)) }),
+    button(' Layout', 'ghost-btn', { icon: 'table-columns', onClick: () => openPanelInDrawer('Layout', buildLayoutPanel(iframe)) }),
+    button(' Add an item', 'ghost-btn', { icon: 'plus', onClick: () => openPanelInDrawer('Add an item', buildAddItemPanel(iframe)) }),
+  );
+  toolbar.append(previewNote, doors);
+  container.appendChild(toolbar);
+
+  // What Remove took out on this visit waits here, greyed with its own Undo,
+  // until the step is left; the preview already goes without it.
+  const waiting = waitingRemovals();
+  if (waiting.length) {
+    const bar = el('div', 'edit-removed-bar');
+    bar.append(...waiting.map((w) => removedRow(w.item, 'edit-removed-row', renderEdit)));
+    container.appendChild(bar);
+  }
+
+  const layout = el('div', 'edit-layout edit-layout--single');
+  const wrap = el('div', 'edit-preview-wrap');
   wrap.appendChild(iframe);
   layout.appendChild(wrap);
-
-  // Persistent edit column (right). Always present so opening/closing cards
-  // never reflows or rescales the sheet.
-  const column = el('div', 'edit-column');
-
-  const colHeader = el('div', 'edit-column-header');
-  const colTitle = el('span', 'edit-column-title', 'Editing');
-  colTitle.tabIndex = -1;   // where focus lands when the last card closes
-  const saveAllBtn = button('Save all', 'ghost-btn edit-saveall-btn', { onClick: closeAllCards });
-  saveAllBtn.hidden = true;
-  colHeader.append(colTitle, saveAllBtn);
-
-  // What Remove took out on this visit waits where its card was, greyed with
-  // its own Undo, until the step is left; the preview already goes without it.
-  const cardList = el('div', 'edit-card-list');
-  cardList.append(...waitingRemovals().map((w) => removedRow(w.item, 'edit-removed-row', renderEdit)));
-
-  column.append(
-    colHeader,
-    cardList,
-    el('div', 'edit-column-empty', 'Click any text in the preview on the left. It opens here to edit.'),
-    buildIntroPanel(iframe),
-    buildLayoutPanel(iframe),
-    buildAddItemPanel(iframe),
-    buildReorderPanel(iframe),
-  );
-  layout.appendChild(column);
-
   container.appendChild(layout);
   iframe.srcdoc = renderNewsletter(state.issue, { editable: true });
 }
