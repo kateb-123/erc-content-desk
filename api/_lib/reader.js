@@ -9,7 +9,8 @@
  */
 import Anthropic from '@anthropic-ai/sdk';
 import { applyExtractedWithProvenance, linkCheckedFromFetch } from '../../js/workflow.js';
-import { fetchPageText } from './fetch-page.js';
+import { fetchPage as fetchPageParts } from './fetch-page.js';
+import { fixedBlurb } from '../../js/feed-tail.js';
 import {
   EXTRACT_MODEL, EXTRACTION_SCHEMA, CLEAN_TYPES,
   buildExtractionPrompt, normalizeExtraction,
@@ -19,8 +20,13 @@ import { doiFromUrl, crossrefText } from './crossref.js';
 
 export async function readRow(row, { fetchPage, extract, lookupDoi }) {
   let pageText = '';
+  let description = '';   // the page's own description tag: a paper's whole abstract, often
   if (row.link) {
-    try { pageText = await fetchPage(row.link); } catch { pageText = ''; }
+    try {
+      const page = await fetchPage(row.link);
+      pageText = typeof page === 'string' ? page : page?.text ?? '';
+      description = typeof page === 'string' ? '' : page?.description ?? '';
+    } catch { pageText = ''; }
     // A publisher that turns the reader away still has a DOI: Crossref knows
     // the title, authors, date, and journal from that alone (F12).
     const doi = !pageText && lookupDoi ? doiFromUrl(row.link) : '';
@@ -40,6 +46,11 @@ export async function readRow(row, { fetchPage, extract, lookupDoi }) {
   next = applyExtractedWithProvenance(next, fields).row;
   const pasted = Boolean(String(row.original_text || row.blurb || '').trim());
   if (cleanBlurb && pasted && CLEAN_TYPES.includes(next.type)) next = { ...next, blurb: cleanBlurb };
+  // A feed's tail ("… more →") never stays; a research summary the feed cut
+  // short takes the page's whole abstract when the page's begins the same way
+  // (Kate, Oct 6: "we want those abstracts"). What came in stays in original_text.
+  const fixed = fixedBlurb(next, description);
+  if (fixed !== null) next = { ...next, blurb: fixed };
   return { ...next, needs_review: needsReview ? 'yes' : '', pending_read: '' };
 }
 
@@ -62,5 +73,5 @@ function extractWithClaude(anthropic) {
 let client;
 export function liveReadRow(row) {
   client ??= new Anthropic({ timeout: 20_000, maxRetries: 1 });
-  return readRow(row, { fetchPage: fetchPageText, extract: extractWithClaude(client), lookupDoi: crossrefText });
+  return readRow(row, { fetchPage: fetchPageParts, extract: extractWithClaude(client), lookupDoi: crossrefText });
 }

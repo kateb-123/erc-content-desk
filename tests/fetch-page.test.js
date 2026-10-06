@@ -132,3 +132,13 @@ test('fetchPageText reads a streaming body incrementally and truncates rather th
   assert.ok(result.length <= 12000);
   assert.equal(cancelled, true);
 });
+
+// Kate, Oct 6: a paper's page (EdWorkingPapers among them) carries the whole
+// abstract in its description tag; the reader can take it from there.
+test('pageDescription: the description tag, either attribute order, entities decoded; og:description as a fallback', async () => {
+  const { pageDescription } = await import('../api/_lib/fetch-page.js');
+  assert.equal(pageDescription('<meta name="description" content="Heat &amp; learning: it&#39;s real &#8212; in math." />'), "Heat & learning: it's real — in math.");
+  assert.equal(pageDescription('<meta content="Order flipped." name="Description">'), 'Order flipped.');
+  assert.equal(pageDescription('<meta property="og:description" content="From the card.">'), 'From the card.');
+  assert.equal(pageDescription('<p>No tags</p>'), '');
+});

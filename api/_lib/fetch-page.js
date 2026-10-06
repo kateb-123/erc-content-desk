@@ -87,6 +87,29 @@ export function pageTextFromHtml(html) {
   return text.replace(/\s+/g, ' ').trim();
 }
 
+const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+const decode = s => String(s ?? '')
+  .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+  .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+  .replace(/&([a-z]+);/gi, (m, n) => ENTITIES[n.toLowerCase()] ?? m);
+
+/** The page's own description tag (or og:description), decoded; '' when it
+ *  has none. A paper's page often keeps its whole abstract there (Kate,
+ *  Oct 6: "we want those abstracts"). */
+export function pageDescription(html) {
+  const tags = String(html ?? '').match(/<meta\b[^>]*>/gi) ?? [];
+  const find = name => {
+    for (const tag of tags) {
+      const key = tag.match(/\b(?:name|property)\s*=\s*["']([^"']+)["']/i)?.[1];
+      if (key?.toLowerCase() !== name) continue;
+      const content = tag.match(/\bcontent\s*=\s*"([^"]*)"/i)?.[1] ?? tag.match(/\bcontent\s*=\s*'([^']*)'/i)?.[1];
+      if (content) return decode(content).replace(/\s+/g, ' ').trim();
+    }
+    return '';
+  };
+  return find('description') || find('og:description');
+}
+
 export function truncateForPrompt(text, cap = MAX_PAGE_CHARS) {
   return String(text ?? '').slice(0, cap);
 }
@@ -111,21 +134,30 @@ async function readBodyCapped(res, cap) {
   return text.slice(0, cap);
 }
 
-/** Best-effort page text; '' on any failure. Follows redirects manually, re-validating each hop. */
+/** Best-effort page text; '' on any failure. */
 export async function fetchPageText(url, fetchImpl = fetch, lookupImpl) {
+  return (await fetchPage(url, fetchImpl, lookupImpl)).text;
+}
+
+const NO_PAGE = { text: '', description: '' };
+
+/** Best-effort { text, description }: the page's readable text and its own
+ *  description tag; both '' on any failure. Follows redirects manually,
+ *  re-validating each hop. */
+export async function fetchPage(url, fetchImpl = fetch, lookupImpl) {
   const startedAt = Date.now();
   const remainingBudget = () => TOTAL_BUDGET_MS - (Date.now() - startedAt);
   try {
     let current = String(url ?? '');
     for (let hop = 0; hop < MAX_REDIRECTS; hop++) {
-      if (!isFetchableUrl(current)) return '';
+      if (!isFetchableUrl(current)) return NO_PAGE;
 
       let remaining = remainingBudget();
-      if (remaining <= 0) return '';
-      if (!(await resolvesPublic(new URL(current).hostname, lookupImpl))) return '';
+      if (remaining <= 0) return NO_PAGE;
+      if (!(await resolvesPublic(new URL(current).hostname, lookupImpl))) return NO_PAGE;
 
       remaining = remainingBudget();
-      if (remaining <= 0) return '';
+      if (remaining <= 0) return NO_PAGE;
       const res = await fetchImpl(current, {
         signal: AbortSignal.timeout(Math.min(FETCH_TIMEOUT_MS, remaining)),
         redirect: 'manual',
@@ -134,22 +166,23 @@ export async function fetchPageText(url, fetchImpl = fetch, lookupImpl) {
 
       if (REDIRECT_STATUSES.has(res.status)) {
         const location = res.headers.get('location');
-        if (!location) return '';
+        if (!location) return NO_PAGE;
         current = new URL(location, current).toString();
         continue;
       }
 
-      if (!res.ok) return '';
+      if (!res.ok) return NO_PAGE;
       const type = String(res.headers.get('content-type') ?? '');
-      if (!/text\/html|text\/plain|application\/xhtml/.test(type)) return '';
+      if (!/text\/html|text\/plain|application\/xhtml/.test(type)) return NO_PAGE;
       const contentLength = Number(res.headers.get('content-length'));
-      if (Number.isFinite(contentLength) && contentLength > MAX_RESPONSE_CHARS) return '';
+      if (Number.isFinite(contentLength) && contentLength > MAX_RESPONSE_CHARS) return NO_PAGE;
       const body = await readBodyCapped(res, MAX_RESPONSE_CHARS);
-      const text = /html/.test(type) ? pageTextFromHtml(body) : body.replace(/\s+/g, ' ').trim();
-      return truncateForPrompt(text);
+      const html = /html/.test(type);
+      const text = html ? pageTextFromHtml(body) : body.replace(/\s+/g, ' ').trim();
+      return { text: truncateForPrompt(text), description: html ? pageDescription(body) : '' };
     }
-    return '';
+    return NO_PAGE;
   } catch {
-    return '';
+    return NO_PAGE;
   }
 }

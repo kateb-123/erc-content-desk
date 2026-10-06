@@ -136,3 +136,31 @@ test('no DOI, or a DOI Crossref does not know, leaves the failed read as it was'
   const b = await readRow(unknown, { fetchPage: pageDown, lookupDoi: async () => '', extract: async () => ({}) });
   assert.equal(b.link_checked, 'failed');
 });
+
+// Kate, Oct 6: "we want those abstracts." A research item whose description
+// is a feed's cut summary ("… more →") takes the page's whole abstract; any
+// item loses the feed's tail.
+const CUT = 'Special education finance systems rely on observable indicators such as disability classifications and educational placements to allocate resources, yet limited evidence exists regarding whether these indicat… more →';
+const FULL = 'Special education finance systems rely on observable indicators such as disability classifications and educational placements to allocate resources, yet limited evidence exists regarding whether these indicators capture the true costs of serving students. We study Texas school districts operating under a predominantly placement-based funding system.';
+const noExtract = async () => ({});
+
+test('a cut research summary becomes the page\'s whole abstract', async () => {
+  const row = submitted({ headline: 'What Drives Special Education Spending', type: 'research', subtype: 'Working Paper', blurb: CUT, original_text: CUT, link: 'https://edworkingpapers.com/ai26-1568' });
+  const read = await readRow(row, { fetchPage: async () => ({ text: 'PAGE TEXT', description: FULL }), extract: noExtract });
+  assert.equal(read.blurb, FULL);
+  assert.equal(read.original_text, CUT, 'what came in is kept');
+});
+
+test('a page whose description is another text never replaces it; the tail still goes', async () => {
+  const row = submitted({ type: 'research', subtype: 'Working Paper', blurb: CUT, link: 'https://x.org/p' });
+  const read = await readRow(row, { fetchPage: async () => ({ text: 'PAGE', description: 'Welcome to our site.' }), extract: noExtract });
+  assert.equal(read.blurb, CUT.replace(/\s*more →$/, ''));
+  const down = await readRow(row, { fetchPage: async () => '', extract: noExtract });
+  assert.doesNotMatch(down.blurb, /more →/);
+});
+
+test('an event or a headline loses the feed\'s tail and keeps its own words', async () => {
+  const row = submitted({ type: 'headline', subtype: 'Texas', blurb: 'The board voted 9 to 6… more →', link: 'https://x.org/h' });
+  const read = await readRow(row, { fetchPage: async () => ({ text: 'PAGE', description: 'The board voted 9 to 6 on Friday to adopt the new standards.' }), extract: noExtract });
+  assert.equal(read.blurb, 'The board voted 9 to 6…', 'only research takes the page\'s abstract');
+});
