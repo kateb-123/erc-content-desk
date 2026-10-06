@@ -984,3 +984,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hl-save { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-05); margin: var(--spacing-05) 0 var(--spacing-07); }
 .hl-save .hl-ask { flex: 1 1 100%; }
 .hl-save-note { flex: 1 1 100%; margin: 0; font: var(--meta-type); color: var(--text-helper); }
+
+/* The edit box's Save and Cancel at its top as well as its foot (Kate, Oct 6). */
+.f-edit-actions.f-edit-top { justify-content: flex-end; margin: 0 0 var(--spacing-05); }

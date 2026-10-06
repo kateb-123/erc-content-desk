@@ -1154,3 +1154,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 /* Add an item's status line sits clear of the button above it. */
 .addon-status { margin-top: var(--spacing-03); }
 .addon-status:empty { display: none; }
+
+/* Save and Cancel at a card's top too (Kate, Oct 6). */
+.drawer-card-top { display: flex; align-items: center; gap: var(--spacing-03); margin-left: auto; }
+.drawer-card-top .btn { height: 32px; }

@@ -1614,6 +1614,7 @@ function openItemEditor(refs, iframe) {
   // Edits are live, so Save is the word that closes the drawer.
   const saveBtn = button('Save', 'btn btn-primary edit-card-save', { onClick: closeDrawer });
   actions.append(revertBtn, cancelBtn, saveBtn);
+  topActions(card);
 
   openDrawer(card);
   requestAnimationFrame(() => fieldInputs[0] && fieldInputs[0].focus());
@@ -1705,6 +1706,7 @@ function openCalloutEditor(id, iframe) {
     closeDrawer();
   } }));
   actions.appendChild(button('Save', 'btn btn-primary edit-card-save', { onClick: closeDrawer }));
+  topActions(card);
 
   openDrawer(card);
   requestAnimationFrame(() => fieldInputs[0] && fieldInputs[0].focus());
@@ -1745,11 +1747,26 @@ function revealAboveDrawer(iframe, block) {
  * The drawer's other cards: the introduction, the layout, and Add an item,
  * from the buttons over the stage. Each reuses its fold, opened flat.
  */
+/** Save and Cancel at the card's top as well as its foot (Kate, Oct 6: "a
+ *  save options up top too on the box"), each pressing its twin below, so
+ *  the two can never disagree. A card with no Save gets none. */
+function topActions(card) {
+  const buttons = [...card.querySelectorAll('.drawer-card-body button, .drawer-card-actions button')];
+  const save = buttons.find((b) => b.textContent.trim() === 'Save');
+  if (!save) return;
+  const cancel = buttons.find((b) => b.textContent.trim() === 'Cancel');
+  const slot = el('div', 'drawer-card-top');
+  if (cancel) slot.append(button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: () => cancel.click() }));
+  slot.append(button('Save', 'btn btn-primary drawer-card-top-save', { onClick: () => save.click() }));
+  card.querySelector('.edit-card-close').before(slot);
+}
+
 function openPanelInDrawer(title, details) {
   const { card, body, actions } = drawerCard(title);
   details.open = true;
   body.appendChild(details);
   actions.appendChild(button('Done', 'btn btn-primary', { onClick: closeDrawer }));
+  topActions(card);
   // Level with the top of the window, wherever the page is scrolled to.
   openDrawer(card, columnOffset(window.scrollY + 72));
   requestAnimationFrame(() => firstField(card)?.focus());

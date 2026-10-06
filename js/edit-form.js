@@ -46,19 +46,26 @@ export function buildEditForm(row, { onSave, onCancel }) {
   wrap.append(grid);
   wrap.addEventListener('input', () => { dirty = true; });
 
+  const doSave = () => {
+    const values = Object.fromEntries(fields.map(field => [field, inputs[field].value]));
+    if ('link' in values) values.link = withScheme(values.link);
+    dirty = false;
+    onSave(editChanges(row, { ...values, infographic: imgCtl.get() }, base));
+  };
+  const doCancel = () => { dirty = false; onCancel(); };
   const actions = el('div', 'f-edit-actions');
   const save = button('Save', 'primary', {
     focus: 'edit-save',
-    onClick: () => {
-      const values = Object.fromEntries(fields.map(field => [field, inputs[field].value]));
-      if ('link' in values) values.link = withScheme(values.link);
-      dirty = false;
-      onSave(editChanges(row, { ...values, infographic: imgCtl.get() }, base));
-    },
+    onClick: doSave,
   });
-  const cancel = button('Cancel', 'btn-outline', { focus: 'edit-cancel', onClick: () => { dirty = false; onCancel(); } });
+  const cancel = button('Cancel', 'btn-outline', { focus: 'edit-cancel', onClick: doCancel });
   actions.append(save, cancel);
   wrap.append(actions);
+  // The same pair at the box's top (Kate, Oct 6: "a save options up top too"),
+  // so a long form saves without a trip to its foot.
+  const top = el('div', 'f-edit-actions f-edit-top');
+  top.append(button('Save', 'primary', { focus: 'edit-save-top', onClick: doSave }), button('Cancel', 'btn-outline', { focus: 'edit-cancel-top', onClick: doCancel }));
+  wrap.prepend(top);
   return { el: wrap, isDirty: () => dirty };
 }
 
