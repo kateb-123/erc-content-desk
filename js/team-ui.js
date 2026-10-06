@@ -12,7 +12,7 @@ import { laneCounts, quickLinkNotes } from './home-panel.js';
 import { sortList } from './sort-view.js';
 import { nextIssueDate } from './schedule.js';
 import { isoToShort } from './queue-view.js';
-import { LANES, openedScreen } from './shell-view.js';
+import { openedScreen } from './shell-view.js';
 import { el, tryAgain } from './ui-aids.js';
 
 /** Quick links are the three PUBLIC-facing pages and nothing else (Kate,
@@ -34,6 +34,13 @@ export const QUICK_LINKS = [
  *  place. Only Content Sort wears a badge; the newsletter's pool is not
  *  something to be alerted about, so it says which issue is next instead,
  *  and the Exchange's count needs a sign-in this page does not have. */
+/** Where each door goes, now the bar names hubs, not lanes (Oct 6). */
+const DOOR_PAGES = {
+  newsletter: { key: 'newsletter', label: 'Newsletter', href: '/#newsletter' },
+  sort: { key: 'sort', label: 'Content Sort', href: '/#sort' },
+  exchange: { key: 'exchange', label: 'Policy Exchange', href: '/#publish' },
+};
+
 export const DESK_DOORS = [
   { key: 'newsletter', icon: 'newspaper' },
   { key: 'sort', icon: 'layer-group', badge: true },
@@ -104,7 +111,7 @@ function quickLink(item) {
  *  It switches in place to the screen its address opens, the way the front
  *  page's cards do: the Newsletter's lane key is not its screen's. */
 function deskDoor(door, onGoTo) {
-  const lane = LANES.find(l => l.key === door.key);
+  const lane = DOOR_PAGES[door.key];
   const a = el('a', 'sort-door');
   a.href = lane.href;
   a.dataset.key = lane.key;

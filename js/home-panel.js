@@ -1,8 +1,11 @@
-/** Pure helpers for the front page: the lanes' counts, the newest items and Kate's cards. */
+/** Pure helpers for the front page: the six hubs' cards, and the counts the team page reads. */
 import { readyToPublish } from './workflow.js';
 import { isoToShort } from './queue-view.js';
 import { splitPool } from './newsletter-view.js';
 import { sortList } from './sort-view.js';
+import { issueRows, sendsIn } from './issue-view.js';
+import { HUBS } from './shell-view.js';
+import { PUBLIC_LINKS } from './public-links.js';
 
 /** The three lanes' counts, each the work waiting on its page (design
  *  critique, Sep 18): Sort the queue, Newsletter what waits to be added to
@@ -24,22 +27,46 @@ export function recentlyAdded(rows, count = 4) {
     .slice(0, count);
 }
 
-/** Kate's own page at the root (her answer, Sep 22): a card for the team's
- *  page, one per lane with the work waiting on it, and Documentation, the
- *  team's how-to (Kate, Sep 30). `counts` is null until the rows are in. */
-export function deskCards({ counts, issue, today }) {
-  const n = key => (counts ? counts[key] : null);
-  const next = issue ? `next issue ${isoToShort(issue, today)}` : 'no issue scheduled';
+const hub = key => HUBS.find(h => h.key === key);
+const lower = text => (text ? text[0].toLowerCase() + text.slice(1) : '');
+
+/**
+ * Kate's drawn map (Oct 6, 2026): six hub cards in her order, each with its
+ * status. A card is { key, label, href, count, sub, foot }, plus `links`
+ * (lines that are links of their own), `copies` (Public links' rows) and
+ * `lock` (Sort is behind the password). Counts are null until the rows are
+ * in; a line about something not known yet is ''.
+ *   preview    the Exchange check, or null until it lands
+ *   archive    the builder's archive index, or null/false
+ *   hubUpdated the live site's last change, YYYY-MM-DD; '' when it did not answer, null while asked
+ *   signups    { live, waiting, last } from the listserv, or null
+ */
+export function hubCards({ rows = [], schedule = [], today = '', loaded = false, preview = null, archive = null, hubUpdated = null, signups = null }) {
+  const card = (key, rest) => ({ key, label: hub(key).label, href: hub(key).href, count: null, sub: '', foot: '', ...rest });
+
+  // Content queue: what waits for Sort, exactly as Sort's list counts it, and how many came from outside.
+  const waiting = loaded ? sortList(rows).live : [];
+  const outside = waiting.filter(r => String(r.submitter_email ?? '').trim()).length;
+
+  // Newsletter: the next send date from today on, how many are in it, and the newest issue not after today.
+  const next = [...schedule].sort().find(d => d >= today) ?? '';
+  const sent = Array.isArray(archive)
+    ? archive.map(e => e?.date).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d ?? '') && d <= today).sort().at(-1) ?? ''
+    : '';
+
+  const signupFoot = !signups ? ''
+    : !signups.live ? 'Not set up'
+    : signups.last ? `Live · last sign-up ${isoToShort(signups.last, today)}` : 'Live';
+
   return [
-    { key: 'team', label: 'Submit content', href: '/#team', count: null, sub: 'The share form, the queue and the quick links, for the team' },
-    { key: 'sort', label: 'Content Sort', href: '/#sort', count: n('sort'), sub: 'Waiting to be sorted' },
-    { key: 'newsletter', label: 'Newsletter', href: '/#newsletter', count: n('newsletter'), sub: `Ready to add · ${next}` },
-    { key: 'exchange', label: 'Policy Exchange', href: '/#exchange', count: n('exchange'), sub: 'Publish would add' },
-    // Two how-tos on one card, each a link of its own (Kate, Sep 30, evening).
-    { key: 'docs', label: 'Documentation', href: '', count: null, sub: '', links: [
-      { label: 'How to submit content', href: '/how-to/submit-content/' },
-      { label: 'How to build the newsletter', href: '/how-to/newsletter/' },
-    ] },
+    card('team', { sub: "The team's form", links: [{ label: 'How to submit content', href: '/how-to/submit-content/' }] }),
+    card('queue', { count: loaded ? waiting.length : null, sub: `waiting for Sort${outside ? ` · ${outside} from outside` : ''}`, foot: 'Sort, password protected', lock: true }),
+    card('newsletter', next
+      ? { count: loaded ? issueRows(rows, next).length : null, sub: `in the ${isoToShort(next, today)} issue · ${lower(sendsIn(next, today))}`, foot: sent ? `Last sent ${isoToShort(sent, today)}` : '' }
+      : { sub: 'No issue scheduled', foot: sent ? `Last sent ${isoToShort(sent, today)}` : '' }),
+    card('listserv', { count: signups?.live && Number.isFinite(signups.waiting) ? signups.waiting : null, sub: 'to be added', foot: signupFoot }),
+    card('links', { copies: PUBLIC_LINKS }),
+    card('exchange', { count: loaded ? (preview ? preview.adding.length : readyToPublish(rows).length) : null, sub: 'waiting to publish', foot: hubUpdated ? `Live · updated ${isoToShort(hubUpdated, today)}` : '' }),
   ];
 }
 

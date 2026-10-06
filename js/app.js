@@ -20,6 +20,7 @@ import { todayCentral } from './today.js';
 import { sessionStatus, signIn as signInRequest, signOut as signOutRequest } from './auth-client.js';
 import { isLocked, SIGN_IN_ON, authError, lockedOut, WRONG_PASSWORD } from './auth-view.js';
 import { renderSignIn } from './auth-ui.js';
+import { hubHead, HUB_LEDES } from './hub-head.js';
 
 
 const state = {
@@ -45,13 +46,15 @@ const state = {
   justPublished: 0,         // count from the last publish, until she leaves the screen (view state)
   justHighlighted: null,    // how many the highlight holds after the last write, for the receipt (view state)
   archive: null,            // the builder's archive index for Past issues and Last issue: null loading, false unreadable
+  hubUpdated: null,         // the live Exchange's last change, YYYY-MM-DD: null while asked, '' when it did not answer
+  signups: null,            // the listserv's count, never names: { live, waiting, last }, or null
   publishPreview: null,
   publishedCsv: '',       // the CSV from the last publish, for the receipt's re-download
   rewroteNote: null,
   lastKeepAll: null,        // [{ id, old }] from the last Keep all remaining, until undone or left
 };
 
-const screens = Object.fromEntries(['home', 'team', 'issue', 'schedule', 'past', 'sort', 'finalize', 'publish']
+const screens = Object.fromEntries(['home', 'team', 'queue', 'issue', 'schedule', 'past', 'sort', 'finalize', 'listserv', 'exchange', 'publish']
   .map(name => [name, document.querySelector(`#screen-${name}`)]));
 const statusEl = document.querySelector('#desk-status');
 
@@ -566,7 +569,7 @@ async function unsendFromNewsletter(ids) {
   render();
 }
 
-const SCREEN_ORDER = ['home', 'team', 'sort', 'finalize', 'issue', 'schedule', 'past', 'publish'];
+const SCREEN_ORDER = ['home', 'team', 'queue', 'sort', 'finalize', 'issue', 'schedule', 'past', 'listserv', 'exchange', 'publish'];
 // Every screen but the front page has an address (/#sort, /#newsletter,
 // /#exchange, and the old screens' own until they fold into the lanes), so a
 // typed or bookmarked one opens there and a reload stays put.
@@ -628,10 +631,13 @@ function render() {
     if (state.loaded && !state.publishPreview && !laneCheck.inFlight && laneCheck.failedAt !== state.rows) quietPublishCheck();
     renderHome(screens.home, {
       ...common, loaded: state.loaded, loadFailed: state.loadFailed,
-      preview: state.publishPreview,
+      preview: state.publishPreview, archive: state.archive, hubUpdated: state.hubUpdated, signups: state.signups,
       onGoTo: goTo,
       onRefresh: reload,
     });
+  } else if (['queue', 'listserv', 'exchange'].includes(state.screen)) {
+    const titles = { queue: 'Content queue', listserv: 'Listserv', exchange: 'Policy Exchange' };
+    screens[state.screen].replaceChildren(hubHead(titles[state.screen], HUB_LEDES[state.screen]));
   } else if (state.screen === 'team') {
     renderTeam(screens.team, {
       ...common, loaded: state.loaded, loadFailed: state.loadFailed,
@@ -774,6 +780,18 @@ async function loadArchive() {
   render();
 }
 loadArchive();
+
+// When the live Exchange last changed: the same Last-Modified the site shows
+// as Updated (api/hub-updated.js). Asked once a visit; a miss claims nothing.
+async function loadHubUpdated() {
+  try {
+    const data = await readReply(await fetch('/api/hub-updated'), 'check the Exchange');
+    const when = new Date(data.lastModified);
+    state.hubUpdated = data.lastModified && !Number.isNaN(when.getTime()) ? todayCentral(when) : '';
+  } catch { state.hubUpdated = ''; }
+  render();
+}
+loadHubUpdated();
 
 // Back, Forward and a typed address switch screens like a menu pick would.
 window.addEventListener('hashchange', () => {

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { LANES, openedScreen } from '../js/shell-view.js';
+import { openedScreen } from '../js/shell-view.js';
 
 // The team page's Quick links (Kate, Sep 22, then her pick C of Sep 23 and her
 // split that evening): the three PUBLIC pages, the standalone share page and
@@ -65,7 +65,7 @@ test('both doors switch in place and land on their own screens', () => {
   assert.match(door, /onGoTo\(openedScreen\(new URL\(a\.href, location\.href\)\.hash\)\)/);
   const doors = src.match(/export const DESK_DOORS = \[([\s\S]*?)\];/)[1];
   const lands = [...doors.matchAll(/key: '(\w+)'/g)]
-    .map(m => openedScreen(new URL(LANES.find(l => l.key === m[1]).href, 'https://desk.example/').hash));
+    .map(m => openedScreen(new URL(src.match(new RegExp(`${m[1]}: \\{[^}]*href: '([^']+)'`))[1], 'https://desk.example/').hash));
   assert.deepEqual(lands, ['issue', 'sort', 'publish']);
 });
 

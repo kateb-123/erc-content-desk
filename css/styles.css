@@ -459,25 +459,43 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
    360px column on the right with the three lanes and the newest items. */
 .home-title { font: var(--page-title); letter-spacing: -.2px; margin: 0; }   /* the page title: 32px Mulish bold */
 .home-page .lede { margin: var(--spacing-02) 0 0; }
-/* Kate's cards (Sep 22): white boxes in a grid, each a name, what it holds, the count as a big numeral, an arrow; the teal bar on hover. */
+/* The six hubs (Kate's drawn map, Oct 6): white boxes in a grid, three to a
+   row on a laptop. Each is a name with its arrow, the count as a big numeral,
+   what it counts, and a line at its foot; the teal bar on hover. The name is
+   the card's link, stretched over the whole box, so a card's own links (a
+   how-to, Copy link) sit above it and never nest. */
 .desk-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--spacing-06); margin-top: var(--gap-28); }
 .desk-card {
-  display: flex; align-items: center; gap: var(--spacing-05); min-height: 96px; padding: var(--spacing-06) var(--spacing-06) var(--spacing-06) 21px;
+  position: relative; display: flex; flex-direction: column; gap: var(--spacing-01); min-height: 176px;
+  padding: var(--spacing-06) var(--spacing-06) var(--spacing-06) 21px;
   background: var(--layer); border: 1px solid var(--layer-line); border-left: 4px solid transparent; border-radius: var(--radius);
-  color: var(--ink); text-decoration: none;
+  color: var(--ink);
   transition: background-color var(--duration-fast-01) var(--ease-productive), border-color var(--duration-fast-01) var(--ease-productive);
 }
-a.desk-card:hover { background: var(--door-hover); border-left-color: var(--accent); color: var(--ink); }
-.desk-card.is-still { color: var(--muted); }
-.desk-card-words { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-01); }
-.desk-card-name { font: var(--sub-title); letter-spacing: -.1px; }
+.desk-card.is-live:hover { background: var(--door-hover); border-left-color: var(--accent); }
+.desk-card:has(.desk-card-go:focus-visible) { box-shadow: var(--focus-ring); }
+.desk-card-head { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-05); margin-bottom: var(--spacing-02); }
+.desk-card-name { font: var(--sub-title); letter-spacing: -.1px; margin: 0; }
+a.desk-card-go { color: var(--ink); text-decoration: none; }
+a.desk-card-go::after { content: ''; position: absolute; inset: 0; }   /* the whole card is the name's link */
+a.desk-card-go:focus-visible { outline: none; }
+.desk-card-count { font: var(--numeral); font-size: 28px; line-height: 36px; }
+.desk-card-count:empty { display: none; }
 .desk-card-sub { font: var(--meta-type); color: var(--text-helper); }
-/* Documentation's lines are links of their own; the card itself opens nothing. */
-.desk-card-link { font: var(--meta-type); color: var(--link-primary); text-decoration: underline; align-self: flex-start; }
+.desk-card-sub .fa-solid { font-size: 12px; }
+.desk-card-foot { margin-top: auto; padding-top: var(--spacing-05); display: flex; flex-direction: column; gap: var(--spacing-01); }
+/* A card's own links stand above the stretched name. */
+.desk-card-link { position: relative; z-index: 1; font: var(--meta-type); color: var(--link-primary); text-decoration: underline; align-self: flex-start; }
 .desk-card-link:hover { color: var(--link-primary-hover); }
 .desk-card-link:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); border-radius: 2px; }
-.desk-card-count { font: var(--numeral); font-size: 28px; line-height: 36px; }
 .desk-card .fa-arrow-right { font-size: 14px; color: var(--icon-secondary); }
+.desk-card.is-live:hover .fa-arrow-right { color: var(--accent); }
+/* Public links: a row a page, its name and Copy link. */
+.desk-card-rows { display: flex; flex-direction: column; }
+.desk-card-row { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-05); padding: var(--spacing-03) 0; border-top: 1px solid var(--line-in); }
+.desk-card-row:first-child { border-top: 0; padding-top: 0; }
+.desk-card-row .desk-card-link { font: var(--body-type); color: var(--ink); text-decoration: none; }
+.desk-card-row .desk-card-link:hover { color: var(--link-primary); text-decoration: underline; }
 .home-note { margin-top: var(--spacing-05); }
 
 /* A small tertiary: the base button at 32px. */

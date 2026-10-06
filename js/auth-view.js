@@ -4,7 +4,6 @@
  * Newsletter stay open. Pure rules, so node --test can hold them; the
  * screen (auth-ui.js) draws what these say.
  */
-import { LANES } from './shell-view.js';
 
 /** The screens behind the password. Finalize is a tab of Content Sort.
  *  Kate, Sep 30: "turn off the password": the set is EMPTY, so no page asks
@@ -20,12 +19,11 @@ export function isLocked(screen) {
   return LOCKED_SCREENS.has(screen);
 }
 
-const LANE_OF = { sort: 'sort', finalize: 'sort', publish: 'exchange' };
+const PAGE_OF = { sort: 'Content Sort', finalize: 'Content Sort', publish: 'Policy Exchange' };
 
 /** The one line over the field: which page the sign-in opens. */
 export function signInLine(screen) {
-  const lane = LANES.find(l => l.key === LANE_OF[screen]);
-  return `Sign in to open ${lane ? lane.label : 'the desk'}.`;
+  return `Sign in to open ${PAGE_OF[screen] ?? 'the desk'}.`;
 }
 
 /** The server's two sentences, word for word (api/_lib/session.js; a test

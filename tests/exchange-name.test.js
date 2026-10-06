@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { LANES, pageTitle } from '../js/shell-view.js';
-import { deskCards } from '../js/home-panel.js';
+import { HUBS, pageTitle } from '../js/shell-view.js';
+import { hubCards } from '../js/home-panel.js';
 
 // Audit, Sep 23: the Exchange's page had two names, Policy Exchange in the top
 // bar and on the front page's card, Publish to Exchange on the page itself. It
@@ -10,12 +10,11 @@ import { deskCards } from '../js/home-panel.js';
 // from the file.
 const src = readFileSync(new URL('../js/publish-ui.js', import.meta.url), 'utf8');
 
-test("the Exchange's page wears the lane's name on the page, in the tab and on the front page's card", () => {
-  const lane = LANES.find(l => l.key === 'exchange').label;
-  assert.equal(lane, 'Policy Exchange');
-  assert.equal(src.match(/screenHead\('([^']+)', 'publish'/)?.[1], lane);
-  assert.equal(pageTitle('publish'), `${lane} · ERC Content Desk`);
-  assert.equal(deskCards({ counts: null, issue: null, today: '' }).find(c => c.key === 'exchange').label, lane);
+test("the Exchange's hub wears its one name in the bar, in the tab and on the front page's card", () => {
+  const hub = HUBS.find(h => h.key === 'exchange').label;
+  assert.equal(hub, 'Policy Exchange');
+  assert.equal(pageTitle('exchange'), `${hub} · ERC Content Desk`);
+  assert.equal(hubCards({ rows: [], schedule: [], today: '', loaded: false }).find(c => c.key === 'exchange').label, hub);
   assert.doesNotMatch(src, /Publish to Exchange/, 'the old name is gone from the file');
 });
 
