@@ -188,7 +188,7 @@ export function renderPublish(container, props) {
   const picksChanged = Boolean(preview) && !samePicks(picks ?? [], nowPicks);
   const hlCtx = { adding, hub: preview?.hub ?? [] };
 
-  const { head, lede } = screenHead('Policy Exchange', 'publish',
+  const { head, lede } = screenHead('Publish', 'publish',
     'Everything here was checked against the live Exchange on arrival. Publish sends the Adding rows to the site. Spotlight events stay held for the newsletter (webinars excepted); a row that needs a fix waits in Sort; anything already live is left out. Click a colour under the bar to see only those rows.');
   if (showReceipt) {
     // The receipt card below is the confirmation — the head stays bare.

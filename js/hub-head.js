@@ -4,6 +4,7 @@
  * the Listserv and the Policy Exchange open with it; Submit content and the
  * Newsletter keep their own heads.
  */
+import { faIcon } from './icons.js';
 import { el } from './ui-aids.js';
 
 export function hubHead(title, lede) {
@@ -18,3 +19,10 @@ export const HUB_LEDES = {
   listserv: 'Sign-ups for the ERC newsletter.',
   exchange: 'The public site, and what waits to go on it.',
 };
+
+/** A line saying something is coming, in the quiet grey (her red Forthcoming). */
+export function forthcoming(words) {
+  const line = el('p', 'forthcoming');
+  line.append(faIcon('clock'), ` ${words} · Forthcoming`);
+  return line;
+}

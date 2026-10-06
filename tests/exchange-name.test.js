@@ -18,6 +18,14 @@ test("the Exchange's hub wears its one name in the bar, in the tab and on the fr
   assert.doesNotMatch(src, /Publish to Exchange/, 'the old name is gone from the file');
 });
 
+// Kate's drawn map (Oct 6): Publish is a page of its own under the Policy
+// Exchange hub, the way the builder sits under Newsletter, so it is named
+// for what it does, and the hub keeps the one name.
+test('Publish is its own page under Policy Exchange, named Publish', () => {
+  assert.equal(src.match(/screenHead\('([^']+)', 'publish'/)?.[1], 'Publish');
+  assert.equal(pageTitle('publish'), 'Publish · ERC Content Desk');
+});
+
 // Kate, Sep 23: one name everywhere, so Finalize's doors say it too.
 test("Finalize's doors to the Exchange say Policy Exchange", async () => {
   const { readFileSync } = await import('node:fs');

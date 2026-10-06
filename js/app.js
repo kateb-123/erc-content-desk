@@ -22,6 +22,7 @@ import { isLocked, SIGN_IN_ON, authError, lockedOut, WRONG_PASSWORD } from './au
 import { renderSignIn } from './auth-ui.js';
 import { hubHead, HUB_LEDES } from './hub-head.js';
 import { renderQueue } from './queue-ui.js';
+import { renderExchange } from './exchange-ui.js';
 
 
 const state = {
@@ -638,9 +639,12 @@ function render() {
     });
   } else if (state.screen === 'queue') {
     renderQueue(screens.queue, { ...common, loaded: state.loaded, loadFailed: state.loadFailed, onGoTo: goTo, onRefresh: reload });
-  } else if (['listserv', 'exchange'].includes(state.screen)) {
-    const titles = { listserv: 'Listserv', exchange: 'Policy Exchange' };
-    screens[state.screen].replaceChildren(hubHead(titles[state.screen], HUB_LEDES[state.screen]));
+  } else if (state.screen === 'exchange') {
+    // What waits to publish comes from the live Exchange check: the quiet one the front page asks for.
+    if (state.loaded && !state.publishPreview && !laneCheck.inFlight && laneCheck.failedAt !== state.rows) quietPublishCheck();
+    renderExchange(screens.exchange, { ...common, loaded: state.loaded, preview: state.publishPreview, hubUpdated: state.hubUpdated, onGoTo: goTo });
+  } else if (state.screen === 'listserv') {
+    screens.listserv.replaceChildren(hubHead('Listserv', HUB_LEDES.listserv));
   } else if (state.screen === 'team') {
     renderTeam(screens.team, { onSubmitted: reload, knownLinks: () => state.rows });
   } else if (state.screen === 'issue') {

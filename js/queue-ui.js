@@ -9,7 +9,7 @@
  */
 import { contentQueue } from './queue-view.js';
 import { sortList } from './sort-view.js';
-import { hubHead, HUB_LEDES } from './hub-head.js';
+import { hubHead, HUB_LEDES, forthcoming } from './hub-head.js';
 import { faIcon } from './icons.js';
 import { el, busyLine, tryAgain } from './ui-aids.js';
 
@@ -17,13 +17,6 @@ let term = '';   // the search, for the visit
 
 const WHERE_CLASS = { Waiting: 'badge badge-waiting', Kept: 'badge', 'On the Exchange': 'badge badge-live' };
 const whereClass = word => WHERE_CLASS[word] ?? 'badge badge-new';   // In the <date> issue
-
-/** A line saying something is coming, in the quiet grey (her red Forthcoming). */
-export function forthcoming(words) {
-  const line = el('p', 'forthcoming');
-  line.append(faIcon('clock'), ` ${words} · Forthcoming`);
-  return line;
-}
 
 function queueRow(entry) {
   const row = el('div', 'qh-row');
