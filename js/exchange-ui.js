@@ -9,7 +9,7 @@
 import { exchangeStatus } from './exchange-view.js';
 import { hubHead, HUB_LEDES, forthcoming } from './hub-head.js';
 import { faIcon } from './icons.js';
-import { el } from './ui-aids.js';
+import { el, focusKeyIn, restoreFocus } from './ui-aids.js';
 
 const SITE = 'https://erc-policy-exchange.vercel.app/';
 
@@ -23,6 +23,7 @@ function stat(label, value) {
 }
 
 export function renderExchange(container, { rows, today, loaded, preview, hubUpdated, onGoTo }) {
+  const focusKey = focusKeyIn(container);   // a late load redraws the page; the keyboard keeps its place
   const s = exchangeStatus({ rows, today, loaded, preview, hubUpdated });
   const page = el('div', 'hub-page');
   const split = el('div', 'qh-split');
@@ -30,6 +31,7 @@ export function renderExchange(container, { rows, today, loaded, preview, hubUpd
 
   const live = el('a', 'hub-link', 'Open the Exchange');
   live.href = SITE; live.target = '_blank'; live.rel = 'noopener';
+  live.dataset.focus = 'site';
   live.append(' ', faIcon('arrow-up-right-from-square'), el('span', 'sr-only', ' (opens in a new tab)'));
   const site = el('span', s.site === 'Live' ? 'hub-ok' : 'hub-quiet', s.site);
   const box = el('div', 'hub-box');
@@ -44,6 +46,7 @@ export function renderExchange(container, { rows, today, loaded, preview, hubUpd
   const side = el('aside', 'qh-side');
   const door = el('a', 'sort-door qh-door');
   door.href = '/#publish';
+  door.dataset.focus = 'publish';
   door.addEventListener('click', event => { event.preventDefault(); onGoTo('publish'); });
   const words = el('span', 'door-words');
   words.append(el('span', 'door-name', 'Publish'), el('span', 'door-note', s.waiting ? `${s.waiting} waiting` : ''));
@@ -53,4 +56,5 @@ export function renderExchange(container, { rows, today, loaded, preview, hubUpd
   split.append(main, side);
   page.append(hubHead('Policy Exchange', HUB_LEDES.exchange), split);
   container.replaceChildren(page);
+  if (focusKey !== null) restoreFocus(container, focusKey, page.querySelector('.page-title'));
 }

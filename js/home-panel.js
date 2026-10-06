@@ -1,9 +1,9 @@
 /** Pure helpers for the front page: the six hubs' cards. */
-import { readyToPublish } from './workflow.js';
 import { isoToShort } from './queue-view.js';
 import { sortList } from './sort-view.js';
 import { issueRows, sendsIn } from './issue-view.js';
 import { HUBS } from './shell-view.js';
+import { exchangeStatus } from './exchange-view.js';
 import { PUBLIC_LINKS } from './public-links.js';
 
 /** Recently added: the newest rows first, deleted ones left out. */
@@ -40,9 +40,11 @@ export function hubCards({ rows = [], schedule = [], today = '', loaded = false,
     ? archive.map(e => e?.date).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d ?? '') && d <= today).sort().at(-1) ?? ''
     : '';
 
-  const signupFoot = !signups ? ''
+  const signupFoot = !signups || signups.error ? ''
     : !signups.live ? 'Not set up'
     : signups.last ? `Live · last sign-up ${isoToShort(signups.last, today)}` : 'Live';
+
+  const exchange = exchangeStatus({ rows, today, loaded, preview, hubUpdated });
 
   return [
     card('team', { sub: "The team's form", links: [{ label: 'How to submit content', href: '/how-to/submit-content/' }] }),
@@ -52,6 +54,6 @@ export function hubCards({ rows = [], schedule = [], today = '', loaded = false,
       : { sub: 'No issue scheduled', foot: sent ? `Last sent ${isoToShort(sent, today)}` : '' }),
     card('listserv', { count: signups?.live && Number.isFinite(signups.waiting) ? signups.waiting : null, sub: 'to be added', foot: signupFoot }),
     card('links', { copies: PUBLIC_LINKS }),
-    card('exchange', { count: loaded ? (preview ? preview.adding.length : readyToPublish(rows).length) : null, sub: 'waiting to publish', foot: hubUpdated ? `Live · updated ${isoToShort(hubUpdated, today)}` : '' }),
+    card('exchange', { count: exchange.waiting, sub: 'waiting to publish', foot: exchange.site === 'Live' ? `Live · updated ${exchange.updated}` : '' }),
   ];
 }

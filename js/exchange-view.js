@@ -8,12 +8,23 @@
  */
 import { readyToPublish } from './workflow.js';
 import { isoToShort } from './queue-view.js';
+import { todayCentral } from './today.js';
+
+/** When the Exchange last changed: the later of the site's own date and the
+ *  desk's last publish (Central), so a publish this visit shows at once,
+ *  before the site's redeploy is done (review, Oct 6). '' when neither is known. */
+export function lastUpdated(rows, hubUpdated) {
+  const published = rows.map(r => String(r.published_at ?? '')).filter(Boolean).sort().at(-1);
+  const desk = published && !Number.isNaN(Date.parse(published)) ? todayCentral(new Date(published)) : '';
+  return [hubUpdated || '', desk].sort().at(-1);
+}
 
 export function exchangeStatus({ rows = [], today = '', loaded = false, preview = null, hubUpdated = null }) {
   const site = hubUpdated === null ? 'Checking' : hubUpdated ? 'Live' : "Didn't answer just now";
+  const updated = lastUpdated(rows, hubUpdated);
   return {
     site,
-    updated: hubUpdated ? isoToShort(hubUpdated, today) : '',
+    updated: updated ? isoToShort(updated, today) : '',
     // What Publish would add, from the live check; until it lands, the kept rows ticked for the Exchange.
     waiting: loaded ? (preview ? preview.adding.length : readyToPublish(rows).length) : null,
   };

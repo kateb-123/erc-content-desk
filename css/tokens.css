@@ -126,6 +126,7 @@
   /* Status as text: the 400 steps are under 4.5:1 on white, so a WORD takes
      the 500 step. */
   --text-success: var(--color-green-500);
+  --text-success-on-tint: #126128;            /* a success word ON the green 100 tint: 6.9:1, where green 500 is 4.3:1 (review, Oct 6) */
   --text-warning: var(--color-orange-500);
   --text-warning-on-tint: #8f3814;            /* a warning word ON the maize 100 tint: 7.3:1, where orange 500 is 4.4:1 */
 

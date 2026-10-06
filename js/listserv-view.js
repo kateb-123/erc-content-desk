@@ -7,6 +7,7 @@ import { isoToShort } from './queue-view.js';
 
 export function listservStatus(signups, today) {
   if (!signups) return { form: 'Checking', last: '', waiting: null, since: '' };
+  if (signups.error) return { form: "Couldn't check just now", last: '', waiting: null, since: '' };
   const form = signups.live ? 'Live, taking sign-ups' : 'Not set up';
   if (!signups.kept) return { form, last: 'Not known', waiting: null, since: 'The desk starts counting once its sign-up table is set up.' };
   return {

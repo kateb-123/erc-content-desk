@@ -19,6 +19,7 @@ import { parseModelJson } from './_lib/reply-json.js';
 import { readAllRows } from './_lib/store.js';
 import { fetchHubCsv } from './_lib/hub.js';
 import { hubRows } from './_lib/highlights.js';
+import { refuseUnlessSignedIn } from './_lib/session.js';
 
 export const config = { maxDuration: 300 };
 
@@ -28,8 +29,10 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, error: 'Use POST.' });
   }
-  // The sign-in is off (Kate, Sep 30), so the model call is open like the
-  // page that makes it.
+  // The Exchange card's words are asked by Publish, an open page. The
+  // rewrite is Finalize's, and Content Sort is behind the desk password
+  // again (Kate's drawn map, Oct 6), so its model call is too.
+  if (!Array.isArray(req.body?.card) && await refuseUnlessSignedIn(req, res)) return;
   try {
     if (Array.isArray(req.body?.card)) return await cardWords(req.body.card, res);
     const all = await readAllRows();

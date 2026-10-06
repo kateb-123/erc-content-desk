@@ -50,8 +50,12 @@ export function validateSignup({ name, email }) {
   return '';
 }
 
+/** How long the copy may take once the script has the sign-up: the sign-up
+ *  already stands, so a stalled database is given up on, never waited out. */
+export const COPY_TIMEOUT_MS = 3000;
+
 /** Built over its dependencies so the tests can hand in fakes. */
-export function createListservHandler({ env, mode, signups }) {
+export function createListservHandler({ env, mode, signups, copyTimeoutMs = COPY_TIMEOUT_MS }) {
   const kept = () => mode() === 'db';
 
   async function summary(res) {
@@ -108,7 +112,11 @@ export function createListservHandler({ env, mode, signups }) {
     // On the list: the desk keeps its copy. A copy that fails is logged and
     // never fails the sign-up, which already stands in the sheet.
     if (kept()) {
-      try { await signups().keep({ name, email }); } catch (err) { console.error('listserv: the copy was not kept', err); }
+      let timer;
+      const giveUp = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`no answer in ${copyTimeoutMs} ms`)), copyTimeoutMs); });
+      try { await Promise.race([signups().keep({ name, email }), giveUp]); }
+      catch (err) { console.error('listserv: the copy was not kept', err); }
+      finally { clearTimeout(timer); }
     }
     return res.status(200).json({ ok: true });
   };

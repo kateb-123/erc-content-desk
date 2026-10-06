@@ -116,3 +116,22 @@ test('a good sign-up is forwarded, then a copy is kept; a refused one keeps noth
     assert.equal(res3.body.ok, true, 'the sign-up stands; the copy is the desk\'s own business');
   } finally { globalThis.fetch = real; }
 });
+
+// Review, Oct 6: the copy runs after the script took the sign-up, inside the
+// function's 30 seconds; a stalled database must never turn that into a
+// failure the visitor sees and retries.
+test('a copy that hangs is given up after a moment, and the sign-up still answers ok', async () => {
+  const real = globalThis.fetch;
+  globalThis.fetch = async () => ({ ok: true, status: 200 });
+  const realError = console.error; console.error = () => {};
+  try {
+    const hangs = { keep: () => new Promise(() => {}), summary: async () => ({}) };
+    const handler = createListservHandler({ env: () => ({ LISTSERV_URL: 'https://script.example/exec' }), mode: () => 'db', signups: () => hangs, copyTimeoutMs: 20 });
+    const res = fakeRes();
+    const started = Date.now();
+    await handler({ method: 'POST', headers: SAME_ORIGIN, body: { name: 'A', email: 'a@b.edu' } }, res);
+    assert.equal(res.code, 200);
+    assert.equal(res.body.ok, true);
+    assert.ok(Date.now() - started < 1000, 'it did not wait on the database');
+  } finally { globalThis.fetch = real; console.error = realError; }
+});

@@ -388,8 +388,8 @@ under "Use it for" (her: the first lines were "lame") and the newest example
 of its kind on the Exchange right now, fetched from the Exchange's public
 news.csv at load, so it never goes stale; no name on the page ("no mention
 of Kate"); and Links to share, the team
-page's own Quick links rows, imported from `js/team-ui.js`, Copy link and
-Copied live. No After you click section and no practice form: "they're not
+page's own Quick links rows (since Oct 6 the desk's public links, imported
+from `js/public-links.js`), Copy link and Copied live. No After you click section and no practice form: "they're not
 idiots". Steps only, and only where the screen does not already say it.
 Sample content is obviously fake, in Aggie names (Howdy Policy Trivia Night).
 
@@ -500,7 +500,11 @@ drawn map: "Sort, password protected (Kate only)", and her pick "Sort only,
 as drawn"): `LOCKED_SCREENS` in `js/auth-view.js` holds sort and finalize;
 every other page opens to anyone with the address, and the password also
 lives on at Publish's Confirm, the one write to the public site. The
-sign-in's way back under its box is the Content queue now. The paragraphs
+Finalize rewrite (`/api/rewrite` with ids) asks for the sign-in again; the
+Exchange card's words (`card`) stay open, since Publish is. The sign-in's
+way back under its box is the Content queue now. The lock guards the pages
+and the model call; `/api/sheet` stays open, as the team's own pages write
+through it. The paragraphs
 below describe the lock as built on Sep 23.
 
 - **The desk password** (Kate: "password protected for just me, Kate"). The

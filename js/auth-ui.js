@@ -13,6 +13,8 @@ const TITLES = { home: 'Desk', sort: 'Content Sort', finalize: 'Content Sort', p
 
 export function renderSignIn(container, { screen, checking, busy, error, onSignIn, onGoTo }) {
   const focusKey = focusKeyIn(container);
+  // A redraw under the field (a load landing) keeps what was typed (review, Oct 6).
+  const typed = container.querySelector('#signin-password')?.value ?? '';
   container.replaceChildren();
   const page = el('div', 'signin-page');
   const middle = el('div', 'signin-middle');
@@ -36,6 +38,7 @@ export function renderSignIn(container, { screen, checking, busy, error, onSignI
   field.autocomplete = 'current-password';
   field.dataset.focus = 'password';
   field.required = true;
+  field.value = typed;
   if (error) {
     field.setAttribute('aria-invalid', 'true');
     field.setAttribute('aria-describedby', 'signin-error');

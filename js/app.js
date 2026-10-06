@@ -644,7 +644,7 @@ function render() {
     if (state.loaded && !state.publishPreview && !laneCheck.inFlight && laneCheck.failedAt !== state.rows) quietPublishCheck();
     renderExchange(screens.exchange, { ...common, loaded: state.loaded, preview: state.publishPreview, hubUpdated: state.hubUpdated, onGoTo: goTo });
   } else if (state.screen === 'listserv') {
-    renderListserv(screens.listserv, { signups: state.signups, today: common.today });
+    renderListserv(screens.listserv, { signups: state.signups, today: common.today, onRetry: () => { state.signups = null; render(); loadSignups(); } });
   } else if (state.screen === 'team') {
     renderTeam(screens.team, { onSubmitted: reload, knownLinks: () => state.rows });
   } else if (state.screen === 'issue') {
@@ -798,12 +798,12 @@ loadHubUpdated();
 
 // The listserv's count, never its names: whether the form is set up, how
 // many wait to be added, the last sign-up (api/listserv.js GET). Asked once a
-// visit; a miss leaves the hub saying it is checking.
+// visit; a miss says so on the hub, with Try again.
 async function loadSignups() {
   try {
     const data = await readReply(await fetch('/api/listserv'), 'count the sign-ups');
     state.signups = { live: data.live, kept: data.kept, waiting: data.waiting, last: data.last, since: data.since };
-  } catch { state.signups = null; }
+  } catch { state.signups = { error: true }; }
   render();
 }
 loadSignups();
