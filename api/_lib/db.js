@@ -17,6 +17,7 @@
 import { neon } from '@neondatabase/serverless';
 import { SHEET_COLUMNS, rowToValues, valuesToRow } from '../../js/schema.js';
 import { DRAFTS_SCHEMA } from './drafts.js';
+import { SIGNUPS_SCHEMA } from './signups.js';
 
 const q = name => `"${name}"`;
 const COLS = SHEET_COLUMNS.map(q).join(', ');
@@ -44,6 +45,8 @@ export function createDb(query) {
     await query(`CREATE TABLE IF NOT EXISTS meta (key text PRIMARY KEY, value text NOT NULL)`);
     // The builder's discarded drafts, kept 90 days (Sep 23; api/_lib/drafts.js).
     await query(DRAFTS_SCHEMA);
+    // The listserv's sign-ups, kept as they pass through (Oct 6; api/_lib/signups.js).
+    await query(SIGNUPS_SCHEMA);
   }
 
   async function getMeta(key) {

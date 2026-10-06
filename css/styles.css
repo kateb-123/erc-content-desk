@@ -971,3 +971,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hub-link .fa-solid { font-size: 11px; }
 .hub-box + .forthcoming { margin-top: var(--spacing-06); }
 .forthcoming + .forthcoming { margin-top: var(--spacing-03); }
+.hub-count { padding: var(--spacing-05) var(--spacing-06); }
+.hub-numeral { display: block; font: var(--numeral); font-size: 28px; line-height: 36px; }
+.hub-numeral:empty { display: none; }
+.hub-count-note { font: var(--meta-type); color: var(--text-helper); margin: var(--spacing-01) 0 0; }
+.hub-aside { font: var(--meta-type); color: var(--text-helper); margin: 0; padding: var(--spacing-05); background: var(--layer-01); border-radius: var(--radius); }
+.hub-stat-v .ql-copy { vertical-align: baseline; }

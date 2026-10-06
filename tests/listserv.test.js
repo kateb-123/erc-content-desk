@@ -43,9 +43,10 @@ test('a preflight is answered before anything else', async () => {
   assert.equal(res.headers['Access-Control-Allow-Origin'], HUB);
 });
 
-test('only POST is accepted', async () => {
+// GET answers the Listserv hub's count since Oct 6 (signups.test.js).
+test('only GET and POST are accepted', async () => {
   const res = fakeRes();
-  await listserv({ method: 'GET', headers: SAME_ORIGIN }, res);
+  await listserv({ method: 'PUT', headers: SAME_ORIGIN }, res);
   assert.equal(res.code, 405);
 });
 
