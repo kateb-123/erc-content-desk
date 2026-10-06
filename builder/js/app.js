@@ -768,23 +768,6 @@ function renderTriage() {
       tr.append(td1, td4);
       tbody.appendChild(tr);
     }
-    const addRow = el('tr', 'outline-add-callout');
-    const addTd = el('td');
-    addTd.colSpan = 4;
-    const addBtn = button(' Add a callout after this section', 'ghost-btn outline-add-callout-btn', { icon: 'plus' });
-    addBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      showMenu(addBtn, 'outline-menu', (menu) => {
-        for (const [kind, def] of Object.entries(CALLOUT_KINDS)) {
-          const b = button(def.label, 'outline-menu-item');
-          b.addEventListener('click', () => { addCallout(issue, kind, reg.key); closeMenu(); scheduleSave(); renderTriage(); setWizardStatus(`Added a callout after ${reg.label}. Style it and change its words on Preview & Tweak.`); });
-          menu.appendChild(b);
-        }
-      });
-    });
-    addTd.appendChild(addBtn);
-    addRow.appendChild(addTd);
-    tbody.appendChild(addRow);
   }
 
   container.appendChild(table);
@@ -1851,6 +1834,57 @@ function buildLayoutPanel(iframe) {
   return details;
 }
 
+/**
+ * Add callout (Kate, Oct 5), a door beside Add an item: pick the kind and
+ * the section it follows; the callout joins the issue and its own card
+ * opens at once, style first, so it can be styled and worded on the spot.
+ */
+function openAddCalloutCard(iframe) {
+  const { card, body, actions } = drawerCard('Add callout');
+  const col = el('div', 'drawer-fields');
+  col.appendChild(el('h4', 'drawer-h4', 'Which one'));
+  const kinds = el('div', 'add-callout-kinds');
+  let kind = 'share';
+  const kindBtns = Object.entries(CALLOUT_KINDS).map(([key, def]) => {
+    const b = button(def.label, 'size-chip' + (key === kind ? ' is-on' : ''));
+    b.setAttribute('role', 'radio');
+    b.addEventListener('click', () => { kind = key; kindBtns.forEach((x) => { x.classList.toggle('is-on', x === b); x.setAttribute('aria-checked', String(x === b)); }); });
+    kinds.appendChild(b);
+    return b;
+  });
+  kinds.setAttribute('role', 'radiogroup');
+  kinds.setAttribute('aria-label', 'Which callout');
+  col.appendChild(kinds);
+  col.appendChild(el('p', 'triage-section-note drawer-note', `${CALLOUT_KINDS.share.label}: the desk's standing ask, for research, events and announcements. Your own words: a blank one.`));
+
+  const afterLabel = el('label', 'edit-card-sublabel', 'After which section');
+  const afterSelect = el('select', 'triage-field-input');
+  afterSelect.id = 'add-callout-after';
+  afterLabel.htmlFor = afterSelect.id;
+  afterSelect.append(...SECTION_REGISTRY.map((reg) => option(reg.key, reg.label, reg.key === 'research')));
+  col.append(afterLabel, afterSelect);
+  body.appendChild(col);
+
+  actions.appendChild(button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: closeDrawer }));
+  actions.appendChild(button('Add to the issue', 'btn btn-primary', { onClick: () => {
+    const c = addCallout(state.issue, kind, afterSelect.value);
+    scheduleSave();
+    refreshEditIframe(iframe);
+    const where = SECTION_REGISTRY.find((s) => s.key === c.after)?.label;
+    setWizardStatus(`Added the callout after ${where}.`);
+    // Its own card, once the email has redrawn with it.
+    setTimeout(() => {
+      openCalloutEditor(c.id, iframe);
+      const doc = iframe.contentDocument;
+      const node = doc?.querySelector(`[data-edit-section="callout"][data-edit-item="${CSS.escape(c.id)}"]`);
+      const cell = node?.closest('td');
+      if (cell) { cell.classList.add('ec-item-open'); revealAboveDrawer(iframe, cell); }
+    }, 400);
+  } }));
+  openDrawer(card, columnOffset(window.scrollY + 72));
+  requestAnimationFrame(() => kindBtns[0]?.focus());
+}
+
 function renderEdit() {
   closeDrawer();
   const container = openStep('edit', 'Check the issue and tweak anything in place.',
@@ -1886,6 +1920,7 @@ function renderEdit() {
     button(' Introduction', 'ghost-btn', { icon: 'align-left', onClick: () => openPanelInDrawer('Introduction', buildIntroPanel(iframe)) }),
     button(' Layout', 'ghost-btn', { icon: 'table-columns', onClick: () => openPanelInDrawer('Layout', buildLayoutPanel(iframe)) }),
     button(' Add an item', 'ghost-btn', { icon: 'plus', onClick: () => openPanelInDrawer('Add an item', buildAddItemPanel(iframe)) }),
+    button(' Add callout', 'ghost-btn', { icon: 'bullhorn', onClick: () => openAddCalloutCard(iframe) }),
   );
   toolbar.append(previewNote, doors);
   container.appendChild(toolbar);

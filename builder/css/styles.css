@@ -383,6 +383,7 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .outline-add-callout-btn { font-size: 13px; color: var(--text-secondary); }
 .outline-add-callout-btn:hover { color: var(--link-primary); }
 .drawer-note { margin: var(--spacing-03) 0 0; }
+.add-callout-kinds { display: flex; flex-wrap: wrap; gap: var(--spacing-02); }
 
 /* The small floating menu (Move to…): a white card with a hairline, one
    open at a time, closed by a click elsewhere or Escape. */
