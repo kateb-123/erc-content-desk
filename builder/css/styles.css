@@ -479,6 +479,14 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .wire-pic.is-empty { background: var(--mail-white); border: 1px dashed var(--border-strong-01); box-sizing: border-box; }
 .wire-label { text-align: center; }
 
+/* The picture's size: a few widths as chips, each with its portrait height. */
+.drawer-h4--later { margin-top: var(--spacing-05); }
+.size-chips { display: flex; flex-wrap: wrap; gap: var(--spacing-02); }
+.size-chip { height: 28px; padding: 0 var(--spacing-03); border: 1px solid var(--border-strong-01); border-radius: var(--radius-pill); background: var(--layer-02); color: var(--text-primary); font: inherit; font-size: 12px; line-height: 16px; letter-spacing: 0; cursor: pointer; }
+.size-chip:hover:not(.is-on) { background: var(--layer-hover-01); }
+.size-chip.is-on { background: var(--button-primary); border-color: var(--button-primary); color: var(--text-on-color); font-weight: 600; }
+.size-chip:focus-visible { box-shadow: var(--focus-ring); }
+
 /* The rail's Layout fold and the card's own look controls. */
 .layout-row { display: flex; flex-direction: column; gap: var(--spacing-03); }
 .layout-row-label, .edit-card-sublabel.look { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-secondary); }

@@ -222,6 +222,11 @@ export function pictureDefault(title) {
   return isEdTalk(title) ? 'headshot' : 'stamp';
 }
 
+/** The picture layout in force: the one chosen by hand, else the default for the title. */
+export function pictureStyleOf(fields) {
+  return PICTURE_STYLES.includes(fields?.pictureStyle) ? fields.pictureStyle : pictureDefault(fields?.title);
+}
+
 /** The picture's width: 160 for a headshot, 96 for a stamp, 0 for none. With
  *  no photo the email draws nothing; the editable preview draws a placeholder
  *  when a picture layout was chosen, so the choice can be seen (Kate, Oct 5). */
@@ -231,8 +236,18 @@ function pictureWidth(fields, sumOk, editable = false) {
   const chosen = PICTURE_STYLES.includes(fields.pictureStyle);
   if (!src && !(editable && chosen)) return 0;
   const style = chosen ? fields.pictureStyle : pictureDefault(fields.title);
-  return style === 'none' ? 0 : style === 'headshot' ? 160 : 96;
+  if (style === 'none') return 0;
+  // A size picked by hand (Kate, Oct 5), else the layout's own: 96 for a stamp, 160 for a headshot.
+  const picked = Number(fields.pictureWidth);
+  if (Number.isFinite(picked) && picked >= PICTURE_MIN && picked <= PICTURE_MAX) return Math.round(picked);
+  return style === 'headshot' ? 160 : 96;
 }
+
+/** The widths a picture may be set to by hand, in px. */
+export const PICTURE_MIN = 48;
+export const PICTURE_MAX = 240;
+/** The column a picture takes: its width plus one 16px gutter. */
+const PICTURE_GUTTER = 16;
 
 /** The preview's stand-in for a photo not yet added: a dashed box the size the photo would take. */
 function placeholderPicture(w, sectionKey, itemId, editable) {
@@ -353,8 +368,9 @@ function itemHtml(it, def, g, editable) {
     : !src ? placeholderPicture(w, def.key, it.id, editable)
     : `<a href="${esc(safeItemHref(f.url) || src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="${esc('Picture: ' + (f.title || ''))}" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:0;"${editAttrs(def.key, it.id, 'image', editable)}></a>`;
   if (!w) return title(hasMeta || sumOk ? 4 : 0) + meta(sumOk ? 8 : 0) + body;
-  if (w === 160) return twoCol(stamp, title(4) + meta(8) + body, 176, 3);
-  return title(4) + meta(8) + twoCol(stamp, body, 112, 4);
+  // A headshot stands beside the whole item; a stamp sits under the title, beside the description.
+  if (pictureStyleOf(f) === 'headshot') return twoCol(stamp, title(4) + meta(8) + body, w + PICTURE_GUTTER, 3);
+  return title(4) + meta(8) + twoCol(stamp, body, w + PICTURE_GUTTER, 4);
 }
 
 function fullRows(def, editable) {

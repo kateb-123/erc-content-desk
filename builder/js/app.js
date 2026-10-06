@@ -24,7 +24,7 @@ import { renderShell } from '../../js/shell-ui.js';
 import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
 import { normalizeLinkUrl } from './editing.js';
 // The per-issue layout options the Outline sets (Claude Design handoff, Oct 2026).
-import { CALLOUT_CHOICES, PICTURE_CHOICES, setCallout, setNav, itemOptions, setPictureStyle, itemLayouts, resetOptions, hasCustomOptions } from './options.js';
+import { CALLOUT_CHOICES, PICTURE_CHOICES, PICTURE_SIZES, setCallout, setNav, itemOptions, setPictureStyle, itemLayouts, pictureWidthOf, setPictureWidth, placeholderItems, resetOptions, hasCustomOptions } from './options.js';
 import { layoutOf } from './template.js';
 // Kept drafts, and hand-added items that go to the desk (Sep 23).
 import { readAllWaiting } from '../../js/reader-client.js';
@@ -1454,7 +1454,26 @@ function openItemEditor(refs, iframe) {
   const drawLook = () => {
     if (!cardItem || !lookCol) return;
     lookCol.replaceChildren(el('h4', 'drawer-h4', 'How it is laid out'));
-    lookCol.appendChild(wireframeRow(first.section, cardItem, () => { scheduleSave(); refreshEditIframe(iframe); drawLook(); }));
+    const redraw = () => { scheduleSave(); refreshEditIframe(iframe); drawLook(); };
+    lookCol.appendChild(wireframeRow(first.section, cardItem, redraw));
+    // The picture's size, once a picture layout is on: a few widths, each
+    // with the height a portrait photo stands at (Kate, Oct 5).
+    const layout = itemLayouts(first.section, cardItem).find((l) => l.on);
+    if (layout && (layout.key === 'stamp' || layout.key === 'headshot')) {
+      lookCol.appendChild(el('h4', 'drawer-h4 drawer-h4--later', 'Picture size, px'));
+      const chips = el('div', 'size-chips');
+      chips.setAttribute('role', 'radiogroup');
+      chips.setAttribute('aria-label', 'Picture size');
+      const current = pictureWidthOf(cardItem);
+      for (const size of PICTURE_SIZES) {
+        const chip = button(size.label, 'size-chip' + (size.width === current ? ' is-on' : ''));
+        chip.setAttribute('role', 'radio');
+        chip.setAttribute('aria-checked', String(size.width === current));
+        chip.addEventListener('click', () => { setPictureWidth(cardItem, size.width); redraw(); });
+        chips.appendChild(chip);
+      }
+      lookCol.appendChild(chips);
+    }
   };
   if (cardItem && IMAGE_SECTIONS.has(first.section)) {
     lookCol = el('div', 'drawer-look');
@@ -1842,6 +1861,14 @@ function renderExport() {
   if (!state.issue || !countIssueItems(state.issue)) {
     emptyLine(container, 'Nothing to export yet. Pull from the desk on the Review step first.');
     return;
+  }
+
+  // Placeholders never block the way out (Kate, Oct 5); they are named once,
+  // so a photo that was meant to come is not forgotten.
+  const waitingPhotos = placeholderItems(state.issue);
+  if (waitingPhotos.length) {
+    const names = waitingPhotos.map(({ item }) => `"${item.fields?.title || '(untitled)'}"`).join(', ');
+    container.appendChild(inlineNote('warning', `${waitingPhotos.length === 1 ? 'One item shows a placeholder' : `${waitingPhotos.length} items show a placeholder`} where its photo would be: ${names}. The email goes out without the picture unless a photo is added under Media on Preview & Tweak.`));
   }
 
   // Button row. An error toast has no timeout; the next click on the row

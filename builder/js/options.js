@@ -5,7 +5,7 @@
  * fields.showSummary and fields.pictureStyle. Nothing here touches the DOM.
  */
 
-import { CALLOUT_STYLES, PICTURE_STYLES, layoutOf, summaryDefault, pictureDefault } from './template.js';
+import { CALLOUT_STYLES, PICTURE_STYLES, PICTURE_MIN, PICTURE_MAX, layoutOf, summaryDefault, pictureDefault, pictureStyleOf } from './template.js';
 
 /** The callout's four treatments, in the order the control shows them. */
 export const CALLOUT_CHOICES = [
@@ -90,6 +90,49 @@ export function itemLayouts(sectionKey, item) {
     { key: 'headshot', label: 'Headshot beside it all', on: o.descriptionOn && pic === 'headshot', dim: !hasPic,
       apply: () => { item.fields.showSummary = true; item.fields.pictureStyle = 'headshot'; } },
   ];
+}
+
+/** The picture sizes offered by hand (Kate, Oct 5): the width, and the height
+ *  a portrait photo (4:5) would stand at, the shape the placeholder takes. */
+export const PICTURE_SIZES = [64, 96, 128, 160, 200].map((w) => ({ width: w, label: `${w} × ${Math.round(w * 1.25)}` }));
+
+/** The width a picture layout takes when no size was picked. */
+export const DEFAULT_PICTURE_WIDTH = { stamp: 96, headshot: 160 };
+
+/** The item's picture width in force: the one picked, else the layout's own. */
+export function pictureWidthOf(item) {
+  const f = item?.fields || {};
+  const picked = Number(f.pictureWidth);
+  if (Number.isFinite(picked) && picked >= PICTURE_MIN && picked <= PICTURE_MAX) return Math.round(picked);
+  return DEFAULT_PICTURE_WIDTH[pictureStyleOf(f)] ?? 96;
+}
+
+/** Sets the picture's width by hand; a width outside the renderer's range clears the choice. */
+export function setPictureWidth(item, width) {
+  if (!item.fields) item.fields = {};
+  const w = Number(width);
+  if (Number.isFinite(w) && w >= PICTURE_MIN && w <= PICTURE_MAX) item.fields.pictureWidth = Math.round(w);
+  else delete item.fields.pictureWidth;
+}
+
+/**
+ * The items whose picture layout is on but have no photo yet: the preview
+ * shows a placeholder for each, the sent email shows nothing. Never a block
+ * (Kate, Oct 5: "make sure you can advance if there's a placeholder"); the
+ * export step names them.
+ * @returns {Array<{ sectionKey: string, item: object }>}
+ */
+export function placeholderItems(issue) {
+  const out = [];
+  for (const [sectionKey, sec] of Object.entries(issue?.sections || {})) {
+    if (!sec?.enabled) continue;
+    for (const item of sec.items || []) {
+      const f = item.fields || {};
+      if (String(f.image ?? '').trim() || !PICTURE_STYLES.includes(f.pictureStyle) || f.pictureStyle === 'none') continue;
+      if (itemOptions(sectionKey, item).descriptionOn) out.push({ sectionKey, item });
+    }
+  }
+  return out;
 }
 
 /** Turns an item's description on or off for this issue. */
