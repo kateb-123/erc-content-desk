@@ -171,3 +171,29 @@ test('picks can change with nothing new to publish: the file is written on its o
   assert.deepEqual(hub.puts.map(p => [p.path, p.sha]), [[FEATURED_PATH, 'hl1']]);
   assert.deepEqual(JSON.parse(hub.puts[0].text), { pins: [], cards: [{ id: 'c1', headline: 'Trivia', until: '2026-10-08' }], hidden: ['https://x.org/h'], heroes: [{ key: 'https://x.org/naep', hero: 'plainr' }] });
 });
+
+// Kate, Oct 6: "when you change the highlights, there is nothing to save
+// them." The highlight has a Save of its own under the picks: it writes the
+// pins and nothing else, whatever waits to publish. A pick that is not on the
+// Exchange yet cannot be pinned; it is held, and goes up with the publish.
+test('a highlight-only write commits the pins alone, never the rows waiting, and says which picks it held', async () => {
+  const rows = [kept({ id: 'a', link: 'https://x.org/new', headline: 'Brand new', type: 'research', subtype: 'Report' })];
+  const store = desk(rows);
+  const hub = fakeHub();
+  const res = fakeRes();
+  await handlerOver(store, hub)(await signedReq('POST', {
+    password: SECRET, only: 'highlight',
+    highlights: [{ link: 'https://x.org/naep', image: '' }, { link: 'https://x.org/new', image: '' }],
+  }), res);
+  assert.equal(res.code, 200);
+  assert.deepEqual(res.body, { ok: true, published: 0, skipped: 0, highlighted: 1, held: ['https://x.org/new'] });
+  assert.deepEqual(hub.puts.map(p => p.path), [FEATURED_PATH], 'news.csv untouched');
+  assert.deepEqual(JSON.parse(hub.puts[0].text).pins.map(p => p.key), ['https://x.org/naep']);
+  assert.equal(store.updates.filter(r => r.published_at).length, 0, 'nothing marked published');
+});
+
+test('a highlight-only write still asks for the password', async () => {
+  const res = fakeRes();
+  await handlerOver(desk([]), fakeHub())(await signedReq('POST', { only: 'highlight', highlights: [] }), res);
+  assert.equal(res.code, 400);
+});

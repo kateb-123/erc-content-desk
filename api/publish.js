@@ -6,7 +6,9 @@
  * POST /api/publish — append the new rows, commit, stamp published_at; then
  *                     commit her highlight picks as the pins of the Exchange's
  *                     own data/featured.json when the body carries them, with
- *                     the card's words (Kate, Sep 30).
+ *                     the card's words (Kate, Sep 30). With only: 'highlight'
+ *                     (the highlight's own Save, Kate, Oct 6) it writes the
+ *                     pins alone; a pick not on the Exchange yet is held.
  * Never modifies or deletes an existing hub row.
  *
  * Behind the desk password (Kate, Sep 23): both need a signed-in browser,
@@ -82,6 +84,8 @@ export function createPublishHandler({
       // Her picks ride the body when the highlight step was on the page; an
       // absent list leaves the file alone.
       const picksGiven = Array.isArray(req.body?.highlights);
+      const onlyHighlight = req.body?.only === 'highlight';
+      if (onlyHighlight && !picksGiven) return res.status(400).json({ ok: false, error: 'Send the highlight picks.' });
 
       // The CSV as it stands after this publish goes back in the response, so the
       // desk can hand Kate a copy to keep (Sep 9) without a second round trip.
@@ -89,6 +93,12 @@ export function createPublishHandler({
       for (let attempt = 0; attempt < 2; attempt += 1) {
         const { text, sha } = await hub.fetchFile(CSV_PATH());
         if (sha === null) throw new Error('GitHub read failed: HTTP 404');   // nothing is ever published onto a missing list
+        if (onlyHighlight) {
+          // The pins alone: only what the Exchange already holds can be pinned.
+          picks = cleanPicks(req.body.highlights, { adding: [], hub: hubRows(text), today: today() });
+          finalCsv = text;
+          break;
+        }
         const diff = diffAgainstHub(text, publishable);
         published = diff.newRows;
         skipped = diff.skipped;
@@ -129,6 +139,8 @@ export function createPublishHandler({
       const reply = { ok: true, published: published.length, skipped: skipped.length };
       if (published.length || skipped.length) reply.csv = finalCsv;
       if (picksGiven) reply.highlighted = picks.items.length;
+      // The picks it could not pin yet because they go out with the next publish.
+      if (onlyHighlight) reply.held = picks.dropped.filter(link => publishable.some(r => String(r.link ?? '').trim() === link));
       try {
         const stamped = [...published, ...skipped].map(row => markPublished(row, now));
         const photos = picksGiven ? photoUpdates(picks.items, all.filter(r => !stamped.some(s => s.id === r.id))) : [];

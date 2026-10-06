@@ -977,3 +977,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hub-count-note { font: var(--meta-type); color: var(--text-helper); margin: var(--spacing-01) 0 0; }
 .hub-aside { font: var(--meta-type); color: var(--text-helper); margin: 0; padding: var(--spacing-05); background: var(--layer-01); border-radius: var(--radius); }
 .hub-stat-v .ql-copy { vertical-align: baseline; }
+
+/* The highlight's own Save, right under the picks (Kate, Oct 6). */
+.hl-save { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-05); margin: var(--spacing-05) 0 var(--spacing-07); }
+.hl-save .hl-ask { flex: 1 1 100%; }
+.hl-save-note { flex: 1 1 100%; margin: 0; font: var(--meta-type); color: var(--text-helper); }

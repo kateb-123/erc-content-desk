@@ -145,8 +145,9 @@ function box(title, note) {
  *   adding: the desk rows going out; hub: the live rows that can be picked
  *   cardBusy / cardFailed: the links whose card words are being written / did not come
  *   onCardWords(links): ask for the card's words again
+ *   saveBar: the highlight's own Save, drawn under the picks when they changed
  */
-export function renderHighlights(container, { now, cards = [], adding, hub, picks, today, cardBusy = new Set(), cardFailed = new Set(), onChange, onCardWords }) {
+export function renderHighlights(container, { now, cards = [], adding, hub, picks, today, cardBusy = new Set(), cardFailed = new Set(), onChange, onCardWords, saveBar = null }) {
   const ctx = { adding, hub };
   const after = bandAfter(picks, ctx);
   const change = (next, always = false) => { if (always || next !== picks) onChange(next); };
@@ -201,6 +202,8 @@ export function renderHighlights(container, { now, cards = [], adding, hub, pick
   if (cards.length) afterBox.append(el('p', 'hl-empty', `Plus ${cards.length} card${cards.length === 1 ? '' : 's'} made on the Exchange, which stay${cards.length === 1 ? 's' : ''}.`));
   cols.append(afterBox);
   container.append(cols);
+  // The highlight's own Save sits right under the picks (Kate, Oct 6).
+  if (saveBar) container.append(saveBar);
 
   container.append(pickFrom());
 

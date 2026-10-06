@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MAX_PICKS, pickOf, bandAfter, addPick, removePick, movePick, setPhoto, setCardWords, wantingWords, withoutPhoto, candidates, whenLine, samePicks, sectionFilters, filterCandidates, trimLive, searchCandidates } from '../js/highlight-view.js';
+import { MAX_PICKS, pickOf, bandAfter, addPick, removePick, movePick, setPhoto, setCardWords, wantingWords, withoutPhoto, candidates, whenLine, samePicks, sectionFilters, filterCandidates, trimLive, searchCandidates, carryPicks } from '../js/highlight-view.js';
 
 // The highlight step on Publish (Kate, Sep 23): her picks for the Exchange's
 // home page, up to six, in her order, each needing a photo. Pure, so
@@ -129,4 +129,21 @@ test('the table shows the newest few live rows a section, and a search reaches t
   assert.deepEqual(searchCandidates(list, 'research 1').map(c => c.headline), ['Research 1', 'Research 10', 'Research 11']);   // by title, any age
   assert.deepEqual(searchCandidates(list, 'RAND').length, 13);   // or by source: the twelve live ones and Brand new
   assert.equal(searchCandidates(list, '  ').length, list.length);   // a blank search is no search
+});
+
+// Kate, Oct 6: after the highlight's own Save, the picks the Exchange could
+// not pin yet (rows going out with the next publish) stay picked, in her
+// order, beside the ones it saved.
+test('carryPicks: the saved picks as the Exchange holds them, the held ones as they were, in her order', () => {
+  const mine = [
+    { link: 'https://x.org/a', image: 'https://img/a.jpg', title: '', summary: '' },
+    { link: 'https://x.org/new', image: '', title: 'New', summary: 'Soon.' },
+    { link: 'https://x.org/b', image: '', title: '', summary: '' },
+  ];
+  const saved = [{ link: 'https://x.org/b', image: '' }, { link: 'https://x.org/a', image: 'https://img/a.jpg', until: '2026-10-20' }];
+  const out = carryPicks(mine, saved, new Set(['https://x.org/new']));
+  assert.deepEqual(out.map(p => p.link), ['https://x.org/a', 'https://x.org/new', 'https://x.org/b']);
+  assert.equal(out[0].until, '2026-10-20', 'the saved one as the Exchange holds it');
+  assert.equal(out[1].summary, 'Soon.', 'the held one as she left it');
+  assert.deepEqual(carryPicks(mine, saved, new Set()).map(p => p.link), ['https://x.org/a', 'https://x.org/b'], 'a held pick no longer going out drops');
 });

@@ -467,14 +467,14 @@ async function quietPublishCheck() {
 
 /** The write, with the password typed again at Confirm and her highlight
  *  picks for the Exchange's home page (Kate, Sep 23). */
-async function publishNow({ password, highlights }) {
+async function publishNow({ password, highlights, only }) {
   state.busy = true;
   state.publishError = '';
   render();
-  setStatus('Publishing to the Exchange…');
+  setStatus(only === 'highlight' ? 'Updating the highlight…' : 'Publishing to the Exchange…');
   await whenSaved();   // every decision must be in the Sheet before the server reads it
   try {
-    const data = await postJson('/api/publish', { password, highlights }, 'publish');
+    const data = await postJson('/api/publish', { password, highlights, ...(only ? { only } : {}) }, 'publish');
     state.publishPreview = null;
     state.justPublished = data.published;
     state.justHighlighted = data.highlighted ?? null;
@@ -484,7 +484,8 @@ async function publishNow({ password, highlights }) {
       // Only the highlight changed: no receipt; the page checks again and says so.
       await reload();
       await loadPublishPreview();
-      setStatus(`Highlight updated: ${data.highlighted} item${data.highlighted === 1 ? '' : 's'}.`, 'ok');
+      const held = data.held?.length ? ` ${data.held.length} more go${data.held.length === 1 ? 'es' : ''} up with the next publish.` : '';
+      setStatus(`Highlight updated: ${data.highlighted} item${data.highlighted === 1 ? '' : 's'}.${held}`, 'ok');
       return;
     }
     // The spare copy saves itself on publish: her browser drops it straight
