@@ -451,6 +451,32 @@ same: the hub's name as the title and one line under it.
 Her red Forthcoming items show as quiet grey lines with a clock, each to be
 built in a round of its own.
 
+## Her notes after the hubs (Oct 6)
+
+- **The highlight's own Save**: once the picks change, Update the highlight
+  and Cancel changes sit right under the Now and After boxes, whatever waits
+  to publish. It asks the password once and writes the pins alone
+  (`/api/publish` with `only: 'highlight'`); a pick not on the Exchange yet
+  stays picked and goes up with the next publish, and the page says so.
+- **No pause on Next issue**: Add, Remove, Delete and their Undo change the
+  row at once and queue the write, the way Sort's decisions do; the server
+  answers once the database has a save and writes the Sheet mirror after
+  (`waitUntil`).
+- **Quick add's Date**: a Date field under the type for every type, Deadline
+  for an opportunity; optional, the reader fills it from the page when blank.
+  The team's form has none.
+- **Source**: the organization that hosts, publishes or funds an item, by its
+  plain name ("New York Times", not "New York Times Education"), never the
+  newsletter, digest or inbox it was found in; the reader is told so and
+  such a source is dropped.
+- **Ready to add, new only**: research and headlines count only if added
+  since the last issue went out (the newest send date before the issue being
+  built, not after today); older ones wait in Past items as "From before the
+  <date> issue", with Delete. Events and opportunities keep their own rules.
+- **Save at the top**: every edit box with a Save has Save and Cancel at its
+  top too: the desk's edit form, the builder's item, callout and
+  Introduction cards.
+
 ## The public pages
 
 The share form and the listserv sign-up live in `public-pages/`, a Vercel project of their own at an address of their own (Kate's pick A, Sep 22), beside the Policy Exchange's copies at /share/ and /newsletter/. Never on the desk's address: the desk has no password, and a public page on it is a door into it (copies at the desk's /submit and /listserv were built and taken down the same hour on Sep 22; Kate: "I don't want others to backspace from submit and see everything"). The pages post to their own `/api`, which the folder's `vercel.json` forwards to the desk server-side, so the desk's address is written nowhere a visitor can read, and the desk's own deployment sends the folder's addresses on to the standalone site (a redirect in the desk's `vercel.json`; an ignore line would empty the standalone deploy too, since Vercel reads `.vercelignore` at the repository root for every project built from the repo). Each call carries `public: true`, which the bot check honours as "gate me"; the project's hostname must be on the Turnstile widget's list in Cloudflare or the human check will not load. The sandbox serves the folder on port 4174 with the same forward. The public share page is deliberately NOT the desk theme: it wears the ERC's outward maroon, the listserv sign-up's look (Work Sans/Open Sans, white card with the 3px #500000 border and hard offset shadow, uppercase maroon button), because it faces the public alongside the newsletter and the hub. It never links into the desk. Uniformity audits should hold it against the sign-up page, not against the desk tokens.
