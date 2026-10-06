@@ -178,3 +178,28 @@ test('the reader says whether the page behind the link is about this item (F20)'
   assert.equal(normalizeExtraction({ link_matches: true }, row).linkMismatch, false);
   assert.equal(normalizeExtraction({}, row).linkMismatch, false);
 });
+
+// Kate, Oct 6: "we are having some serious trouble with the source thing.
+// Things are showing up like NNERP newsletter and not the group that is
+// actually putting it on." And: "just the place where it is actually hosted.
+// like not new york times education. just new york times." A scrape's
+// spreadsheet carried "Source: NNERPP newsletter (Kate's inbox)" into the
+// text, and the reader copied it.
+test('the reader is told Source is the group that hosts or publishes it, by its plain name, never where it was found', () => {
+  const src = EXTRACTION_SCHEMA.properties.source.description;
+  assert.match(src, /hosts, publishes or funds/);
+  assert.match(src, /New York Times/);
+  assert.match(src, /never a newsletter, digest, email, inbox/i);
+  const prompt = buildExtractionPrompt({ headline: 'A webinar', link: 'https://x.org/w', original_text: 'Source: NNERPP newsletter' }, '');
+  assert.match(prompt, /Source is the organization that hosts, publishes or funds the item/);
+  assert.match(prompt, /a "Source:" line in the submitted text may only say where it was found/i);
+});
+
+test('a source that names a newsletter, digest, inbox or email is dropped; a real one stays', () => {
+  for (const bad of ["NNERPP newsletter (Kate's inbox)", 'NNERPP Newsletter', 'Weekly digest', 'Forwarded email', 'ERC listserv']) {
+    assert.equal(normalizeExtraction({ source: bad }, {}).fields.source, undefined, bad);
+  }
+  for (const good of ['New York Times', 'NBER', 'Education Week', 'NNERPP']) {
+    assert.equal(normalizeExtraction({ source: good }, {}).fields.source, good, good);
+  }
+});

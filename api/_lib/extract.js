@@ -14,13 +14,17 @@ export const CLEAN_TYPES = ['event', 'erc_event', 'opportunity'];
 
 export const EXTRACT_MODEL = 'claude-haiku-4-5';
 
+/** Words that say where an item was found, not who puts it on. */
+const FOUND_IN = /\b(newsletters?|digests?|inbox|listservs?|e-?mails?)\b/i;
+
 export const EXTRACTION_SCHEMA = {
   type: 'object',
   additionalProperties: false,
   required: [...FIELD_KEYS, ...GUESS_KEYS, 'clean_blurb', 'link_matches', 'needs_review'],
   properties: {
     date: { type: 'string', description: 'Event date or publication date as YYYY-MM-DD; "" if not stated.' },
-    source: { type: 'string', description: 'Outlet, publisher, journal, or host organization; "" if not stated.' },
+    // Kate, Oct 6: "just the place where it is actually hosted ... not new york times education. just new york times."
+    source: { type: 'string', description: 'The organization that hosts, publishes or funds the item, by its plain name: "New York Times", not "New York Times Education"; "NBER", not "NBER working papers". Never a newsletter, digest, email, inbox or site that only passed the item along; "" if not stated.' },
     topic: { type: 'string', description: 'One short cross-cutting topic, e.g. "Teacher workforce"; "" if unclear.' },
     deadline: { type: 'string', description: 'Opportunities only: deadline as YYYY-MM-DD; else "".' },
     medium: { type: 'string', description: 'Headlines only: the outlet name; else "".' },
@@ -67,6 +71,8 @@ export function buildExtractionPrompt(row, pageText = '') {
       + 'An event merely held at Texas A&M, or one the ERC is only attending, is a '
       + 'plain event with the A&M subtype. When in doubt use event, not erc_event.',
     'Never invent a date, deadline, author, time, location, or source; use "" when the text does not state it.',
+    'Source is the organization that hosts, publishes or funds the item (the event\'s host, the paper\'s publisher or journal, the outlet that ran the story, the funder of the opportunity), by its plain name without a section or feed: "New York Times", not "New York Times Education". '
+      + 'It is never the newsletter, digest, email or inbox the item was found in, and a "Source:" line in the submitted text may only say where it was found: use it only when it names the group that hosts or publishes the item.',
     'Set `link_matches` to false when the page behind the link is about a different item than the title and submitted text describe; true otherwise, and true when there is no page text.',
     'Dates are YYYY-MM-DD. Event times are Central Time, written like "1:00 PM CT" — convert from ET/PT when the zone is given.',
   );
@@ -101,6 +107,8 @@ export function normalizeExtraction(extracted, row) {
     fields[key] = String(value);
   }
   if (fields.type && !isValidType(fields.type)) delete fields.type;
+  // Where an item was found is never its source (Kate, Oct 6): a newsletter, a digest, an inbox.
+  if (fields.source && FOUND_IN.test(fields.source)) delete fields.source;
   const effectiveType = row?.type || fields.type || '';
   if (fields.subtype && !isValidSubtype(effectiveType, fields.subtype)) {
     delete fields.subtype;
