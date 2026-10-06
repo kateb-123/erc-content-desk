@@ -549,27 +549,22 @@ function arrive(screen) {
   if (screen === 'publish' && !state.publishPreview) loadPublishPreview();
 }
 
-async function sendToNewsletter(selectedRows, issue) {
-  state.busy = true;
-  render();
-  setStatus(`Sending ${selectedRows.length} to the newsletter…`);
-  await whenSaved();   // no queued write may race the issue stamp
-  const ok = await persist(selectedRows.map(r => markNewsletterIssue(r, issue)));
-  state.busy = false;
-  if (!ok) { render(); return; } // persist already showed the error
+/** Add on Next issue: the rows are stamped in place at once and the write
+ *  drains behind, the way Sort's decisions do (Kate, Oct 6: "a 3 second
+ *  pause as it's being added"). The queue keeps the write in order, retries
+ *  a miss, and the leave-page guard holds the tab while it is out. */
+function sendToNewsletter(selectedRows, issue) {
+  noteChange(selectedRows.map(r => markNewsletterIssue(current(r), issue)));
   const name = selectedRows.length === 1 ? (selectedRows[0].headline || selectedRows[0].link || 'this item') : `${selectedRows.length} items`;
   setStatus(`Added: ${name}`, 'ok', { label: 'Undo', onClick: () => unsendFromNewsletter(selectedRows.map(r => r.id)) });
-  render();
 }
 
-/** The un-send: clear the stamps and the rows rejoin the pool. */
-async function unsendFromNewsletter(ids) {
+/** The un-send: clear the stamps and the rows rejoin the pool, at once. */
+function unsendFromNewsletter(ids) {
   const targets = state.rows.filter(r => ids.includes(r.id));
   if (!targets.length) return;
-  const ok = await persist(targets.map(clearNewsletterIssue));
-  if (!ok) return; // persist already showed the error; the stamps stand
+  noteChange(targets.map(clearNewsletterIssue));
   setStatus(`Taken out of the issue: ${targets.length === 1 ? (targets[0].headline || targets[0].link || 'this item') : `${targets.length} items`}`, 'ok');
-  render();
 }
 
 const SCREEN_ORDER = ['home', 'team', 'queue', 'sort', 'finalize', 'issue', 'schedule', 'past', 'listserv', 'exchange', 'publish'];
@@ -658,9 +653,9 @@ function render() {
       knownLinks: () => state.rows,
       onRemove: row => unsendFromNewsletter([row.id]),
       onEditRow: saveEdit,
-      onRestore: row => persist([row]),   // Undo on Remove: the row as it was, stamp included
-      onTrash: row => persist([trash(row)]),
-      onRestoreTrashed: row => persist([row]),
+      onRestore: row => noteChange([{ ...current(row), newsletter_issue: row.newsletter_issue }]),   // Undo on Remove: the stamp back, at once
+      onTrash: row => noteChange([trash(current(row))]),
+      onRestoreTrashed: row => noteChange([row]),
     });
   } else if (state.screen === 'schedule') {
     renderSchedule(screens.schedule, { ...common, loaded: state.loaded, onGoTo: goTo, onPick: date => { pickIssue(date); goTo('issue'); } });

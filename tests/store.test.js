@@ -126,3 +126,30 @@ test('pickMode: database when DATABASE_URL is there, sheet when it is not, DESK_
 test('the schedule copy is trusted for ten minutes', () => {
   assert.equal(SCHEDULE_REFRESH_MS, 10 * 60 * 1000);
 });
+
+// Kate, Oct 6: "it still has like a 3 second pause as it's being added to the
+// newsletter." Every save waited for the Sheet mirror, which rereads the
+// whole Sheet before it writes. The mirror now runs after the answer, handed
+// to `defer` (Vercel's waitUntil live), so a save answers at the database's
+// speed; the mirror still runs, and a failure is still only logged.
+test('db mode: with defer, a save answers before the sheet mirror, which still runs after', async () => {
+  let release;
+  const gate = new Promise(r => { release = r; });
+  const db = fake([row('a')]);
+  const sheet = fake([row('a', { _rowNumber: 4 })]);
+  const slowRead = sheet.readAllRows;
+  sheet.readAllRows = async () => { await gate; return slowRead(); };
+  const deferred = [];
+  const store = createStore({ mode: 'db', db, sheet, log: quiet, defer: p => deferred.push(p) });
+  const out = await store.updateRows([row('a', { _rowNumber: 1 })]);
+  assert.deepEqual(out, { saved: 1, unmatched: 0 });
+  assert.equal(deferred.length, 1, 'the mirror was handed off');
+  assert.equal(sheet.calls.filter(c => c[0] === 'updateRow').length, 0, 'and has not written yet');
+  release();
+  await deferred[0];
+  assert.deepEqual(sheet.calls.filter(c => c[0] === 'updateRow'), [['updateRow', 'a', 4]]);
+
+  const appended = [];
+  await createStore({ mode: 'db', db: fake(), sheet: fake(), log: quiet, defer: p => appended.push(p) }).appendRow(row('n'));
+  assert.equal(appended.length, 1, 'a new row mirrors after the answer too');
+});

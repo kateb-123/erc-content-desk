@@ -18,6 +18,7 @@
  * number in sheet mode, the database seq in db mode); writes match by id.
  */
 
+import { waitUntil } from '@vercel/functions';
 import * as sheet from './sheets.js';
 import { db } from './db.js';
 import { normalizeSchedule } from '../../js/schedule.js';
@@ -52,11 +53,19 @@ async function writeToSheet(sheetStore, rows) {
  * Build a store over explicit backends. Production uses store() below; the
  * tests hand in fakes.
  */
-export function createStore({ mode, db: dbStore, sheet: sheetStore, log = console, now = () => Date.now() }) {
+export function createStore({ mode, db: dbStore, sheet: sheetStore, log = console, now = () => Date.now(), defer = null }) {
   if (!MODES.includes(mode)) throw new Error(`DESK_STORE must be one of ${MODES.join(', ')}, not "${mode}"`);
 
+  /** The Sheet copy. With `defer` (Vercel's waitUntil live) it runs after the
+   *  answer, so a save never waits on the Sheet (Kate, Oct 6: "a 3 second
+   *  pause"); without it, before the answer, as the copy script needs. A
+   *  failure is logged either way, never thrown. */
   async function mirror(what, fn) {
-    try { await fn(); } catch (err) { log.error(`sheet mirror failed (${what})`, err); }
+    const run = (async () => {
+      try { await fn(); } catch (err) { log.error(`sheet mirror failed (${what})`, err); }
+    })();
+    if (defer) { defer(run); return; }
+    await run;
   }
 
   if (mode === 'sheet') {
@@ -135,7 +144,7 @@ let live;
 export function store() {
   if (!live) {
     const mode = pickMode(process.env);
-    live = createStore({ mode, db: mode === 'db' ? db() : null, sheet });
+    live = createStore({ mode, db: mode === 'db' ? db() : null, sheet, defer: waitUntil });
   }
   return live;
 }
