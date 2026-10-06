@@ -24,8 +24,9 @@ import { renderShell } from '../../js/shell-ui.js';
 import { STEPS, canEnterStep, lockedMessage, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
 import { normalizeLinkUrl } from './editing.js';
 // The per-issue layout options the Outline sets (Claude Design handoff, Oct 2026).
-import { CALLOUT_CHOICES, PICTURE_CHOICES, PICTURE_SIZES, setCallout, setNav, itemOptions, setPictureStyle, itemLayouts, pictureWidthOf, setPictureWidth, placeholderItems, resetOptions, hasCustomOptions } from './options.js';
-import { layoutOf } from './template.js';
+import { CALLOUT_CHOICES, PICTURE_CHOICES, PICTURE_SIZES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setPictureStyle, itemLayouts, pictureWidthOf, setPictureWidth, placeholderItems, resetOptions, hasCustomOptions } from './options.js';
+import { layoutOf, calloutsOf } from './template.js';
+import { CALLOUT_KINDS } from './model.js';
 // Kept drafts, and hand-added items that go to the desk (Sep 23).
 import { readAllWaiting } from '../../js/reader-client.js';
 import { discardToDesk, draftIsOpen, replaceAskMessage, discardedTitle, discardedDetail, withEntry, withoutEntry, restoreOver } from './discarded.js';
@@ -728,6 +729,62 @@ function renderTriage() {
         tbody.appendChild(tr);
       }
     }
+
+    // The callouts after this section (Kate, Oct 5): one row each, with
+    // Move to… another section and Remove; then a quiet word to add one.
+    for (const c of calloutsOf(issue).filter((x) => x.after === reg.key)) {
+      const tr = el('tr', 'outline-item outline-callout');
+      const td1 = el('td', 'outline-item-cell');
+      td1.appendChild(el('span', 'outline-callout-tag', 'Callout'));
+      td1.appendChild(el('span', 'outline-title', c.title || '(untitled)'));
+      td1.appendChild(el('span', 'outline-meta', `${CALLOUT_KINDS[c.kind]?.label || 'Your own words'} · ${CALLOUT_CHOICES.find((s) => s.key === c.style)?.label || 'Maroon block'}. Style it on Preview & Tweak.`));
+      const mv = button('Move to…', 'ghost-btn outline-move');
+      mv.setAttribute('aria-label', `Move the callout "${c.title}" after another section`);
+      mv.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showMenu(mv, 'outline-menu', (menu) => {
+          menu.appendChild(el('div', 'outline-menu-head', 'After'));
+          for (const r2 of SECTION_REGISTRY) {
+            const here = r2.key === reg.key;
+            const b = button(r2.label, 'outline-menu-item' + (here ? ' is-current' : ''));
+            if (here) b.disabled = true;
+            else b.addEventListener('click', () => { moveCallout(issue, c.id, r2.key); closeMenu(); scheduleSave(); renderTriage(); setWizardStatus(`Moved the callout after ${r2.label}.`); });
+            menu.appendChild(b);
+          }
+        });
+      });
+      td1.appendChild(mv);
+      const td4 = el('td', 'r');
+      const rm = button(' Remove', 'ghost-btn ghost-btn--danger', { icon: 'trash-can', onClick: () => {
+        const at = issue.callouts.indexOf(c);
+        removeCallout(issue, c.id);
+        scheduleSave();
+        renderTriage();
+        showUndoToast(`Removed the callout "${c.title}".`, () => { restoreCallout(issue, c, at); scheduleSave(); renderTriage(); });
+      } });
+      rm.setAttribute('aria-label', `Remove the callout "${c.title}"`);
+      td4.appendChild(rm);
+      td4.colSpan = 3;
+      tr.append(td1, td4);
+      tbody.appendChild(tr);
+    }
+    const addRow = el('tr', 'outline-add-callout');
+    const addTd = el('td');
+    addTd.colSpan = 4;
+    const addBtn = button(' Add a callout after this section', 'ghost-btn outline-add-callout-btn', { icon: 'plus' });
+    addBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showMenu(addBtn, 'outline-menu', (menu) => {
+        for (const [kind, def] of Object.entries(CALLOUT_KINDS)) {
+          const b = button(def.label, 'outline-menu-item');
+          b.addEventListener('click', () => { addCallout(issue, kind, reg.key); closeMenu(); scheduleSave(); renderTriage(); setWizardStatus(`Added a callout after ${reg.label}. Style it and change its words on Preview & Tweak.`); });
+          menu.appendChild(b);
+        }
+      });
+    });
+    addTd.appendChild(addBtn);
+    addRow.appendChild(addTd);
+    tbody.appendChild(addRow);
   }
 
   container.appendChild(table);
@@ -1049,16 +1106,20 @@ function wireIframeEditing(iframe) {
   // Click listener: open an editor for the whole item the clicked field
   // belongs to (all of its fields at once), not just the one piece clicked.
   doc.addEventListener('click', (e) => {
-    // The look, chosen on the email itself (Kate, Oct 5): the callout and
-    // any picture open a popover of swatches instead of a card.
-    const submit = e.target.closest('a[href*="forms.office.com"]');
-    const calloutCell = submit && submit.closest('td[style*="padding:26px 48px 28px 24px"], td[style*="padding:22px 24px 24px 24px"], td[style*="padding:20px 22px 22px 22px"]');
-    if (calloutCell) {
+    // A callout (Kate, Oct 5): the whole box opens its card, style first.
+    const calloutNode = e.target.closest('[data-edit-section="callout"]');
+    if (calloutNode) {
       e.preventDefault();
       e.stopPropagation();
-      tweakPopover(iframe, calloutCell, 'Submit your research callout', CALLOUT_CHOICES, layoutOf(state.issue).callout, (key) => { setCallout(state.issue, key); afterTweak(iframe); });
+      const id = calloutNode.dataset.editItem;
+      const cell = calloutNode.closest('td');
+      closeMenu();
+      openCalloutEditor(id, iframe);
+      doc.querySelectorAll('.ec-item-open').forEach((n) => n.classList.remove('ec-item-open'));
+      if (cell) { cell.classList.add('ec-item-open'); revealAboveDrawer(iframe, cell); }
       return;
     }
+    // A picture opens a popover of swatches instead of a card.
     const picture = e.target.closest('img[data-edit-field="image"]');
     if (picture) {
       e.preventDefault();
@@ -1171,6 +1232,10 @@ const FIELD_LABELS = {
   time: 'Time',
   location: 'Location',
   image: 'Media',
+  // A callout's parts (Oct 5).
+  text: 'Text',
+  button: 'Button words',
+  deadline: 'Deadline line',
 };
 
 /**
@@ -1572,6 +1637,97 @@ function openItemEditor(refs, iframe) {
 }
 
 /**
+ * A callout's card (Kate, Oct 5): its style as three swatches, then its
+ * words (title, text, button words, link, deadline line), and Remove.
+ * Typing updates the email live; Save closes.
+ */
+function openCalloutEditor(id, iframe) {
+  const callout = calloutsOf(state.issue).find((c) => c.id === id);
+  if (!callout) return;
+  const name = callout.title || 'Callout';
+  const { card, body, actions } = drawerCard(name);
+  card.setAttribute('aria-label', name);
+  const debouncedPreview = debounce(() => refreshEditIframe(iframe), 350);
+
+  const lookCol = el('div', 'drawer-look');
+  const drawLook = () => {
+    lookCol.replaceChildren(el('h4', 'drawer-h4', 'Its style'));
+    lookCol.appendChild(swatchRow(CALLOUT_CHOICES, callout.style, (key) => { setCalloutStyle(callout, key); scheduleSave(); refreshEditIframe(iframe); drawLook(); }));
+    const where = SECTION_REGISTRY.find((s) => s.key === callout.after)?.label || 'the introduction';
+    lookCol.appendChild(el('p', 'triage-section-note drawer-note', `After ${where}. Move it on Outline.`));
+  };
+  drawLook();
+  body.appendChild(lookCol);
+
+  const fieldsCol = el('div', 'drawer-fields');
+  fieldsCol.appendChild(el('h4', 'drawer-h4', 'Its words'));
+  body.appendChild(fieldsCol);
+  const refs = ['title', 'text', 'button', 'url', 'deadline'].map((field) => ({ section: 'callout', item: id, field }));
+  const fieldInputs = [];
+  for (const ref of refs) {
+    const group = el('div', 'edit-card-group');
+    const isLong = ref.field === 'text';
+    editFieldSeq += 1;
+    const fieldId = `edit-field-${editFieldSeq}`;
+    const sub = el(isLong ? 'span' : 'label', 'edit-card-sublabel', FIELD_LABELS[ref.field]);
+    sub.id = `${fieldId}-label`;
+    group.appendChild(sub);
+    const onEdit = (value) => { setField(state.issue, ref, value); scheduleSave(); debouncedPreview(); };
+    let ctl;
+    if (isLong) {
+      const rich = buildRichEditor(getField(state.issue, ref) ?? '', onEdit, { labelledBy: sub.id });
+      ctl = { el: rich.el, set: rich.setMd, focus: rich.focus };
+    } else {
+      const inputEl = el('input', 'edit-card-input');
+      inputEl.type = ref.field === 'url' ? 'url' : 'text';
+      inputEl.id = fieldId;
+      sub.htmlFor = fieldId;
+      if (ref.field === 'url') inputEl.placeholder = 'https://';
+      inputEl.value = getField(state.issue, ref) ?? '';
+      inputEl.addEventListener('input', () => onEdit(inputEl.value));
+      ctl = { el: inputEl, set: (v) => { inputEl.value = v; }, focus: () => inputEl.focus() };
+    }
+    group.appendChild(ctl.el);
+    fieldsCol.appendChild(group);
+    fieldInputs.push({ ref, set: ctl.set, focus: ctl.focus });
+  }
+  const opened = fieldInputs.map((f) => ({ ref: f.ref, value: getField(state.issue, f.ref) ?? '' }));
+
+  actions.appendChild(button(' Remove', 'ghost-btn ghost-btn--danger edit-card-delete', { icon: 'trash-can', onClick: () => {
+    closeDrawer();
+    const at = state.issue.callouts.indexOf(callout);
+    removeCallout(state.issue, id);
+    scheduleSave();
+    refreshEditIframe(iframe);
+    showUndoToast(`Removed the callout "${name}".`, () => { restoreCallout(state.issue, callout, at); scheduleSave(); refreshEditIframe(iframe); });
+  } }));
+  // The Share callout's words come from the desk; Use original puts them back.
+  if (callout.kind === 'share') {
+    actions.appendChild(button(' Use original', 'ghost-btn ghost-btn--muted', { icon: 'rotate-left', onClick: () => {
+      const base = CALLOUT_KINDS.share;
+      for (const f of fieldInputs) { const v = f.ref.field === 'deadline' ? '' : (base[f.ref.field] ?? ''); f.set(v); setField(state.issue, f.ref, v); }
+      scheduleSave();
+      refreshEditIframe(iframe);
+    } }));
+  }
+  actions.appendChild(button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: () => {
+    let changed = false;
+    opened.forEach(({ ref, value }, i) => {
+      if ((getField(state.issue, ref) ?? '') === value) return;
+      setField(state.issue, ref, value);
+      fieldInputs[i].set(value);
+      changed = true;
+    });
+    if (changed) { scheduleSave(); refreshEditIframe(iframe); }
+    closeDrawer();
+  } }));
+  actions.appendChild(button('Save', 'btn btn-primary edit-card-save', { onClick: closeDrawer }));
+
+  openDrawer(card);
+  requestAnimationFrame(() => fieldInputs[0] && fieldInputs[0].focus());
+}
+
+/**
  * The item's block in the preview: the cell that holds its title (or the
  * intro's cell). Hover and the open state light the whole block, since the
  * click opens the whole item.
@@ -1676,10 +1832,6 @@ function buildLayoutPanel(iframe) {
   const draw = () => {
     body.replaceChildren();
     const issue = state.issue;
-    const callout = el('div', 'layout-row');
-    callout.appendChild(el('span', 'layout-row-label', 'Submit your research callout'));
-    callout.appendChild(swatchRow(CALLOUT_CHOICES, layoutOf(issue).callout, (key) => { setCallout(issue, key); scheduleSave(); refreshEditIframe(iframe); draw(); }));
-    body.appendChild(callout);
     const nav = el('label', 'layout-check');
     const cb = el('input');
     cb.type = 'checkbox';
@@ -1687,7 +1839,7 @@ function buildLayoutPanel(iframe) {
     cb.addEventListener('change', () => { setNav(issue, cb.checked); scheduleSave(); refreshEditIframe(iframe); draw(); });
     nav.append(cb, ' Contents strip under the masthead');
     body.appendChild(nav);
-    body.appendChild(el('p', 'triage-section-note', 'Click the callout or any picture in the email to change it there. Descriptions show or hide from their card.'));
+    body.appendChild(el('p', 'triage-section-note', 'Callouts are added and moved on Outline and styled from their own card here. Pictures and descriptions are chosen from each item\'s card.'));
     if (hasCustomOptions(issue)) {
       const reset = button(' Reset layout options', 'ghost-btn ghost-btn--muted layout-reset', { icon: 'rotate-left', onClick: () => { resetOptions(issue); scheduleSave(); refreshEditIframe(iframe); draw(); } });
       reset.title = 'Every layout option back to its default';
@@ -1702,7 +1854,7 @@ function buildLayoutPanel(iframe) {
 function renderEdit() {
   closeDrawer();
   const container = openStep('edit', 'Check the issue and tweak anything in place.',
-    'Click any item in the email and its card opens beside it: how it is laid out, then its words. Click the Submit callout or a picture to change it on the spot. The introduction, the layout and Add an item open from the buttons over the email.');
+    'Click any item in the email and its card opens beside it: how it is laid out, then its words. A callout opens the same way, its style first. Click a picture to change it on the spot. The introduction, the layout and Add an item open from the buttons over the email.');
 
   if (!state.issue) {
     emptyLine(container, 'No issue loaded. Pull from the desk on the Review step first.');

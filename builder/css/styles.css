@@ -377,6 +377,12 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .outline-item.is-removed td { background: var(--layer-01); color: var(--text-disabled); }
 .outline-item.is-removed .outline-title { color: var(--text-disabled); text-decoration: line-through; }
 .outline-undo { color: var(--link-primary); text-decoration: underline; }
+/* A callout's row (Oct 5): a small tag before its title, and the quiet word to add one. */
+.outline-callout-tag { display: inline-block; margin-right: var(--spacing-03); padding: 0 var(--spacing-02); font-size: 11px; line-height: 16px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; color: var(--tag-color-blue); background: var(--tag-background-blue); border-radius: var(--radius-pill); vertical-align: 2px; }
+.outline-add-callout td { padding: var(--spacing-01) var(--spacing-03) var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--border-subtle-01); }
+.outline-add-callout-btn { font-size: 13px; color: var(--text-secondary); }
+.outline-add-callout-btn:hover { color: var(--link-primary); }
+.drawer-note { margin: var(--spacing-03) 0 0; }
 
 /* The small floating menu (Move to…): a white card with a hairline, one
    open at a time, closed by a click elsewhere or Escape. */

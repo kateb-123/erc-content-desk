@@ -13,6 +13,11 @@ function itemOf(issue, ref) {
   return issue.sections?.[ref.section]?.items?.find(i => i.id === ref.item);
 }
 
+/** A callout ref (section 'callout', item = the callout's id, Oct 5) points at issue.callouts. */
+function calloutOf(issue, ref) {
+  return Array.isArray(issue.callouts) ? issue.callouts.find(c => c.id === ref.item) : undefined;
+}
+
 /**
  * @param {object} issue
  * @param {{ section: string, item?: string, field: string }} ref
@@ -21,6 +26,7 @@ function itemOf(issue, ref) {
 export function getField(issue, ref) {
   if (!issue || !ref) return undefined;
   if (ref.field === 'intro') return issue.intro;
+  if (ref.section === 'callout') return calloutOf(issue, ref)?.[ref.field];
   return itemOf(issue, ref)?.fields?.[ref.field];
 }
 
@@ -33,6 +39,11 @@ export function setField(issue, ref, value) {
   if (!issue || !ref) return;
   if (ref.field === 'intro') {
     issue.intro = value;
+    return;
+  }
+  if (ref.section === 'callout') {
+    const c = calloutOf(issue, ref);
+    if (c) c[ref.field] = value;
     return;
   }
   const item = itemOf(issue, ref);

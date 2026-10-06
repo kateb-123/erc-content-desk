@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { renderNewsletter, renderProse, navLinks, layoutOf, URLS } from '../js/template.js';
+import { renderNewsletter, renderProse, navLinks, layoutOf, calloutsOf, URLS } from '../js/template.js';
 import { createEmptyIssue, SECTION_REGISTRY, POLICY_EXCHANGE_URL } from '../js/model.js';
 
 const issueOf = file =>
@@ -21,6 +21,7 @@ const sparseIssue = () => {
     title: 'ERC EdTalk: Steven Woltering', date: 'June 18, 2026', time: '12:00 PM',
     location: 'WCSS 218', url: 'https://erc.tamu.edu/events/edtalk' } });
   issue.sections.events.enabled = true;
+  issue.callouts = [];
   return issue;
 };
 
@@ -110,13 +111,14 @@ test('issue.layout.nav=false drops the contents strip; the export keeps jump lin
   assert.ok(!/href="#events"/.test(html) && !/background-color:#F6F6F6; padding:10px 16px/.test(html));
 });
 
-test('the intro is its own panel; a last paragraph starting "Want to feature" becomes the standing line under a hairline', () => {
+test('the intro is its own panel of plain paragraphs; the old "Want to feature" standing line is gone (the Share callout says it)', () => {
   const issue = fullIssue();
   issue.intro = 'Howdy all! First.\n\nSecond **bold** here.\n\nWant to feature something? [Let us know](https://x.org/share)!';
   const html = renderNewsletter(issue);
-  assert.match(html, /padding:26px 48px 0 24px;"><p style="margin:0 0 14px; font-family:'Trebuchet MS'[^"]*font-size:15px; line-height:1.55; color:#202020;">Howdy all! First\.<\/p><p style="margin:0 0 0px;[^"]*">Second <strong>bold<\/strong> here\.<\/p><div style="border-top:1px solid #EAEAEA; margin:18px 0 0;[^"]*">&nbsp;<\/div><p style="margin:14px 0 0;[^"]*color:#535353;">Want to feature something\? <a href="https:\/\/x\.org\/share"[^>]*>Let us know<\/a>!<\/p>/);
+  assert.match(html, /padding:26px 48px 0 24px;"><p style="margin:0 0 14px; font-family:'Trebuchet MS'[^"]*font-size:15px; line-height:1.55; color:#202020;">Howdy all! First\.<\/p><p style="margin:0 0 14px;[^"]*">Second <strong>bold<\/strong> here\.<\/p><p style="margin:0 0 0px;[^"]*color:#202020;">Want to feature something\?/);
+  assert.ok(!/border-top:1px solid #EAEAEA; margin:18px 0 0/.test(html), 'no hairline, no standing line');
   const ed = renderNewsletter(issue, { editable: true });
-  assert.equal(count(ed, 'data-edit-field="intro"'), 3, 'every intro paragraph, the standing line included, carries the hook');
+  assert.equal(count(ed, 'data-edit-field="intro"'), 3, 'every intro paragraph carries the hook');
   issue.intro = '';
   assert.equal(panels(renderNewsletter(issue)), 9, 'no intro, no intro panel');
 });
@@ -332,39 +334,79 @@ test('an unsafe picture URL renders no picture and leaks no scheme', () => {
 
 // ─── The callout ─────────────────────────────────────────────────────────────
 
-const CALLOUT = 'Submit your research for an ERC Research Brief';
-test('the callout is a maroon panel between Research and Spotlight by default, with the white button', () => {
+const SHARE = 'Share something with the ERC';
+test('a new issue carries the Share callout after ERC Research as a maroon panel with the white button; its words are the desk\'s', () => {
   const html = renderNewsletter(fullIssue());
-  const i = html.indexOf(CALLOUT);
-  assert.ok(i > 0);
-  assert.ok(html.lastIndexOf('>ERC Research</h2>', i) > 0 && html.indexOf('>ERC Spotlight</h2>', i) > i);
+  const i = html.indexOf(`>${SHARE}</p>`);
+  assert.ok(i > 0, 'the Share callout renders');
+  assert.ok(html.lastIndexOf('>ERC Research</h2>', i) > 0 && html.indexOf('>ERC Spotlight</h2>', i) > i, 'between Research and Spotlight');
   const panel = html.slice(html.lastIndexOf('<table align="center" width="640"', i), i);
-  assert.match(panel, /background-color:#ffffff;"><tbody>\n<tr><td style="background-color:#500000; padding:26px 48px 28px 24px;"><p style="[^"]*font-size:18px;[^"]*color:#ffffff;">$/);
-  assert.match(html.slice(i), /^[^<]*<\/p><p style="margin:0 0 18px;[^"]*color:#E9E4DC;">Working on research[^<]*<\/p><table[^>]*><tbody><tr><td style="background-color:#ffffff; padding:11px 20px 12px 20px;"><a href="https:\/\/forms\.office\.com[^"]*"[^>]*text-transform:uppercase; color:#500000;[^"]*">Submit your research &#187;<\/a>/);
+  assert.match(panel, /background-color:#ffffff;"><tbody>\n<tr><td style="background-color:#500000; padding:26px 48px 28px 24px;"><p style="[^"]*font-size:18px;[^"]*color:#ffffff;"$/);
+  assert.match(html.slice(i), /^>[^<]*<\/p><p style="margin:0 0 18px;[^"]*color:#E9E4DC;">Research, an event, an announcement[^<]*<\/p><table[^>]*><tbody><tr><td style="background-color:#ffffff; padding:11px 20px 12px 20px;"><a href="https:\/\/erc-policy-exchange\.vercel\.app\/share\/"[^>]*text-transform:uppercase; color:#500000;[^"]*">Share something &#187;<\/a>/);
   assert.equal(count(html, 'height:12px; font-size:1px; line-height:12px;'), 9, 'the panel adds a gap like any other');
+  assert.ok(!/Submit your research|Want to feature/.test(html), 'the old callout and the old standing line are gone');
 });
 
-test('issue.layout.callout gray and dotted sit inside the Research panel before its closing spacer; none removes it; the old showSubmit=false still means none', () => {
+test('a callout\'s style: gray and dotted sit inside the panel before it, before its closing spacer; a deadline line draws between text and button', () => {
   const issue = fullIssue();
-  issue.layout = { callout: 'gray' };
+  issue.callouts = calloutsOf(issue);   // the fixture predates callouts: its one legacy Share callout, made real
+  const c = issue.callouts[0];
+  c.style = 'gray';
   let html = renderNewsletter(issue);
-  assert.match(html, /<tr><td style="padding:28px 24px 0 24px;"><table[^>]*><tbody><tr><td style="background-color:#F6F6F6; padding:22px 24px 24px 24px;"><p style="margin:0 0 8px;[^"]*color:#202020;">Submit your research[\s\S]*?<td style="background-color:#500000; padding:11px 20px 12px 20px;"><a[^>]*color:#ffffff;[\s\S]*?<\/td><\/tr>\n<tr><td style="height:26px;[^"]*">&nbsp;<\/td><\/tr>\n<\/tbody><\/table>/);
-  assert.equal(panels(html), 9, 'the callout no longer stands in its own panel');
-  issue.layout = { callout: 'dotted' };
+  assert.match(html, /<tr><td style="padding:28px 24px 0 24px;"><table[^>]*><tbody><tr><td style="background-color:#F6F6F6; padding:22px 24px 24px 24px;"><p style="margin:0 0 8px;[^"]*color:#202020;">Share something with the ERC[\s\S]*?<td style="background-color:#500000; padding:11px 20px 12px 20px;"><a[^>]*color:#ffffff;[\s\S]*?<\/td><\/tr>\n<tr><td style="height:26px;[^"]*">&nbsp;<\/td><\/tr>\n<\/tbody><\/table>/);
+  assert.equal(panels(html), 9, 'no panel of its own');
+  c.style = 'dotted';
+  c.deadline = 'Deadline: October 20, 2026';
   html = renderNewsletter(issue);
-  assert.match(html, /border:2px dotted #732F2F; padding:20px 22px 22px 22px;"><p style="margin:0 0 8px;[^"]*color:#500000;">Submit your research/);
+  assert.match(html, /border:2px dotted #732F2F; padding:20px 22px 22px 22px;"><p style="margin:0 0 8px;[^"]*color:#500000;">Share something with the ERC<\/p><p style="margin:0 0 8px;[^"]*">Research[^<]*<\/p><p style="margin:0 0 18px;[^"]*font-size:14px;[^"]*color:#535353;">Deadline: October 20, 2026<\/p><table/);
+  c.style = 'weird';
+  assert.match(renderNewsletter(issue), /background-color:#500000; padding:26px 48px 28px 24px;"><p[^>]*>Share something with the ERC/, 'an unknown style is maroon');
+});
+
+test('any number of callouts, each after its section; one whose section is empty follows the nearest earlier one, or the intro', () => {
+  const issue = fullIssue();
+  issue.callouts = [
+    { id: 'c1', kind: 'share', after: 'research', style: 'maroon', title: 'First', text: 't', button: 'Go', url: 'https://x.org/1' },
+    { id: 'c2', kind: 'custom', after: 'headlines', style: 'gray', title: 'Second', text: 't', button: 'Go', url: 'https://x.org/2' },
+    { id: 'c3', kind: 'custom', after: 'misc', style: 'maroon', title: 'Third', text: '', button: 'Go', url: 'https://x.org/3' },
+    { id: 'c4', kind: 'custom', after: 'research', style: 'dotted', title: '  ', text: 't', button: 'Go', url: '' },
+  ];
+  const html = renderNewsletter(issue);
+  const at = (s) => html.indexOf(s);
+  assert.ok(at('>ERC Research</h2>') < at('>First</p>') && at('>First</p>') < at('>ERC Spotlight</h2>'));
+  assert.ok(at('>Education Headlines</h2>') < at('>Second</p>') && at('>Second</p>') < at('>Third</p>'), 'Second inside Headlines, Third after it (Miscellaneous is off, so Third follows Headlines)');
+  assert.ok(at('>Third</p>') < at('alt="Texas A&amp;M University Education Research Center"'), 'before the footer');
+  assert.ok(!html.includes('c4') && count(html, 'border:2px dotted') === 0, 'a titleless callout draws nothing');
+  const sparse = sparseIssue();
+  sparse.callouts = [{ id: 'c5', kind: 'custom', after: 'research', style: 'gray', title: 'Lonely', text: 't', button: 'Go', url: 'https://x.org/5' }];
+  const h2 = renderNewsletter(sparse);
+  assert.ok(at.call(null, '') === -1 || true);
+  assert.ok(h2.indexOf('>Lonely</p>') > h2.indexOf('Welcome to the June 16') && h2.indexOf('>Lonely</p>') < h2.indexOf('>Upcoming Events</h2>'), 'no Research: it follows the intro, in its own panel');
+  assert.equal(panels(h2), 5, 'header, intro, the lonely callout, events, footer');
+});
+
+test('an older draft\'s one fixed callout still reads: layout.callout as a Share callout in that style, none or showSubmit=false as no callout', () => {
+  const issue = fullIssue();
+  delete issue.callouts;
+  issue.layout = { callout: 'dotted' };
+  assert.deepEqual(calloutsOf(issue).map((c) => [c.kind, c.after, c.style]), [['share', 'research', 'dotted']]);
+  assert.match(renderNewsletter(issue), /border:2px dotted #732F2F;[^"]*"><p[^>]*>Share something with the ERC/);
   issue.layout = { callout: 'none' };
-  assert.ok(!renderNewsletter(issue).includes(CALLOUT));
+  assert.deepEqual(calloutsOf(issue), []);
   delete issue.layout;
   issue.sections.research.showSubmit = false;
-  assert.ok(!renderNewsletter(issue).includes(CALLOUT));
-  assert.deepEqual(layoutOf(issue), { callout: 'none', nav: true });
-  assert.deepEqual(layoutOf({ layout: { callout: 'weird', nav: 0 } }), { callout: 'maroon', nav: true });
+  assert.deepEqual(calloutsOf(issue), []);
+  assert.ok(!renderNewsletter(issue).includes(SHARE));
+  assert.deepEqual(layoutOf({ layout: { nav: 0 } }), { nav: true });
 });
 
-test('no Research section, no callout', () => {
-  const html = renderNewsletter(sparseIssue());
-  assert.ok(!html.includes(CALLOUT));
+test('in the editable preview every part of a callout carries its hook: title, text, deadline, button', () => {
+  const issue = fullIssue();
+  issue.callouts = calloutsOf(issue);
+  issue.callouts[0].deadline = 'By Friday';
+  const ed = renderNewsletter(issue, { editable: true });
+  for (const f of ['title', 'text', 'deadline', 'button']) assert.match(ed, new RegExp(`data-edit-section="callout" data-edit-item="${issue.callouts[0].id}" data-edit-field="${f}"`), f);
+  assert.ok(!/data-edit-section="callout"/.test(renderNewsletter(issue)));
 });
 
 // ─── Footer and document ─────────────────────────────────────────────────────

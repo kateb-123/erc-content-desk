@@ -6,13 +6,18 @@
  * Outlook. The maroon lives here and nowhere in-app.
  *
  * Per-issue options the builder writes:
- *   issue.layout.callout   'maroon' | 'gray' | 'dotted' | 'none'   (default maroon)
  *   issue.layout.nav       false hides the contents strip             (default on)
+ *   issue.callouts         [{ id, kind, after, style, title, text, button, url, deadline }]
+ *                          any number, each after a section; kind 'share' or 'custom';
+ *                          style 'maroon' | 'gray' | 'dotted' (Kate, Oct 5)
  *   fields.showSummary     true | false overrides the group's description default
  *   fields.pictureStyle    'stamp' | 'headshot' | 'none'              (default by title)
+ *   fields.pictureWidth    a width in px, 48 to 240, else the layout's own
+ * Older drafts carried issue.layout.callout for the one fixed callout; it
+ * still reads as one Share callout after ERC Research.
  */
 
-import { SECTION_REGISTRY } from './model.js';
+import { SECTION_REGISTRY, newCallout } from './model.js';
 
 // ─── Tokens (Aggie UX) ───────────────────────────────────────────────────────
 
@@ -45,7 +50,7 @@ const T = {
 };
 
 /** The option values the renderer understands; anything else falls to the default. */
-export const CALLOUT_STYLES = ['maroon', 'gray', 'dotted', 'none'];
+export const CALLOUT_STYLES = ['maroon', 'gray', 'dotted'];
 export const PICTURE_STYLES = ['stamp', 'headshot', 'none'];
 
 /** The email's heading, contents-strip label, and which groups show a description, per section. */
@@ -255,13 +260,28 @@ function placeholderPicture(w, sectionKey, itemId, editable) {
   return `<span style="display:block; box-sizing:border-box; width:${w}px; height:${h}px; border:1px dashed #A7A7A7; background-color:#F6F6F6; color:#626262; font-family:${SANS}; font-size:12px; line-height:${h}px; text-align:center;"${editAttrs(sectionKey, itemId, 'image', editable)}>Photo</span>`;
 }
 
-/** The layout options, normalised: an unknown callout falls to maroon; the old
- *  research.showSubmit=false switch still means no callout. */
+/** The layout options, normalised. */
 export function layoutOf(issue) {
   const l = issue?.layout || {};
-  let callout = CALLOUT_STYLES.includes(l.callout) ? l.callout : 'maroon';
-  if (l.callout == null && issue?.sections?.research?.showSubmit === false) callout = 'none';
-  return { callout, nav: l.nav !== false };
+  return { nav: l.nav !== false };
+}
+
+/**
+ * The issue's callouts, in order. A draft from before Oct 5 carried one fixed
+ * callout as issue.layout.callout (or research.showSubmit=false for none); it
+ * reads as one Share callout after ERC Research in that style, so nothing an
+ * older draft chose is lost.
+ */
+export function calloutsOf(issue) {
+  if (Array.isArray(issue?.callouts)) {
+    return issue.callouts.filter((c) => c && typeof c === 'object' && String(c.title ?? '').trim());
+  }
+  const old = issue?.layout?.callout;
+  if (old === 'none' || (old == null && issue?.sections?.research?.showSubmit === false)) return [];
+  const c = newCallout('share', 'research');
+  c.id = 'callout_legacy';
+  if (CALLOUT_STYLES.includes(old)) c.style = old;
+  return [c];
 }
 
 // ─── Header, intro ───────────────────────────────────────────────────────────
@@ -306,13 +326,10 @@ function introRows(issue, editable) {
   const list = splitParas(issue.intro);
   if (!list.length) return [];
   const hook = editAttrs('intro', null, 'intro', editable);
-  const standing = /^want to feature/i.test(list[list.length - 1] || '') ? list.pop() : null;
+  // The "Want to feature something?" standing line is gone (Kate, Oct 5): the Share callout says it.
   const bodyStyle = `font-family:${SANS}; font-size:15px; line-height:1.55; color:${C.g900};`;
   const body = list.map((t, i) => p(bodyStyle, renderProse(t), i < list.length - 1 ? 14 : 0, hook)).join('');
-  const standingHtml = standing
-    ? `<div style="border-top:${T.hair}; margin:18px 0 0; font-size:1px; line-height:1px;">&nbsp;</div><p style="margin:14px 0 0; font-family:${SANS}; font-size:15px; line-height:1.5; color:${C.g700};"${hook}>${renderProse(standing)}</p>`
-    : '';
-  return [row(body + standingHtml, 'padding:26px 48px 0 24px;'), spacer(26)];
+  return [row(body, 'padding:26px 48px 0 24px;'), spacer(26)];
 }
 
 // ─── Sections ────────────────────────────────────────────────────────────────
@@ -421,15 +438,61 @@ function sectionRows(def, editable) {
 
 // ─── The callout ─────────────────────────────────────────────────────────────
 
-const CALLOUT_TITLE = 'Submit your research for an ERC Research Brief';
-const CALLOUT_TEXT = 'Working on research that could reach a broader audience? Share a recent publication or working paper and the ERC will consider it for a research brief or other public-facing product.';
-function calloutRows(cs) {
-  const inner = (titleStyle, textColor, btnBg, btnFg) =>
-    p(titleStyle, CALLOUT_TITLE, 8) + p(`font-family:${SANS}; font-size:15px; line-height:1.5; color:${textColor};`, CALLOUT_TEXT, 18) + button('Submit your research &#187;', URLS.submit, btnBg, btnFg);
-  const box = (td, titleColor) => [row(tbl(`<tr><td style="${td}">${inner(`font-family:${SANS}; font-size:18px; line-height:1.3; font-weight:700; color:${titleColor};`, C.g800, C.maroon, C.white)}</td></tr>`), 'padding:28px 24px 0 24px;')];
-  if (cs === 'gray') return box(`background-color:${C.g100}; padding:22px 24px 24px 24px;`, C.g900);
-  if (cs === 'dotted') return box(`border:2px dotted ${C.maroonLight}; padding:20px 22px 22px 22px;`, C.maroon);
-  return [row(inner(`font-family:${SANS}; font-size:18px; line-height:1.3; font-weight:700; color:${C.white};`, C.ivory, C.white, C.maroon), `background-color:${C.maroon}; padding:26px 48px 28px 24px;`)];
+/**
+ * One callout, in its style: the title, the text, an optional deadline line,
+ * and the button. Each part carries its edit hook in the preview. Maroon is
+ * its own panel; gray and dotted are a box inside the panel before it.
+ */
+function calloutRows(c, editable) {
+  const hook = (field) => editAttrs('callout', c.id, field, editable);
+  const href = safeItemHref(c.url);
+  const btn = (bg, fg) => {
+    const words = `${esc(c.button || 'Learn more')} &#187;`;
+    return href ? button(words, esc(href), bg, fg).replace('<a href=', `<a${hook('button')} href=`) : button(words, '#', bg, fg).replace('<a href=', `<a${hook('button')} href=`);
+  };
+  const inner = (titleStyle, textColor, btnBg, btnFg, metaColor) =>
+    p(titleStyle, esc(c.title), 8, hook('title'))
+    + (c.text ? p(`font-family:${SANS}; font-size:15px; line-height:1.5; color:${textColor};`, renderProse(c.text), c.deadline ? 8 : 18, hook('text')) : '')
+    + (c.deadline ? p(`font-family:${SANS}; font-size:14px; line-height:1.4; color:${metaColor};`, esc(c.deadline), 18, hook('deadline')) : '')
+    + btn(btnBg, btnFg);
+  const style = CALLOUT_STYLES.includes(c.style) ? c.style : 'maroon';
+  const box = (td, titleColor) => [row(tbl(`<tr><td style="${td}">${inner(`font-family:${SANS}; font-size:18px; line-height:1.3; font-weight:700; color:${titleColor};`, C.g800, C.maroon, C.white, C.g700)}</td></tr>`), 'padding:28px 24px 0 24px;')];
+  if (style === 'gray') return box(`background-color:${C.g100}; padding:22px 24px 24px 24px;`, C.g900);
+  if (style === 'dotted') return box(`border:2px dotted ${C.maroonLight}; padding:20px 22px 22px 22px;`, C.maroon);
+  return [row(inner(`font-family:${SANS}; font-size:18px; line-height:1.3; font-weight:700; color:${C.white};`, C.ivory, C.white, C.maroon, C.cream), `background-color:${C.maroon}; padding:26px 48px 28px 24px;`)];
+}
+
+/**
+ * Where each callout lands: after the section it names when that section
+ * renders, else after the nearest earlier one that does, else after the
+ * intro. Returns a map of anchor key ('intro' or a section key) to callouts.
+ */
+function calloutsByAnchor(issue, renderedKeys) {
+  const order = SECTION_REGISTRY.map((s) => s.key);
+  const out = new Map();
+  for (const c of calloutsOf(issue)) {
+    let anchor = 'intro';
+    const at = order.indexOf(c.after);
+    for (let i = at; i >= 0; i--) if (renderedKeys.includes(order[i])) { anchor = order[i]; break; }
+    if (!out.has(anchor)) out.set(anchor, []);
+    out.get(anchor).push(c);
+  }
+  return out;
+}
+
+/** The callouts after one anchor, as panel parts: gray and dotted go inside
+ *  `rows` before its closing spacer; maroon stands alone after it. */
+function placeCallouts(parts, rows, callouts, editable) {
+  const inside = [], alone = [];
+  for (const c of callouts) ((CALLOUT_STYLES.includes(c.style) ? c.style : 'maroon') === 'maroon' ? alone : inside).push(c);
+  if (rows) {
+    for (const c of inside) rows.splice(rows.length - 1, 0, ...calloutRows(c, editable));
+    parts.push(rows);
+  } else {
+    // No panel to sit inside (after the intro, or before any section): each gets its own.
+    for (const c of inside) parts.push([...calloutRows(c, editable), spacer(26)]);
+  }
+  for (const c of alone) parts.push(calloutRows(c, editable));
 }
 
 // ─── Footer, preheader, document ─────────────────────────────────────────────
@@ -453,19 +516,18 @@ function preheader(issue) {
 /** The email's body: the stacked panels on the gray page. */
 export function renderBody(issue, opts = {}) {
   const editable = opts.editable === true;
-  const { callout, nav: showNav } = layoutOf(issue);
+  const { nav: showNav } = layoutOf(issue);
   const secs = buildSections(issue);
   const nav = secs.map((s) => ({ anchor: s.anchor, short: s.short }));
   const parts = [headerRows(issue, nav, showNav, editable)];
   const intro = introRows(issue, editable);
   if (intro.length) parts.push(intro);
+  const callouts = calloutsByAnchor(issue, secs.map((s) => s.key));
+  if (callouts.has('intro')) placeCallouts(parts, null, callouts.get('intro'), editable);
   for (const def of secs) {
     const rows = sectionRows(def, editable);
-    if (def.key !== 'research' || callout === 'none') { parts.push(rows); continue; }
-    const c = calloutRows(callout);
-    // Gray and dotted sit inside the Research panel, before its closing spacer; the maroon block stands alone.
-    if (callout !== 'maroon') { rows.splice(rows.length - 1, 0, ...c); parts.push(rows); }
-    else parts.push(rows, c);
+    if (callouts.has(def.key)) placeCallouts(parts, rows, callouts.get(def.key), editable);
+    else parts.push(rows);
   }
   parts.push(footerRows(issue));
   const sheet = (rows) => `<table align="center" width="640" role="presentation" cellspacing="0" cellpadding="0" border="0" style="width:640px; margin:0 auto; background-color:${C.white};"><tbody>\n${rows.join('\n')}\n</tbody></table>`;

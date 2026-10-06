@@ -45,10 +45,51 @@ export const SECTION_REGISTRY = [
     ] },
 ];
 
+/** The desk's intake page, where the Share callout sends readers. */
+export const SHARE_URL = 'https://erc-policy-exchange.vercel.app/share/';
+
+/**
+ * The two kinds of callout (Kate, Oct 5): the Share callout, one standing ask
+ * covering research, events and announcements, in the desk's own words; and
+ * a catch-all with your own words. Each sits after a section, in a style.
+ */
+export const CALLOUT_KINDS = {
+  share: {
+    label: 'Share something with the ERC',
+    title: 'Share something with the ERC',
+    text: 'Research, an event, an announcement: if it belongs in the newsletter or on the Policy Exchange, send it our way. The ERC team reviews everything before it goes out.',
+    button: 'Share something',
+    url: SHARE_URL,
+  },
+  custom: {
+    label: 'Your own words',
+    title: 'A title for this callout',
+    text: '',
+    button: 'Learn more',
+    url: '',
+  },
+};
+
+let calloutSeq = 0;
+
+/** A new callout of one kind, after a section, in the maroon style. */
+export function newCallout(kind, after = 'research') {
+  const base = CALLOUT_KINDS[kind] || CALLOUT_KINDS.custom;
+  calloutSeq += 1;
+  return {
+    id: `callout_${Date.now().toString(36)}_${calloutSeq}`,
+    kind: CALLOUT_KINDS[kind] ? kind : 'custom',
+    after: SECTION_REGISTRY.some((s) => s.key === after) ? after : 'research',
+    style: 'maroon',
+    title: base.title, text: base.text, button: base.button, url: base.url, deadline: '',
+  };
+}
+
 export function createEmptyIssue() {
   const sections = {};
   for (const s of SECTION_REGISTRY) sections[s.key] = { enabled: false, items: [] };
-  return { date: '', intro: '', sections };
+  // Every issue starts with the Share callout after ERC Research.
+  return { date: '', intro: '', sections, callouts: [newCallout('share', 'research')] };
 }
 
 /** Append review-sourced items to an issue. Ids continue the rvw_ sequence. */

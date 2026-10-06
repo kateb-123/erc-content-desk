@@ -5,15 +5,56 @@
  * fields.showSummary and fields.pictureStyle. Nothing here touches the DOM.
  */
 
-import { CALLOUT_STYLES, PICTURE_STYLES, PICTURE_MIN, PICTURE_MAX, layoutOf, summaryDefault, pictureDefault, pictureStyleOf } from './template.js';
+import { CALLOUT_STYLES, PICTURE_STYLES, PICTURE_MIN, PICTURE_MAX, layoutOf, calloutsOf, summaryDefault, pictureDefault, pictureStyleOf } from './template.js';
+import { SECTION_REGISTRY, newCallout } from './model.js';
 
-/** The callout's four treatments, in the order the control shows them. */
+/** A callout's three styles, in the order the control shows them. */
 export const CALLOUT_CHOICES = [
   { key: 'maroon', label: 'Maroon block' },
   { key: 'gray', label: 'Light gray box' },
   { key: 'dotted', label: 'Dotted rule' },
-  { key: 'none', label: 'None' },
 ];
+
+/** The issue's callouts as a real list the builder can change (an older draft's is made on first touch). */
+function calloutList(issue) {
+  if (!Array.isArray(issue.callouts)) issue.callouts = calloutsOf(issue);
+  return issue.callouts;
+}
+
+/** Adds a callout of one kind after a section; returns it. */
+export function addCallout(issue, kind, after) {
+  const c = newCallout(kind, after);
+  calloutList(issue).push(c);
+  return c;
+}
+
+/** Takes a callout out; returns it (for Undo) or null. */
+export function removeCallout(issue, id) {
+  const list = calloutList(issue);
+  const at = list.findIndex((c) => c.id === id);
+  if (at === -1) return null;
+  return list.splice(at, 1)[0];
+}
+
+/** Puts a callout back where it was. */
+export function restoreCallout(issue, callout, at) {
+  const list = calloutList(issue);
+  list.splice(Math.max(0, Math.min(at ?? list.length, list.length)), 0, callout);
+}
+
+/** Moves a callout to follow another section; an unknown section is ignored. */
+export function moveCallout(issue, id, after) {
+  if (!SECTION_REGISTRY.some((s) => s.key === after)) return false;
+  const c = calloutList(issue).find((x) => x.id === id);
+  if (!c) return false;
+  c.after = after;
+  return true;
+}
+
+/** Sets a callout's style; an unknown style is ignored. */
+export function setCalloutStyle(callout, style) {
+  if (CALLOUT_STYLES.includes(style)) callout.style = style;
+}
 
 /** The picture's three layouts, in the order the control shows them. */
 export const PICTURE_CHOICES = [
@@ -29,14 +70,6 @@ export const DESCRIBED_SECTIONS = new Set(['research', 'spotlight', 'events', 'o
 function layoutBlock(issue) {
   if (!issue.layout || typeof issue.layout !== 'object') issue.layout = {};
   return issue.layout;
-}
-
-/** Sets the callout style; an unknown key is ignored. The old research.showSubmit
- *  switch is cleared so it cannot disagree with the choice. */
-export function setCallout(issue, key) {
-  if (!CALLOUT_STYLES.includes(key)) return;
-  layoutBlock(issue).callout = key;
-  if (issue.sections?.research) delete issue.sections.research.showSubmit;
 }
 
 /** Shows or hides the contents strip under the masthead. */
@@ -174,8 +207,7 @@ export function resetOptions(issue) {
 
 /** True when any option differs from its default, so Reset has something to do. */
 export function hasCustomOptions(issue) {
-  const { callout, nav } = layoutOf(issue);
-  if (callout !== 'maroon' || !nav) return true;
+  if (!layoutOf(issue).nav) return true;
   for (const sec of Object.values(issue?.sections || {})) {
     for (const item of sec.items || []) {
       const f = item.fields || {};

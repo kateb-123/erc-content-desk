@@ -1,27 +1,58 @@
 // builder/tests/options.test.js: the Outline's per-issue layout options (Oct 2026).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CALLOUT_CHOICES, PICTURE_CHOICES, setCallout, setNav, itemOptions, setDescription, setPictureStyle, acceptPictureUrl, resetOptions, hasCustomOptions, includedWords } from '../js/options.js';
-import { layoutOf, renderNewsletter, CALLOUT_STYLES, PICTURE_STYLES } from '../js/template.js';
-import { createEmptyIssue } from '../js/model.js';
+import { CALLOUT_CHOICES, PICTURE_CHOICES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setDescription, setPictureStyle, acceptPictureUrl, resetOptions, hasCustomOptions, includedWords } from '../js/options.js';
+import { layoutOf, calloutsOf, renderNewsletter, CALLOUT_STYLES, PICTURE_STYLES } from '../js/template.js';
+import { createEmptyIssue, CALLOUT_KINDS, SHARE_URL } from '../js/model.js';
 
 const item = (id, group, fields = {}, extra = {}) => ({ id, group, fields: { title: id, ...fields }, ...extra });
 
 test('the controls offer exactly what the renderer understands, in the handoff\'s order', () => {
   assert.deepEqual(CALLOUT_CHOICES.map((c) => c.key), CALLOUT_STYLES);
-  assert.deepEqual(CALLOUT_CHOICES.map((c) => c.label), ['Maroon block', 'Light gray box', 'Dotted rule', 'None']);
+  assert.deepEqual(CALLOUT_CHOICES.map((c) => c.label), ['Maroon block', 'Light gray box', 'Dotted rule']);
   assert.deepEqual(PICTURE_CHOICES.map((c) => c.key), ['none', 'stamp', 'headshot']);
   assert.ok(PICTURE_CHOICES.every((c) => PICTURE_STYLES.includes(c.key)));
 });
 
-test('setCallout writes issue.layout.callout, ignores junk, and retires the old showSubmit switch', () => {
+test('the two kinds of callout (Kate, Oct 5): Share, in the desk\'s words to its share page, and your own words', () => {
+  assert.deepEqual(Object.keys(CALLOUT_KINDS), ['share', 'custom']);
+  assert.equal(CALLOUT_KINDS.share.url, SHARE_URL);
+  assert.equal(SHARE_URL, 'https://erc-policy-exchange.vercel.app/share/');
+  assert.match(CALLOUT_KINDS.share.text, /Research, an event, an announcement/);
+  assert.equal(CALLOUT_KINDS.custom.url, '');
+});
+
+test('a new issue has one Share callout after ERC Research; add, move, style, remove and restore work on the list', () => {
   const issue = createEmptyIssue();
-  issue.sections.research.showSubmit = false;
-  setCallout(issue, 'gray');
-  assert.deepEqual(layoutOf(issue), { callout: 'gray', nav: true });
-  assert.ok(!('showSubmit' in issue.sections.research));
-  setCallout(issue, 'bogus');
-  assert.equal(issue.layout.callout, 'gray');
+  assert.deepEqual(calloutsOf(issue).map((c) => [c.kind, c.after, c.style]), [['share', 'research', 'maroon']]);
+  const c = addCallout(issue, 'custom', 'headlines');
+  assert.equal(c.kind, 'custom');
+  assert.equal(c.after, 'headlines');
+  assert.equal(c.title, 'A title for this callout');
+  assert.equal(addCallout(issue, 'bogus', 'nowhere').after, 'research', 'unknown kind and section fall back');
+  assert.equal(calloutsOf(issue).length, 3);
+  assert.equal(moveCallout(issue, c.id, 'policy'), true);
+  assert.equal(c.after, 'policy');
+  assert.equal(moveCallout(issue, c.id, 'nowhere'), false);
+  setCalloutStyle(c, 'dotted');
+  assert.equal(c.style, 'dotted');
+  setCalloutStyle(c, 'none');
+  assert.equal(c.style, 'dotted', 'none is not a style any more; removing is');
+  const gone = removeCallout(issue, c.id);
+  assert.equal(gone, c);
+  assert.equal(calloutsOf(issue).length, 2);
+  assert.equal(removeCallout(issue, 'zz'), null);
+  restoreCallout(issue, gone, 1);
+  assert.deepEqual(issue.callouts.map((x) => x.id)[1], c.id);
+});
+
+test('an older draft with no callouts list gets one made from its layout.callout on the first change', () => {
+  const issue = createEmptyIssue();
+  delete issue.callouts;
+  issue.layout = { callout: 'gray' };
+  const added = addCallout(issue, 'custom', 'events');
+  assert.deepEqual(issue.callouts.map((c) => [c.kind, c.style]), [['share', 'gray'], ['custom', 'maroon']]);
+  assert.equal(issue.callouts[1], added);
 });
 
 test('setNav hides and shows the contents strip', () => {
@@ -90,20 +121,19 @@ test('resetOptions returns every option to its default, and hasCustomOptions kno
   issue.sections.research.enabled = true;
   issue.sections.research.items = [item('r', 'brief', { summary: 'x', image: 'https://x.org/p.jpg' })];
   assert.equal(hasCustomOptions(issue), false);
-  setCallout(issue, 'dotted');
+  setNav(issue, false);
   assert.equal(hasCustomOptions(issue), true);
   resetOptions(issue);
   assert.equal(hasCustomOptions(issue), false);
   setDescription(issue.sections.research.items[0], true);
   assert.equal(hasCustomOptions(issue), true, 'a stated choice counts even when it matches the default');
   setNav(issue, false);
+  addCallout(issue, 'custom', 'events');
   resetOptions(issue);
-  assert.deepEqual(layoutOf(issue), { callout: 'maroon', nav: true });
+  assert.deepEqual(layoutOf(issue), { nav: true });
   assert.ok(!('showSummary' in issue.sections.research.items[0].fields));
   assert.ok(!('layout' in issue));
-  issue.sections.research.showSubmit = false;
-  assert.equal(hasCustomOptions(issue), true, 'the old switch reads as a custom callout');
-  resetOptions(issue);
+  assert.equal(calloutsOf(issue).length, 2, 'callouts are content, not options: Reset leaves them');
   assert.equal(hasCustomOptions(issue), false);
 });
 
