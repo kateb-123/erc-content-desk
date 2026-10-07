@@ -12,11 +12,12 @@
   <link rel="stylesheet" href="/css/styles.css?v=157" />
   <link rel="stylesheet" href="/css/shell.css?v=7" />
   <style>
-    /* The newsletter builder's how-to (Sep 30, 2026, evening): the
-       submit how-to's pattern for whoever builds an issue. Three tabs under
-       the band; the middle one has a tab per builder step. Every slide is
-       the steps beside a recording of the real desk. Nothing here writes to
-       the desk. */
+    /* The newsletter builder's how-to (Sep 30, 2026; one page since Oct 7):
+       the submit how-to's look, read top to bottom in the order the work
+       happens, with a contents strip that stays on screen. Each part is a
+       slide: the steps beside a recording of the real desk, where one exists.
+       The last part lists every option in the builder's own words. Nothing
+       here writes to the desk. */
     body { margin: 0; background: var(--background); color: var(--ink); font: var(--body-type); }
     a { color: var(--link-primary); }
     a:hover { color: var(--link-primary-hover); }
@@ -36,29 +37,52 @@
     .open:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-blue-400), 0 0 0 4px var(--text-inverse); }
     .open .fa-solid { margin-left: var(--spacing-05); font-size: 14px; }
 
-    /* The page: the three tabs, then one pane at a time. */
-    .page { max-width: 1200px; margin: 0 auto; padding: var(--spacing-05) var(--gap-56) var(--gap-72); }
-    .pane[hidden] { display: none; }
-    .pane h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-    .steps-tabs { margin-top: var(--spacing-05); }
-    .steps-tabs .tab { font-size: 14px; }
+    /* The contents strip: the parts in order, the one on screen marked, drawn
+       like the desk's tabs; it stays at the top as the page scrolls. */
+    .contents { position: sticky; top: 0; z-index: 5; background: var(--background); border-bottom: 1px solid var(--line); }
+    .contents .in { max-width: 1200px; margin: 0 auto; padding: 0 var(--gap-56); display: flex; gap: var(--spacing-05); overflow-x: auto; }
+    .contents a { display: inline-flex; align-items: center; height: 44px; padding: 0 var(--spacing-02); color: var(--text-secondary); font-size: 14px; line-height: 18px; text-decoration: none; border-bottom: 2px solid transparent; white-space: nowrap; }
+    .contents a:hover { color: var(--ink); }
+    .contents a.is-active { color: var(--ink); font-weight: 700; border-bottom-color: var(--accent); }
+
+    /* The page: one part after another, each with its heading and its slide. */
+    .page { max-width: 1200px; margin: 0 auto; padding: var(--spacing-03) var(--gap-56) var(--gap-72); }
+    .part { padding-top: var(--spacing-07); scroll-margin-top: 56px; }
+    .part h2 { font: var(--card-title); margin: 0; }
+    .part .lede { font: var(--meta-type); color: var(--text-secondary); margin: var(--spacing-02) 0 0; }
 
     /* A slide: the steps in the left third, the recording in the right two thirds. */
-    .slide { display: none; }
-    .slide.on { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--spacing-07); align-items: start; margin-top: var(--spacing-05); padding: var(--spacing-06); background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); }
-    .slide h3 { font: var(--card-title); margin: 0 0 var(--spacing-04); }
+    .slide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--spacing-07); align-items: start; margin-top: var(--spacing-05); padding: var(--spacing-06); background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); }
+    .slide h3 { font: var(--sub-title); margin: 0 0 var(--spacing-04); }
     .slide ol { padding-left: 24px; }
+    .slide .pointer { margin: 0; }
     .rec { display: grid; gap: var(--spacing-03); margin: 0; min-width: 0; }
     .rec video { display: block; width: 100%; height: auto; border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer-01); }
     .rec figcaption { font: var(--meta-type); color: var(--muted); }
     .rec-toggle { margin: 0 0 0 var(--spacing-02); height: 24px; padding: 0 var(--spacing-02); }
 
+    /* The add-in, as it looks in Outlook's Apps menu, and where to get it. */
+    .addin { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-05); background: var(--background); border: 1px solid var(--layer-line); border-radius: var(--radius); }
+    .addin img { width: 48px; height: 48px; display: block; border-radius: 8px; }
+    .addin b { display: block; }
+    .addin .quiet { font: var(--meta-type); }
+    .rec--links { align-content: start; gap: var(--spacing-04); }
+    .rec--links ul { margin: 0; padding-left: 20px; }
+    .rec--links li { margin: 0 0 var(--spacing-02); }
+
+    /* The options: three lists, each control in bold, then what it does. */
+    .options { margin-top: var(--spacing-05); padding: var(--spacing-06); background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); }
+    .options h3 { font: var(--sub-title); margin: var(--spacing-05) 0 var(--spacing-03); }
+    .options h3:first-child { margin-top: 0; }
+    .options ul { margin: 0 0 var(--spacing-04); padding-left: 20px; }
+    .options li { margin: 0 0 var(--spacing-02); }
+
     @media (max-width: 900px) {
       .band { padding: var(--spacing-07) var(--spacing-05); }
       .band h1 { font-size: 26px; line-height: 32px; }
-      .page { padding: var(--spacing-04) var(--spacing-05) var(--spacing-08); }
-      .page-tabs { overflow-x: auto; }
-      .slide.on { grid-template-columns: minmax(0, 1fr); gap: var(--spacing-05); padding: var(--spacing-05); }
+      .contents .in { padding: 0 var(--spacing-05); }
+      .page { padding: var(--spacing-02) var(--spacing-05) var(--spacing-08); }
+      .slide { grid-template-columns: minmax(0, 1fr); gap: var(--spacing-05); padding: var(--spacing-05); }
     }
   </style>
 </head>
@@ -69,100 +93,175 @@
     <div>
       <div class="eyebrow">How to</div>
       <h1>Build the newsletter</h1>
-      <p class="lede">From what was kept to what goes out, on Next issue and in the builder.</p>
+      <p class="lede">From the desk to the inbox: where items come from, the three steps, the send, and every option.</p>
     </div>
     <a class="open" href="https://erc-content-desk.vercel.app/#newsletter" target="_blank" rel="noopener">Open Newsletter<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
   </div></div>
 
+  <nav class="contents" aria-label="On this page"><div class="in">
+    <a href="#items">Where items come from</a>
+    <a href="#outline">Outline</a>
+    <a href="#tweak">Preview &amp; Tweak</a>
+    <a href="#export">Save &amp; Export</a>
+    <a href="#send">Send from erc@tamu.edu</a>
+    <a href="#options">The options</a>
+  </div></nav>
+
   <main class="page">
-    <div class="page-tabs"><div class="tabs" role="tablist" aria-label="How to build the newsletter" id="part-tabs"></div></div>
-    <div id="parts">
 
-      <section class="pane" data-tab="Where items come from">
-        <h2>Where items come from</h2>
-        <div class="slide on" data-tab="Next issue">
-          <div>
-            <h3>Next issue</h3>
-            <ol>
-              <li>Kept items wait in Ready to add.</li>
-              <li>Add puts one in the issue. Quick add puts in something new.</li>
-              <li>The builder only pulls what is in the issue.</li>
-            </ol>
-          </div>
-          <figure class="rec">
-            <video muted loop playsinline preload="metadata" poster="next-issue.png" aria-label="Next issue: an item added from Ready to add, then one typed in with Quick add."><source src="next-issue.webm" type="video/webm" /></video>
-            <figcaption>An item added from Ready to add, then one by Quick add.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
-          </figure>
+    <section class="part" id="items">
+      <h2>Where items come from</h2>
+      <p class="lede">The desk's path, one stop at a time. The builder only pulls what reached Next issue.</p>
+      <div class="slide">
+        <div>
+          <ol>
+            <li>Submit content, the team form or the public page, puts a link in the queue.</li>
+            <li>Sort gives each item a type and keeps, skips or deletes it.</li>
+            <li>Finalize rewrites and checks the description; Publish puts it on the Policy Exchange.</li>
+            <li>Next issue holds the kept items under Ready to add. Add puts one in the issue; Quick add puts in something new.</li>
+            <li>The builder pulls what is in the issue, again any time, only new items coming in. An item added by hand in the builder goes to the desk's queue too.</li>
+          </ol>
         </div>
-      </section>
+        <figure class="rec">
+          <video muted loop playsinline preload="metadata" poster="next-issue.png" aria-label="Next issue: an item added from Ready to add, then one typed in with Quick add."><source src="next-issue.webm" type="video/webm" /></video>
+          <figcaption>An item added from Ready to add, then one by Quick add.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
+        </figure>
+      </div>
+    </section>
 
-      <section class="pane" data-tab="Build the issue">
-        <h2>Build the issue</h2>
-        <div class="page-tabs steps-tabs"><div class="tabs" role="tablist" aria-label="The builder's steps" id="step-tabs"></div></div>
-        <div id="steps">
-          <div class="slide on" data-tab="Outline">
-            <div>
-              <h3>Outline</h3>
-              <ol>
-                <li>Open the builder from Next issue.</li>
-                <li>Pick the issue, then Pull from the desk. Pull again any time; only new items come in.</li>
-                <li>To practice, pick a sample under Samples in the Issue list. A sample never saves to the archive.</li>
-                <li>Drag a section or an item by its grip to move it.</li>
-                <li>Mark one event Featured.</li>
-                <li>Remove takes an item out. Undo puts it back.</li>
-              </ol>
-            </div>
-            <figure class="rec">
-              <video muted loop playsinline preload="metadata" poster="outline.png" aria-label="Outline: an item moved with the arrows, an event marked Featured, an item removed."><source src="outline.webm" type="video/webm" /></video>
-              <figcaption>An item moved, an event marked Featured, one removed.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
-            </figure>
-          </div>
-          <div class="slide" data-tab="Preview &amp; Tweak">
-            <div>
-              <h3>Preview &amp; Tweak</h3>
-              <ol>
-                <li>Fix titles, dates, the introduction and pictures.</li>
-              </ol>
-            </div>
-            <figure class="rec">
-              <video muted loop playsinline preload="metadata" poster="edit.png" aria-label="Preview and Edit: a title clicked in the preview and fixed on the right."><source src="edit.webm" type="video/webm" /></video>
-              <figcaption>A title clicked in the preview, fixed on the right.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
-            </figure>
-          </div>
+    <section class="part" id="outline">
+      <h2>1 Outline</h2>
+      <p class="lede">Pick the issue, pull what the desk staged, and put it in order.</p>
+      <div class="slide">
+        <div>
+          <ol>
+            <li>Open the builder from Next issue.</li>
+            <li>Pick the issue, then Pull from the desk. Pull again any time; only new items come in.</li>
+            <li>To practice, pick a sample under Samples in the Issue list. A sample never saves to the archive.</li>
+            <li>Drag a section or an item by its grip to move it.</li>
+            <li>Mark one event Featured.</li>
+            <li>Remove takes an item out. Undo puts it back.</li>
+          </ol>
+          <p class="pointer quiet">Every control on this step is under <a href="#options">The options</a>.</p>
         </div>
-        <p class="quiet" style="margin-top: var(--spacing-05)">Every fix in Preview &amp; Tweak, never in Outlook, so the archive matches what went out.</p>
-      </section>
+        <figure class="rec">
+          <video muted loop playsinline preload="metadata" poster="outline.png" aria-label="Outline: an item moved with the arrows, an event marked Featured, an item removed."><source src="outline.webm" type="video/webm" /></video>
+          <figcaption>An item moved, an event marked Featured, one removed.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
+        </figure>
+      </div>
+    </section>
 
-      <section class="pane" data-tab="Send and archive">
-        <h2>Send and archive</h2>
-        <div class="slide on" data-tab="Save &amp; Export">
-          <div>
-            <h3>Save &amp; Export</h3>
-            <ol>
-              <li>Copy HTML, paste it into Outlook, send.</li>
-              <li>Save to the archive. It shows under Past issues.</li>
-            </ol>
-          </div>
-          <figure class="rec">
-            <video muted loop playsinline preload="metadata" poster="export.png" aria-label="Save and Export: Copy HTML, then Save to the archive, then the issue under Past issues."><source src="export.webm" type="video/webm" /></video>
-            <figcaption>Copy HTML, then Save to the archive, then Past issues.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
-          </figure>
+    <section class="part" id="tweak">
+      <h2>2 Preview &amp; Tweak</h2>
+      <p class="lede">Check the issue and tweak anything in place.</p>
+      <div class="slide">
+        <div>
+          <ol>
+            <li>Click anything on the email and its card opens: how it is laid out, then its words. Every edit is live; Done closes the card.</li>
+            <li>Drag an item or a section by the grip at its left to move it on the email.</li>
+            <li>Add an item and Add a callout sit over the email, with the contents strip.</li>
+            <li>Every fix here, never in Outlook, so the archive matches what went out.</li>
+          </ol>
+          <p class="pointer quiet">Every control on this step is under <a href="#options">The options</a>.</p>
         </div>
-      </section>
+        <figure class="rec">
+          <video muted loop playsinline preload="metadata" poster="edit.png" aria-label="Preview and Edit: a title clicked in the preview and fixed on the right."><source src="edit.webm" type="video/webm" /></video>
+          <figcaption>A title clicked in the preview, fixed on the right.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
+        </figure>
+      </div>
+    </section>
 
-    </div>
+    <section class="part" id="export">
+      <h2>3 Save &amp; Export</h2>
+      <p class="lede">Copy the issue into Outlook, then archive it.</p>
+      <div class="slide">
+        <div>
+          <ol>
+            <li>Copy HTML. The next part takes it into Outlook and out from erc@tamu.edu.</li>
+            <li>Save to the archive. It shows under Past issues.</li>
+            <li>Start the next issue clears the way for the next one.</li>
+          </ol>
+          <p class="pointer quiet">Every control on this step is under <a href="#options">The options</a>.</p>
+        </div>
+        <figure class="rec">
+          <video muted loop playsinline preload="metadata" poster="export.png" aria-label="Save and Export: Copy HTML, then Save to the archive, then the issue under Past issues."><source src="export.webm" type="video/webm" /></video>
+          <figcaption>Copy HTML, then Save to the archive, then Past issues.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="part" id="send">
+      <h2>Send from erc@tamu.edu</h2>
+      <p class="lede">The ERC mailbox can't install add-ins, and HTML pasted into a message as text never formats. So the add-in runs in your personal TAMU mailbox, and the message moves over.</p>
+      <div class="slide">
+        <div>
+          <h3>Outlook on the web</h3>
+          <ol>
+            <li>On Save &amp; Export, Copy HTML.</li>
+            <li>In Outlook on the web, in your personal TAMU account, start a new message.</li>
+            <li>In the message toolbar, open Apps (or More apps), then Insert HTML by Designmodo. The first time: Get Add-ins, search Designmodo, Add.</li>
+            <li>Paste HTML, paste what you copied, then Insert HTML. The newsletter appears in the message.</li>
+            <li>Get it to erc@tamu.edu one of two ways. Forward: send the message to erc@tamu.edu, open it there, and forward it on, deleting the forwarded lines at the top. Copy: select all in the composed message, copy, and paste into a new message from erc@tamu.edu.</li>
+            <li>Address it and send it from erc@tamu.edu.</li>
+          </ol>
+          <p class="pointer quiet">Never paste the HTML into a message as text, and never copy the .html from a browser window: both come out in the wrong fonts.</p>
+        </div>
+        <figure class="rec rec--links">
+          <div class="addin"><img src="designmodo.png" alt="" /><div><b>Insert HTML by Designmodo</b><span class="quiet">How it looks in the Apps menu.</span></div></div>
+          <ul>
+            <li><a href="https://appsource.microsoft.com/en-us/product/office/wa200002918" target="_blank" rel="noopener">The add-in on AppSource</a></li>
+            <li><a href="https://support.microsoft.com/en-us/outlook/getstarted/use-add-ins-in-outlook" target="_blank" rel="noopener">Microsoft: use add-ins in Outlook</a></li>
+          </ul>
+        </figure>
+      </div>
+    </section>
+
+    <section class="part" id="options">
+      <h2>The options</h2>
+      <p class="lede">Every control, step by step, in the builder's own words.</p>
+      <div class="options">
+        <h3>Outline</h3>
+        <ul>
+          <li><b>Issue</b>: the desk's upcoming dates; under Samples, October 6, 2026, as sent, and Sample issue (fictional).</li>
+          <li><b>Pull from the desk</b>: brings in what Next issue staged. Again any time; only new items come in.</li>
+          <li><b>The grip</b> on a section or an item: drag it to move it, or press the up and down arrow keys.</li>
+          <li><b>Feature</b>: one event becomes the featured event.</li>
+          <li><b>Move to…</b>: files an item under another section or group.</li>
+          <li><b>Remove</b>: takes an item out; Undo on its row puts it back until you leave the step.</li>
+          <li><b>A callout's row</b>: Move to… (after which section) and Remove.</li>
+          <li><b>Recently discarded</b>: Restore brings back a draft the desk kept.</li>
+        </ul>
+        <h3>Preview &amp; Tweak</h3>
+        <ul>
+          <li><b>Click anything on the email</b>: its card opens, the introduction, an item or a callout.</li>
+          <li><b>The grip</b> at the left of an item or a section heading: drag it to move it on the email.</li>
+          <li><b>The card</b>: Done closes it (every edit is live), Remove, Use original, Undo changes.</li>
+          <li><b>How it is laid out</b>: Title and details, With description, Stamp beside the text, Headshot beside it all, and for an event the Date card.</li>
+          <li><b>Picture size, px</b>: a few widths, once a picture layout is on.</li>
+          <li><b>Zoom available</b> and <b>Flyer link</b>: under the Date card.</li>
+          <li><b>Kind</b>, for research: Research Brief, Research Report, Journal Article, ERC Explains.</li>
+          <li><b>Its words</b>: Title, Link, Description with bold, italic and a link, Date, Time, Location or Details, Authors, Media.</li>
+          <li><b>A callout's card</b>: Its style, Maroon block, Light gray box or Dotted rule, then its words.</li>
+          <li><b>Over the email</b>: Add an item, Add a callout, Contents strip, Reset layout.</li>
+        </ul>
+        <h3>Save &amp; Export</h3>
+        <ul>
+          <li><b>Copy HTML</b>: the issue, ready for the add-in.</li>
+          <li><b>Save to the archive</b>: asks once before replacing an earlier save; off on a sample.</li>
+          <li><b>Download .html</b>: the same file, saved.</li>
+          <li><b>Start the next issue</b>: clears the draft and returns to Outline.</li>
+        </ul>
+      </div>
+    </section>
+
   </main>
 
-  <script type="module">
-    import { el } from '/js/ui-aids.js';
-
+  <script>
+    // ---- The recordings: play while on screen, Pause holds one, motion off holds all ----
     const stillMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    // ---- The recordings: play while on screen and their slide and pane are up, unless motion is off ----
-    const seen = new WeakSet();
+    const seen = new Set();
     function settle(v) {
-      const slide = v.closest('.slide');
-      const up = (!slide || slide.classList.contains('on')) && !v.closest('[hidden]');
+      const up = !v.closest('[hidden]');
       if (seen.has(v) && up && !stillMotion && !v.dataset.held) v.play().catch(() => {});
       else v.pause();
     }
@@ -179,53 +278,23 @@
       say();
     }
 
-    // ---- Tabs, the desk's own: one tab stop, Left and Right move, Home and End jump ----
-    function tabSet(list, panels, name) {
-      const tabs = panels.map((panel, i) => {
-        const tab = el('button', `tab${i === 0 ? ' is-active' : ''}`, panel.dataset.tab);
-        tab.type = 'button';
-        tab.setAttribute('role', 'tab');
-        tab.id = `${name}-tab-${i}`;
-        panel.id ||= `${name}-panel-${i}`;
-        tab.setAttribute('aria-controls', panel.id);
-        panel.setAttribute('role', 'tabpanel');
-        panel.setAttribute('aria-labelledby', tab.id);
-        tab.addEventListener('click', () => pick(i));
-        list.append(tab);
-        return tab;
-      });
-      function pick(i, focus = false) {
-        tabs.forEach((t, n) => { t.classList.toggle('is-active', n === i); t.setAttribute('aria-selected', String(n === i)); t.tabIndex = n === i ? 0 : -1; });
-        panels.forEach((p, n) => { if (p.classList.contains('slide')) p.classList.toggle('on', n === i); else p.hidden = n !== i; });
-        for (const v of document.querySelectorAll('video')) settle(v);
-        if (focus) tabs[i].focus();
-      }
-      list.addEventListener('keydown', e => {
-        const i = tabs.indexOf(document.activeElement);
-        if (i < 0) return;
-        const moves = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 };
-        if (!(e.key in moves)) return;
-        e.preventDefault();
-        pick((moves[e.key] + tabs.length) % tabs.length, true);
-      });
-      // A swipe on a phone moves too. The nearest tab box takes it, so a swipe
-      // across a builder step never also turns the page's tab.
-      let x0 = null, y0 = null, at = () => tabs.findIndex(t => t.classList.contains('is-active'));
-      const box = panels[0].parentElement;
-      box.dataset.swipe = name;
-      box.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
-      box.addEventListener('touchend', e => {
-        if (x0 === null) return;
-        const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
-        x0 = null;
-        if (e.target.closest('[data-swipe]') !== box) return;
-        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) pick(Math.min(tabs.length - 1, Math.max(0, at() + (dx < 0 ? 1 : -1))));
-      }, { passive: true });
-      pick(0);
-      return pick;
+    // ---- The contents strip: the part being read is the one marked ----
+    // The last part whose top has passed 40% down the window; at the very
+    // bottom, the last part. A click marks its part at once.
+    const links = [...document.querySelectorAll('.contents a')];
+    const parts = links.map(a => document.querySelector(a.getAttribute('href')));
+    const mark = (i) => links.forEach((a, n) => { a.classList.toggle('is-active', n === i); if (n === i) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
+    function spy() {
+      const line = window.innerHeight * 0.4;
+      let at = 0;
+      parts.forEach((p, i) => { if (p.getBoundingClientRect().top <= line) at = i; });
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) at = parts.length - 1;
+      mark(at);
     }
-    tabSet(document.getElementById('step-tabs'), [...document.querySelectorAll('#steps .slide')], 'step');
-    tabSet(document.getElementById('part-tabs'), [...document.querySelectorAll('#parts .pane')], 'part');
+    window.addEventListener('scroll', spy, { passive: true });
+    window.addEventListener('resize', spy);
+    links.forEach((a, i) => a.addEventListener('click', () => mark(i)));
+    spy();
   </script>
 </body>
 </html>
