@@ -76,14 +76,19 @@ export const CALLOUT_KINDS = {
 
 let calloutSeq = 0;
 
-/** A new callout of one kind, after a section, in the maroon style. */
+/** The place after every section: `after` for a callout at the end of the email. */
+export const CALLOUT_END = 'end';
+
+/** A new callout of one kind, after a section, in the maroon style. The Share
+ *  callout always sits at the end of the email (Kate, Oct 7). */
 export function newCallout(kind, after = 'research') {
   const base = CALLOUT_KINDS[kind] || CALLOUT_KINDS.custom;
+  const k = CALLOUT_KINDS[kind] ? kind : 'custom';
   calloutSeq += 1;
   return {
     id: `callout_${Date.now().toString(36)}_${calloutSeq}`,
-    kind: CALLOUT_KINDS[kind] ? kind : 'custom',
-    after: SECTION_REGISTRY.some((s) => s.key === after) ? after : 'research',
+    kind: k,
+    after: k === 'share' ? CALLOUT_END : (after === CALLOUT_END || SECTION_REGISTRY.some((s) => s.key === after) ? after : 'research'),
     style: 'maroon',
     title: base.title, text: base.text, button: base.button, url: base.url, deadline: '',
   };

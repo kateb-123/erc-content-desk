@@ -24,9 +24,9 @@ import { renderShell } from '../../js/shell-ui.js';
 import { STEPS, canEnterStep, lockedMessage, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
 import { normalizeLinkUrl } from './editing.js';
 // The per-issue layout options the Outline sets (Claude Design handoff, Oct 2026).
-import { CALLOUT_CHOICES, PICTURE_CHOICES, PICTURE_SIZES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setPictureStyle, itemLayouts, pictureWidthOf, setPictureWidth, placeholderItems, resetOptions, hasCustomOptions, canHighlight, setHighlight, setZoom, setFlyer, RESEARCH_KINDS, setResearchKind, moveSection } from './options.js';
-import { layoutOf, calloutsOf, sectionOrder } from './template.js';
-import { CALLOUT_KINDS } from './model.js';
+import { CALLOUT_CHOICES, PICTURE_CHOICES, PICTURE_SIZES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setPictureStyle, itemLayouts, pictureWidthOf, setPictureWidth, placeholderItems, resetOptions, hasCustomOptions, canHighlight, setHighlight, setZoom, setFlyer, RESEARCH_KINDS, setResearchKind, moveSection, calloutSection } from './options.js';
+import { layoutOf, calloutsOf, calloutAfter, sectionOrder } from './template.js';
+import { CALLOUT_KINDS, CALLOUT_END } from './model.js';
 // Kept drafts, and hand-added items that go to the desk (Sep 23).
 import { readAllWaiting } from '../../js/reader-client.js';
 import { discardToDesk, draftIsOpen, replaceAskMessage, discardedTitle, discardedDetail, withEntry, withoutEntry, restoreOver } from './discarded.js';
@@ -737,29 +737,34 @@ function renderTriage() {
 
     // The callouts after this section (Kate, Oct 5): one row each, with
     // Move to… another section and Remove; then a quiet word to add one.
-    for (const c of calloutsOf(issue).filter((x) => x.after === reg.key)) {
+    // The Share callout is always at the end (Kate, Oct 7), so it has no Move to….
+    for (const c of calloutsOf(issue).filter((x) => (calloutSection(issue, x) ?? populated[0]?.key) === reg.key)) {
       const tr = el('tr', 'outline-item outline-callout');
       tr.dataset.section = reg.key;
       const td1 = el('td', 'outline-item-cell');
       td1.appendChild(el('span', 'outline-callout-tag', 'Callout'));
       td1.appendChild(el('span', 'outline-title', c.title || '(untitled)'));
-      td1.appendChild(el('span', 'outline-meta', `${CALLOUT_KINDS[c.kind]?.label || 'Your own words'} · ${CALLOUT_CHOICES.find((s) => s.key === c.style)?.label || 'Maroon block'}. Style it on Preview & Tweak.`));
-      const mv = button('Move to…', 'ghost-btn outline-move');
-      mv.setAttribute('aria-label', `Move the callout "${c.title}" after another section`);
-      mv.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showMenu(mv, 'outline-menu', (menu) => {
-          menu.appendChild(el('div', 'outline-menu-head', 'After'));
-          for (const r2 of SECTION_REGISTRY) {
-            const here = r2.key === reg.key;
-            const b = button(r2.label, 'outline-menu-item' + (here ? ' is-current' : ''));
-            if (here) b.disabled = true;
-            else b.addEventListener('click', () => { moveCallout(issue, c.id, r2.key); closeMenu(); scheduleSave(); renderTriage(); setWizardStatus(`Moved the callout after ${r2.label}.`); });
-            menu.appendChild(b);
-          }
+      const fixed = c.kind === 'share';
+      td1.appendChild(el('span', 'outline-meta', `${CALLOUT_KINDS[c.kind]?.label || 'Your own words'} · ${CALLOUT_CHOICES.find((s) => s.key === c.style)?.label || 'Maroon block'}. ${fixed ? 'Always at the end. ' : ''}Style it on Preview & Tweak.`));
+      if (!fixed) {
+        const mv = button('Move to…', 'ghost-btn outline-move');
+        mv.setAttribute('aria-label', `Move the callout "${c.title}" after another section`);
+        mv.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showMenu(mv, 'outline-menu', (menu) => {
+            menu.appendChild(el('div', 'outline-menu-head', 'After'));
+            const choices = [...SECTION_REGISTRY.map((r2) => [r2.key, r2.label]), [CALLOUT_END, 'The end of the email']];
+            for (const [key, label] of choices) {
+              const here = key === calloutAfter(c);
+              const b = button(label, 'outline-menu-item' + (here ? ' is-current' : ''));
+              if (here) b.disabled = true;
+              else b.addEventListener('click', () => { moveCallout(issue, c.id, key); closeMenu(); scheduleSave(); renderTriage(); setWizardStatus(key === CALLOUT_END ? 'Moved the callout to the end.' : `Moved the callout after ${label}.`); });
+              menu.appendChild(b);
+            }
+          });
         });
-      });
-      td1.appendChild(mv);
+        td1.appendChild(mv);
+      }
       const td4 = el('td', 'r');
       const rm = button(' Remove', 'ghost-btn ghost-btn--danger', { icon: 'trash-can', onClick: () => {
         const at = issue.callouts.indexOf(c);
@@ -1783,8 +1788,10 @@ function openCalloutEditor(id, iframe) {
   const drawLook = () => {
     lookCol.replaceChildren(el('h4', 'drawer-h4', 'Its style'));
     lookCol.appendChild(swatchRow(CALLOUT_CHOICES, callout.style, (key) => { setCalloutStyle(callout, key); scheduleSave(); refreshEditIframe(iframe); drawLook(); }));
-    const where = SECTION_REGISTRY.find((s) => s.key === callout.after)?.label || 'the introduction';
-    lookCol.appendChild(el('p', 'triage-section-note drawer-note', `After ${where}. Move it on Outline.`));
+    const note = callout.kind === 'share' ? 'Always at the end of the email.'
+      : calloutAfter(callout) === CALLOUT_END ? 'At the end of the email. Move it on Outline.'
+      : `After ${SECTION_REGISTRY.find((s) => s.key === callout.after)?.label || 'the introduction'}. Move it on Outline.`;
+    lookCol.appendChild(el('p', 'triage-section-note drawer-note', note));
   };
   drawLook();
   body.appendChild(lookCol);
@@ -2024,8 +2031,13 @@ function openAddCalloutCard(iframe) {
   const afterSelect = el('select', 'triage-field-input');
   afterSelect.id = 'add-callout-after';
   afterLabel.htmlFor = afterSelect.id;
-  afterSelect.append(...SECTION_REGISTRY.map((reg) => option(reg.key, reg.label, reg.key === 'research')));
-  col.append(afterLabel, afterSelect);
+  afterSelect.append(...SECTION_REGISTRY.map((reg) => option(reg.key, reg.label, reg.key === 'research')), option(CALLOUT_END, 'The end of the email', false));
+  // The Share callout always sits at the end (Kate, Oct 7): no section to pick.
+  const fixedNote = el('p', 'triage-section-note drawer-note', 'The Share callout always sits at the end of the email.');
+  const showAfter = () => { const own = kind !== 'share'; afterLabel.hidden = !own; afterSelect.hidden = !own; fixedNote.hidden = own; };
+  kinds.addEventListener('click', showAfter);
+  col.append(afterLabel, afterSelect, fixedNote);
+  showAfter();
   body.appendChild(col);
 
   actions.appendChild(button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: closeDrawer }));
@@ -2033,8 +2045,8 @@ function openAddCalloutCard(iframe) {
     const c = addCallout(state.issue, kind, afterSelect.value);
     scheduleSave();
     refreshEditIframe(iframe);
-    const where = SECTION_REGISTRY.find((s) => s.key === c.after)?.label;
-    setWizardStatus(`Added the callout after ${where}.`);
+    const where = c.after === CALLOUT_END ? 'at the end' : `after ${SECTION_REGISTRY.find((s) => s.key === c.after)?.label}`;
+    setWizardStatus(`Added the callout ${where}.`);
     // Its own card, once the email has redrawn with it.
     setTimeout(() => {
       openCalloutEditor(c.id, iframe);

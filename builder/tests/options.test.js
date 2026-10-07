@@ -1,7 +1,7 @@
 // builder/tests/options.test.js: the Outline's per-issue layout options (Oct 2026).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CALLOUT_CHOICES, PICTURE_CHOICES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setDescription, setPictureStyle, acceptPictureUrl, resetOptions, hasCustomOptions, includedWords, canHighlight, setHighlight, setSectionOrder, moveSection, setZoom, setFlyer, RESEARCH_KINDS, setResearchKind, placeholderItems } from '../js/options.js';
+import { CALLOUT_CHOICES, PICTURE_CHOICES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setDescription, setPictureStyle, acceptPictureUrl, resetOptions, hasCustomOptions, includedWords, canHighlight, setHighlight, setSectionOrder, moveSection, setZoom, setFlyer, RESEARCH_KINDS, setResearchKind, placeholderItems, calloutSection } from '../js/options.js';
 import { layoutOf, calloutsOf, sectionOrder, renderNewsletter, CALLOUT_STYLES, PICTURE_STYLES } from '../js/template.js';
 import { createEmptyIssue, CALLOUT_KINDS, SHARE_URL, SECTION_REGISTRY } from '../js/model.js';
 
@@ -22,9 +22,12 @@ test('the two kinds of callout (Kate, Oct 5): Share, in the desk\'s words to its
   assert.equal(CALLOUT_KINDS.custom.url, '');
 });
 
-test('a new issue has one Share callout after ERC Research; add, move, style, remove and restore work on the list', () => {
+test('a new issue has one Share callout at the end (Kate, Oct 7); add, move, style, remove and restore work on the list', () => {
   const issue = createEmptyIssue();
-  assert.deepEqual(calloutsOf(issue).map((c) => [c.kind, c.after, c.style]), [['share', 'research', 'maroon']]);
+  assert.deepEqual(calloutsOf(issue).map((c) => [c.kind, c.after, c.style]), [['share', 'end', 'maroon']]);
+  const share = calloutsOf(issue)[0];
+  assert.equal(moveCallout(issue, share.id, 'research'), false, 'the Share callout stays at the end');
+  assert.equal(share.after, 'end');
   const c = addCallout(issue, 'custom', 'headlines');
   assert.equal(c.kind, 'custom');
   assert.equal(c.after, 'headlines');
@@ -33,6 +36,8 @@ test('a new issue has one Share callout after ERC Research; add, move, style, re
   assert.equal(calloutsOf(issue).length, 3);
   assert.equal(moveCallout(issue, c.id, 'policy'), true);
   assert.equal(c.after, 'policy');
+  assert.equal(moveCallout(issue, c.id, 'end'), true, 'a callout of your own can sit at the end too');
+  assert.equal(c.after, 'end');
   assert.equal(moveCallout(issue, c.id, 'nowhere'), false);
   setCalloutStyle(c, 'dotted');
   assert.equal(c.style, 'dotted');
@@ -206,6 +211,22 @@ test('RESEARCH_KINDS lists the four kinds with their labels; setResearchKind fil
   assert.equal(it.group, 'explains');
   assert.equal(setResearchKind(it, 'poem'), false);
   assert.equal(it.group, 'explains');
+});
+
+test('calloutSection says which populated section a callout is listed under on the Outline: the last one for the end, the nearest earlier one for an empty section, none with nothing populated', () => {
+  const issue = createEmptyIssue();
+  const share = calloutsOf(issue)[0];
+  assert.equal(calloutSection(issue, share), null, 'nothing populated yet');
+  issue.sections.research.items = [item('r', 'brief')];
+  issue.sections.events.items = [item('e', 'tamu')];
+  issue.sections.headlines.items = [item('h', 'federal')];
+  assert.equal(calloutSection(issue, share), 'headlines', 'the Share callout: the last populated section');
+  const c = addCallout(issue, 'custom', 'spotlight');
+  assert.equal(calloutSection(issue, c), 'research', 'Spotlight is empty, so the nearest earlier populated one');
+  moveCallout(issue, c.id, 'events');
+  assert.equal(calloutSection(issue, c), 'events');
+  issue.layout = { order: ['headlines', 'research', 'events'] };
+  assert.equal(calloutSection(issue, share), 'events', 'in print order');
 });
 
 test('the Outline\'s count line', () => {

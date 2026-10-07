@@ -123,6 +123,18 @@ test('the intro is its own panel of plain paragraphs; the old "Want to feature" 
   assert.equal(panels(renderNewsletter(issue)), 9, 'no intro, no intro panel');
 });
 
+test('with no introduction written, the editable preview shows where it goes (Kate, Oct 7); the email shows nothing', () => {
+  const issue = fullIssue();
+  issue.intro = '';
+  const ed = renderNewsletter(issue, { editable: true });
+  assert.match(ed, /<tr><td style="padding:26px 48px 0 24px;"><p style="margin:0; font-family:'Trebuchet MS'[^"]*font-size:15px; line-height:1.55; font-style:italic; color:#626262;" data-edit-section="intro" data-edit-field="intro">The introduction goes here\. Click to write it: a greeting, the season, this issue's events and research\.<\/p><\/td><\/tr>/);
+  assert.equal(panels(ed), 10, 'its own panel, like a written introduction');
+  const sent = renderNewsletter(issue);
+  assert.ok(!/The introduction goes here/.test(sent));
+  assert.equal(panels(sent), 9);
+  assert.ok(!/mso-hide:all/.test(sent), 'and no preheader made from it');
+});
+
 test('a hidden preheader follows <body>, built from the intro\'s first paragraph as plain words', () => {
   const issue = fullIssue();
   issue.intro = 'Welcome back, **everyone** — see [the site](https://x.org).\n\nSecond paragraph.';
@@ -361,11 +373,17 @@ test('an unsafe picture URL renders no picture and leaks no scheme', () => {
 // ─── The callout ─────────────────────────────────────────────────────────────
 
 const SHARE = 'Share something with the ERC';
-test('a new issue carries the Share callout after ERC Research as a maroon panel with the white button; its words are the desk\'s', () => {
+test('a new issue carries the Share callout at the very end of the email (Kate, Oct 7), whatever the order, as a maroon panel with the white button; its words are the desk\'s', () => {
   const html = renderNewsletter(fullIssue());
   const i = html.indexOf(`>${SHARE}</p>`);
   assert.ok(i > 0, 'the Share callout renders');
-  assert.ok(html.lastIndexOf('>ERC Research</h2>', i) > 0 && html.indexOf('>ERC Spotlight</h2>', i) > i, 'between Research and Spotlight');
+  assert.ok(html.lastIndexOf('>Education Headlines</h2>', i) > 0 && html.indexOf('</h2>', i) === -1, 'after the last section');
+  assert.ok(i < html.indexOf('erc-lockup-maroon.png'), 'before the footer');
+  const reordered = fullIssue();
+  reordered.layout = { order: ['headlines', 'research'] };
+  const h2 = renderNewsletter(reordered);
+  const j = h2.indexOf(`>${SHARE}</p>`);
+  assert.ok(h2.lastIndexOf('>New Education Policy Research</h2>', j) > 0 && h2.indexOf('</h2>', j) === -1, 'still after whichever section prints last');
   const panel = html.slice(html.lastIndexOf('<table align="center" width="640"', i), i);
   assert.match(panel, /background-color:#ffffff;"><tbody>\n<tr><td style="background-color:#500000; padding:26px 48px 28px 24px;"><p style="[^"]*font-size:18px;[^"]*color:#ffffff;"$/);
   assert.match(html.slice(i), /^>[^<]*<\/p><p style="margin:0 0 18px;[^"]*color:#E9E4DC;">Research, an event, an announcement[^<]*<\/p><table[^>]*><tbody><tr><td style="background-color:#ffffff; padding:11px 20px 12px 20px;"><a href="https:\/\/erc-policy-exchange\.vercel\.app\/share\/"[^>]*text-transform:uppercase; color:#500000;[^"]*">Share something &#187;<\/a>/);
@@ -399,9 +417,8 @@ test('any number of callouts, each after its section; one whose section is empty
   ];
   const html = renderNewsletter(issue);
   const at = (s) => html.indexOf(s);
-  assert.ok(at('>ERC Research</h2>') < at('>First</p>') && at('>First</p>') < at('>ERC Spotlight</h2>'));
   assert.ok(at('>Education Headlines</h2>') < at('>Second</p>') && at('>Second</p>') < at('>Third</p>'), 'Second inside Headlines, Third after it (Miscellaneous is off, so Third follows Headlines)');
-  assert.ok(at('>Third</p>') < at('alt="Texas A&amp;M University Education Research Center"'), 'before the footer');
+  assert.ok(at('>Third</p>') < at('>First</p>') && at('>First</p>') < at('alt="Texas A&amp;M University Education Research Center"'), 'the Share callout ignores its "after" and comes last of all, before the footer (Kate, Oct 7)');
   assert.ok(!html.includes('c4') && count(html, 'border:2px dotted') === 0, 'a titleless callout draws nothing');
   const sparse = sparseIssue();
   sparse.callouts = [{ id: 'c5', kind: 'custom', after: 'research', style: 'gray', title: 'Lonely', text: 't', button: 'Go', url: 'https://x.org/5' }];
@@ -415,7 +432,7 @@ test('an older draft\'s one fixed callout still reads: layout.callout as a Share
   const issue = fullIssue();
   delete issue.callouts;
   issue.layout = { callout: 'dotted' };
-  assert.deepEqual(calloutsOf(issue).map((c) => [c.kind, c.after, c.style]), [['share', 'research', 'dotted']]);
+  assert.deepEqual(calloutsOf(issue).map((c) => [c.kind, c.after, c.style]), [['share', 'end', 'dotted']]);
   assert.match(renderNewsletter(issue), /border:2px dotted #732F2F;[^"]*"><p[^>]*>Share something with the ERC/);
   issue.layout = { callout: 'none' };
   assert.deepEqual(calloutsOf(issue), []);
@@ -578,7 +595,7 @@ test('the card with less: a title with no colon is the maroon line alone; a date
 
 test('issue.layout.order prints the sections in that order; unknown keys are ignored, the rest follow in registry order; the contents strip and the callouts follow the print order', () => {
   const issue = fullIssue();
-  issue.callouts = [{ id: 'c1', kind: 'share', after: 'research', style: 'maroon', title: 'Share it', text: 't', button: 'Go', url: 'https://x.org/1' }];
+  issue.callouts = [{ id: 'c1', kind: 'custom', after: 'research', style: 'maroon', title: 'Share it', text: 't', button: 'Go', url: 'https://x.org/1' }];
   issue.layout = { order: ['spotlight', 'bogus', 'research', 'spotlight'] };
   assert.deepEqual(sectionOrder(issue), ['spotlight', 'research', 'events', 'opportunities', 'policy', 'headlines', 'misc']);
   const html = renderNewsletter(issue);

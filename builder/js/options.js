@@ -5,8 +5,8 @@
  * fields.showSummary and fields.pictureStyle. Nothing here touches the DOM.
  */
 
-import { CALLOUT_STYLES, PICTURE_STYLES, PICTURE_MIN, PICTURE_MAX, RESEARCH_PICTURE_WIDTH, layoutOf, calloutsOf, sectionOrder, summaryDefault, pictureDefault, pictureStyleOf } from './template.js';
-import { SECTION_REGISTRY, newCallout } from './model.js';
+import { CALLOUT_STYLES, PICTURE_STYLES, PICTURE_MIN, PICTURE_MAX, RESEARCH_PICTURE_WIDTH, layoutOf, calloutsOf, calloutAfter, sectionOrder, summaryDefault, pictureDefault, pictureStyleOf } from './template.js';
+import { SECTION_REGISTRY, newCallout, CALLOUT_END } from './model.js';
 
 /** A callout's three styles, in the order the control shows them. */
 export const CALLOUT_CHOICES = [
@@ -42,13 +42,31 @@ export function restoreCallout(issue, callout, at) {
   list.splice(Math.max(0, Math.min(at ?? list.length, list.length)), 0, callout);
 }
 
-/** Moves a callout to follow another section; an unknown section is ignored. */
+/** Moves a callout to follow another section, or to the end; an unknown
+ *  section is ignored, and the Share callout never moves (it is always at
+ *  the end; Kate, Oct 7). */
 export function moveCallout(issue, id, after) {
-  if (!SECTION_REGISTRY.some((s) => s.key === after)) return false;
+  if (after !== CALLOUT_END && !SECTION_REGISTRY.some((s) => s.key === after)) return false;
   const c = calloutList(issue).find((x) => x.id === id);
-  if (!c) return false;
+  if (!c || c.kind === 'share') return false;
   c.after = after;
   return true;
+}
+
+/**
+ * The populated section a callout is listed under on the Outline: the last
+ * one for a callout at the end, else the one it names, else the nearest
+ * earlier one in print order; null when it would follow the introduction
+ * (nothing populated before it).
+ */
+export function calloutSection(issue, c) {
+  const order = sectionOrder(issue);
+  const populated = order.filter((k) => (issue?.sections?.[k]?.items?.length ?? 0) > 0);
+  if (!populated.length) return null;
+  const want = calloutAfter(c);
+  if (want === CALLOUT_END) return populated[populated.length - 1];
+  for (let i = order.indexOf(want); i >= 0; i--) if (populated.includes(order[i])) return order[i];
+  return null;
 }
 
 /** Sets a callout's style; an unknown style is ignored. */

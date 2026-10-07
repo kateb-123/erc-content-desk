@@ -30,7 +30,7 @@
  * right of the text as a stamp, or at the left of the whole box as a headshot.
  */
 
-import { SECTION_REGISTRY, newCallout } from './model.js';
+import { SECTION_REGISTRY, newCallout, CALLOUT_END } from './model.js';
 
 // ─── Tokens (Aggie UX) ───────────────────────────────────────────────────────
 
@@ -361,8 +361,12 @@ function headerRows(issue, nav, showNav, editable) {
 
 function introRows(issue, editable) {
   const list = splitParas(issue.intro);
-  if (!list.length) return [];
   const hook = editAttrs('intro', null, 'intro', editable);
+  if (!list.length) {
+    if (!editable) return [];
+    // Preview & Tweak shows where the introduction goes until one is written (Kate, Oct 7); the email never carries this.
+    return [row(`<p style="margin:0; font-family:${SANS}; font-size:15px; line-height:1.55; font-style:italic; color:${C.g600};"${hook}>The introduction goes here. Click to write it: a greeting, the season, this issue's events and research.</p>`, 'padding:26px 48px 0 24px;'), spacer(26)];
+  }
   // The "Want to feature something?" standing line is gone (Kate, Oct 5): the Share callout says it.
   const bodyStyle = `font-family:${SANS}; font-size:15px; line-height:1.55; color:${C.g900};`;
   const body = list.map((t, i) => p(bodyStyle, renderProse(t), i < list.length - 1 ? 14 : 0, hook)).join('');
@@ -630,22 +634,29 @@ function calloutRows(c, editable) {
   return [row(inner(`font-family:${SANS}; font-size:18px; line-height:1.3; font-weight:700; color:${C.white};`, C.ivory, C.white, C.maroon, C.cream), `background-color:${C.maroon}; padding:26px 48px 28px 24px;`)];
 }
 
+/** Where a callout asks to be: the Share callout is always at the end of the
+ *  email (Kate, Oct 7); any other sits after its section, or at the end. */
+export const calloutAfter = (c) => (c.kind === 'share' || c.after === CALLOUT_END ? CALLOUT_END : c.after);
+
 /**
  * Where each callout lands: after the section it names when that section
  * renders, else after the nearest earlier one (in print order) that does,
- * else after the intro. Returns a map of anchor key ('intro' or a section
- * key) to callouts.
+ * else after the intro; "end" is after the last section that renders. The
+ * Share callout comes last of all. Returns a map of anchor key ('intro' or
+ * a section key) to callouts.
  */
 function calloutsByAnchor(issue, renderedKeys) {
   const order = sectionOrder(issue);
   const out = new Map();
   for (const c of calloutsOf(issue)) {
     let anchor = 'intro';
-    const at = order.indexOf(c.after);
-    for (let i = at; i >= 0; i--) if (renderedKeys.includes(order[i])) { anchor = order[i]; break; }
+    const want = calloutAfter(c);
+    if (want === CALLOUT_END) anchor = renderedKeys[renderedKeys.length - 1] ?? 'intro';
+    else for (let i = order.indexOf(want); i >= 0; i--) if (renderedKeys.includes(order[i])) { anchor = order[i]; break; }
     if (!out.has(anchor)) out.set(anchor, []);
     out.get(anchor).push(c);
   }
+  for (const list of out.values()) list.sort((a, b) => (a.kind === 'share') - (b.kind === 'share'));
   return out;
 }
 
