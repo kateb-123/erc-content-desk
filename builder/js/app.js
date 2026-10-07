@@ -1604,6 +1604,10 @@ function openDrawer(card, top = 0) {
 
 /** Hides the box. Focus goes back to the stage so it never falls off the page. */
 function closeDrawer() {
+  // Every edit is live and saved as it is made; closing writes the draft at
+  // once rather than after the debounce (Kate, Oct 7: "things save when you
+  // close the edit box").
+  if (state.issue && !restorePending) saveState(state.issue);
   const drawerEl = document.querySelector('[data-step="edit"] .edit-drawer');
   if (!drawerEl) return;
   drawerEl.classList.remove('is-open');
