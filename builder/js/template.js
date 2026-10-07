@@ -22,7 +22,8 @@ import { SECTION_REGISTRY, newCallout } from './model.js';
 // ─── Tokens (Aggie UX) ───────────────────────────────────────────────────────
 
 const MASTHEAD = 'https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/newsletter-masthead.png';
-const LOCKUP = 'https://i.ibb.co/JjQWyZq3/ERC-Horizontal-White-Text-narrow.png';
+// The maroon lockup for the light footer (Kate, Oct 6), 380x141, shown at 190x70.
+const LOCKUP = 'https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/erc-lockup-maroon.png';
 export const URLS = {
   site: 'https://erc.cehd.tamu.edu/',
   join: 'https://erc-policy-exchange.vercel.app/newsletter/',
@@ -497,13 +498,16 @@ function placeCallouts(parts, rows, callouts, editable) {
 
 // ─── Footer, preheader, document ─────────────────────────────────────────────
 
+/** The footer: a light gray band under the (usually maroon) Share callout, the
+ *  maroon lockup, a hairline, maroon links, the date at right (Kate, Oct 6:
+ *  the maroon footer and the maroon callout stacked were too heavy). */
 function footerRows(issue) {
-  const link = (href, t) => `<a href="${href}" target="_blank" rel="noopener" style="color:${C.white}; text-decoration:none;">${t}</a>`;
-  const dot = ` <span style="padding:0 6px; font-weight:400; color:${C.cream};">&#183;</span> `;
+  const link = (href, t) => `<a href="${href}" target="_blank" rel="noopener" style="color:${C.maroon}; text-decoration:none;">${t}</a>`;
+  const dot = ` <span style="padding:0 6px; font-weight:400; color:${C.g400};">&#183;</span> `;
   return [
-    row(`<img width="190" height="50" src="${LOCKUP}" alt="Texas A&amp;M University Education Research Center" style="width:190px; height:50px; display:block; border:0;">`, `background-color:${C.maroon}; padding:28px 24px 20px 24px;`),
-    row(`<div style="border-top:1px solid ${C.maroonLight}; font-size:1px; line-height:1px;">&nbsp;</div>`, `background-color:${C.maroon}; padding:0 24px;`),
-    row(tbl(`<tr><td style="font-family:${SANS}; font-size:14px; line-height:1.5; font-weight:700; color:${C.white};">${link(URLS.site, 'Website')}${dot}${link(URLS.email, 'Email')}${dot}${link(URLS.join, 'Join&nbsp;the&nbsp;mailing&nbsp;list')}</td><td align="right" style="text-align:right; font-family:${SANS}; font-size:13px; line-height:1.5; color:${C.cream}; white-space:nowrap;">${esc(issue.date || '')}</td></tr>`), `background-color:${C.maroon}; padding:14px 24px 24px 24px;`),
+    row(`<img width="190" height="70" src="${LOCKUP}" alt="Texas A&amp;M University Education Research Center" style="width:190px; height:70px; display:block; border:0;">`, `background-color:${C.g100}; padding:24px 24px 18px 24px;`),
+    row(`<div style="border-top:1px solid ${C.g300}; font-size:1px; line-height:1px;">&nbsp;</div>`, `background-color:${C.g100}; padding:0 24px;`),
+    row(tbl(`<tr><td style="font-family:${SANS}; font-size:14px; line-height:1.5; font-weight:700; color:${C.maroon};">${link(URLS.site, 'Website')}${dot}${link(URLS.email, 'Email')}${dot}${link(URLS.join, 'Join&nbsp;the&nbsp;mailing&nbsp;list')}</td><td align="right" style="text-align:right; font-family:${SANS}; font-size:13px; line-height:1.5; color:${C.g700}; white-space:nowrap;">${esc(issue.date || '')}</td></tr>`), `background-color:${C.g100}; padding:14px 24px 24px 24px;`),
   ];
 }
 

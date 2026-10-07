@@ -13,7 +13,7 @@ export const SECTION_REGISTRY = [
       { key: 'events', label: 'Events' },
       { key: 'thisandthat', label: 'This & That' },
     ] },
-  { key: 'events', label: 'Upcoming Events', navLabel: 'Events', kind: 'grouped-list',
+  { key: 'events', seeMoreUrl: POLICY_EXCHANGE_URL, label: 'Upcoming Events', navLabel: 'Events', kind: 'grouped-list',
     groups: [
       { key: 'featured', label: 'Featured Events' },
       { key: 'tamu', label: 'Texas A&M' },

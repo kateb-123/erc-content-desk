@@ -238,12 +238,14 @@ test('digests are one-line entries divided by hairlines, no bullets; headlines a
   assert.match(html, /padding:10px 48px 0 40px;"><table/, 'the list sits 10px under its label');
 });
 
-test('"View more »" ends Opportunities, Policy Research and Headlines and points at the Policy Exchange; a stray per-issue URL is ignored', () => {
+test('"View more »" ends Upcoming Events (Kate, Oct 6), Opportunities, Policy Research and Headlines and points at the Policy Exchange; a stray per-issue URL is ignored', () => {
   const issue = fullIssue();
   issue.sections.policy.seeMoreUrl = 'https://example.org/policy';
   const html = renderNewsletter(issue);
   assert.ok(!/href="#"/.test(html));
-  assert.equal(count(html, `<a href="${POLICY_EXCHANGE_URL}" target="_blank" rel="noopener" style="font-family:'Trebuchet MS','Segoe UI',Tahoma,sans-serif; font-size:14px; line-height:1.4; font-weight:700; color:#500000; text-decoration:none;">View more &#187;</a>`), 3);
+  assert.equal(count(html, `<a href="${POLICY_EXCHANGE_URL}" target="_blank" rel="noopener" style="font-family:'Trebuchet MS','Segoe UI',Tahoma,sans-serif; font-size:14px; line-height:1.4; font-weight:700; color:#500000; text-decoration:none;">View more &#187;</a>`), 4);
+  const iEvents = html.indexOf('>Upcoming Events</h2>'), iOpps = html.indexOf('>Opportunities</h2>');
+  assert.ok(html.slice(iEvents, iOpps).includes('View more &#187;'), 'Events has its tail link');
   assert.ok(!html.includes('https://example.org/policy'));
   assert.ok(!/ERC website|&#8594;/.test(html));
 });
@@ -411,12 +413,13 @@ test('in the editable preview every part of a callout carries its hook: title, t
 
 // ─── Footer and document ─────────────────────────────────────────────────────
 
-test('the footer: lockup, hairline, white text links with cream dots, the date at right; no icons', () => {
+test('the footer (Kate, Oct 6): a light gray band, the maroon lockup, a hairline, maroon links with gray dots, the date at right; no icons', () => {
   const html = renderNewsletter(fullIssue());
-  assert.match(html, /<tr><td style="background-color:#500000; padding:28px 24px 20px 24px;"><img width="190" height="50" src="https:\/\/i\.ibb\.co\/JjQWyZq3\/ERC-Horizontal-White-Text-narrow\.png" alt="Texas A&amp;M University Education Research Center"/);
-  assert.match(html, /<div style="border-top:1px solid #732F2F;[^"]*">&nbsp;<\/div><\/td><\/tr>/);
-  assert.match(html, /font-weight:700; color:#ffffff;"><a href="https:\/\/erc\.cehd\.tamu\.edu\/"[^>]*>Website<\/a> <span style="padding:0 6px; font-weight:400; color:#D6D3C4;">&#183;<\/span> <a href="mailto:erc@tamu\.edu"[^>]*>Email<\/a> <span[^>]*>&#183;<\/span> <a href="https:\/\/erc-policy-exchange\.vercel\.app\/newsletter\/"[^>]*>Join&nbsp;the&nbsp;mailing&nbsp;list<\/a><\/td><td align="right" style="text-align:right;[^"]*font-size:13px;[^"]*color:#D6D3C4; white-space:nowrap;">June 16, 2026<\/td>/);
+  assert.match(html, /<tr><td style="background-color:#F6F6F6; padding:24px 24px 18px 24px;"><img width="190" height="70" src="https:\/\/raw\.githubusercontent\.com\/kateb-123\/erc-content-desk\/main\/builder\/images\/erc-lockup-maroon\.png" alt="Texas A&amp;M University Education Research Center" style="width:190px; height:70px; display:block; border:0;">/);
+  assert.match(html, /<tr><td style="background-color:#F6F6F6; padding:0 24px;"><div style="border-top:1px solid #D1D1D1;[^"]*">&nbsp;<\/div><\/td><\/tr>/);
+  assert.match(html, /background-color:#F6F6F6; padding:14px 24px 24px 24px;"><table[^>]*><tbody><tr><td style="font-family:'Trebuchet MS'[^"]*font-weight:700; color:#500000;"><a href="https:\/\/erc\.cehd\.tamu\.edu\/"[^>]*style="color:#500000; text-decoration:none;">Website<\/a> <span style="padding:0 6px; font-weight:400; color:#A7A7A7;">&#183;<\/span> <a href="mailto:erc@tamu\.edu"[^>]*>Email<\/a> <span[^>]*>&#183;<\/span> <a href="https:\/\/erc-policy-exchange\.vercel\.app\/newsletter\/"[^>]*>Join&nbsp;the&nbsp;mailing&nbsp;list<\/a><\/td><td align="right" style="text-align:right;[^"]*font-size:13px;[^"]*color:#535353; white-space:nowrap;">June 16, 2026<\/td>/);
   assert.ok(!/<svg/.test(html));
+  assert.ok(!/i\.ibb\.co/.test(html), 'the white lockup on imgbb is gone');
   assert.equal(count(html, '>Join the mailing list</a>'), 1, 'the header has the plain one; the footer keeps its words together');
 });
 
