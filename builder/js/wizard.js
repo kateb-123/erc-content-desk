@@ -15,6 +15,31 @@ export const STEPS = ['triage', 'edit', 'export'];
 export const LOCKED_STEP_MESSAGE = 'Pick an issue and pull from the desk first.';
 
 /**
+ * The samples the Issue list offers under its dates (Kate, Oct 7: the
+ * hand-off to Kathy): the October 6, 2026 issue as it was sent, and a
+ * practice issue of made-up items. Each loads as the draft at once; the
+ * `sample` key it carries keeps Save to the archive off.
+ */
+export const SAMPLES = [
+  { key: 'oct-6-2026', label: 'October 6, 2026, as sent', file: 'fixtures/oct-6-2026.json' },
+  { key: 'practice', label: 'Sample issue (fictional)', file: 'fixtures/practice-issue.json' },
+];
+
+/** A sample's value in the Issue list, apart from the dates. */
+const SAMPLE_VALUE = 'sample:';
+export const sampleValue = (key) => `${SAMPLE_VALUE}${key}`;
+
+/** The sample an Issue list value names, or null for a date or anything else. */
+export function sampleOf(value) {
+  const s = String(value ?? '');
+  if (!s.startsWith(SAMPLE_VALUE)) return null;
+  return SAMPLES.find((x) => x.key === s.slice(SAMPLE_VALUE.length)) ?? null;
+}
+
+/** Why Save to the archive is off for a sample (the archive is what Past issues shows). */
+export const SAMPLE_ARCHIVE_MESSAGE = 'A sample never saves to the archive. Copy HTML and Download .html work as usual.';
+
+/**
  * Outline is always open (the issue is picked and pulled there); Preview &
  * Tweak and Save & Export need an issue with at least one item: a date alone
  * opens nothing. The step buttons and Next both ask this, so they agree.
@@ -73,6 +98,8 @@ export function restoreBannerMessage(saved) {
   const count = countIssueItems(saved);
   const items = `${count} ${count === 1 ? 'item' : 'items'}`;
   const date = String(saved?.date ?? '').trim();
+  // A sample says so (Kate, Oct 7), so no one mistakes it for a real draft.
+  if (saved?.sample) return date ? `Restore the sample issue for ${date} (${items})?` : `Restore the sample issue (${items})?`;
   if (saved?.sentAt && date) return `Restore the sent ${date} issue (${items})?`;
   return date
     ? `Restore the in-progress newsletter for ${date} (${items})?`

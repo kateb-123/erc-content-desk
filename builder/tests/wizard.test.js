@@ -1,7 +1,7 @@
 // wizard.test.js: the wizard shell's pure logic (step gating, the restore banner's words).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO } from '../js/wizard.js';
+import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, SAMPLES, sampleValue, sampleOf, SAMPLE_ARCHIVE_MESSAGE } from '../js/wizard.js';
 import { createEmptyIssue } from '../js/model.js';
 
 test('three steps (Kate, Oct 7): Outline is always open; Preview & Tweak and Save & Export need at least one pulled item (b22, b23, d9)', () => {
@@ -55,6 +55,31 @@ test('the restore banner names the saved issue and its item count (a10)', () => 
 test('the restore banner copes with a saved issue that has no date yet', () => {
   const saved = createEmptyIssue();
   assert.equal(restoreBannerMessage(saved), 'Restore the in-progress newsletter (0 items)?');
+});
+
+test('the Issue list offers two samples under its dates (Kate, Oct 7: the hand-off): October 6 as sent, and a practice issue', () => {
+  assert.deepEqual(SAMPLES.map((s) => [s.key, s.label, s.file]), [
+    ['oct-6-2026', 'October 6, 2026, as sent', 'fixtures/oct-6-2026.json'],
+    ['practice', 'Sample issue (fictional)', 'fixtures/practice-issue.json'],
+  ]);
+  assert.equal(sampleValue('practice'), 'sample:practice');
+  assert.equal(sampleOf('sample:practice'), SAMPLES[1]);
+  assert.equal(sampleOf('sample:oct-6-2026'), SAMPLES[0]);
+  assert.equal(sampleOf('2026-10-20'), null, 'a date is no sample');
+  assert.equal(sampleOf('sample:nope'), null);
+  assert.equal(sampleOf(''), null);
+  assert.equal(sampleOf(undefined), null);
+  assert.equal(SAMPLE_ARCHIVE_MESSAGE, 'A sample never saves to the archive. Copy HTML and Download .html work as usual.');
+});
+
+test('the restore banner says when the saved issue is a sample (Kate, Oct 7)', () => {
+  const saved = createEmptyIssue();
+  saved.date = 'October 13, 2026';
+  saved.sample = 'practice';
+  saved.sections.events.items.push({ id: 'a', group: 'tamu', fields: { title: 'A' } });
+  assert.equal(restoreBannerMessage(saved), 'Restore the sample issue for October 13, 2026 (1 item)?');
+  saved.date = '';
+  assert.equal(restoreBannerMessage(saved), 'Restore the sample issue (1 item)?');
 });
 
 test('the restore banner says when the saved issue already went out (e31)', () => {

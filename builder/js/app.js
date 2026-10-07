@@ -21,7 +21,7 @@ import { getField, setField } from './editpath.js';
 import { computePreviewScale } from './preview.js';
 import { takeOut, putBack, listedItems, listedSections } from './removals.js';
 import { renderShell } from '../../js/shell-ui.js';
-import { STEPS, canEnterStep, lockedMessage, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
+import { STEPS, canEnterStep, lockedMessage, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices, SAMPLES, sampleValue, sampleOf, SAMPLE_ARCHIVE_MESSAGE } from './wizard.js';
 import { normalizeLinkUrl } from './editing.js';
 // The per-issue layout options the Outline sets (Claude Design handoff, Oct 2026).
 import { CALLOUT_CHOICES, PICTURE_SIZES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemLayouts, pictureWidthOf, setPictureWidth, placeholderItems, resetOptions, hasCustomOptions, setZoom, setFlyer, RESEARCH_KINDS, setResearchKind, moveSection, calloutSection } from './options.js';
@@ -284,27 +284,83 @@ function renderPullHead(container) {
   const metaSection = el('div', 'triage-meta');
   const dateLabel = el('label', 'triage-field-label', 'Issue');
   const dateSelect = el('select', 'triage-field-input');
-  const currentIso = state.issue ? displayDateToISO(state.issue.date || '') : '';
+  // A sample draft (Kate, Oct 7) is listed by its sample, not by its date.
+  const sampleKey = state.issue?.sample || '';
+  const currentIso = state.issue && !sampleKey ? displayDateToISO(state.issue.date || '') : '';
   const placeholder = option(currentIso, currentIso ? isoToDisplayDate(currentIso) : 'Loading issues…');
   dateSelect.appendChild(placeholder);
+  // The samples under the dates (Kate, Oct 7: the hand-off): each opens as the draft at once.
+  const samplesGroup = () => {
+    const group = el('optgroup');
+    group.label = 'Samples';
+    group.append(...SAMPLES.map((s) => option(sampleValue(s.key), s.label, s.key === sampleKey)));
+    return group;
+  };
+  dateSelect.appendChild(samplesGroup());
+  let was = dateSelect.value;   // what the list showed before a change, for a Cancel
   // While the restore banner asks, the issue cannot be changed under it.
   dateSelect.disabled = restorePending;
   dateSelect.addEventListener('change', () => {
+    const sample = sampleOf(dateSelect.value);
+    if (sample) { openSample(sample); return; }
     if (!dateSelect.value) return;
+    was = dateSelect.value;
     if (!state.issue) state.issue = createEmptyIssue();
     // The issue keeps the display string the header renders ("July 1, 2026").
     state.issue.date = isoToDisplayDate(dateSelect.value);
     scheduleSave();
   });
   dateLabel.appendChild(dateSelect);
-  // Where a failed schedule load speaks: an error note under the field, with Retry.
+  // Where a failed schedule load speaks: an error note under the field, with
+  // Retry. A sample's ask and its errors speak there too.
   const scheduleNote = el('div', 'note-slot');
   metaSection.append(dateLabel, scheduleNote);
   container.appendChild(metaSection);
 
+  /**
+   * A sample picked from the list (Kate, Oct 7): its file loads and opens as
+   * the draft, the way Restore opens a kept one. With a draft open here, one
+   * ask first; Confirm keeps that draft on the desk under Recently discarded,
+   * Cancel puts the list back.
+   */
+  function openSample(def) {
+    const back = () => { scheduleNote.replaceChildren(); dateSelect.disabled = false; dateSelect.value = was; };
+    const load = async () => {
+      const wait = el('span', 'pull-status');
+      wait.append(busyWords(`Opening ${def.label}…`));
+      scheduleNote.replaceChildren(wait);
+      dateSelect.disabled = true;
+      try {
+        const res = await fetch(def.file, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`The sample did not load (${res.status}).`);
+        const issue = await res.json();
+        if (draftIsOpen(state.issue)) {
+          const reply = await discardToDesk(state.issue, { send: (body) => postJson('/api/drafts', body, 'keep the open draft'), clear: clearState });
+          discarded = withEntry(discarded, reply.draft);
+        }
+        openDraft(issue);
+        setWizardStatus(`Opened ${def.label}.`);
+      } catch (err) {
+        back();
+        scheduleNote.replaceChildren(inlineNote('error', `Couldn't open the sample. ${reasonOf(err)}`, () => openSample(def)));
+      }
+    };
+    if (!draftIsOpen(state.issue)) { load(); return; }
+    const ask = inlineNote('warning', replaceAskMessage(state.issue));
+    ask.removeAttribute('aria-live');
+    const ok = ghostButton('Confirm');
+    ok.classList.add('ask-confirm');
+    ok.addEventListener('click', load);
+    const no = ghostButton('Cancel');
+    no.addEventListener('click', () => { back(); dateSelect.focus(); });
+    ask.append(ok, ' · ', no);
+    scheduleNote.replaceChildren(ask);
+    queueMicrotask(() => ok.focus({ preventScroll: true }));
+  }
+
   // Fill the dropdown from the desk: scheduled dates plus anything staged,
   // from College Station's today on. The draft's own date stays even once it
-  // has passed, or dropped off the desk's schedule.
+  // has passed, or dropped off the desk's schedule; the samples follow.
   async function loadSchedule() {
     scheduleNote.replaceChildren();
     if (!currentIso) placeholder.textContent = 'Loading issues…';
@@ -313,9 +369,11 @@ function renderPullHead(container) {
       const isos = issueDateChoices([...(data.schedule ?? []), ...Object.keys(data.staged ?? {})], todayCentral(), currentIso);
       if (!isos.length) { placeholder.textContent = 'No upcoming issues on the desk'; return; }
       dateSelect.replaceChildren(
-        ...(currentIso ? [] : [option('', 'Pick an issue…')]),
+        ...(currentIso || sampleKey ? [] : [option('', 'Pick an issue…')]),
         ...isos.map((iso) => option(iso, isoToDisplayDate(iso), iso === currentIso)),
+        samplesGroup(),
       );
+      was = dateSelect.value;
     } catch {
       // The select keeps a real first option; the error speaks beside it, with a way to try again.
       if (!currentIso) placeholder.textContent = 'Pick an issue…';
@@ -2359,7 +2417,13 @@ function renderExport() {
     queueMicrotask(() => ok.focus({ preventScroll: true }));
   });
 
-  btnRow.append(copyBtn, archiveSlot, dlHtmlBtn);
+  if (state.issue.sample) {
+    // A sample never saves to the archive (Kate, Oct 7): the note says so, and the way on is here.
+    btnRow.append(copyBtn, dlHtmlBtn);
+    const next = button('Start the next issue', 'btn btn-tertiary', { onClick: startNextIssue });
+    next.append(faIcon('arrow-right'));
+    after.append(inlineNote('warning', SAMPLE_ARCHIVE_MESSAGE), next);
+  } else btnRow.append(copyBtn, archiveSlot, dlHtmlBtn);
   container.append(btnRow, after);
 }
 

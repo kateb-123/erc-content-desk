@@ -1,0 +1,100 @@
+{
+  "date": "October 13, 2026",
+  "sample": "practice",
+  "intro": "Howdy all! This is a practice issue. Every item in it is made up, so click anything, drag it, change it or remove it: nothing real is touched, and Save to the archive stays off.\n\nThe sections below show one of everything: a Date card event, a research box of each kind, a featured event, pictures, and both kinds of callout.\n\nThanks for practicing!",
+  "layout": { "order": ["spotlight", "research", "events", "opportunities", "policy", "headlines", "misc"] },
+  "callouts": [
+    { "id": "callout_practice_custom", "kind": "custom", "after": "events", "style": "gray",
+      "title": "Nominate a speaker for the Imaginary Lecture Series",
+      "text": "Know someone who gives a great talk about research that never happened? Send a name and a sentence. The Pretend Committee meets on a date to be made up.",
+      "button": "Nominate someone", "url": "https://example.org/practice/nominate", "deadline": "Nominations close October 31, 2026" },
+    { "id": "callout_practice_share", "kind": "share", "after": "end", "style": "maroon",
+      "title": "Share something with the ERC",
+      "text": "Research, an event, an announcement: if it belongs in the newsletter or on the Policy Exchange, send it our way. The ERC team reviews everything before it goes out.",
+      "button": "Share something", "url": "https://erc-policy-exchange.vercel.app/share/", "deadline": "" }
+  ],
+  "sections": {
+    "research": { "enabled": true, "items": [
+      { "id": "pr1", "group": "brief", "fields": {
+        "title": "Do Hallway Posters Raise Test Scores? Evidence from 400 Imaginary Schools",
+        "url": "https://example.org/practice/briefs/hallway-posters",
+        "authors": "Ada Example, Sam Placeholder",
+        "summary": "In 400 schools that do not exist, hallways were papered with motivational posters for a year. Scores did not move, attendance did not move, and the posters faded. This brief explains why the Pretend Education Agency should spend its imaginary dollars elsewhere." } },
+      { "id": "pr2", "group": "report", "fields": {
+        "title": "The Tabletop Cohort: Five Years of Pretend Teachers in Three Made-Up States",
+        "url": "https://example.org/practice/reports/tabletop-cohort",
+        "authors": "Sam Placeholder, Ada Example, Jo Fictional",
+        "summary": "This report follows 3,000 invented teaching candidates from application to classroom across three states that appear on no map. Most finish, many stay, and the chart beside this text was drawn to look like a chart. Every number in it was made up for practice.",
+        "image": "https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/sample-chart.png",
+        "pictureStyle": "stamp", "pictureWidth": 230 } },
+      { "id": "pr3", "group": "article", "fields": {
+        "title": "A Journal Article That Never Was: Attendance at Schools That Do Not Exist",
+        "url": "https://example.org/practice/articles/attendance-nowhere",
+        "authors": "Jo Fictional",
+        "summary": "Published in the Journal of Made-Up Findings, this article asks whether students attend schools that are not there. They do not. The methods section is two sentences long." } },
+      { "id": "pr4", "group": "explains", "fields": {
+        "title": "ERC Explains: What a Practice Issue Is For",
+        "url": "https://example.org/practice/explains/practice-issue",
+        "authors": "The ERC team",
+        "summary": "A practice issue lets you try every part of the builder without touching anything real. Move a section, change a title, remove an item and put it back, pick a layout for a picture. When you are done, start the next issue." } }
+    ] },
+    "spotlight": { "enabled": true, "items": [
+      { "id": "ps1", "group": "programs", "fields": {
+        "title": "The ERC Practice Fellowship",
+        "url": "https://example.org/practice/programs/practice-fellowship",
+        "meta": "Applications due never | Everyone is eligible",
+        "summary": "A year-long fellowship in which nothing is required and nothing is awarded. Fellows meet at the Pretend Pavilion on a schedule to be made up." } },
+      { "id": "ps2", "group": "events", "fields": {
+        "title": "ERC Colloquium: The Imaginary Classroom",
+        "url": "https://example.org/practice/events/imaginary-classroom",
+        "date": "October 27, 2026", "time": "5:00 to 7:00 PM CT", "location": "Hypothetical Hall, Room 101, College Station, TX",
+        "summary": "Moderated by **Dr. Ada Example**\n\nThree invented scholars (**Dr. Sam Placeholder**, **Dr. Jo Fictional** and **Dr. Nobody in Particular**) discuss a classroom that has never been built. Imaginary drinks will be provided.",
+        "flyer": "https://example.org/practice/flyers/imaginary-classroom.pdf",
+        "zoom": true, "highlight": true } },
+      { "id": "ps3", "group": "events", "fields": {
+        "title": "ERC EdTalk with Dr. Sam Placeholder",
+        "url": "https://example.org/practice/events/edtalk-placeholder",
+        "date": "October 16, 2026", "time": "11:30 AM to 1:00 PM CT", "location": "Pretend Pavilion, Room 2",
+        "summary": "Dr. Placeholder presents a book that has not been written on a topic that has not been chosen. Lunch is imaginary; please RSVP anyway, for practice.",
+        "image": "https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/sample-headshot.png",
+        "pictureStyle": "headshot", "pictureWidth": 124 } },
+      { "id": "ps4", "group": "thisandthat", "fields": {
+        "title": "Sample Social Hour at the Pretend Pavilion",
+        "url": "https://example.org/practice/this-and-that/social-hour",
+        "meta": "October 23, 2026 | 4:00 PM CT | Pretend Pavilion patio",
+        "summary": "An hour of made-up conversation. Bring a question you do not need answered." } }
+    ] },
+    "events": { "enabled": true, "items": [
+      { "id": "pe1", "group": "tamu", "featured": true, "fields": {
+        "title": "Symposium on Made-Up Measures",
+        "url": "https://example.org/practice/events/made-up-measures",
+        "date": "October 30, 2026", "time": "1:00 to 4:00 PM CT", "location": "Memorial Student Center, Room 0000",
+        "summary": "A half-day of panels on measuring things that did not happen. This is the featured event, so it shows its description; the others below do not." } },
+      { "id": "pe2", "group": "tamu", "fields": { "title": "NSF 102: An Imaginary Program Officer Visits", "url": "https://example.org/practice/events/nsf-102", "date": "October 15, 2026", "time": "10:00 AM CT", "location": "Rudder Tower, Room 000 or Zoom" } },
+      { "id": "pe3", "group": "tamu", "fields": { "title": "Distinguished Speaker Series with Dr. Nobody in Particular", "url": "https://example.org/practice/events/nobody-in-particular", "date": "October 21, 2026", "time": "1:30 PM CT", "location": "Harrington Tower, Room 000" } },
+      { "id": "pe4", "group": "offcampus", "fields": { "title": "Webinar: Teaching With, Against and About Fictional Data", "url": "https://example.org/practice/events/fictional-data-webinar", "date": "October 22, 2026", "time": "12:00 PM CT", "location": "Webinar", "source": "The Example Institute" } },
+      { "id": "pe5", "group": "offcampus", "fields": { "title": "Virtual Panel: Four-Day Weeks on Imaginary Calendars", "url": "https://example.org/practice/events/four-day-weeks-panel", "date": "November 2, 2026", "time": "2:00 PM CT", "location": "Virtual" } }
+    ] },
+    "opportunities": { "enabled": true, "items": [
+      { "id": "po1", "group": "funding", "fields": { "title": "The Example Foundation Grant for Research That Does Not Exist", "url": "https://example.org/practice/funding/example-foundation", "meta": "Deadline: November 30, 2026" } },
+      { "id": "po2", "group": "fellowships", "fields": { "title": "Pretend Postdoctoral Fellowship in Imaginary Policy", "url": "https://example.org/practice/fellowships/pretend-postdoc", "meta": "Apply by December 1, 2026 | Doctoral students and postdocs" } },
+      { "id": "po3", "group": "calls", "fields": { "title": "Call for Papers: Journal of Made-Up Findings, a special issue on nothing in particular", "url": "https://example.org/practice/calls/nothing-in-particular", "meta": "Manuscript deadline: January 15, 2027" } },
+      { "id": "po4", "group": "misc", "fields": { "title": "Student reviewers wanted: Journal of Made-Up Findings", "url": "https://example.org/practice/misc/student-reviewers", "meta": "Rolling | Doctoral students" } }
+    ] },
+    "policy": { "enabled": true, "items": [
+      { "id": "pp1", "group": "working", "fields": { "title": "Working Paper: Counting Things That Did Not Happen in 1,000 Fictional Districts", "url": "https://example.org/practice/papers/counting-nothing" } },
+      { "id": "pp2", "group": "working", "fields": { "title": "Working Paper: Does Pretend Tutoring Help Imaginary Readers?", "url": "https://example.org/practice/papers/pretend-tutoring" } },
+      { "id": "pp3", "group": "peer", "fields": { "title": "School Buildings That Were Never Built and the Students Who Never Attended Them", "url": "https://example.org/practice/papers/never-built" } },
+      { "id": "pp4", "group": "misc", "fields": { "title": "A Field Guide to Reading Sample Issues", "url": "https://example.org/practice/papers/field-guide", "source": "Fictional Research and Policy Review" } }
+    ] },
+    "headlines": { "enabled": true, "items": [
+      { "id": "ph1", "group": "federal", "fields": { "title": "Imaginary Education Department announces a policy that does not exist", "source": "The Sample Tribune", "url": "https://example.org/practice/news/policy-that-does-not-exist" } },
+      { "id": "ph2", "group": "federal", "fields": { "title": "Survey: 3 in 4 pretend teachers find the sample issue clear", "source": "Made-Up Daily", "url": "https://example.org/practice/news/pretend-teachers-survey" } },
+      { "id": "ph3", "group": "texas", "fields": { "title": "Brazos Valley districts pilot a five-day weekend", "source": "Brazos Valley Bugle", "url": "https://example.org/practice/news/five-day-weekend" } },
+      { "id": "ph4", "group": "texas", "fields": { "title": "Hypothetical ISD opens a school on a map that does not exist", "source": "The Sample Tribune", "url": "https://example.org/practice/news/hypothetical-isd" } }
+    ] },
+    "misc": { "enabled": true, "items": [
+      { "id": "pm1", "group": "misc", "fields": { "title": "ERC reader survey: two minutes on this practice issue", "url": "https://example.org/practice/misc/reader-survey" } }
+    ] }
+  }
+}
