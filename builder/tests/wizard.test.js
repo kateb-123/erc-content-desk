@@ -4,41 +4,42 @@ import assert from 'node:assert/strict';
 import { STEPS, canEnterStep, LOCKED_STEP_MESSAGE, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO } from '../js/wizard.js';
 import { createEmptyIssue } from '../js/model.js';
 
-test('Review is always open; the later steps need at least one pulled item (b22, b23, d9)', () => {
-  assert.deepEqual(STEPS, ['review', 'triage', 'edit', 'export']);
-  assert.equal(canEnterStep('review', 0), true);
-  assert.equal(canEnterStep('review', 3), true);
-  for (const step of ['triage', 'edit', 'export']) {
+test('three steps (Kate, Oct 7): Outline is always open; Preview & Tweak and Save & Export need at least one pulled item (b22, b23, d9)', () => {
+  assert.deepEqual(STEPS, ['triage', 'edit', 'export']);
+  assert.equal(canEnterStep('triage', 0), true);
+  assert.equal(canEnterStep('triage', undefined), true, 'the first step opens with no issue at all');
+  assert.equal(canEnterStep('triage', 3), true);
+  for (const step of ['edit', 'export']) {
     assert.equal(canEnterStep(step, 0), false, `${step} locked with no items`);
     assert.equal(canEnterStep(step, undefined), false, `${step} locked with no issue at all`);
     assert.equal(canEnterStep(step, 1), true, `${step} open with one item`);
     assert.equal(canEnterStep(step, 14), true, `${step} open with items`);
   }
+  assert.equal(canEnterStep('review', 5), false, 'the Review step is gone: Issue and Pull live on Outline');
   assert.equal(canEnterStep('nowhere', 5), false);
   assert.equal(LOCKED_STEP_MESSAGE, 'Pick an issue and pull from the desk first.');
 });
 
 test('a step is current, complete, open or locked; checks survive going back (e29, d9)', () => {
-  // On Save & Export with items: the three before it are complete.
-  const at = { current: 'export', reached: 3, itemCount: 14 };
-  assert.equal(stepState('review', at), 'complete');
+  // On Save & Export with items: the two before it are complete.
+  const at = { current: 'export', reached: 2, itemCount: 14 };
+  assert.equal(stepState('triage', at), 'complete');
   assert.equal(stepState('edit', at), 'complete');
   assert.equal(stepState('export', at), 'current');
-  // Back on Review after reaching Save & Export: Outline and Preview & Edit keep their checks.
-  const back = { current: 'review', reached: 3, itemCount: 14 };
-  assert.equal(stepState('review', back), 'current');
-  assert.equal(stepState('triage', back), 'complete');
+  // Back on Outline after reaching Save & Export: Preview & Tweak keeps its check.
+  const back = { current: 'triage', reached: 2, itemCount: 14 };
+  assert.equal(stepState('triage', back), 'current');
   assert.equal(stepState('edit', back), 'complete');
   assert.equal(stepState('export', back), 'open', 'the furthest step reached is not finished');
   // A date alone opens nothing and checks nothing.
-  const bare = { current: 'review', reached: 0, itemCount: 0 };
-  assert.equal(stepState('review', bare), 'current');
-  assert.equal(stepState('triage', bare), 'locked');
+  const bare = { current: 'triage', reached: 0, itemCount: 0 };
+  assert.equal(stepState('triage', bare), 'current');
+  assert.equal(stepState('edit', bare), 'locked');
   assert.equal(stepState('export', bare), 'locked');
   // Items in hand but nothing visited yet: the later steps are open, not complete.
-  const pulled = { current: 'review', reached: 0, itemCount: 5 };
-  assert.equal(stepState('triage', pulled), 'open');
-  assert.equal(stepState('review', { current: 'triage', reached: 1, itemCount: 5 }), 'complete');
+  const pulled = { current: 'triage', reached: 0, itemCount: 5 };
+  assert.equal(stepState('edit', pulled), 'open');
+  assert.equal(stepState('triage', { current: 'edit', reached: 1, itemCount: 5 }), 'complete');
 });
 
 test('the restore banner names the saved issue and its item count (a10)', () => {

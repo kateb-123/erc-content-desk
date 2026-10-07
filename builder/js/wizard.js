@@ -7,23 +7,24 @@
 
 import { countIssueItems } from './model.js';
 
-/** The wizard's steps, in order. */
-export const STEPS = ['review', 'triage', 'edit', 'export'];
+/** The wizard's steps, in order: Outline, Preview & Tweak, Save & Export
+ *  (three since Oct 7, 2026: the Review step's Issue and Pull sit on Outline). */
+export const STEPS = ['triage', 'edit', 'export'];
 
 /** What the status line says when a locked step or Next is pressed too early. */
 export const LOCKED_STEP_MESSAGE = 'Pick an issue and pull from the desk first.';
 
 /**
- * Review is always open; Outline, Preview & Edit and Save & Export need an
- * issue with at least one item: a date alone opens nothing. The step
- * buttons and Next both ask this, so they agree.
+ * Outline is always open (the issue is picked and pulled there); Preview &
+ * Tweak and Save & Export need an issue with at least one item: a date alone
+ * opens nothing. The step buttons and Next both ask this, so they agree.
  * @param {string} step
  * @param {number} itemCount
  * @returns {boolean}
  */
 export function canEnterStep(step, itemCount, placeholders = 0) {
   if (!STEPS.includes(step)) return false;
-  if (step === 'review') return true;
+  if (step === 'triage') return true;
   if (!(Number(itemCount) > 0)) return false;
   // Save & Export waits while any item shows a placeholder where its photo
   // would be (Kate, Oct 5: "don't let it get to 4 without a picture").
@@ -99,7 +100,7 @@ export function archiveAskMessage(entry) {
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
- * The dates the Review step's Issue list offers (Kate, Sep 23): the desk's
+ * The dates the Outline step's Issue list offers (Kate, Sep 23): the desk's
  * scheduled dates and any date with staged items, from today on, so an issue
  * stays listed through its own send day. The draft's own date stays even once
  * it has passed, so the field is never blank. In order, each once.

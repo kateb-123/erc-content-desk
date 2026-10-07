@@ -5,7 +5,7 @@
  * pure logic lives in model.js, template.js, editpath.js and preview.js.
  */
 
-import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, partitionPulled, countIssueItems, bucketSectionItems, moveItemToGroup } from './model.js';
+import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, partitionPulled, countIssueItems, bucketSectionItems, moveItemToGroup, moveItemNear } from './model.js';
 
 // The builder lives INSIDE the desk's project (/builder/), so the desk's API
 // is same-origin: relative fetches, no CORS.
@@ -24,7 +24,7 @@ import { renderShell } from '../../js/shell-ui.js';
 import { STEPS, canEnterStep, lockedMessage, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
 import { normalizeLinkUrl } from './editing.js';
 // The per-issue layout options the Outline sets (Claude Design handoff, Oct 2026).
-import { CALLOUT_CHOICES, PICTURE_CHOICES, PICTURE_SIZES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setPictureStyle, itemLayouts, pictureWidthOf, setPictureWidth, placeholderItems, resetOptions, hasCustomOptions, canHighlight, setHighlight, setZoom, setFlyer, RESEARCH_KINDS, setResearchKind, moveSection, calloutSection } from './options.js';
+import { CALLOUT_CHOICES, PICTURE_SIZES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemLayouts, pictureWidthOf, setPictureWidth, placeholderItems, resetOptions, hasCustomOptions, setZoom, setFlyer, RESEARCH_KINDS, setResearchKind, moveSection, calloutSection } from './options.js';
 import { layoutOf, calloutsOf, calloutAfter, sectionOrder } from './template.js';
 import { CALLOUT_KINDS, CALLOUT_END } from './model.js';
 // Kept drafts, and hand-added items that go to the desk (Sep 23).
@@ -42,7 +42,7 @@ const state = {
   /** @type {object|null} Deep clone of issue as pulled or restored, the text "Use original" puts back */
   baseline: null,
   /** @type {string} Current wizard step key */
-  step: 'review',
+  step: 'triage',
   /** @type {number} The furthest step index visited, so checks survive going back */
   reached: 0,
 };
@@ -78,8 +78,9 @@ const scheduleSave = debounce(() => {
 // DOM refs
 // ---------------------------------------------------------------------------
 
-const btnBack = document.getElementById('btn-back');
-const btnNext = document.getElementById('btn-next');
+/** Back and Next, at the top and at the foot (Kate, Oct 7): one pair's worth of state, set on both. */
+const backBtns = [...document.querySelectorAll('[data-wizard-back]')];
+const nextBtns = [...document.querySelectorAll('[data-wizard-next]')];
 /** The one-line status slot under the step row: what a locked step says.
     Always one line tall, so a message never moves the page. */
 const wizardStatus = document.getElementById('wizard-status');
@@ -163,7 +164,7 @@ function syncStepNav() {
 // ---------------------------------------------------------------------------
 
 /** Which renderer draws each step. */
-const RENDER = { review: renderReview, triage: renderTriage, edit: renderEdit, export: renderExport };
+const RENDER = { triage: renderTriage, edit: renderEdit, export: renderExport };
 
 /**
  * Show the wizard section for `step`, hide all others.
@@ -184,10 +185,10 @@ function goTo(step) {
   syncStepNav();
   setWizardStatus('');
 
-  // The footer pair: Back sleeps on the first step; Next has nowhere to go on
+  // Both pairs: Back sleeps on the first step; Next has nowhere to go on
   // the last, so it goes rather than greys.
-  btnBack.disabled = idx === 0;
-  btnNext.hidden = idx === STEPS.length - 1;
+  backBtns.forEach((b) => { b.disabled = idx === 0; });
+  nextBtns.forEach((b) => { b.hidden = idx === STEPS.length - 1; });
 
   RENDER[step]();
 }
@@ -213,8 +214,8 @@ function goNext() {
   const idx = STEPS.indexOf(state.step);
   if (idx < STEPS.length - 1) tryGo(STEPS[idx + 1]);
 }
-btnBack.addEventListener('click', goBack);
-btnNext.addEventListener('click', goNext);
+backBtns.forEach((b) => b.addEventListener('click', goBack));
+nextBtns.forEach((b) => b.addEventListener('click', goNext));
 
 // The step buttons jump straight to any step. Review is always reachable; the
 // later steps need a loaded issue, and say so on the status line.
@@ -271,10 +272,13 @@ function emptyLine(container, text) {
   container.appendChild(el('p', 'edit-empty-msg', text));
 }
 
-function renderReview() {
-  const container = openStep('review', 'Pick the issue and pull what the desk staged.',
-    'Pick the issue, pull what the desk staged, and look it over. Pull again any time. Only new items are added.');
-
+/**
+ * The head of the Outline (the Review step folded in; Kate, Oct 7): the Issue
+ * dropdown, Pull from the desk with its status, and Recently discarded, which
+ * joins the step last.
+ * @param {HTMLElement} container - the Outline step
+ */
+function renderPullHead(container) {
   // ── Issue date: a dropdown of the desk's scheduled issues, with staged
   //    counts. The desk owns the schedule; the builder just picks from it. ──
   const metaSection = el('div', 'triage-meta');
@@ -363,7 +367,7 @@ function renderReview() {
         scheduleSave();
       }
       setPull(already ? `Pulled ${fresh} new · ${already} already here.` : `Pulled ${fresh} from the desk.`);
-      if (fresh) { renderReview(); syncStepNav(); }
+      if (fresh) { renderTriage(); syncStepNav(); }
     } catch {
       setPull('');
       pullNote.replaceChildren(inlineNote('error', "Couldn't reach the desk.", () => pullBtn.click()));
@@ -374,36 +378,6 @@ function renderReview() {
   pullRow.append(pullBtn, pullStatus);
   container.append(pullRow, pullNote);
   renderDiscardedDrafts(container);   // Recently discarded (Sep 23): joins the step after the rest has drawn
-
-  // ── What's in the issue ──────────────────────────────────────────────────
-  const items = [];
-  for (const sec of SECTION_REGISTRY) {
-    for (const item of state.issue?.sections?.[sec.key]?.items ?? []) items.push([sec, item]);
-  }
-  if (!items.length) {
-    emptyLine(container, 'Nothing here yet.');
-    return;
-  }
-  const table = el('table', 'review-table');
-  const thead = el('thead');
-  const headRow = el('tr');
-  headRow.append(...['Item', 'Section'].map((label) => el('th', '', label)));
-  thead.appendChild(headRow);
-  const tbody = el('tbody');
-  for (const [sec, item] of items) {
-    const tr = el('tr');
-    const itemTd = el('td');
-    itemTd.appendChild(el('strong', '', item.fields?.title || item.fields?.url || '(untitled)'));
-    const source = String(item.fields?.source ?? '').trim();
-    if (source) itemTd.appendChild(el('span', 'review-table-sub', source));
-    const secTd = el('td', '', sec.label);
-    const groupLabel = sec.groups.find((g) => g.key === item.group)?.label ?? '';
-    if (groupLabel) secTd.appendChild(el('span', 'review-table-sub', groupLabel));
-    tr.append(itemTd, secTd);
-    tbody.appendChild(tr);
-  }
-  table.append(thead, tbody);
-  container.appendChild(table);
 }
 
 /**
@@ -556,15 +530,16 @@ function outlineMeta(sectionKey, f) {
  * wrong group. The look is chosen on Preview & Tweak, on the email itself.
  */
 function renderTriage() {
-  const container = openStep('triage', 'Put the issue in order.',
-    'What goes out, in the order it goes out. Drag a section by its handle to move it in the email. Hover a row for Move to…; the look is chosen on the next step, on the email itself.');
+  const container = openStep('triage', 'Pick the issue, pull what the desk staged, and put it in order.',
+    'Pick the issue and pull what the desk staged; pull again any time, only new items are added. What goes out, in the order it goes out: drag a section or an item by its grip to move it in the email, or press the arrow keys on the grip. Move to… files an item under another group; the look is chosen on the next step, on the email itself.');
+  renderPullHead(container);
 
   const issue = state.issue;
 
-  // Nothing pulled yet: one line, and no empty table to puzzle over.
+  // Nothing pulled yet: one line under Pull, and no empty table to puzzle over.
   // Items removed on this visit still list, greyed, so the last one out is not lost.
   if (!issue || (!countIssueItems(issue) && !waitingRemovals().length)) {
-    emptyLine(container, 'No issue loaded. Pull from the desk on the Review step first.');
+    emptyLine(container, 'Nothing here yet.');
     return;
   }
 
@@ -579,7 +554,7 @@ function renderTriage() {
   const table = el('table', 'outline-table');
   const thead = el('thead');
   const hr = el('tr');
-  for (const [text, cls] of [['Item', ''], ['Featured', ''], ['Order', 'r'], ['', 'r']]) {
+  for (const [text, cls] of [['Item', ''], ['Featured', ''], ['', 'r']]) {
     const th = el('th', cls, text);
     th.scope = 'col';
     hr.appendChild(th);
@@ -602,10 +577,9 @@ function renderTriage() {
 
     // The section row: its drag handle (Kate, Oct 6), its name and count.
     const sr = el('tr', 'outline-section');
-    sr.draggable = true;
     sr.dataset.section = reg.key;
     const std = el('td');
-    std.colSpan = 4;
+    std.colSpan = 3;
     std.appendChild(sectionHandle(issue, reg, populated));
     std.appendChild(el('span', 'outline-section-name', reg.label));
     std.appendChild(el('span', 'outline-section-count', live.length === rows.length ? String(rows.length) : `${live.length} of ${rows.length}`));
@@ -622,7 +596,7 @@ function renderTriage() {
         const gr = el('tr', 'outline-group');
         gr.dataset.section = reg.key;
         const gtd = el('td', '', bucket.label);
-        gtd.colSpan = 4;
+        gtd.colSpan = 3;
         gr.appendChild(gtd);
         tbody.appendChild(gr);
       }
@@ -634,15 +608,47 @@ function renderTriage() {
         tr.dataset.item = item.id;
         tr.dataset.section = reg.key;
 
-        // Item: the title as its link, the meta line, and Move to… on hover.
+        // Item: its grip (Kate, Oct 7: drag it, or the arrow keys), then the title as its link with the meta line under it.
         const td1 = el('td', 'outline-item-cell');
+        const cell = el('div', 'outline-cell');
+        cell.appendChild(removed.has(item) ? el('span', 'triage-drag-handle is-blank') : itemHandle(issue, reg.key, item, bucketLive));
+        const words = el('div', 'outline-words');
         const href = normalizeLinkUrl(f.url || '');
         const link = href ? el('a', 'outline-title', title) : el('span', 'outline-title', title);
         if (href) { link.href = href; link.target = '_blank'; link.rel = 'noopener'; }
-        td1.appendChild(link);
+        words.appendChild(link);
         const meta = outlineMeta(reg.key, f);
-        if (meta) td1.appendChild(el('span', 'outline-meta', meta));
-        if (!removed.has(item)) {
+        if (meta) words.appendChild(el('span', 'outline-meta', meta));
+        cell.appendChild(words);
+        td1.appendChild(cell);
+
+        // Featured: events only, one radio across the section.
+        const td2 = el('td');
+        if (reg.key === 'events' && !removed.has(item)) {
+          const lab = el('label', 'outline-featured' + (item.featured ? ' is-on' : ''));
+          const rb = el('input');
+          rb.type = 'radio';
+          rb.name = 'outline-featured';
+          rb.checked = !!item.featured;
+          rb.setAttribute('aria-label', `Feature "${title}"`);
+          rb.addEventListener('change', () => {
+            items.forEach((ev) => { ev.featured = false; });
+            item.featured = true;
+            scheduleSave();
+            renderTriage();
+          });
+          lab.append(rb, item.featured ? ' Featured' : ' Feature');
+          td2.appendChild(lab);
+        }
+
+        // The actions, quiet on every row (Kate, Oct 7): Move to… and Remove;
+        // Undo on a removed row (the desk's greyed row).
+        const td3 = el('td', 'r outline-actions');
+        if (removed.has(item)) {
+          const undo = button('Undo', 'ghost-btn outline-undo', { onClick: (e) => undoRemove(item.id, renderTriage, e.detail === 0) });
+          undo.setAttribute('aria-label', `Put "${title}" back`);
+          td3.appendChild(undo);
+        } else {
           const mv = button('Move to…', 'ghost-btn outline-move');
           mv.setAttribute('aria-label', `Move "${title}" to another group`);
           mv.addEventListener('click', (e) => {
@@ -666,71 +672,17 @@ function renderTriage() {
               }
             });
           });
-          td1.appendChild(mv);
-        }
-
-        // Featured: events only, one radio across the section.
-        const td2 = el('td');
-        if (reg.key === 'events' && !removed.has(item)) {
-          const lab = el('label', 'outline-featured' + (item.featured ? ' is-on' : ''));
-          const rb = el('input');
-          rb.type = 'radio';
-          rb.name = 'outline-featured';
-          rb.checked = !!item.featured;
-          rb.setAttribute('aria-label', `Feature "${title}"`);
-          rb.addEventListener('change', () => {
-            items.forEach((ev) => { ev.featured = false; });
-            item.featured = true;
-            scheduleSave();
-            renderTriage();
-          });
-          lab.append(rb, item.featured ? ' Featured' : ' Feature');
-          td2.appendChild(lab);
-        }
-
-        // Order: the arrows, within the group.
-        const td3 = el('td', 'r');
-        if (!removed.has(item)) {
-          const k = bucketLive.indexOf(item);
-          const arrow = (dir, glyph, disabled, other) => {
-            const btn = button('', 'triage-reorder-btn', { icon: glyph, onClick: () => {
-              const a = items.indexOf(item), b = items.indexOf(other);
-              if (a < 0 || b < 0) return;
-              [items[a], items[b]] = [items[b], items[a]];
-              scheduleSave();
-              renderTriage();
-              const again = document.querySelector(`[data-move-item="${CSS.escape(item.id)}"][data-move-dir="${dir}"]`);
-              if (again && !again.disabled) again.focus();
-            } });
-            btn.setAttribute('aria-label', `Move "${title}" ${dir}`);
-            btn.dataset.moveItem = item.id;
-            btn.dataset.moveDir = dir;
-            btn.disabled = disabled;
-            return btn;
-          };
-          const group = el('div', 'triage-reorder-group');
-          group.append(arrow('up', 'arrow-up', k === 0, bucketLive[k - 1]), arrow('down', 'arrow-down', k === bucketLive.length - 1, bucketLive[k + 1]));
-          td3.appendChild(group);
-        }
-
-        // Remove, or Undo on a removed row (the desk's greyed row).
-        const td4 = el('td', 'r');
-        if (removed.has(item)) {
-          const undo = button('Undo', 'ghost-btn outline-undo', { onClick: (e) => undoRemove(item.id, renderTriage, e.detail === 0) });
-          undo.setAttribute('aria-label', `Put "${title}" back`);
-          td4.appendChild(undo);
-        } else {
-          const delBtn = button(' Remove', 'ghost-btn ghost-btn--danger', {
+          const delBtn = button(' Remove', 'ghost-btn ghost-btn--danger outline-remove', {
             icon: 'trash-can',
             onClick: (e) => deleteItemWithUndo(item.id, renderTriage, e.detail === 0),
           });
           delBtn.dataset.removeItem = item.id;
           delBtn.setAttribute('aria-label', `Remove "${title}" from the issue`);
           delBtn.title = 'Removes this item from the issue';
-          td4.appendChild(delBtn);
+          td3.append(mv, delBtn);
         }
 
-        tr.append(td1, td2, td3, td4);
+        tr.append(td1, td2, td3);
         tbody.appendChild(tr);
       }
     }
@@ -742,10 +694,17 @@ function renderTriage() {
       const tr = el('tr', 'outline-item outline-callout');
       tr.dataset.section = reg.key;
       const td1 = el('td', 'outline-item-cell');
-      td1.appendChild(el('span', 'outline-callout-tag', 'Callout'));
-      td1.appendChild(el('span', 'outline-title', c.title || '(untitled)'));
+      const cell = el('div', 'outline-cell');
+      cell.appendChild(el('span', 'triage-drag-handle is-blank'));   // a callout moves by Move to…, so the grip's room stays empty
+      const words = el('div', 'outline-words');
+      const line = el('span');
+      line.append(el('span', 'outline-callout-tag', 'Callout'), el('span', 'outline-title', c.title || '(untitled)'));
       const fixed = c.kind === 'share';
-      td1.appendChild(el('span', 'outline-meta', `${CALLOUT_KINDS[c.kind]?.label || 'Your own words'} · ${CALLOUT_CHOICES.find((s) => s.key === c.style)?.label || 'Maroon block'}. ${fixed ? 'Always at the end. ' : ''}Style it on Preview & Tweak.`));
+      words.append(line, el('span', 'outline-meta', `${CALLOUT_KINDS[c.kind]?.label || 'Your own words'} · ${CALLOUT_CHOICES.find((s) => s.key === c.style)?.label || 'Maroon block'}. ${fixed ? 'Always at the end. ' : ''}Style it on Preview & Tweak.`));
+      cell.appendChild(words);
+      td1.appendChild(cell);
+      const td3 = el('td', 'r outline-actions');
+      td3.colSpan = 2;
       if (!fixed) {
         const mv = button('Move to…', 'ghost-btn outline-move');
         mv.setAttribute('aria-label', `Move the callout "${c.title}" after another section`);
@@ -763,10 +722,9 @@ function renderTriage() {
             }
           });
         });
-        td1.appendChild(mv);
+        td3.appendChild(mv);
       }
-      const td4 = el('td', 'r');
-      const rm = button(' Remove', 'ghost-btn ghost-btn--danger', { icon: 'trash-can', onClick: () => {
+      const rm = button(' Remove', 'ghost-btn ghost-btn--danger outline-remove', { icon: 'trash-can', onClick: () => {
         const at = issue.callouts.indexOf(c);
         removeCallout(issue, c.id);
         scheduleSave();
@@ -774,17 +732,23 @@ function renderTriage() {
         showUndoToast(`Removed the callout "${c.title}".`, () => { restoreCallout(issue, c, at); scheduleSave(); renderTriage(); });
       } });
       rm.setAttribute('aria-label', `Remove the callout "${c.title}"`);
-      td4.appendChild(rm);
-      td4.colSpan = 3;
-      tr.append(td1, td4);
+      td3.appendChild(rm);
+      tr.append(td1, td3);
       tbody.appendChild(tr);
     }
   }
 
-  wireSectionDrag(tbody, issue, (key, other, before) => {
-    scheduleSave();
-    renderTriage();
-    setWizardStatus(`Moved ${sectionLabel(key)} ${before ? 'before' : 'after'} ${sectionLabel(other)}.`);
+  wireOutlineDrag(tbody, issue, {
+    onSection: (key, other, before) => {
+      scheduleSave();
+      renderTriage();
+      setWizardStatus(`Moved ${sectionLabel(key)} ${before ? 'before' : 'after'} ${sectionLabel(other)}.`);
+    },
+    onItem: (section, id, other, before) => {
+      scheduleSave();
+      renderTriage();
+      setWizardStatus(`Moved "${itemTitle(issue, section, id)}" ${before ? 'before' : 'after'} "${itemTitle(issue, section, other)}".`);
+    },
   });
   container.appendChild(table);
   const foot = el('p', 'triage-missing', `${inIssue} of ${listed} ${listed === 1 ? 'item' : 'items'} in the issue.` + (missing.length ? ` Not in this issue: ${missing.join(', ')}.` : ''));
@@ -792,6 +756,7 @@ function renderTriage() {
 }
 
 const sectionLabel = (key) => SECTION_REGISTRY.find((s) => s.key === key)?.label || key;
+const itemTitle = (issue, section, id) => issue?.sections?.[section]?.items?.find((i) => i.id === id)?.fields?.title || '(untitled)';
 
 /**
  * A section's drag handle on the Outline (Kate, Oct 6): drag it to another
@@ -802,7 +767,8 @@ const sectionLabel = (key) => SECTION_REGISTRY.find((s) => s.key === key)?.label
 function sectionHandle(issue, reg, populated) {
   const handle = button('', 'triage-drag-handle', { icon: 'grip-vertical' });
   handle.setAttribute('aria-label', `Move ${reg.label}: drag it, or press the up and down arrows`);
-  handle.title = 'Drag to move this section';
+  handle.title = 'Drag to move';
+  handle.draggable = true;   // the grip is the drag source (Kate, Oct 7), not the row
   handle.dataset.moveSection = reg.key;
   handle.addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
@@ -821,30 +787,71 @@ function sectionHandle(issue, reg, populated) {
 }
 
 /**
- * Drag a section to another place in the email. Every row carries its
- * section, so a drop anywhere among a section's rows lands on that section:
- * the upper half of its rows means before it, the lower half after. The
- * marks are a line above or below the rows the drop would land against.
+ * An item's grip on the Outline (Kate, Oct 7): drag it to another place in
+ * its section, or press ArrowUp and ArrowDown to move it past its listed
+ * neighbour. It takes the group it lands in; see moveItemNear.
  */
-function wireSectionDrag(tbody, issue, onMoved) {
-  let dragging = null;
+function itemHandle(issue, sectionKey, item, bucketLive) {
+  const title = item.fields?.title || '(untitled)';
+  const handle = button('', 'triage-drag-handle', { icon: 'grip-vertical' });
+  handle.setAttribute('aria-label', `Move "${title}": drag it, or press the up and down arrows`);
+  handle.title = 'Drag to move';
+  handle.draggable = true;
+  handle.dataset.moveItem = item.id;
+  handle.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    const other = bucketLive[bucketLive.indexOf(item) + (e.key === 'ArrowUp' ? -1 : 1)];
+    if (!other) return;
+    const before = e.key === 'ArrowUp';
+    if (!moveItemNear(issue, sectionKey, item.id, other.id, before)) return;
+    scheduleSave();
+    renderTriage();
+    document.querySelector(`[data-move-item="${CSS.escape(item.id)}"]`)?.focus();
+    setWizardStatus(`Moved "${title}" ${before ? 'before' : 'after'} "${other.fields?.title || '(untitled)'}".`);
+  });
+  return handle;
+}
+
+/**
+ * Drag a section or an item by its grip (Kate, Oct 6 and 7). Every row
+ * carries its section, so a dragged section lands on whichever section the
+ * drop is among: the upper half of its rows means before it, the lower half
+ * after. A dragged item lands before or after the item row it is dropped on,
+ * in its own section only. The marks are a line above or below the rows the
+ * drop would land against.
+ */
+function wireOutlineDrag(tbody, issue, { onSection, onItem }) {
+  let drag = null;   // { kind: 'section', key } or { kind: 'item', section, id }
   const rowsOf = (key) => [...tbody.querySelectorAll(`tr[data-section="${CSS.escape(key)}"]`)];
   const unmark = () => tbody.querySelectorAll('.is-drop-before, .is-drop-after').forEach((n) => n.classList.remove('is-drop-before', 'is-drop-after'));
   const clear = () => { unmark(); tbody.querySelectorAll('.is-dragging').forEach((n) => n.classList.remove('is-dragging')); };
   const target = (e) => {
     const row = e.target.closest ? e.target.closest('tr[data-section]') : null;
-    if (!row || !dragging || row.dataset.section === dragging) return null;
-    const rows = rowsOf(row.dataset.section);
-    const top = rows[0].getBoundingClientRect().top, bottom = rows[rows.length - 1].getBoundingClientRect().bottom;
-    return { key: row.dataset.section, before: e.clientY < (top + bottom) / 2, rows };
+    if (!row || !drag) return null;
+    if (drag.kind === 'section') {
+      if (row.dataset.section === drag.key) return null;
+      const rows = rowsOf(row.dataset.section);
+      const top = rows[0].getBoundingClientRect().top, bottom = rows[rows.length - 1].getBoundingClientRect().bottom;
+      return { kind: 'section', key: row.dataset.section, before: e.clientY < (top + bottom) / 2, rows };
+    }
+    if (!row.dataset.item || row.dataset.section !== drag.section || row.dataset.item === drag.id || row.classList.contains('is-removed')) return null;
+    // Nothing lands beside the one featured event (moveItemNear refuses it too): no mark.
+    const items = issue.sections[drag.section]?.items ?? [];
+    const moving = items.find((it) => it.id === drag.id), under = items.find((it) => it.id === row.dataset.item);
+    if (!moving || !under || (drag.section === 'events' && under.featured && !moving.featured)) return null;
+    const r = row.getBoundingClientRect();
+    return { kind: 'item', id: row.dataset.item, before: e.clientY < (r.top + r.bottom) / 2, rows: [row] };
   };
   tbody.addEventListener('dragstart', (e) => {
-    const row = e.target.closest ? e.target.closest('tr.outline-section') : null;
-    if (!row) return;
-    dragging = row.dataset.section;
+    // Only a grip starts a drag; a title's own link drag is refused.
+    const handle = e.target.closest ? e.target.closest('.triage-drag-handle') : null;
+    const row = handle && handle.closest('tr[data-section]');
+    if (!row) { e.preventDefault(); return; }
+    drag = row.classList.contains('outline-section') ? { kind: 'section', key: row.dataset.section } : { kind: 'item', section: row.dataset.section, id: row.dataset.item };
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', dragging);
-    rowsOf(dragging).forEach((r) => r.classList.add('is-dragging'));
+    e.dataTransfer.setData('text/plain', drag.id || drag.key);
+    (drag.kind === 'section' ? rowsOf(drag.key) : [row]).forEach((r) => r.classList.add('is-dragging'));
   });
   tbody.addEventListener('dragover', (e) => {
     const t = target(e);
@@ -857,15 +864,19 @@ function wireSectionDrag(tbody, issue, onMoved) {
   tbody.addEventListener('dragleave', (e) => { if (!tbody.contains(e.relatedTarget)) unmark(); });
   tbody.addEventListener('drop', (e) => {
     const t = target(e);
-    const key = dragging;
+    const d = drag;
     clear();
-    dragging = null;
+    drag = null;
     if (!t) return;
     e.preventDefault();
-    moveSection(issue, key, sectionOrder(issue).filter((k) => k !== key).indexOf(t.key) + (t.before ? 0 : 1));
-    onMoved(key, t.key, t.before);
+    if (t.kind === 'section') {
+      moveSection(issue, d.key, sectionOrder(issue).filter((k) => k !== d.key).indexOf(t.key) + (t.before ? 0 : 1));
+      onSection(d.key, t.key, t.before);
+    } else if (moveItemNear(issue, d.section, d.id, t.id, t.before)) {
+      onItem(d.section, d.id, t.id, t.before);
+    }
   });
-  tbody.addEventListener('dragend', () => { dragging = null; clear(); });
+  tbody.addEventListener('dragend', () => { drag = null; clear(); });
 }
 
 // ---------------------------------------------------------------------------
@@ -880,8 +891,9 @@ function wireSectionDrag(tbody, issue, onMoved) {
  */
 function editHoverCss() {
   const tokens = getComputedStyle(document.documentElement);
-  const wash = tokens.getPropertyValue('--accent-10').trim();   // the editable cue, plain enough to see
-  const chosen = tokens.getPropertyValue('--highlight').trim();
+  const t = (name) => tokens.getPropertyValue(name).trim();
+  const wash = t('--accent-10');   // the editable cue, plain enough to see
+  const chosen = t('--highlight');
   return `
 [data-edit-field] {
   cursor: pointer;
@@ -902,8 +914,28 @@ function editHoverCss() {
   background-color: ${chosen};
   box-shadow: 0 0 0 4px ${chosen};
 }
+/* The grip (Kate, Oct 7): one floating handle at the left of the item or
+   section heading under the pointer; drag it to move the block. The dragged
+   block fades; a line above or below the block it would land against says where. */
+.ec-grip {
+  position: absolute; z-index: 5; width: 20px; height: 28px; margin: 0; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: ${t('--layer-02')}; border: 1px solid ${t('--border-subtle-01')}; border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .14); color: ${t('--icon-secondary')}; cursor: grab;
+}
+.ec-grip:hover { color: ${t('--icon-primary')}; border-color: ${t('--border-strong-01')}; }
+.ec-grip svg { width: 8px; height: 14px; display: block; }
+.ec-dragging { opacity: .4; }
+.ec-drop-before { box-shadow: inset 0 3px 0 ${t('--button-primary')} !important; }
+.ec-drop-after { box-shadow: inset 0 -3px 0 ${t('--button-primary')} !important; }
 `;
 }
+
+/** The grip's six dots, drawn inline so the iframe needs no icon font. */
+const GRIP_SVG = '<svg viewBox="0 0 8 14" aria-hidden="true"><g fill="currentColor"><circle cx="2" cy="2" r="1.4"/><circle cx="6" cy="2" r="1.4"/><circle cx="2" cy="7" r="1.4"/><circle cx="6" cy="7" r="1.4"/><circle cx="2" cy="12" r="1.4"/><circle cx="6" cy="12" r="1.4"/></g></svg>';
+
+/** A section heading's anchor names its section, except Headlines, whose anchor is "news". */
+const ANCHOR_SECTIONS = { news: 'headlines' };
 
 
 /** Counter behind the edit cards' field ids, so each label points at its own field. */
@@ -917,6 +949,9 @@ function firstField(card) {
 
 /** True newsletter width (px). The preview is scaled down to fit narrower panes. */
 const PREVIEW_WIDTH = 640;
+
+/** What the preview note says after the scale: how the sheet is worked on. */
+const PREVIEW_TAIL = ' Click anything to edit it; drag an item or a section by its grip to move it.';
 
 /** Cap the preview at 95% of true size; scales down on narrow windows so the
     edit column always fits and there's never a horizontal scrollbar. */
@@ -963,8 +998,7 @@ function fitLayout(layout) {
   if (scale <= 0) return;
   iframe.style.zoom = String(scale);
   const note = layout.closest('.wizard-step')?.querySelector('.preview-note');
-  const tail = layout.classList.contains('outline-layout') ? '' : ' Click any text to edit it.';
-  if (note) note.textContent = `Preview at ${Math.round(scale * 100)} percent, as it lands in Outlook.${tail}`;
+  if (note) note.textContent = `Preview at ${Math.round(scale * 100)} percent, as it lands in Outlook.${PREVIEW_TAIL}`;
 }
 
 // Bound once: fitPreview finds the preview afresh on every call.
@@ -975,11 +1009,15 @@ window.addEventListener('resize', debounce(fitPreview, 150));
  * Re-render the editable iframe (after an edit) and re-attach listeners.
  * @param {HTMLIFrameElement} iframe
  */
+/** Redraws the doors over the sheet after a change: the strip's box and Reset follow the options. Set by renderEdit. */
+let syncEditDoors = null;
+
 function refreshEditIframe(iframe) {
   // Re-setting srcdoc triggers the 'load' event, which re-attaches the listener.
   iframe.srcdoc = renderNewsletter(state.issue, { editable: true });
   // A tweak can lock or free Save & Export (a placeholder, or its photo arriving).
   syncStepNav();
+  syncEditDoors?.();
 }
 
 /** One fold in the edit column's rail: its label, and the empty body to fill. */
@@ -988,32 +1026,6 @@ function railPanel(title) {
   const body = el('div', 'reorder-panel-body');
   details.append(el('summary', 'reorder-panel-summary', title), body);
   return { details, body };
-}
-
-/**
- * The introduction's home in the edit column: a panel with the same rich
- * editor the cards use, bound to issue.intro. The preview refreshes as you
- * type (debounced); the editor lives outside the iframe, so focus holds.
- */
-function buildIntroPanel(iframe) {
-  const { details, body } = railPanel('Introduction');
-  body.appendChild(el('p', 'addon-hint', 'Shows under the header, before the first section.'));
-  const refresh = debounce(() => refreshEditIframe(iframe), 500);
-  const editor = buildRichEditor(state.issue?.intro || '', (md) => {
-    if (!state.issue) state.issue = createEmptyIssue();
-    state.issue.intro = md;
-    scheduleSave();
-    refresh();
-  });
-  // Edits are live, so Save is a quiet word, not a second primary.
-  const save = button('Save', 'ghost-btn intro-save-btn', { onClick: () => {
-    if (state.issue) saveState(state.issue);
-    refreshEditIframe(iframe);
-    save.textContent = 'Saved';
-    setTimeout(() => { save.textContent = 'Save'; }, 1500);
-  } });
-  body.append(editor.el, save);
-  return details;
 }
 
 let miscItemSeq = 0;
@@ -1109,7 +1121,8 @@ function buildAddItemPanel(iframe) {
     }
   };
 
-  const addBtn = button('Add to the issue', 'btn btn-secondary', { onClick: () => {
+  // The card's own primary (Kate, Oct 7): the one Add, teal like Add a callout's, moved to the card's foot by openPanelInDrawer.
+  const addBtn = button('Add to the issue', 'btn btn-primary addon-primary', { onClick: () => {
     const title = titleInput.value.trim();
     if (!title) { status.textContent = 'Give it a title first.'; return; }
     if (!state.issue) state.issue = createEmptyIssue();
@@ -1154,8 +1167,9 @@ function buildAddItemPanel(iframe) {
 }
 
 /**
- * Wire up the click-to-edit listener and hover CSS in the iframe's contentDocument.
- * Called on every iframe 'load' event (re-fires on each srcdoc set).
+ * Wire up the sheet in the iframe's contentDocument: the hover wash, the
+ * click that opens a block's card, and the grip that drags a block (Kate,
+ * Oct 7). Called on every iframe 'load' event (re-fires on each srcdoc set).
  * @param {HTMLIFrameElement} iframe
  */
 function wireIframeEditing(iframe) {
@@ -1167,68 +1181,152 @@ function wireIframeEditing(iframe) {
   style.textContent = editHoverCss();
   (doc.head || doc.documentElement).appendChild(style);
 
-  // Hover lights the whole item (the cell that holds it), since the click
-  // opens the whole item in the drawer.
-  let hoveredBlock = null;
-  const clearHover = () => { if (hoveredBlock) hoveredBlock.classList.remove('ec-item-hover'); hoveredBlock = null; };
+  // Each section's panel carries its key, so a dragged section knows what it lands on.
+  for (const panel of doc.querySelectorAll('table[align="center"]')) {
+    const a = panel.querySelector('h2 a[id]');
+    if (a) panel.dataset.section = ANCHOR_SECTIONS[a.id] || a.id;
+  }
+
+  // The grip: one floating handle, placed at the left of the item or section
+  // heading under the pointer, in the sheet's own margin.
+  const grip = doc.createElement('button');
+  grip.type = 'button';
+  grip.className = 'ec-grip';
+  grip.draggable = true;
+  grip.innerHTML = GRIP_SVG;
+  grip.setAttribute('aria-label', 'Drag to move');
+  grip.title = 'Drag to move';
+  grip.hidden = true;
+  doc.body.appendChild(grip);
+
+  // Hover lights the whole block (the cell that holds it), since the click
+  // opens the whole item in the drawer; the grip follows the pointer's block.
+  let over = null;
+  const clearHover = () => { doc.querySelectorAll('.ec-item-hover').forEach((n) => n.classList.remove('ec-item-hover')); };
+  const placeGrip = (b) => {
+    const r = b.node.getBoundingClientRect();
+    const sheet = b.node.closest('table[align="center"]')?.getBoundingClientRect() ?? r;
+    const pad = b.kind === 'section' ? 20 : (parseFloat(doc.defaultView.getComputedStyle(b.node).paddingTop) || 0);
+    grip.hidden = false;
+    grip.style.top = `${r.top + doc.documentElement.scrollTop + pad}px`;
+    grip.style.left = `${Math.max(sheet.left + 3, r.left - 26) + doc.documentElement.scrollLeft}px`;
+  };
   doc.addEventListener('mouseover', (e) => {
-    const cell = itemCellOf(e.target);
-    if (cell === hoveredBlock) return;
+    if (e.target === grip || grip.contains(e.target)) return;
+    const b = blockAt(e.target);
+    if (b && over && b.node === over.node) return;
     clearHover();
-    if (cell) { cell.classList.add('ec-item-hover'); hoveredBlock = cell; }
+    over = b;
+    if (!b) { grip.hidden = true; return; }
+    b.node.classList.add('ec-item-hover');
+    if (b.kind === 'item' || b.kind === 'section') placeGrip(b); else grip.hidden = true;
   });
-  doc.addEventListener('mouseleave', clearHover);
+  doc.addEventListener('mouseleave', () => { clearHover(); over = null; grip.hidden = true; });
 
-  // Click listener: open an editor for the whole item the clicked field
-  // belongs to (all of its fields at once), not just the one piece clicked.
+  // Click: the block's card opens beside it, the whole item at once. A
+  // picture is part of its item, so it opens the item's card too (Kate, Oct
+  // 7: one way to every choice); a callout opens its own, style first.
   doc.addEventListener('click', (e) => {
-    // A callout (Kate, Oct 5): the whole box opens its card, style first.
-    const calloutNode = e.target.closest('[data-edit-section="callout"]');
-    if (calloutNode) {
-      e.preventDefault();
-      e.stopPropagation();
-      const id = calloutNode.dataset.editItem;
-      const cell = calloutNode.closest('td');
-      closeMenu();
-      openCalloutEditor(id, iframe);
-      doc.querySelectorAll('.ec-item-open').forEach((n) => n.classList.remove('ec-item-open'));
-      if (cell) { cell.classList.add('ec-item-open'); revealAboveDrawer(iframe, cell); }
-      return;
-    }
-    // A picture opens a popover of swatches instead of a card.
-    const picture = e.target.closest('img[data-edit-field="image"]');
-    if (picture) {
-      e.preventDefault();
-      e.stopPropagation();
-      const item = state.issue.sections?.[picture.dataset.editSection]?.items?.find((i) => i.id === picture.dataset.editItem);
-      if (item) {
-        const o = itemOptions(picture.dataset.editSection, item);
-        tweakPopover(iframe, picture.closest('a') || picture, 'Picture', PICTURE_CHOICES, o.pictureStyle, (key) => { setPictureStyle(item, key); afterTweak(iframe); });
-      }
-      return;
-    }
-
-    const cell = itemCellOf(e.target);
-    if (!cell) { closeMenu(); return; }
-    if (e.target.closest('a')) e.preventDefault();   // the title is a link; the click edits, never navigates
-    const { editSection: section, editItem: item } = cell.querySelector('[data-edit-field]').dataset;
-    const refs = collectItemFields(doc, section, item);
-    if (!refs.length) return;
+    if (e.target === grip || grip.contains(e.target)) { e.preventDefault(); return; }
+    const b = blockAt(e.target);
+    if (!b || b.kind === 'section') { closeMenu(); return; }
+    e.preventDefault();   // a title or a picture is a link; the click edits, never navigates
+    e.stopPropagation();
     closeMenu();
-    openItemEditor(refs, iframe);
+    if (b.kind === 'callout') openCalloutEditor(b.item, iframe);
+    else {
+      const refs = collectItemFields(doc, b.section, b.item);
+      if (!refs.length) return;
+      openItemEditor(refs, iframe);
+    }
     doc.querySelectorAll('.ec-item-open').forEach((n) => n.classList.remove('ec-item-open'));
-    cell.classList.add('ec-item-open');
-    revealAboveDrawer(iframe, cell);
+    b.node.classList.add('ec-item-open');
+    revealAboveDrawer(iframe, b.node);
   });
+
+  // Drag by the grip: an item within its section (it takes the group it lands
+  // in), a section past another. A line marks where the drop would land.
+  let drag = null;
+  const unmark = () => doc.querySelectorAll('.ec-drop-before, .ec-drop-after').forEach((n) => n.classList.remove('ec-drop-before', 'ec-drop-after'));
+  grip.addEventListener('dragstart', (e) => {
+    if (!over || (over.kind !== 'item' && over.kind !== 'section')) { e.preventDefault(); return; }
+    drag = over;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', drag.item || drag.section);
+    (drag.kind === 'section' ? drag.panel : drag.node).classList.add('ec-dragging');
+    closeDrawer();
+  });
+  const target = (e) => {
+    if (!drag) return null;
+    if (drag.kind === 'item') {
+      const b = blockAt(e.target);
+      if (!b || b.kind !== 'item' || b.section !== drag.section || b.item === drag.item) return null;
+      // Nothing lands beside the one featured event (moveItemNear refuses it too): no mark.
+      const items = state.issue.sections[drag.section]?.items ?? [];
+      const moving = items.find((i) => i.id === drag.item), under = items.find((i) => i.id === b.item);
+      if (!moving || !under || (drag.section === 'events' && under.featured && !moving.featured)) return null;
+      const r = b.node.getBoundingClientRect();
+      return { kind: 'item', node: b.node, item: b.item, before: e.clientY < (r.top + r.bottom) / 2 };
+    }
+    const panel = e.target.closest ? e.target.closest('table[data-section]') : null;
+    if (!panel || panel.dataset.section === drag.section) return null;
+    const r = panel.getBoundingClientRect();
+    return { kind: 'section', node: panel, section: panel.dataset.section, before: e.clientY < (r.top + r.bottom) / 2 };
+  };
+  doc.addEventListener('dragover', (e) => {
+    const t = target(e);
+    if (!t) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    unmark();
+    t.node.classList.add(t.before ? 'ec-drop-before' : 'ec-drop-after');
+  });
+  doc.addEventListener('drop', (e) => {
+    const t = target(e);
+    const d = drag;
+    drag = null;
+    unmark();
+    if (!t) return;
+    e.preventDefault();
+    if (t.kind === 'section') {
+      moveSection(state.issue, d.section, sectionOrder(state.issue).filter((k) => k !== d.section).indexOf(t.section) + (t.before ? 0 : 1));
+      setWizardStatus(`Moved ${sectionLabel(d.section)} ${t.before ? 'before' : 'after'} ${sectionLabel(t.section)}.`);
+    } else if (moveItemNear(state.issue, d.section, d.item, t.item, t.before)) {
+      setWizardStatus(`Moved "${itemTitle(state.issue, d.section, d.item)}" ${t.before ? 'before' : 'after'} "${itemTitle(state.issue, d.section, t.item)}".`);
+    } else return;
+    scheduleSave();
+    refreshEditIframe(iframe);
+  });
+  doc.addEventListener('dragend', () => { drag = null; unmark(); doc.querySelectorAll('.ec-dragging').forEach((n) => n.classList.remove('ec-dragging')); });
 }
 
-/** The cell that holds the item (or the intro) under a node, if any: the
- *  click target and the hover highlight are the whole item. */
-function itemCellOf(node) {
-  const cell = node.closest ? node.closest('td') : null;
-  if (!cell) return null;
-  const field = cell.querySelector('[data-edit-field="title"], [data-edit-field="intro"]');
-  return field ? cell : null;
+/**
+ * The block under a node on the sheet: a section heading; else the nearest
+ * cell up the tree that holds exactly one item (its picture and date block
+ * included), the introduction, or one callout. A cell that holds several
+ * (a digest's list, the page's own cell) is no block, so a click between
+ * items opens nothing.
+ * @returns {{ kind: 'section'|'item'|'intro'|'callout', node: HTMLElement, section?: string, item?: string, panel?: HTMLElement }|null}
+ */
+function blockAt(node) {
+  if (!node || !node.closest) return null;
+  const h2 = node.closest('h2');
+  if (h2) {
+    const panel = h2.closest('table[data-section]');
+    return panel ? { kind: 'section', node: h2.closest('td'), panel, section: panel.dataset.section } : null;
+  }
+  for (let cell = node.closest('td'); cell; cell = cell.parentElement?.closest('td') ?? null) {
+    // A callout's title is hooked too; it counts as the callout, not as an item.
+    const items = new Set([...cell.querySelectorAll('[data-edit-field="title"]:not([data-edit-section="callout"]), [data-edit-field="intro"]')].map((h) => `${h.dataset.editSection}|${h.dataset.editItem ?? ''}`));
+    const callouts = new Set([...cell.querySelectorAll('[data-edit-section="callout"]')].map((h) => h.dataset.editItem));
+    if (items.size + callouts.size > 1) return null;
+    if (callouts.size === 1) return { kind: 'callout', node: cell, item: [...callouts][0] };
+    if (items.size === 1) {
+      const [section, item] = [...items][0].split('|');
+      return section === 'intro' ? { kind: 'intro', node: cell, section: 'intro', item: undefined } : { kind: 'item', node: cell, section, item };
+    }
+  }
+  return null;
 }
 
 /**
@@ -1506,6 +1604,10 @@ function openDrawer(card, top = 0) {
 
 /** Hides the box. Focus goes back to the stage so it never falls off the page. */
 function closeDrawer() {
+  // Every edit is live and saved as it is made; closing writes the draft at
+  // once rather than after the debounce (Kate, Oct 7: "things save when you
+  // close the edit box").
+  if (state.issue && !restorePending) saveState(state.issue);
   const drawerEl = document.querySelector('[data-step="edit"] .edit-drawer');
   if (!drawerEl) return;
   drawerEl.classList.remove('is-open');
@@ -1523,13 +1625,19 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawe
  * caller fills, and the actions along the foot.
  * @returns {{ card: HTMLElement, body: HTMLElement, actions: HTMLElement }}
  */
-function drawerCard(name) {
+function drawerCard(name, { closeWord = 'Done' } = {}) {
   const card = el('div', 'drawer-card');
   const head = el('div', 'drawer-card-head');
   head.appendChild(el('span', 'drawer-card-name', name));
-  const closeBtn = button('', 'edit-card-close', { icon: 'xmark', onClick: closeDrawer });
-  closeBtn.setAttribute('aria-label', 'Close');
-  head.appendChild(closeBtn);
+  // Every edit is live, so the one word that closes a card is Done, in its
+  // head (Kate, Oct 7: "Done up top"). An Add card takes an × instead: its
+  // own Add to the issue sits at the foot.
+  if (closeWord) head.appendChild(button(closeWord, 'btn btn-primary drawer-card-done', { onClick: closeDrawer }));
+  else {
+    const closeBtn = button('', 'edit-card-close', { icon: 'xmark', onClick: closeDrawer });
+    closeBtn.setAttribute('aria-label', 'Close');
+    head.appendChild(closeBtn);
+  }
   const body = el('div', 'drawer-card-body');
   const actions = el('div', 'edit-card-actions drawer-card-actions');
   card.append(head, body, actions);
@@ -1553,8 +1661,35 @@ function wireframeEl(key, hasPic) {
     const beside = el('span', 'wire-beside');
     beside.append(pic(18, 22), col(...lines(3)));
     w.append(col(bar('wire-t', '80%'), bar('wire-m', '55%'), beside));
+  } else if (key === 'card') {
+    // The Date card (Kate, Oct 7): the words on the tint, the maroon date block at the right.
+    w.classList.add('wire-card');
+    const block = el('span', 'wire-block');
+    block.append(bar('wire-bt', '70%'), bar('wire-bl', '55%'), bar('wire-bl', '65%'));
+    w.append(col(bar('wire-t', '85%'), bar('wire-m', '50%'), ...lines(2)), block);
   } else w.append(pic(28, 36), col(bar('wire-t', '90%'), bar('wire-m', '60%'), ...lines(2)));
   return w;
+}
+
+/** A callout's three styles as tiles in the same frame (Kate, Oct 7: one tile family for every look), one on. */
+function calloutTiles(current, onPick) {
+  const row = el('div', 'wires');
+  row.setAttribute('role', 'radiogroup');
+  row.setAttribute('aria-label', 'Its style');
+  const bar = (cls, width) => { const s = el('span', cls); s.style.width = width; return s; };
+  for (const c of CALLOUT_CHOICES) {
+    const b = button('', 'wire' + (c.key === current ? ' is-on' : ''));
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(c.key === current));
+    const w = el('span', `wire-draw wire-callout wire-callout--${c.key}`);
+    const box = el('span', 'wire-cbox');
+    box.append(bar('wire-ct', '60%'), bar('wire-cl', '90%'), bar('wire-cl', '75%'), bar('wire-cb', '34%'));
+    w.appendChild(box);
+    b.append(w, el('span', 'wire-label', c.label));
+    b.addEventListener('click', () => onPick(c.key));
+    row.appendChild(b);
+  }
+  return row;
 }
 
 /** A labelled checkbox in the card's look column (Kate, Oct 6). */
@@ -1621,7 +1756,8 @@ function openItemEditor(refs, iframe) {
   // Live preview re-render, debounced so typing doesn't thrash the iframe.
   const debouncedPreview = debounce(() => refreshEditIframe(iframe), 350);
 
-  // The look, first: the item drawn in each layout it can take.
+  // The look, first: the item drawn in each layout it can take, one tile
+  // family (Kate, Oct 7: the Date card is a tile among them).
   let lookCol = null;
   const drawLook = () => {
     if (!cardItem || !lookCol) return;
@@ -1632,36 +1768,29 @@ function openItemEditor(refs, iframe) {
       lookCol.appendChild(el('h4', 'drawer-h4', 'Kind'));
       lookCol.appendChild(chipRow('Kind', RESEARCH_KINDS, cardItem.group, (key) => { setResearchKind(cardItem, key); redraw(); }));
     }
-    // An event can be the highlight card (Kate, Oct 6): its words on the tint, the date block beside them.
-    if (canHighlight(first.section)) {
-      const highlighted = cardItem.fields?.highlight === true;
-      lookCol.appendChild(el('h4', 'drawer-h4', 'Highlight'));
-      lookCol.appendChild(checkRow('Highlight card: the date block beside its words', highlighted, (on) => { setHighlight(cardItem, on); redraw(); }));
-      if (highlighted) {
-        lookCol.appendChild(checkRow('Zoom available', cardItem.fields.zoom === true, (on) => { setZoom(cardItem, on); redraw(); }));
-        const group = el('div', 'edit-card-group');
-        editFieldSeq += 1;
-        const id = `edit-field-${editFieldSeq}`;
-        const sub = el('label', 'edit-card-sublabel', FIELD_LABELS.flyer);
-        sub.htmlFor = id;
-        const input = el('input', 'edit-card-input');
-        input.type = 'url';
-        input.id = id;
-        input.placeholder = 'https://';
-        input.value = cardItem.fields.flyer ?? '';
-        input.addEventListener('input', () => { setFlyer(cardItem, input.value); scheduleSave(); debouncedPreview(); });
-        group.append(sub, input);
-        lookCol.appendChild(group);
-        lookCol.appendChild(el('p', 'triage-section-note drawer-note', 'The card shows the description and leaves the picture out.'));
-        return;
-      }
-    }
     lookCol.appendChild(el('h4', 'drawer-h4' + (lookCol.childElementCount ? ' drawer-h4--later' : ''), 'How it is laid out'));
     lookCol.appendChild(wireframeRow(first.section, cardItem, redraw));
-    // The picture's size, once a picture layout is on: a few widths, each
-    // with the height a portrait photo stands at (Kate, Oct 5).
     const layout = itemLayouts(first.section, cardItem).find((l) => l.on);
-    if (layout && (layout.key === 'stamp' || layout.key === 'headshot')) {
+    if (layout?.key === 'card') {
+      // The Date card's extras (Kate, Oct 6): Zoom available on the date block, and the View flyer link.
+      lookCol.appendChild(checkRow('Zoom available', cardItem.fields.zoom === true, (on) => { setZoom(cardItem, on); redraw(); }));
+      const group = el('div', 'edit-card-group');
+      editFieldSeq += 1;
+      const id = `edit-field-${editFieldSeq}`;
+      const sub = el('label', 'edit-card-sublabel', FIELD_LABELS.flyer);
+      sub.htmlFor = id;
+      const input = el('input', 'edit-card-input');
+      input.type = 'url';
+      input.id = id;
+      input.placeholder = 'https://';
+      input.value = cardItem.fields.flyer ?? '';
+      input.addEventListener('input', () => { setFlyer(cardItem, input.value); scheduleSave(); debouncedPreview(); });
+      group.append(sub, input);
+      lookCol.appendChild(group);
+      lookCol.appendChild(el('p', 'triage-section-note drawer-note', 'The card shows the description and leaves the picture out.'));
+    } else if (layout && (layout.key === 'stamp' || layout.key === 'headshot')) {
+      // The picture's size, once a picture layout is on: a few widths, each
+      // with the height a portrait photo stands at (Kate, Oct 5).
       lookCol.appendChild(el('h4', 'drawer-h4 drawer-h4--later', 'Picture size, px'));
       const chips = el('div', 'size-chips');
       chips.setAttribute('role', 'radiogroup');
@@ -1727,8 +1856,9 @@ function openItemEditor(refs, iframe) {
     fieldInputs.push({ ref, set: ctl.set, focus: ctl.focus });
   }
 
-  // What the fields held when the card opened, for Cancel.
+  // What the card held when it opened, the look included, for Undo changes.
   const opened = fieldInputs.map((f) => ({ ref: f.ref, value: getField(state.issue, f.ref) ?? '' }));
+  const openedLook = cardItem ? { fields: structuredClone(cardItem.fields ?? {}), group: cardItem.group } : null;
 
   const itemId = first.item;
   if (itemId) {
@@ -1751,21 +1881,16 @@ function openItemEditor(refs, iframe) {
     refreshEditIframe(iframe);
     drawLook();
   } });
-  const cancelBtn = button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: () => {
-    let changed = false;
-    opened.forEach(({ ref, value }, i) => {
-      if ((getField(state.issue, ref) ?? '') === value) return;
-      setField(state.issue, ref, value);
-      fieldInputs[i].set(value);
-      changed = true;
-    });
-    if (changed) { scheduleSave(); refreshEditIframe(iframe); }
-    closeDrawer();
+  // Undo changes (Kate, Oct 7): everything back to what it was when the card
+  // opened, the look included; the card stays open. Done, in the head, closes it.
+  const undoBtn = button(' Undo changes', 'ghost-btn ghost-btn--muted', { icon: 'arrow-rotate-left', onClick: () => {
+    if (openedLook) { cardItem.fields = structuredClone(openedLook.fields); cardItem.group = openedLook.group; }
+    opened.forEach(({ ref, value }, i) => { setField(state.issue, ref, value); fieldInputs[i].set(value); });
+    scheduleSave();
+    refreshEditIframe(iframe);
+    drawLook();
   } });
-  // Edits are live, so Save is the word that closes the drawer.
-  const saveBtn = button('Save', 'btn btn-primary edit-card-save', { onClick: closeDrawer });
-  actions.append(revertBtn, cancelBtn, saveBtn);
-  topActions(card);
+  actions.append(revertBtn, undoBtn);
 
   openDrawer(card);
   requestAnimationFrame(() => fieldInputs[0] && fieldInputs[0].focus());
@@ -1787,7 +1912,7 @@ function openCalloutEditor(id, iframe) {
   const lookCol = el('div', 'drawer-look');
   const drawLook = () => {
     lookCol.replaceChildren(el('h4', 'drawer-h4', 'Its style'));
-    lookCol.appendChild(swatchRow(CALLOUT_CHOICES, callout.style, (key) => { setCalloutStyle(callout, key); scheduleSave(); refreshEditIframe(iframe); drawLook(); }));
+    lookCol.appendChild(calloutTiles(callout.style, (key) => { setCalloutStyle(callout, key); scheduleSave(); refreshEditIframe(iframe); drawLook(); }));
     const note = callout.kind === 'share' ? 'Always at the end of the email.'
       : calloutAfter(callout) === CALLOUT_END ? 'At the end of the email. Move it on Outline.'
       : `After ${SECTION_REGISTRY.find((s) => s.key === callout.after)?.label || 'the introduction'}. Move it on Outline.`;
@@ -1829,6 +1954,7 @@ function openCalloutEditor(id, iframe) {
     fieldInputs.push({ ref, set: ctl.set, focus: ctl.focus });
   }
   const opened = fieldInputs.map((f) => ({ ref: f.ref, value: getField(state.issue, f.ref) ?? '' }));
+  const openedStyle = callout.style;
 
   actions.appendChild(button(' Remove', 'ghost-btn ghost-btn--danger edit-card-delete', { icon: 'trash-can', onClick: () => {
     closeDrawer();
@@ -1847,19 +1973,14 @@ function openCalloutEditor(id, iframe) {
       refreshEditIframe(iframe);
     } }));
   }
-  actions.appendChild(button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: () => {
-    let changed = false;
-    opened.forEach(({ ref, value }, i) => {
-      if ((getField(state.issue, ref) ?? '') === value) return;
-      setField(state.issue, ref, value);
-      fieldInputs[i].set(value);
-      changed = true;
-    });
-    if (changed) { scheduleSave(); refreshEditIframe(iframe); }
-    closeDrawer();
+  // Undo changes (Kate, Oct 7): the style and the words back to what they were when the card opened; it stays open.
+  actions.appendChild(button(' Undo changes', 'ghost-btn ghost-btn--muted', { icon: 'arrow-rotate-left', onClick: () => {
+    setCalloutStyle(callout, openedStyle);
+    opened.forEach(({ ref, value }, i) => { setField(state.issue, ref, value); fieldInputs[i].set(value); });
+    scheduleSave();
+    refreshEditIframe(iframe);
+    drawLook();
   } }));
-  actions.appendChild(button('Save', 'btn btn-primary edit-card-save', { onClick: closeDrawer }));
-  topActions(card);
 
   openDrawer(card);
   requestAnimationFrame(() => fieldInputs[0] && fieldInputs[0].focus());
@@ -1900,26 +2021,15 @@ function revealAboveDrawer(iframe, block) {
  * The drawer's other cards: the introduction, the layout, and Add an item,
  * from the buttons over the stage. Each reuses its fold, opened flat.
  */
-/** Save and Cancel at the card's top as well as its foot (Kate, Oct 6: "a
- *  save options up top too on the box"), each pressing its twin below, so
- *  the two can never disagree. A card with no Save gets none. */
-function topActions(card) {
-  const buttons = [...card.querySelectorAll('.drawer-card-body button, .drawer-card-actions button')];
-  const save = buttons.find((b) => b.textContent.trim() === 'Save');
-  if (!save) return;
-  const cancel = buttons.find((b) => b.textContent.trim() === 'Cancel');
-  const slot = el('div', 'drawer-card-top');
-  if (cancel) slot.append(button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: () => cancel.click() }));
-  slot.append(button('Save', 'btn btn-primary drawer-card-top-save', { onClick: () => save.click() }));
-  card.querySelector('.edit-card-close').before(slot);
-}
-
+/** Add an item's card (Kate, Oct 7): the fold's fields in the body, Cancel
+ *  and its own Add to the issue at the foot, an × in the head. */
 function openPanelInDrawer(title, details) {
-  const { card, body, actions } = drawerCard(title);
+  const { card, body, actions } = drawerCard(title, { closeWord: '' });
   details.open = true;
   body.appendChild(details);
-  actions.appendChild(button('Done', 'btn btn-primary', { onClick: closeDrawer }));
-  topActions(card);
+  const primary = details.querySelector('.addon-primary');
+  actions.appendChild(button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: closeDrawer }));
+  if (primary) actions.appendChild(primary);
   // Level with the top of the window, wherever the page is scrolled to.
   openDrawer(card, columnOffset(window.scrollY + 72));
   requestAnimationFrame(() => firstField(card)?.focus());
@@ -1931,86 +2041,12 @@ function openPanelInDrawer(title, details) {
  * Called each time the wizard navigates to 'edit'.
  */
 /**
- * A row of swatches, one on: each is a small drawing of the result, with its
- * word under it. `choices` are {key, label}; `swKey` maps a key to its drawing.
- */
-function swatchRow(choices, current, onPick) {
-  const row = el('div', 'swatch-row');
-  row.setAttribute('role', 'radiogroup');
-  for (const c of choices) {
-    const drawing = c.key === 'none' && choices === PICTURE_CHOICES ? 'nopic' : c.key;
-    const b = button('', `swatch sw-${drawing}` + (c.key === current ? ' is-on' : ''));
-    b.setAttribute('role', 'radio');
-    b.setAttribute('aria-checked', String(c.key === current));
-    b.append(el('span', 'pic'), el('span', '', c.label));
-    b.addEventListener('click', () => onPick(c.key));
-    row.appendChild(b);
-  }
-  return row;
-}
-
-/**
- * The popover of swatches beside something clicked in the preview: its
- * rectangle is read inside the iframe and mapped out through the iframe's
- * zoom, so the card lands next to the thing on the page.
- */
-function tweakPopover(iframe, target, title, choices, current, onPick) {
-  const zoom = parseFloat(iframe.style.zoom) || 1;
-  const outer = iframe.getBoundingClientRect();
-  const r = target.getBoundingClientRect();
-  const rect = { left: outer.left + r.left * zoom, right: outer.left + r.right * zoom, top: outer.top + r.top * zoom, bottom: outer.top + r.bottom * zoom };
-  target.classList.add('ec-edit-flash');
-  setTimeout(() => target.classList.remove('ec-edit-flash'), 600);
-  showMenu(target, 'tweak-pop', (menu) => {
-    menu.appendChild(el('span', 'tweak-pop-title', title));
-    menu.appendChild(swatchRow(choices, current, (key) => { onPick(key); closeMenu(); }));
-  }, rect);
-}
-
-/** After a choice made on the email: save, redraw, and keep the rail's Layout fold in step. */
-function afterTweak(iframe) {
-  scheduleSave();
-  refreshEditIframe(iframe);
-  document.querySelector('.layout-panel-body')?.dispatchEvent(new CustomEvent('layout-changed'));
-}
-
-/**
- * The rail's Layout fold: the callout's style as swatches (also reachable by
- * clicking the callout in the email), the contents strip, and Reset. Here
- * because a callout set to None cannot be clicked back on the email.
- */
-function buildLayoutPanel(iframe) {
-  const { details, body } = railPanel('Layout');
-  body.classList.add('layout-panel-body');
-  const draw = () => {
-    body.replaceChildren();
-    const issue = state.issue;
-    const nav = el('label', 'layout-check');
-    const cb = el('input');
-    cb.type = 'checkbox';
-    cb.checked = layoutOf(issue).nav;
-    cb.addEventListener('change', () => { setNav(issue, cb.checked); scheduleSave(); refreshEditIframe(iframe); draw(); });
-    nav.append(cb, ' Contents strip under the masthead');
-    body.appendChild(nav);
-    body.appendChild(el('p', 'triage-section-note', 'The sections\' order is set on Outline: drag a section by its handle. Callouts are added and moved on Outline and styled from their own card here. Pictures and descriptions are chosen from each item\'s card.'));
-    if (hasCustomOptions(issue)) {
-      const reset = button(' Reset layout options', 'ghost-btn ghost-btn--muted layout-reset', { icon: 'rotate-left', onClick: () => { resetOptions(issue); scheduleSave(); refreshEditIframe(iframe); draw(); } });
-      reset.title = 'Every layout option back to its default';
-      body.appendChild(reset);
-    }
-  };
-  body.addEventListener('layout-changed', draw);
-  draw();
-  return details;
-}
-
-/**
  * Add callout (Kate, Oct 5), a door beside Add an item: pick the kind and
  * the section it follows; the callout joins the issue and its own card
  * opens at once, style first, so it can be styled and worded on the spot.
  */
 function openAddCalloutCard(iframe) {
-  const { card, body, actions } = drawerCard('Add callout');
+  const { card, body, actions } = drawerCard('Add a callout', { closeWord: '' });
   const col = el('div', 'drawer-fields');
   col.appendChild(el('h4', 'drawer-h4', 'Which one'));
   const kinds = el('div', 'add-callout-kinds');
@@ -2063,15 +2099,15 @@ function openAddCalloutCard(iframe) {
 function renderEdit() {
   closeDrawer();
   const container = openStep('edit', 'Check the issue and tweak anything in place.',
-    'Click any item in the email and its card opens beside it: how it is laid out, then its words. A callout opens the same way, its style first. Click a picture to change it on the spot. The introduction, the layout and Add an item open from the buttons over the email.');
+    'Click anything on the email and its card opens beside it: how it is laid out, then its words. A callout opens the same way, its style first. Drag an item or a section by the grip at its left to move it. Add an item, Add a callout and the contents strip sit over the email.');
 
   if (!state.issue) {
-    emptyLine(container, 'No issue loaded. Pull from the desk on the Review step first.');
+    emptyLine(container, 'No issue loaded. Pull from the desk on the Outline step first.');
     return;
   }
 
   const iframe = el('iframe', 'edit-preview-iframe');
-  iframe.setAttribute('title', 'Newsletter preview: click an item to edit it');
+  iframe.setAttribute('title', 'Newsletter preview: click an item to edit it, drag it by its grip to move it');
   iframe.setAttribute('scrolling', 'no');
   iframe.addEventListener('load', () => {
     wireIframeEditing(iframe);
@@ -2085,18 +2121,35 @@ function renderEdit() {
     }
   });
 
-  // Over the stage: what the sheet is, and the three doors that are not an item.
+  // Over the stage: what the sheet is, and the doors for what is not on it
+  // yet (Kate, Oct 7): Add an item, Add a callout, the contents strip, and
+  // Reset once an option differs from its default. The introduction, the
+  // items, the callouts and the pictures are all clicked on the email.
   const toolbar = el('div', 'edit-toolbar');
   const previewNote = el('p', 'preview-note');
   previewNote.tabIndex = -1;   // where focus lands when the drawer closes
-  previewNote.textContent = `Preview at ${Math.round(PREVIEW_MAX_SCALE * 100)} percent, as it lands in Outlook. Click any item to edit it.`;
+  previewNote.textContent = `Preview at ${Math.round(PREVIEW_MAX_SCALE * 100)} percent, as it lands in Outlook.${PREVIEW_TAIL}`;
   const doors = el('div', 'edit-doors');
-  doors.append(
-    button(' Introduction', 'ghost-btn', { icon: 'align-left', onClick: () => openPanelInDrawer('Introduction', buildIntroPanel(iframe)) }),
-    button(' Layout', 'ghost-btn', { icon: 'table-columns', onClick: () => openPanelInDrawer('Layout', buildLayoutPanel(iframe)) }),
-    button(' Add an item', 'ghost-btn', { icon: 'plus', onClick: () => openPanelInDrawer('Add an item', buildAddItemPanel(iframe)) }),
-    button(' Add callout', 'ghost-btn', { icon: 'bullhorn', onClick: () => openAddCalloutCard(iframe) }),
-  );
+  const drawDoors = () => {
+    doors.replaceChildren(
+      button(' Add an item', 'ghost-btn', { icon: 'plus', onClick: () => openPanelInDrawer('Add an item', buildAddItemPanel(iframe)) }),
+      button(' Add a callout', 'ghost-btn', { icon: 'bullhorn', onClick: () => openAddCalloutCard(iframe) }),
+    );
+    const strip = el('label', 'layout-check');
+    const cb = el('input');
+    cb.type = 'checkbox';
+    cb.checked = layoutOf(state.issue).nav;
+    cb.addEventListener('change', () => { setNav(state.issue, cb.checked); scheduleSave(); refreshEditIframe(iframe); });
+    strip.append(cb, ' Contents strip');
+    doors.appendChild(strip);
+    if (hasCustomOptions(state.issue)) {
+      const reset = button(' Reset layout', 'ghost-btn ghost-btn--muted', { icon: 'rotate-left', onClick: () => { resetOptions(state.issue); scheduleSave(); refreshEditIframe(iframe); } });
+      reset.title = 'Every layout option back to its default';
+      doors.appendChild(reset);
+    }
+  };
+  drawDoors();
+  syncEditDoors = drawDoors;
   toolbar.append(previewNote, doors);
   container.appendChild(toolbar);
 
@@ -2225,7 +2278,7 @@ function renderExport() {
 
   // Nothing to export yet: one plain sentence, no buttons.
   if (!state.issue || !countIssueItems(state.issue)) {
-    emptyLine(container, 'Nothing to export yet. Pull from the desk on the Review step first.');
+    emptyLine(container, 'Nothing to export yet. Pull from the desk on the Outline step first.');
     return;
   }
 
@@ -2310,14 +2363,14 @@ function renderExport() {
   container.append(btnRow, after);
 }
 
-/** The way on after an issue is archived: storage cleared, back to Review for the next one. */
+/** The way on after an issue is archived: storage cleared, back to Outline for the next one. */
 function startNextIssue() {
   clearState();
   state.issue = null;
   state.baseline = null;
   state.reached = 0;
   pullMessage = '';
-  goTo('review');
+  goTo('triage');
 }
 
 // ---------------------------------------------------------------------------
@@ -2326,8 +2379,8 @@ function startNextIssue() {
 
 /**
  * Make a saved draft the builder's current issue: the banner's Restore and
- * Recently discarded's alike. Kept in storage, and on to the Outline when it
- * holds items; one without stays on Review.
+ * Recently discarded's alike. Kept in storage, and drawn on the Outline,
+ * which holds the Issue and Pull for one that is still empty.
  * @param {object} issue
  */
 function openDraft(issue) {
@@ -2336,7 +2389,7 @@ function openDraft(issue) {
   state.reached = 0;
   pullMessage = '';
   saveState(issue);
-  goTo(countIssueItems(issue) ? 'triage' : 'review');
+  goTo('triage');
 }
 
 /** A failure's own words, without the "try again" a Try again or Retry button beside them already says. */
@@ -2395,7 +2448,7 @@ function showRestoreBanner(saved) {
       settle();
       discarded = withEntry(discarded, reply.draft);
       focusDiscarded = fromKeyboard ? reply.draft.id : null;
-      if (state.step === 'review') renderReview();   // unlocks the Issue select and Pull; the list leads with it
+      if (state.step === 'triage') renderTriage();   // unlocks the Issue select and Pull; the list leads with it
       setWizardStatus('Discarded. Recently discarded keeps it for 90 days.');
     } catch (err) {
       const retry = ghostButton('Try again');
@@ -2498,13 +2551,13 @@ function discardedRow(entry) {
 }
 
 /**
- * Review's Recently discarded list: what Discard kept on the desk, newest
- * first, each with Restore. Called once from renderReview, before its last
- * part draws; the list joins the step after everything else. Nothing at all
- * while it is empty; the last list known shows at once and the desk's answer
- * replaces it; a list that can't load is a quiet line with Retry that holds
- * nothing else up.
- * @param {HTMLElement} container - the Review step
+ * The Outline's Recently discarded list: what Discard kept on the desk, newest
+ * first, each with Restore. Called once from renderPullHead, before the rest
+ * of the step draws; the list joins the step after everything else. Nothing
+ * at all while it is empty; the last list known shows at once and the desk's
+ * answer replaces it; a list that can't load is a quiet line with Retry that
+ * holds nothing else up.
+ * @param {HTMLElement} container - the Outline step
  */
 function renderDiscardedDrafts(container) {
   const draw = ++discardedDraw;
@@ -2553,8 +2606,8 @@ function renderDiscardedDrafts(container) {
 
 // The desk's top bar: the builder crumbs under Newsletter.
 renderShell(document.querySelector('.topbar'), { screen: 'builder' });
-// A saved issue locks Review before it is drawn, so the first render already knows.
+// A saved issue locks the Outline's Issue and Pull before it is drawn, so the first render already knows.
 const savedIssue = loadState();
 restorePending = Boolean(savedIssue);
-goTo('review');
+goTo('triage');
 if (savedIssue) showRestoreBanner(savedIssue);
