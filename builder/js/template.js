@@ -16,6 +16,11 @@
  * Older drafts carried issue.layout.callout for the one fixed callout; it
  * still reads as one Share callout after ERC Research.
  *
+ *   fields.highlight       true draws a Spotlight or Upcoming Events item as the
+ *                          highlight card (Kate, Oct 6): its words on the tint at
+ *                          left, the maroon date block at right; fields.flyer is
+ *                          the "View flyer" link and fields.zoom adds "Zoom available"
+ *
  * Research items (Kate, Oct 6, after the April 14 issue) are tinted boxes:
  * the item's group is its kind (Research Brief, Research Report, Journal
  * Article, ERC Explains) and prints as the box's eyebrow; the maroon title is
@@ -206,7 +211,7 @@ function buildSections(issue) {
       key: secReg.key, anchor: anchorIdForSection(secReg.key), heading: email.heading, short: email.short,
       kind: DIGEST_KINDS.has(secReg.kind) ? 'digest' : 'full', showSource: secReg.key === 'headlines',
       tailUrl: safeItemHref(secReg.seeMoreUrl), summaryGroups: email.summaryGroups,
-      groups: groupsInOrder(secReg, items),
+      groups: groupsInOrder(secReg, items), year: issueYear(issue),
     });
   }
   return out;
@@ -442,6 +447,97 @@ function researchRows(def, editable) {
   return rows;
 }
 
+// ─── The highlight card (Kate, Oct 6: the Colloquium) ────────────────────────
+
+/** The sections whose items can be the card: the two that hold events. */
+const HIGHLIGHT_SECTIONS = new Set(['spotlight', 'events']);
+const isCard = (def, it) => HIGHLIGHT_SECTIONS.has(def.key) && it.fields.highlight === true;
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+/** The year the issue is dated, for a card's date typed without one. */
+function issueYear(issue) {
+  const m = /\b(20\d{2})\b/.exec(String(issue?.date ?? ''));
+  return m ? Number(m[1]) : new Date().getFullYear();
+}
+
+/**
+ * A typed date read for the card: "October 20, 2026", "Oct 20", "Tuesday,
+ * October 20, 2026" or "2026-10-20". A year left out is the issue's own.
+ * Returns { weekday, short } ("Tuesday", "Oct 20"), or null when the words
+ * are not a date, so the card prints them as typed.
+ */
+function readDate(text, fallbackYear) {
+  const s = String(text ?? '').trim();
+  let y, m, d;
+  const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s);
+  const named = /^(?:[A-Za-z]+,?\s+)?([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?$/.exec(s);
+  if (iso) [y, m, d] = [Number(iso[1]), Number(iso[2]) - 1, Number(iso[3])];
+  else if (named) {
+    m = MONTHS.findIndex((name) => name.toLowerCase().startsWith(named[1].toLowerCase().slice(0, 3)));
+    d = Number(named[2]);
+    y = named[3] ? Number(named[3]) : fallbackYear;
+  } else return null;
+  if (m < 0 || d < 1 || d > 31) return null;
+  const date = new Date(Date.UTC(y, m, d));
+  if (date.getUTCMonth() !== m) return null;
+  return { weekday: DAYS[date.getUTCDay()], short: `${MONTHS[m].slice(0, 3)}&nbsp;${d}` };
+}
+
+/** A place one line per part, "City, ST" kept together: "Texas A&M Hotel, Ross Room, College Station, TX". */
+function placeLines(text) {
+  const lines = [];
+  for (const part of String(text ?? '').split(/\s*,\s*/).map((s) => s.trim()).filter(Boolean)) {
+    if (/^[A-Z]{2}$/.test(part) && lines.length) lines[lines.length - 1] += `, ${part}`;
+    else lines.push(part);
+  }
+  return lines;
+}
+
+/**
+ * The highlight card (Kate, Oct 6, after her Policy Exchange card): the
+ * event's words on the tint at left (a kicker when the title has one before
+ * a colon, the maroon title, the description, "View flyer »"), the maroon
+ * date block at right (weekday, the short date, time, the place a line a
+ * part, "Zoom available"). The description shows whatever the group's
+ * default, unless switched off. No button, no picture. `pt` is the room
+ * above: 12 under a label, 22 under an item.
+ */
+function highlightCard(it, def, pt, editable) {
+  const f = it.fields;
+  const hook = (field) => editAttrs(def.key, it.id, field, editable);
+  const href = safeItemHref(f.url);
+  const link = (words, color, hooks = '') => href
+    ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:${color}; text-decoration:none;"${hooks}>${words}</a>`
+    : `<span${hooks}>${words}</span>`;
+  const title = String(f.title ?? '').trim();
+  const colon = title.indexOf(': ');
+  const kicker = colon > 0 ? title.slice(0, colon) : '';
+  const headline = colon > 0 ? title.slice(colon + 2) : title;
+  const sumOk = !!f.summary && f.showSummary !== false;
+  const flyer = safeItemHref(f.flyer);
+  const words = (kicker ? `<p style="margin:0; ${T.title} color:${C.maroonLight};">${link(esc(kicker), C.maroonLight)}</p>` : '')
+    + p(`font-family:${SANS}; font-size:18px; line-height:1.3; font-weight:700; color:${C.maroon};`, link(esc(headline), C.maroon, hook('title')), sumOk || flyer ? 8 : 0)
+    + (sumOk ? paras(T.body, f.summary, 8, hook('summary')) : '')
+    + (flyer ? `<p style="margin:8px 0 0; font-family:${SANS}; font-size:14px; line-height:1.4; font-weight:700;"><a href="${esc(flyer)}" target="_blank" rel="noopener" style="color:${C.maroon}; text-decoration:none;"${hook('flyer')}>View flyer &#187;</a></p>` : '');
+
+  const when = readDate(f.date, def.year);
+  const lines = [];   // [style, html, mb, hooks]; the last line gets no margin
+  const ivory = `font-family:${SANS}; font-size:14px; line-height:1.4; color:${C.ivory};`;
+  if (f.date && when) {
+    lines.push([`font-family:${LABEL}; font-size:12px; line-height:1.4; letter-spacing:2px; text-transform:uppercase; color:${C.cream};`, when.weekday, 2, '']);
+    lines.push([`font-family:${SANS}; font-size:30px; line-height:1.1; font-weight:700; color:${C.white};`, when.short, 8, hook('date')]);
+  } else if (f.date) lines.push([`font-family:${SANS}; font-size:18px; line-height:1.3; font-weight:700; color:${C.white};`, esc(f.date), 8, hook('date')]);
+  if (f.time) lines.push([ivory, esc(f.time), 8, hook('time')]);
+  if (f.location) lines.push([ivory, placeLines(f.location).map(esc).join('<br>'), 8, hook('location')]);
+  if (f.zoom) lines.push([`font-family:${SANS}; font-size:14px; line-height:1.4; font-weight:700; color:${C.white};`, 'Zoom available', 0, '']);
+  const block = lines.map(([style, html, mb, hooks], i) => `<p style="${i === lines.length - 1 ? 'margin:0;' : `margin:0 0 ${mb}px;`} ${style}"${hooks}>${html}</p>`).join('');
+
+  return row(tbl(`<tr><td valign="top" style="vertical-align:top; background-color:${C.tint}; padding:20px 20px 20px 20px;">${words}</td>`
+    + `<td valign="top" width="176" style="width:176px; vertical-align:top; background-color:${C.maroon}; padding:22px 20px 20px 20px;">${block}</td></tr>`), `padding:${pt}px 24px 0 24px;`);
+}
+
 function fullRows(def, editable) {
   if (def.key === 'research') return researchRows(def, editable);
   const rows = [];
@@ -450,9 +546,12 @@ function fullRows(def, editable) {
     const brief = def.key === 'events' && !summaryAllowed(def, g.key);
     if (g.label) rows.push(labelRow(g.label, gi === 0 ? 18 : 30));
     g.items.forEach((it, ii) => {
-      if (ii && brief) rows.push(rule(T.hair, '12px 48px 0 40px'));
-      const tight = ii && !shows(it) && !shows(g.items[ii - 1]);
-      const pt = ii === 0 ? 10 : brief ? 12 : tight ? 16 : 22;
+      // A card keeps its own distance: no hairline on either side of it, 22px to the item after.
+      const afterCard = ii > 0 && isCard(def, g.items[ii - 1]);
+      if (isCard(def, it)) { rows.push(highlightCard(it, def, ii === 0 ? 12 : 22, editable)); return; }
+      if (ii && brief && !afterCard) rows.push(rule(T.hair, '12px 48px 0 40px'));
+      const tight = ii && !afterCard && !shows(it) && !shows(g.items[ii - 1]);
+      const pt = ii === 0 ? 10 : afterCard ? 22 : brief ? 12 : tight ? 16 : 22;
       rows.push(row(itemHtml(it, def, g, editable), `padding:${pt}px 48px 0 40px;`));
     });
   });

@@ -1,7 +1,7 @@
 // builder/tests/options.test.js: the Outline's per-issue layout options (Oct 2026).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CALLOUT_CHOICES, PICTURE_CHOICES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setDescription, setPictureStyle, acceptPictureUrl, resetOptions, hasCustomOptions, includedWords } from '../js/options.js';
+import { CALLOUT_CHOICES, PICTURE_CHOICES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setDescription, setPictureStyle, acceptPictureUrl, resetOptions, hasCustomOptions, includedWords, canHighlight, setHighlight } from '../js/options.js';
 import { layoutOf, calloutsOf, renderNewsletter, CALLOUT_STYLES, PICTURE_STYLES } from '../js/template.js';
 import { createEmptyIssue, CALLOUT_KINDS, SHARE_URL } from '../js/model.js';
 
@@ -135,6 +135,27 @@ test('resetOptions returns every option to its default, and hasCustomOptions kno
   assert.ok(!('layout' in issue));
   assert.equal(calloutsOf(issue).length, 2, 'callouts are content, not options: Reset leaves them');
   assert.equal(hasCustomOptions(issue), false);
+});
+
+test('the highlight card (Kate, Oct 6) is offered to Spotlight and Upcoming Events items; setHighlight writes the field, Reset clears it, and it counts as a custom option', () => {
+  assert.equal(canHighlight('spotlight'), true);
+  assert.equal(canHighlight('events'), true);
+  assert.equal(canHighlight('research'), false);
+  assert.equal(canHighlight('opportunities'), false);
+  const issue = createEmptyIssue();
+  issue.sections.spotlight.enabled = true;
+  const it = item('c', 'events', { summary: 'x', date: 'October 20, 2026' });
+  issue.sections.spotlight.items = [it];
+  assert.equal(hasCustomOptions(issue), false);
+  setHighlight(it, true);
+  assert.equal(it.fields.highlight, true);
+  assert.equal(hasCustomOptions(issue), true);
+  assert.match(renderNewsletter(issue), /background-color:#500000; padding:22px 20px 20px 20px;/);
+  setHighlight(it, false);
+  assert.ok(!('highlight' in it.fields), 'off is the default, so the field goes');
+  setHighlight(it, true);
+  resetOptions(issue);
+  assert.ok(!('highlight' in it.fields));
 });
 
 test('the Outline\'s count line', () => {

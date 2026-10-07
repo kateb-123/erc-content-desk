@@ -170,6 +170,17 @@ export function placeholderItems(issue) {
   return out;
 }
 
+/** The sections whose items can be the highlight card (Kate, Oct 6): the two that hold events. */
+export const HIGHLIGHT_SECTIONS = new Set(['spotlight', 'events']);
+export const canHighlight = (sectionKey) => HIGHLIGHT_SECTIONS.has(sectionKey);
+
+/** Makes an item the highlight card, or a plain item again (the default, so the field goes). */
+export function setHighlight(item, on) {
+  if (!item.fields) item.fields = {};
+  if (on) item.fields.highlight = true;
+  else delete item.fields.highlight;
+}
+
 /** Turns an item's description on or off for this issue. */
 export function setDescription(item, on) {
   if (!item.fields) item.fields = {};
@@ -203,6 +214,7 @@ export function resetOptions(issue) {
       if (!item.fields) continue;
       delete item.fields.showSummary;
       delete item.fields.pictureStyle;
+      delete item.fields.highlight;
     }
   }
 }
@@ -213,7 +225,7 @@ export function hasCustomOptions(issue) {
   for (const sec of Object.values(issue?.sections || {})) {
     for (const item of sec.items || []) {
       const f = item.fields || {};
-      if (typeof f.showSummary === 'boolean' || PICTURE_STYLES.includes(f.pictureStyle)) return true;
+      if (typeof f.showSummary === 'boolean' || PICTURE_STYLES.includes(f.pictureStyle) || f.highlight === true) return true;
     }
   }
   return false;

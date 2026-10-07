@@ -532,6 +532,48 @@ test('a URL typed without a scheme is linked as https; a word or an unsafe schem
   assert.match(html, /<span[^>]*>Word<\/span>/);
 });
 
+// ─── The highlight card (Kate, Oct 6: the Colloquium) ────────────────────────
+
+test('fields.highlight turns an event into the card: tinted words at left (kicker, maroon title, text, View flyer), the maroon date block at right; no button, no picture', () => {
+  const issue = createEmptyIssue();
+  issue.date = 'October 6, 2026';
+  issue.callouts = [];
+  issue.sections.spotlight.enabled = true;
+  issue.sections.spotlight.items = [
+    { id: 'c', group: 'events', fields: { title: 'ERC Colloquium: Controversies in the Classroom', url: 'https://x.org/c', date: 'October 20, 2026', time: '5:00 to 7:00 PM CT', location: 'Texas A&M Hotel, Ross Room, College Station, TX', summary: 'Moderated by **Lori Taylor**.\n\nDrinks & hors d\'oeuvres.', flyer: 'https://x.org/flyer.pdf', zoom: true, highlight: true, image: PHOTO } },
+    { id: 'e', group: 'events', fields: { title: 'ERC EdTalk with Mark', date: 'October 9, 2026', summary: 'A talk.' } },
+  ];
+  const html = renderNewsletter(issue);
+  assert.match(html, /<tr><td style="padding:12px 24px 0 24px;"><table role="presentation"[^>]*width="100%"[^>]*><tbody><tr><td valign="top" style="vertical-align:top; background-color:#F5F2F1; padding:20px 20px 20px 20px;"><p style="margin:0; font-family:'Trebuchet MS'[^"]*font-size:16px; line-height:1.3; font-weight:700; color:#732F2F;"><a href="https:\/\/x\.org\/c" target="_blank" rel="noopener" style="color:#732F2F; text-decoration:none;">ERC Colloquium<\/a><\/p><p style="margin:0 0 8px;[^"]*font-size:18px; line-height:1.3; font-weight:700; color:#500000;"><a href="https:\/\/x\.org\/c"[^>]*style="color:#500000; text-decoration:none;">Controversies in the Classroom<\/a><\/p><p style="margin:0 0 8px;[^"]*color:#3E3E3E;">Moderated by <strong>Lori Taylor<\/strong>\.<\/p><p style="margin:0 0 0px;[^"]*">Drinks &amp; hors d'oeuvres\.<\/p><p style="margin:8px 0 0;[^"]*font-weight:700;"><a href="https:\/\/x\.org\/flyer\.pdf" target="_blank" rel="noopener" style="color:#500000; text-decoration:none;">View flyer &#187;<\/a><\/p><\/td>/, 'the words');
+  assert.match(html, /<td valign="top" width="176" style="width:176px; vertical-align:top; background-color:#500000; padding:22px 20px 20px 20px;"><p style="margin:0 0 2px; font-family:Verdana[^"]*font-size:12px;[^"]*letter-spacing:2px; text-transform:uppercase; color:#D6D3C4;">Tuesday<\/p><p style="margin:0 0 8px;[^"]*font-size:30px; line-height:1.1; font-weight:700; color:#ffffff;">Oct&nbsp;20<\/p><p style="margin:0 0 8px;[^"]*font-size:14px;[^"]*color:#E9E4DC;">5:00 to 7:00 PM CT<\/p><p style="margin:0 0 8px;[^"]*color:#E9E4DC;">Texas A&amp;M Hotel<br>Ross Room<br>College Station, TX<\/p><p style="margin:0;[^"]*font-weight:700; color:#ffffff;">Zoom available<\/p><\/td><\/tr><\/tbody><\/table><\/td><\/tr>/, 'the date block: weekday and short date read from the date, the place one line per part with the state kept with its city');
+  assert.ok(!/photo\.jpg/.test(html) && !/padding:11px 20px 12px 20px/.test(html), 'no picture, no button');
+  assert.match(html, /padding:22px 48px 0 40px;"><p[^>]*><span[^>]*>ERC EdTalk with Mark<\/span>/, 'the next item sits 22px under the card, in the plain layout');
+  const ed = renderNewsletter(issue, { editable: true });
+  for (const f of ['title', 'summary', 'date', 'time', 'location', 'flyer']) assert.match(ed, new RegExp(`data-edit-section="spotlight" data-edit-item="c" data-edit-field="${f}"`), f);
+});
+
+test('the card with less: a title with no colon is the maroon line alone; a date it cannot read prints as typed, smaller, with no weekday; no time, place, flyer or Zoom lines; its description shows even where the group hides them; in Upcoming Events the hairlines around it go; research never gets one', () => {
+  const issue = createEmptyIssue();
+  issue.sections.events.enabled = true;
+  issue.sections.events.items = [
+    { id: 'e1', group: 'tamu', fields: { title: 'Before', date: 'May 1' } },
+    { id: 'c', group: 'tamu', fields: { title: 'Tea Time', date: 'TBA', summary: 'Shown.', highlight: true } },
+    { id: 'e2', group: 'tamu', fields: { title: 'After', date: 'May 3' } },
+    { id: 'd', group: 'offcampus', fields: { title: 'Dated', date: '2026-10-20', highlight: true } },
+  ];
+  issue.sections.research.enabled = true;
+  issue.sections.research.items = [{ id: 'r', group: 'brief', fields: { title: 'Not a card', summary: 'x', highlight: true } }];
+  const html = renderNewsletter(issue);
+  assert.ok(html.indexOf('>Not a card<') < html.indexOf('>Upcoming Events</h2>'), 'research prints first');
+  const panel = html.slice(html.indexOf('>Upcoming Events</h2>'), html.indexOf('alt="Texas A&amp;M University Education Research Center"'));
+  assert.ok(!/border-top:1px solid #EAEAEA/.test(panel.slice(0, panel.indexOf('>After<'))), 'no hairline before or after the card');
+  assert.match(panel, /<td valign="top" style="vertical-align:top; background-color:#F5F2F1;[^"]*"><p style="margin:0 0 8px;[^"]*font-size:18px;[^"]*color:#500000;"><span>Tea Time<\/span><\/p><p style="margin:0 0 0px;[^"]*color:#3E3E3E;">Shown\.<\/p><\/td><td valign="top" width="176"[^>]*><p style="margin:0;[^"]*font-size:18px; line-height:1.3; font-weight:700; color:#ffffff;">TBA<\/p><\/td>/, 'the plain card');
+  assert.match(panel, /<p style="margin:0 0 2px;[^"]*">Tuesday<\/p><p style="margin:0;[^"]*font-size:30px;[^"]*">Oct&nbsp;20<\/p><\/td>/, 'an ISO date reads too; the last line of the block has no margin');
+  assert.ok(!/Zoom available|View flyer/.test(panel));
+  assert.match(panel, /padding:22px 48px 0 40px;"><p[^>]*><span[^>]*>After<\/span>/);
+  assert.equal(count(html, 'background-color:#500000; padding:22px 20px 20px 20px;'), 2, 'two cards; the research item is a box, not a card');
+});
+
 test('the standing links are the ones the handoff names', () => {
   assert.equal(URLS.site, 'https://erc.cehd.tamu.edu/');
   assert.equal(URLS.join, 'https://erc-policy-exchange.vercel.app/newsletter/');
