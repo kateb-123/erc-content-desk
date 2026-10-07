@@ -189,6 +189,7 @@ export function placeholderItems(issue) {
     for (const item of sec.items || []) {
       const f = item.fields || {};
       if (String(f.image ?? '').trim() || !PICTURE_STYLES.includes(f.pictureStyle) || f.pictureStyle === 'none') continue;
+      if (f.highlight === true) continue;   // the card draws no picture, so nothing waits on one
       if (itemOptions(sectionKey, item).descriptionOn) out.push({ sectionKey, item });
     }
   }
@@ -204,6 +205,31 @@ export function setHighlight(item, on) {
   if (!item.fields) item.fields = {};
   if (on) item.fields.highlight = true;
   else delete item.fields.highlight;
+}
+
+/** "Zoom available" on the card's date block, or not (the default, so the field goes). */
+export function setZoom(item, on) {
+  if (!item.fields) item.fields = {};
+  if (on) item.fields.zoom = true;
+  else delete item.fields.zoom;
+}
+
+/** The card's "View flyer" link, trimmed; nothing typed takes the link out. */
+export function setFlyer(item, url) {
+  if (!item.fields) item.fields = {};
+  const s = String(url ?? '').trim();
+  if (s) item.fields.flyer = s;
+  else delete item.fields.flyer;
+}
+
+/** The kinds of ERC research, as the registry prints them (Kate, Oct 6). */
+export const RESEARCH_KINDS = SECTION_REGISTRY.find((s) => s.key === 'research').groups.map((g) => ({ key: g.key, label: g.label }));
+
+/** Files a research item under one kind (its group); an unknown kind is ignored. */
+export function setResearchKind(item, key) {
+  if (!RESEARCH_KINDS.some((k) => k.key === key)) return false;
+  item.group = key;
+  return true;
 }
 
 /** Turns an item's description on or off for this issue. */
