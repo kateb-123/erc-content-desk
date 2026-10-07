@@ -447,7 +447,8 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .edit-toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--spacing-05); flex-wrap: wrap; }
 .edit-toolbar .preview-note { margin-top: var(--spacing-03); }
 .edit-toolbar .preview-note:focus { outline: none; }
-.edit-doors { display: flex; gap: var(--spacing-02); }
+.edit-doors { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02); }
+.edit-doors .layout-check { margin: 0 var(--spacing-02); }
 .edit-removed-bar { display: flex; flex-direction: column; gap: var(--spacing-02); margin-top: var(--spacing-04); }
 /* The stage: the sheet alone, centred; the box hovers over it. */
 .edit-layout--float { position: relative; justify-content: center; }

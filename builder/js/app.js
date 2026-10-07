@@ -890,8 +890,9 @@ function wireOutlineDrag(tbody, issue, { onSection, onItem }) {
  */
 function editHoverCss() {
   const tokens = getComputedStyle(document.documentElement);
-  const wash = tokens.getPropertyValue('--accent-10').trim();   // the editable cue, plain enough to see
-  const chosen = tokens.getPropertyValue('--highlight').trim();
+  const t = (name) => tokens.getPropertyValue(name).trim();
+  const wash = t('--accent-10');   // the editable cue, plain enough to see
+  const chosen = t('--highlight');
   return `
 [data-edit-field] {
   cursor: pointer;
@@ -912,8 +913,28 @@ function editHoverCss() {
   background-color: ${chosen};
   box-shadow: 0 0 0 4px ${chosen};
 }
+/* The grip (Kate, Oct 7): one floating handle at the left of the item or
+   section heading under the pointer; drag it to move the block. The dragged
+   block fades; a line above or below the block it would land against says where. */
+.ec-grip {
+  position: absolute; z-index: 5; width: 20px; height: 28px; margin: 0; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: ${t('--layer-02')}; border: 1px solid ${t('--border-subtle-01')}; border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .14); color: ${t('--icon-secondary')}; cursor: grab;
+}
+.ec-grip:hover { color: ${t('--icon-primary')}; border-color: ${t('--border-strong-01')}; }
+.ec-grip svg { width: 8px; height: 14px; display: block; }
+.ec-dragging { opacity: .4; }
+.ec-drop-before { box-shadow: inset 0 3px 0 ${t('--button-primary')} !important; }
+.ec-drop-after { box-shadow: inset 0 -3px 0 ${t('--button-primary')} !important; }
 `;
 }
+
+/** The grip's six dots, drawn inline so the iframe needs no icon font. */
+const GRIP_SVG = '<svg viewBox="0 0 8 14" aria-hidden="true"><g fill="currentColor"><circle cx="2" cy="2" r="1.4"/><circle cx="6" cy="2" r="1.4"/><circle cx="2" cy="7" r="1.4"/><circle cx="6" cy="7" r="1.4"/><circle cx="2" cy="12" r="1.4"/><circle cx="6" cy="12" r="1.4"/></g></svg>';
+
+/** A section heading's anchor names its section, except Headlines, whose anchor is "news". */
+const ANCHOR_SECTIONS = { news: 'headlines' };
 
 
 /** Counter behind the edit cards' field ids, so each label points at its own field. */
@@ -927,6 +948,9 @@ function firstField(card) {
 
 /** True newsletter width (px). The preview is scaled down to fit narrower panes. */
 const PREVIEW_WIDTH = 640;
+
+/** What the preview note says after the scale: how the sheet is worked on. */
+const PREVIEW_TAIL = ' Click anything to edit it; drag an item or a section by its grip to move it.';
 
 /** Cap the preview at 95% of true size; scales down on narrow windows so the
     edit column always fits and there's never a horizontal scrollbar. */
@@ -973,8 +997,7 @@ function fitLayout(layout) {
   if (scale <= 0) return;
   iframe.style.zoom = String(scale);
   const note = layout.closest('.wizard-step')?.querySelector('.preview-note');
-  const tail = layout.classList.contains('outline-layout') ? '' : ' Click any text to edit it.';
-  if (note) note.textContent = `Preview at ${Math.round(scale * 100)} percent, as it lands in Outlook.${tail}`;
+  if (note) note.textContent = `Preview at ${Math.round(scale * 100)} percent, as it lands in Outlook.${PREVIEW_TAIL}`;
 }
 
 // Bound once: fitPreview finds the preview afresh on every call.
@@ -985,11 +1008,15 @@ window.addEventListener('resize', debounce(fitPreview, 150));
  * Re-render the editable iframe (after an edit) and re-attach listeners.
  * @param {HTMLIFrameElement} iframe
  */
+/** Redraws the doors over the sheet after a change: the strip's box and Reset follow the options. Set by renderEdit. */
+let syncEditDoors = null;
+
 function refreshEditIframe(iframe) {
   // Re-setting srcdoc triggers the 'load' event, which re-attaches the listener.
   iframe.srcdoc = renderNewsletter(state.issue, { editable: true });
   // A tweak can lock or free Save & Export (a placeholder, or its photo arriving).
   syncStepNav();
+  syncEditDoors?.();
 }
 
 /** One fold in the edit column's rail: its label, and the empty body to fill. */
@@ -998,32 +1025,6 @@ function railPanel(title) {
   const body = el('div', 'reorder-panel-body');
   details.append(el('summary', 'reorder-panel-summary', title), body);
   return { details, body };
-}
-
-/**
- * The introduction's home in the edit column: a panel with the same rich
- * editor the cards use, bound to issue.intro. The preview refreshes as you
- * type (debounced); the editor lives outside the iframe, so focus holds.
- */
-function buildIntroPanel(iframe) {
-  const { details, body } = railPanel('Introduction');
-  body.appendChild(el('p', 'addon-hint', 'Shows under the header, before the first section.'));
-  const refresh = debounce(() => refreshEditIframe(iframe), 500);
-  const editor = buildRichEditor(state.issue?.intro || '', (md) => {
-    if (!state.issue) state.issue = createEmptyIssue();
-    state.issue.intro = md;
-    scheduleSave();
-    refresh();
-  });
-  // Edits are live, so Save is a quiet word, not a second primary.
-  const save = button('Save', 'ghost-btn intro-save-btn', { onClick: () => {
-    if (state.issue) saveState(state.issue);
-    refreshEditIframe(iframe);
-    save.textContent = 'Saved';
-    setTimeout(() => { save.textContent = 'Save'; }, 1500);
-  } });
-  body.append(editor.el, save);
-  return details;
 }
 
 let miscItemSeq = 0;
@@ -1164,8 +1165,9 @@ function buildAddItemPanel(iframe) {
 }
 
 /**
- * Wire up the click-to-edit listener and hover CSS in the iframe's contentDocument.
- * Called on every iframe 'load' event (re-fires on each srcdoc set).
+ * Wire up the sheet in the iframe's contentDocument: the hover wash, the
+ * click that opens a block's card, and the grip that drags a block (Kate,
+ * Oct 7). Called on every iframe 'load' event (re-fires on each srcdoc set).
  * @param {HTMLIFrameElement} iframe
  */
 function wireIframeEditing(iframe) {
@@ -1177,68 +1179,152 @@ function wireIframeEditing(iframe) {
   style.textContent = editHoverCss();
   (doc.head || doc.documentElement).appendChild(style);
 
-  // Hover lights the whole item (the cell that holds it), since the click
-  // opens the whole item in the drawer.
-  let hoveredBlock = null;
-  const clearHover = () => { if (hoveredBlock) hoveredBlock.classList.remove('ec-item-hover'); hoveredBlock = null; };
+  // Each section's panel carries its key, so a dragged section knows what it lands on.
+  for (const panel of doc.querySelectorAll('table[align="center"]')) {
+    const a = panel.querySelector('h2 a[id]');
+    if (a) panel.dataset.section = ANCHOR_SECTIONS[a.id] || a.id;
+  }
+
+  // The grip: one floating handle, placed at the left of the item or section
+  // heading under the pointer, in the sheet's own margin.
+  const grip = doc.createElement('button');
+  grip.type = 'button';
+  grip.className = 'ec-grip';
+  grip.draggable = true;
+  grip.innerHTML = GRIP_SVG;
+  grip.setAttribute('aria-label', 'Drag to move');
+  grip.title = 'Drag to move';
+  grip.hidden = true;
+  doc.body.appendChild(grip);
+
+  // Hover lights the whole block (the cell that holds it), since the click
+  // opens the whole item in the drawer; the grip follows the pointer's block.
+  let over = null;
+  const clearHover = () => { doc.querySelectorAll('.ec-item-hover').forEach((n) => n.classList.remove('ec-item-hover')); };
+  const placeGrip = (b) => {
+    const r = b.node.getBoundingClientRect();
+    const sheet = b.node.closest('table[align="center"]')?.getBoundingClientRect() ?? r;
+    const pad = b.kind === 'section' ? 20 : (parseFloat(doc.defaultView.getComputedStyle(b.node).paddingTop) || 0);
+    grip.hidden = false;
+    grip.style.top = `${r.top + doc.documentElement.scrollTop + pad}px`;
+    grip.style.left = `${Math.max(sheet.left + 3, r.left - 26) + doc.documentElement.scrollLeft}px`;
+  };
   doc.addEventListener('mouseover', (e) => {
-    const cell = itemCellOf(e.target);
-    if (cell === hoveredBlock) return;
+    if (e.target === grip || grip.contains(e.target)) return;
+    const b = blockAt(e.target);
+    if (b && over && b.node === over.node) return;
     clearHover();
-    if (cell) { cell.classList.add('ec-item-hover'); hoveredBlock = cell; }
+    over = b;
+    if (!b) { grip.hidden = true; return; }
+    b.node.classList.add('ec-item-hover');
+    if (b.kind === 'item' || b.kind === 'section') placeGrip(b); else grip.hidden = true;
   });
-  doc.addEventListener('mouseleave', clearHover);
+  doc.addEventListener('mouseleave', () => { clearHover(); over = null; grip.hidden = true; });
 
-  // Click listener: open an editor for the whole item the clicked field
-  // belongs to (all of its fields at once), not just the one piece clicked.
+  // Click: the block's card opens beside it, the whole item at once. A
+  // picture is part of its item, so it opens the item's card too (Kate, Oct
+  // 7: one way to every choice); a callout opens its own, style first.
   doc.addEventListener('click', (e) => {
-    // A callout (Kate, Oct 5): the whole box opens its card, style first.
-    const calloutNode = e.target.closest('[data-edit-section="callout"]');
-    if (calloutNode) {
-      e.preventDefault();
-      e.stopPropagation();
-      const id = calloutNode.dataset.editItem;
-      const cell = calloutNode.closest('td');
-      closeMenu();
-      openCalloutEditor(id, iframe);
-      doc.querySelectorAll('.ec-item-open').forEach((n) => n.classList.remove('ec-item-open'));
-      if (cell) { cell.classList.add('ec-item-open'); revealAboveDrawer(iframe, cell); }
-      return;
-    }
-    // A picture opens a popover of swatches instead of a card.
-    const picture = e.target.closest('img[data-edit-field="image"]');
-    if (picture) {
-      e.preventDefault();
-      e.stopPropagation();
-      const item = state.issue.sections?.[picture.dataset.editSection]?.items?.find((i) => i.id === picture.dataset.editItem);
-      if (item) {
-        const o = itemOptions(picture.dataset.editSection, item);
-        tweakPopover(iframe, picture.closest('a') || picture, 'Picture', PICTURE_CHOICES, o.pictureStyle, (key) => { setPictureStyle(item, key); afterTweak(iframe); });
-      }
-      return;
-    }
-
-    const cell = itemCellOf(e.target);
-    if (!cell) { closeMenu(); return; }
-    if (e.target.closest('a')) e.preventDefault();   // the title is a link; the click edits, never navigates
-    const { editSection: section, editItem: item } = cell.querySelector('[data-edit-field]').dataset;
-    const refs = collectItemFields(doc, section, item);
-    if (!refs.length) return;
+    if (e.target === grip || grip.contains(e.target)) { e.preventDefault(); return; }
+    const b = blockAt(e.target);
+    if (!b || b.kind === 'section') { closeMenu(); return; }
+    e.preventDefault();   // a title or a picture is a link; the click edits, never navigates
+    e.stopPropagation();
     closeMenu();
-    openItemEditor(refs, iframe);
+    if (b.kind === 'callout') openCalloutEditor(b.item, iframe);
+    else {
+      const refs = collectItemFields(doc, b.section, b.item);
+      if (!refs.length) return;
+      openItemEditor(refs, iframe);
+    }
     doc.querySelectorAll('.ec-item-open').forEach((n) => n.classList.remove('ec-item-open'));
-    cell.classList.add('ec-item-open');
-    revealAboveDrawer(iframe, cell);
+    b.node.classList.add('ec-item-open');
+    revealAboveDrawer(iframe, b.node);
   });
+
+  // Drag by the grip: an item within its section (it takes the group it lands
+  // in), a section past another. A line marks where the drop would land.
+  let drag = null;
+  const unmark = () => doc.querySelectorAll('.ec-drop-before, .ec-drop-after').forEach((n) => n.classList.remove('ec-drop-before', 'ec-drop-after'));
+  grip.addEventListener('dragstart', (e) => {
+    if (!over || (over.kind !== 'item' && over.kind !== 'section')) { e.preventDefault(); return; }
+    drag = over;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', drag.item || drag.section);
+    (drag.kind === 'section' ? drag.panel : drag.node).classList.add('ec-dragging');
+    closeDrawer();
+  });
+  const target = (e) => {
+    if (!drag) return null;
+    if (drag.kind === 'item') {
+      const b = blockAt(e.target);
+      if (!b || b.kind !== 'item' || b.section !== drag.section || b.item === drag.item) return null;
+      // Nothing lands beside the one featured event (moveItemNear refuses it too): no mark.
+      const items = state.issue.sections[drag.section]?.items ?? [];
+      const moving = items.find((i) => i.id === drag.item), under = items.find((i) => i.id === b.item);
+      if (!moving || !under || (drag.section === 'events' && under.featured && !moving.featured)) return null;
+      const r = b.node.getBoundingClientRect();
+      return { kind: 'item', node: b.node, item: b.item, before: e.clientY < (r.top + r.bottom) / 2 };
+    }
+    const panel = e.target.closest ? e.target.closest('table[data-section]') : null;
+    if (!panel || panel.dataset.section === drag.section) return null;
+    const r = panel.getBoundingClientRect();
+    return { kind: 'section', node: panel, section: panel.dataset.section, before: e.clientY < (r.top + r.bottom) / 2 };
+  };
+  doc.addEventListener('dragover', (e) => {
+    const t = target(e);
+    if (!t) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    unmark();
+    t.node.classList.add(t.before ? 'ec-drop-before' : 'ec-drop-after');
+  });
+  doc.addEventListener('drop', (e) => {
+    const t = target(e);
+    const d = drag;
+    drag = null;
+    unmark();
+    if (!t) return;
+    e.preventDefault();
+    if (t.kind === 'section') {
+      moveSection(state.issue, d.section, sectionOrder(state.issue).filter((k) => k !== d.section).indexOf(t.section) + (t.before ? 0 : 1));
+      setWizardStatus(`Moved ${sectionLabel(d.section)} ${t.before ? 'before' : 'after'} ${sectionLabel(t.section)}.`);
+    } else if (moveItemNear(state.issue, d.section, d.item, t.item, t.before)) {
+      setWizardStatus(`Moved "${itemTitle(state.issue, d.section, d.item)}" ${t.before ? 'before' : 'after'} "${itemTitle(state.issue, d.section, t.item)}".`);
+    } else return;
+    scheduleSave();
+    refreshEditIframe(iframe);
+  });
+  doc.addEventListener('dragend', () => { drag = null; unmark(); doc.querySelectorAll('.ec-dragging').forEach((n) => n.classList.remove('ec-dragging')); });
 }
 
-/** The cell that holds the item (or the intro) under a node, if any: the
- *  click target and the hover highlight are the whole item. */
-function itemCellOf(node) {
-  const cell = node.closest ? node.closest('td') : null;
-  if (!cell) return null;
-  const field = cell.querySelector('[data-edit-field="title"], [data-edit-field="intro"]');
-  return field ? cell : null;
+/**
+ * The block under a node on the sheet: a section heading; else the nearest
+ * cell up the tree that holds exactly one item (its picture and date block
+ * included), the introduction, or one callout. A cell that holds several
+ * (a digest's list, the page's own cell) is no block, so a click between
+ * items opens nothing.
+ * @returns {{ kind: 'section'|'item'|'intro'|'callout', node: HTMLElement, section?: string, item?: string, panel?: HTMLElement }|null}
+ */
+function blockAt(node) {
+  if (!node || !node.closest) return null;
+  const h2 = node.closest('h2');
+  if (h2) {
+    const panel = h2.closest('table[data-section]');
+    return panel ? { kind: 'section', node: h2.closest('td'), panel, section: panel.dataset.section } : null;
+  }
+  for (let cell = node.closest('td'); cell; cell = cell.parentElement?.closest('td') ?? null) {
+    // A callout's title is hooked too; it counts as the callout, not as an item.
+    const items = new Set([...cell.querySelectorAll('[data-edit-field="title"]:not([data-edit-section="callout"]), [data-edit-field="intro"]')].map((h) => `${h.dataset.editSection}|${h.dataset.editItem ?? ''}`));
+    const callouts = new Set([...cell.querySelectorAll('[data-edit-section="callout"]')].map((h) => h.dataset.editItem));
+    if (items.size + callouts.size > 1) return null;
+    if (callouts.size === 1) return { kind: 'callout', node: cell, item: [...callouts][0] };
+    if (items.size === 1) {
+      const [section, item] = [...items][0].split('|');
+      return section === 'intro' ? { kind: 'intro', node: cell, section: 'intro', item: undefined } : { kind: 'item', node: cell, section, item };
+    }
+  }
+  return null;
 }
 
 /**
@@ -1960,67 +2046,12 @@ function swatchRow(choices, current, onPick) {
 }
 
 /**
- * The popover of swatches beside something clicked in the preview: its
- * rectangle is read inside the iframe and mapped out through the iframe's
- * zoom, so the card lands next to the thing on the page.
- */
-function tweakPopover(iframe, target, title, choices, current, onPick) {
-  const zoom = parseFloat(iframe.style.zoom) || 1;
-  const outer = iframe.getBoundingClientRect();
-  const r = target.getBoundingClientRect();
-  const rect = { left: outer.left + r.left * zoom, right: outer.left + r.right * zoom, top: outer.top + r.top * zoom, bottom: outer.top + r.bottom * zoom };
-  target.classList.add('ec-edit-flash');
-  setTimeout(() => target.classList.remove('ec-edit-flash'), 600);
-  showMenu(target, 'tweak-pop', (menu) => {
-    menu.appendChild(el('span', 'tweak-pop-title', title));
-    menu.appendChild(swatchRow(choices, current, (key) => { onPick(key); closeMenu(); }));
-  }, rect);
-}
-
-/** After a choice made on the email: save, redraw, and keep the rail's Layout fold in step. */
-function afterTweak(iframe) {
-  scheduleSave();
-  refreshEditIframe(iframe);
-  document.querySelector('.layout-panel-body')?.dispatchEvent(new CustomEvent('layout-changed'));
-}
-
-/**
- * The rail's Layout fold: the callout's style as swatches (also reachable by
- * clicking the callout in the email), the contents strip, and Reset. Here
- * because a callout set to None cannot be clicked back on the email.
- */
-function buildLayoutPanel(iframe) {
-  const { details, body } = railPanel('Layout');
-  body.classList.add('layout-panel-body');
-  const draw = () => {
-    body.replaceChildren();
-    const issue = state.issue;
-    const nav = el('label', 'layout-check');
-    const cb = el('input');
-    cb.type = 'checkbox';
-    cb.checked = layoutOf(issue).nav;
-    cb.addEventListener('change', () => { setNav(issue, cb.checked); scheduleSave(); refreshEditIframe(iframe); draw(); });
-    nav.append(cb, ' Contents strip under the masthead');
-    body.appendChild(nav);
-    body.appendChild(el('p', 'triage-section-note', 'The sections\' order is set on Outline: drag a section by its handle. Callouts are added and moved on Outline and styled from their own card here. Pictures and descriptions are chosen from each item\'s card.'));
-    if (hasCustomOptions(issue)) {
-      const reset = button(' Reset layout options', 'ghost-btn ghost-btn--muted layout-reset', { icon: 'rotate-left', onClick: () => { resetOptions(issue); scheduleSave(); refreshEditIframe(iframe); draw(); } });
-      reset.title = 'Every layout option back to its default';
-      body.appendChild(reset);
-    }
-  };
-  body.addEventListener('layout-changed', draw);
-  draw();
-  return details;
-}
-
-/**
  * Add callout (Kate, Oct 5), a door beside Add an item: pick the kind and
  * the section it follows; the callout joins the issue and its own card
  * opens at once, style first, so it can be styled and worded on the spot.
  */
 function openAddCalloutCard(iframe) {
-  const { card, body, actions } = drawerCard('Add callout');
+  const { card, body, actions } = drawerCard('Add a callout');
   const col = el('div', 'drawer-fields');
   col.appendChild(el('h4', 'drawer-h4', 'Which one'));
   const kinds = el('div', 'add-callout-kinds');
@@ -2073,7 +2104,7 @@ function openAddCalloutCard(iframe) {
 function renderEdit() {
   closeDrawer();
   const container = openStep('edit', 'Check the issue and tweak anything in place.',
-    'Click any item in the email and its card opens beside it: how it is laid out, then its words. A callout opens the same way, its style first. Click a picture to change it on the spot. The introduction, the layout and Add an item open from the buttons over the email.');
+    'Click anything on the email and its card opens beside it: how it is laid out, then its words. A callout opens the same way, its style first. Drag an item or a section by the grip at its left to move it. Add an item, Add a callout and the contents strip sit over the email.');
 
   if (!state.issue) {
     emptyLine(container, 'No issue loaded. Pull from the desk on the Outline step first.');
@@ -2081,7 +2112,7 @@ function renderEdit() {
   }
 
   const iframe = el('iframe', 'edit-preview-iframe');
-  iframe.setAttribute('title', 'Newsletter preview: click an item to edit it');
+  iframe.setAttribute('title', 'Newsletter preview: click an item to edit it, drag it by its grip to move it');
   iframe.setAttribute('scrolling', 'no');
   iframe.addEventListener('load', () => {
     wireIframeEditing(iframe);
@@ -2095,18 +2126,35 @@ function renderEdit() {
     }
   });
 
-  // Over the stage: what the sheet is, and the three doors that are not an item.
+  // Over the stage: what the sheet is, and the doors for what is not on it
+  // yet (Kate, Oct 7): Add an item, Add a callout, the contents strip, and
+  // Reset once an option differs from its default. The introduction, the
+  // items, the callouts and the pictures are all clicked on the email.
   const toolbar = el('div', 'edit-toolbar');
   const previewNote = el('p', 'preview-note');
   previewNote.tabIndex = -1;   // where focus lands when the drawer closes
-  previewNote.textContent = `Preview at ${Math.round(PREVIEW_MAX_SCALE * 100)} percent, as it lands in Outlook. Click any item to edit it.`;
+  previewNote.textContent = `Preview at ${Math.round(PREVIEW_MAX_SCALE * 100)} percent, as it lands in Outlook.${PREVIEW_TAIL}`;
   const doors = el('div', 'edit-doors');
-  doors.append(
-    button(' Introduction', 'ghost-btn', { icon: 'align-left', onClick: () => openPanelInDrawer('Introduction', buildIntroPanel(iframe)) }),
-    button(' Layout', 'ghost-btn', { icon: 'table-columns', onClick: () => openPanelInDrawer('Layout', buildLayoutPanel(iframe)) }),
-    button(' Add an item', 'ghost-btn', { icon: 'plus', onClick: () => openPanelInDrawer('Add an item', buildAddItemPanel(iframe)) }),
-    button(' Add callout', 'ghost-btn', { icon: 'bullhorn', onClick: () => openAddCalloutCard(iframe) }),
-  );
+  const drawDoors = () => {
+    doors.replaceChildren(
+      button(' Add an item', 'ghost-btn', { icon: 'plus', onClick: () => openPanelInDrawer('Add an item', buildAddItemPanel(iframe)) }),
+      button(' Add a callout', 'ghost-btn', { icon: 'bullhorn', onClick: () => openAddCalloutCard(iframe) }),
+    );
+    const strip = el('label', 'layout-check');
+    const cb = el('input');
+    cb.type = 'checkbox';
+    cb.checked = layoutOf(state.issue).nav;
+    cb.addEventListener('change', () => { setNav(state.issue, cb.checked); scheduleSave(); refreshEditIframe(iframe); });
+    strip.append(cb, ' Contents strip');
+    doors.appendChild(strip);
+    if (hasCustomOptions(state.issue)) {
+      const reset = button(' Reset layout', 'ghost-btn ghost-btn--muted', { icon: 'rotate-left', onClick: () => { resetOptions(state.issue); scheduleSave(); refreshEditIframe(iframe); } });
+      reset.title = 'Every layout option back to its default';
+      doors.appendChild(reset);
+    }
+  };
+  drawDoors();
+  syncEditDoors = drawDoors;
   toolbar.append(previewNote, doors);
   container.appendChild(toolbar);
 
