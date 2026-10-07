@@ -326,19 +326,6 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 /* The sections that hold nothing, named once under the list. */
 .wizard-step .triage-missing { font-size: 12px; line-height: 16px; letter-spacing: 0; margin-top: var(--spacing-05); }
 
-.triage-sections-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.triage-section-row {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-03);
-  padding: var(--spacing-03) var(--spacing-03);
-  transition: background-color var(--duration-fast-01) var(--ease-productive);
-}
-
 /* The Outline as a table (Kate, Oct 5, 2026): what goes out, in the order it
    goes out. A section row, a group row, then one row per item: the title as
    its link with the meta line under it, Featured for events, the order
@@ -391,9 +378,6 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .outline-undo { color: var(--link-primary); text-decoration: underline; }
 /* A callout's row (Oct 5): a small tag before its title, and the quiet word to add one. */
 .outline-callout-tag { display: inline-block; margin-right: var(--spacing-03); padding: 0 var(--spacing-02); font-size: 11px; line-height: 16px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; color: var(--tag-color-blue); background: var(--tag-background-blue); border-radius: var(--radius-pill); vertical-align: 2px; }
-.outline-add-callout td { padding: var(--spacing-01) var(--spacing-03) var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--border-subtle-01); }
-.outline-add-callout-btn { font-size: 13px; color: var(--text-secondary); }
-.outline-add-callout-btn:hover { color: var(--link-primary); }
 .drawer-note { margin: var(--spacing-03) 0 0; }
 .add-callout-kinds { display: flex; flex-wrap: wrap; gap: var(--spacing-02); }
 
@@ -410,36 +394,6 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .outline-menu-item { display: block; width: 100%; text-align: left; background: none; border: 0; font: inherit; padding: var(--spacing-02) var(--spacing-05) var(--spacing-02) var(--spacing-06); cursor: pointer; color: var(--text-primary); }
 .outline-menu-item:hover:not(:disabled) { background: var(--accent-10); }
 .outline-menu-item:disabled { color: var(--text-disabled); cursor: default; }
-
-/* Preview & Tweak: the choices made on the email itself. A popover of
-   swatches beside what was clicked; each swatch is a small picture of the
-   result, drawn in CSS, so nothing has to be translated from words. */
-.tweak-pop {
-  position: absolute; z-index: 20; display: flex; gap: var(--spacing-03);
-  background: var(--layer-02); border: 1px solid var(--border-subtle-01);
-  box-shadow: var(--mail-menu-shadow); padding: var(--spacing-03);
-  font-size: 12px; line-height: 16px; letter-spacing: 0;
-}
-.tweak-pop-title { position: absolute; top: -18px; left: 0; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-secondary); white-space: nowrap; }
-.swatch { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-02); padding: var(--spacing-02); border: 2px solid transparent; border-radius: var(--radius); background: none; font: inherit; font-size: 12px; color: var(--text-primary); cursor: pointer; }
-.swatch:hover { background: var(--accent-10); }
-.swatch.is-on { border-color: var(--button-primary); }
-.swatch:focus-visible { box-shadow: var(--focus-ring); }
-.swatch .pic { width: 64px; height: 44px; background: var(--mail-white); border: 1px solid var(--border-subtle-01); position: relative; overflow: hidden; }
-/* These are drawings of the email, so they wear the email's colours, the one place in-app that does. */
-.swatch.sw-maroon .pic { background: var(--mail-maroon); }
-.swatch.sw-maroon .pic::before { content: ""; position: absolute; left: 8px; top: 8px; width: 36px; height: 5px; background: var(--mail-white); box-shadow: 0 10px 0 -1px var(--mail-ivory), 0 15px 0 -1px var(--mail-ivory); }
-.swatch.sw-maroon .pic::after { content: ""; position: absolute; left: 8px; bottom: 7px; width: 22px; height: 7px; background: var(--mail-white); }
-.swatch.sw-gray .pic::before { content: ""; position: absolute; inset: 6px; background: var(--mail-gray-100); }
-.swatch.sw-gray .pic::after { content: ""; position: absolute; left: 12px; top: 12px; width: 30px; height: 4px; background: var(--mail-ink); box-shadow: 0 8px 0 -1px var(--mail-body), 0 12px 0 -1px var(--mail-body), 0 19px 0 1px var(--mail-maroon); }
-.swatch.sw-dotted .pic::before { content: ""; position: absolute; inset: 6px; border: 2px dotted var(--mail-maroon-light); }
-.swatch.sw-dotted .pic::after { content: ""; position: absolute; left: 13px; top: 13px; width: 28px; height: 4px; background: var(--mail-maroon); box-shadow: 0 8px 0 -1px var(--mail-body), 0 12px 0 -1px var(--mail-body), 0 18px 0 1px var(--mail-maroon); }
-.swatch.sw-none .pic::before { content: ""; position: absolute; left: 8px; top: 10px; width: 48px; height: 3px; background: var(--mail-gray-300); box-shadow: 0 7px 0 var(--mail-gray-300), 0 14px 0 var(--mail-gray-300), 0 21px 0 var(--mail-gray-300); }
-.swatch.sw-stamp .pic::before { content: ""; position: absolute; left: 6px; top: 16px; width: 16px; height: 20px; background: var(--mail-maroon-light); }
-.swatch.sw-stamp .pic::after { content: ""; position: absolute; left: 6px; top: 7px; width: 50px; height: 4px; background: var(--mail-ink); box-shadow: 20px 10px 0 -1px var(--mail-body), 20px 15px 0 -1px var(--mail-body), 20px 20px 0 -1px var(--mail-body); }
-.swatch.sw-headshot .pic::before { content: ""; position: absolute; left: 6px; top: 7px; width: 24px; height: 30px; background: var(--mail-maroon-light); }
-.swatch.sw-headshot .pic::after { content: ""; position: absolute; left: 36px; top: 8px; width: 22px; height: 4px; background: var(--mail-ink); box-shadow: 0 8px 0 -1px var(--mail-body), 0 13px 0 -1px var(--mail-body), 0 18px 0 -1px var(--mail-body); }
-.swatch.sw-nopic .pic::before { content: ""; position: absolute; left: 6px; top: 7px; width: 50px; height: 4px; background: var(--mail-ink); box-shadow: 0 8px 0 -1px var(--mail-body), 0 13px 0 -1px var(--mail-body), 0 18px 0 -1px var(--mail-body); }
 
 /* Preview & Tweak as one column (Kate, Oct 5): the email alone on the stage,
    three doors over it, and the drawer that slides up from the bottom with
@@ -530,183 +484,20 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .size-chip.is-on { background: var(--button-primary); border-color: var(--button-primary); color: var(--text-on-color); font-weight: 600; }
 .size-chip:focus-visible { box-shadow: var(--focus-ring); }
 
-/* The rail's Layout fold and the card's own look controls. */
-.layout-row { display: flex; flex-direction: column; gap: var(--spacing-03); }
-.layout-row-label, .edit-card-sublabel.look { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-secondary); }
-.swatch-row { display: flex; flex-wrap: wrap; gap: var(--spacing-02); }
+/* The checkboxes: the contents strip over the sheet, Zoom available in the look column. */
 .layout-check { display: flex; align-items: center; gap: var(--spacing-03); font-size: 14px; line-height: 18px; letter-spacing: 0; color: var(--text-primary); cursor: pointer; }
-/* The card's own checkboxes (Highlight card, Zoom available; Kate, Oct 6) stack in the look column. */
 .look-check { margin: 0 0 var(--spacing-03); }
 .drawer-look .edit-card-group { margin-top: var(--spacing-03); }
 .layout-check input { accent-color: var(--button-primary); width: 16px; height: 16px; margin: 0; }
-.layout-reset { align-self: flex-start; }
-
-/* Submit-callout opt-in switch: a compact setting chip, toggle first. */
-.triage-switch-row {
-  display: inline-flex;
-  align-self: flex-start;
-  align-items: center;
-  gap: var(--spacing-03);
-  background: var(--field-02);
-  border: 1px solid var(--border-subtle-01);
-  padding: var(--spacing-03) var(--spacing-04);
-  margin: var(--spacing-03) 0 var(--spacing-05) var(--spacing-07);
-}
-
-.triage-switch-line {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-03);
-  order: -1; /* toggle before the label text */
-}
-
-
-/* Carbon's toggle: a 48 by 24 track, an 18px handle, green when on. */
-.triage-switch {
-  position: relative;
-  display: inline-flex;
-  width: 48px;
-  height: 24px;
-  flex-shrink: 0;
-  cursor: pointer;
-}
-
-.triage-switch-input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-  margin: 0;
-}
-
-.triage-switch-track {
-  position: absolute;
-  inset: 0;
-  background: var(--toggle-off);
-  border-radius: var(--radius-round);
-  transition: background-color var(--duration-fast-02) var(--ease-standard);
-}
-
-.triage-switch-track::before {
-  content: "";
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 18px;
-  height: 18px;
-  background: var(--text-on-color);
-  border-radius: var(--radius-round);
-  transition: transform var(--duration-fast-02) var(--ease-standard);
-}
-
-.triage-switch-input:checked + .triage-switch-track {
-  background: var(--support-success);
-}
-
-.triage-switch-input:checked + .triage-switch-track::before {
-  transform: translateX(24px);
-}
-
-.triage-switch-input:focus-visible + .triage-switch-track {
-  outline: 2px solid transparent;
-  outline-offset: 0;
-  box-shadow: var(--focus-ring);
-}
-
-/* The toggle's word, On or Off, beside the track as Carbon draws it. */
-.triage-switch-state {
-  font-size: 12px; line-height: 16px; letter-spacing: 0;
-  color: var(--text-secondary);
-}
-
-.triage-section-name {
-  font-size: 16px; line-height: 22px; letter-spacing: 0;   /* heading-compact-02 */
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.triage-switch-label {
-  font-size: 14px; line-height: 18px; letter-spacing: 0;
-  font-weight: 600;
-  color: var(--text-primary);
-}
 
 .triage-section-note {
   font-size: 12px; line-height: 16px; letter-spacing: 0;
   color: var(--text-helper);
 }
-/* The Featured rule, once under the Events name, in line with the group labels. */
-.triage-grouped-section > .triage-section-note {
-  display: block;
-  padding-left: var(--spacing-02);
-  margin: var(--spacing-01) 0 var(--spacing-02);
-}
-
-.triage-grouped-section {
-  margin: var(--spacing-02) 0 var(--spacing-03) var(--spacing-07);
-  display: flex;
-  flex-direction: column;
-}
-
-.triage-group-label {
-  font-size: 12px; line-height: 16px; letter-spacing: 0;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-top: var(--spacing-03);
-  margin-bottom: var(--spacing-01);
-  padding-left: var(--spacing-02);
-}
-
-.triage-group-label:first-child {
-  margin-top: var(--spacing-01);
-}
-
-.triage-event-row {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-03);
-  /* indented under the group label so items read as nested */
-  padding: var(--spacing-02) var(--spacing-02) var(--spacing-02) var(--spacing-06);
-}
-
-.triage-event-title {
-  flex: 1;
-  color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.triage-featured-label {
-  display: flex;
-  align-items: center;
-  min-height: 24px;   /* the box stays 16px; the target is the label */
-  gap: var(--spacing-03);
-  font-size: 12px; line-height: 16px; letter-spacing: 0;
-  color: var(--text-secondary);
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.triage-featured-cb {
-  accent-color: var(--button-primary);
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  cursor: pointer;
-}
-
-/* Checked featured rows read in the ink, semibold. */
-.triage-featured-label:has(.triage-featured-cb:checked) {
-  color: var(--text-primary);
-  font-weight: 600;
-}
 
 /* A removed item stays listed where it stood until the step is left, greyed
    with its own Undo: the desk's removed row on Next issue (Kate, Sep 23). The
-   Outline greys the row in place; Preview & Edit lists it where its card was. */
-.triage-event-row.is-removed { background: var(--layer-01); }
+   Outline greys the row in place; Preview & Tweak lists it over the sheet. */
 .edit-removed-row {
   display: flex;
   align-items: center;
@@ -749,46 +540,6 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
   padding: var(--spacing-06);
 }
 
-/* The column is sticky: it rides beside the page-long sheet, scrolling
-   inside itself when its cards run past the window. */
-.edit-column {
-  flex: 0 0 340px;
-  min-width: 0; /* defeat the min-content floor so wide nowrap children (reorder rows) can't stretch the column */
-  position: sticky;
-  top: var(--spacing-05);
-  max-height: calc(100vh - var(--spacing-07));
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-04);
-}
-
-.edit-column-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 24px;
-}
-
-.edit-column-title {
-  font-size: 16px; line-height: 22px; letter-spacing: 0;   /* heading-compact-02 */
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.edit-card-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-04);
-}
-
-.edit-column-empty {
-  color: var(--text-secondary);
-  padding: var(--spacing-04);
-  border: 1px dashed var(--border-strong-01);
-  background: var(--field-02);
-}
-
 .edit-preview-iframe {
   display: block;
   border: 0;
@@ -796,18 +547,7 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
   transform-origin: top left;
 }
 
-/* --- Edit cards ------------------------------------------- */
-.edit-card {
-  border: 1px solid var(--border-subtle-01);
-  background: var(--layer-02);
-  padding: var(--spacing-04);
-}
-.edit-card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  margin-bottom: var(--spacing-01);
-}
+/* --- The card's parts ------------------------------------- */
 .edit-card-close {
   display: inline-flex; align-items: center; height: 32px;   /* a ghost button's size */
   background: none;
@@ -875,14 +615,13 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .rich-editable a {
   color: var(--link-primary);
 }
-.intro-save-btn { margin-top: var(--spacing-03); }
 .img-upload { display: flex; align-items: center; gap: var(--spacing-03); flex-wrap: wrap; }
 .img-upload .media-add { margin-left: calc(-1 * var(--spacing-03)); }
 .img-status { color: var(--text-secondary); display: inline-flex; align-items: center; gap: var(--spacing-03); }
 /* The preview beside the card already shows the picture. */
 .img-upload .img-thumb { display: none; }
-/* Card footer, desk grammar: Delete far left; Use original · Save on the
-   right, with gap and wrap so nothing ever clips. */
+/* Card foot, desk grammar: Remove far left; Use original · Undo changes on
+   the right, with gap and wrap so nothing ever clips. */
 .edit-card-actions {
   display: flex;
   align-items: center;
@@ -891,7 +630,6 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
   flex-wrap: wrap;
   margin-top: var(--spacing-02);
 }
-.edit-card-save { margin-right: calc(-1 * var(--spacing-03)); }   /* the quiet Save sits flush right */
 .edit-card-delete {
   margin-right: auto; /* push it to the far left, away from Save */
   margin-left: calc(-1 * var(--spacing-03));
@@ -1002,7 +740,7 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 
 .restore-banner__btn { height: 32px; padding: 0 var(--spacing-04); }
 
-/* --- Drag-to-reorder panel (edit column) ------------------- */
+/* --- A fold shown flat in a card (Add an item) -------------- */
 .reorder-panel {
   border: 1px solid var(--border-subtle-01);
   background: var(--layer-02);
@@ -1036,66 +774,7 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
   overflow-y: auto;
 }
 
-.reorder-section-label {
-  font-size: 12px; line-height: 16px; letter-spacing: 0;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: var(--spacing-03) 0 var(--spacing-01);
-}
-.reorder-section-label:first-child { margin-top: var(--spacing-02); }
-
-.reorder-group-label {
-  font-size: 12px; line-height: 16px; letter-spacing: 0;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin: var(--spacing-02) 0 0 var(--spacing-01);
-}
-
-.reorder-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.reorder-row {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-03);
-  padding: var(--spacing-02) var(--spacing-03);
-  font-size: 12px; line-height: 16px; letter-spacing: 0;
-  color: var(--text-primary);
-  border: 1px solid transparent;
-}
-.reorder-row[draggable="true"] { cursor: grab; }
-.reorder-row[draggable="true"]:hover { background: var(--accent-10); }
-.reorder-row[draggable="true"]:hover .reorder-grip { color: var(--icon-primary); }
-
-.reorder-row--dragging {
-  opacity: 0.45;
-  cursor: grabbing;
-}
-.reorder-row--over {
-  border-color: var(--button-primary);
-  background: var(--accent-10);
-}
-
-.reorder-grip {
-  color: var(--icon-secondary);
-  font-size: 11px;
-  flex-shrink: 0;
-  line-height: 1;
-}
-/* Single-item groups have nothing to swap with: hide their grip */
-.reorder-row:not([draggable="true"]) .reorder-grip { visibility: hidden; }
-
-.reorder-title {
-  flex: 1;
-  min-width: 0; /* let long nowrap titles ellipsize instead of widening the column */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Edit-column add-on panels (Introduction, Add an item). */
+/* Add an item's fields. */
 .addon-hint { font-size: 12px; line-height: 16px; letter-spacing: 0; }
 .addon-field { display: block; margin-bottom: var(--spacing-03); }
 .addon-field > span { display: block; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-secondary); margin-bottom: var(--spacing-03); }
@@ -1110,7 +789,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .undo-toast, .export-toast, .triage-switch-track, .triage-switch-track::before, .reorder-panel-summary::before { transition: none; }
+  .undo-toast, .export-toast, .reorder-panel-summary::before { transition: none; }
 }
 
 /* ============================================================
@@ -1164,7 +843,3 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 /* Add an item's status line sits clear of the button above it. */
 .addon-status { margin-top: var(--spacing-03); }
 .addon-status:empty { display: none; }
-
-/* Save and Cancel at a card's top too (Kate, Oct 6). */
-.drawer-card-top { display: flex; align-items: center; gap: var(--spacing-03); margin-left: auto; }
-.drawer-card-top .btn { height: 32px; }
