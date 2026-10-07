@@ -162,6 +162,35 @@ export function moveItemToGroup(issue, itemId, sectionKey, groupKey) {
   return false;
 }
 
+/**
+ * Puts one item before or after another in the same section: a drag by the
+ * grip, on the Outline or on the email (Kate, Oct 7). The item takes the
+ * group it lands in, so where it is dropped is where it prints; a featured
+ * event dragged into a list stops being featured, and nothing lands beside
+ * the one featured event (Feature it instead). Returns true when it moved.
+ * @param {object} issue
+ * @param {string} sectionKey
+ * @param {string} itemId - the item dragged
+ * @param {string} targetId - the item it is dropped against
+ * @param {boolean} before - above the target, else below it
+ */
+export function moveItemNear(issue, sectionKey, itemId, targetId, before) {
+  const items = issue?.sections?.[sectionKey]?.items;
+  if (!items || itemId === targetId) return false;
+  const moving = items.find((it) => it.id === itemId);
+  const target = items.find((it) => it.id === targetId);
+  if (!moving || !target) return false;
+  const targetFeatured = sectionKey === 'events' && !!target.featured;
+  if (targetFeatured && !moving.featured) return false;
+  items.splice(items.indexOf(moving), 1);
+  if (!targetFeatured) {
+    moving.group = target.group;
+    if (sectionKey === 'events') delete moving.featured;
+  }
+  items.splice(items.indexOf(target) + (before ? 0 : 1), 0, moving);
+  return true;
+}
+
 /** Re-insert a previously deleted item at its original spot (the Undo path). */
 export function insertItem(issue, sectionKey, index, item) {
   const sec = issue.sections[sectionKey];

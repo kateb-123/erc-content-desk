@@ -5,7 +5,7 @@
  * pure logic lives in model.js, template.js, editpath.js and preview.js.
  */
 
-import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, partitionPulled, countIssueItems, bucketSectionItems, moveItemToGroup } from './model.js';
+import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, partitionPulled, countIssueItems, bucketSectionItems, moveItemToGroup, moveItemNear } from './model.js';
 
 // The builder lives INSIDE the desk's project (/builder/), so the desk's API
 // is same-origin: relative fetches, no CORS.
@@ -530,7 +530,7 @@ function outlineMeta(sectionKey, f) {
  */
 function renderTriage() {
   const container = openStep('triage', 'Pick the issue, pull what the desk staged, and put it in order.',
-    'Pick the issue and pull what the desk staged; pull again any time, only new items are added. What goes out, in the order it goes out: drag a section by its handle to move it in the email. Hover a row for Move to…; the look is chosen on the next step, on the email itself.');
+    'Pick the issue and pull what the desk staged; pull again any time, only new items are added. What goes out, in the order it goes out: drag a section or an item by its grip to move it in the email, or press the arrow keys on the grip. Move to… files an item under another group; the look is chosen on the next step, on the email itself.');
   renderPullHead(container);
 
   const issue = state.issue;
@@ -553,7 +553,7 @@ function renderTriage() {
   const table = el('table', 'outline-table');
   const thead = el('thead');
   const hr = el('tr');
-  for (const [text, cls] of [['Item', ''], ['Featured', ''], ['Order', 'r'], ['', 'r']]) {
+  for (const [text, cls] of [['Item', ''], ['Featured', ''], ['', 'r']]) {
     const th = el('th', cls, text);
     th.scope = 'col';
     hr.appendChild(th);
@@ -576,10 +576,9 @@ function renderTriage() {
 
     // The section row: its drag handle (Kate, Oct 6), its name and count.
     const sr = el('tr', 'outline-section');
-    sr.draggable = true;
     sr.dataset.section = reg.key;
     const std = el('td');
-    std.colSpan = 4;
+    std.colSpan = 3;
     std.appendChild(sectionHandle(issue, reg, populated));
     std.appendChild(el('span', 'outline-section-name', reg.label));
     std.appendChild(el('span', 'outline-section-count', live.length === rows.length ? String(rows.length) : `${live.length} of ${rows.length}`));
@@ -596,7 +595,7 @@ function renderTriage() {
         const gr = el('tr', 'outline-group');
         gr.dataset.section = reg.key;
         const gtd = el('td', '', bucket.label);
-        gtd.colSpan = 4;
+        gtd.colSpan = 3;
         gr.appendChild(gtd);
         tbody.appendChild(gr);
       }
@@ -608,15 +607,47 @@ function renderTriage() {
         tr.dataset.item = item.id;
         tr.dataset.section = reg.key;
 
-        // Item: the title as its link, the meta line, and Move to… on hover.
+        // Item: its grip (Kate, Oct 7: drag it, or the arrow keys), then the title as its link with the meta line under it.
         const td1 = el('td', 'outline-item-cell');
+        const cell = el('div', 'outline-cell');
+        cell.appendChild(removed.has(item) ? el('span', 'triage-drag-handle is-blank') : itemHandle(issue, reg.key, item, bucketLive));
+        const words = el('div', 'outline-words');
         const href = normalizeLinkUrl(f.url || '');
         const link = href ? el('a', 'outline-title', title) : el('span', 'outline-title', title);
         if (href) { link.href = href; link.target = '_blank'; link.rel = 'noopener'; }
-        td1.appendChild(link);
+        words.appendChild(link);
         const meta = outlineMeta(reg.key, f);
-        if (meta) td1.appendChild(el('span', 'outline-meta', meta));
-        if (!removed.has(item)) {
+        if (meta) words.appendChild(el('span', 'outline-meta', meta));
+        cell.appendChild(words);
+        td1.appendChild(cell);
+
+        // Featured: events only, one radio across the section.
+        const td2 = el('td');
+        if (reg.key === 'events' && !removed.has(item)) {
+          const lab = el('label', 'outline-featured' + (item.featured ? ' is-on' : ''));
+          const rb = el('input');
+          rb.type = 'radio';
+          rb.name = 'outline-featured';
+          rb.checked = !!item.featured;
+          rb.setAttribute('aria-label', `Feature "${title}"`);
+          rb.addEventListener('change', () => {
+            items.forEach((ev) => { ev.featured = false; });
+            item.featured = true;
+            scheduleSave();
+            renderTriage();
+          });
+          lab.append(rb, item.featured ? ' Featured' : ' Feature');
+          td2.appendChild(lab);
+        }
+
+        // The actions, quiet on every row (Kate, Oct 7): Move to… and Remove;
+        // Undo on a removed row (the desk's greyed row).
+        const td3 = el('td', 'r outline-actions');
+        if (removed.has(item)) {
+          const undo = button('Undo', 'ghost-btn outline-undo', { onClick: (e) => undoRemove(item.id, renderTriage, e.detail === 0) });
+          undo.setAttribute('aria-label', `Put "${title}" back`);
+          td3.appendChild(undo);
+        } else {
           const mv = button('Move to…', 'ghost-btn outline-move');
           mv.setAttribute('aria-label', `Move "${title}" to another group`);
           mv.addEventListener('click', (e) => {
@@ -640,71 +671,17 @@ function renderTriage() {
               }
             });
           });
-          td1.appendChild(mv);
-        }
-
-        // Featured: events only, one radio across the section.
-        const td2 = el('td');
-        if (reg.key === 'events' && !removed.has(item)) {
-          const lab = el('label', 'outline-featured' + (item.featured ? ' is-on' : ''));
-          const rb = el('input');
-          rb.type = 'radio';
-          rb.name = 'outline-featured';
-          rb.checked = !!item.featured;
-          rb.setAttribute('aria-label', `Feature "${title}"`);
-          rb.addEventListener('change', () => {
-            items.forEach((ev) => { ev.featured = false; });
-            item.featured = true;
-            scheduleSave();
-            renderTriage();
-          });
-          lab.append(rb, item.featured ? ' Featured' : ' Feature');
-          td2.appendChild(lab);
-        }
-
-        // Order: the arrows, within the group.
-        const td3 = el('td', 'r');
-        if (!removed.has(item)) {
-          const k = bucketLive.indexOf(item);
-          const arrow = (dir, glyph, disabled, other) => {
-            const btn = button('', 'triage-reorder-btn', { icon: glyph, onClick: () => {
-              const a = items.indexOf(item), b = items.indexOf(other);
-              if (a < 0 || b < 0) return;
-              [items[a], items[b]] = [items[b], items[a]];
-              scheduleSave();
-              renderTriage();
-              const again = document.querySelector(`[data-move-item="${CSS.escape(item.id)}"][data-move-dir="${dir}"]`);
-              if (again && !again.disabled) again.focus();
-            } });
-            btn.setAttribute('aria-label', `Move "${title}" ${dir}`);
-            btn.dataset.moveItem = item.id;
-            btn.dataset.moveDir = dir;
-            btn.disabled = disabled;
-            return btn;
-          };
-          const group = el('div', 'triage-reorder-group');
-          group.append(arrow('up', 'arrow-up', k === 0, bucketLive[k - 1]), arrow('down', 'arrow-down', k === bucketLive.length - 1, bucketLive[k + 1]));
-          td3.appendChild(group);
-        }
-
-        // Remove, or Undo on a removed row (the desk's greyed row).
-        const td4 = el('td', 'r');
-        if (removed.has(item)) {
-          const undo = button('Undo', 'ghost-btn outline-undo', { onClick: (e) => undoRemove(item.id, renderTriage, e.detail === 0) });
-          undo.setAttribute('aria-label', `Put "${title}" back`);
-          td4.appendChild(undo);
-        } else {
-          const delBtn = button(' Remove', 'ghost-btn ghost-btn--danger', {
+          const delBtn = button(' Remove', 'ghost-btn ghost-btn--danger outline-remove', {
             icon: 'trash-can',
             onClick: (e) => deleteItemWithUndo(item.id, renderTriage, e.detail === 0),
           });
           delBtn.dataset.removeItem = item.id;
           delBtn.setAttribute('aria-label', `Remove "${title}" from the issue`);
           delBtn.title = 'Removes this item from the issue';
-          td4.appendChild(delBtn);
+          td3.append(mv, delBtn);
         }
 
-        tr.append(td1, td2, td3, td4);
+        tr.append(td1, td2, td3);
         tbody.appendChild(tr);
       }
     }
@@ -716,10 +693,17 @@ function renderTriage() {
       const tr = el('tr', 'outline-item outline-callout');
       tr.dataset.section = reg.key;
       const td1 = el('td', 'outline-item-cell');
-      td1.appendChild(el('span', 'outline-callout-tag', 'Callout'));
-      td1.appendChild(el('span', 'outline-title', c.title || '(untitled)'));
+      const cell = el('div', 'outline-cell');
+      cell.appendChild(el('span', 'triage-drag-handle is-blank'));   // a callout moves by Move to…, so the grip's room stays empty
+      const words = el('div', 'outline-words');
+      const line = el('span');
+      line.append(el('span', 'outline-callout-tag', 'Callout'), el('span', 'outline-title', c.title || '(untitled)'));
       const fixed = c.kind === 'share';
-      td1.appendChild(el('span', 'outline-meta', `${CALLOUT_KINDS[c.kind]?.label || 'Your own words'} · ${CALLOUT_CHOICES.find((s) => s.key === c.style)?.label || 'Maroon block'}. ${fixed ? 'Always at the end. ' : ''}Style it on Preview & Tweak.`));
+      words.append(line, el('span', 'outline-meta', `${CALLOUT_KINDS[c.kind]?.label || 'Your own words'} · ${CALLOUT_CHOICES.find((s) => s.key === c.style)?.label || 'Maroon block'}. ${fixed ? 'Always at the end. ' : ''}Style it on Preview & Tweak.`));
+      cell.appendChild(words);
+      td1.appendChild(cell);
+      const td3 = el('td', 'r outline-actions');
+      td3.colSpan = 2;
       if (!fixed) {
         const mv = button('Move to…', 'ghost-btn outline-move');
         mv.setAttribute('aria-label', `Move the callout "${c.title}" after another section`);
@@ -737,10 +721,9 @@ function renderTriage() {
             }
           });
         });
-        td1.appendChild(mv);
+        td3.appendChild(mv);
       }
-      const td4 = el('td', 'r');
-      const rm = button(' Remove', 'ghost-btn ghost-btn--danger', { icon: 'trash-can', onClick: () => {
+      const rm = button(' Remove', 'ghost-btn ghost-btn--danger outline-remove', { icon: 'trash-can', onClick: () => {
         const at = issue.callouts.indexOf(c);
         removeCallout(issue, c.id);
         scheduleSave();
@@ -748,17 +731,23 @@ function renderTriage() {
         showUndoToast(`Removed the callout "${c.title}".`, () => { restoreCallout(issue, c, at); scheduleSave(); renderTriage(); });
       } });
       rm.setAttribute('aria-label', `Remove the callout "${c.title}"`);
-      td4.appendChild(rm);
-      td4.colSpan = 3;
-      tr.append(td1, td4);
+      td3.appendChild(rm);
+      tr.append(td1, td3);
       tbody.appendChild(tr);
     }
   }
 
-  wireSectionDrag(tbody, issue, (key, other, before) => {
-    scheduleSave();
-    renderTriage();
-    setWizardStatus(`Moved ${sectionLabel(key)} ${before ? 'before' : 'after'} ${sectionLabel(other)}.`);
+  wireOutlineDrag(tbody, issue, {
+    onSection: (key, other, before) => {
+      scheduleSave();
+      renderTriage();
+      setWizardStatus(`Moved ${sectionLabel(key)} ${before ? 'before' : 'after'} ${sectionLabel(other)}.`);
+    },
+    onItem: (section, id, other, before) => {
+      scheduleSave();
+      renderTriage();
+      setWizardStatus(`Moved "${itemTitle(issue, section, id)}" ${before ? 'before' : 'after'} "${itemTitle(issue, section, other)}".`);
+    },
   });
   container.appendChild(table);
   const foot = el('p', 'triage-missing', `${inIssue} of ${listed} ${listed === 1 ? 'item' : 'items'} in the issue.` + (missing.length ? ` Not in this issue: ${missing.join(', ')}.` : ''));
@@ -766,6 +755,7 @@ function renderTriage() {
 }
 
 const sectionLabel = (key) => SECTION_REGISTRY.find((s) => s.key === key)?.label || key;
+const itemTitle = (issue, section, id) => issue?.sections?.[section]?.items?.find((i) => i.id === id)?.fields?.title || '(untitled)';
 
 /**
  * A section's drag handle on the Outline (Kate, Oct 6): drag it to another
@@ -776,7 +766,8 @@ const sectionLabel = (key) => SECTION_REGISTRY.find((s) => s.key === key)?.label
 function sectionHandle(issue, reg, populated) {
   const handle = button('', 'triage-drag-handle', { icon: 'grip-vertical' });
   handle.setAttribute('aria-label', `Move ${reg.label}: drag it, or press the up and down arrows`);
-  handle.title = 'Drag to move this section';
+  handle.title = 'Drag to move';
+  handle.draggable = true;   // the grip is the drag source (Kate, Oct 7), not the row
   handle.dataset.moveSection = reg.key;
   handle.addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
@@ -795,30 +786,71 @@ function sectionHandle(issue, reg, populated) {
 }
 
 /**
- * Drag a section to another place in the email. Every row carries its
- * section, so a drop anywhere among a section's rows lands on that section:
- * the upper half of its rows means before it, the lower half after. The
- * marks are a line above or below the rows the drop would land against.
+ * An item's grip on the Outline (Kate, Oct 7): drag it to another place in
+ * its section, or press ArrowUp and ArrowDown to move it past its listed
+ * neighbour. It takes the group it lands in; see moveItemNear.
  */
-function wireSectionDrag(tbody, issue, onMoved) {
-  let dragging = null;
+function itemHandle(issue, sectionKey, item, bucketLive) {
+  const title = item.fields?.title || '(untitled)';
+  const handle = button('', 'triage-drag-handle', { icon: 'grip-vertical' });
+  handle.setAttribute('aria-label', `Move "${title}": drag it, or press the up and down arrows`);
+  handle.title = 'Drag to move';
+  handle.draggable = true;
+  handle.dataset.moveItem = item.id;
+  handle.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    const other = bucketLive[bucketLive.indexOf(item) + (e.key === 'ArrowUp' ? -1 : 1)];
+    if (!other) return;
+    const before = e.key === 'ArrowUp';
+    if (!moveItemNear(issue, sectionKey, item.id, other.id, before)) return;
+    scheduleSave();
+    renderTriage();
+    document.querySelector(`[data-move-item="${CSS.escape(item.id)}"]`)?.focus();
+    setWizardStatus(`Moved "${title}" ${before ? 'before' : 'after'} "${other.fields?.title || '(untitled)'}".`);
+  });
+  return handle;
+}
+
+/**
+ * Drag a section or an item by its grip (Kate, Oct 6 and 7). Every row
+ * carries its section, so a dragged section lands on whichever section the
+ * drop is among: the upper half of its rows means before it, the lower half
+ * after. A dragged item lands before or after the item row it is dropped on,
+ * in its own section only. The marks are a line above or below the rows the
+ * drop would land against.
+ */
+function wireOutlineDrag(tbody, issue, { onSection, onItem }) {
+  let drag = null;   // { kind: 'section', key } or { kind: 'item', section, id }
   const rowsOf = (key) => [...tbody.querySelectorAll(`tr[data-section="${CSS.escape(key)}"]`)];
   const unmark = () => tbody.querySelectorAll('.is-drop-before, .is-drop-after').forEach((n) => n.classList.remove('is-drop-before', 'is-drop-after'));
   const clear = () => { unmark(); tbody.querySelectorAll('.is-dragging').forEach((n) => n.classList.remove('is-dragging')); };
   const target = (e) => {
     const row = e.target.closest ? e.target.closest('tr[data-section]') : null;
-    if (!row || !dragging || row.dataset.section === dragging) return null;
-    const rows = rowsOf(row.dataset.section);
-    const top = rows[0].getBoundingClientRect().top, bottom = rows[rows.length - 1].getBoundingClientRect().bottom;
-    return { key: row.dataset.section, before: e.clientY < (top + bottom) / 2, rows };
+    if (!row || !drag) return null;
+    if (drag.kind === 'section') {
+      if (row.dataset.section === drag.key) return null;
+      const rows = rowsOf(row.dataset.section);
+      const top = rows[0].getBoundingClientRect().top, bottom = rows[rows.length - 1].getBoundingClientRect().bottom;
+      return { kind: 'section', key: row.dataset.section, before: e.clientY < (top + bottom) / 2, rows };
+    }
+    if (!row.dataset.item || row.dataset.section !== drag.section || row.dataset.item === drag.id || row.classList.contains('is-removed')) return null;
+    // Nothing lands beside the one featured event (moveItemNear refuses it too): no mark.
+    const items = issue.sections[drag.section]?.items ?? [];
+    const moving = items.find((it) => it.id === drag.id), under = items.find((it) => it.id === row.dataset.item);
+    if (!moving || !under || (drag.section === 'events' && under.featured && !moving.featured)) return null;
+    const r = row.getBoundingClientRect();
+    return { kind: 'item', id: row.dataset.item, before: e.clientY < (r.top + r.bottom) / 2, rows: [row] };
   };
   tbody.addEventListener('dragstart', (e) => {
-    const row = e.target.closest ? e.target.closest('tr.outline-section') : null;
-    if (!row) return;
-    dragging = row.dataset.section;
+    // Only a grip starts a drag; a title's own link drag is refused.
+    const handle = e.target.closest ? e.target.closest('.triage-drag-handle') : null;
+    const row = handle && handle.closest('tr[data-section]');
+    if (!row) { e.preventDefault(); return; }
+    drag = row.classList.contains('outline-section') ? { kind: 'section', key: row.dataset.section } : { kind: 'item', section: row.dataset.section, id: row.dataset.item };
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', dragging);
-    rowsOf(dragging).forEach((r) => r.classList.add('is-dragging'));
+    e.dataTransfer.setData('text/plain', drag.id || drag.key);
+    (drag.kind === 'section' ? rowsOf(drag.key) : [row]).forEach((r) => r.classList.add('is-dragging'));
   });
   tbody.addEventListener('dragover', (e) => {
     const t = target(e);
@@ -831,15 +863,19 @@ function wireSectionDrag(tbody, issue, onMoved) {
   tbody.addEventListener('dragleave', (e) => { if (!tbody.contains(e.relatedTarget)) unmark(); });
   tbody.addEventListener('drop', (e) => {
     const t = target(e);
-    const key = dragging;
+    const d = drag;
     clear();
-    dragging = null;
+    drag = null;
     if (!t) return;
     e.preventDefault();
-    moveSection(issue, key, sectionOrder(issue).filter((k) => k !== key).indexOf(t.key) + (t.before ? 0 : 1));
-    onMoved(key, t.key, t.before);
+    if (t.kind === 'section') {
+      moveSection(issue, d.key, sectionOrder(issue).filter((k) => k !== d.key).indexOf(t.key) + (t.before ? 0 : 1));
+      onSection(d.key, t.key, t.before);
+    } else if (moveItemNear(issue, d.section, d.id, t.id, t.before)) {
+      onItem(d.section, d.id, t.id, t.before);
+    }
   });
-  tbody.addEventListener('dragend', () => { dragging = null; clear(); });
+  tbody.addEventListener('dragend', () => { drag = null; clear(); });
 }
 
 // ---------------------------------------------------------------------------

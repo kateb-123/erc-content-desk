@@ -353,12 +353,13 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 }
 .outline-table th.r, .outline-table td.r { text-align: right; }
 .outline-section td { padding: var(--spacing-06) var(--spacing-03) var(--spacing-02); border-bottom: 1px solid var(--border-subtle-01); }
-/* Drag a section by its handle to another place in the email (Kate, Oct 6):
-   the dragged section's rows fade; a line above or below the rows it would
-   land against says where. The handle also takes the up and down arrows. */
-.outline-section[draggable="true"] { cursor: grab; }
-.triage-drag-handle { background: none; border: 0; padding: 0; margin-right: var(--spacing-03); width: 20px; height: 22px; color: var(--icon-secondary); cursor: grab; font-size: 13px; line-height: 1; vertical-align: middle; border-radius: var(--radius); }
-.outline-section:hover .triage-drag-handle, .triage-drag-handle:hover { color: var(--icon-primary); }
+/* Drag a section or an item by its grip to another place in the email (Kate,
+   Oct 6 and 7): the dragged rows fade; a line above or below the rows they
+   would land against says where. The grip also takes the up and down arrows. */
+.triage-drag-handle { background: none; border: 0; padding: 0; margin-right: var(--spacing-03); width: 20px; height: 22px; flex: 0 0 auto; color: var(--icon-secondary); cursor: grab; font-size: 13px; line-height: 1; vertical-align: middle; border-radius: var(--radius); }
+.outline-section:hover .triage-drag-handle, .outline-item:hover .triage-drag-handle, .triage-drag-handle:hover { color: var(--icon-primary); }
+/* A row with nothing to drag (a removed item, a callout) keeps the grip's room, so the words line up. */
+.triage-drag-handle.is-blank { display: inline-block; visibility: hidden; }
 .triage-drag-handle:focus-visible { outline: 0; box-shadow: var(--focus-ring); }
 tr.is-dragging td { opacity: .45; }
 tr.is-drop-before td { box-shadow: inset 0 2px 0 var(--button-primary); }
@@ -367,13 +368,21 @@ tr.is-drop-after td { box-shadow: inset 0 -2px 0 var(--button-primary); }
 .outline-section-count { font-size: 13px; color: var(--text-secondary); margin-left: var(--spacing-03); }
 .outline-group td { padding: var(--spacing-04) var(--spacing-03) var(--spacing-01) var(--spacing-05); font-size: 12px; line-height: 16px; letter-spacing: 1.1px; text-transform: uppercase; font-weight: 600; color: var(--text-secondary); }
 .outline-item td { padding: var(--spacing-03) var(--spacing-03); border-bottom: 1px solid var(--border-subtle-01); vertical-align: middle; }
-.outline-item td.outline-item-cell { padding-left: var(--spacing-06); }
+.outline-item td.outline-item-cell { padding-left: var(--spacing-05); }
+/* The grip at the left of the words (Kate, Oct 7), the actions at the right. */
+.outline-cell { display: flex; align-items: flex-start; gap: var(--spacing-03); }
+.outline-words { min-width: 0; }
+.outline-actions { white-space: nowrap; }
+.outline-actions .ghost-btn { height: 28px; }
 .outline-item:hover { background: var(--row-hover); }
 .outline-title { color: var(--text-primary); text-decoration: none; }
 a.outline-title:hover { text-decoration: underline; text-decoration-color: var(--link-primary); }
 .outline-meta { display: block; font-size: 12px; line-height: 16px; color: var(--text-secondary); }
-.outline-move { margin-left: var(--spacing-03); font-size: 13px; color: var(--link-primary); text-decoration: underline; visibility: hidden; }
-.outline-item:hover .outline-move, .outline-move.is-open, .outline-move:focus-visible { visibility: visible; }
+/* Move to… and Remove sit on every row in gray and take their colour when
+   the row is hovered (Kate, Oct 7: "quiet, always there"). */
+.outline-move, .outline-remove { color: var(--text-secondary); }
+.outline-item:hover .outline-move, .outline-move.is-open, .outline-move:focus-visible { color: var(--link-primary); }
+.outline-item:hover .outline-remove, .outline-remove:focus-visible { color: var(--button-danger-secondary); }
 .outline-featured { display: inline-flex; align-items: center; gap: var(--spacing-03); font-size: 13px; color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
 .outline-featured input { accent-color: var(--button-primary); margin: 0; width: 16px; height: 16px; }
 .outline-featured.is-on { color: var(--text-primary); font-weight: 600; }
@@ -668,35 +677,6 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .triage-featured-label:has(.triage-featured-cb:checked) {
   color: var(--text-primary);
   font-weight: 600;
-}
-
-/* Reorder arrows: ghost icon buttons. */
-.triage-reorder-group {
-  display: flex;
-  flex-shrink: 0;
-}
-
-.triage-reorder-btn {
-  background: none;
-  border: 0;
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-size: 14px;
-  width: 32px; height: 32px;
-  padding: 0;
-  color: var(--icon-secondary);
-  transition: color var(--duration-fast-01) var(--ease-productive), background-color var(--duration-fast-01) var(--ease-productive);
-  line-height: 1;
-}
-
-.triage-reorder-btn:not(:disabled):hover {
-  color: var(--icon-primary);
-  background: var(--background-hover);
-}
-
-.triage-reorder-btn:disabled {
-  color: var(--icon-disabled);
-  cursor: not-allowed;
 }
 
 /* A removed item stays listed where it stood until the step is left, greyed
