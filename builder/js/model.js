@@ -2,10 +2,14 @@
 export const POLICY_EXCHANGE_URL = 'https://erc-policy-exchange.vercel.app/';
 
 export const SECTION_REGISTRY = [
+  // The four kinds of ERC research (Kate, Oct 6); the email prints the kind
+  // as the eyebrow of the item's tinted box.
   { key: 'research', label: 'Featured Research', navLabel: 'ERC Research', kind: 'briefs',
     groups: [
-      { key: 'brief',  label: 'Research Brief' },
-      { key: 'report', label: 'Report' },
+      { key: 'brief',    label: 'Research Brief' },
+      { key: 'report',   label: 'Research Report' },
+      { key: 'article',  label: 'Journal Article' },
+      { key: 'explains', label: 'ERC Explains' },
     ] },
   { key: 'spotlight', label: 'ERC Spotlight', navLabel: 'Spotlight', kind: 'spotlight',
     groups: [

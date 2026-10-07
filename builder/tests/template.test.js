@@ -45,7 +45,7 @@ test('section panels open with a 4px maroon rule and an uppercase maroon heading
 
 test('group labels are Verdana 12px uppercase in the light maroon, 18px under the heading and 30px below a group', () => {
   const html = renderNewsletter(issueOf('sample-real.json'));
-  assert.match(html, /<tr><td style="padding:18px 24px 0 24px;"><h3 style="margin:0; font-family:Verdana[^"]*font-size:12px;[^"]*text-transform:uppercase; color:#732F2F;">Research Brief<\/h3>/);
+  assert.match(html, /<tr><td style="padding:18px 24px 0 24px;"><h3 style="margin:0; font-family:Verdana[^"]*font-size:12px;[^"]*text-transform:uppercase; color:#732F2F;">Programs &amp; Opportunities<\/h3>/);
   assert.ok((html.match(/padding:30px 24px 0 24px;"><h3/g) || []).length >= 3, 'later groups sit 30px down');
   assert.ok(!/#913B3B/.test(html), 'the old eyebrow brick is gone');
 });
@@ -202,18 +202,42 @@ test('a featured event pins under Featured Events with its description, whatever
   assert.ok(html.includes('The one event that keeps its description.'));
 });
 
-test('research: the author line is the meta line, and an unknown group folds into Research Brief before Report', () => {
+// ─── Research (Kate, Oct 6: the tinted box) ──────────────────────────────────
+
+const TINT = 'background-color:#F5F2F1; padding:18px 20px 20px 20px;';
+const EYEBROW = `<p style="margin:0 0 8px; font-family:Verdana,Geneva,Tahoma,sans-serif; font-size:12px; line-height:1.4; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:#732F2F;">`;
+
+test('a research item is a tinted box: its type as an eyebrow, the maroon title (the link), the authors, the text beside the picture at right; no group labels', () => {
   const issue = createEmptyIssue();
   issue.sections.research.enabled = true;
   issue.sections.research.items = [
-    { id: 'itm_2', group: 'report', fields: { title: 'R-One', authors: 'A & B', summary: 'y' } },
-    { id: 'itm_x', group: '', fields: { title: 'Untagged', summary: 's' } },
+    { id: 'r1', group: 'report', fields: { title: 'Evaluating iteach', url: 'https://x.org/r', authors: 'A. Kwok, B. Bartanen', summary: 'Para one.\n\nPara two.', image: PHOTO } },
+    { id: 'r2', group: 'brief', fields: { title: 'A brief', authors: 'C. Author', summary: 'Short.' } },
   ];
   const html = renderNewsletter(issue);
-  const iBrief = html.indexOf('>Research Brief</h3>'), iReport = html.indexOf('>Report</h3>');
-  assert.ok(iBrief > 0 && iBrief < html.indexOf('Untagged') && html.indexOf('Untagged') < iReport && iReport < html.indexOf('R-One'));
-  assert.match(html, /R-One<\/a><\/p>|R-One<\/span><\/p>/);
-  assert.match(html, /<p style="margin:0 0 8px;[^"]*color:#535353;">A &amp; B<\/p>/);
+  const panel = html.slice(html.indexOf('>ERC Research</h2>'), html.indexOf('alt="Texas A&amp;M University Education Research Center"'));
+  assert.ok(!/<h3/.test(panel), 'the type lives in the box, not in a group label');
+  assert.match(panel, new RegExp(`<tr><td style="padding:18px 24px 0 24px;"><table role="presentation"[^>]*width="100%"[^>]*><tbody><tr><td style="${TINT}">${EYEBROW}Research Brief</p><p style="margin:0 0 6px; font-family:'Trebuchet MS'[^"]*font-size:16px; line-height:1.3; font-weight:700; color:#500000;"><span>A brief</span></p><p style="margin:0 0 12px;[^"]*color:#535353;">C. Author</p><p style="margin:0 0 0px;[^"]*color:#3E3E3E;">Short\\.</p></td></tr></tbody></table></td></tr>`), 'brief first (the registry order), its box 18px under the heading, no picture column without a picture');
+  assert.match(panel, new RegExp(`<tr><td style="padding:12px 24px 0 24px;"><table role="presentation"[^>]*><tbody><tr><td style="${TINT}">${EYEBROW}Research Report</p><p style="margin:0 0 6px;[^"]*color:#500000;"><a href="https://x\\.org/r" target="_blank" rel="noopener" style="color:#500000; text-decoration:none;">Evaluating iteach</a></p><p style="margin:0 0 12px;[^"]*color:#535353;">A\\. Kwok, B\\. Bartanen</p><table role="presentation"[^>]*width="100%"[^>]*><tbody><tr><td valign="top" style="vertical-align:top; padding:0 20px 0 0;"><p style="margin:0 0 8px;[^"]*color:#3E3E3E;">Para one\\.</p><p style="margin:0 0 0px;[^"]*">Para two\\.</p></td><td valign="top" width="160" style="width:160px; vertical-align:top;"><a href="https://x\\.org/r" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${PHOTO}" alt="Picture: Evaluating iteach" width="160" style="width:160px; max-width:160px; height:auto; display:block; border:0;"></a></td></tr></tbody></table></td></tr></tbody></table></td></tr>`), 'the report: 12px under the box before it, the picture 160 wide at right of the text, linked like the title');
+  assert.ok(!/Read the full/.test(panel), 'no button: the title is the link');
+  assert.ok(!/padding:\d+px 48px 0 40px;"><p[^>]*><a[^>]*>A brief/.test(panel), 'not the plain item layout');
+});
+
+test('research types: Brief, Report, Journal Article and ERC Explains, in that order; an unknown type reads as a brief; fields.pictureWidth sizes the picture', () => {
+  assert.deepEqual(SECTION_REGISTRY.find((s) => s.key === 'research').groups.map((g) => [g.key, g.label]),
+    [['brief', 'Research Brief'], ['report', 'Research Report'], ['article', 'Journal Article'], ['explains', 'ERC Explains']]);
+  const issue = createEmptyIssue();
+  issue.sections.research.enabled = true;
+  issue.sections.research.items = [
+    { id: 'x', group: 'explains', fields: { title: 'Explainer', summary: 'e' } },
+    { id: 'a', group: 'article', fields: { title: 'Article', summary: 'a', image: PHOTO, pictureWidth: 230 } },
+    { id: 'u', group: 'whatever', fields: { title: 'Untagged', summary: 'u' } },
+    { id: 'p', group: 'report', fields: { title: 'Report', summary: 'p' } },
+  ];
+  const html = renderNewsletter(issue);
+  const at = (s) => html.indexOf(s);
+  assert.ok(at(`${EYEBROW}Research Brief</p>`) < at('Untagged') && at('Untagged') < at(`${EYEBROW}Research Report</p>`) && at('>Report<') < at(`${EYEBROW}Journal Article</p>`) && at('>Article<') < at(`${EYEBROW}ERC Explains</p>`) && at(`${EYEBROW}ERC Explains</p>`) < at('>Explainer<'));
+  assert.match(html, /<td valign="top" width="230" style="width:230px; vertical-align:top;"><a [^>]*><img src="[^"]*photo\.jpg" alt="Picture: Article" width="230"/);
 });
 
 test('the Miscellaneous section renders its one list with no group label', () => {
@@ -275,11 +299,9 @@ const pictures = html => [...html.matchAll(/<img src="https:\/\/raw\.githubuserc
 
 test('a stamp is 96px wide under the title and meta, beside the description, in a 112px column; it links to the item', () => {
   const html = renderNewsletter(mediaIssue());
-  const i = html.indexOf('First blurb');
-  const seg = html.slice(i, html.indexOf('Brief sans summary'));
-  assert.match(seg, /A\. Author<\/p><table role="presentation"[^>]*width="100%"[^>]*><tbody><tr><td valign="top" width="112" style="width:112px; vertical-align:top; padding:4px 0 0 0;"><a href="https:\/\/raw\.githubusercontent\.com\/erc\/media\/main\/photo\.jpg" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="[^"]*photo\.jpg" alt="Picture: First blurb" width="96" style="width:96px; max-width:96px; height:auto; display:block; border:0;"><\/a><\/td><td valign="top" style="vertical-align:top;"><p[^>]*>A summary\.<\/p>/);
-  const brownBag = html.slice(html.indexOf('Brown Bag'));
-  assert.match(brownBag, /width="96"/, 'other spotlight events get the stamp');
+  const seg = html.slice(html.indexOf('Brown Bag'));
+  assert.match(seg, /Oct 9<\/p><table role="presentation"[^>]*width="100%"[^>]*><tbody><tr><td valign="top" width="112" style="width:112px; vertical-align:top; padding:4px 0 0 0;"><a href="https:\/\/raw\.githubusercontent\.com\/erc\/media\/main\/photo\.jpg" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="[^"]*photo\.jpg" alt="Picture: Brown Bag" width="96" style="width:96px; max-width:96px; height:auto; display:block; border:0;"><\/a><\/td><td valign="top" style="vertical-align:top;"><p[^>]*>A lunch\.<\/p>/);
+  assert.match(html, /<td valign="top" width="160" style="width:160px; vertical-align:top;"><a [^>]*><img [^>]*alt="Picture: First blurb" width="160"/, 'a research stamp is the box\'s 160, at the right of the text');
 });
 
 test('an "ERC EdTalk" item gets a 160px headshot beside the title, meta and description, linked to the item URL', () => {
@@ -299,6 +321,8 @@ test('fields.pictureStyle picks the layout: headshot on any item, stamp on an Ed
   const html = renderNewsletter(issue);
   const got = Object.fromEntries(pictures(html));
   assert.equal(got['First blurb'], 160);
+  const box = body(html).slice(body(html).indexOf('background-color:#F5F2F1'));
+  assert.match(box, /^[^<]*<p[^>]*>Research Brief<\/p><table role="presentation"[^>]*><tbody><tr><td valign="top" width="176" style="width:176px;[^"]*"><a [^>]*><img src="[^"]*photo\.jpg" alt="Picture: First blurb" width="160"/, 'a research headshot stands at the left of the whole box, under the eyebrow');
   assert.equal(got['ERC EdTalk: Dr. Vale'], 96);
   assert.ok(!('Brown Bag' in got));
 });
@@ -432,6 +456,7 @@ test('document declares its language and a doctype, pins its colours for dark mo
   assert.match(style, /\[data-ogsc\] \[style\*="background-color:#ffffff"\] \{ background-color:#ffffff !important; \}/);
   assert.match(style, /@media \(prefers-color-scheme: dark\)/);
   assert.match(style, /\[style\*=" color:#202020"\] \{ color:#202020 !important; \}/);
+  assert.match(style, /\[data-ogsc\] \[style\*="background-color:#F5F2F1"\] \{ background-color:#F5F2F1 !important; \}/, 'the research tint is pinned too');
   assert.equal(count(html, 'target="_blank"'), count(html, 'target="_blank" rel="noopener"'));
   assert.ok(!/rgb\(/.test(html), 'hex throughout, so the guards match');
 });

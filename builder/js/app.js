@@ -1516,7 +1516,7 @@ function openItemEditor(refs, iframe) {
       const chips = el('div', 'size-chips');
       chips.setAttribute('role', 'radiogroup');
       chips.setAttribute('aria-label', 'Picture size');
-      const current = pictureWidthOf(cardItem);
+      const current = pictureWidthOf(cardItem, first.section);
       for (const size of PICTURE_SIZES) {
         const chip = button(size.label, 'size-chip' + (size.width === current ? ' is-on' : ''));
         chip.setAttribute('role', 'radio');

@@ -5,7 +5,7 @@
  * fields.showSummary and fields.pictureStyle. Nothing here touches the DOM.
  */
 
-import { CALLOUT_STYLES, PICTURE_STYLES, PICTURE_MIN, PICTURE_MAX, layoutOf, calloutsOf, summaryDefault, pictureDefault, pictureStyleOf } from './template.js';
+import { CALLOUT_STYLES, PICTURE_STYLES, PICTURE_MIN, PICTURE_MAX, RESEARCH_PICTURE_WIDTH, layoutOf, calloutsOf, summaryDefault, pictureDefault, pictureStyleOf } from './template.js';
 import { SECTION_REGISTRY, newCallout } from './model.js';
 
 /** A callout's three styles, in the order the control shows them. */
@@ -132,11 +132,13 @@ export const PICTURE_SIZES = [64, 96, 128, 160, 200].map((w) => ({ width: w, lab
 /** The width a picture layout takes when no size was picked. */
 export const DEFAULT_PICTURE_WIDTH = { stamp: 96, headshot: 160 };
 
-/** The item's picture width in force: the one picked, else the layout's own. */
-export function pictureWidthOf(item) {
+/** The item's picture width in force: the one picked, else the layout's own
+ *  (a research box draws 160 either way; Kate, Oct 6). */
+export function pictureWidthOf(item, sectionKey = '') {
   const f = item?.fields || {};
   const picked = Number(f.pictureWidth);
   if (Number.isFinite(picked) && picked >= PICTURE_MIN && picked <= PICTURE_MAX) return Math.round(picked);
+  if (sectionKey === 'research') return RESEARCH_PICTURE_WIDTH;
   return DEFAULT_PICTURE_WIDTH[pictureStyleOf(f)] ?? 96;
 }
 

@@ -23,6 +23,7 @@ test('the sizes on offer list the width and the height a portrait photo stands a
 test('the width in force is the layout\'s own until one is picked; a picked size moves the photo and its column', () => {
   const { issue, item } = withItem({ image: PHOTO });
   assert.equal(pictureWidthOf(item), 96);
+  assert.equal(pictureWidthOf(item, 'research'), 160, 'a research box draws 160 by default (Kate, Oct 6)');
   item.fields.pictureStyle = 'headshot';
   assert.equal(pictureWidthOf(item), 160);
   setPictureWidth(item, 200);
@@ -31,7 +32,10 @@ test('the width in force is the layout\'s own until one is picked; a picked size
   assert.match(html, /<td valign="top" width="216" style="width:216px;[^"]*padding:3px 0 0 0;"><a [^>]*><img [^>]*width="200" style="width:200px; max-width:200px;/, 'a 200px headshot in a 216px column, beside the whole item');
   item.fields.pictureStyle = 'stamp';
   setPictureWidth(item, 64);
-  assert.match(renderNewsletter(issue), /<td valign="top" width="80" style="width:80px;[^"]*padding:4px 0 0 0;"><a [^>]*><img [^>]*width="64"/, 'a 64px stamp in an 80px column, beside the description');
+  assert.match(renderNewsletter(issue), /<td valign="top" width="64" style="width:64px; vertical-align:top;"><a [^>]*><img [^>]*width="64"/, 'a 64px stamp at the right of a research box\'s text');
+  const ev = withItem({ image: PHOTO, pictureStyle: 'stamp' }, 'spotlight', 'events');
+  setPictureWidth(ev.item, 64);
+  assert.match(renderNewsletter(ev.issue), /<td valign="top" width="80" style="width:80px;[^"]*padding:4px 0 0 0;"><a [^>]*><img [^>]*width="64"/, 'a 64px stamp in an 80px column, beside the description');
   setPictureWidth(item, 9999);
   assert.equal(pictureWidthOf(item), 96, 'a width outside the range clears the choice');
   assert.ok(!('pictureWidth' in item.fields));

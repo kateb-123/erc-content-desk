@@ -15,6 +15,12 @@
  *   fields.pictureWidth    a width in px, 48 to 240, else the layout's own
  * Older drafts carried issue.layout.callout for the one fixed callout; it
  * still reads as one Share callout after ERC Research.
+ *
+ * Research items (Kate, Oct 6, after the April 14 issue) are tinted boxes:
+ * the item's group is its kind (Research Brief, Research Report, Journal
+ * Article, ERC Explains) and prints as the box's eyebrow; the maroon title is
+ * the link, no button; the picture (160 unless sized by hand) sits at the
+ * right of the text as a stamp, or at the left of the whole box as a headshot.
  */
 
 import { SECTION_REGISTRY, newCallout } from './model.js';
@@ -35,6 +41,7 @@ const C = {
   maroon: '#500000', maroonDark: '#3C0000', maroonLight: '#732F2F', white: '#ffffff',
   g100: '#F6F6F6', g200: '#EAEAEA', g300: '#D1D1D1', g400: '#A7A7A7', g600: '#626262', g700: '#535353', g800: '#3E3E3E', g900: '#202020',
   cream: '#D6D3C4', ivory: '#E9E4DC',
+  tint: '#F5F2F1',   // the research box (Kate, Oct 6: "that pinkish background")
 };
 
 const SANS = "'Trebuchet MS','Segoe UI',Tahoma,sans-serif";
@@ -159,12 +166,15 @@ const titled = (items) => (items || []).filter((i) => String(i?.fields?.title ??
  *  is the one section whose anchor is not its key. */
 const anchorIdForSection = (key) => (key === 'headlines' ? 'news' : key);
 
+/** The kinds of research the registry names, in print order. */
+const RESEARCH_KINDS = SECTION_REGISTRY.find((s) => s.key === 'research').groups.map((g) => g.key);
+
 /** An item's group as the email draws it: a featured event pins under Featured
  *  Events; a research item with an unknown group folds into Research Brief. */
 function groupOf(secKey, item) {
   const g = item.group || '';
   if (secKey === 'events' && item.featured) return 'featured';
-  if (secKey === 'research') return ['brief', 'report'].includes(g) ? g : 'brief';
+  if (secKey === 'research') return RESEARCH_KINDS.includes(g) ? g : 'brief';
   if (secKey === 'misc') return 'misc';
   return g;
 }
@@ -233,20 +243,25 @@ export function pictureStyleOf(fields) {
   return PICTURE_STYLES.includes(fields?.pictureStyle) ? fields.pictureStyle : pictureDefault(fields?.title);
 }
 
+/** The width a layout draws when none was picked by hand. */
+const PICTURE_DEFAULTS = { stamp: 96, headshot: 160 };
+/** The research box draws its picture at 160 either way (Kate, Oct 6). */
+export const RESEARCH_PICTURE_WIDTH = 160;
+
 /** The picture's width: 160 for a headshot, 96 for a stamp, 0 for none. With
  *  no photo the email draws nothing; the editable preview draws a placeholder
  *  when a picture layout was chosen, so the choice can be seen (Kate, Oct 5). */
-function pictureWidth(fields, sumOk, editable = false) {
+function pictureWidth(fields, sumOk, editable = false, defaults = PICTURE_DEFAULTS) {
   const src = safeItemHref(fields.image);
   if (!sumOk) return 0;
   const chosen = PICTURE_STYLES.includes(fields.pictureStyle);
   if (!src && !(editable && chosen)) return 0;
   const style = chosen ? fields.pictureStyle : pictureDefault(fields.title);
   if (style === 'none') return 0;
-  // A size picked by hand (Kate, Oct 5), else the layout's own: 96 for a stamp, 160 for a headshot.
+  // A size picked by hand (Kate, Oct 5), else the layout's own.
   const picked = Number(fields.pictureWidth);
   if (Number.isFinite(picked) && picked >= PICTURE_MIN && picked <= PICTURE_MAX) return Math.round(picked);
-  return style === 'headshot' ? 160 : 96;
+  return defaults[style] ?? PICTURE_DEFAULTS[style];
 }
 
 /** The widths a picture may be set to by hand, in px. */
@@ -346,12 +361,21 @@ const labelRow = (text, pt) => row(`<h3 style="margin:0; ${T.label}">${esc(text)
 
 /** An item's title: a link to its source, or a plain span when the url is
  *  missing or unsafe. Either way it carries the edit hook. */
-function titleLink(sectionKey, item, editable) {
+function titleLink(sectionKey, item, editable, color = C.g900) {
   const hooks = editAttrs(sectionKey, item.id, 'title', editable);
   const href = safeItemHref(item.fields.url);
   return href
-    ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:${C.g900}; text-decoration:none;"${hooks}>${esc(item.fields.title)}</a>`
+    ? `<a href="${esc(href)}" target="_blank" rel="noopener" style="color:${color}; text-decoration:none;"${hooks}>${esc(item.fields.title)}</a>`
     : `<span${hooks}>${esc(item.fields.title)}</span>`;
+}
+
+/** The picture itself: the photo, linked like the item (or to itself), or the
+ *  preview's placeholder when a layout was chosen before the photo came. */
+function pictureHtml(f, w, sectionKey, itemId, editable) {
+  if (!w) return '';
+  const src = safeItemHref(f.image);
+  if (!src) return placeholderPicture(w, sectionKey, itemId, editable);
+  return `<a href="${esc(safeItemHref(f.url) || src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="${esc('Picture: ' + (f.title || ''))}" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:0;"${editAttrs(sectionKey, itemId, 'image', editable)}></a>`;
 }
 
 /** The meta line's words and hooks: authors in Research; else fields.meta, else
@@ -381,17 +405,45 @@ function itemHtml(it, def, g, editable) {
   const title = (mb) => p(`${T.title} color:${C.g900};`, titleLink(def.key, it, editable), mb);
   const meta = (mb) => metaLine(def, it, mb, editable);
   const body = sumOk ? paras(T.body, f.summary, 8, editAttrs(def.key, it.id, 'summary', editable)) : '';
-  const src = safeItemHref(f.image);
-  const stamp = !w ? ''
-    : !src ? placeholderPicture(w, def.key, it.id, editable)
-    : `<a href="${esc(safeItemHref(f.url) || src)}" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${esc(src)}" alt="${esc('Picture: ' + (f.title || ''))}" width="${w}" style="width:${w}px; max-width:${w}px; height:auto; display:block; border:0;"${editAttrs(def.key, it.id, 'image', editable)}></a>`;
+  const stamp = pictureHtml(f, w, def.key, it.id, editable);
   if (!w) return title(hasMeta || sumOk ? 4 : 0) + meta(sumOk ? 8 : 0) + body;
   // A headshot stands beside the whole item; a stamp sits under the title, beside the description.
   if (pictureStyleOf(f) === 'headshot') return twoCol(stamp, title(4) + meta(8) + body, w + PICTURE_GUTTER, 3);
   return title(4) + meta(8) + twoCol(stamp, body, w + PICTURE_GUTTER, 4);
 }
 
+/**
+ * One research item as a tinted box (Kate, Oct 6, after the April 14 issue):
+ * the kind as an eyebrow, the maroon title (the link), the authors, then the
+ * text with the picture at its right; a headshot stands at the left of it
+ * all. No button. The first box sits 18px under the heading, each next one
+ * 12px under the box before, the page's own rhythm.
+ */
+function researchBox(it, def, g, first, editable) {
+  const f = it.fields;
+  const sumOk = showsSummary(def, g.key, f);
+  const w = pictureWidth(f, sumOk, editable, { stamp: RESEARCH_PICTURE_WIDTH, headshot: RESEARCH_PICTURE_WIDTH });
+  const eyebrow = p(T.label, esc(g.label), 8);
+  const title = p(`${T.title} color:${C.maroon};`, titleLink(def.key, it, editable, C.maroon), f.authors || sumOk ? 6 : 0);
+  const authors = f.authors ? p(T.meta, esc(f.authors), sumOk ? 12 : 0, editAttrs(def.key, it.id, 'authors', editable)) : '';
+  const body = sumOk ? paras(T.body, f.summary, 8, editAttrs(def.key, it.id, 'summary', editable)) : '';
+  const picture = pictureHtml(f, w, def.key, it.id, editable);
+  let inner;
+  if (!w) inner = eyebrow + title + authors + body;
+  else if (pictureStyleOf(f) === 'headshot') inner = eyebrow + twoCol(picture, title + authors + body, w + PICTURE_GUTTER, 3);
+  else inner = eyebrow + title + authors + tbl(`<tr><td valign="top" style="vertical-align:top; padding:0 20px 0 0;">${body}</td><td valign="top" width="${w}" style="width:${w}px; vertical-align:top;">${picture}</td></tr>`);
+  return row(tbl(`<tr><td style="background-color:${C.tint}; padding:18px 20px 20px 20px;">${inner}</td></tr>`), `padding:${first ? 18 : 12}px 24px 0 24px;`);
+}
+
+/** The research section's items, each its own box, in kind order; no group labels. */
+function researchRows(def, editable) {
+  const rows = [];
+  for (const g of def.groups) for (const it of g.items) rows.push(researchBox(it, def, g, rows.length === 0, editable));
+  return rows;
+}
+
 function fullRows(def, editable) {
+  if (def.key === 'research') return researchRows(def, editable);
   const rows = [];
   def.groups.forEach((g, gi) => {
     const shows = (it) => showsSummary(def, g.key, it.fields);
@@ -543,7 +595,7 @@ export function renderBody(issue, opts = {}) {
 }
 
 // Dark-mode guards: every background and text colour the email uses, pinned.
-const BGS = [C.white, C.g100, C.g200, C.maroon, C.maroonDark, C.g900];
+const BGS = [C.white, C.g100, C.tint, C.g200, C.maroon, C.maroonDark, C.g900];
 const INKS = [C.g900, C.g800, C.g700, C.g600, C.maroon, C.maroonLight, C.white, C.cream, C.ivory, C.g300, C.g400];
 function guards() {
   const bg = (sel) => BGS.map((c) => `${sel}[style*="background-color:${c}"] { background-color:${c} !important; }`).join('\n  ');

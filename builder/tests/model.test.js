@@ -20,9 +20,9 @@ test('spotlight groups are programs, events, thisandthat in order', () => {
   assert.deepEqual(sp.groups.map(g => g.key), ['programs','events','thisandthat']);
 });
 
-test('research section has brief and report groups in order', () => {
+test('research section has the four kinds in order: brief, report, article, explains (Kate, Oct 6)', () => {
   const r = SECTION_REGISTRY.find(s => s.key === 'research');
-  assert.deepEqual(r.groups.map(g => g.key), ['brief', 'report']);
+  assert.deepEqual(r.groups.map(g => g.key), ['brief', 'report', 'article', 'explains']);
 });
 
 test('mergeIssueItems appends items with rvw_ ids and enables sections', () => {
