@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Mulish:wght@300;400;600;700&display=swap" />
   <link rel="stylesheet" href="/css/tokens.css?v=11" />
   <link rel="stylesheet" href="/css/shell.css?v=7" />
-  <link rel="stylesheet" href="css/styles.css?v=66" />
+  <link rel="stylesheet" href="css/styles.css?v=67" />
 </head>
 <body>
   <a class="skip-to-main" href="#main">Skip to content</a>
@@ -22,8 +22,8 @@
 
   <nav class="step-nav" aria-label="Wizard steps">
     <ol class="step-list">
-      <!-- The li draws the circle and the line; the button inside is the control. -->
-      <li class="step-indicator" data-nav-step="review"><button type="button" class="step-btn">Review</button></li>
+      <!-- The li draws the circle and the line; the button inside is the control.
+           Three steps since Oct 7, 2026: Outline opens with the Issue and Pull. -->
       <li class="step-indicator" data-nav-step="triage"><button type="button" class="step-btn">Outline</button></li>
       <li class="step-indicator" data-nav-step="edit"><button type="button" class="step-btn">Preview &amp; Tweak</button></li>
       <li class="step-indicator" data-nav-step="export"><button type="button" class="step-btn">Save &amp; Export</button></li>
@@ -36,8 +36,7 @@
        from the step row's own words; on screen the step row names it and the
        step opens with a lede. -->
   <main id="main" class="wizard-body">
-    <section data-step="review" class="wizard-step"></section>
-    <section data-step="triage" class="wizard-step" hidden></section>
+    <section data-step="triage" class="wizard-step"></section>
     <section data-step="edit" class="wizard-step" hidden></section>
     <section data-step="export" class="wizard-step" hidden></section>
   </main>
@@ -50,6 +49,6 @@
   </div>
 
   <!-- Bump ?v when you change the JS so browsers load the new code (cache-busting). -->
-  <script type="module" src="js/app.js?v=60"></script>
+  <script type="module" src="js/app.js?v=61"></script>
 </body>
 </html>

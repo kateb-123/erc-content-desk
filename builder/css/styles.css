@@ -279,14 +279,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 .btn-tertiary:not(:disabled):hover { background: var(--button-primary); color: var(--text-on-accent); }
 .btn-tertiary:not(:disabled):active { background: var(--button-primary-active); border-color: var(--button-primary-active); color: var(--text-on-color); }
 
-/* --- Review step ------------------------------------------ */
-/* Review: what's in the issue, as Carbon's data table in a white box. */
-.review-table { width: 100%; border-collapse: collapse; margin-top: var(--spacing-05); background: var(--layer-02); border: 1px solid var(--border-subtle-01); }
-.review-table th { text-align: left; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--text-primary); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 2px solid var(--mark); }
-.review-table td { padding: var(--spacing-03) var(--spacing-05); border-top: 1px solid var(--border-subtle-01); vertical-align: top; }   /* titles in the ink; the sub-line stays secondary */
-.review-table-sub { display: block; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-secondary); margin-top: var(--spacing-01); font-weight: 400; }
-
-/* --- Triage step ------------------------------------------ */
+/* --- Outline step (the Issue and Pull at its head since Oct 7, 2026) ----- */
 .triage-meta {
   display: flex;
   flex-direction: column;

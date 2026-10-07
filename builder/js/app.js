@@ -42,7 +42,7 @@ const state = {
   /** @type {object|null} Deep clone of issue as pulled or restored, the text "Use original" puts back */
   baseline: null,
   /** @type {string} Current wizard step key */
-  step: 'review',
+  step: 'triage',
   /** @type {number} The furthest step index visited, so checks survive going back */
   reached: 0,
 };
@@ -163,7 +163,7 @@ function syncStepNav() {
 // ---------------------------------------------------------------------------
 
 /** Which renderer draws each step. */
-const RENDER = { review: renderReview, triage: renderTriage, edit: renderEdit, export: renderExport };
+const RENDER = { triage: renderTriage, edit: renderEdit, export: renderExport };
 
 /**
  * Show the wizard section for `step`, hide all others.
@@ -271,10 +271,13 @@ function emptyLine(container, text) {
   container.appendChild(el('p', 'edit-empty-msg', text));
 }
 
-function renderReview() {
-  const container = openStep('review', 'Pick the issue and pull what the desk staged.',
-    'Pick the issue, pull what the desk staged, and look it over. Pull again any time. Only new items are added.');
-
+/**
+ * The head of the Outline (the Review step folded in; Kate, Oct 7): the Issue
+ * dropdown, Pull from the desk with its status, and Recently discarded, which
+ * joins the step last.
+ * @param {HTMLElement} container - the Outline step
+ */
+function renderPullHead(container) {
   // ── Issue date: a dropdown of the desk's scheduled issues, with staged
   //    counts. The desk owns the schedule; the builder just picks from it. ──
   const metaSection = el('div', 'triage-meta');
@@ -363,7 +366,7 @@ function renderReview() {
         scheduleSave();
       }
       setPull(already ? `Pulled ${fresh} new · ${already} already here.` : `Pulled ${fresh} from the desk.`);
-      if (fresh) { renderReview(); syncStepNav(); }
+      if (fresh) { renderTriage(); syncStepNav(); }
     } catch {
       setPull('');
       pullNote.replaceChildren(inlineNote('error', "Couldn't reach the desk.", () => pullBtn.click()));
@@ -374,36 +377,6 @@ function renderReview() {
   pullRow.append(pullBtn, pullStatus);
   container.append(pullRow, pullNote);
   renderDiscardedDrafts(container);   // Recently discarded (Sep 23): joins the step after the rest has drawn
-
-  // ── What's in the issue ──────────────────────────────────────────────────
-  const items = [];
-  for (const sec of SECTION_REGISTRY) {
-    for (const item of state.issue?.sections?.[sec.key]?.items ?? []) items.push([sec, item]);
-  }
-  if (!items.length) {
-    emptyLine(container, 'Nothing here yet.');
-    return;
-  }
-  const table = el('table', 'review-table');
-  const thead = el('thead');
-  const headRow = el('tr');
-  headRow.append(...['Item', 'Section'].map((label) => el('th', '', label)));
-  thead.appendChild(headRow);
-  const tbody = el('tbody');
-  for (const [sec, item] of items) {
-    const tr = el('tr');
-    const itemTd = el('td');
-    itemTd.appendChild(el('strong', '', item.fields?.title || item.fields?.url || '(untitled)'));
-    const source = String(item.fields?.source ?? '').trim();
-    if (source) itemTd.appendChild(el('span', 'review-table-sub', source));
-    const secTd = el('td', '', sec.label);
-    const groupLabel = sec.groups.find((g) => g.key === item.group)?.label ?? '';
-    if (groupLabel) secTd.appendChild(el('span', 'review-table-sub', groupLabel));
-    tr.append(itemTd, secTd);
-    tbody.appendChild(tr);
-  }
-  table.append(thead, tbody);
-  container.appendChild(table);
 }
 
 /**
@@ -556,15 +529,16 @@ function outlineMeta(sectionKey, f) {
  * wrong group. The look is chosen on Preview & Tweak, on the email itself.
  */
 function renderTriage() {
-  const container = openStep('triage', 'Put the issue in order.',
-    'What goes out, in the order it goes out. Drag a section by its handle to move it in the email. Hover a row for Move to…; the look is chosen on the next step, on the email itself.');
+  const container = openStep('triage', 'Pick the issue, pull what the desk staged, and put it in order.',
+    'Pick the issue and pull what the desk staged; pull again any time, only new items are added. What goes out, in the order it goes out: drag a section by its handle to move it in the email. Hover a row for Move to…; the look is chosen on the next step, on the email itself.');
+  renderPullHead(container);
 
   const issue = state.issue;
 
-  // Nothing pulled yet: one line, and no empty table to puzzle over.
+  // Nothing pulled yet: one line under Pull, and no empty table to puzzle over.
   // Items removed on this visit still list, greyed, so the last one out is not lost.
   if (!issue || (!countIssueItems(issue) && !waitingRemovals().length)) {
-    emptyLine(container, 'No issue loaded. Pull from the desk on the Review step first.');
+    emptyLine(container, 'Nothing here yet.');
     return;
   }
 
@@ -2066,7 +2040,7 @@ function renderEdit() {
     'Click any item in the email and its card opens beside it: how it is laid out, then its words. A callout opens the same way, its style first. Click a picture to change it on the spot. The introduction, the layout and Add an item open from the buttons over the email.');
 
   if (!state.issue) {
-    emptyLine(container, 'No issue loaded. Pull from the desk on the Review step first.');
+    emptyLine(container, 'No issue loaded. Pull from the desk on the Outline step first.');
     return;
   }
 
@@ -2225,7 +2199,7 @@ function renderExport() {
 
   // Nothing to export yet: one plain sentence, no buttons.
   if (!state.issue || !countIssueItems(state.issue)) {
-    emptyLine(container, 'Nothing to export yet. Pull from the desk on the Review step first.');
+    emptyLine(container, 'Nothing to export yet. Pull from the desk on the Outline step first.');
     return;
   }
 
@@ -2310,14 +2284,14 @@ function renderExport() {
   container.append(btnRow, after);
 }
 
-/** The way on after an issue is archived: storage cleared, back to Review for the next one. */
+/** The way on after an issue is archived: storage cleared, back to Outline for the next one. */
 function startNextIssue() {
   clearState();
   state.issue = null;
   state.baseline = null;
   state.reached = 0;
   pullMessage = '';
-  goTo('review');
+  goTo('triage');
 }
 
 // ---------------------------------------------------------------------------
@@ -2326,8 +2300,8 @@ function startNextIssue() {
 
 /**
  * Make a saved draft the builder's current issue: the banner's Restore and
- * Recently discarded's alike. Kept in storage, and on to the Outline when it
- * holds items; one without stays on Review.
+ * Recently discarded's alike. Kept in storage, and drawn on the Outline,
+ * which holds the Issue and Pull for one that is still empty.
  * @param {object} issue
  */
 function openDraft(issue) {
@@ -2336,7 +2310,7 @@ function openDraft(issue) {
   state.reached = 0;
   pullMessage = '';
   saveState(issue);
-  goTo(countIssueItems(issue) ? 'triage' : 'review');
+  goTo('triage');
 }
 
 /** A failure's own words, without the "try again" a Try again or Retry button beside them already says. */
@@ -2395,7 +2369,7 @@ function showRestoreBanner(saved) {
       settle();
       discarded = withEntry(discarded, reply.draft);
       focusDiscarded = fromKeyboard ? reply.draft.id : null;
-      if (state.step === 'review') renderReview();   // unlocks the Issue select and Pull; the list leads with it
+      if (state.step === 'triage') renderTriage();   // unlocks the Issue select and Pull; the list leads with it
       setWizardStatus('Discarded. Recently discarded keeps it for 90 days.');
     } catch (err) {
       const retry = ghostButton('Try again');
@@ -2498,13 +2472,13 @@ function discardedRow(entry) {
 }
 
 /**
- * Review's Recently discarded list: what Discard kept on the desk, newest
- * first, each with Restore. Called once from renderReview, before its last
- * part draws; the list joins the step after everything else. Nothing at all
- * while it is empty; the last list known shows at once and the desk's answer
- * replaces it; a list that can't load is a quiet line with Retry that holds
- * nothing else up.
- * @param {HTMLElement} container - the Review step
+ * The Outline's Recently discarded list: what Discard kept on the desk, newest
+ * first, each with Restore. Called once from renderPullHead, before the rest
+ * of the step draws; the list joins the step after everything else. Nothing
+ * at all while it is empty; the last list known shows at once and the desk's
+ * answer replaces it; a list that can't load is a quiet line with Retry that
+ * holds nothing else up.
+ * @param {HTMLElement} container - the Outline step
  */
 function renderDiscardedDrafts(container) {
   const draw = ++discardedDraw;
@@ -2553,8 +2527,8 @@ function renderDiscardedDrafts(container) {
 
 // The desk's top bar: the builder crumbs under Newsletter.
 renderShell(document.querySelector('.topbar'), { screen: 'builder' });
-// A saved issue locks Review before it is drawn, so the first render already knows.
+// A saved issue locks the Outline's Issue and Pull before it is drawn, so the first render already knows.
 const savedIssue = loadState();
 restorePending = Boolean(savedIssue);
-goTo('review');
+goTo('triage');
 if (savedIssue) showRestoreBanner(savedIssue);
