@@ -24,7 +24,7 @@ import { renderShell } from '../../js/shell-ui.js';
 import { STEPS, canEnterStep, lockedMessage, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
 import { normalizeLinkUrl } from './editing.js';
 // The per-issue layout options the Outline sets (Claude Design handoff, Oct 2026).
-import { CALLOUT_CHOICES, PICTURE_CHOICES, PICTURE_SIZES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setPictureStyle, itemLayouts, pictureWidthOf, setPictureWidth, placeholderItems, resetOptions, hasCustomOptions, canHighlight, setHighlight, setZoom, setFlyer, RESEARCH_KINDS, setResearchKind, moveSection, calloutSection } from './options.js';
+import { CALLOUT_CHOICES, PICTURE_SIZES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemLayouts, pictureWidthOf, setPictureWidth, placeholderItems, resetOptions, hasCustomOptions, setZoom, setFlyer, RESEARCH_KINDS, setResearchKind, moveSection, calloutSection } from './options.js';
 import { layoutOf, calloutsOf, calloutAfter, sectionOrder } from './template.js';
 import { CALLOUT_KINDS, CALLOUT_END } from './model.js';
 // Kept drafts, and hand-added items that go to the desk (Sep 23).
@@ -1120,7 +1120,8 @@ function buildAddItemPanel(iframe) {
     }
   };
 
-  const addBtn = button('Add to the issue', 'btn btn-secondary', { onClick: () => {
+  // The card's own primary (Kate, Oct 7): the one Add, teal like Add a callout's, moved to the card's foot by openPanelInDrawer.
+  const addBtn = button('Add to the issue', 'btn btn-primary addon-primary', { onClick: () => {
     const title = titleInput.value.trim();
     if (!title) { status.textContent = 'Give it a title first.'; return; }
     if (!state.issue) state.issue = createEmptyIssue();
@@ -1619,13 +1620,19 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawe
  * caller fills, and the actions along the foot.
  * @returns {{ card: HTMLElement, body: HTMLElement, actions: HTMLElement }}
  */
-function drawerCard(name) {
+function drawerCard(name, { closeWord = 'Done' } = {}) {
   const card = el('div', 'drawer-card');
   const head = el('div', 'drawer-card-head');
   head.appendChild(el('span', 'drawer-card-name', name));
-  const closeBtn = button('', 'edit-card-close', { icon: 'xmark', onClick: closeDrawer });
-  closeBtn.setAttribute('aria-label', 'Close');
-  head.appendChild(closeBtn);
+  // Every edit is live, so the one word that closes a card is Done, in its
+  // head (Kate, Oct 7: "Done up top"). An Add card takes an × instead: its
+  // own Add to the issue sits at the foot.
+  if (closeWord) head.appendChild(button(closeWord, 'btn btn-primary drawer-card-done', { onClick: closeDrawer }));
+  else {
+    const closeBtn = button('', 'edit-card-close', { icon: 'xmark', onClick: closeDrawer });
+    closeBtn.setAttribute('aria-label', 'Close');
+    head.appendChild(closeBtn);
+  }
   const body = el('div', 'drawer-card-body');
   const actions = el('div', 'edit-card-actions drawer-card-actions');
   card.append(head, body, actions);
@@ -1649,8 +1656,35 @@ function wireframeEl(key, hasPic) {
     const beside = el('span', 'wire-beside');
     beside.append(pic(18, 22), col(...lines(3)));
     w.append(col(bar('wire-t', '80%'), bar('wire-m', '55%'), beside));
+  } else if (key === 'card') {
+    // The Date card (Kate, Oct 7): the words on the tint, the maroon date block at the right.
+    w.classList.add('wire-card');
+    const block = el('span', 'wire-block');
+    block.append(bar('wire-bt', '70%'), bar('wire-bl', '55%'), bar('wire-bl', '65%'));
+    w.append(col(bar('wire-t', '85%'), bar('wire-m', '50%'), ...lines(2)), block);
   } else w.append(pic(28, 36), col(bar('wire-t', '90%'), bar('wire-m', '60%'), ...lines(2)));
   return w;
+}
+
+/** A callout's three styles as tiles in the same frame (Kate, Oct 7: one tile family for every look), one on. */
+function calloutTiles(current, onPick) {
+  const row = el('div', 'wires');
+  row.setAttribute('role', 'radiogroup');
+  row.setAttribute('aria-label', 'Its style');
+  const bar = (cls, width) => { const s = el('span', cls); s.style.width = width; return s; };
+  for (const c of CALLOUT_CHOICES) {
+    const b = button('', 'wire' + (c.key === current ? ' is-on' : ''));
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(c.key === current));
+    const w = el('span', `wire-draw wire-callout wire-callout--${c.key}`);
+    const box = el('span', 'wire-cbox');
+    box.append(bar('wire-ct', '60%'), bar('wire-cl', '90%'), bar('wire-cl', '75%'), bar('wire-cb', '34%'));
+    w.appendChild(box);
+    b.append(w, el('span', 'wire-label', c.label));
+    b.addEventListener('click', () => onPick(c.key));
+    row.appendChild(b);
+  }
+  return row;
 }
 
 /** A labelled checkbox in the card's look column (Kate, Oct 6). */
@@ -1717,7 +1751,8 @@ function openItemEditor(refs, iframe) {
   // Live preview re-render, debounced so typing doesn't thrash the iframe.
   const debouncedPreview = debounce(() => refreshEditIframe(iframe), 350);
 
-  // The look, first: the item drawn in each layout it can take.
+  // The look, first: the item drawn in each layout it can take, one tile
+  // family (Kate, Oct 7: the Date card is a tile among them).
   let lookCol = null;
   const drawLook = () => {
     if (!cardItem || !lookCol) return;
@@ -1728,36 +1763,29 @@ function openItemEditor(refs, iframe) {
       lookCol.appendChild(el('h4', 'drawer-h4', 'Kind'));
       lookCol.appendChild(chipRow('Kind', RESEARCH_KINDS, cardItem.group, (key) => { setResearchKind(cardItem, key); redraw(); }));
     }
-    // An event can be the highlight card (Kate, Oct 6): its words on the tint, the date block beside them.
-    if (canHighlight(first.section)) {
-      const highlighted = cardItem.fields?.highlight === true;
-      lookCol.appendChild(el('h4', 'drawer-h4', 'Highlight'));
-      lookCol.appendChild(checkRow('Highlight card: the date block beside its words', highlighted, (on) => { setHighlight(cardItem, on); redraw(); }));
-      if (highlighted) {
-        lookCol.appendChild(checkRow('Zoom available', cardItem.fields.zoom === true, (on) => { setZoom(cardItem, on); redraw(); }));
-        const group = el('div', 'edit-card-group');
-        editFieldSeq += 1;
-        const id = `edit-field-${editFieldSeq}`;
-        const sub = el('label', 'edit-card-sublabel', FIELD_LABELS.flyer);
-        sub.htmlFor = id;
-        const input = el('input', 'edit-card-input');
-        input.type = 'url';
-        input.id = id;
-        input.placeholder = 'https://';
-        input.value = cardItem.fields.flyer ?? '';
-        input.addEventListener('input', () => { setFlyer(cardItem, input.value); scheduleSave(); debouncedPreview(); });
-        group.append(sub, input);
-        lookCol.appendChild(group);
-        lookCol.appendChild(el('p', 'triage-section-note drawer-note', 'The card shows the description and leaves the picture out.'));
-        return;
-      }
-    }
     lookCol.appendChild(el('h4', 'drawer-h4' + (lookCol.childElementCount ? ' drawer-h4--later' : ''), 'How it is laid out'));
     lookCol.appendChild(wireframeRow(first.section, cardItem, redraw));
-    // The picture's size, once a picture layout is on: a few widths, each
-    // with the height a portrait photo stands at (Kate, Oct 5).
     const layout = itemLayouts(first.section, cardItem).find((l) => l.on);
-    if (layout && (layout.key === 'stamp' || layout.key === 'headshot')) {
+    if (layout?.key === 'card') {
+      // The Date card's extras (Kate, Oct 6): Zoom available on the date block, and the View flyer link.
+      lookCol.appendChild(checkRow('Zoom available', cardItem.fields.zoom === true, (on) => { setZoom(cardItem, on); redraw(); }));
+      const group = el('div', 'edit-card-group');
+      editFieldSeq += 1;
+      const id = `edit-field-${editFieldSeq}`;
+      const sub = el('label', 'edit-card-sublabel', FIELD_LABELS.flyer);
+      sub.htmlFor = id;
+      const input = el('input', 'edit-card-input');
+      input.type = 'url';
+      input.id = id;
+      input.placeholder = 'https://';
+      input.value = cardItem.fields.flyer ?? '';
+      input.addEventListener('input', () => { setFlyer(cardItem, input.value); scheduleSave(); debouncedPreview(); });
+      group.append(sub, input);
+      lookCol.appendChild(group);
+      lookCol.appendChild(el('p', 'triage-section-note drawer-note', 'The card shows the description and leaves the picture out.'));
+    } else if (layout && (layout.key === 'stamp' || layout.key === 'headshot')) {
+      // The picture's size, once a picture layout is on: a few widths, each
+      // with the height a portrait photo stands at (Kate, Oct 5).
       lookCol.appendChild(el('h4', 'drawer-h4 drawer-h4--later', 'Picture size, px'));
       const chips = el('div', 'size-chips');
       chips.setAttribute('role', 'radiogroup');
@@ -1823,8 +1851,9 @@ function openItemEditor(refs, iframe) {
     fieldInputs.push({ ref, set: ctl.set, focus: ctl.focus });
   }
 
-  // What the fields held when the card opened, for Cancel.
+  // What the card held when it opened, the look included, for Undo changes.
   const opened = fieldInputs.map((f) => ({ ref: f.ref, value: getField(state.issue, f.ref) ?? '' }));
+  const openedLook = cardItem ? { fields: structuredClone(cardItem.fields ?? {}), group: cardItem.group } : null;
 
   const itemId = first.item;
   if (itemId) {
@@ -1847,21 +1876,16 @@ function openItemEditor(refs, iframe) {
     refreshEditIframe(iframe);
     drawLook();
   } });
-  const cancelBtn = button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: () => {
-    let changed = false;
-    opened.forEach(({ ref, value }, i) => {
-      if ((getField(state.issue, ref) ?? '') === value) return;
-      setField(state.issue, ref, value);
-      fieldInputs[i].set(value);
-      changed = true;
-    });
-    if (changed) { scheduleSave(); refreshEditIframe(iframe); }
-    closeDrawer();
+  // Undo changes (Kate, Oct 7): everything back to what it was when the card
+  // opened, the look included; the card stays open. Done, in the head, closes it.
+  const undoBtn = button(' Undo changes', 'ghost-btn ghost-btn--muted', { icon: 'arrow-rotate-left', onClick: () => {
+    if (openedLook) { cardItem.fields = structuredClone(openedLook.fields); cardItem.group = openedLook.group; }
+    opened.forEach(({ ref, value }, i) => { setField(state.issue, ref, value); fieldInputs[i].set(value); });
+    scheduleSave();
+    refreshEditIframe(iframe);
+    drawLook();
   } });
-  // Edits are live, so Save is the word that closes the drawer.
-  const saveBtn = button('Save', 'btn btn-primary edit-card-save', { onClick: closeDrawer });
-  actions.append(revertBtn, cancelBtn, saveBtn);
-  topActions(card);
+  actions.append(revertBtn, undoBtn);
 
   openDrawer(card);
   requestAnimationFrame(() => fieldInputs[0] && fieldInputs[0].focus());
@@ -1883,7 +1907,7 @@ function openCalloutEditor(id, iframe) {
   const lookCol = el('div', 'drawer-look');
   const drawLook = () => {
     lookCol.replaceChildren(el('h4', 'drawer-h4', 'Its style'));
-    lookCol.appendChild(swatchRow(CALLOUT_CHOICES, callout.style, (key) => { setCalloutStyle(callout, key); scheduleSave(); refreshEditIframe(iframe); drawLook(); }));
+    lookCol.appendChild(calloutTiles(callout.style, (key) => { setCalloutStyle(callout, key); scheduleSave(); refreshEditIframe(iframe); drawLook(); }));
     const note = callout.kind === 'share' ? 'Always at the end of the email.'
       : calloutAfter(callout) === CALLOUT_END ? 'At the end of the email. Move it on Outline.'
       : `After ${SECTION_REGISTRY.find((s) => s.key === callout.after)?.label || 'the introduction'}. Move it on Outline.`;
@@ -1925,6 +1949,7 @@ function openCalloutEditor(id, iframe) {
     fieldInputs.push({ ref, set: ctl.set, focus: ctl.focus });
   }
   const opened = fieldInputs.map((f) => ({ ref: f.ref, value: getField(state.issue, f.ref) ?? '' }));
+  const openedStyle = callout.style;
 
   actions.appendChild(button(' Remove', 'ghost-btn ghost-btn--danger edit-card-delete', { icon: 'trash-can', onClick: () => {
     closeDrawer();
@@ -1943,19 +1968,14 @@ function openCalloutEditor(id, iframe) {
       refreshEditIframe(iframe);
     } }));
   }
-  actions.appendChild(button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: () => {
-    let changed = false;
-    opened.forEach(({ ref, value }, i) => {
-      if ((getField(state.issue, ref) ?? '') === value) return;
-      setField(state.issue, ref, value);
-      fieldInputs[i].set(value);
-      changed = true;
-    });
-    if (changed) { scheduleSave(); refreshEditIframe(iframe); }
-    closeDrawer();
+  // Undo changes (Kate, Oct 7): the style and the words back to what they were when the card opened; it stays open.
+  actions.appendChild(button(' Undo changes', 'ghost-btn ghost-btn--muted', { icon: 'arrow-rotate-left', onClick: () => {
+    setCalloutStyle(callout, openedStyle);
+    opened.forEach(({ ref, value }, i) => { setField(state.issue, ref, value); fieldInputs[i].set(value); });
+    scheduleSave();
+    refreshEditIframe(iframe);
+    drawLook();
   } }));
-  actions.appendChild(button('Save', 'btn btn-primary edit-card-save', { onClick: closeDrawer }));
-  topActions(card);
 
   openDrawer(card);
   requestAnimationFrame(() => fieldInputs[0] && fieldInputs[0].focus());
@@ -1996,26 +2016,15 @@ function revealAboveDrawer(iframe, block) {
  * The drawer's other cards: the introduction, the layout, and Add an item,
  * from the buttons over the stage. Each reuses its fold, opened flat.
  */
-/** Save and Cancel at the card's top as well as its foot (Kate, Oct 6: "a
- *  save options up top too on the box"), each pressing its twin below, so
- *  the two can never disagree. A card with no Save gets none. */
-function topActions(card) {
-  const buttons = [...card.querySelectorAll('.drawer-card-body button, .drawer-card-actions button')];
-  const save = buttons.find((b) => b.textContent.trim() === 'Save');
-  if (!save) return;
-  const cancel = buttons.find((b) => b.textContent.trim() === 'Cancel');
-  const slot = el('div', 'drawer-card-top');
-  if (cancel) slot.append(button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: () => cancel.click() }));
-  slot.append(button('Save', 'btn btn-primary drawer-card-top-save', { onClick: () => save.click() }));
-  card.querySelector('.edit-card-close').before(slot);
-}
-
+/** Add an item's card (Kate, Oct 7): the fold's fields in the body, Cancel
+ *  and its own Add to the issue at the foot, an × in the head. */
 function openPanelInDrawer(title, details) {
-  const { card, body, actions } = drawerCard(title);
+  const { card, body, actions } = drawerCard(title, { closeWord: '' });
   details.open = true;
   body.appendChild(details);
-  actions.appendChild(button('Done', 'btn btn-primary', { onClick: closeDrawer }));
-  topActions(card);
+  const primary = details.querySelector('.addon-primary');
+  actions.appendChild(button('Cancel', 'ghost-btn ghost-btn--muted', { onClick: closeDrawer }));
+  if (primary) actions.appendChild(primary);
   // Level with the top of the window, wherever the page is scrolled to.
   openDrawer(card, columnOffset(window.scrollY + 72));
   requestAnimationFrame(() => firstField(card)?.focus());
@@ -2027,31 +2036,12 @@ function openPanelInDrawer(title, details) {
  * Called each time the wizard navigates to 'edit'.
  */
 /**
- * A row of swatches, one on: each is a small drawing of the result, with its
- * word under it. `choices` are {key, label}; `swKey` maps a key to its drawing.
- */
-function swatchRow(choices, current, onPick) {
-  const row = el('div', 'swatch-row');
-  row.setAttribute('role', 'radiogroup');
-  for (const c of choices) {
-    const drawing = c.key === 'none' && choices === PICTURE_CHOICES ? 'nopic' : c.key;
-    const b = button('', `swatch sw-${drawing}` + (c.key === current ? ' is-on' : ''));
-    b.setAttribute('role', 'radio');
-    b.setAttribute('aria-checked', String(c.key === current));
-    b.append(el('span', 'pic'), el('span', '', c.label));
-    b.addEventListener('click', () => onPick(c.key));
-    row.appendChild(b);
-  }
-  return row;
-}
-
-/**
  * Add callout (Kate, Oct 5), a door beside Add an item: pick the kind and
  * the section it follows; the callout joins the issue and its own card
  * opens at once, style first, so it can be styled and worded on the spot.
  */
 function openAddCalloutCard(iframe) {
-  const { card, body, actions } = drawerCard('Add a callout');
+  const { card, body, actions } = drawerCard('Add a callout', { closeWord: '' });
   const col = el('div', 'drawer-fields');
   col.appendChild(el('h4', 'drawer-h4', 'Which one'));
   const kinds = el('div', 'add-callout-kinds');

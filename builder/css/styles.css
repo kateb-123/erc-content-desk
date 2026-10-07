@@ -469,7 +469,8 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .drawer-card-head { display: flex; align-items: center; gap: var(--spacing-03); padding: var(--spacing-03) var(--spacing-04) var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--border-subtle-01); }
 .drawer-card-name { flex: 1; font-size: 14px; line-height: 18px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .drawer-card-body { min-height: 0; overflow: auto; display: grid; grid-template-columns: 1fr; }
-.drawer-card-body:has(> .drawer-look) { grid-template-columns: 236px 1fr; }
+.drawer-card-body:has(> .drawer-look) { grid-template-columns: 268px 1fr; }   /* two tiles a row */
+.drawer-card-head .drawer-card-done { height: 32px; margin-left: auto; }   /* Done, the one word that closes the card (Kate, Oct 7) */
 .drawer-look { padding: var(--spacing-04) var(--spacing-05); border-right: 1px solid var(--border-subtle-01); }
 .drawer-look .wires { gap: var(--spacing-02); }
 .drawer-fields { padding: var(--spacing-04) var(--spacing-05); display: flex; flex-direction: column; gap: var(--spacing-03); min-width: 0; }
@@ -483,7 +484,7 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 
 /* The wireframes: the item drawn small in each layout it can take. */
 .wires { display: flex; flex-wrap: wrap; gap: var(--spacing-03); }
-.wire { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-02); padding: var(--spacing-02); border: 2px solid transparent; border-radius: var(--radius); background: none; font: inherit; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-primary); cursor: pointer; }
+.wire { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-02); width: 110px; box-sizing: border-box; padding: var(--spacing-02); border: 2px solid transparent; border-radius: var(--radius); background: none; font: inherit; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-primary); cursor: pointer; }
 .wire:hover { background: var(--accent-10); }
 .wire.is-on { border-color: var(--button-primary); }
 .wire.is-dim .wire-draw { opacity: .5; }
@@ -498,6 +499,28 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .wire-pic { display: block; flex: 0 0 auto; background: var(--mail-maroon-light); }
 .wire-pic.is-empty { background: var(--mail-white); border: 1px dashed var(--border-strong-01); box-sizing: border-box; }
 .wire-label { text-align: center; }
+/* The Date card as a tile (Kate, Oct 7): the words on the tint, the maroon date block at the right. */
+.wire-draw.wire-card { padding: 0; gap: 0; }
+.wire-draw.wire-card .wire-col { padding: 8px 6px; background: var(--mail-tint); }
+.wire-block { display: flex; flex-direction: column; gap: 4px; width: 26px; flex: 0 0 auto; background: var(--mail-maroon); padding: 7px 4px; box-sizing: border-box; }
+.wire-bt { display: block; height: 5px; background: var(--mail-white); border-radius: 1px; }
+.wire-bl { display: block; height: 3px; background: var(--mail-ivory); border-radius: 1px; }
+/* A callout's three styles in the same frame: the maroon block, the light gray box, the dotted rule. */
+.wire-draw.wire-callout { padding: 6px; }
+.wire-cbox { display: flex; flex-direction: column; gap: 4px; flex: 1; padding: 7px 8px; box-sizing: border-box; }
+.wire-ct { display: block; height: 5px; border-radius: 1px; }
+.wire-cl { display: block; height: 3px; border-radius: 1px; }
+.wire-cb { display: block; height: 7px; margin-top: 2px; }
+.wire-callout--maroon .wire-cbox { background: var(--mail-maroon); }
+.wire-callout--maroon .wire-ct, .wire-callout--maroon .wire-cb { background: var(--mail-white); }
+.wire-callout--maroon .wire-cl { background: var(--mail-ivory); }
+.wire-callout--gray .wire-cbox { background: var(--mail-gray-100); }
+.wire-callout--gray .wire-ct { background: var(--mail-ink); }
+.wire-callout--gray .wire-cl { background: var(--mail-body); }
+.wire-callout--gray .wire-cb { background: var(--mail-maroon); }
+.wire-callout--dotted .wire-cbox { border: 2px dotted var(--mail-maroon-light); }
+.wire-callout--dotted .wire-ct, .wire-callout--dotted .wire-cb { background: var(--mail-maroon); }
+.wire-callout--dotted .wire-cl { background: var(--mail-body); }
 
 /* The picture's size: a few widths as chips, each with its portrait height. */
 .drawer-h4--later { margin-top: var(--spacing-05); }

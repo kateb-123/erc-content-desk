@@ -138,34 +138,39 @@ export function itemOptions(sectionKey, item) {
 }
 
 /**
- * The layouts an item can take, for the card's wireframes (Kate, Oct 5):
- * title and details only; with its description; the description beside a
- * 96px stamp; a 160px headshot beside it all. Each says whether it is the
+ * The layouts an item can take, for the card's tiles (Kate, Oct 5): title
+ * and details only; with its description; the description beside a 96px
+ * stamp; a 160px headshot beside it all; and, for a Spotlight or Upcoming
+ * Events item, the Date card (Kate, Oct 7: the highlight card is a layout
+ * like the others, not a switch of its own). Each says whether it is the
  * one in force (`on`), whether the item still lacks the photo it draws
  * (`dim`, a hint only: the layout applies anyway, and the preview shows a
  * placeholder until a photo is added; Kate, Oct 5), and how to apply it.
  * Items with no summary, or outside the described sections, have only the
- * first.
+ * first (and the Date card where it is offered).
  * @returns {Array<{key: string, label: string, on: boolean, dim: boolean, apply: () => void}>}
  */
 export function itemLayouts(sectionKey, item) {
   const f = item?.fields || {};
   const o = itemOptions(sectionKey, item);
   const hasPic = !!String(f.image ?? '').trim();
+  const card = canHighlight(sectionKey) && f.highlight === true;
   // With no photo, only a layout chosen by hand counts (the preview draws its placeholder).
   const pic = !o.descriptionOn ? 'none' : hasPic ? o.pictureStyle : (PICTURE_STYLES.includes(f.pictureStyle) ? f.pictureStyle : 'none');
-  const bare = { key: 'bare', label: 'Title and details', on: !o.descriptionOn, dim: false,
-    apply: () => { if (!item.fields) item.fields = {}; item.fields.showSummary = false; } };
-  if (!o.hasDescription) return [bare];
-  return [
+  // A plain layout is never on while the card is, and picking one takes the card off.
+  const plain = (key, label, on, dim, apply) => ({ key, label, on: on && !card, dim,
+    apply: () => { if (!item.fields) item.fields = {}; delete item.fields.highlight; apply(); } });
+  const bare = plain('bare', 'Title and details', !o.descriptionOn, false, () => { item.fields.showSummary = false; });
+  const dateCard = { key: 'card', label: 'Date card', on: card, dim: false,
+    apply: () => { if (!item.fields) item.fields = {}; item.fields.highlight = true; } };
+  const offered = (list) => (canHighlight(sectionKey) ? [...list, dateCard] : list);
+  if (!o.hasDescription) return offered([bare]);
+  return offered([
     bare,
-    { key: 'text', label: 'With description', on: o.descriptionOn && pic === 'none', dim: false,
-      apply: () => { item.fields.showSummary = true; if (hasPic) item.fields.pictureStyle = 'none'; } },
-    { key: 'stamp', label: 'Stamp beside the text', on: o.descriptionOn && pic === 'stamp', dim: !hasPic,
-      apply: () => { item.fields.showSummary = true; item.fields.pictureStyle = 'stamp'; } },
-    { key: 'headshot', label: 'Headshot beside it all', on: o.descriptionOn && pic === 'headshot', dim: !hasPic,
-      apply: () => { item.fields.showSummary = true; item.fields.pictureStyle = 'headshot'; } },
-  ];
+    plain('text', 'With description', o.descriptionOn && pic === 'none', false, () => { item.fields.showSummary = true; if (hasPic) item.fields.pictureStyle = 'none'; }),
+    plain('stamp', 'Stamp beside the text', o.descriptionOn && pic === 'stamp', !hasPic, () => { item.fields.showSummary = true; item.fields.pictureStyle = 'stamp'; }),
+    plain('headshot', 'Headshot beside it all', o.descriptionOn && pic === 'headshot', !hasPic, () => { item.fields.showSummary = true; item.fields.pictureStyle = 'headshot'; }),
+  ]);
 }
 
 /** The picture sizes offered by hand (Kate, Oct 5): the width, and the height

@@ -33,6 +33,28 @@ test('an item with a summary offers four layouts; the picture ones say they lack
   assert.deepEqual(on(itemLayouts('events', item({ summary: 'x', image: 'https://x.org/p.jpg' }, 'tamu'))), ['bare'], 'a Texas A&M event hides its description by default');
 });
 
+test('a Spotlight or Upcoming Events item offers the Date card as a layout (Kate, Oct 7); the other sections do not', () => {
+  const ev = item({ summary: 'x', date: 'October 20, 2026' }, 'tamu');
+  const list = itemLayouts('events', ev);
+  assert.deepEqual(list.map((l) => l.key), ['bare', 'text', 'stamp', 'headshot', 'card']);
+  assert.equal(list.find((l) => l.key === 'card').label, 'Date card');
+  assert.deepEqual(on(list), ['bare']);
+  list.find((l) => l.key === 'card').apply();
+  assert.equal(ev.fields.highlight, true);
+  assert.deepEqual(on(itemLayouts('events', ev)), ['card'], 'the card is the one layout on');
+  const issue = createEmptyIssue();
+  issue.sections.events.enabled = true;
+  issue.sections.events.items = [ev];
+  assert.match(renderNewsletter(issue), /width="176"[^>]*background-color:#500000/, 'the email draws the date block');
+  itemLayouts('events', ev).find((l) => l.key === 'text').apply();
+  assert.ok(!('highlight' in ev.fields), 'another layout takes the card off');
+  assert.deepEqual(on(itemLayouts('events', ev)), ['text']);
+  assert.deepEqual(itemLayouts('events', item({}, 'tamu')).map((l) => l.key), ['bare', 'card'], 'with no description the card is still offered');
+  assert.deepEqual(itemLayouts('spotlight', item({}, 'events')).map((l) => l.key), ['bare', 'card']);
+  assert.deepEqual(itemLayouts('research', item({ summary: 'x' })).map((l) => l.key), ['bare', 'text', 'stamp', 'headshot']);
+  assert.deepEqual(itemLayouts('policy', item({ summary: 'x' }, 'working')).map((l) => l.key), ['bare']);
+});
+
 test('applying a layout writes what the renderer reads, and only one layout is on afterwards', () => {
   const issue = createEmptyIssue();
   issue.sections.research.enabled = true;
