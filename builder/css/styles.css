@@ -223,13 +223,15 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 }
 .wizard-step .edit-empty-msg { margin-top: var(--spacing-05); }   /* the empty line stands clear of what is above it */
 
-/* --- Footer nav ------------------------------------------- */
+/* --- Back and Next, at the foot and at the top (Kate, Oct 7) ----- */
 .wizard-footer {
   padding: var(--spacing-05) var(--spacing-07);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+/* The top pair sits between the status line and the step's card, closer to the card. */
+.wizard-footer--top { padding-top: var(--spacing-02); padding-bottom: 0; }
 
 /* --- Buttons ---------------------------------------------- */
 /* Carbon's buttons: 40px, square, the label left and an icon in the right

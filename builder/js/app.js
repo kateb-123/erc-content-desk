@@ -78,8 +78,9 @@ const scheduleSave = debounce(() => {
 // DOM refs
 // ---------------------------------------------------------------------------
 
-const btnBack = document.getElementById('btn-back');
-const btnNext = document.getElementById('btn-next');
+/** Back and Next, at the top and at the foot (Kate, Oct 7): one pair's worth of state, set on both. */
+const backBtns = [...document.querySelectorAll('[data-wizard-back]')];
+const nextBtns = [...document.querySelectorAll('[data-wizard-next]')];
 /** The one-line status slot under the step row: what a locked step says.
     Always one line tall, so a message never moves the page. */
 const wizardStatus = document.getElementById('wizard-status');
@@ -184,10 +185,10 @@ function goTo(step) {
   syncStepNav();
   setWizardStatus('');
 
-  // The footer pair: Back sleeps on the first step; Next has nowhere to go on
+  // Both pairs: Back sleeps on the first step; Next has nowhere to go on
   // the last, so it goes rather than greys.
-  btnBack.disabled = idx === 0;
-  btnNext.hidden = idx === STEPS.length - 1;
+  backBtns.forEach((b) => { b.disabled = idx === 0; });
+  nextBtns.forEach((b) => { b.hidden = idx === STEPS.length - 1; });
 
   RENDER[step]();
 }
@@ -213,8 +214,8 @@ function goNext() {
   const idx = STEPS.indexOf(state.step);
   if (idx < STEPS.length - 1) tryGo(STEPS[idx + 1]);
 }
-btnBack.addEventListener('click', goBack);
-btnNext.addEventListener('click', goNext);
+backBtns.forEach((b) => b.addEventListener('click', goBack));
+nextBtns.forEach((b) => b.addEventListener('click', goNext));
 
 // The step buttons jump straight to any step. Review is always reachable; the
 // later steps need a loaded issue, and say so on the status line.
