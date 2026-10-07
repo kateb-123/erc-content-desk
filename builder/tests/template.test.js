@@ -598,6 +598,26 @@ test('issue.layout.order prints the sections in that order; unknown keys are ign
   assert.ok(at2('>Upcoming Events</h2>') < at2('>ERC Spotlight</h2>') && at2('>ERC Spotlight</h2>') < at2('>Lonely</p>') && at2('>Lonely</p>') < at2('>Opportunities</h2>'), 'after Spotlight, the one printed just before where Research would be');
 });
 
+// ─── The October 6, 2026 issue, as the builder would make it ─────────────────
+
+test('the Oct 6 fixture renders every Oct 6 decision: Spotlight first, the Colloquium card, the report box, View more on Events, the Share callout last, the gray footer', () => {
+  const html = renderNewsletter(issueOf('oct-6-2026.json'));
+  const at = (s) => html.indexOf(s);
+  assert.ok(at('>ERC Spotlight</h2>') < at('>ERC Research</h2>') && at('>ERC Research</h2>') < at('>Upcoming Events</h2>') && at('>Upcoming Events</h2>') < at('>New Education Policy Research</h2>') && at('>New Education Policy Research</h2>') < at('>Education Headlines</h2>'));
+  assert.match(html, /href="#spotlight"[^>]*>Spotlight<\/a>&nbsp;<span[^>]*>&#183;<\/span>&nbsp;<a href="#research"[^>]*>Research<\/a>/);
+  assert.match(html, /color:#732F2F; text-decoration:none;">ERC Colloquium<\/a><\/p><p[^>]*><a[^>]*>Controversies in the Classroom<\/a><\/p><p[^>]*>Moderated by <strong>Lori Taylor<\/strong><\/p>/);
+  assert.match(html, />Tuesday<\/p><p[^>]*>Oct&nbsp;20<\/p><p[^>]*>5:00 to 7:00 PM CT<\/p><p[^>]*>Texas A&amp;M Hotel<br>Ross Room<br>College Station, TX<\/p><p[^>]*>Zoom available<\/p>/);
+  assert.match(html, /View flyer &#187;/);
+  assert.match(html, /alt="Picture: ERC EdTalk with Mark Hlavacik" width="124"/);
+  assert.match(html, />Research Report<\/p><p[^>]*><a href="https:\/\/erc-policy-exchange\.vercel\.app\/\?brief=[^"]*"[^>]*style="color:#500000; text-decoration:none;">The Pipeline of Alternative Teacher Certification: Evaluating iteach<\/a>/);
+  assert.match(html, /<td valign="top" width="230" style="width:230px; vertical-align:top;"><a [^>]*><img src="[^"]*iteach-chart\.png" alt="Picture: The Pipeline[^"]*" width="230"/);
+  assert.match(html, /a decade of <em>iteach<\/em> candidates/);
+  assert.equal(count(html, 'View more &#187;'), 3, 'Events, Policy Research, Headlines');
+  assert.ok(at('>Education Headlines</h2>') < at('>Share something with the ERC</p>') && at('>Share something with the ERC</p>') < at('erc-lockup-maroon.png'), 'the Share callout sits between Headlines and the gray footer');
+  assert.ok(!/Read the full|i\.ibb\.co|>Research Brief</.test(html));
+  assert.equal(panels(html), 9, 'header, intro, five sections, the callout, the footer');
+});
+
 test('the standing links are the ones the handoff names', () => {
   assert.equal(URLS.site, 'https://erc.cehd.tamu.edu/');
   assert.equal(URLS.join, 'https://erc-policy-exchange.vercel.app/newsletter/');
