@@ -5,7 +5,7 @@
  * fields.showSummary and fields.pictureStyle. Nothing here touches the DOM.
  */
 
-import { CALLOUT_STYLES, PICTURE_STYLES, PICTURE_MIN, PICTURE_MAX, RESEARCH_PICTURE_WIDTH, layoutOf, calloutsOf, summaryDefault, pictureDefault, pictureStyleOf } from './template.js';
+import { CALLOUT_STYLES, PICTURE_STYLES, PICTURE_MIN, PICTURE_MAX, RESEARCH_PICTURE_WIDTH, layoutOf, calloutsOf, sectionOrder, summaryDefault, pictureDefault, pictureStyleOf } from './template.js';
 import { SECTION_REGISTRY, newCallout } from './model.js';
 
 /** A callout's three styles, in the order the control shows them. */
@@ -75,6 +75,31 @@ function layoutBlock(issue) {
 /** Shows or hides the contents strip under the masthead. */
 export function setNav(issue, on) {
   layoutBlock(issue).nav = !!on;
+}
+
+const registryOrder = () => SECTION_REGISTRY.map((s) => s.key);
+
+/**
+ * Sets the sections' print order (Kate, Oct 6: Spotlight before Research).
+ * Unknown keys are dropped and the rest follow in registry order; the
+ * registry order itself is the default, so it clears the field.
+ */
+export function setSectionOrder(issue, keys) {
+  const order = sectionOrder({ layout: { order: Array.isArray(keys) ? keys : [] } });
+  const layout = layoutBlock(issue);
+  if (order.join() === registryOrder().join()) delete layout.order;
+  else layout.order = order;
+}
+
+/** Moves one section to a place in the print order (the drop); past the end lands last. Returns true when it moved. */
+export function moveSection(issue, key, toIndex) {
+  const order = sectionOrder(issue);
+  const from = order.indexOf(key);
+  if (from === -1) return false;
+  order.splice(from, 1);
+  order.splice(Math.max(0, Math.min(Number(toIndex) || 0, order.length)), 0, key);
+  setSectionOrder(issue, order);
+  return true;
 }
 
 /**
@@ -222,6 +247,7 @@ export function resetOptions(issue) {
 /** True when any option differs from its default, so Reset has something to do. */
 export function hasCustomOptions(issue) {
   if (!layoutOf(issue).nav) return true;
+  if (sectionOrder(issue).join() !== registryOrder().join()) return true;
   for (const sec of Object.values(issue?.sections || {})) {
     for (const item of sec.items || []) {
       const f = item.fields || {};

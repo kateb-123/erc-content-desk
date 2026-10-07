@@ -1,9 +1,9 @@
 // builder/tests/options.test.js: the Outline's per-issue layout options (Oct 2026).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CALLOUT_CHOICES, PICTURE_CHOICES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setDescription, setPictureStyle, acceptPictureUrl, resetOptions, hasCustomOptions, includedWords, canHighlight, setHighlight } from '../js/options.js';
-import { layoutOf, calloutsOf, renderNewsletter, CALLOUT_STYLES, PICTURE_STYLES } from '../js/template.js';
-import { createEmptyIssue, CALLOUT_KINDS, SHARE_URL } from '../js/model.js';
+import { CALLOUT_CHOICES, PICTURE_CHOICES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setDescription, setPictureStyle, acceptPictureUrl, resetOptions, hasCustomOptions, includedWords, canHighlight, setHighlight, setSectionOrder, moveSection } from '../js/options.js';
+import { layoutOf, calloutsOf, sectionOrder, renderNewsletter, CALLOUT_STYLES, PICTURE_STYLES } from '../js/template.js';
+import { createEmptyIssue, CALLOUT_KINDS, SHARE_URL, SECTION_REGISTRY } from '../js/model.js';
 
 const item = (id, group, fields = {}, extra = {}) => ({ id, group, fields: { title: id, ...fields }, ...extra });
 
@@ -156,6 +156,26 @@ test('the highlight card (Kate, Oct 6) is offered to Spotlight and Upcoming Even
   setHighlight(it, true);
   resetOptions(issue);
   assert.ok(!('highlight' in it.fields));
+});
+
+test('setSectionOrder and moveSection (Kate, Oct 6: drag and drop) write the order the renderer reads; the registry order is the default and Reset returns to it', () => {
+  const registry = SECTION_REGISTRY.map((s) => s.key);
+  const issue = createEmptyIssue();
+  assert.equal(hasCustomOptions(issue), false);
+  setSectionOrder(issue, ['spotlight', 'research']);
+  assert.deepEqual(sectionOrder(issue), ['spotlight', 'research', 'events', 'opportunities', 'policy', 'headlines', 'misc']);
+  assert.equal(hasCustomOptions(issue), true);
+  assert.equal(moveSection(issue, 'headlines', 0), true);
+  assert.deepEqual(sectionOrder(issue).slice(0, 3), ['headlines', 'spotlight', 'research']);
+  assert.equal(moveSection(issue, 'headlines', 99), true);
+  assert.equal(sectionOrder(issue).at(-1), 'headlines', 'past the end lands last');
+  assert.equal(moveSection(issue, 'nowhere', 0), false);
+  setSectionOrder(issue, registry);
+  assert.equal(hasCustomOptions(issue), false, 'the registry order is the default, so nothing to reset');
+  assert.ok(!('order' in (issue.layout || {})), 'and the field goes');
+  moveSection(issue, 'misc', 0);
+  resetOptions(issue);
+  assert.deepEqual(sectionOrder(issue), registry);
 });
 
 test('the Outline\'s count line', () => {

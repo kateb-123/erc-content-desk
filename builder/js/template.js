@@ -7,6 +7,8 @@
  *
  * Per-issue options the builder writes:
  *   issue.layout.nav       false hides the contents strip             (default on)
+ *   issue.layout.order     section keys in print order (Kate, Oct 6: Spotlight
+ *                          before Research); the rest follow in registry order
  *   issue.callouts         [{ id, kind, after, style, title, text, button, url, deadline }]
  *                          any number, each after a section; kind 'share' or 'custom';
  *                          style 'maroon' | 'gray' | 'dotted' (Kate, Oct 5)
@@ -198,10 +200,24 @@ function groupsInOrder(secReg, items) {
   return keys.map((key) => ({ key, label: secReg.groups.find((g) => g.key === key)?.label ?? key, items: byGroup[key] }));
 }
 
-/** The sections that render, in registry order, each with its groups. */
+/**
+ * The sections in print order: issue.layout.order first (known keys, each
+ * once), then every other section in registry order, so nothing is lost.
+ */
+export function sectionOrder(issue) {
+  const known = SECTION_REGISTRY.map((s) => s.key);
+  const asked = Array.isArray(issue?.layout?.order) ? issue.layout.order : [];
+  const order = [];
+  for (const key of asked) if (known.includes(key) && !order.includes(key)) order.push(key);
+  for (const key of known) if (!order.includes(key)) order.push(key);
+  return order;
+}
+
+/** The sections that render, in print order, each with its groups. */
 function buildSections(issue) {
   const out = [];
-  for (const secReg of SECTION_REGISTRY) {
+  for (const key of sectionOrder(issue)) {
+    const secReg = SECTION_REGISTRY.find((s) => s.key === key);
     const sec = issue?.sections?.[secReg.key];
     if (!sec || !sec.enabled) continue;
     const items = titled(sec.items);
@@ -616,11 +632,12 @@ function calloutRows(c, editable) {
 
 /**
  * Where each callout lands: after the section it names when that section
- * renders, else after the nearest earlier one that does, else after the
- * intro. Returns a map of anchor key ('intro' or a section key) to callouts.
+ * renders, else after the nearest earlier one (in print order) that does,
+ * else after the intro. Returns a map of anchor key ('intro' or a section
+ * key) to callouts.
  */
 function calloutsByAnchor(issue, renderedKeys) {
-  const order = SECTION_REGISTRY.map((s) => s.key);
+  const order = sectionOrder(issue);
   const out = new Map();
   for (const c of calloutsOf(issue)) {
     let anchor = 'intro';

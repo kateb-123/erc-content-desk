@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { renderNewsletter, renderProse, navLinks, layoutOf, calloutsOf, URLS } from '../js/template.js';
+import { renderNewsletter, renderProse, navLinks, layoutOf, calloutsOf, sectionOrder, URLS } from '../js/template.js';
 import { createEmptyIssue, SECTION_REGISTRY, POLICY_EXCHANGE_URL } from '../js/model.js';
 
 const issueOf = file =>
@@ -572,6 +572,30 @@ test('the card with less: a title with no colon is the maroon line alone; a date
   assert.ok(!/Zoom available|View flyer/.test(panel));
   assert.match(panel, /padding:22px 48px 0 40px;"><p[^>]*><span[^>]*>After<\/span>/);
   assert.equal(count(html, 'background-color:#500000; padding:22px 20px 20px 20px;'), 2, 'two cards; the research item is a box, not a card');
+});
+
+// ─── Section order (Kate, Oct 6: Spotlight before Research) ──────────────────
+
+test('issue.layout.order prints the sections in that order; unknown keys are ignored, the rest follow in registry order; the contents strip and the callouts follow the print order', () => {
+  const issue = fullIssue();
+  issue.callouts = [{ id: 'c1', kind: 'share', after: 'research', style: 'maroon', title: 'Share it', text: 't', button: 'Go', url: 'https://x.org/1' }];
+  issue.layout = { order: ['spotlight', 'bogus', 'research', 'spotlight'] };
+  assert.deepEqual(sectionOrder(issue), ['spotlight', 'research', 'events', 'opportunities', 'policy', 'headlines', 'misc']);
+  const html = renderNewsletter(issue);
+  const at = (s) => html.indexOf(s);
+  assert.ok(at('>ERC Spotlight</h2>') < at('>ERC Research</h2>') && at('>ERC Research</h2>') < at('>Upcoming Events</h2>'));
+  assert.match(html, /href="#spotlight"[^>]*>Spotlight<\/a>&nbsp;<span[^>]*>&#183;<\/span>&nbsp;<a href="#research"/, 'the strip follows');
+  assert.ok(at('>ERC Research</h2>') < at('>Share it</p>') && at('>Share it</p>') < at('>Upcoming Events</h2>'), 'the callout still follows Research');
+  assert.deepEqual(sectionOrder(fullIssue()), SECTION_REGISTRY.map((s) => s.key), 'no order set: the registry order');
+  assert.deepEqual(layoutOf(issue), { nav: true }, 'layoutOf is unchanged');
+  // A callout whose section is off follows the nearest earlier one in PRINT order.
+  const moved = fullIssue();
+  moved.sections.research.enabled = false;
+  moved.callouts = [{ id: 'c2', kind: 'custom', after: 'research', style: 'gray', title: 'Lonely', text: 't', button: 'Go', url: 'https://x.org/2' }];
+  moved.layout = { order: ['events', 'spotlight', 'research'] };
+  const h2 = renderNewsletter(moved);
+  const at2 = (s) => h2.indexOf(s);
+  assert.ok(at2('>Upcoming Events</h2>') < at2('>ERC Spotlight</h2>') && at2('>ERC Spotlight</h2>') < at2('>Lonely</p>') && at2('>Lonely</p>') < at2('>Opportunities</h2>'), 'after Spotlight, the one printed just before where Research would be');
 });
 
 test('the standing links are the ones the handoff names', () => {
