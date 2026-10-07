@@ -49,6 +49,6 @@ test('applying a layout writes what the renderer reads, and only one layout is o
   assert.match(html, /width="160"/);
   assert.deepEqual(on(itemLayouts('research', it)), ['headshot']);
   html = pick('stamp');
-  assert.match(html, /width="96"/);
+  assert.match(html, /<td valign="top" width="160" style="width:160px; vertical-align:top;"><a [^>]*><img [^>]*width="160"/, 'a research stamp is 160, at the right of the box\'s text (Kate, Oct 6)');
   assert.deepEqual(on(itemLayouts('research', it)), ['stamp']);
 });

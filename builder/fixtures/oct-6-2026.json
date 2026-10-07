@@ -1,0 +1,57 @@
+{
+  "date": "October 6, 2026",
+  "intro": "Howdy all! October is here, and so is a busy stretch for the ERC.\n\nThis Friday, Dr. Mark Hlavacik joins us for an EdTalk on his new book, *Willing Warriors*. On October 20, the ERC hosts a colloquium with three National Academy of Education members. Inside this issue, you will also find our new report tracing a decade of *iteach* candidates from application to classroom.\n\nThanks for reading!",
+  "layout": { "order": ["spotlight", "research", "events", "policy", "headlines"] },
+  "callouts": [
+    { "id": "callout_share", "kind": "share", "after": "headlines", "style": "maroon",
+      "title": "Share something with the ERC",
+      "text": "Research, an event, an announcement: if it belongs in the newsletter or on the Policy Exchange, send it our way. The ERC team reviews everything before it goes out.",
+      "button": "Share something", "url": "https://erc-policy-exchange.vercel.app/share/", "deadline": "" }
+  ],
+  "sections": {
+    "research": { "enabled": true, "items": [
+      { "id": "r1", "group": "report", "fields": {
+        "title": "The Pipeline of Alternative Teacher Certification: Evaluating iteach",
+        "url": "https://erc-policy-exchange.vercel.app/?brief=1kmMObIRgSpBK1suK3cv3dTG-1p0wCbM4",
+        "authors": "Andrew Kwok, Brendan Bartanen, Kate Barnes",
+        "summary": "Alternative certification now supplies most new Texas teachers, but evidence on how those teachers fare has been limited. This ERC study tracks a decade of *iteach* candidates in Texas, Virginia, and Louisiana, following who applies, enrolls, finishes, and stays teaching. The pipeline is expanding rapidly; Texas applications have tripled since 2015. Many join mid-career from other fields. Notably, five years in, *iteach* completers remain in classrooms at higher rates than their peers.",
+        "image": "https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/newsletter-20261006-iteach-chart.png",
+        "pictureStyle": "stamp", "pictureWidth": 230 } }
+    ] },
+    "spotlight": { "enabled": true, "items": [
+      { "id": "s1", "group": "events", "fields": {
+        "title": "ERC Colloquium: Controversies in the Classroom",
+        "url": "https://calendar.tamu.edu/cehd/event/488453-erc-colloquium-controversies-in-the-classroom",
+        "date": "October 20, 2026", "time": "5:00 to 7:00 PM CT", "location": "Texas A&M Hotel, Ross Room, College Station, TX",
+        "summary": "Moderated by **Lori Taylor**\n\nWe invite you to join us as the ERC hosts a special colloquium with three National Academy of Education members (**Bob Pianta**, **Mark Berends**, and **Jinfa Cai**) addressing education’s most pressing issues. Drinks & hors d’oeuvres will be provided.",
+        "flyer": "https://drive.google.com/file/d/1d3onk6LQVcrcXHVMFNdBSJCXwoQ_Pn0b/view?usp=drive_link",
+        "zoom": true, "highlight": true } },
+      { "id": "s2", "group": "events", "fields": {
+        "title": "ERC EdTalk with Mark Hlavacik",
+        "url": "https://docs.google.com/forms/d/e/1FAIpQLSebL60FJQ65bAs41AgDwsxpeXwoAvhah51qqt6mLSCBFgYhSQ/viewform",
+        "date": "October 9, 2026", "time": "11:30 AM to 1:00 PM CT", "location": "Rudder Tower, Room 401",
+        "summary": "Dr. Mark Hlavacik discusses his new book, *Willing Warriors*, and how the culture wars have redefined the politics of U.S. schooling from the 1970s to today. Lunch and refreshments will be provided; please RSVP.",
+        "image": "https://erc-policy-exchange.vercel.app/assets/pictures/newsletter-speaker-headshots-721129f3.png",
+        "pictureStyle": "headshot", "pictureWidth": 124 } }
+    ] },
+    "events": { "enabled": true, "items": [
+      { "id": "e1", "group": "tamu", "fields": { "title": "NSF 101: Funding Opportunities, Proposal Preparation, & Tips", "url": "https://calendar.tamu.edu/cehd/event/487946-nsf-stem-program-officer-presentation", "date": "October 13, 2026", "time": "10:00 AM CT", "location": "Rudder Tower, Room 701 or Zoom" } },
+      { "id": "e2", "group": "tamu", "fields": { "title": "Curtis D. Robert Distinguished Speaker Series with Dr. Eric Knuth", "url": "https://calendar.tamu.edu/cehd/event/487209-curtis-d-robert-distinguished-speaker-series-with", "date": "October 13, 2026", "time": "1:30 PM CT", "location": "Rudder Tower, Room 707" } },
+      { "id": "e3", "group": "tamu", "fields": { "title": "Leveraging Computational Thinking to Teach About, Against, and with AI in K–12", "url": "https://calendar.tamu.edu/cehd/event/488042-clic-distinguished-guest-talk-with-dr-aman-yadav", "date": "October 16, 2026", "time": "12:15 PM CT", "location": "Webinar" } }
+    ] },
+    "opportunities": { "enabled": false, "items": [] },
+    "policy": { "enabled": true, "items": [
+      { "id": "p1", "group": "working", "fields": { "title": "Targeted Acceleration in Middle School Math: Impacts on College Entry, Degree Completion, and STEM", "url": "https://www.nber.org/papers/w35847" } },
+      { "id": "p2", "group": "working", "fields": { "title": "Defaults, Discretion, and Local Capacity: District Leaders’ Accounts of Automatic English Learner Reclassification", "url": "https://edworkingpapers.com/ai26-1605" } },
+      { "id": "p3", "group": "working", "fields": { "title": "Estimating the Expenditures Associated with Special Education: Evidence from Michigan", "url": "https://edworkingpapers.com/ai26-1596" } },
+      { "id": "p4", "group": "peer", "fields": { "title": "Sidewalks for Students: Google Street View Measures of Walkability Around Schools and Chronic Absenteeism Rates", "url": "https://doi.org/10.3102/0013189x261485085" } },
+      { "id": "p5", "group": "misc", "fields": { "title": "Understanding School Choice Dynamics in St. Louis: A Mixed-Methods Study of Parent Experiences and System Perspectives", "url": "https://www.primecenter.org/education-reports-database/school-choice-stl" } }
+    ] },
+    "headlines": { "enabled": true, "items": [
+      { "id": "h1", "group": "federal", "fields": { "title": "Schools are experimenting with AI with little evidence or policy to guide them", "source": "NPR", "url": "https://www.npr.org/2026/09/28/nx-s1-5759718/ai-schools-experiment-research" } },
+      { "id": "h2", "group": "federal", "fields": { "title": "The Education Dept. hasn't been dismantled. It's become more inefficient, staff say", "source": "NPR", "url": "https://www.npr.org/2026/09/24/nx-s1-5968605/education-department-dismantling-how-its-going" } },
+      { "id": "h3", "group": "federal", "fields": { "title": "30 Ideas for Fixing U.S. Schools, Ranked by Experts", "source": "New York Times", "url": "https://www.nytimes.com/2026/09/28/upshot/ideas-fixing-schools-ranked.html?unlocked_article_code=1.ElE.E1sX.SS4jOA1yqfa5&smid=url-share" } }
+    ] },
+    "misc": { "enabled": false, "items": [] }
+  }
+}

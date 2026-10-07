@@ -5,7 +5,7 @@
  * fields.showSummary and fields.pictureStyle. Nothing here touches the DOM.
  */
 
-import { CALLOUT_STYLES, PICTURE_STYLES, PICTURE_MIN, PICTURE_MAX, layoutOf, calloutsOf, summaryDefault, pictureDefault, pictureStyleOf } from './template.js';
+import { CALLOUT_STYLES, PICTURE_STYLES, PICTURE_MIN, PICTURE_MAX, RESEARCH_PICTURE_WIDTH, layoutOf, calloutsOf, sectionOrder, summaryDefault, pictureDefault, pictureStyleOf } from './template.js';
 import { SECTION_REGISTRY, newCallout } from './model.js';
 
 /** A callout's three styles, in the order the control shows them. */
@@ -77,6 +77,31 @@ export function setNav(issue, on) {
   layoutBlock(issue).nav = !!on;
 }
 
+const registryOrder = () => SECTION_REGISTRY.map((s) => s.key);
+
+/**
+ * Sets the sections' print order (Kate, Oct 6: Spotlight before Research).
+ * Unknown keys are dropped and the rest follow in registry order; the
+ * registry order itself is the default, so it clears the field.
+ */
+export function setSectionOrder(issue, keys) {
+  const order = sectionOrder({ layout: { order: Array.isArray(keys) ? keys : [] } });
+  const layout = layoutBlock(issue);
+  if (order.join() === registryOrder().join()) delete layout.order;
+  else layout.order = order;
+}
+
+/** Moves one section to a place in the print order (the drop); past the end lands last. Returns true when it moved. */
+export function moveSection(issue, key, toIndex) {
+  const order = sectionOrder(issue);
+  const from = order.indexOf(key);
+  if (from === -1) return false;
+  order.splice(from, 1);
+  order.splice(Math.max(0, Math.min(Number(toIndex) || 0, order.length)), 0, key);
+  setSectionOrder(issue, order);
+  return true;
+}
+
 /**
  * What the Outline shows for one item: whether it has a description to
  * offer, whether that description is on, and the picture state when it is.
@@ -132,11 +157,13 @@ export const PICTURE_SIZES = [64, 96, 128, 160, 200].map((w) => ({ width: w, lab
 /** The width a picture layout takes when no size was picked. */
 export const DEFAULT_PICTURE_WIDTH = { stamp: 96, headshot: 160 };
 
-/** The item's picture width in force: the one picked, else the layout's own. */
-export function pictureWidthOf(item) {
+/** The item's picture width in force: the one picked, else the layout's own
+ *  (a research box draws 160 either way; Kate, Oct 6). */
+export function pictureWidthOf(item, sectionKey = '') {
   const f = item?.fields || {};
   const picked = Number(f.pictureWidth);
   if (Number.isFinite(picked) && picked >= PICTURE_MIN && picked <= PICTURE_MAX) return Math.round(picked);
+  if (sectionKey === 'research') return RESEARCH_PICTURE_WIDTH;
   return DEFAULT_PICTURE_WIDTH[pictureStyleOf(f)] ?? 96;
 }
 
@@ -162,10 +189,47 @@ export function placeholderItems(issue) {
     for (const item of sec.items || []) {
       const f = item.fields || {};
       if (String(f.image ?? '').trim() || !PICTURE_STYLES.includes(f.pictureStyle) || f.pictureStyle === 'none') continue;
+      if (f.highlight === true) continue;   // the card draws no picture, so nothing waits on one
       if (itemOptions(sectionKey, item).descriptionOn) out.push({ sectionKey, item });
     }
   }
   return out;
+}
+
+/** The sections whose items can be the highlight card (Kate, Oct 6): the two that hold events. */
+export const HIGHLIGHT_SECTIONS = new Set(['spotlight', 'events']);
+export const canHighlight = (sectionKey) => HIGHLIGHT_SECTIONS.has(sectionKey);
+
+/** Makes an item the highlight card, or a plain item again (the default, so the field goes). */
+export function setHighlight(item, on) {
+  if (!item.fields) item.fields = {};
+  if (on) item.fields.highlight = true;
+  else delete item.fields.highlight;
+}
+
+/** "Zoom available" on the card's date block, or not (the default, so the field goes). */
+export function setZoom(item, on) {
+  if (!item.fields) item.fields = {};
+  if (on) item.fields.zoom = true;
+  else delete item.fields.zoom;
+}
+
+/** The card's "View flyer" link, trimmed; nothing typed takes the link out. */
+export function setFlyer(item, url) {
+  if (!item.fields) item.fields = {};
+  const s = String(url ?? '').trim();
+  if (s) item.fields.flyer = s;
+  else delete item.fields.flyer;
+}
+
+/** The kinds of ERC research, as the registry prints them (Kate, Oct 6). */
+export const RESEARCH_KINDS = SECTION_REGISTRY.find((s) => s.key === 'research').groups.map((g) => ({ key: g.key, label: g.label }));
+
+/** Files a research item under one kind (its group); an unknown kind is ignored. */
+export function setResearchKind(item, key) {
+  if (!RESEARCH_KINDS.some((k) => k.key === key)) return false;
+  item.group = key;
+  return true;
 }
 
 /** Turns an item's description on or off for this issue. */
@@ -201,6 +265,7 @@ export function resetOptions(issue) {
       if (!item.fields) continue;
       delete item.fields.showSummary;
       delete item.fields.pictureStyle;
+      delete item.fields.highlight;
     }
   }
 }
@@ -208,10 +273,11 @@ export function resetOptions(issue) {
 /** True when any option differs from its default, so Reset has something to do. */
 export function hasCustomOptions(issue) {
   if (!layoutOf(issue).nav) return true;
+  if (sectionOrder(issue).join() !== registryOrder().join()) return true;
   for (const sec of Object.values(issue?.sections || {})) {
     for (const item of sec.items || []) {
       const f = item.fields || {};
-      if (typeof f.showSummary === 'boolean' || PICTURE_STYLES.includes(f.pictureStyle)) return true;
+      if (typeof f.showSummary === 'boolean' || PICTURE_STYLES.includes(f.pictureStyle) || f.highlight === true) return true;
     }
   }
   return false;

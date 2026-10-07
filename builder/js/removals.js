@@ -10,6 +10,7 @@
  */
 
 import { SECTION_REGISTRY, deleteItem, insertItem } from './model.js';
+import { sectionOrder } from './template.js';
 
 /**
  * @typedef {object} Waiting
@@ -116,7 +117,9 @@ export function listedSections(issue, waiting) {
   const held = new Set(waiting.map((w) => w.sectionKey));
   const populated = [];
   const missing = [];
-  for (const reg of SECTION_REGISTRY) {
+  // In print order (Kate, Oct 6): the Outline lists the sections as the email will run.
+  for (const key of sectionOrder(issue)) {
+    const reg = SECTION_REGISTRY.find((s) => s.key === key);
     if ((issue?.sections?.[reg.key]?.items?.length ?? 0) > 0 || held.has(reg.key)) populated.push(reg);
     else missing.push(reg.label);
   }

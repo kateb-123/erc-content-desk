@@ -24,8 +24,8 @@ import { renderShell } from '../../js/shell-ui.js';
 import { STEPS, canEnterStep, lockedMessage, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices } from './wizard.js';
 import { normalizeLinkUrl } from './editing.js';
 // The per-issue layout options the Outline sets (Claude Design handoff, Oct 2026).
-import { CALLOUT_CHOICES, PICTURE_CHOICES, PICTURE_SIZES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setPictureStyle, itemLayouts, pictureWidthOf, setPictureWidth, placeholderItems, resetOptions, hasCustomOptions } from './options.js';
-import { layoutOf, calloutsOf } from './template.js';
+import { CALLOUT_CHOICES, PICTURE_CHOICES, PICTURE_SIZES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setPictureStyle, itemLayouts, pictureWidthOf, setPictureWidth, placeholderItems, resetOptions, hasCustomOptions, canHighlight, setHighlight, setZoom, setFlyer, RESEARCH_KINDS, setResearchKind, moveSection } from './options.js';
+import { layoutOf, calloutsOf, sectionOrder } from './template.js';
 import { CALLOUT_KINDS } from './model.js';
 // Kept drafts, and hand-added items that go to the desk (Sep 23).
 import { readAllWaiting } from '../../js/reader-client.js';
@@ -557,7 +557,7 @@ function outlineMeta(sectionKey, f) {
  */
 function renderTriage() {
   const container = openStep('triage', 'Put the issue in order.',
-    'What goes out, in the order it goes out. Each section and group is as the email prints it. Hover a row for Move to…; the look is chosen on the next step, on the email itself.');
+    'What goes out, in the order it goes out. Drag a section by its handle to move it in the email. Hover a row for Move to…; the look is chosen on the next step, on the email itself.');
 
   const issue = state.issue;
 
@@ -600,10 +600,13 @@ function renderTriage() {
     const live = rows.filter((it) => !removed.has(it));
     listed += rows.length; inIssue += live.length;
 
-    // The section row: its name and count.
+    // The section row: its drag handle (Kate, Oct 6), its name and count.
     const sr = el('tr', 'outline-section');
+    sr.draggable = true;
+    sr.dataset.section = reg.key;
     const std = el('td');
     std.colSpan = 4;
+    std.appendChild(sectionHandle(issue, reg, populated));
     std.appendChild(el('span', 'outline-section-name', reg.label));
     std.appendChild(el('span', 'outline-section-count', live.length === rows.length ? String(rows.length) : `${live.length} of ${rows.length}`));
     sr.appendChild(std);
@@ -617,6 +620,7 @@ function renderTriage() {
     for (const bucket of buckets) {
       if (bucket.label) {
         const gr = el('tr', 'outline-group');
+        gr.dataset.section = reg.key;
         const gtd = el('td', '', bucket.label);
         gtd.colSpan = 4;
         gr.appendChild(gtd);
@@ -628,6 +632,7 @@ function renderTriage() {
         const title = f.title || '(untitled)';
         const tr = el('tr', 'outline-item' + (removed.has(item) ? ' is-removed' : ''));
         tr.dataset.item = item.id;
+        tr.dataset.section = reg.key;
 
         // Item: the title as its link, the meta line, and Move to… on hover.
         const td1 = el('td', 'outline-item-cell');
@@ -734,6 +739,7 @@ function renderTriage() {
     // Move to… another section and Remove; then a quiet word to add one.
     for (const c of calloutsOf(issue).filter((x) => x.after === reg.key)) {
       const tr = el('tr', 'outline-item outline-callout');
+      tr.dataset.section = reg.key;
       const td1 = el('td', 'outline-item-cell');
       td1.appendChild(el('span', 'outline-callout-tag', 'Callout'));
       td1.appendChild(el('span', 'outline-title', c.title || '(untitled)'));
@@ -770,9 +776,91 @@ function renderTriage() {
     }
   }
 
+  wireSectionDrag(tbody, issue, (key, other, before) => {
+    scheduleSave();
+    renderTriage();
+    setWizardStatus(`Moved ${sectionLabel(key)} ${before ? 'before' : 'after'} ${sectionLabel(other)}.`);
+  });
   container.appendChild(table);
   const foot = el('p', 'triage-missing', `${inIssue} of ${listed} ${listed === 1 ? 'item' : 'items'} in the issue.` + (missing.length ? ` Not in this issue: ${missing.join(', ')}.` : ''));
   container.appendChild(foot);
+}
+
+const sectionLabel = (key) => SECTION_REGISTRY.find((s) => s.key === key)?.label || key;
+
+/**
+ * A section's drag handle on the Outline (Kate, Oct 6): drag it to another
+ * place in the email, or press ArrowUp and ArrowDown to move the section
+ * past its listed neighbour. The order is issue.layout.order; the email,
+ * its contents strip and the callouts follow it.
+ */
+function sectionHandle(issue, reg, populated) {
+  const handle = button('', 'triage-drag-handle', { icon: 'grip-vertical' });
+  handle.setAttribute('aria-label', `Move ${reg.label}: drag it, or press the up and down arrows`);
+  handle.title = 'Drag to move this section';
+  handle.dataset.moveSection = reg.key;
+  handle.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    const listed = populated.map((r) => r.key);
+    const other = listed[listed.indexOf(reg.key) + (e.key === 'ArrowUp' ? -1 : 1)];
+    if (!other) return;
+    const before = e.key === 'ArrowUp';
+    moveSection(issue, reg.key, sectionOrder(issue).filter((k) => k !== reg.key).indexOf(other) + (before ? 0 : 1));
+    scheduleSave();
+    renderTriage();
+    document.querySelector(`[data-move-section="${CSS.escape(reg.key)}"]`)?.focus();
+    setWizardStatus(`Moved ${reg.label} ${before ? 'before' : 'after'} ${sectionLabel(other)}.`);
+  });
+  return handle;
+}
+
+/**
+ * Drag a section to another place in the email. Every row carries its
+ * section, so a drop anywhere among a section's rows lands on that section:
+ * the upper half of its rows means before it, the lower half after. The
+ * marks are a line above or below the rows the drop would land against.
+ */
+function wireSectionDrag(tbody, issue, onMoved) {
+  let dragging = null;
+  const rowsOf = (key) => [...tbody.querySelectorAll(`tr[data-section="${CSS.escape(key)}"]`)];
+  const unmark = () => tbody.querySelectorAll('.is-drop-before, .is-drop-after').forEach((n) => n.classList.remove('is-drop-before', 'is-drop-after'));
+  const clear = () => { unmark(); tbody.querySelectorAll('.is-dragging').forEach((n) => n.classList.remove('is-dragging')); };
+  const target = (e) => {
+    const row = e.target.closest ? e.target.closest('tr[data-section]') : null;
+    if (!row || !dragging || row.dataset.section === dragging) return null;
+    const rows = rowsOf(row.dataset.section);
+    const top = rows[0].getBoundingClientRect().top, bottom = rows[rows.length - 1].getBoundingClientRect().bottom;
+    return { key: row.dataset.section, before: e.clientY < (top + bottom) / 2, rows };
+  };
+  tbody.addEventListener('dragstart', (e) => {
+    const row = e.target.closest ? e.target.closest('tr.outline-section') : null;
+    if (!row) return;
+    dragging = row.dataset.section;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', dragging);
+    rowsOf(dragging).forEach((r) => r.classList.add('is-dragging'));
+  });
+  tbody.addEventListener('dragover', (e) => {
+    const t = target(e);
+    if (!t) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    unmark();
+    (t.before ? t.rows[0] : t.rows[t.rows.length - 1]).classList.add(t.before ? 'is-drop-before' : 'is-drop-after');
+  });
+  tbody.addEventListener('dragleave', (e) => { if (!tbody.contains(e.relatedTarget)) unmark(); });
+  tbody.addEventListener('drop', (e) => {
+    const t = target(e);
+    const key = dragging;
+    clear();
+    dragging = null;
+    if (!t) return;
+    e.preventDefault();
+    moveSection(issue, key, sectionOrder(issue).filter((k) => k !== key).indexOf(t.key) + (t.before ? 0 : 1));
+    onMoved(key, t.key, t.before);
+  });
+  tbody.addEventListener('dragend', () => { dragging = null; clear(); });
 }
 
 // ---------------------------------------------------------------------------
@@ -1215,6 +1303,7 @@ const FIELD_LABELS = {
   time: 'Time',
   location: 'Location',
   image: 'Media',
+  flyer: 'Flyer link',
   // A callout's parts (Oct 5).
   text: 'Text',
   button: 'Button words',
@@ -1463,6 +1552,32 @@ function wireframeEl(key, hasPic) {
   return w;
 }
 
+/** A labelled checkbox in the card's look column (Kate, Oct 6). */
+function checkRow(words, on, onChange) {
+  const lab = el('label', 'layout-check look-check');
+  const cb = el('input');
+  cb.type = 'checkbox';
+  cb.checked = on;
+  cb.addEventListener('change', () => onChange(cb.checked));
+  lab.append(cb, ` ${words}`);
+  return lab;
+}
+
+/** A row of chips with one on: the research kind (Kate, Oct 6). */
+function chipRow(name, choices, current, onPick) {
+  const chips = el('div', 'size-chips');
+  chips.setAttribute('role', 'radiogroup');
+  chips.setAttribute('aria-label', name);
+  for (const c of choices) {
+    const chip = button(c.label, 'size-chip' + (c.key === current ? ' is-on' : ''));
+    chip.setAttribute('role', 'radio');
+    chip.setAttribute('aria-checked', String(c.key === current));
+    chip.addEventListener('click', () => onPick(c.key));
+    chips.appendChild(chip);
+  }
+  return chips;
+}
+
 /** The row of wireframes for an item: pick one and the email redraws. */
 function wireframeRow(sectionKey, item, onPick) {
   const row = el('div', 'wires');
@@ -1505,8 +1620,38 @@ function openItemEditor(refs, iframe) {
   let lookCol = null;
   const drawLook = () => {
     if (!cardItem || !lookCol) return;
-    lookCol.replaceChildren(el('h4', 'drawer-h4', 'How it is laid out'));
+    lookCol.replaceChildren();
     const redraw = () => { scheduleSave(); refreshEditIframe(iframe); drawLook(); };
+    // Research: its kind first (Kate, Oct 6), the eyebrow of its box.
+    if (first.section === 'research') {
+      lookCol.appendChild(el('h4', 'drawer-h4', 'Kind'));
+      lookCol.appendChild(chipRow('Kind', RESEARCH_KINDS, cardItem.group, (key) => { setResearchKind(cardItem, key); redraw(); }));
+    }
+    // An event can be the highlight card (Kate, Oct 6): its words on the tint, the date block beside them.
+    if (canHighlight(first.section)) {
+      const highlighted = cardItem.fields?.highlight === true;
+      lookCol.appendChild(el('h4', 'drawer-h4', 'Highlight'));
+      lookCol.appendChild(checkRow('Highlight card: the date block beside its words', highlighted, (on) => { setHighlight(cardItem, on); redraw(); }));
+      if (highlighted) {
+        lookCol.appendChild(checkRow('Zoom available', cardItem.fields.zoom === true, (on) => { setZoom(cardItem, on); redraw(); }));
+        const group = el('div', 'edit-card-group');
+        editFieldSeq += 1;
+        const id = `edit-field-${editFieldSeq}`;
+        const sub = el('label', 'edit-card-sublabel', FIELD_LABELS.flyer);
+        sub.htmlFor = id;
+        const input = el('input', 'edit-card-input');
+        input.type = 'url';
+        input.id = id;
+        input.placeholder = 'https://';
+        input.value = cardItem.fields.flyer ?? '';
+        input.addEventListener('input', () => { setFlyer(cardItem, input.value); scheduleSave(); debouncedPreview(); });
+        group.append(sub, input);
+        lookCol.appendChild(group);
+        lookCol.appendChild(el('p', 'triage-section-note drawer-note', 'The card shows the description and leaves the picture out.'));
+        return;
+      }
+    }
+    lookCol.appendChild(el('h4', 'drawer-h4' + (lookCol.childElementCount ? ' drawer-h4--later' : ''), 'How it is laid out'));
     lookCol.appendChild(wireframeRow(first.section, cardItem, redraw));
     // The picture's size, once a picture layout is on: a few widths, each
     // with the height a portrait photo stands at (Kate, Oct 5).
@@ -1516,7 +1661,7 @@ function openItemEditor(refs, iframe) {
       const chips = el('div', 'size-chips');
       chips.setAttribute('role', 'radiogroup');
       chips.setAttribute('aria-label', 'Picture size');
-      const current = pictureWidthOf(cardItem);
+      const current = pictureWidthOf(cardItem, first.section);
       for (const size of PICTURE_SIZES) {
         const chip = button(size.label, 'size-chip' + (size.width === current ? ' is-on' : ''));
         chip.setAttribute('role', 'radio');
@@ -1538,7 +1683,8 @@ function openItemEditor(refs, iframe) {
   body.appendChild(fieldsCol);
 
   const fieldInputs = [];
-  for (const ref of refs) {
+  // The flyer link is set beside the Highlight switch, not among the words.
+  for (const ref of refs.filter((r) => r.field !== 'flyer')) {
     const group = el('div', 'edit-card-group');
     const isLong = ref.field === 'summary' || ref.field === 'intro';
     editFieldSeq += 1;
@@ -1839,7 +1985,7 @@ function buildLayoutPanel(iframe) {
     cb.addEventListener('change', () => { setNav(issue, cb.checked); scheduleSave(); refreshEditIframe(iframe); draw(); });
     nav.append(cb, ' Contents strip under the masthead');
     body.appendChild(nav);
-    body.appendChild(el('p', 'triage-section-note', 'Callouts are added and moved on Outline and styled from their own card here. Pictures and descriptions are chosen from each item\'s card.'));
+    body.appendChild(el('p', 'triage-section-note', 'The sections\' order is set on Outline: drag a section by its handle. Callouts are added and moved on Outline and styled from their own card here. Pictures and descriptions are chosen from each item\'s card.'));
     if (hasCustomOptions(issue)) {
       const reset = button(' Reset layout options', 'ghost-btn ghost-btn--muted layout-reset', { icon: 'rotate-left', onClick: () => { resetOptions(issue); scheduleSave(); refreshEditIframe(iframe); draw(); } });
       reset.title = 'Every layout option back to its default';

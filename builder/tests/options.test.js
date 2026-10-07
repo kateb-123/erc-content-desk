@@ -1,9 +1,9 @@
 // builder/tests/options.test.js: the Outline's per-issue layout options (Oct 2026).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CALLOUT_CHOICES, PICTURE_CHOICES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setDescription, setPictureStyle, acceptPictureUrl, resetOptions, hasCustomOptions, includedWords } from '../js/options.js';
-import { layoutOf, calloutsOf, renderNewsletter, CALLOUT_STYLES, PICTURE_STYLES } from '../js/template.js';
-import { createEmptyIssue, CALLOUT_KINDS, SHARE_URL } from '../js/model.js';
+import { CALLOUT_CHOICES, PICTURE_CHOICES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemOptions, setDescription, setPictureStyle, acceptPictureUrl, resetOptions, hasCustomOptions, includedWords, canHighlight, setHighlight, setSectionOrder, moveSection, setZoom, setFlyer, RESEARCH_KINDS, setResearchKind, placeholderItems } from '../js/options.js';
+import { layoutOf, calloutsOf, sectionOrder, renderNewsletter, CALLOUT_STYLES, PICTURE_STYLES } from '../js/template.js';
+import { createEmptyIssue, CALLOUT_KINDS, SHARE_URL, SECTION_REGISTRY } from '../js/model.js';
 
 const item = (id, group, fields = {}, extra = {}) => ({ id, group, fields: { title: id, ...fields }, ...extra });
 
@@ -135,6 +135,77 @@ test('resetOptions returns every option to its default, and hasCustomOptions kno
   assert.ok(!('layout' in issue));
   assert.equal(calloutsOf(issue).length, 2, 'callouts are content, not options: Reset leaves them');
   assert.equal(hasCustomOptions(issue), false);
+});
+
+test('the highlight card (Kate, Oct 6) is offered to Spotlight and Upcoming Events items; setHighlight writes the field, Reset clears it, and it counts as a custom option', () => {
+  assert.equal(canHighlight('spotlight'), true);
+  assert.equal(canHighlight('events'), true);
+  assert.equal(canHighlight('research'), false);
+  assert.equal(canHighlight('opportunities'), false);
+  const issue = createEmptyIssue();
+  issue.sections.spotlight.enabled = true;
+  const it = item('c', 'events', { summary: 'x', date: 'October 20, 2026' });
+  issue.sections.spotlight.items = [it];
+  assert.equal(hasCustomOptions(issue), false);
+  setHighlight(it, true);
+  assert.equal(it.fields.highlight, true);
+  assert.equal(hasCustomOptions(issue), true);
+  assert.match(renderNewsletter(issue), /background-color:#500000; padding:22px 20px 20px 20px;/);
+  setHighlight(it, false);
+  assert.ok(!('highlight' in it.fields), 'off is the default, so the field goes');
+  setHighlight(it, true);
+  resetOptions(issue);
+  assert.ok(!('highlight' in it.fields));
+});
+
+test('setSectionOrder and moveSection (Kate, Oct 6: drag and drop) write the order the renderer reads; the registry order is the default and Reset returns to it', () => {
+  const registry = SECTION_REGISTRY.map((s) => s.key);
+  const issue = createEmptyIssue();
+  assert.equal(hasCustomOptions(issue), false);
+  setSectionOrder(issue, ['spotlight', 'research']);
+  assert.deepEqual(sectionOrder(issue), ['spotlight', 'research', 'events', 'opportunities', 'policy', 'headlines', 'misc']);
+  assert.equal(hasCustomOptions(issue), true);
+  assert.equal(moveSection(issue, 'headlines', 0), true);
+  assert.deepEqual(sectionOrder(issue).slice(0, 3), ['headlines', 'spotlight', 'research']);
+  assert.equal(moveSection(issue, 'headlines', 99), true);
+  assert.equal(sectionOrder(issue).at(-1), 'headlines', 'past the end lands last');
+  assert.equal(moveSection(issue, 'nowhere', 0), false);
+  setSectionOrder(issue, registry);
+  assert.equal(hasCustomOptions(issue), false, 'the registry order is the default, so nothing to reset');
+  assert.ok(!('order' in (issue.layout || {})), 'and the field goes');
+  moveSection(issue, 'misc', 0);
+  resetOptions(issue);
+  assert.deepEqual(sectionOrder(issue), registry);
+});
+
+test('the card\'s extras: setZoom and setFlyer write the fields the card reads and clear them when off or blank; a highlighted item never waits on a placeholder', () => {
+  const it = item('c', 'events', { summary: 'x', pictureStyle: 'stamp' });
+  setZoom(it, true);
+  assert.equal(it.fields.zoom, true);
+  setZoom(it, false);
+  assert.ok(!('zoom' in it.fields));
+  setFlyer(it, '  https://x.org/flyer.pdf ');
+  assert.equal(it.fields.flyer, 'https://x.org/flyer.pdf');
+  setFlyer(it, '   ');
+  assert.ok(!('flyer' in it.fields));
+  const issue = createEmptyIssue();
+  issue.sections.spotlight.enabled = true;
+  issue.sections.spotlight.items = [it];
+  assert.equal(placeholderItems(issue).length, 1, 'a stamp chosen with no photo waits');
+  setHighlight(it, true);
+  assert.equal(placeholderItems(issue).length, 0, 'not once it is the card');
+});
+
+test('RESEARCH_KINDS lists the four kinds with their labels; setResearchKind files the item under one and ignores an unknown kind', () => {
+  assert.deepEqual(RESEARCH_KINDS, [
+    { key: 'brief', label: 'Research Brief' }, { key: 'report', label: 'Research Report' },
+    { key: 'article', label: 'Journal Article' }, { key: 'explains', label: 'ERC Explains' },
+  ]);
+  const it = item('r', 'brief', { summary: 'x' });
+  assert.equal(setResearchKind(it, 'explains'), true);
+  assert.equal(it.group, 'explains');
+  assert.equal(setResearchKind(it, 'poem'), false);
+  assert.equal(it.group, 'explains');
 });
 
 test('the Outline\'s count line', () => {

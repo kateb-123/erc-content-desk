@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { renderNewsletter, renderProse, navLinks, layoutOf, calloutsOf, URLS } from '../js/template.js';
+import { renderNewsletter, renderProse, navLinks, layoutOf, calloutsOf, sectionOrder, URLS } from '../js/template.js';
 import { createEmptyIssue, SECTION_REGISTRY, POLICY_EXCHANGE_URL } from '../js/model.js';
 
 const issueOf = file =>
@@ -45,7 +45,7 @@ test('section panels open with a 4px maroon rule and an uppercase maroon heading
 
 test('group labels are Verdana 12px uppercase in the light maroon, 18px under the heading and 30px below a group', () => {
   const html = renderNewsletter(issueOf('sample-real.json'));
-  assert.match(html, /<tr><td style="padding:18px 24px 0 24px;"><h3 style="margin:0; font-family:Verdana[^"]*font-size:12px;[^"]*text-transform:uppercase; color:#732F2F;">Research Brief<\/h3>/);
+  assert.match(html, /<tr><td style="padding:18px 24px 0 24px;"><h3 style="margin:0; font-family:Verdana[^"]*font-size:12px;[^"]*text-transform:uppercase; color:#732F2F;">Programs &amp; Opportunities<\/h3>/);
   assert.ok((html.match(/padding:30px 24px 0 24px;"><h3/g) || []).length >= 3, 'later groups sit 30px down');
   assert.ok(!/#913B3B/.test(html), 'the old eyebrow brick is gone');
 });
@@ -202,18 +202,42 @@ test('a featured event pins under Featured Events with its description, whatever
   assert.ok(html.includes('The one event that keeps its description.'));
 });
 
-test('research: the author line is the meta line, and an unknown group folds into Research Brief before Report', () => {
+// ─── Research (Kate, Oct 6: the tinted box) ──────────────────────────────────
+
+const TINT = 'background-color:#F5F2F1; padding:18px 20px 20px 20px;';
+const EYEBROW = `<p style="margin:0 0 8px; font-family:Verdana,Geneva,Tahoma,sans-serif; font-size:12px; line-height:1.4; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:#732F2F;">`;
+
+test('a research item is a tinted box: its type as an eyebrow, the maroon title (the link), the authors, the text beside the picture at right; no group labels', () => {
   const issue = createEmptyIssue();
   issue.sections.research.enabled = true;
   issue.sections.research.items = [
-    { id: 'itm_2', group: 'report', fields: { title: 'R-One', authors: 'A & B', summary: 'y' } },
-    { id: 'itm_x', group: '', fields: { title: 'Untagged', summary: 's' } },
+    { id: 'r1', group: 'report', fields: { title: 'Evaluating iteach', url: 'https://x.org/r', authors: 'A. Kwok, B. Bartanen', summary: 'Para one.\n\nPara two.', image: PHOTO } },
+    { id: 'r2', group: 'brief', fields: { title: 'A brief', authors: 'C. Author', summary: 'Short.' } },
   ];
   const html = renderNewsletter(issue);
-  const iBrief = html.indexOf('>Research Brief</h3>'), iReport = html.indexOf('>Report</h3>');
-  assert.ok(iBrief > 0 && iBrief < html.indexOf('Untagged') && html.indexOf('Untagged') < iReport && iReport < html.indexOf('R-One'));
-  assert.match(html, /R-One<\/a><\/p>|R-One<\/span><\/p>/);
-  assert.match(html, /<p style="margin:0 0 8px;[^"]*color:#535353;">A &amp; B<\/p>/);
+  const panel = html.slice(html.indexOf('>ERC Research</h2>'), html.indexOf('alt="Texas A&amp;M University Education Research Center"'));
+  assert.ok(!/<h3/.test(panel), 'the type lives in the box, not in a group label');
+  assert.match(panel, new RegExp(`<tr><td style="padding:18px 24px 0 24px;"><table role="presentation"[^>]*width="100%"[^>]*><tbody><tr><td style="${TINT}">${EYEBROW}Research Brief</p><p style="margin:0 0 6px; font-family:'Trebuchet MS'[^"]*font-size:16px; line-height:1.3; font-weight:700; color:#500000;"><span>A brief</span></p><p style="margin:0 0 12px;[^"]*color:#535353;">C. Author</p><p style="margin:0 0 0px;[^"]*color:#3E3E3E;">Short\\.</p></td></tr></tbody></table></td></tr>`), 'brief first (the registry order), its box 18px under the heading, no picture column without a picture');
+  assert.match(panel, new RegExp(`<tr><td style="padding:12px 24px 0 24px;"><table role="presentation"[^>]*><tbody><tr><td style="${TINT}">${EYEBROW}Research Report</p><p style="margin:0 0 6px;[^"]*color:#500000;"><a href="https://x\\.org/r" target="_blank" rel="noopener" style="color:#500000; text-decoration:none;">Evaluating iteach</a></p><p style="margin:0 0 12px;[^"]*color:#535353;">A\\. Kwok, B\\. Bartanen</p><table role="presentation"[^>]*width="100%"[^>]*><tbody><tr><td valign="top" style="vertical-align:top; padding:0 20px 0 0;"><p style="margin:0 0 8px;[^"]*color:#3E3E3E;">Para one\\.</p><p style="margin:0 0 0px;[^"]*">Para two\\.</p></td><td valign="top" width="160" style="width:160px; vertical-align:top;"><a href="https://x\\.org/r" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="${PHOTO}" alt="Picture: Evaluating iteach" width="160" style="width:160px; max-width:160px; height:auto; display:block; border:0;"></a></td></tr></tbody></table></td></tr></tbody></table></td></tr>`), 'the report: 12px under the box before it, the picture 160 wide at right of the text, linked like the title');
+  assert.ok(!/Read the full/.test(panel), 'no button: the title is the link');
+  assert.ok(!/padding:\d+px 48px 0 40px;"><p[^>]*><a[^>]*>A brief/.test(panel), 'not the plain item layout');
+});
+
+test('research types: Brief, Report, Journal Article and ERC Explains, in that order; an unknown type reads as a brief; fields.pictureWidth sizes the picture', () => {
+  assert.deepEqual(SECTION_REGISTRY.find((s) => s.key === 'research').groups.map((g) => [g.key, g.label]),
+    [['brief', 'Research Brief'], ['report', 'Research Report'], ['article', 'Journal Article'], ['explains', 'ERC Explains']]);
+  const issue = createEmptyIssue();
+  issue.sections.research.enabled = true;
+  issue.sections.research.items = [
+    { id: 'x', group: 'explains', fields: { title: 'Explainer', summary: 'e' } },
+    { id: 'a', group: 'article', fields: { title: 'Article', summary: 'a', image: PHOTO, pictureWidth: 230 } },
+    { id: 'u', group: 'whatever', fields: { title: 'Untagged', summary: 'u' } },
+    { id: 'p', group: 'report', fields: { title: 'Report', summary: 'p' } },
+  ];
+  const html = renderNewsletter(issue);
+  const at = (s) => html.indexOf(s);
+  assert.ok(at(`${EYEBROW}Research Brief</p>`) < at('Untagged') && at('Untagged') < at(`${EYEBROW}Research Report</p>`) && at('>Report<') < at(`${EYEBROW}Journal Article</p>`) && at('>Article<') < at(`${EYEBROW}ERC Explains</p>`) && at(`${EYEBROW}ERC Explains</p>`) < at('>Explainer<'));
+  assert.match(html, /<td valign="top" width="230" style="width:230px; vertical-align:top;"><a [^>]*><img src="[^"]*photo\.jpg" alt="Picture: Article" width="230"/);
 });
 
 test('the Miscellaneous section renders its one list with no group label', () => {
@@ -238,12 +262,14 @@ test('digests are one-line entries divided by hairlines, no bullets; headlines a
   assert.match(html, /padding:10px 48px 0 40px;"><table/, 'the list sits 10px under its label');
 });
 
-test('"View more »" ends Opportunities, Policy Research and Headlines and points at the Policy Exchange; a stray per-issue URL is ignored', () => {
+test('"View more »" ends Upcoming Events (Kate, Oct 6), Opportunities, Policy Research and Headlines and points at the Policy Exchange; a stray per-issue URL is ignored', () => {
   const issue = fullIssue();
   issue.sections.policy.seeMoreUrl = 'https://example.org/policy';
   const html = renderNewsletter(issue);
   assert.ok(!/href="#"/.test(html));
-  assert.equal(count(html, `<a href="${POLICY_EXCHANGE_URL}" target="_blank" rel="noopener" style="font-family:'Trebuchet MS','Segoe UI',Tahoma,sans-serif; font-size:14px; line-height:1.4; font-weight:700; color:#500000; text-decoration:none;">View more &#187;</a>`), 3);
+  assert.equal(count(html, `<a href="${POLICY_EXCHANGE_URL}" target="_blank" rel="noopener" style="font-family:'Trebuchet MS','Segoe UI',Tahoma,sans-serif; font-size:14px; line-height:1.4; font-weight:700; color:#500000; text-decoration:none;">View more &#187;</a>`), 4);
+  const iEvents = html.indexOf('>Upcoming Events</h2>'), iOpps = html.indexOf('>Opportunities</h2>');
+  assert.ok(html.slice(iEvents, iOpps).includes('View more &#187;'), 'Events has its tail link');
   assert.ok(!html.includes('https://example.org/policy'));
   assert.ok(!/ERC website|&#8594;/.test(html));
 });
@@ -273,11 +299,9 @@ const pictures = html => [...html.matchAll(/<img src="https:\/\/raw\.githubuserc
 
 test('a stamp is 96px wide under the title and meta, beside the description, in a 112px column; it links to the item', () => {
   const html = renderNewsletter(mediaIssue());
-  const i = html.indexOf('First blurb');
-  const seg = html.slice(i, html.indexOf('Brief sans summary'));
-  assert.match(seg, /A\. Author<\/p><table role="presentation"[^>]*width="100%"[^>]*><tbody><tr><td valign="top" width="112" style="width:112px; vertical-align:top; padding:4px 0 0 0;"><a href="https:\/\/raw\.githubusercontent\.com\/erc\/media\/main\/photo\.jpg" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="[^"]*photo\.jpg" alt="Picture: First blurb" width="96" style="width:96px; max-width:96px; height:auto; display:block; border:0;"><\/a><\/td><td valign="top" style="vertical-align:top;"><p[^>]*>A summary\.<\/p>/);
-  const brownBag = html.slice(html.indexOf('Brown Bag'));
-  assert.match(brownBag, /width="96"/, 'other spotlight events get the stamp');
+  const seg = html.slice(html.indexOf('Brown Bag'));
+  assert.match(seg, /Oct 9<\/p><table role="presentation"[^>]*width="100%"[^>]*><tbody><tr><td valign="top" width="112" style="width:112px; vertical-align:top; padding:4px 0 0 0;"><a href="https:\/\/raw\.githubusercontent\.com\/erc\/media\/main\/photo\.jpg" target="_blank" rel="noopener" style="display:block; text-decoration:none;"><img src="[^"]*photo\.jpg" alt="Picture: Brown Bag" width="96" style="width:96px; max-width:96px; height:auto; display:block; border:0;"><\/a><\/td><td valign="top" style="vertical-align:top;"><p[^>]*>A lunch\.<\/p>/);
+  assert.match(html, /<td valign="top" width="160" style="width:160px; vertical-align:top;"><a [^>]*><img [^>]*alt="Picture: First blurb" width="160"/, 'a research stamp is the box\'s 160, at the right of the text');
 });
 
 test('an "ERC EdTalk" item gets a 160px headshot beside the title, meta and description, linked to the item URL', () => {
@@ -297,6 +321,8 @@ test('fields.pictureStyle picks the layout: headshot on any item, stamp on an Ed
   const html = renderNewsletter(issue);
   const got = Object.fromEntries(pictures(html));
   assert.equal(got['First blurb'], 160);
+  const box = body(html).slice(body(html).indexOf('background-color:#F5F2F1'));
+  assert.match(box, /^[^<]*<p[^>]*>Research Brief<\/p><table role="presentation"[^>]*><tbody><tr><td valign="top" width="176" style="width:176px;[^"]*"><a [^>]*><img src="[^"]*photo\.jpg" alt="Picture: First blurb" width="160"/, 'a research headshot stands at the left of the whole box, under the eyebrow');
   assert.equal(got['ERC EdTalk: Dr. Vale'], 96);
   assert.ok(!('Brown Bag' in got));
 });
@@ -411,12 +437,13 @@ test('in the editable preview every part of a callout carries its hook: title, t
 
 // ─── Footer and document ─────────────────────────────────────────────────────
 
-test('the footer: lockup, hairline, white text links with cream dots, the date at right; no icons', () => {
+test('the footer (Kate, Oct 6): a light gray band, the maroon lockup, a hairline, maroon links with gray dots, the date at right; no icons', () => {
   const html = renderNewsletter(fullIssue());
-  assert.match(html, /<tr><td style="background-color:#500000; padding:28px 24px 20px 24px;"><img width="190" height="50" src="https:\/\/i\.ibb\.co\/JjQWyZq3\/ERC-Horizontal-White-Text-narrow\.png" alt="Texas A&amp;M University Education Research Center"/);
-  assert.match(html, /<div style="border-top:1px solid #732F2F;[^"]*">&nbsp;<\/div><\/td><\/tr>/);
-  assert.match(html, /font-weight:700; color:#ffffff;"><a href="https:\/\/erc\.cehd\.tamu\.edu\/"[^>]*>Website<\/a> <span style="padding:0 6px; font-weight:400; color:#D6D3C4;">&#183;<\/span> <a href="mailto:erc@tamu\.edu"[^>]*>Email<\/a> <span[^>]*>&#183;<\/span> <a href="https:\/\/erc-policy-exchange\.vercel\.app\/newsletter\/"[^>]*>Join&nbsp;the&nbsp;mailing&nbsp;list<\/a><\/td><td align="right" style="text-align:right;[^"]*font-size:13px;[^"]*color:#D6D3C4; white-space:nowrap;">June 16, 2026<\/td>/);
+  assert.match(html, /<tr><td style="background-color:#F6F6F6; padding:24px 24px 18px 24px;"><img width="190" height="70" src="https:\/\/raw\.githubusercontent\.com\/kateb-123\/erc-content-desk\/main\/builder\/images\/erc-lockup-maroon\.png" alt="Texas A&amp;M University Education Research Center" style="width:190px; height:70px; display:block; border:0;">/);
+  assert.match(html, /<tr><td style="background-color:#F6F6F6; padding:0 24px;"><div style="border-top:1px solid #D1D1D1;[^"]*">&nbsp;<\/div><\/td><\/tr>/);
+  assert.match(html, /background-color:#F6F6F6; padding:14px 24px 24px 24px;"><table[^>]*><tbody><tr><td style="font-family:'Trebuchet MS'[^"]*font-weight:700; color:#500000;"><a href="https:\/\/erc\.cehd\.tamu\.edu\/"[^>]*style="color:#500000; text-decoration:none;">Website<\/a> <span style="padding:0 6px; font-weight:400; color:#A7A7A7;">&#183;<\/span> <a href="mailto:erc@tamu\.edu"[^>]*>Email<\/a> <span[^>]*>&#183;<\/span> <a href="https:\/\/erc-policy-exchange\.vercel\.app\/newsletter\/"[^>]*>Join&nbsp;the&nbsp;mailing&nbsp;list<\/a><\/td><td align="right" style="text-align:right;[^"]*font-size:13px;[^"]*color:#535353; white-space:nowrap;">June 16, 2026<\/td>/);
   assert.ok(!/<svg/.test(html));
+  assert.ok(!/i\.ibb\.co/.test(html), 'the white lockup on imgbb is gone');
   assert.equal(count(html, '>Join the mailing list</a>'), 1, 'the header has the plain one; the footer keeps its words together');
 });
 
@@ -429,6 +456,7 @@ test('document declares its language and a doctype, pins its colours for dark mo
   assert.match(style, /\[data-ogsc\] \[style\*="background-color:#ffffff"\] \{ background-color:#ffffff !important; \}/);
   assert.match(style, /@media \(prefers-color-scheme: dark\)/);
   assert.match(style, /\[style\*=" color:#202020"\] \{ color:#202020 !important; \}/);
+  assert.match(style, /\[data-ogsc\] \[style\*="background-color:#F5F2F1"\] \{ background-color:#F5F2F1 !important; \}/, 'the research tint is pinned too');
   assert.equal(count(html, 'target="_blank"'), count(html, 'target="_blank" rel="noopener"'));
   assert.ok(!/rgb\(/.test(html), 'hex throughout, so the guards match');
 });
@@ -502,6 +530,92 @@ test('a URL typed without a scheme is linked as https; a word or an unsafe schem
   assert.ok(html.includes('href="https://erc.cehd.tamu.edu/briefs/1"'));
   assert.ok(!/href="[^"]*Rolling/.test(html) && !/javascript:/.test(html));
   assert.match(html, /<span[^>]*>Word<\/span>/);
+});
+
+// ─── The highlight card (Kate, Oct 6: the Colloquium) ────────────────────────
+
+test('fields.highlight turns an event into the card: tinted words at left (kicker, maroon title, text, View flyer), the maroon date block at right; no button, no picture', () => {
+  const issue = createEmptyIssue();
+  issue.date = 'October 6, 2026';
+  issue.callouts = [];
+  issue.sections.spotlight.enabled = true;
+  issue.sections.spotlight.items = [
+    { id: 'c', group: 'events', fields: { title: 'ERC Colloquium: Controversies in the Classroom', url: 'https://x.org/c', date: 'October 20, 2026', time: '5:00 to 7:00 PM CT', location: 'Texas A&M Hotel, Ross Room, College Station, TX', summary: 'Moderated by **Lori Taylor**.\n\nDrinks & hors d\'oeuvres.', flyer: 'https://x.org/flyer.pdf', zoom: true, highlight: true, image: PHOTO } },
+    { id: 'e', group: 'events', fields: { title: 'ERC EdTalk with Mark', date: 'October 9, 2026', summary: 'A talk.' } },
+  ];
+  const html = renderNewsletter(issue);
+  assert.match(html, /<tr><td style="padding:12px 24px 0 24px;"><table role="presentation"[^>]*width="100%"[^>]*><tbody><tr><td valign="top" style="vertical-align:top; background-color:#F5F2F1; padding:20px 20px 20px 20px;"><p style="margin:0; font-family:'Trebuchet MS'[^"]*font-size:16px; line-height:1.3; font-weight:700; color:#732F2F;"><a href="https:\/\/x\.org\/c" target="_blank" rel="noopener" style="color:#732F2F; text-decoration:none;">ERC Colloquium<\/a><\/p><p style="margin:0 0 8px;[^"]*font-size:18px; line-height:1.3; font-weight:700; color:#500000;"><a href="https:\/\/x\.org\/c"[^>]*style="color:#500000; text-decoration:none;">Controversies in the Classroom<\/a><\/p><p style="margin:0 0 8px;[^"]*color:#3E3E3E;">Moderated by <strong>Lori Taylor<\/strong>\.<\/p><p style="margin:0 0 0px;[^"]*">Drinks &amp; hors d'oeuvres\.<\/p><p style="margin:8px 0 0;[^"]*font-weight:700;"><a href="https:\/\/x\.org\/flyer\.pdf" target="_blank" rel="noopener" style="color:#500000; text-decoration:none;">View flyer &#187;<\/a><\/p><\/td>/, 'the words');
+  assert.match(html, /<td valign="top" width="176" style="width:176px; vertical-align:top; background-color:#500000; padding:22px 20px 20px 20px;"><p style="margin:0 0 2px; font-family:Verdana[^"]*font-size:12px;[^"]*letter-spacing:2px; text-transform:uppercase; color:#D6D3C4;">Tuesday<\/p><p style="margin:0 0 8px;[^"]*font-size:30px; line-height:1.1; font-weight:700; color:#ffffff;">Oct&nbsp;20<\/p><p style="margin:0 0 8px;[^"]*font-size:14px;[^"]*color:#E9E4DC;">5:00 to 7:00 PM CT<\/p><p style="margin:0 0 8px;[^"]*color:#E9E4DC;">Texas A&amp;M Hotel<br>Ross Room<br>College Station, TX<\/p><p style="margin:0;[^"]*font-weight:700; color:#ffffff;">Zoom available<\/p><\/td><\/tr><\/tbody><\/table><\/td><\/tr>/, 'the date block: weekday and short date read from the date, the place one line per part with the state kept with its city');
+  assert.ok(!/photo\.jpg/.test(html) && !/padding:11px 20px 12px 20px/.test(html), 'no picture, no button');
+  assert.match(html, /padding:22px 48px 0 40px;"><p[^>]*><span[^>]*>ERC EdTalk with Mark<\/span>/, 'the next item sits 22px under the card, in the plain layout');
+  const ed = renderNewsletter(issue, { editable: true });
+  for (const f of ['title', 'summary', 'date', 'time', 'location', 'flyer']) assert.match(ed, new RegExp(`data-edit-section="spotlight" data-edit-item="c" data-edit-field="${f}"`), f);
+});
+
+test('the card with less: a title with no colon is the maroon line alone; a date it cannot read prints as typed, smaller, with no weekday; no time, place, flyer or Zoom lines; its description shows even where the group hides them; in Upcoming Events the hairlines around it go; research never gets one', () => {
+  const issue = createEmptyIssue();
+  issue.sections.events.enabled = true;
+  issue.sections.events.items = [
+    { id: 'e1', group: 'tamu', fields: { title: 'Before', date: 'May 1' } },
+    { id: 'c', group: 'tamu', fields: { title: 'Tea Time', date: 'TBA', summary: 'Shown.', highlight: true } },
+    { id: 'e2', group: 'tamu', fields: { title: 'After', date: 'May 3' } },
+    { id: 'd', group: 'offcampus', fields: { title: 'Dated', date: '2026-10-20', highlight: true } },
+  ];
+  issue.sections.research.enabled = true;
+  issue.sections.research.items = [{ id: 'r', group: 'brief', fields: { title: 'Not a card', summary: 'x', highlight: true } }];
+  const html = renderNewsletter(issue);
+  assert.ok(html.indexOf('>Not a card<') < html.indexOf('>Upcoming Events</h2>'), 'research prints first');
+  const panel = html.slice(html.indexOf('>Upcoming Events</h2>'), html.indexOf('alt="Texas A&amp;M University Education Research Center"'));
+  assert.ok(!/border-top:1px solid #EAEAEA/.test(panel.slice(0, panel.indexOf('>After<'))), 'no hairline before or after the card');
+  assert.match(panel, /<td valign="top" style="vertical-align:top; background-color:#F5F2F1;[^"]*"><p style="margin:0 0 8px;[^"]*font-size:18px;[^"]*color:#500000;"><span>Tea Time<\/span><\/p><p style="margin:0 0 0px;[^"]*color:#3E3E3E;">Shown\.<\/p><\/td><td valign="top" width="176"[^>]*><p style="margin:0;[^"]*font-size:18px; line-height:1.3; font-weight:700; color:#ffffff;">TBA<\/p><\/td>/, 'the plain card');
+  assert.match(panel, /<p style="margin:0 0 2px;[^"]*">Tuesday<\/p><p style="margin:0;[^"]*font-size:30px;[^"]*">Oct&nbsp;20<\/p><\/td>/, 'an ISO date reads too; the last line of the block has no margin');
+  assert.ok(!/Zoom available|View flyer/.test(panel));
+  assert.match(panel, /padding:22px 48px 0 40px;"><p[^>]*><span[^>]*>After<\/span>/);
+  assert.equal(count(html, 'background-color:#500000; padding:22px 20px 20px 20px;'), 2, 'two cards; the research item is a box, not a card');
+});
+
+// ─── Section order (Kate, Oct 6: Spotlight before Research) ──────────────────
+
+test('issue.layout.order prints the sections in that order; unknown keys are ignored, the rest follow in registry order; the contents strip and the callouts follow the print order', () => {
+  const issue = fullIssue();
+  issue.callouts = [{ id: 'c1', kind: 'share', after: 'research', style: 'maroon', title: 'Share it', text: 't', button: 'Go', url: 'https://x.org/1' }];
+  issue.layout = { order: ['spotlight', 'bogus', 'research', 'spotlight'] };
+  assert.deepEqual(sectionOrder(issue), ['spotlight', 'research', 'events', 'opportunities', 'policy', 'headlines', 'misc']);
+  const html = renderNewsletter(issue);
+  const at = (s) => html.indexOf(s);
+  assert.ok(at('>ERC Spotlight</h2>') < at('>ERC Research</h2>') && at('>ERC Research</h2>') < at('>Upcoming Events</h2>'));
+  assert.match(html, /href="#spotlight"[^>]*>Spotlight<\/a>&nbsp;<span[^>]*>&#183;<\/span>&nbsp;<a href="#research"/, 'the strip follows');
+  assert.ok(at('>ERC Research</h2>') < at('>Share it</p>') && at('>Share it</p>') < at('>Upcoming Events</h2>'), 'the callout still follows Research');
+  assert.deepEqual(sectionOrder(fullIssue()), SECTION_REGISTRY.map((s) => s.key), 'no order set: the registry order');
+  assert.deepEqual(layoutOf(issue), { nav: true }, 'layoutOf is unchanged');
+  // A callout whose section is off follows the nearest earlier one in PRINT order.
+  const moved = fullIssue();
+  moved.sections.research.enabled = false;
+  moved.callouts = [{ id: 'c2', kind: 'custom', after: 'research', style: 'gray', title: 'Lonely', text: 't', button: 'Go', url: 'https://x.org/2' }];
+  moved.layout = { order: ['events', 'spotlight', 'research'] };
+  const h2 = renderNewsletter(moved);
+  const at2 = (s) => h2.indexOf(s);
+  assert.ok(at2('>Upcoming Events</h2>') < at2('>ERC Spotlight</h2>') && at2('>ERC Spotlight</h2>') < at2('>Lonely</p>') && at2('>Lonely</p>') < at2('>Opportunities</h2>'), 'after Spotlight, the one printed just before where Research would be');
+});
+
+// ─── The October 6, 2026 issue, as the builder would make it ─────────────────
+
+test('the Oct 6 fixture renders every Oct 6 decision: Spotlight first, the Colloquium card, the report box, View more on Events, the Share callout last, the gray footer', () => {
+  const html = renderNewsletter(issueOf('oct-6-2026.json'));
+  const at = (s) => html.indexOf(s);
+  assert.ok(at('>ERC Spotlight</h2>') < at('>ERC Research</h2>') && at('>ERC Research</h2>') < at('>Upcoming Events</h2>') && at('>Upcoming Events</h2>') < at('>New Education Policy Research</h2>') && at('>New Education Policy Research</h2>') < at('>Education Headlines</h2>'));
+  assert.match(html, /href="#spotlight"[^>]*>Spotlight<\/a>&nbsp;<span[^>]*>&#183;<\/span>&nbsp;<a href="#research"[^>]*>Research<\/a>/);
+  assert.match(html, /color:#732F2F; text-decoration:none;">ERC Colloquium<\/a><\/p><p[^>]*><a[^>]*>Controversies in the Classroom<\/a><\/p><p[^>]*>Moderated by <strong>Lori Taylor<\/strong><\/p>/);
+  assert.match(html, />Tuesday<\/p><p[^>]*>Oct&nbsp;20<\/p><p[^>]*>5:00 to 7:00 PM CT<\/p><p[^>]*>Texas A&amp;M Hotel<br>Ross Room<br>College Station, TX<\/p><p[^>]*>Zoom available<\/p>/);
+  assert.match(html, /View flyer &#187;/);
+  assert.match(html, /alt="Picture: ERC EdTalk with Mark Hlavacik" width="124"/);
+  assert.match(html, />Research Report<\/p><p[^>]*><a href="https:\/\/erc-policy-exchange\.vercel\.app\/\?brief=[^"]*"[^>]*style="color:#500000; text-decoration:none;">The Pipeline of Alternative Teacher Certification: Evaluating iteach<\/a>/);
+  assert.match(html, /<td valign="top" width="230" style="width:230px; vertical-align:top;"><a [^>]*><img src="[^"]*iteach-chart\.png" alt="Picture: The Pipeline[^"]*" width="230"/);
+  assert.match(html, /a decade of <em>iteach<\/em> candidates/);
+  assert.equal(count(html, 'View more &#187;'), 3, 'Events, Policy Research, Headlines');
+  assert.ok(at('>Education Headlines</h2>') < at('>Share something with the ERC</p>') && at('>Share something with the ERC</p>') < at('erc-lockup-maroon.png'), 'the Share callout sits between Headlines and the gray footer');
+  assert.ok(!/Read the full|i\.ibb\.co|>Research Brief</.test(html));
+  assert.equal(panels(html), 9, 'header, intro, five sections, the callout, the footer');
 });
 
 test('the standing links are the ones the handoff names', () => {
