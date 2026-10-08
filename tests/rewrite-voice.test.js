@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { VOICE_EXAMPLES } from '../api/_lib/voice-examples.js';
-import { buildRewritePrompt, REWRITE_SCHEMA } from '../api/_lib/rewrite.js';
+import { buildRewritePrompt, normalizeRewrites, noDashes, REWRITE_SCHEMA } from '../api/_lib/rewrite.js';
 import { ERC_VOICE } from '../api/_lib/voice.js';
 
 // Kate's four approved samples (Oct 8), copied byte for byte from
@@ -151,4 +151,51 @@ test('no page text line when the page was not read, a text the same as another s
   assert.doesNotMatch(item, /page text:/);
   assert.equal(item.split('Same words.').length - 1, 1);
   assert.match(item, /^type: opportunity$/m);
+});
+
+// 22 recent descriptions came back with an em dash. Whatever the model
+// returns, the desk takes them out.
+const EN = '\u2013';
+const EM = '\u2014';
+
+test('noDashes: a dash between words or clauses is a comma, a period where it ends a clause', () => {
+  assert.equal(noDashes(`The program raised wages${EM}and retention rose.`), 'The program raised wages, and retention rose.');
+  assert.equal(noDashes(`Researchers ${EM} including Reveille ${EM} meet online.`), 'Researchers, including Reveille, meet online.');
+  assert.equal(noDashes(`A briefing ${EN} free to all.`), 'A briefing, free to all.');
+  assert.equal(noDashes(`Register by Friday ${EM}`), 'Register by Friday.');
+  assert.equal(noDashes(`Seats are limited${EM}\nApply today.`), 'Seats are limited.\nApply today.');
+  assert.equal(noDashes(`Wages rose, ${EM} and so did retention.`), 'Wages rose, and so did retention.');
+  assert.equal(noDashes(`Funded by the state (in part ${EM}).`), 'Funded by the state (in part).');
+  assert.equal(noDashes(`${EM} A note on the grants.`), 'A note on the grants.');
+});
+
+test('noDashes: an en dash in a number or date range is " to "', () => {
+  assert.equal(noDashes(`Teachers in grades 3${EN}8.`), 'Teachers in grades 3 to 8.');
+  assert.equal(noDashes(`Data from 2020${EN}2024.`), 'Data from 2020 to 2024.');
+  assert.equal(noDashes(`On October 1${EN}3, 2026.`), 'On October 1 to 3, 2026.');
+  assert.equal(noDashes(`From October 30 ${EN} November 2.`), 'From October 30 to November 2.');
+  assert.equal(noDashes(`At 1:00 ${EN} 2:30 PM CT.`), 'At 1:00 to 2:30 PM CT.');
+  assert.equal(noDashes(`From 9:00 AM${EN}11:00 AM.`), 'From 9:00 AM to 11:00 AM.');
+  assert.equal(noDashes(`Awards of $5,000${EN}$10,000.`), 'Awards of $5,000 to $10,000.');
+  assert.equal(noDashes(`Open Monday${EN}Friday.`), 'Open Monday to Friday.');
+});
+
+test('noDashes: an en dash joining a compound is a hyphen, so K-12 never reads "K, 12"', () => {
+  assert.equal(noDashes(`For K${EN}12 schools.`), 'For K-12 schools.');
+  assert.equal(noDashes(`At Texas A&M University${EN}Commerce.`), 'At Texas A&M University-Commerce.');
+  assert.equal(noDashes('No dash here, and a hyphen in high-quality stays.'), 'No dash here, and a hyphen in high-quality stays.');
+});
+
+test('normalizeRewrites strips the dashes from what the model returns', () => {
+  const rows = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+  const { rewrites } = normalizeRewrites({ rewrites: [
+    { id: 'a', blurb: `Students rarely study examples${EM}mathematicians do.` },
+    { id: 'b', blurb: `For grades 3${EN}8, free.` },
+    { id: 'c', blurb: ` ${EM} ` },
+  ] }, rows);
+  assert.deepEqual(rewrites, [
+    { id: 'a', blurb: 'Students rarely study examples, mathematicians do.' },
+    { id: 'b', blurb: 'For grades 3 to 8, free.' },
+  ]);
+  assert.doesNotMatch(JSON.stringify(rewrites), /[\u2013\u2014]/);
 });

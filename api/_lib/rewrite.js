@@ -137,13 +137,43 @@ export function buildRewritePrompt(rows, pages = new Map()) {
   ].join('\n');
 }
 
+const MONTH = '(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|June?|July?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)';
+const DAY = '(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day';
+/** An en dash between two ends of a range: numbers, times, dates, days. */
+const RANGE = new RegExp(
+  `(\\d%?|\\b[AP]M\\b|\\b[ap]\\.m\\.|\\b${DAY}\\b|\\b${MONTH}\\b)[ \\t]*\\u2013[ \\t]*(?=\\$?\\d|${DAY}\\b|${MONTH}\\b|noon\\b|midnight\\b)`,
+  'g',
+);
+/** An en dash with no space joining two words or a letter and a number. */
+const COMPOUND = /(?<=[\p{L}\p{N}])\u2013(?=[\p{L}\p{N}])/gu;
+/** Any other em or en dash, with the spaces around it. */
+const CLAUSE = /[ \t]*[\u2013\u2014]+[ \t]*/g;
+
+/** No em or en dash in a description (Kate's rule): a range takes "to", a
+ *  compound a hyphen, and any other dash a comma, or a period where it ends
+ *  a clause; a dash beside other punctuation just goes. */
+export function noDashes(text) {
+  return String(text ?? '')
+    .replace(RANGE, '$1 to ')
+    .replace(COMPOUND, '-')
+    .replace(CLAUSE, (dash, at, all) => {
+      const before = all.slice(0, at);
+      const after = all.slice(at + dash.length);
+      if (!before.trim() || before.endsWith('\n')) return '';
+      if (!after.trim() || /^\r?\n/.test(after)) return /[.!?,;:]$/.test(before) ? '' : '.';
+      if (/^[.!?,;:)\]]/.test(after) || /[([]$/.test(before)) return '';
+      if (/[.!?,;:]$/.test(before)) return ' ';
+      return ', ';
+    });
+}
+
 export function normalizeRewrites(parsed, rows) {
   const known = new Set(rows.map(r => r.id));
   const rewrites = [];
   const warnings = [];
   for (const entry of parsed?.rewrites ?? []) {
     const id = String(entry?.id ?? '');
-    const blurb = String(entry?.blurb ?? '').trim();
+    const blurb = noDashes(entry?.blurb).trim();
     if (!known.has(id)) {
       warnings.push(`Skipped a rewrite that didn't match an item (${id || 'no id'}).`);
       continue;
