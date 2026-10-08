@@ -973,6 +973,12 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hub-link { color: var(--link-primary); text-decoration: underline; }
 .hub-link:hover { color: var(--link-primary-hover); }
 .hub-link .fa-solid { font-size: 11px; }
+/* Adding people (Oct 8): the sheet's door on the box, the three steps under it. */
+.hub-adding { padding-top: var(--spacing-05); padding-bottom: var(--spacing-04); }
+.hub-door { width: 100%; }
+.hub-door .fa-arrow-up-right-from-square { font-size: 14px; }
+.hub-steps { margin: var(--spacing-05) 0 0; padding-left: var(--spacing-06); font: var(--body-type); color: var(--ink); }
+.hub-steps li { margin: 0 0 var(--spacing-02); }
 .hub-box + .forthcoming { margin-top: var(--spacing-06); }
 .forthcoming + .forthcoming { margin-top: var(--spacing-03); }
 .hub-count { padding: var(--spacing-05) var(--spacing-06); }

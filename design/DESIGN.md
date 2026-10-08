@@ -459,8 +459,13 @@ same: the hub's name as the title and one line under it.
   began keeping a copy of each sign-up (her pick: `/api/listserv` keeps one
   in a `signups` table once the script has taken it, made only by
   `scripts/ensure-schema.js`, run by hand). Counts and dates only, never a
-  name or an address. Downloading the sign-ups in the listserv's format is
-  forthcoming.
+  name or an address. Since Oct 8 (Kate: "a button or something that links
+  to the google sheet"): a filled door, Open the sign-up sheet, opening in a
+  new tab, under an Adding people label, with her three steps under it (Add
+  the people on Sheet 1 to the listserv; Move their rows from Sheet 1 to
+  Sheet 2; Clear Sheet 1); the card carries the sheet as a link. The address
+  sits in the code (her pick; the sheet's own sharing guards it). Downloading
+  the sign-ups in the listserv's format is forthcoming.
 - **Public links**: the card alone, Copy link on each row.
 - **Policy Exchange** (/#exchange): the site's status (Live, or that it did
   not answer), when it last changed (`/api/hub-updated`), the live link, how
