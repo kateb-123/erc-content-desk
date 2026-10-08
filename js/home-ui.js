@@ -43,7 +43,12 @@ function card(item, onGoTo) {
   box.append(el('span', 'desk-card-count', item.count == null ? '' : String(item.count)));
   if (item.sub) box.append(el('span', 'desk-card-sub', item.sub));
   const foot = el('div', 'desk-card-foot');
-  for (const link of item.links ?? []) { const a = el('a', 'desk-card-link', link.label); a.href = link.href; foot.append(a); }
+  for (const link of item.links ?? []) {
+    const a = el('a', 'desk-card-link', link.label);
+    a.href = link.href;
+    if (link.blank) { a.target = '_blank'; a.rel = 'noopener'; a.append(el('span', 'sr-only', ' (opens in a new tab)')); }
+    foot.append(a);
+  }
   if (item.foot) {
     const line = el('span', 'desk-card-sub');
     if (item.lock) line.append(faIcon('lock'), ' ');

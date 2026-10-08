@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Read me · ERC Content Desk</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%231d7491'/%3E%3Cpath d='M9 16.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="/css/tokens.css?v=11" />
+  <link rel="stylesheet" href="/css/shell.css?v=7" />
+  <link rel="stylesheet" href="/css/styles.css?v=159" />
+</head>
+<body>
+  <a class="skip-to-main" href="#main">Skip to content</a>
+  <!-- The desk's top bar, built by /js/shell-ui.js: these pages crumb under Newsletter. -->
+  <header class="topbar"></header>
+  <main id="main" class="email-page email-readme">
+    <h1 class="home-title">Read me</h1>
+    <p class="lede">The newsletter's HTML: what the two pages are, and how to change the email.</p>
+
+    <h2>The two pages</h2>
+    <ul>
+      <li><a href="/newsletter/template/">Blank template</a>: every section and callout, with placeholder words in each slot, so you can see every place an item can go.</li>
+      <li><a href="/newsletter/sample/">Sample issue</a>: a fictional issue with every kind of item, as the builder would send it. The builder's Issue list offers the same sample to practice on.</li>
+    </ul>
+    <p>Both are drawn from the builder's own template the moment they open, so they always match what the builder makes. Copy HTML on either page puts that email's code on the clipboard.</p>
+
+    <h2>Change one email</h2>
+    <p>An issue is built in the <a href="/builder/">Newsletter builder</a>, and every fix goes in its Preview &amp; Tweak step, never in Outlook, so the archive matches what went out. For a change the builder cannot make, press Copy HTML on the Save &amp; Export step, paste the code into Claude, and ask for the change, then paste the result into Outlook. That changes one email only. Example asks:</p>
+    <ul>
+      <li>"Move the Opportunities section above Upcoming Events."</li>
+      <li>"Make the Research Brief label maroon instead of gray."</li>
+      <li>"Shorten the introduction to two sentences."</li>
+    </ul>
+
+    <h2>Change the email for good</h2>
+    <p>The email's look lives in one file of the desk's code, <code>builder/js/template.js</code>. A change there reaches the builder, the blank template and the sample at once. To make one, open the desk's folder in Claude Code and ask for the change; it writes the code and runs the desk's tests, and the change goes live when it is pushed. Example asks:</p>
+    <ul>
+      <li>"In builder/js/template.js, add a Podcasts section after Headlines."</li>
+      <li>"Change the masthead's date line to read Month Day, Year in small caps."</li>
+      <li>"Give the Share something callout a white button on maroon."</li>
+    </ul>
+    <p>Where the desk's code lives, and who can push it, is in the Policy Exchange hub's handoff.</p>
+  </main>
+  <script type="module">
+    import { renderShell } from "/js/shell-ui.js";
+    renderShell(document.querySelector(".topbar"), { screen: "emailpage" });
+  </script>
+</body>
+</html>

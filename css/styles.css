@@ -989,3 +989,23 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 
 /* The edit box's Save and Cancel at its top as well as its foot (Kate, Oct 6). */
 .f-edit-actions.f-edit-top { justify-content: flex-end; margin: 0 0 var(--spacing-05); }
+
+/* The newsletter's HTML pages (Kate, Oct 8): the blank template and the sample,
+   each the email drawn in a sheet under a head with Copy HTML; the read me, prose. */
+.email-page { max-width: 1280px; margin: 0 auto; padding: var(--spacing-06) var(--gap-56) var(--spacing-09); }
+.email-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-06); }
+.email-head .lede { margin: var(--spacing-02) 0 0; }
+.email-actions { display: flex; align-items: center; gap: var(--spacing-05); flex: none; padding-top: var(--spacing-02); }
+.email-status { font: var(--meta-type); color: var(--text-secondary); }
+.email-error { color: var(--support-error); }
+.email-note { font: var(--meta-type); color: var(--text-secondary); margin: var(--spacing-05) 0 0; max-width: 72ch; }
+.email-sheet { display: block; width: 100%; height: calc(100vh - 220px); min-height: 640px; margin-top: var(--spacing-06); border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer-02); }
+.email-readme { max-width: 760px; margin: 0 auto; }
+.email-readme h2 { font: var(--card-title); margin: var(--spacing-07) 0 var(--spacing-03); }
+.email-readme p, .email-readme li { font: var(--body-type); color: var(--ink); }
+.email-readme p { margin: 0 0 var(--spacing-04); }
+.email-readme ul { margin: 0 0 var(--spacing-04); padding-left: var(--spacing-06); }
+.email-readme li { margin: 0 0 var(--spacing-02); }
+.email-readme code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; background: var(--layer-01); padding: 1px 4px; border-radius: 2px; }
+.email-readme a { color: var(--link-primary); }
+@media (max-width: 760px) { .email-page { padding: var(--spacing-05) var(--spacing-05) var(--spacing-08); } .email-head { flex-direction: column; } .email-sheet { height: 70vh; min-height: 480px; } }

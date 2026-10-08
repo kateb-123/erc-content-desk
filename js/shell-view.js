@@ -35,6 +35,8 @@ const SCREENS = {
   exchange: { hub: 'exchange', hash: '#exchange' },
   publish: { hub: 'exchange', hash: '#publish', page: 'Publish' },
   builder: { hub: 'newsletter', hash: null, page: 'Builder', title: 'Newsletter builder' },
+  // The newsletter's HTML pages (Kate, Oct 8): the blank template, the sample and the read me, each a page of its own.
+  emailpage: { hub: 'newsletter', hash: null, page: 'The email' },
 };
 
 // Old addresses keep landing where they used to.

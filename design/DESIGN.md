@@ -440,6 +440,18 @@ same: the hub's name as the title and one line under it.
   tab; an empty first tab says "Nothing new since the <date> issue."
 - **Newsletter** (/#newsletter): unchanged (her answer); its status, the
   next send, how many are in it and the last sent, rides its card.
+  The newsletter's HTML (Kate, Oct 8; her map's "HTML design files"):
+  three links at the card's foot, never downloads (her words: "the builder
+  has the most recent html template right now. that's what we should be
+  using ... they can all link in vercel"). Blank template
+  (/newsletter/template/, every section and callout with placeholder words,
+  builder/fixtures/blank-issue.json) and Sample issue (/newsletter/sample/,
+  the builder's own practice issue) are each the email drawn in a sheet by
+  js/email-page.js through builder/js/template.js the moment the page
+  opens, with Copy HTML in the head; Read me (/newsletter/read-me/) says what
+  the two are, how to change one email in Claude, and that a permanent
+  change goes in builder/js/template.js through Claude Code. All three crumb
+  under Newsletter as The email.
 - **Listserv** (/#listserv): the sign-up form's status, its last sign-up, its
   link with Copy link; how many wait to be added, counted since the desk
   began keeping a copy of each sign-up (her pick: `/api/listserv` keeps one

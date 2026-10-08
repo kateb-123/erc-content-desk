@@ -1,0 +1,340 @@
+{
+  "date": "Issue date",
+  "sample": "blank",
+  "intro": "The opening note goes here: a line or two from the ERC about this issue.",
+  "layout": {
+    "order": [
+      "spotlight",
+      "research",
+      "events",
+      "opportunities",
+      "policy",
+      "headlines",
+      "misc"
+    ]
+  },
+  "callouts": [
+    {
+      "id": "callout_blank_custom",
+      "kind": "custom",
+      "after": "events",
+      "style": "gray",
+      "title": "Callout title",
+      "text": "A sentence or two for the callout.",
+      "button": "Button words",
+      "url": "https://example.org/your-link",
+      "deadline": "Deadline: date"
+    },
+    {
+      "id": "callout_blank_share",
+      "kind": "share",
+      "after": "end",
+      "style": "maroon",
+      "title": "Share something with the ERC",
+      "text": "Research, an event, an announcement: if it belongs in the newsletter or on the Policy Exchange, send it our way. The ERC team reviews everything before it goes out.",
+      "button": "Share something",
+      "url": "https://erc-policy-exchange.vercel.app/share/",
+      "deadline": ""
+    }
+  ],
+  "sections": {
+    "research": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "blank_research_1",
+          "group": "brief",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "authors": "Authors",
+            "summary": "One or two sentences about the item."
+          }
+        },
+        {
+          "id": "blank_research_2",
+          "group": "report",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "authors": "Authors",
+            "summary": "One or two sentences about the item.",
+            "pictureStyle": "stamp",
+            "pictureWidth": 230,
+            "image": "https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/sample-chart.png"
+          }
+        },
+        {
+          "id": "blank_research_3",
+          "group": "article",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "authors": "Authors",
+            "summary": "One or two sentences about the item."
+          }
+        },
+        {
+          "id": "blank_research_4",
+          "group": "explains",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "authors": "Authors",
+            "summary": "One or two sentences about the item."
+          }
+        }
+      ]
+    },
+    "spotlight": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "blank_spotlight_1",
+          "group": "programs",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "meta": "Deadline: date",
+            "summary": "One or two sentences about the item."
+          }
+        },
+        {
+          "id": "blank_spotlight_2",
+          "group": "events",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "date": "Date",
+            "time": "Time",
+            "location": "Place",
+            "summary": "One or two sentences about the item.",
+            "flyer": "https://example.org/your-flyer",
+            "zoom": true,
+            "highlight": true
+          }
+        },
+        {
+          "id": "blank_spotlight_3",
+          "group": "events",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "date": "Date",
+            "time": "Time",
+            "location": "Place",
+            "summary": "One or two sentences about the item.",
+            "pictureStyle": "headshot",
+            "pictureWidth": 124,
+            "image": "https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/builder/images/sample-headshot.png"
+          }
+        },
+        {
+          "id": "blank_spotlight_4",
+          "group": "thisandthat",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "meta": "Deadline: date",
+            "summary": "One or two sentences about the item."
+          }
+        }
+      ]
+    },
+    "events": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "blank_events_1",
+          "group": "tamu",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "date": "Date",
+            "time": "Time",
+            "location": "Place",
+            "summary": "One or two sentences about the item."
+          }
+        },
+        {
+          "id": "blank_events_2",
+          "group": "tamu",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "date": "Date",
+            "time": "Time",
+            "location": "Place"
+          }
+        },
+        {
+          "id": "blank_events_3",
+          "group": "tamu",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "date": "Date",
+            "time": "Time",
+            "location": "Place"
+          }
+        },
+        {
+          "id": "blank_events_4",
+          "group": "offcampus",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "date": "Date",
+            "time": "Time",
+            "location": "Place",
+            "source": "Source"
+          }
+        },
+        {
+          "id": "blank_events_5",
+          "group": "offcampus",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "date": "Date",
+            "time": "Time",
+            "location": "Place"
+          }
+        }
+      ]
+    },
+    "opportunities": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "blank_opportunities_1",
+          "group": "funding",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "meta": "Deadline: date"
+          }
+        },
+        {
+          "id": "blank_opportunities_2",
+          "group": "fellowships",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "meta": "Deadline: date"
+          }
+        },
+        {
+          "id": "blank_opportunities_3",
+          "group": "calls",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "meta": "Deadline: date"
+          }
+        },
+        {
+          "id": "blank_opportunities_4",
+          "group": "misc",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "meta": "Deadline: date"
+          }
+        }
+      ]
+    },
+    "policy": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "blank_policy_1",
+          "group": "working",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link"
+          }
+        },
+        {
+          "id": "blank_policy_2",
+          "group": "working",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link"
+          }
+        },
+        {
+          "id": "blank_policy_3",
+          "group": "peer",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link"
+          }
+        },
+        {
+          "id": "blank_policy_4",
+          "group": "misc",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link",
+            "source": "Source"
+          }
+        }
+      ]
+    },
+    "headlines": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "blank_headlines_1",
+          "group": "federal",
+          "fields": {
+            "title": "Item title",
+            "source": "Source",
+            "url": "https://example.org/your-link"
+          }
+        },
+        {
+          "id": "blank_headlines_2",
+          "group": "federal",
+          "fields": {
+            "title": "Item title",
+            "source": "Source",
+            "url": "https://example.org/your-link"
+          }
+        },
+        {
+          "id": "blank_headlines_3",
+          "group": "texas",
+          "fields": {
+            "title": "Item title",
+            "source": "Source",
+            "url": "https://example.org/your-link"
+          }
+        },
+        {
+          "id": "blank_headlines_4",
+          "group": "texas",
+          "fields": {
+            "title": "Item title",
+            "source": "Source",
+            "url": "https://example.org/your-link"
+          }
+        }
+      ]
+    },
+    "misc": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "blank_misc_1",
+          "group": "misc",
+          "fields": {
+            "title": "Item title",
+            "url": "https://example.org/your-link"
+          }
+        }
+      ]
+    }
+  }
+}
