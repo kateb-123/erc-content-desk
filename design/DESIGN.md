@@ -431,6 +431,13 @@ same: the hub's name as the title and one line under it.
   submission (it came with an email) is tagged From outside and shows no name
   or email: the page is open. On the right, Content Sort's filled door with a
   lock and how many wait, "Password protected", and How to sort, forthcoming.
+  Since Oct 8 (Kate: "the queue has too many items. It should just be what
+  was submitted from the last newsletter until now"; her pick of a second
+  tab): the desk's tab row under the head, Since the last issue (opens
+  first) and Everything, each with its count, and "Last issue: <date>" at the
+  row's right. The cutoff is Ready to add's: the newest send date not after
+  today, by College Station's date of submission. The search filters the open
+  tab; an empty first tab says "Nothing new since the <date> issue."
 - **Newsletter** (/#newsletter): unchanged (her answer); its status, the
   next send, how many are in it and the last sent, rides its card.
 - **Listserv** (/#listserv): the sign-up form's status, its last sign-up, its

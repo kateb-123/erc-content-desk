@@ -5,15 +5,19 @@
  * name or an email (the page is open). Content Sort hangs under it, behind
  * the password: its door sits at the page's right with how many wait. The
  * page is built once and only the list redraws, so the search keeps its
- * typing.
+ * typing. Since Oct 8 it opens on what came in since the last issue went
+ * out, with Everything as a second tab (Kate: "the queue has too many
+ * items"; her pick of a second tab).
  */
-import { contentQueue } from './queue-view.js';
+import { contentQueue, lastIssueSent, isoToShort } from './queue-view.js';
+import { tabBar } from './page-head.js';
 import { sortList } from './sort-view.js';
 import { hubHead, HUB_LEDES, forthcoming } from './hub-head.js';
 import { faIcon } from './icons.js';
 import { el, busyLine, tryAgain } from './ui-aids.js';
 
 let term = '';   // the search, for the visit
+let tab = 'since';   // the open tab, for the visit: since the last issue, or all
 
 const WHERE_CLASS = { Waiting: 'badge badge-waiting', Kept: 'badge', 'On the Exchange': 'badge badge-live' };
 const whereClass = word => WHERE_CLASS[word] ?? 'badge badge-new';   // In the <date> issue
@@ -55,35 +59,48 @@ function build(container, onGoTo) {
   side.append(door, el('p', 'qh-side-note', 'Password protected. Sort and Finalize ask the desk password.'), forthcoming('How to sort'));
 
   split.append(main, side);
-  page.append(hubHead('Content queue', HUB_LEDES.queue), split);
+  page.append(hubHead('Content queue', HUB_LEDES.queue), el('div', 'qh-tabs'), split);
   container.replaceChildren(page);
   return page;
 }
 
 export function renderQueue(container, props) {
-  const { rows, today, loaded, loadFailed, onGoTo, onRefresh } = props;
+  const { rows, schedule, today, loaded, loadFailed, onGoTo, onRefresh } = props;
   const page = container.querySelector('.queue-hub') ?? build(container, onGoTo);
   const list = page.querySelector('.qh-list');
   const count = page.querySelector('.qh-count');
   const search = page.querySelector('.qh-search');
   const note = page.querySelector('.qh-door .door-note');
+  const tabs = page.querySelector('.qh-tabs');
   // Typing redraws the list alone, from the rows this draw was handed.
   search.oninput = () => { term = search.value; renderQueue(container, props); };
 
   if (!loaded) {
     count.textContent = '';
     note.textContent = '';
+    tabs.replaceChildren();
     list.replaceChildren(loadFailed ? tryAgain(onRefresh) : busyLine('Loading the queue'));
     return;
   }
   const waiting = sortList(rows).live.length;
   note.textContent = waiting ? `${waiting} waiting` : 'Nothing waiting';
+  // The last issue that went out sets the first tab's cutoff; with none yet, both tabs hold everything.
+  const since = lastIssueSent(schedule, today);
   const all = contentQueue(rows, { today });
-  const shown = term.trim() ? contentQueue(rows, { today, term }) : all;
+  const fresh = since ? contentQueue(rows, { today, since }) : all;
+  tabs.replaceChildren(tabBar({
+    label: 'Content queue', active: tab,
+    tabs: [{ key: 'since', label: 'Since the last issue', count: fresh.length }, { key: 'all', label: 'Everything', count: all.length }],
+    note: since ? `Last issue: ${isoToShort(since, today)}` : '',
+    onGoTo: key => { tab = key; renderQueue(container, props); tabs.querySelector('[aria-selected="true"]')?.focus(); },
+  }));
+  const listed = tab === 'since' ? fresh : all;
+  const shownSince = tab === 'since' ? since : '';
+  const shown = term.trim() ? contentQueue(rows, { today, since: shownSince, term }) : listed;
   count.textContent = term.trim()
-    ? `${shown.length} of ${all.length} item${all.length === 1 ? '' : 's'}`
-    : `${all.length} item${all.length === 1 ? '' : 's'} · newest first`;
-  list.replaceChildren(...(shown.length
-    ? shown.map(queueRow)
-    : [el('p', 'qh-empty', all.length ? 'Nothing matches that search.' : 'Nothing submitted yet.')]));
+    ? `${shown.length} of ${listed.length} item${listed.length === 1 ? '' : 's'}`
+    : `${listed.length} item${listed.length === 1 ? '' : 's'} · newest first`;
+  const empty = listed.length ? 'Nothing matches that search.'
+    : shownSince ? `Nothing new since the ${isoToShort(since, today)} issue.` : 'Nothing submitted yet.';
+  list.replaceChildren(...(shown.length ? shown.map(queueRow) : [el('p', 'qh-empty', empty)]));
 }

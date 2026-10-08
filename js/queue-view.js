@@ -4,6 +4,7 @@
  */
 import { typeDisplay } from './schema.js';
 import { pendingRows, circlebackRows } from './workflow.js';
+import { todayCentral } from './today.js';
 
 /**
  * What the Home queue table lists: everything still waiting, circle-backs last.
@@ -97,6 +98,19 @@ export function isoToShort(iso, todayIso) {
   return m[1] === String(todayIso ?? '').slice(0, 4) ? day : `${day}, ${m[1]}`;
 }
 
+/** The last issue that went out (Kate, Oct 8: the queue holds "what was
+ *  submitted from the last newsletter until now"): the newest send date not
+ *  after today, the send day itself included, as Ready to add counts it. */
+export function lastIssueSent(schedule, today) {
+  return [...(schedule ?? [])].filter(d => d && d <= today).sort().at(-1) ?? '';
+}
+
+/** The day a row came in, in College Station; '' when it carries none. */
+const addedOn = row => {
+  const t = Date.parse(String(row.submitted_at ?? ''));
+  return Number.isNaN(t) ? '' : todayCentral(new Date(t));
+};
+
 /**
  * The Content queue hub (Kate's drawn map, Oct 6, 2026): everything ever
  * submitted, newest first, deleted items left out, each saying where it
@@ -104,13 +118,16 @@ export function isoToShort(iso, todayIso) {
  * the <date> issue (an item can be both of the last two). An outside
  * submission (it came with an email, from the public form) is tagged and
  * shows no name and no email: the page is open. The search reads the title,
- * the link where there is no title, and the source, any case.
+ * the link where there is no title, and the source, any case. With `since`
+ * (an ISO day) only what came in on or after that day in College Station is
+ * listed: the queue's Since the last issue tab (Kate, Oct 8).
  * Returns [{ id, title, meta, where: [words], outside }].
  */
-export function contentQueue(rows, { today = '', term = '' } = {}) {
+export function contentQueue(rows, { today = '', term = '', since = '' } = {}) {
   const want = String(term ?? '').trim().toLowerCase();
   return rows
     .filter(r => r.status !== 'trashed')
+    .filter(r => !since || addedOn(r) >= since)
     .filter(r => !want || [r.headline || r.link, r.source].some(v => String(v ?? '').toLowerCase().includes(want)))
     .sort(bySubmitted('desc'))
     .map(r => {

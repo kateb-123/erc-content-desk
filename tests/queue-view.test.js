@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sortRows, isoToShort, queueRows, queueMatch, partnerFocusKey, contentQueue } from '../js/queue-view.js';
+import { sortRows, isoToShort, queueRows, queueMatch, partnerFocusKey, contentQueue, lastIssueSent } from '../js/queue-view.js';
 
 // Deliberately NOT pre-sorted in any tested order, so an in-place sort or a
 // wrong direction provably fails.
@@ -170,4 +170,32 @@ test('contentQueue: the search finds by title or source, any case, and nothing e
   assert.deepEqual(titles('bonfire'), ['s1'], 'a row with no title is found by its link');
   assert.deepEqual(titles('sarge'), [], 'never by a submitter from outside');
   assert.deepEqual(titles('  '), contentQueue(everything, { today: '2026-10-07' }).map(e => e.id), 'a blank search is no search');
+});
+
+// ── Since the last issue (Kate, Oct 8: "the queue has too many items. It
+// should just be what was submitted from the last newsletter until now"):
+// the queue opens on what came in since the last issue went out, and an
+// Everything tab keeps the whole list (her pick). The cutoff is Ready to
+// add's: the newest send date not after today, by College Station's date. ──
+
+test('lastIssueSent: the newest send date not after today, the send day itself included', () => {
+  const schedule = ['2026-09-22', '2026-10-06', '2026-10-20'];
+  assert.equal(lastIssueSent(schedule, '2026-10-08'), '2026-10-06');
+  assert.equal(lastIssueSent(schedule, '2026-10-20'), '2026-10-20', 'it goes out that day');
+  assert.equal(lastIssueSent(schedule, '2026-09-01'), '', 'none gone out yet');
+  assert.equal(lastIssueSent([], '2026-10-08'), '');
+  assert.equal(lastIssueSent(['2026-10-06', '2026-09-22'], '2026-10-08'), '2026-10-06', 'in any order');
+});
+
+test('contentQueue since: only what came in on or after the last issue\'s day, in College Station', () => {
+  const rows = [
+    ...everything,
+    // 03:00 UTC on Oct 6 is still Oct 5 in College Station: before the issue.
+    { id: 'late', status: 'new', headline: 'Fish Camp Funding Brief', submitted_at: '2026-10-06T03:00:00Z' },
+  ];
+  const ids = contentQueue(rows, { today: '2026-10-08', since: '2026-10-06' }).map(e => e.id);
+  assert.deepEqual(ids, ['r1', 'w1'], 'the deleted d1 stays out too');
+  assert.deepEqual(contentQueue(rows, { today: '2026-10-08', since: '' }).map(e => e.id), contentQueue(rows, { today: '2026-10-08' }).map(e => e.id), 'no issue gone out yet: everything');
+  assert.deepEqual(contentQueue(rows, { today: '2026-10-08', since: '2026-10-06', term: 'howdy' }).map(e => e.id), ['w1'], 'the search works inside the tab');
+  assert.deepEqual(contentQueue(rows, { today: '2026-10-08', since: '2026-10-06', term: 'reveille' }).map(e => e.id), [], 'and never reaches past it');
 });

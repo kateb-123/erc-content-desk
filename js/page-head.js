@@ -7,18 +7,19 @@
 import { adjacentTab } from './sort-view.js';
 import { el } from './ui-aids.js';
 
-/** tabs: [{ key, label, count? }]; active: the key of this screen;
- *  canLeave() says whether the screen may switch now. */
-export function pageHead({ title, tabs, active, note = '', onGoTo, canLeave = () => true }) {
-  const head = el('div', 'page-head');
-  head.append(el('h2', 'page-title', title));
+/** The tab row under a page's title: tabs [{ key, label, count? }], the
+ *  active key, and an optional fact at the row's right; canLeave() says
+ *  whether the page may switch now. Read as tabs: one tab stop, Left and
+ *  Right move, Home and End jump. The Content queue draws it under its hub
+ *  head (Oct 8). */
+export function tabBar({ label, tabs, active, note = '', onGoTo, canLeave = () => true }) {
   const bar = el('div', 'page-tabs');
   const nav = el('div', 'tabs');
   nav.setAttribute('role', 'tablist');
-  nav.setAttribute('aria-label', title);
+  nav.setAttribute('aria-label', label);
   const go = key => { if (key !== active && canLeave()) onGoTo(key); };
-  for (const { key, label, count } of tabs) {
-    const tab = el('button', `tab${key === active ? ' is-active' : ''}`, label);
+  for (const { key, label: words, count } of tabs) {
+    const tab = el('button', `tab${key === active ? ' is-active' : ''}`, words);
     tab.type = 'button';
     tab.dataset.focus = `tab:${key}`;
     tab.setAttribute('role', 'tab');
@@ -36,7 +37,14 @@ export function pageHead({ title, tabs, active, note = '', onGoTo, canLeave = ()
   });
   bar.append(nav);
   if (note) bar.append(el('span', 'page-tabs-note', note));
-  head.append(bar);
+  return bar;
+}
+
+/** tabs: [{ key, label, count? }]; active: the key of this screen;
+ *  canLeave() says whether the screen may switch now. */
+export function pageHead({ title, tabs, active, note = '', onGoTo, canLeave = () => true }) {
+  const head = el('div', 'page-head');
+  head.append(el('h2', 'page-title', title), tabBar({ label: title, tabs, active, note, onGoTo, canLeave }));
   return head;
 }
 

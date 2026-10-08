@@ -940,6 +940,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .forthcoming .fa-solid { font-size: 12px; margin-right: var(--spacing-01); }
 
 /* The Content queue: the list on the left, Content Sort's door on the right. */
+/* The queue's tabs (Oct 8): the desk's tab row across the page, the list and the door under it. */
+.qh-tabs { margin-bottom: var(--spacing-06); }
 .qh-split { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--spacing-08); align-items: start; }
 .qh-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-05); margin-bottom: var(--spacing-04); }
 .qh-count { font: var(--meta-type); color: var(--text-helper); white-space: nowrap; }
