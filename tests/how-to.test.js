@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { TYPE_ORDER } from '../js/schema.js';
 import { PUBLIC_LINKS } from '../js/public-links.js';
 
@@ -47,19 +47,22 @@ test('the words are the desk’s own and carry no dash', () => {
   for (const words of ['Item types', 'Use it for', 'Add one item', 'Bulk add items', 'Add to the queue', 'Add a doc or spreadsheet', 'Every item needs a link', 'Copy link']) assert.ok(page.includes(words), words);
 });
 
-// ── The newsletter builder's how-to (Kate, Sep 30, 2026, evening; one page
-// since Oct 7): where items come from, the three steps, the send from
-// erc@tamu.edu, and every option, read top to bottom with a contents strip.
-// Each part is the steps beside a recording of the real desk where one
-// exists. No Claude note: the builder never calls it. Linked from Next issue
-// and the front page.
-const nl = readFileSync(new URL('../how-to/newsletter/index.html', import.meta.url), 'utf8');
+// ── The newsletter builder's how-to (Kate, Sep 30, 2026; remade Oct 7 as a
+// deck): the three builder steps and Send as chapters of slides, each slide a
+// still of the real builder with numbered pins that name the controls, and
+// Styles, the email's looks rendered by the builder's own template, one at a
+// time behind a menu of groups. Where items come from sits on the first
+// Outline slide. Stills, not recordings. No Claude note: the builder never
+// calls it. Linked from Next issue and the front page. Read on a desktop.
+const nlDir = new URL('../how-to/newsletter/', import.meta.url);
+const nl = readFileSync(new URL('index.html', nlDir), 'utf8');
 const builderPage = readFileSync(new URL('../builder/index.html', import.meta.url), 'utf8');
 const builderApp = readFileSync(new URL('../builder/js/app.js', import.meta.url), 'utf8');
 const builderOptions = readFileSync(new URL('../builder/js/options.js', import.meta.url), 'utf8');
 const builderModel = readFileSync(new URL('../builder/js/model.js', import.meta.url), 'utf8');
 const builderWizard = readFileSync(new URL('../builder/js/wizard.js', import.meta.url), 'utf8');
-const builderWords = builderPage + builderApp + builderOptions + builderModel + builderWizard;
+const itemImage = readFileSync(new URL('../js/item-image.js', import.meta.url), 'utf8');   // the Media control the builder's card borrows from the desk
+const builderWords = builderPage + builderApp + builderOptions + builderModel + builderWizard + itemImage;
 const issueUi = readFileSync(new URL('../js/issue-ui.js', import.meta.url), 'utf8');
 
 test('the newsletter how-to opens the Newsletter page and carries only the addresses it needs', () => {
@@ -74,59 +77,103 @@ test('the newsletter how-to opens the Newsletter page and carries only the addre
     'http://www.w3.org/2000/svg',
   ]);
   for (const a of addresses) assert.ok(allowed.has(a), `an address the how-to should not carry: ${a}`);
+  assert.doesNotMatch(nl, /localhost/, 'the stylesheets and pictures are the desk’s own, by path');
+  assert.match(nl, /href="\/css\/tokens\.css/, 'the desk’s own tokens');
   assert.doesNotMatch(nl, /fetch\(|window\.fetch/, 'nothing on the page reads or writes the desk');
 });
 
-test('the newsletter how-to is one page in the order the work happens, with a contents strip to each part', () => {
-  const parts = ['items', 'outline', 'tweak', 'export', 'send', 'options'];
-  for (const id of parts) {
-    assert.match(nl, new RegExp(`<section class="part" id="${id}">`), `${id} is a part`);
-    assert.ok(nl.includes(`href="#${id}"`), `${id} is in the contents strip`);
-  }
+test('the deck: the three steps and Send as chapters of slides, then Styles, in the order the work happens', () => {
+  const chips = nl.match(/<nav class="chips"[\s\S]*?<\/nav>/)[0];
+  const parts = [...chips.matchAll(/href="#([a-z]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(parts, ['outline', 'tweak', 'export', 'send', 'options'], 'the chips, Styles last');
+  for (const id of ['outline', 'tweak', 'export', 'send']) assert.match(nl, new RegExp(`<section class="chapter" id="${id}"`), `${id} is a chapter`);
+  assert.match(nl, /<section class="styles" id="options"/, 'Styles keeps the #options address the practice note links');
+  assert.match(nl, /<section class="from" id="items"/, 'Where items come from sits on the first Outline slide');
   const order = parts.map((id) => nl.indexOf(`id="${id}"`));
   assert.deepEqual([...order].sort((a, b) => a - b), order, 'the parts run in the order the work happens');
-  for (const words of ['Where items come from', 'Send from erc@tamu.edu', 'The options']) assert.ok(nl.includes(words), words);
-  // Each builder step is a part, named as the builder names it.
-  for (const step of ['Outline', 'Preview &amp; Tweak', 'Save &amp; Export']) {
-    assert.match(nl, new RegExp(`<h2>\\d ${step.replace(/[&;]/g, (c) => `\\${c}`)}</h2>`), `${step} is a numbered part`);
+  // Each builder step is a chapter, numbered and named as the builder names it.
+  for (const [n, step] of [['1', 'Outline'], ['2', 'Preview &amp; Tweak'], ['3', 'Save &amp; Export']]) {
+    assert.match(nl, new RegExp(`<h2 class="pane-title" id="h-[a-z]+"><span class="step" aria-hidden="true">${n}</span><span class="sr-only">Step ${n}: </span>${step.replace(/[&;]/g, (c) => `\\${c}`)}</h2>`), `${step} is chapter ${n}`);
     assert.ok(builderPage.includes(step), `${step} is the builder's own name for the step`);
   }
-  assert.ok(!nl.includes('data-tab='), 'no tabs inside tabs');
+  for (const words of ['Where items come from', 'Send from erc@tamu.edu', 'Styles']) assert.ok(nl.includes(words), words);
+  assert.doesNotMatch(nl, /<video|\.webm/, 'stills, not recordings');
   assert.doesNotMatch(nl, /[–—]/, 'no en or em dash');
   assert.doesNotMatch(nl, /Kate|Kathy/, 'no name on a team page');
   assert.doesNotMatch(nl, /Claude/, 'the builder never calls Claude, so no note');
+  assert.doesNotMatch(nl, /featured/i, 'Featured is hidden in the builder (Oct 7), so the how-to never mentions it');
 });
 
 test('the newsletter how-to says what it should in the desk\'s own words', () => {
   for (const words of ['Ready to add', 'Quick add', 'Open the builder', 'Pull from the desk', 'Samples', 'Copy HTML', 'Save to the archive', 'Past issues', 'never in Outlook', 'Submit content', 'Sort', 'Finalize', 'Publish']) assert.ok(nl.includes(words), words);
 });
 
-test('the recordings: one for Next issue and one per builder step, each with its pause', () => {
-  const videos = nl.match(/<source src="[a-z-]+\.webm" type="video\/webm" \/>/g) ?? [];
-  assert.equal(videos.length, 4, 'four recordings');
-  assert.equal((nl.match(/class="linkish rec-toggle"/g) ?? []).length, 4, 'a Pause on each');
-  for (const name of ['next-issue', 'outline', 'edit', 'export']) assert.ok(nl.includes(`src="${name}.webm"`), name);
+test('every still and every look is a file beside the page, drawn at its own shape, with words for a screen reader', () => {
+  const imgs = nl.match(/<img\b[^>]*>/g) ?? [];
+  assert.ok(imgs.length >= 40, `the page is pictures (${imgs.length})`);
+  for (const tag of imgs) {
+    const src = tag.match(/src="([^"]+)"/)[1];
+    assert.match(src, /^(?:shots|gallery)\/[a-z0-9-]+\.png$|^designmodo\.png$/, `${src} is a file beside the page`);
+    const file = new URL(src, nlDir);
+    assert.ok(existsSync(file), `${src} exists`);
+    assert.match(tag, /\balt="/, `${src} has alt words`);
+    const w = +tag.match(/width="(\d+)"/)[1], h = +tag.match(/height="(\d+)"/)[1];
+    const png = readFileSync(file);
+    const fw = png.readUInt32BE(16), fh = png.readUInt32BE(20);
+    assert.ok(Math.abs(w / h - fw / fh) < 0.01, `${src} is drawn at its own shape: ${w}x${h} for a ${fw}x${fh} file`);
+  }
+});
+
+test('every pin sits inside its still and says the same words to a pointer and to a screen reader', () => {
+  const shots = nl.split('<div class="shot" ').slice(1).map((x) => x.split('\n          </div>')[0]);
+  assert.equal(shots.length, (nl.match(/<div class="frame">/g) ?? []).length, 'every picture frame holds a still');
+  assert.ok(shots.length >= 6, `stills with pins (${shots.length})`);
+  for (const shot of shots) {
+    const [, iw, ih, cx, cy, cw, ch] = shot.match(/^style="--iw:(\d+);--ih:(\d+);--cx:(\d+);--cy:(\d+);--cw:(\d+);--ch:(\d+)"/).map(Number);
+    const [, w, h] = shot.match(/width="(\d+)" height="(\d+)"/).map(Number);
+    assert.equal(`${iw}x${ih}`, `${w}x${h}`, 'the window knows the picture’s size');
+    assert.ok(cx + cw <= iw && cy + ch <= ih, 'the window stays inside the picture');
+    const pins = [...shot.matchAll(/class="pin(?: up)?" style="--x:([\d.]+);--y:([\d.]+)" aria-label="([^"]+)"><span class="num" aria-hidden="true">(\d+)<\/span><span class="tip" aria-hidden="true">([^<]+)<\/span>/g)];
+    assert.ok(pins.length >= 1, 'a pin on every still');
+    pins.forEach(([, x, y, label, num, tip], i) => {
+      assert.ok(x >= 0 && x <= 100 && y >= 0 && y <= 100, `pin ${num} is on the picture`);
+      assert.equal(+num, i + 1, 'the pins count up');
+      assert.equal(label, tip, 'the label and the bubble say the same');
+      assert.doesNotMatch(label, /[–—]/);
+    });
+  }
 });
 
 test('the send part teaches the add-in route from the personal mailbox to erc@tamu.edu, both ways, with the two warnings', () => {
   const send = nl.slice(nl.indexOf('id="send"'), nl.indexOf('id="options"'));
-  for (const words of ['Insert HTML by Designmodo', 'designmodo.png', 'personal TAMU account', 'Apps', 'Get Add-ins', 'Paste HTML', 'Insert HTML', 'Forward:', 'Copy:', 'select all', 'erc@tamu.edu', 'never paste the HTML into a message as text', 'never copy the .html from a browser window']) {
-    assert.ok(send.toLowerCase().includes(words.toLowerCase()), words);
+  for (const words of ['Insert HTML by Designmodo', 'designmodo.png', 'personal TAMU account', 'Apps', 'Get Add-ins', 'Paste HTML', 'Insert HTML', 'Forward', 'Or copy', 'select all', 'erc@tamu.edu', 'Never paste the HTML into the message as text', 'Never open the .html in a browser']) {
+    assert.ok(send.includes(words), words);
   }
   assert.ok(send.includes('appsource.microsoft.com') && send.includes('support.microsoft.com'), 'the add-in and Microsoft\'s page on add-ins are linked');
+  assert.doesNotMatch(send, /<img(?![^>]*designmodo\.png)/, 'words only, no drawing');
 });
 
-test('every option the how-to lists is a control the builder names, in the builder\'s own words', () => {
-  const options = nl.slice(nl.indexOf('id="options"'));
+test('Styles: a menu of every group in the page\'s order, and a look for each of the email\'s shapes', () => {
+  const menu = nl.match(/<nav class="sg-menu"[\s\S]*?<\/nav>/)[0];
+  const listed = [...menu.matchAll(/href="#(sg-g-[a-z]+)"/g)].map((m) => m[1]);
+  const groups = [...nl.matchAll(/<section class="sg-group" id="(sg-g-[a-z]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(listed, groups, 'the menu is the groups');
+  assert.deepEqual(groups, ['sg-g-looks', 'sg-g-research', 'sg-g-callouts', 'sg-g-text', 'sg-g-photos', 'sg-g-lists', 'sg-g-top']);
+  assert.ok((nl.match(/class="sg-look/g) ?? []).length >= 20, 'twenty looks and notes');
+});
+
+test('every control the how-to names is a control the builder names, in the builder\'s own words', () => {
   const names = [
-    'Pull from the desk', 'Move to…', 'Remove', 'Undo', 'Recently discarded', 'Restore',
-    'Done', 'Use original', 'Undo changes', 'How it is laid out', 'Title and details', 'With description', 'Stamp beside the text', 'Headshot beside it all', 'Date card',
-    'Picture size, px', 'Zoom available', 'Flyer link', 'Kind', 'Research Brief', 'Research Report', 'Journal Article', 'ERC Explains',
-    'Its words', 'Its style', 'Maroon block', 'Light gray box', 'Dotted rule', 'Add an item', 'Add a callout', 'Contents strip', 'Reset layout',
-    'Copy HTML', 'Save to the archive', 'Download .html', 'Start the next issue', 'Sample issue (fictional)', 'October 6, 2026, as sent',
+    'Pull from the desk', 'Samples', 'Sample issue (fictional)', 'Move to…', 'Remove', 'Undo',
+    'Add an item', 'Add a callout', 'Contents strip', 'Reset layout', 'Done', 'Undo changes',
+    'How it is laid out', 'Its words', 'Title and details', 'With description', 'Stamp beside the text', 'Headshot beside it all', 'Date card',
+    'Picture size, px', 'Zoom available', 'Flyer link', 'Add media', 'Description',
+    'Kind', 'Research Brief', 'Research Report', 'Journal Article', 'ERC Explains',
+    'Its style', 'Maroon block', 'Light gray box', 'Dotted rule',
+    'Copy HTML', 'Save to the archive', 'Download .html', 'Start the next issue',
   ];
   for (const name of names) {
-    assert.ok(options.includes(name), `the how-to lists ${name}`);
+    assert.ok(nl.includes(name), `the how-to names ${name}`);
     assert.ok(builderWords.includes(name), `the builder names ${name}`);
   }
 });

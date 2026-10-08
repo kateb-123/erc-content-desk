@@ -11,78 +11,277 @@
   <link rel="stylesheet" href="/css/tokens.css?v=11" />
   <link rel="stylesheet" href="/css/styles.css?v=157" />
   <link rel="stylesheet" href="/css/shell.css?v=7" />
+  <script>
+    (() => {
+      const html = document.documentElement;
+      html.classList.add('js');
+    })();
+  </script>
   <style>
-    /* The newsletter builder's how-to (Sep 30, 2026; one page since Oct 7):
-       the submit how-to's look, read top to bottom in the order the work
-       happens, with a contents strip that stays on screen. Each part is a
-       slide: the steps beside a recording of the real desk, where one exists.
-       The last part lists every option in the builder's own words. Nothing
-       here writes to the desk. */
+    /* The newsletter builder's how-to (Oct 7, 2026) in one box: the
+       walkthrough as slides, or Styles, the email's looks. Every slide has two
+       columns: its words on the left, about a third, and its picture on the
+       right; Back, the dots and Next sit at the foot of the words. Numbered
+       pins on the screenshots name the controls in the builder's words and
+       show while the pointer is on the picture. Styles, the last chip, swaps
+       the slides for a menu of groups on the left and one look at a time on
+       the right, in the same columns. Without script every slide and look
+       shows, one after another. Read on a desktop. Nothing here writes to
+       the desk. */
+    :root {
+      --fh: clamp(340px, calc(100vh - 340px), 470px);   /* the picture's height at most; the frame is this plus its padding */
+      --pad: var(--spacing-05);
+      --cols: minmax(272px, 1fr) minmax(0, 2fr);
+      --colgap: var(--spacing-07);
+      --title-h: calc(28px + var(--spacing-04));   /* a pane title: the 28px line of --card-title and the space under it */
+    }
     body { margin: 0; background: var(--background); color: var(--ink); font: var(--body-type); }
+    img { max-width: 100%; }
     a { color: var(--link-primary); }
     a:hover { color: var(--link-primary-hover); }
-    p { margin: 0 0 var(--spacing-05); }
-    ol, ul { margin: 0 0 var(--spacing-05); padding-left: 28px; }
-    li { margin: 0 0 var(--spacing-03); padding-left: 4px; }
-    .quiet { color: var(--text-secondary); }
+    a:focus-visible, button:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
 
     /* The band: the bar's navy, the page's name on it. */
     .band { background: var(--color-blue-400); color: var(--text-inverse); padding: var(--spacing-06) var(--gap-56); }
-    .band .in { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-06); flex-wrap: wrap; }
+    .band .in { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-06); flex-wrap: wrap; }
     .eyebrow { display: inline-block; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--color-maize-400); padding-bottom: 6px; border-bottom: 2px solid var(--color-maize-400); margin: 0 0 var(--spacing-03); }
     .band h1 { font: var(--card-title); font-size: 24px; line-height: 32px; margin: 0 0 var(--spacing-01); }
     .band .lede { font: var(--meta-type); color: var(--color-blue-100); margin: 0; }
     .open { display: inline-flex; align-items: center; height: 40px; padding: 0 var(--spacing-05); border-radius: var(--radius); background: var(--text-inverse); color: var(--color-blue-400); font-weight: 700; text-decoration: none; }
     .open:hover { background: var(--color-blue-100); color: var(--color-blue-400); }
-    .open:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-blue-400), 0 0 0 4px var(--text-inverse); }
+    .open:focus-visible { box-shadow: 0 0 0 2px var(--color-blue-400), 0 0 0 4px var(--text-inverse); }
     .open .fa-solid { margin-left: var(--spacing-05); font-size: 14px; }
 
-    /* The contents strip: the parts in order, the one on screen marked, drawn
-       like the desk's tabs; it stays at the top as the page scrolls. */
-    .contents { position: sticky; top: 0; z-index: 5; background: var(--background); border-bottom: 1px solid var(--line); }
-    .contents .in { max-width: 1200px; margin: 0 auto; padding: 0 var(--gap-56); display: flex; gap: var(--spacing-05); overflow-x: auto; }
-    .contents a { display: inline-flex; align-items: center; height: 44px; padding: 0 var(--spacing-02); color: var(--text-secondary); font-size: 14px; line-height: 18px; text-decoration: none; border-bottom: 2px solid transparent; white-space: nowrap; }
-    .contents a:hover { color: var(--ink); }
-    .contents a.is-active { color: var(--ink); font-weight: 700; border-bottom-color: var(--accent); }
+    .page { max-width: 1200px; margin: 0 auto; padding: var(--spacing-05) var(--gap-56) var(--gap-72); }
 
-    /* The page: one part after another, each with its heading and its slide. */
-    .page { max-width: 1200px; margin: 0 auto; padding: var(--spacing-03) var(--gap-56) var(--gap-72); }
-    .part { padding-top: var(--spacing-07); scroll-margin-top: 56px; }
-    .part h2 { font: var(--card-title); margin: 0; }
-    .part .lede { font: var(--meta-type); color: var(--text-secondary); margin: var(--spacing-02) 0 0; }
+    /* The chapter chips: the parts in order, then Styles; the one on screen filled. */
+    .chips { display: flex; flex-wrap: wrap; gap: var(--spacing-03); margin: 0 0 var(--spacing-04); }
+    .chips a { display: inline-flex; align-items: center; gap: var(--spacing-03); height: 36px; padding: 0 var(--spacing-05); border: 1px solid var(--accent-line); border-radius: var(--radius-pill); background: var(--background); color: var(--ink); font: var(--meta-type); font-weight: 600; text-decoration: none; white-space: nowrap; }
+    .chips a:hover { background: var(--hover); border-color: var(--text-secondary); color: var(--ink); }
+    .chips a[aria-current] { background: var(--accent); border-color: var(--accent); color: var(--text-on-color); }
+    .chips .step { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-left: calc(-1 * var(--spacing-02)); border: 1px solid currentColor; border-radius: var(--radius-round); font-size: 12px; line-height: 1; font-weight: 700; }
 
-    /* A slide: the steps in the left third, the recording in the right two thirds. */
-    .slide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--spacing-07); align-items: start; margin-top: var(--spacing-05); padding: var(--spacing-06); background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); }
-    .slide h3 { font: var(--sub-title); margin: 0 0 var(--spacing-04); }
-    .slide ol { padding-left: 24px; }
-    .slide .pointer { margin: 0; }
-    .rec { display: grid; gap: var(--spacing-03); margin: 0; min-width: 0; }
-    .rec video { display: block; width: 100%; height: auto; border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer-01); }
-    .rec figcaption { font: var(--meta-type); color: var(--muted); }
-    .rec-toggle { margin: 0 0 0 var(--spacing-02); height: 24px; padding: 0 var(--spacing-02); }
+    /* The deck: a white box with a hairline, a thin bar for how far along.
+       It holds the slides or Styles, never both. */
+    .deck { position: relative; background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); overflow: hidden; }
+    .progress { height: 3px; background: var(--layer-accent-01); }
+    .progress span { display: block; height: 100%; width: 0; background: var(--accent); }
+    html:not(.js) .progress, html:not(.js) .controls, html:not(.js) .foot { display: none; }
+    .js .chapter:not(.is-on), .js .slide:not(.is-on), .js .sg-group:not(.is-on), .js .sg-look:not(.is-on) { display: none; }
+    .js .deck[data-mode="styles"] .chapter, .js .deck:not([data-mode="styles"]) .styles { display: none; }
+    .chapter, .styles, .from { scroll-margin-top: 100vh; }   /* a link to a part opens the page at its top, the band and chips in view */
+    html:not(.js) .slide + .slide, html:not(.js) .chapter + .chapter, html:not(.js) .styles { border-top: 1px solid var(--layer-line); }
 
-    /* The add-in, as it looks in Outlook's Apps menu, and where to get it. */
-    .addin { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-05); background: var(--background); border: 1px solid var(--layer-line); border-radius: var(--radius); }
-    .addin img { width: 48px; height: 48px; display: block; border-radius: 8px; }
-    .addin b { display: block; }
-    .addin .quiet { font: var(--meta-type); }
-    .rec--links { align-content: start; gap: var(--spacing-04); }
-    .rec--links ul { margin: 0; padding-left: 20px; }
-    .rec--links li { margin: 0 0 var(--spacing-02); }
+    /* A pane, the slides' or Styles': its title and words in the left column,
+       the picture in the right, top-aligned. The picture's frame is the same
+       height on every slide and look, so Back and Next, at the foot of the left
+       column, stay where they are. */
+    .chapter, .styles { padding: var(--spacing-06); }
+    .pane-title { display: flex; align-items: center; gap: var(--spacing-03); margin: 0 0 var(--spacing-04); font: var(--card-title); color: var(--ink); }
+    .pane-title .step { display: inline-grid; place-items: center; flex: none; width: 24px; height: 24px; border: 1px solid currentColor; border-radius: var(--radius-round); font: 700 12px/1 var(--font-sans); }   /* the chips' step circle, so it never reads as a pin */
 
-    /* The options: three lists, each control in bold, then what it does. */
-    .options { margin-top: var(--spacing-05); padding: var(--spacing-06); background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); }
-    .options h3 { font: var(--sub-title); margin: var(--spacing-05) 0 var(--spacing-03); }
-    .options h3:first-child { margin-top: 0; }
-    .options ul { margin: 0 0 var(--spacing-04); padding-left: 20px; }
-    .options li { margin: 0 0 var(--spacing-02); }
+    /* A slide: the words, then the picture. With script the chapter's title and
+       the slide share one grid, so the frame lines up with the title. The words
+       end where the frame's usual height ends and never stretch with a taller
+       picture, so Back and Next stay put. */
+    .slide { display: grid; grid-template-columns: var(--cols); column-gap: var(--colgap); padding: var(--spacing-05) 0; }
+    .js .chapter.is-on { display: grid; grid-template-columns: var(--cols); grid-template-rows: auto 1fr; column-gap: var(--colgap); }
+    .js .chapter > .pane-title { grid-area: 1 / 1; }
+    .js .slide.is-on { grid-area: 1 / 1 / 3 / 3; grid-template-columns: subgrid; grid-template-rows: subgrid; padding: 0; }
+    .js .slide > .side { grid-area: 2 / 1; align-self: start; min-height: calc(var(--fh) + 2 * var(--pad) - var(--title-h)); }
+    .js .slide > .frame { grid-area: 1 / 2 / 3 / 3; }
+    .side { display: flex; flex-direction: column; gap: var(--spacing-05); min-width: 0; }
+    .cap { margin: 0; font: var(--sub-title); font-weight: 400; color: var(--ink); }
+    .foot { margin-top: auto; padding-top: var(--spacing-03); }
+    .frame { container-type: inline-size; min-width: 0; min-height: calc(var(--fh) + 2 * var(--pad)); padding: var(--pad); display: flex; align-items: flex-start; justify-content: center; background: var(--layer-01); border-radius: var(--radius); }
 
-    @media (max-width: 900px) {
-      .band { padding: var(--spacing-07) var(--spacing-05); }
-      .band h1 { font-size: 26px; line-height: 32px; }
-      .contents .in { padding: 0 var(--spacing-05); }
-      .page { padding: var(--spacing-02) var(--spacing-05) var(--spacing-08); }
-      .slide { grid-template-columns: minmax(0, 1fr); gap: var(--spacing-05); padding: var(--spacing-05); }
+    /* Where items come from: the desk's path to the builder, a few lines on the first Outline slide. */
+    .from { padding-top: var(--spacing-04); border-top: 1px solid var(--layer-line); }
+    .from h3 { margin: 0 0 var(--spacing-03); font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--muted); }
+    .from ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-02); font: var(--meta-type); color: var(--ink); }
+    .from li { position: relative; padding-left: var(--spacing-05); }
+    .from li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: var(--radius-round); background: var(--accent); }
+    .from li:not(:last-child)::after { content: ''; position: absolute; left: 2px; top: 17px; bottom: calc(-1 * var(--spacing-02) - 3px); width: 2px; background: var(--color-teal-200); }
+    .from b { font-weight: 700; }
+
+    /* A still: a window on the picture (the crop). Every number is the
+       picture's own pixels, so the crop holds at any width. */
+    .shot { position: relative; container-type: inline-size; flex: 0 1 auto; min-width: 0; width: min(100%, calc(var(--fh) * var(--cw) / var(--ch))); aspect-ratio: var(--cw) / var(--ch); }
+    .crop { position: absolute; inset: 0; overflow: hidden; border-radius: var(--radius); background: var(--background); box-shadow: 0 0 0 1px var(--layer-line); }
+    .zoom { position: absolute; left: calc(var(--cx) / var(--cw) * -100%); top: calc(var(--cy) / var(--ch) * -100%); width: calc(var(--iw) / var(--cw) * 100%); }
+    .zoom img { display: block; width: 100%; max-width: 100%; height: auto; }
+
+    /* The pins: teal numbered circles over the controls, x and y in percent
+       of the still's window. Each is a button named by its label; the label
+       shows as a bubble that slides along with the pin, so it never leaves
+       the still: a pin at the left edge opens its bubble rightward, one at
+       the right edge leftward. */
+    .pin, .pin:hover:not(:disabled) { position: absolute; z-index: 1; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); display: grid; place-items: center; width: 32px; height: 32px; margin: -16px 0 0 -16px; padding: 0; border: 0; border-radius: var(--radius-round); background: none; color: var(--text-on-color); font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .pin .num { display: grid; place-items: center; width: 24px; height: 24px; border-radius: var(--radius-round); background: var(--accent); color: var(--text-on-color); font: 700 12px/1 var(--font-sans); box-shadow: 0 0 0 2px var(--background); }
+    .pin .tip { position: absolute; left: 50%; top: calc(100% + 2px); transform: translateX(calc(var(--x) * -1%)); width: max-content; max-width: min(20rem, 100cqw); padding: var(--spacing-02) var(--spacing-03); border-radius: var(--radius); background: var(--background-inverse); color: var(--text-inverse); font: 600 13px/18px var(--font-sans); text-align: left; white-space: normal; visibility: hidden; opacity: 0; pointer-events: none; }
+    .pin.up .tip { top: auto; bottom: calc(100% + 2px); }
+    .pin:focus-visible, .pin.is-open { z-index: 3; }
+    .pin:focus-visible .tip, .pin.is-open .tip { visibility: visible; opacity: 1; }
+    @media (hover: hover) {
+      .pin:hover { z-index: 3; }
+      .pin:hover .tip { visibility: visible; opacity: 1; }
+    }
+
+    /* Hidden until the pointer is on the still or focus is in it; a tap shows them on a touch screen. */
+    .pin { opacity: 0; pointer-events: none; }
+    .shot:focus-within .pin, .shot.is-shown .pin { opacity: 1; pointer-events: auto; }
+    @media (hover: hover) { .shot:hover .pin { opacity: 1; pointer-events: auto; } }
+
+    /* The numbered circle of a note. */
+    .n { display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: var(--radius-round); background: var(--accent); color: var(--text-on-color); font: 700 12px/1 var(--font-sans); font-style: normal; }
+
+    /* A note in the words: a rule, or the button that comes next. */
+    .note { display: flex; align-items: center; gap: var(--spacing-04); margin: 0; font: var(--meta-type); color: var(--ink); }
+    .note b { font-weight: 700; }
+    .note .n.go { background: var(--background); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+    .note.warn .n { background: var(--color-maize-100); color: var(--text-warning-on-tint); box-shadow: inset 0 0 0 1px var(--notification-warning-border); }
+    .note.warn b { color: var(--text-warning-on-tint); }
+
+    /* The controls: Back, the dots of this part, Next. They move to the foot
+       of the left column of whatever is on screen. */
+    .controls { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-02); }
+    .controls .go { justify-content: center; gap: var(--spacing-03); min-width: 0; padding: 0 var(--spacing-04); }
+    .controls .next { background: var(--accent); border-color: var(--accent); color: var(--text-on-color); }
+    .controls .next:hover:not(:disabled) { background: var(--button-primary-hover); border-color: var(--button-primary-hover); color: var(--text-on-color); }
+    .controls .next:disabled { background: var(--button-disabled); border-color: var(--button-disabled); color: var(--text-on-color-disabled); }
+    .dots { display: flex; align-items: center; }
+    .dots button { width: auto; min-width: 22px; height: 32px; padding: 0 3px; border: 0; background: none; display: inline-grid; place-items: center; }
+    .dots button:hover:not(:disabled) { background: none; }
+    .dots button::before { content: ''; display: block; width: 8px; height: 8px; border-radius: var(--radius-round); background: var(--border-strong-01); }
+    .dots button:hover::before { background: var(--muted); }
+    .dots button[aria-current]::before { width: 22px; background: var(--accent); }
+
+    /* A slide in words only (Send): the steps sit where a still would,
+       numbered like pins, in a measure that reads. */
+    .js .slide > .text { grid-area: 1 / 2 / 3 / 3; }
+    .text { min-width: 0; max-width: 62ch; display: grid; align-content: start; gap: var(--spacing-07); }
+    .steps { display: grid; gap: var(--spacing-04); }
+    .steps h3 { margin: 0; font: var(--sub-title); font-weight: 700; color: var(--ink); }
+    .steps ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-04); counter-reset: step; font: var(--body-type); color: var(--ink); }
+    .steps li { position: relative; padding-left: 36px; counter-increment: step; }
+    .steps li::before { content: counter(step); position: absolute; left: 0; top: 1px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: var(--radius-round); background: var(--accent); color: var(--text-on-color); font: 700 12px/1 var(--font-sans); }
+    .addin-ic { display: inline-block; width: 20px; height: 20px; margin: 0 4px -4px 0; border-radius: 5px; }
+    .links { display: flex; flex-wrap: wrap; gap: var(--spacing-02) var(--spacing-06); margin: 0; font: var(--meta-type); }
+    .links .fa-solid { margin-left: 6px; font-size: 11px; }
+
+    /* Styles: the email's looks, one at a time. The left column is the menu
+       of groups, the line on where the group lives in the builder, and the
+       controls; the right column is the look: the real email (2x renders,
+       never wider than the email's own 640) in the same frame as a slide's
+       picture, its name and one line under it, and the builder control that
+       makes it, cropped from a still at the builder's own size. Every number
+       in a crop or a ring is the picture's own pixels. Its classes start with
+       sg-, so the slides' .crop, .zoom, .slide and .cap never reach it.
+       The left column is as tall as the frame's usual height and never
+       stretches with a taller look, so Back and Next stay put. */
+    .styles { display: grid; grid-template-columns: var(--cols); column-gap: var(--colgap); align-items: start; }
+    .styles .sg-side { display: flex; flex-direction: column; min-width: 0; min-height: calc(var(--fh) + 2 * var(--pad)); }
+    .styles .sg-menu, .styles .sg-where { min-width: 0; }
+    .styles .sg-foot { margin-top: auto; padding-top: var(--spacing-03); }
+    .styles .sg-view { container: sg-gallery / inline-size; min-width: 0; color: var(--ink); }
+
+    /* The menu: the groups in order, the one on screen filled like its chip. */
+    .styles .sg-menu ol { position: relative; list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-01); }
+    .styles .sg-menu a { display: flex; align-items: center; min-height: 32px; padding: var(--spacing-02) var(--spacing-04); border-radius: var(--radius); color: var(--ink); font: var(--meta-type); font-weight: 600; text-decoration: none; }
+    .styles .sg-menu a:hover { background: var(--accent-alpha); color: var(--ink); }
+    .styles .sg-menu a[aria-current] { background: var(--accent); color: var(--text-on-color); }
+    /* A short screen: a tighter menu, so the left column still ends with the frame. */
+    @media (width >= 900px) and (height < 800px) {
+      .styles .sg-menu a { min-height: 28px; padding-top: var(--spacing-01); padding-bottom: var(--spacing-01); }
+    }
+
+    /* Where the group lives in the builder: a line, sometimes the control. */
+    .styles .sg-where:not(:empty) { margin-top: var(--spacing-04); padding: var(--spacing-01) 0 var(--spacing-01) var(--spacing-04); border-left: 2px solid var(--accent); }
+    .styles .sg-head { display: grid; justify-items: start; gap: var(--spacing-03); }
+    .styles .sg-head p { margin: 0; font: var(--meta-type); color: var(--muted); }
+    .styles .sg-head b, .styles .sg-txt b { color: var(--ink); font-weight: 700; }
+    .styles .sg-gname { margin: 0 0 var(--spacing-05); font: var(--card-title); color: var(--ink); }
+    .js .styles .sg-gname { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }   /* the menu says it */
+    html:not(.js) .styles .sg-group + .sg-group { margin-top: var(--spacing-07); }
+    html:not(.js) .styles .sg-head { margin-bottom: var(--spacing-05); }
+    .styles .sg-looks { display: grid; gap: var(--spacing-05); }
+
+    /* A look: the frame of a slide's picture; the email at its top, like a slide's picture, and its words under it. */
+    .styles .sg-look { display: flex; flex-direction: column; gap: var(--spacing-05); min-width: 0; min-height: calc(var(--fh) + 2 * var(--pad)); margin: 0; padding: var(--pad); background: var(--layer-01); border-radius: var(--radius); }
+    .styles .sg-stage { display: grid; place-items: center; min-width: 0; }
+    .styles .sg-pic { position: relative; width: min(100%, 640px); }
+    .styles .sg-pic img { display: block; width: 100%; max-width: 100%; height: auto; background: var(--background); box-shadow: 0 0 0 1px var(--layer-line); }
+    .styles .sg-pic img.sg-trim { aspect-ratio: var(--iw) / var(--ih); object-fit: cover; object-position: 50% 100%; }
+    .styles .sg-ring { position: absolute; left: calc(var(--x) / var(--iw) * 100%); top: calc(var(--y) / var(--ih) * 100%); width: calc(var(--w) / var(--iw) * 100%); height: calc(var(--h) / var(--ih) * 100%); border: 2px solid var(--accent); border-radius: var(--radius); pointer-events: none; }
+    .styles .sg-ring.sg-gap { box-shadow: 0 0 0 2px var(--background); }
+    .styles .sg-cap { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--spacing-04) var(--spacing-05); margin: 0; }
+    .styles .sg-txt { flex: 1 1 200px; min-width: 0; }
+    .styles .sg-name { margin: 0; font: var(--body-type); font-weight: 700; color: var(--ink); }
+    .styles .sg-txt p { margin: var(--spacing-01) 0 0; font: var(--meta-type); color: var(--muted); }
+
+    /* A crop of a builder still: a window on the picture at the builder's own size. */
+    .styles .sg-crop { position: relative; display: block; flex: none; width: var(--dw); max-width: 100%; aspect-ratio: var(--cw) / var(--ch); overflow: hidden; border-radius: var(--radius); background: var(--background); box-shadow: 0 0 0 1px var(--layer-line); }
+    .styles .sg-crop > span { position: absolute; left: calc(var(--cx) / var(--cw) * -100%); top: calc(var(--cy) / var(--ch) * -100%); width: calc(var(--iw) / var(--cw) * 100%); }
+    .styles .sg-crop img { display: block; width: 100%; max-width: 100%; height: auto; }
+
+    /* Bold, italic and links: the toolbar's letter, the words as the email sets them, the rule. */
+    .styles .sg-keys { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-05); flex: 1 1 300px; }
+    .styles .sg-keys li { display: grid; grid-template-columns: 32px minmax(0, 1fr); column-gap: var(--spacing-04); align-items: center; }
+    .styles .sg-btn { grid-row: span 2; display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--radius-input); background: var(--layer-accent-01); color: var(--ink); font: 700 16px/1 var(--font-sans); }
+    .styles .sg-btn.sg-i { font-style: italic; font-weight: 400; }
+    .styles .sg-btn .fa-solid { font-size: 14px; }
+    .styles .sg-spec { font: 400 16px/22px 'Trebuchet MS', 'Segoe UI', Tahoma, sans-serif; color: var(--mail-body); }
+    .styles .sg-spec b { font-weight: 700; color: var(--mail-body); }
+    .styles .sg-spec .sg-link { font-weight: 700; color: var(--mail-maroon); text-decoration: underline; }
+    .styles .sg-rule { font: var(--meta-type); color: var(--muted); }
+
+    /* Photos: the sizes at true size, the defaults tagged. */
+    .styles .sg-sizes { flex: 1 1 auto; display: flex; flex-direction: column; gap: var(--spacing-05); margin: 0; }
+    .styles .sg-ruler { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: var(--spacing-06); }
+    .styles .sg-ruler li { display: grid; justify-items: center; align-content: end; gap: var(--spacing-03); min-width: 0; max-width: 100%; }
+    .styles .sg-ruler li > img { display: block; max-width: 100%; height: auto; box-shadow: 0 0 0 1px var(--layer-line); }
+    .styles .sg-ruler .sg-rule { display: inline-flex; align-items: center; height: 28px; white-space: nowrap; }   /* not a chip: the builder has no square size */
+    .styles .sg-pill { display: inline-flex; align-items: center; height: 28px; padding: 0 var(--spacing-04); border: 1px solid var(--border-strong-01); border-radius: var(--radius-pill); background: var(--background); color: var(--ink); font: var(--meta-type); white-space: nowrap; }
+    .styles .sg-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--spacing-02); min-height: 20px; }
+    .styles .sg-tag { display: inline-flex; align-items: center; height: 20px; padding: 0 var(--spacing-03); border-radius: var(--radius-pill); background: var(--tag-background-blue); color: var(--tag-color-blue); font: 700 12px/16px var(--font-sans); }
+    .styles .sg-sizes figcaption { font: var(--meta-type); color: var(--muted); }
+
+    /* The three photo notes: a picture of the rule, then its words. */
+    .styles .sg-note .sg-stage { place-items: start; }   /* small pictures line up with their words */
+    .styles .sg-note .sg-txt p { display: flex; gap: var(--spacing-03); align-items: baseline; margin-top: var(--spacing-03); }
+    .styles .sg-note p .fa-solid, .styles .sg-pair figcaption .fa-solid { flex: none; font-size: 14px; }
+    .styles .sg-yes .fa-solid { color: var(--support-success); }
+    .styles .sg-no .fa-solid { color: var(--support-error); }
+    .styles .sg-mini { list-style: none; margin: var(--spacing-02) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--spacing-06); }
+    .styles .sg-mini li { position: relative; }
+    .styles .sg-mini li > .fa-solid { position: absolute; right: -7px; top: -7px; font-size: 18px; border-radius: var(--radius-round); background: var(--background); box-shadow: 0 0 0 2px var(--background); }
+    .styles .sg-fmts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--spacing-03); }
+    .styles .sg-fmts li { height: 32px; padding: 0 var(--spacing-04); border-radius: var(--radius-pill); background: var(--tag-background-gray); color: var(--tag-color-gray); font: 700 14px/32px var(--font-sans); white-space: nowrap; }
+    .styles .sg-pair { display: flex; flex-wrap: wrap; gap: var(--spacing-08); }
+    .styles .sg-pair figure { margin: 0; display: grid; justify-items: start; gap: var(--spacing-03); }
+    .styles .sg-pair img { display: block; max-width: 100%; height: auto; box-shadow: 0 0 0 1px var(--layer-line); }
+    .styles .sg-pair figcaption { display: flex; align-items: baseline; gap: var(--spacing-03); font: var(--meta-type); color: var(--ink); font-weight: 600; }
+
+    /* A flyer, drawn: a maroon band, a big title, a wall of lines. */
+    .styles .sg-flyer { display: grid; align-content: start; gap: 5px; width: 96px; height: 120px; padding: var(--spacing-03); background: var(--background); box-shadow: 0 0 0 1px var(--layer-line); }
+    .styles .sg-flyer i { display: block; height: 4px; border-radius: 2px; background: var(--mail-gray-300); }
+    .styles .sg-flyer i:first-child { height: 16px; margin: calc(-1 * var(--spacing-03)) calc(-1 * var(--spacing-03)) 2px; border-radius: 0; background: var(--mail-maroon); }
+    .styles .sg-flyer i:nth-child(2), .styles .sg-flyer i:nth-child(3) { height: 8px; background: var(--mail-ink); }
+    .styles .sg-flyer i:nth-child(3) { width: 70%; }
+    .styles .sg-flyer i:nth-child(odd):not(:first-child):not(:nth-child(3)) { width: 85%; }
+
+    /* Motion, only for those who have not asked for less. */
+    @media (prefers-reduced-motion: no-preference) {
+      .chips a, .styles .sg-menu a { transition: background-color var(--duration-fast-02) var(--ease-productive), color var(--duration-fast-02) var(--ease-productive), border-color var(--duration-fast-02) var(--ease-productive); }
+      .progress span { transition: width var(--duration-moderate-02) var(--ease-productive); }
+      .dots button::before { transition: width var(--duration-moderate-02) var(--ease-productive), background-color var(--duration-moderate-02) var(--ease-productive); }
+      /* The words and the picture move; the controls hold still. */
+      .slide.in-next > .frame, .slide.in-next > .side > :not(.foot), .styles .sg-look.in-next { animation: in-next var(--duration-moderate-02) var(--ease-productive); }
+      .slide.in-back > .frame, .slide.in-back > .side > :not(.foot), .styles .sg-look.in-back { animation: in-back var(--duration-moderate-02) var(--ease-productive); }
+      @keyframes in-next { from { opacity: 0; transform: translateX(20px); } }
+      @keyframes in-back { from { opacity: 0; transform: translateX(-20px); } }
+      .pin { transition: opacity var(--duration-moderate-02) var(--ease-productive); }
+      .pin .tip { transition: opacity var(--duration-fast-02) var(--ease-productive), visibility var(--duration-fast-02) var(--ease-productive); }
     }
   </style>
 </head>
@@ -93,206 +292,639 @@
     <div>
       <div class="eyebrow">How to</div>
       <h1>Build the newsletter</h1>
-      <p class="lede">From the desk to the inbox: where items come from, the three steps, the send, and every option.</p>
+      <p class="lede">Pull in what the desk staged, put it in order, fix it on the email, and send it from erc@tamu.edu.</p>
     </div>
     <a class="open" href="https://erc-content-desk.vercel.app/#newsletter" target="_blank" rel="noopener">Open Newsletter<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
   </div></div>
 
-  <nav class="contents" aria-label="On this page"><div class="in">
-    <a href="#items">Where items come from</a>
-    <a href="#outline">Outline</a>
-    <a href="#tweak">Preview &amp; Tweak</a>
-    <a href="#export">Save &amp; Export</a>
-    <a href="#send">Send from erc@tamu.edu</a>
-    <a href="#options">The options</a>
-  </div></nav>
-
   <main class="page">
+    <nav class="chips" aria-label="Parts">
+      <a href="#outline"><span class="step" aria-hidden="true">1</span>Outline</a>
+      <a href="#tweak"><span class="step" aria-hidden="true">2</span>Preview &amp; Tweak</a>
+      <a href="#export"><span class="step" aria-hidden="true">3</span>Save &amp; Export</a>
+      <a href="#send">Send</a>
+      <a href="#options">Styles</a>
+    </nav>
 
-    <section class="part" id="items">
-      <h2>Where items come from</h2>
-      <p class="lede">The desk's path, one stop at a time. The builder only pulls what reached Next issue.</p>
-      <div class="slide">
-        <div>
-          <ol>
-            <li>Submit content, the team form or the public page, puts a link in the queue.</li>
-            <li>Sort gives each item a type and keeps, skips or deletes it.</li>
-            <li>Finalize rewrites and checks the description; Publish puts it on the Policy Exchange.</li>
-            <li>Next issue holds the kept items under Ready to add. Add puts one in the issue; Quick add puts in something new.</li>
-            <li>The builder pulls what is in the issue, again any time, only new items coming in. An item added by hand in the builder goes to the desk's queue too.</li>
-          </ol>
+    <div class="deck" role="region" aria-roledescription="carousel" aria-label="Build the newsletter">
+      <div class="progress" aria-hidden="true"><span></span></div>
+      <p class="sr-only" aria-live="polite" data-said></p>
+
+      <!-- ===== 1 Outline ===== -->
+      <section class="chapter" id="outline" data-name="Outline" aria-labelledby="h-outline">
+        <h2 class="pane-title" id="h-outline"><span class="step" aria-hidden="true">1</span><span class="sr-only">Step 1: </span>Outline</h2>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">On Next issue, Open the builder. Pick the issue's date, then Pull from the desk: everything staged for it comes in.</p>
+            <section class="from" id="items" aria-labelledby="h-items">
+              <h3 id="h-items">Where items come from</h3>
+              <ol>
+                <li><b>Submit content</b>: anyone on the team sends a link; it waits in the queue.</li>
+                <li><b>Sort</b>: each link gets a type and is kept, skipped or deleted.</li>
+                <li><b>Finalize</b> and <b>Publish</b>: the description is checked and the item goes on the Policy Exchange.</li>
+                <li><b>Next issue</b>: kept items wait under Ready to add. Add puts one in the issue; Quick add types in something new.</li>
+                <li><b>The builder</b>: Pull from the desk brings in what is in the issue.</li>
+              </ol>
+            </section>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:490;--cy:590;--cw:1590;--ch:710">
+              <div class="crop"><div class="zoom"><img src="shots/outline.png" width="2560" height="1800" loading="lazy" alt="The Outline step: the Issue list set to Sample issue (fictional), the teal Pull from the desk button, and the top of the item table." /></div></div>
+              <button type="button" class="pin" style="--x:38.09;--y:23.99" aria-label="Issue: the date. To practice, pick a sample under Samples"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Issue: the date. To practice, pick a sample under Samples</span></button>
+              <button type="button" class="pin" style="--x:26.18;--y:39.67" aria-label="Pull from the desk. Pull again any time; only new items come in"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Pull from the desk. Pull again any time; only new items come in</span></button>
+            </div>
+          </div>
         </div>
-        <figure class="rec">
-          <video muted loop playsinline preload="metadata" poster="next-issue.png" aria-label="Next issue: an item added from Ready to add, then one typed in with Quick add."><source src="next-issue.webm" type="video/webm" /></video>
-          <figcaption>An item added from Ready to add, then one by Quick add.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
-        </figure>
-      </div>
-    </section>
 
-    <section class="part" id="outline">
-      <h2>1 Outline</h2>
-      <p class="lede">Pick the issue, pull what the desk staged, and put it in order.</p>
-      <div class="slide">
-        <div>
-          <ol>
-            <li>Open the builder from Next issue.</li>
-            <li>Pick the issue, then Pull from the desk. Pull again any time; only new items come in.</li>
-            <li>To practice, pick a sample under Samples in the Issue list. A sample never saves to the archive.</li>
-            <li>Drag a section or an item by its grip to move it.</li>
-            <li>Remove takes an item out. Undo puts it back.</li>
-          </ol>
-          <p class="pointer quiet">Every control on this step is under <a href="#options">The options</a>.</p>
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Put the issue in the order it should print. Drag a section or an item by its grip; it lands where you drop it.</p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1540;--ih:792;--cx:0;--cy:0;--cw:1540;--ch:792">
+              <div class="crop"><div class="zoom"><img src="shots/outline-rows.png" width="1540" height="792" loading="lazy" alt="The Outline table: a grip at the left of the ERC Spotlight section and of every item; the hovered row shows Move to… in teal and Remove in red." /></div></div>
+              <button type="button" class="pin" style="--x:3.38;--y:20.02" aria-label="A section's grip: drag the whole section up or down the email"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">A section's grip: drag the whole section up or down the email</span></button>
+              <button type="button" class="pin" style="--x:4.42;--y:36.4" aria-label="An item's grip: drag it within its section"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">An item's grip: drag it within its section</span></button>
+              <button type="button" class="pin" style="--x:81.51;--y:37.74" aria-label="Move to…: file it under another section or group"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Move to…: file it under another section or group</span></button>
+              <button type="button" class="pin" style="--x:92.2;--y:38.07" aria-label="Remove: takes it out. Undo on its row puts it back"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">Remove: takes it out. Undo on its row puts it back</span></button>
+            </div>
+          </div>
         </div>
-        <figure class="rec">
-          <video muted loop playsinline preload="metadata" poster="outline.png" aria-label="Outline: an item moved with the arrows, an event marked Featured, an item removed."><source src="outline.webm" type="video/webm" /></video>
-          <figcaption>An item moved, an event marked Featured, one removed.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
-        </figure>
-      </div>
-    </section>
+      </section>
 
-    <section class="part" id="tweak">
-      <h2>2 Preview &amp; Tweak</h2>
-      <p class="lede">Check the issue and tweak anything in place.</p>
-      <div class="slide">
-        <div>
-          <ol>
-            <li>Click anything on the email and its card opens: how it is laid out, then its words. Every edit is live; Done closes the card.</li>
-            <li>Drag an item or a section by the grip at its left to move it on the email.</li>
-            <li>Add an item and Add a callout sit over the email, with the contents strip.</li>
-            <li>Every fix here, never in Outlook, so the archive matches what went out.</li>
-          </ol>
-          <p class="pointer quiet">Every control on this step is under <a href="#options">The options</a>.</p>
+      <!-- ===== 2 Preview & Tweak ===== -->
+      <section class="chapter" id="tweak" data-name="Preview &amp; Tweak" aria-labelledby="h-tweak">
+        <h2 class="pane-title" id="h-tweak"><span class="step" aria-hidden="true">2</span><span class="sr-only">Step 2: </span>Preview &amp; Tweak</h2>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">The email as it will land in Outlook. Click anything on it to change it; what is not on it yet comes from the buttons above.</p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:110;--cy:690;--cw:1880;--ch:1110">
+              <div class="crop"><div class="zoom"><img src="shots/tweak.png" width="2560" height="1800" loading="lazy" alt="Preview &amp; Tweak: Add an item, Add a callout, the Contents strip checkbox and Reset layout over the email; the email opens with its date line, masthead, contents strip and introduction." /></div></div>
+              <button type="button" class="pin" style="--x:7.13;--y:5.77" aria-label="Add an item: something the desk did not have"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Add an item: something the desk did not have</span></button>
+              <button type="button" class="pin" style="--x:21.6;--y:5.77" aria-label="Add a callout: a box that asks readers for something"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Add a callout: a box that asks readers for something</span></button>
+              <button type="button" class="pin" style="--x:35.64;--y:5.77" aria-label="Contents strip: show or hide the row of section names"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Contents strip: show or hide the row of section names</span></button>
+              <button type="button" class="pin" style="--x:28.72;--y:44.77" aria-label="The contents strip on the email, one link per section"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">The contents strip on the email, one link per section</span></button>
+            </div>
+          </div>
         </div>
-        <figure class="rec">
-          <video muted loop playsinline preload="metadata" poster="edit.png" aria-label="Preview and Edit: a title clicked in the preview and fixed on the right."><source src="edit.webm" type="video/webm" /></video>
-          <figcaption>A title clicked in the preview, fixed on the right.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
-        </figure>
-      </div>
-    </section>
 
-    <section class="part" id="export">
-      <h2>3 Save &amp; Export</h2>
-      <p class="lede">Copy the issue into Outlook, then archive it.</p>
-      <div class="slide">
-        <div>
-          <ol>
-            <li>Copy HTML. The next part takes it into Outlook and out from erc@tamu.edu.</li>
-            <li>Save to the archive. It shows under Past issues.</li>
-            <li>Start the next issue clears the way for the next one.</li>
-          </ol>
-          <p class="pointer quiet">Every control on this step is under <a href="#options">The options</a>.</p>
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Click an item and its card opens beside it. Every change shows on the email as you make it; Done closes the card.</p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:700;--cy:560;--cw:1850;--ch:960">
+              <div class="crop"><div class="zoom"><img src="shots/tweak-card.png" width="2560" height="1800" loading="lazy" alt="An event clicked on the email, outlined in teal, with its card open beside it: How it is laid out, Picture size, px, Its words, and Done at the top." /></div></div>
+              <button type="button" class="pin" style="--x:8.93;--y:30.34" aria-label="The item you clicked, outlined on the email"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The item you clicked, outlined on the email</span></button>
+              <button type="button" class="pin" style="--x:59.72;--y:18.34" aria-label="How it is laid out: pick a look. Styles shows each one"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">How it is laid out: pick a look. Styles shows each one</span></button>
+              <button type="button" class="pin" style="--x:81.85;--y:18.34" aria-label="Its words: title, link, description, date, time, place, media"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Its words: title, link, description, date, time, place, media</span></button>
+              <button type="button" class="pin" style="--x:85.66;--y:9.14" aria-label="Done closes the card. Undo changes puts it all back"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">Done closes the card. Undo changes puts it all back</span></button>
+            </div>
+          </div>
         </div>
-        <figure class="rec">
-          <video muted loop playsinline preload="metadata" poster="export.png" aria-label="Save and Export: Copy HTML, then Save to the archive, then the issue under Past issues."><source src="export.webm" type="video/webm" /></video>
-          <figcaption>Copy HTML, then Save to the archive, then Past issues.<button type="button" class="linkish rec-toggle">Pause</button></figcaption>
-        </figure>
-      </div>
-    </section>
 
-    <section class="part" id="send">
-      <h2>Send from erc@tamu.edu</h2>
-      <p class="lede">The ERC mailbox can't install add-ins, and HTML pasted into a message as text never formats. So the add-in runs in your personal TAMU mailbox, and the message moves over.</p>
-      <div class="slide">
-        <div>
-          <h3>Outlook on the web</h3>
-          <ol>
-            <li>On Save &amp; Export, Copy HTML.</li>
-            <li>In Outlook on the web, in your personal TAMU account, start a new message.</li>
-            <li>In the message toolbar, open Apps (or More apps), then Insert HTML by Designmodo. The first time: Get Add-ins, search Designmodo, Add.</li>
-            <li>Paste HTML, paste what you copied, then Insert HTML. The newsletter appears in the message.</li>
-            <li>Get it to erc@tamu.edu one of two ways. Forward: send the message to erc@tamu.edu, open it there, and forward it on, deleting the forwarded lines at the top. Copy: select all in the composed message, copy, and paste into a new message from erc@tamu.edu.</li>
-            <li>Address it and send it from erc@tamu.edu.</li>
-          </ol>
-          <p class="pointer quiet">Never paste the HTML into a message as text, and never copy the .html from a browser window: both come out in the wrong fonts.</p>
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Reorder here too: point at an item or a section heading and drag it by the grip that appears at its left.</p>
+            <p class="note warn"><span class="n"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span><b>Fix things here, never in Outlook, so the archive matches what went out.</b></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1352;--ih:396;--cx:0;--cy:0;--cw:1352;--ch:396">
+              <div class="crop"><div class="zoom"><img src="shots/sheet-grip.png" width="1352" height="396" loading="lazy" alt="An item on the email hovered, with a small grip at its left edge." /></div></div>
+              <button type="button" class="pin" style="--x:27.37;--y:24" aria-label="The grip: it shows when you point at an item"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The grip: it shows when you point at an item</span></button>
+            </div>
+          </div>
         </div>
-        <figure class="rec rec--links">
-          <div class="addin"><img src="designmodo.png" alt="" /><div><b>Insert HTML by Designmodo</b><span class="quiet">How it looks in the Apps menu.</span></div></div>
-          <ul>
-            <li><a href="https://appsource.microsoft.com/en-us/product/office/wa200002918" target="_blank" rel="noopener">The add-in on AppSource</a></li>
-            <li><a href="https://support.microsoft.com/en-us/outlook/getstarted/use-add-ins-in-outlook" target="_blank" rel="noopener">Microsoft: use add-ins in Outlook</a></li>
-          </ul>
-        </figure>
-      </div>
-    </section>
+      </section>
 
-    <section class="part" id="options">
-      <h2>The options</h2>
-      <p class="lede">Every control, step by step, in the builder's own words.</p>
-      <div class="options">
-        <h3>Outline</h3>
-        <ul>
-          <li><b>Issue</b>: the desk's upcoming dates; under Samples, October 6, 2026, as sent, and Sample issue (fictional).</li>
-          <li><b>Pull from the desk</b>: brings in what Next issue staged. Again any time; only new items come in.</li>
-          <li><b>The grip</b> on a section or an item: drag it to move it, or press the up and down arrow keys.</li>
-          <li><b>Move to…</b>: files an item under another section or group.</li>
-          <li><b>Remove</b>: takes an item out; Undo on its row puts it back until you leave the step.</li>
-          <li><b>A callout's row</b>: Move to… (after which section) and Remove.</li>
-          <li><b>Recently discarded</b>: Restore brings back a draft the desk kept.</li>
-        </ul>
-        <h3>Preview &amp; Tweak</h3>
-        <ul>
-          <li><b>Click anything on the email</b>: its card opens, the introduction, an item or a callout.</li>
-          <li><b>The grip</b> at the left of an item or a section heading: drag it to move it on the email.</li>
-          <li><b>The card</b>: Done closes it (every edit is live), Remove, Use original, Undo changes.</li>
-          <li><b>How it is laid out</b>: Title and details, With description, Stamp beside the text, Headshot beside it all, and for an event the Date card.</li>
-          <li><b>Picture size, px</b>: a few widths, once a picture layout is on.</li>
-          <li><b>Zoom available</b> and <b>Flyer link</b>: under the Date card.</li>
-          <li><b>Kind</b>, for research: Research Brief, Research Report, Journal Article, ERC Explains.</li>
-          <li><b>Its words</b>: Title, Link, Description with bold, italic and a link, Date, Time, Location or Details, Authors, Media.</li>
-          <li><b>A callout's card</b>: Its style, Maroon block, Light gray box or Dotted rule, then its words.</li>
-          <li><b>Over the email</b>: Add an item, Add a callout, Contents strip, Reset layout.</li>
-        </ul>
-        <h3>Save &amp; Export</h3>
-        <ul>
-          <li><b>Copy HTML</b>: the issue, ready for the add-in.</li>
-          <li><b>Save to the archive</b>: asks once before replacing an earlier save; off on a sample.</li>
-          <li><b>Download .html</b>: the same file, saved.</li>
-          <li><b>Start the next issue</b>: clears the draft and returns to Outline.</li>
-        </ul>
-      </div>
-    </section>
+      <!-- ===== 3 Save & Export ===== -->
+      <section class="chapter" id="export" data-name="Save &amp; Export" aria-labelledby="h-export">
+        <h2 class="pane-title" id="h-export"><span class="step" aria-hidden="true">3</span><span class="sr-only">Step 3: </span>Save &amp; Export</h2>
 
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Copy HTML and send it (the next part). Once it has gone out, Save to the archive, so Past issues keeps it.</p>
+            <p class="note"><span class="n go"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span><span><b>Start the next issue</b> clears the draft for the next one.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:440;--cy:270;--cw:1680;--ch:650">
+              <div class="crop"><div class="zoom"><img src="shots/export.png" width="2560" height="1800" loading="lazy" alt="Save &amp; Export: the step row with Save &amp; Export current, Back, and the buttons Copy HTML, Save to the archive and Download .html." /></div></div>
+              <button type="button" class="pin up" style="--x:15.33;--y:87.63" aria-label="Copy HTML: the whole email, ready for Outlook"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Copy HTML: the whole email, ready for Outlook</span></button>
+              <button type="button" class="pin up" style="--x:37.43;--y:87.63" aria-label="Save to the archive: keeps it under Past issues. Off on a sample"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Save to the archive: keeps it under Past issues. Off on a sample</span></button>
+              <button type="button" class="pin up" style="--x:58.23;--y:87.63" aria-label="Download .html: the same file, saved to your computer"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Download .html: the same file, saved to your computer</span></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Send from erc@tamu.edu ===== -->
+      <section class="chapter" id="send" data-name="Send" aria-labelledby="h-send">
+        <h2 class="pane-title" id="h-send">Send from erc@tamu.edu</h2>
+
+        <!-- Words only: the steps sit where a still would. A screenshot of
+             Outlook can take the right side later, with the steps as its pins. -->
+        <div class="slide words" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">The ERC mailbox can't install add-ins, and HTML pasted into a message as text never formats. So the newsletter goes into a message in your personal TAMU account through an add-in, and moves over to erc@tamu.edu from there.</p>
+            <div class="foot"></div>
+          </div>
+          <div class="text">
+            <section class="steps" aria-labelledby="h-send-1">
+              <h3 id="h-send-1">First time only: install the add-in</h3>
+              <ol>
+                <li>In Outlook on the web, in your personal TAMU account, open a new message.</li>
+                <li>Apps in the toolbar, or More apps, then Get Add-ins.</li>
+                <li>Search Designmodo and add <img class="addin-ic" src="designmodo.png" width="80" height="80" alt="" loading="lazy" />Insert HTML by Designmodo.</li>
+              </ol>
+              <p class="links">
+                <a href="https://appsource.microsoft.com/en-us/product/office/wa200002918" target="_blank" rel="noopener">The add-in on AppSource<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                <a href="https://support.microsoft.com/en-us/outlook/getstarted/use-add-ins-in-outlook" target="_blank" rel="noopener">Microsoft: how to use add-ins in Outlook<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+              </p>
+            </section>
+          </div>
+        </div>
+
+        <div class="slide words" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Every issue: a new message in your personal account, and the add-in puts the newsletter in it.</p>
+            <p class="note warn"><span class="n"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span><b>Never paste the HTML into the message as text: it won't format.</b></p>
+            <p class="note warn"><span class="n"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span><b>Never open the .html in a browser and copy from there: wrong fonts.</b></p>
+            <div class="foot"></div>
+          </div>
+          <div class="text">
+            <section class="steps" aria-labelledby="h-send-2">
+              <h3 id="h-send-2">Put the newsletter in a message</h3>
+              <ol>
+                <li>Copy HTML on Save &amp; Export.</li>
+                <li>In Outlook on the web, open a new message. Apps in the toolbar, or More apps, then Insert HTML by Designmodo.</li>
+                <li>Paste into the add-in's Paste HTML box, then Insert HTML. The newsletter appears in the message.</li>
+              </ol>
+            </section>
+          </div>
+        </div>
+
+        <div class="slide words" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">The newsletter is now in a message in your account. Get it into one from erc@tamu.edu, either way, then send.</p>
+            <div class="foot"></div>
+          </div>
+          <div class="text">
+            <section class="steps" aria-labelledby="h-send-3a">
+              <h3 id="h-send-3a">Forward</h3>
+              <ol>
+                <li>Send the message to erc@tamu.edu.</li>
+                <li>Open it there and forward it to the list.</li>
+                <li>Delete the forwarded-message lines at the top, then Send.</li>
+              </ol>
+            </section>
+            <section class="steps" aria-labelledby="h-send-3b">
+              <h3 id="h-send-3b">Or copy</h3>
+              <ol>
+                <li>In the message, select all and copy.</li>
+                <li>Paste it into a new message from erc@tamu.edu, then Send.</li>
+              </ol>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Styles ===== -->
+      <section class="styles" id="options" data-name="Styles" aria-labelledby="h-options">
+        <div class="sg-side">
+          <h2 class="pane-title" id="h-options">Styles</h2>
+          <nav class="sg-menu" aria-label="Styles groups">
+            <ol>
+              <li><a href="#sg-g-looks">How an item can look</a></li>
+              <li><a href="#sg-g-research">Research boxes</a></li>
+              <li><a href="#sg-g-callouts">Callouts</a></li>
+              <li><a href="#sg-g-text">Bold, italic and links</a></li>
+              <li><a href="#sg-g-photos">Photos</a></li>
+              <li><a href="#sg-g-lists">Lists</a></li>
+              <li><a href="#sg-g-top">The top of the email</a></li>
+            </ol>
+          </nav>
+          <div class="sg-where"></div>
+          <div class="sg-foot"></div>
+        </div>
+
+        <div class="sg-view">
+
+          <!-- 1. How an item can look -->
+          <section class="sg-group" id="sg-g-looks" data-name="How an item can look" aria-labelledby="sg-h-looks">
+            <h3 class="sg-gname" id="sg-h-looks">How an item can look</h3>
+            <div class="sg-head"><p>Click the item on the email, then pick one under <b>How it is laid out</b> on its card.</p></div>
+            <div class="sg-looks">
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic"><img src="gallery/item-bare.png" width="1280" height="140" alt="An event as Title and details: the title, then the date, time and place." loading="lazy" /></div></div>
+                <div class="sg-cap">
+                  <div class="sg-txt"><h4 class="sg-name">Title and details</h4><p>A plain listing: the title and its details, nothing under them.</p></div>
+                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:56;--cy:192;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="1148" height="1288" alt="The Title and details tile in the builder." loading="lazy" /></span></span>
+                </div>
+              </div>
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic"><img src="gallery/item-text.png" width="1280" height="264" alt="An event With description: title, details, then a sentence with a bold name, an italic book title and a link." loading="lazy" /></div></div>
+                <div class="sg-cap">
+                  <div class="sg-txt"><h4 class="sg-name">With description</h4><p>When a sentence or two helps: the description prints under the details.</p></div>
+                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:284;--cy:192;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="1148" height="1288" alt="The With description tile in the builder." loading="lazy" /></span></span>
+                </div>
+              </div>
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic"><img src="gallery/item-stamp.png" width="1280" height="404" alt="An opportunity as Stamp beside the text: a small picture under the title, beside the description." loading="lazy" /></div></div>
+                <div class="sg-cap">
+                  <div class="sg-txt"><h4 class="sg-name">Stamp beside the text</h4><p>A small photo under the title, beside the description: 96 wide unless you size it.</p></div>
+                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:56;--cy:380;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="1148" height="1288" alt="The Stamp beside the text tile in the builder." loading="lazy" /></span></span>
+                </div>
+              </div>
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic"><img src="gallery/item-headshot.png" width="1280" height="482" alt="An event as Headshot beside it all: a portrait standing beside the title, details and description." loading="lazy" /></div></div>
+                <div class="sg-cap">
+                  <div class="sg-txt"><h4 class="sg-name">Headshot beside it all</h4><p>A portrait beside the whole item, 160 wide: for a speaker.</p></div>
+                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:284;--cy:380;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="1148" height="1288" alt="The Headshot beside it all tile in the builder." loading="lazy" /></span></span>
+                </div>
+              </div>
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic" style="--iw:1280;--ih:502">
+                  <img class="sg-trim" src="gallery/item-datecard.png" width="1280" height="506" alt="A Date card: the title and description on a pale pink tint with View flyer, and a maroon block at the right with the weekday, date, time, place and Zoom available." loading="lazy" />
+                  <span class="sg-ring" style="--x:78;--y:342;--w:176;--h:42" aria-hidden="true"></span>
+                  <span class="sg-ring sg-gap" style="--x:830;--y:392;--w:216;--h:36" aria-hidden="true"></span>
+                </div></div>
+                <div class="sg-cap">
+                  <div class="sg-txt"><h4 class="sg-name">Date card</h4><p>For a big ERC event, in ERC Spotlight or Upcoming Events. The block takes the item's Date, Time and Location; under the tile, tick Zoom available and paste a Flyer link. A card never shows a photo.</p></div>
+                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:40;--cy:588;--cw:488;--ch:380;--dw:244px"><span><img src="shots/card-datecard.png" width="1148" height="1288" alt="The Date card tile picked, Zoom available ticked and a Flyer link filled in." loading="lazy" /></span></span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. Research boxes -->
+          <section class="sg-group" id="sg-g-research" data-name="Research boxes" aria-labelledby="sg-h-research">
+            <h3 class="sg-gname" id="sg-h-research">Research boxes</h3>
+            <div class="sg-head">
+              <p>Every ERC Research item is a tinted box. <b>Kind</b> on its card sets the label at the top; the title is the link, so there is no button.</p>
+              <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:40;--cy:136;--cw:444;--ch:176;--dw:222px"><span><img src="shots/card-research.png" width="1148" height="1288" alt="The Kind chips: Research Brief, Research Report, Journal Article and ERC Explains." loading="lazy" /></span></span>
+            </div>
+            <div class="sg-looks">
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic"><img src="gallery/research-brief.png" width="1280" height="386" alt="A Research Brief: the label, a maroon title, the authors and two lines on a tinted box." loading="lazy" /></div></div>
+                <div class="sg-cap"><div class="sg-txt"><h4 class="sg-name">Research Brief</h4><p>The kind a pulled item starts as.</p></div></div>
+              </div>
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic" style="--iw:1280;--ih:606"><img class="sg-trim" src="gallery/research-report.png" width="1280" height="610" alt="A Research Report: the tinted box with a sample chart at the right of the text." loading="lazy" /></div></div>
+                <div class="sg-cap"><div class="sg-txt"><h4 class="sg-name">Research Report</h4><p>Give it a chart or photo: Stamp beside the text puts it at the right, 160 wide.</p></div></div>
+              </div>
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic"><img src="gallery/research-article.png" width="1280" height="332" alt="A Journal Article: the label, the title, one author and one line." loading="lazy" /></div></div>
+                <div class="sg-cap"><div class="sg-txt"><h4 class="sg-name">Journal Article</h4><p>A published paper; name the journal in the description.</p></div></div>
+              </div>
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic"><img src="gallery/research-explains.png" width="1280" height="332" alt="An ERC Explains box: the label, the title, the ERC team and one line." loading="lazy" /></div></div>
+                <div class="sg-cap"><div class="sg-txt"><h4 class="sg-name">ERC Explains</h4><p>A short explainer in the ERC's own words.</p></div></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 4. Callouts -->
+          <section class="sg-group" id="sg-g-callouts" data-name="Callouts" aria-labelledby="sg-h-callouts">
+            <h3 class="sg-gname" id="sg-h-callouts">Callouts</h3>
+            <div class="sg-head">
+              <p><b>Add a callout</b> over the email, then pick <b>Its style</b> on its card. Share something with the ERC always sits last.</p>
+              <span class="sg-crop" style="--iw:1094;--ih:104;--cx:290;--cy:22;--cw:262;--ch:62;--dw:131px"><span><img src="shots/tweak-doors.png" width="1094" height="104" alt="The Add a callout button over the email." loading="lazy" /></span></span>
+            </div>
+            <div class="sg-looks">
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic"><img src="gallery/callout-gray.png" width="1280" height="402" alt="A Light gray box callout: a title, a line and a maroon Sign up button on light gray." loading="lazy" /></div></div>
+                <div class="sg-cap">
+                  <div class="sg-txt"><h4 class="sg-name">Light gray box</h4><p>Sits inside the section before it: a quiet ask.</p></div>
+                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:284;--cy:192;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-callout.png" width="1148" height="1288" alt="The Light gray box tile in the builder." loading="lazy" /></span></span>
+                </div>
+              </div>
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic"><img src="gallery/callout-dotted.png" width="1280" height="458" alt="A Dotted rule callout: a dotted maroon border around a title, a line, a deadline line and a button." loading="lazy" /></div></div>
+                <div class="sg-cap">
+                  <div class="sg-txt"><h4 class="sg-name">Dotted rule</h4><p>Also inside the section; the Deadline line is optional.</p></div>
+                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:56;--cy:380;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-callout.png" width="1148" height="1288" alt="The Dotted rule tile in the builder." loading="lazy" /></span></span>
+                </div>
+              </div>
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic"><img src="gallery/callout-maroon.png" width="1280" height="420" alt="The Share something with the ERC callout as a Maroon block: white words and a white button on maroon." loading="lazy" /></div></div>
+                <div class="sg-cap">
+                  <div class="sg-txt"><h4 class="sg-name">Maroon block</h4><p>Its own maroon panel, the loudest of the three.</p></div>
+                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:56;--cy:192;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-callout.png" width="1148" height="1288" alt="The Maroon block tile in the builder." loading="lazy" /></span></span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 5. Bold, italic and links -->
+          <section class="sg-group" id="sg-g-text" data-name="Bold, italic and links" aria-labelledby="sg-h-text">
+            <h3 class="sg-gname" id="sg-h-text">Bold, italic and links</h3>
+            <div class="sg-head"><p>In <b>Description</b> on the card, select the words, then press B, I or the link button.</p></div>
+            <div class="sg-looks">
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic" style="--iw:1280;--ih:264">
+                  <img src="gallery/item-text.png" width="1280" height="264" alt="An event's description: Dr. Ada Example in bold, The Imaginary Classroom in italic, and RSVP here as a maroon underlined link." loading="lazy" />
+                  <span class="sg-ring" style="--x:134;--y:150;--w:225;--h:41" aria-hidden="true"></span>
+                  <span class="sg-ring" style="--x:636;--y:150;--w:332;--h:41" aria-hidden="true"></span>
+                  <span class="sg-ring" style="--x:200;--y:197;--w:152;--h:36" aria-hidden="true"></span>
+                </div></div>
+                <div class="sg-cap">
+                  <ul class="sg-keys" role="list">
+                    <li><span class="sg-btn" aria-hidden="true">B</span><span class="sg-spec"><span class="sr-only">Bold: </span><b>Dr. Ada Example</b></span><span class="sg-rule">Bold for names: speakers, moderators.</span></li>
+                    <li><span class="sg-btn sg-i" aria-hidden="true">I</span><span class="sg-spec"><span class="sr-only">Italic: </span><i>The Imaginary Classroom</i></span><span class="sg-rule">Italic for book and report titles.</span></li>
+                    <li><span class="sg-btn" aria-hidden="true"><i class="fa-solid fa-link"></i></span><span class="sg-spec"><span class="sr-only">Link: </span><span class="sg-link">RSVP here</span></span><span class="sg-rule">A link prints maroon, bold and underlined.</span></li>
+                  </ul>
+                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:576;--cy:682;--cw:532;--ch:128;--dw:266px"><span><img src="shots/card-research.png" width="1148" height="1288" alt="The Description box's toolbar: B, I and the link button." loading="lazy" /></span></span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 6. Photos -->
+          <section class="sg-group" id="sg-g-photos" data-name="Photos" aria-labelledby="sg-h-photos">
+            <h3 class="sg-gname" id="sg-h-photos">Photos</h3>
+            <div class="sg-head"><p><b>Add media</b> on the card. Once Stamp or Headshot is on, <b>Picture size, px</b> appears under the tiles.</p></div>
+            <div class="sg-looks">
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <figure class="sg-sizes">
+                  <div class="sg-stage">
+                    <ul class="sg-ruler" role="list">
+                      <li><img src="gallery/stand-in-person.png" width="64" height="80" alt="A stand-in portrait at 64 by 80." loading="lazy" /><span class="sg-pill">64 × 80</span><span class="sg-tags"></span></li>
+                      <li><img src="gallery/stand-in-person.png" width="96" height="120" alt="A stand-in portrait at 96 by 120." loading="lazy" /><span class="sg-pill">96 × 120</span><span class="sg-tags"><span class="sg-tag">Stamp</span></span></li>
+                      <li><img src="gallery/stand-in-person.png" width="128" height="160" alt="A stand-in portrait at 128 by 160." loading="lazy" /><span class="sg-pill">128 × 160</span><span class="sg-tags"></span></li>
+                      <li><img src="gallery/stand-in-person.png" width="160" height="200" alt="A stand-in portrait at 160 by 200." loading="lazy" /><span class="sg-pill">160 × 200</span><span class="sg-tags"><span class="sg-tag">Headshot</span><span class="sg-tag">Research</span></span></li>
+                      <li><img src="gallery/stand-in-person.png" width="200" height="250" alt="A stand-in portrait at 200 by 250." loading="lazy" /><span class="sg-pill">200 × 250</span><span class="sg-tags"></span></li>
+                      <li>
+                        <span class="sg-crop" style="--iw:1280;--ih:610;--cx:872;--cy:227;--cw:320;--ch:320;--dw:160px"><span><img src="gallery/research-report.png" width="1280" height="610" alt="A square sample chart at 160, standing 160 tall." loading="lazy" /></span></span>
+                        <span class="sg-rule">Square, 160 wide</span><span class="sg-tags"></span>
+                      </li>
+                    </ul>
+                  </div>
+                  <figcaption class="sg-cap">Shown at true size. The height follows the photo's own shape; the tags mark what you get without picking a size.</figcaption>
+                </figure>
+              </div>
+              <div class="sg-look sg-note" role="group" aria-roledescription="slide">
+                <div class="sg-stage">
+                  <ul class="sg-mini" role="list">
+                    <li class="sg-yes"><span class="sg-crop" style="--iw:1148;--ih:1288;--cx:56;--cy:380;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="1148" height="1288" alt="Yes: the Stamp beside the text tile." loading="lazy" /></span></span><i class="fa-solid fa-circle-check" aria-hidden="true"></i></li>
+                    <li class="sg-yes"><span class="sg-crop" style="--iw:1148;--ih:1288;--cx:284;--cy:380;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="1148" height="1288" alt="Yes: the Headshot beside it all tile." loading="lazy" /></span></span><i class="fa-solid fa-circle-check" aria-hidden="true"></i></li>
+                    <li class="sg-no"><span class="sg-crop" style="--iw:1148;--ih:1288;--cx:56;--cy:600;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="1148" height="1288" alt="No: the Date card tile." loading="lazy" /></span></span><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></li>
+                  </ul>
+                </div>
+                <div class="sg-cap"><div class="sg-txt">
+                  <h4 class="sg-name">Where photos go</h4>
+                  <p class="sg-yes"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span><span class="sr-only">Yes: </span>Any item with a description in ERC Research, ERC Spotlight, Upcoming Events or Opportunities.</span></p>
+                  <p class="sg-no"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i><span><span class="sr-only">No: </span>Nothing in Policy Research, Headlines or Miscellaneous: those are lists.</span></p>
+                </div></div>
+              </div>
+              <div class="sg-look sg-note" role="group" aria-roledescription="slide">
+                <div class="sg-stage">
+                  <ul class="sg-fmts" role="list"><li>JPG</li><li>PNG</li><li>GIF</li><li>WebP</li><li>PDF, page 1</li></ul>
+                </div>
+                <div class="sg-cap"><div class="sg-txt">
+                  <h4 class="sg-name">The file</h4>
+                  <p><span>Under <b>Media</b> on the card, <b>Add media</b> and pick the file.</span></p>
+                  <p><span>Any size works: the builder shrinks big ones. A GIF goes up as it is, so keep it under 2.5 MB. For a sharp picture, use one at least twice the width it shows: 320 wide for a 160 headshot.</span></p>
+                </div></div>
+              </div>
+              <div class="sg-look sg-note" role="group" aria-roledescription="slide">
+                <div class="sg-stage">
+                  <div class="sg-pair">
+                    <figure><img src="gallery/stand-in-scene.png" width="96" height="120" alt="A stand-in photo of a building." loading="lazy" /><figcaption class="sg-yes"><i class="fa-solid fa-circle-check" aria-hidden="true"></i>Photo</figcaption></figure>
+                    <figure><span class="sg-flyer" role="img" aria-label="A drawn flyer, mostly text."><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><figcaption class="sg-no"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>Flyer</figcaption></figure>
+                  </div>
+                </div>
+                <div class="sg-cap"><div class="sg-txt">
+                  <h4 class="sg-name">A photo, not a flyer</h4>
+                  <p><span>A flyer is a page of small text, so it reads badly as a picture. Link it instead: <b>Flyer link</b> on a Date card, or a link in the description.</span></p>
+                </div></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 7. Lists -->
+          <section class="sg-group" id="sg-g-lists" data-name="Lists" aria-labelledby="sg-h-lists">
+            <h3 class="sg-gname" id="sg-h-lists">Lists</h3>
+            <div class="sg-head"><p>No descriptions or photos here: linked titles under their group labels, then View more » to the Policy Exchange.</p></div>
+            <div class="sg-looks">
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic"><img src="gallery/policy-section.png" width="1280" height="584" alt="New Education Policy Research: linked titles under Working Papers and Peer-Reviewed, then View more." loading="lazy" /></div></div>
+                <div class="sg-cap"><div class="sg-txt"><h4 class="sg-name">New Education Policy Research</h4><p>Working Papers, Peer-Reviewed, Miscellaneous.</p></div></div>
+              </div>
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic"><img src="gallery/headlines-section.png" width="1280" height="546" alt="Education Headlines: linked titles under Federal and Texas, each with its source in gray, then View more." loading="lazy" /></div></div>
+                <div class="sg-cap"><div class="sg-txt"><h4 class="sg-name">Education Headlines</h4><p>Federal, then Texas; the source prints in gray after the title.</p></div></div>
+              </div>
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic"><img src="gallery/opportunities-section.png" width="1280" height="602" alt="Opportunities: titles with their deadline in the details, under Funding &amp; Grants and Fellowships &amp; Training, then View more." loading="lazy" /></div></div>
+                <div class="sg-cap"><div class="sg-txt"><h4 class="sg-name">Opportunities</h4><p>Title and details only; put the deadline in the details.</p></div></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 8. The top of the email -->
+          <section class="sg-group" id="sg-g-top" data-name="The top of the email" aria-labelledby="sg-h-top">
+            <h3 class="sg-gname" id="sg-h-top">The top of the email</h3>
+            <div class="sg-looks">
+              <div class="sg-look" role="group" aria-roledescription="slide">
+                <div class="sg-stage"><div class="sg-pic" style="--iw:1280;--ih:352"><img src="gallery/email-header.png" width="1280" height="352" alt="The top of the email: the date line, the maroon Newsletter masthead, and the Contents strip of section names on gray." loading="lazy" />
+                  <span class="sg-ring" style="--x:6;--y:270;--w:1268;--h:78" aria-hidden="true"></span>
+                </div></div>
+                <div class="sg-cap">
+                  <div class="sg-txt"><h4 class="sg-name">Contents strip</h4><p>The row of section names under the masthead, each a link into the email. On or off with the Contents strip box over the email.</p></div>
+                  <span class="sg-crop" style="--iw:1094;--ih:104;--cx:560;--cy:22;--cw:250;--ch:62;--dw:125px"><span><img src="shots/tweak-doors.png" width="1094" height="104" alt="The Contents strip checkbox over the email." loading="lazy" /></span></span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </section>
+
+      <div class="controls" role="group" aria-label="Slides">
+        <button type="button" class="go back"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Back</button>
+        <div class="dots"></div>
+        <button type="button" class="go next">Next<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+      </div>
+    </div>
   </main>
 
   <script>
-    // ---- The recordings: play while on screen, Pause holds one, motion off holds all ----
-    const stillMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const seen = new Set();
-    function settle(v) {
-      const up = !v.closest('[hidden]');
-      if (seen.has(v) && up && !stillMotion && !v.dataset.held) v.play().catch(() => {});
-      else v.pause();
-    }
-    const shown = new IntersectionObserver(entries => {
-      for (const e of entries) { if (e.isIntersecting) seen.add(e.target); else seen.delete(e.target); settle(e.target); }
-    }, { threshold: 0.3 });
-    for (const v of document.querySelectorAll('video')) {
-      shown.observe(v);
-      const toggle = v.closest('figure').querySelector('.rec-toggle');
-      const say = () => { toggle.textContent = v.paused ? 'Play' : 'Pause'; };
-      toggle.addEventListener('click', () => { if (v.paused) { delete v.dataset.held; v.play().catch(() => {}); } else { v.dataset.held = '1'; v.pause(); } });
-      v.addEventListener('play', say);
-      v.addEventListener('pause', say);
-      say();
-    }
+    // ---- The pins: one clicked keeps its label open; on a touch screen a tap on the still shows them ----
+    (() => {
+      let touch = false;   // the last press was a finger or a pen, not a mouse
+      addEventListener('pointerdown', (e) => { touch = e.pointerType !== 'mouse'; }, true);
+      const states = ['is-open', 'is-shown'];
+      const shut = (root) => root.querySelectorAll(states.map((c) => '.' + c).join(',')).forEach((n) => n.classList.remove(...states));
 
-    // ---- The contents strip: the part being read is the one marked ----
-    // The last part whose top has passed 40% down the window; at the very
-    // bottom, the last part. A click marks its part at once.
-    const links = [...document.querySelectorAll('.contents a')];
-    const parts = links.map(a => document.querySelector(a.getAttribute('href')));
-    const mark = (i) => links.forEach((a, n) => { a.classList.toggle('is-active', n === i); if (n === i) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
-    function spy() {
-      const line = window.innerHeight * 0.4;
-      let at = 0;
-      parts.forEach((p, i) => { if (p.getBoundingClientRect().top <= line) at = i; });
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) at = parts.length - 1;
-      mark(at);
-    }
-    window.addEventListener('scroll', spy, { passive: true });
-    window.addEventListener('resize', spy);
-    links.forEach((a, i) => a.addEventListener('click', () => mark(i)));
-    spy();
+      document.querySelectorAll('.shot').forEach((shot) => {
+        shot.addEventListener('click', (e) => {
+          const pin = e.target.closest('.pin');
+          if (pin) {
+            const open = !pin.classList.contains('is-open');
+            shot.querySelectorAll('.pin.is-open').forEach((p) => p.classList.remove('is-open'));
+            pin.classList.toggle('is-open', open);
+            if (touch) shot.classList.add('is-shown');
+          } else if (touch) {
+            const on = !shot.classList.contains('is-shown');
+            shut(shot);
+            shot.classList.toggle('is-shown', on);
+          }
+        });
+      });
+      document.addEventListener('click', (e) => { if (!e.target.closest('.shot')) shut(document); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') shut(document); });
+    })();
+
+    // ---- The deck: the slides or the Styles looks, one at a time; the hash names the part ----
+    (() => {
+      const deck = document.querySelector('.deck');
+      const chips = [...document.querySelectorAll('.chips a')];
+      const controls = deck.querySelector('.controls');
+      const back = controls.querySelector('.back');
+      const next = controls.querySelector('.next');
+      const dots = controls.querySelector('.dots');
+      const bar = deck.querySelector('.progress span');
+      const said = deck.querySelector('[data-said]');
+      const gallery = deck.querySelector('.styles');
+      const where = gallery.querySelector('.sg-where');
+      const menu = [...gallery.querySelectorAll('.sg-menu a')];
+      const still = matchMedia('(prefers-reduced-motion: reduce)');
+
+      // Two runs share the controls: the slides, chapter by chapter, and the looks, group by group.
+      const runs = {
+        walk: { items: [...deck.querySelectorAll('.slide')], parts: [...deck.querySelectorAll('.chapter')], home: (s) => s.querySelector('.foot'), at: -1 },
+        styles: { items: [...gallery.querySelectorAll('.sg-look')], parts: [...gallery.querySelectorAll('.sg-group')], home: () => gallery.querySelector('.sg-foot'), at: -1 },
+      };
+      // A group's line on where it lives in the builder sits under the menu while the group is on screen.
+      const heads = new Map(runs.styles.parts.map((g) => [g, g.querySelector('.sg-head')]));
+      let mode = '';
+      let ready = false;
+
+      const partOf = (s) => s.closest('.chapter, .sg-group');
+      const firstOf = (m, p) => runs[m].items.indexOf(p.querySelector(m === 'walk' ? '.slide' : '.sg-look'));
+      const mark = (links, hash) => links.forEach((a) => { if (a.hash === hash) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
+
+      function show(m, i, focusDot) {
+        const run = runs[m];
+        i = Math.max(0, Math.min(run.items.length - 1, i));
+        const turning = m === mode;   // a turn inside the run, not a swap between the slides and Styles
+        if (turning && i === run.at) return;
+        const was = turning ? run.at : -1;
+        // The controls move to the new foot; the key they held comes with them.
+        const held = controls.contains(document.activeElement) ? document.activeElement : null;
+        const onDot = held?.parentNode === dots;
+        mode = m;
+        run.at = i;
+        deck.dataset.mode = m;
+        const s = run.items[i];
+        const p = partOf(s);
+        const own = [...p.querySelectorAll(m === 'walk' ? '.slide' : '.sg-look')];
+        deck.querySelectorAll('.is-open, .is-shown').forEach((n) => n.classList.remove('is-open', 'is-shown'));
+        run.parts.forEach((x) => x.classList.toggle('is-on', x === p));
+        run.items.forEach((x) => { x.classList.toggle('is-on', x === s); x.classList.remove('in-next', 'in-back'); });
+        own.forEach((x, n) => x.setAttribute('aria-label', `${n + 1} of ${own.length}`));
+        if (was >= 0 && !still.matches) { void s.offsetWidth; s.classList.add(i > was ? 'in-next' : 'in-back'); }
+        run.home(s).append(controls);
+        controls.setAttribute('aria-label', m === 'walk' ? 'Slides' : 'Looks');
+
+        const hash = m === 'walk' ? '#' + p.id : '#options';
+        mark(chips, hash);
+        if (m === 'styles') {
+          where.replaceChildren(...(heads.get(p) ? [heads.get(p)] : []));
+          mark(menu, '#' + p.id);
+        }
+        dots.replaceChildren(...own.map((x, n) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.setAttribute('aria-label', `${p.dataset.name}, ${n + 1} of ${own.length}`);
+          if (x === s) b.setAttribute('aria-current', 'step');
+          b.addEventListener('click', () => show(m, run.items.indexOf(x), true));
+          return b;
+        }));
+        back.disabled = i === 0;
+        next.disabled = i === run.items.length - 1;
+        if (focusDot || onDot) dots.querySelector('[aria-current]').focus({ preventScroll: true });
+        else if (held === back) (back.disabled ? next : back).focus({ preventScroll: true });
+        else if (held === next) (next.disabled ? back : next).focus({ preventScroll: true });
+
+        bar.style.width = `${((i + 1) / run.items.length) * 100}%`;
+        if (location.hash !== hash) history.replaceState(null, '', hash);
+        if (ready) {
+          const words = s.querySelector('.cap, .sg-name');
+          said.textContent = `${p.dataset.name}, ${own.indexOf(s) + 1} of ${own.length}.${words ? ' ' + words.textContent.trim() : ''}`;
+        }
+        // The neighbours' pictures load now, so the next click shows them at once.
+        [i - 1, i + 1].forEach((n) => run.items[n]?.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; }));
+      }
+
+      // What a hash opens: a chapter's first slide (#items is on the first Outline slide), or Styles,
+      // where it was left, or at a group's first look.
+      function target(hash) {
+        let el = null;
+        try { el = hash.length > 1 ? document.getElementById(decodeURIComponent(hash.slice(1))) : null; } catch (e) { return null; }
+        if (!el || !deck.contains(el)) return null;
+        if (gallery.contains(el)) {
+          const g = el.closest('.sg-group');
+          return ['styles', g ? firstOf('styles', g) : Math.max(0, runs.styles.at)];
+        }
+        const s = el.closest('.slide') || el.closest('.chapter')?.querySelector('.slide');
+        return s ? ['walk', runs.walk.items.indexOf(s)] : null;
+      }
+
+      back.addEventListener('click', () => show(mode, runs[mode].at - 1));
+      next.addEventListener('click', () => show(mode, runs[mode].at + 1));
+      // A part's chip opens its first slide; the Styles chip swaps the slides for the looks.
+      chips.forEach((a) => a.addEventListener('click', (e) => {
+        const t = target(a.hash);
+        if (!t) return;
+        e.preventDefault();
+        show(...t);
+      }));
+      // A group in the menu opens its first look.
+      menu.forEach((a) => a.addEventListener('click', (e) => {
+        const t = target(a.hash);
+        if (!t) return;
+        e.preventDefault();
+        show(...t);
+      }));
+      // A hash typed or followed opens its part at the top of the page.
+      addEventListener('hashchange', () => { const t = target(location.hash); if (t) { show(...t); scrollTo(0, 0); } });
+      // The arrows turn slides or looks only while the deck is on screen.
+      const onScreen = () => { const r = deck.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; };
+      document.addEventListener('keydown', (e) => {
+        if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+        if (!onScreen() || e.target.closest?.('input, textarea, select, [contenteditable]')) return;
+        if (e.key === 'ArrowRight') { e.preventDefault(); show(mode, runs[mode].at + 1); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); show(mode, runs[mode].at - 1); }
+      });
+
+      // A swipe on a touch screen moves one slide or look; one along the group menu is left to it.
+      let x0 = null, y0 = null;
+      deck.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.sg-menu')) { x0 = null; return; }
+        x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+      }, { passive: true });
+      deck.addEventListener('touchend', (e) => {
+        if (x0 === null) return;
+        const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+        if (Math.abs(dx) > 60 && Math.abs(dy) < 40) show(mode, runs[mode].at + (dx < 0 ? 1 : -1));
+        x0 = null;
+      }, { passive: true });
+
+      // Opened on a part, its first slide; on #options, Styles; otherwise the first slide.
+      show(...(target(location.hash) || ['walk', 0]));
+      ready = true;
+    })();
   </script>
 </body>
 </html>
