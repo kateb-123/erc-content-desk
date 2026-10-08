@@ -29,24 +29,37 @@ export function shouldPull(issue) {
 
 /**
  * Merge a pull's reply into the issue, adding only what it does not hold yet
- * (by link and by desk id), and say what happened.
+ * (by link and by desk id) and nothing removed here while the pull was out,
+ * and say what happened. An empty date points at the next issue that has items.
  * @param {object} issue - mutated
  * @param {{ issue: object, staged?: object }} reply - GET /api/newsletter-pull?issue=
  * @param {string} iso - the issue pulled
- * @returns {{ fresh: number, message: string }}
+ * @param {{ skip?: Set<string>, today?: string }} [o] - item ids removed here; College Station's today
+ * @returns {{ fresh: number, message: string, pulled: object|null }} pulled: what was added
  */
-export function applyPull(issue, reply, iso) {
+export function applyPull(issue, reply, iso, { skip = new Set(), today = '' } = {}) {
   if (!countIssueItems(reply?.issue)) {
-    const [other] = Object.entries(reply?.staged ?? {}).filter(([d]) => d !== iso).sort(([a], [b]) => a.localeCompare(b));
+    const [next] = Object.entries(reply?.staged ?? {}).filter(([d]) => d !== iso && d >= today).sort(([a], [b]) => a.localeCompare(b));
     const none = `Nothing on the desk for ${isoToDisplayDate(iso)} yet.`;
-    return { fresh: 0, message: other ? `${none} ${isoToDisplayDate(other[0])} has ${other[1]}.` : none };
+    return { fresh: 0, message: next ? `${none} ${isoToDisplayDate(next[0])} has ${next[1]}.` : none, pulled: null };
   }
   const { pulled, already } = partitionPulled(reply.issue, issue);
+  for (const sec of Object.values(pulled.sections ?? {})) {
+    sec.items = (sec.items ?? []).filter((item) => !skip.has(item.id));
+    sec.enabled = sec.items.length > 0;
+  }
   const fresh = countIssueItems(pulled);
-  if (!fresh) return { fresh, message: 'Nothing new from the desk.' };
+  if (!fresh) return { fresh, message: 'Nothing new from the desk.', pulled: null };
   pulled.date = '';   // never the ISO date the pull carries
-  mergeIssues(issue, pulled);
-  return { fresh, message: already ? `Pulled ${fresh} new from the desk.` : `Pulled ${fresh} from the desk.` };
+  mergeIssues(issue, structuredClone(pulled));
+  return { fresh, message: already ? `Pulled ${fresh} new from the desk.` : `Pulled ${fresh} from the desk.`, pulled };
+}
+
+/** Remove and Undo reach the desk only for a real issue still to go out: a
+ *  sent issue keeps its record there, and a sample is never the desk's. */
+export function tellsDesk(issue, today) {
+  const iso = isoOf(issue);
+  return Boolean(issue && !issue.sample && iso && iso >= today);
 }
 
 /** The desk row behind an item: a pulled item's id is desk_<row id>; one
@@ -70,10 +83,11 @@ export function unstampedRow(rows, item, issueIso) {
   return clearNewsletterIssue(row);
 }
 
-/** Undo: the stamp goes back while the row is still kept and in no issue. */
+/** Undo: the stamp goes back while the row is in no issue and not deleted (a
+ *  row added by hand or by Quick add can still be waiting in Sort). */
 export function restampedRow(rows, item, issueIso) {
   const row = rowOf(rows, item);
-  if (!issueIso || !row || row.newsletter_issue || row.status !== 'kept') return null;
+  if (!issueIso || !row || row.newsletter_issue || row.status === 'trashed') return null;
   return markNewsletterIssue(row, issueIso);
 }
 

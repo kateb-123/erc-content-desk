@@ -5,7 +5,7 @@
  * pure logic lives in model.js, template.js, editpath.js and preview.js.
  */
 
-import { SECTION_REGISTRY, createEmptyIssue, countIssueItems, bucketSectionItems, moveItemToGroup, moveItemNear } from './model.js';
+import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, countIssueItems, bucketSectionItems, moveItemToGroup, moveItemNear } from './model.js';
 
 // The builder lives INSIDE the desk's project (/builder/), so the desk's API
 // is same-origin: relative fetches, no CORS.
@@ -32,7 +32,7 @@ import { readAllWaiting } from '../../js/reader-client.js';
 import { discardToDesk, draftIsOpen, replaceAskMessage, discardedTitle, discardedDetail, withEntry, withoutEntry, restoreOver } from './discarded.js';
 import { deskSubmission, sendItemToDesk } from './send-to-desk.js';
 // No Pull button (Kate, Oct 7): a date picked and a draft opened pull on their own.
-import { pickNeedsAsk, shouldPull, applyPull, syncRemoval } from './auto-pull.js';
+import { pickNeedsAsk, shouldPull, applyPull, syncRemoval, tellsDesk } from './auto-pull.js';
 
 // ---------------------------------------------------------------------------
 // State
@@ -305,6 +305,7 @@ function renderPullHead(container) {
   // A date picked pulls its items at once (Kate, Oct 7: no Pull button); a
   // different date over an open draft asks first, then starts fresh.
   dateSelect.addEventListener('change', () => {
+    scheduleNote.replaceChildren();   // a new pick answers any ask still up
     const sample = sampleOf(dateSelect.value);
     if (sample) { openSample(sample); return; }
     const iso = dateSelect.value;
@@ -374,6 +375,7 @@ function renderPullHead(container) {
   function askNewIssue(iso) {
     const back = () => { scheduleNote.replaceChildren(); dateSelect.disabled = false; dateSelect.value = was; };
     const start = async () => {
+      resetPull();   // no pull lands on the draft while it is being kept
       const wait = el('span', 'pull-status');
       wait.append(busyWords(`Opening ${isoToDisplayDate(iso)}…`));
       scheduleNote.replaceChildren(wait);
@@ -451,6 +453,14 @@ let pullFailed = false;
 /** The Outline's status row and note slot, as last drawn. */
 let pullView = null;
 
+/** Stop any pull in flight and clear what the last one said: the issue is being replaced. */
+function resetPull() {
+  pullRun++;
+  pullBusy = false;
+  pullFailed = false;
+  pullMessage = '';
+}
+
 function drawPull() {
   if (!pullView) return;
   if (pullBusy) pullView.status.replaceChildren(busyWords(pullMessage));
@@ -475,18 +485,28 @@ async function pullIssue() {
   pullMessage = 'Pulling from the desk…';
   drawPull();
   try {
+    await deskWrites;   // a Remove queued before the pull reaches the desk first
     const data = await readReply(await fetch(`/api/newsletter-pull?issue=${iso}`), 'pull the issue');
     if (run !== pullRun) return;   // a later pull speaks
     pullBusy = false;
     if (state.issue !== issue) { pullMessage = ''; drawPull(); return; }   // the issue changed under it
-    const { fresh, message } = applyPull(issue, data, iso);
+    const { fresh, message, pulled } = applyPull(issue, data, iso, { skip: removedIds(), today: todayCentral() });
     pullMessage = message;
     if (fresh) {
-      state.baseline = structuredClone(issue);
+      // Use original puts back the text as pulled: the new items join it, and
+      // any edit made while the pull was out stays an edit.
+      if (state.baseline) mergeIssues(state.baseline, structuredClone(pulled));
+      else state.baseline = structuredClone(issue);
       scheduleSave();
+      if (state.step === 'triage') renderTriage();
+      else {
+        // Landed past the Outline: the sheet redraws and the status line says what came.
+        const frame = document.querySelector('[data-step="edit"] .edit-preview-iframe');
+        if (state.step === 'edit' && frame) refreshEditIframe(frame);
+        setWizardStatus(message);
+      }
     }
-    if (fresh && state.step === 'triage') renderTriage();
-    else drawPull();
+    drawPull();
     syncStepNav();
   } catch {
     if (run !== pullRun) return;
@@ -513,6 +533,14 @@ function settleRemovals() {
   removals = { issue: null, waiting: [] };
 }
 
+/** What Remove took out of this issue since it opened, Undo aside: a pull that
+ *  was already out when the Remove happened never puts it back. */
+let removedHere = { issue: null, ids: new Set() };
+function removedIds() {
+  if (removedHere.issue !== state.issue) removedHere = { issue: state.issue, ids: new Set() };
+  return removedHere.ids;
+}
+
 /**
  * Take one item out of the issue: the Outline row's Remove and the Preview &
  * Edit card's Remove. `rerender` redraws the step on screen, with the item
@@ -522,6 +550,7 @@ let _undoToastTimer = null;
 function deleteItemWithUndo(itemId, rerender, fromKeyboard = false) {
   const entry = takeOut(state.issue, waitingRemovals(), itemId);
   if (!entry) return;
+  removedIds().add(entry.item.id);
   tellDesk(entry.item, true);
   scheduleSave();
   rerender();
@@ -535,6 +564,7 @@ function deleteItemWithUndo(itemId, rerender, fromKeyboard = false) {
 function undoRemove(itemId, rerender, fromKeyboard = false) {
   const item = putBack(state.issue, waitingRemovals(), itemId);
   if (!item) return;
+  removedIds().delete(item.id);
   tellDesk(item, false);
   scheduleSave();
   rerender();
@@ -545,12 +575,13 @@ function undoRemove(itemId, rerender, fromKeyboard = false) {
 /**
  * Remove tells the desk too (Kate, Oct 7): the item goes back to Ready to
  * add, so the next pull never brings it back, and its Undo stamps it again.
- * One write after another, so a quick Undo never lands before its Remove.
- * A sample is never the desk's.
+ * One write after another, so a quick Undo never lands before its Remove,
+ * and an item added by hand goes through the same queue. A sent issue keeps
+ * its record on the desk, and a sample is never the desk's.
  */
 let deskWrites = Promise.resolve();
 function tellDesk(item, removed) {
-  if (state.issue?.sample) return;
+  if (!tellsDesk(state.issue, todayCentral())) return;
   const issueIso = displayDateToISO(state.issue?.date || '');
   deskWrites = deskWrites.then(() => syncRemoval(item, { issueIso, removed, api: DESK }))
     .catch(() => setWizardStatus(removed ? "Removed here only: the desk couldn't be reached." : "Back here only: the desk couldn't be reached."));
@@ -1225,7 +1256,10 @@ function buildAddItemPanel(iframe) {
     addBtn.hidden = true;
     status.replaceChildren(busyWords(`Added to ${label}. Sending it to the desk…`));
     try {
-      await sendItemToDesk(item, { sectionKey, issueIso: displayDateToISO(state.issue?.date || ''), api: DESK });
+      // Through the desk's queue, so a Remove pressed meanwhile lands after the stamp.
+      const sent = deskWrites.then(() => sendItemToDesk(item, { sectionKey, issueIso: displayDateToISO(state.issue?.date || ''), api: DESK }));
+      deskWrites = sent.catch(() => {});
+      await sent;
       status.textContent = `Added to ${label} and to Content Sort's queue.`;
     } catch (err) {
       console.error('[add an item] the desk did not take it:', err);
@@ -2494,7 +2528,7 @@ function startNextIssue() {
   state.issue = null;
   state.baseline = null;
   state.reached = 0;
-  pullMessage = '';
+  resetPull();
   goTo('triage');
 }
 
@@ -2512,10 +2546,7 @@ function openDraft(issue) {
   state.issue = issue;
   state.baseline = structuredClone(issue);
   state.reached = 0;
-  pullRun++;   // a pull for the issue it replaces never lands here
-  pullBusy = false;
-  pullFailed = false;
-  pullMessage = '';
+  resetPull();   // a pull for the issue it replaces never lands here
   saveState(issue);
   goTo('triage');
   // Each opening pulls what the desk added since (Kate, Oct 7).

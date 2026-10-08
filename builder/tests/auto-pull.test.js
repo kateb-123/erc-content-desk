@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import { createEmptyIssue, countIssueItems } from '../js/model.js';
 import { issueForPull } from '../../js/rows-to-issue.js';
 import {
-  pickNeedsAsk, shouldPull, applyPull, deskRowId, unstampedRow, restampedRow, syncRemoval,
+  pickNeedsAsk, shouldPull, applyPull, deskRowId, unstampedRow, restampedRow, syncRemoval, tellsDesk,
 } from '../js/auto-pull.js';
 
 const app = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
@@ -25,6 +25,7 @@ function draft(date, titles = []) {
   return issue;
 }
 
+const said = ({ fresh, message }) => ({ fresh, message });
 const row = (id, issue, extra = {}) => ({ id, _rowNumber: 2, status: 'kept', newsletter_issue: issue, type: 'headline', subtype: 'Texas', headline: id, link: `https://x.org/${id}`, ...extra });
 
 test('a different date over a draft with items asks first; anything else just picks', () => {
@@ -50,21 +51,21 @@ test('a pull adds only what is new, keeps the issue\'s own date, and says what i
   const issue = draft('October 6, 2026', ['Known']);
   const rows = [row('r0', '2026-10-06', { link: 'https://x.org/0' }), row('r9', '2026-10-06')];
   const reply = { issue: issueForPull(rows, '2026-10-06'), staged: { '2026-10-06': 2 } };
-  assert.deepEqual(applyPull(issue, reply, '2026-10-06'), { fresh: 1, message: 'Pulled 1 new from the desk.' });
+  assert.deepEqual(said(applyPull(issue, reply, '2026-10-06')), { fresh: 1, message: 'Pulled 1 new from the desk.' });
   assert.equal(countIssueItems(issue), 2);
   assert.equal(issue.date, 'October 6, 2026', 'never the ISO date the pull carries');
-  assert.deepEqual(applyPull(issue, reply, '2026-10-06'), { fresh: 0, message: 'Nothing new from the desk.' }, 'the next opening adds nothing twice');
+  assert.deepEqual(said(applyPull(issue, reply, '2026-10-06')), { fresh: 0, message: 'Nothing new from the desk.' }, 'the next opening adds nothing twice');
   assert.equal(countIssueItems(issue), 2);
 });
 
 test('a first pull counts what came; an empty one points at the issue that has items', () => {
   const issue = draft('October 6, 2026');
   const reply = { issue: issueForPull([row('a', '2026-10-06'), row('b', '2026-10-06')], '2026-10-06'), staged: {} };
-  assert.deepEqual(applyPull(issue, reply, '2026-10-06'), { fresh: 2, message: 'Pulled 2 from the desk.' });
+  assert.deepEqual(said(applyPull(issue, reply, '2026-10-06')), { fresh: 2, message: 'Pulled 2 from the desk.' });
   const empty = draft('October 13, 2026');
   const none = { issue: issueForPull([], '2026-10-13'), staged: { '2026-10-20': 3, '2026-10-06': 2 } };
-  assert.deepEqual(applyPull(empty, none, '2026-10-13'), { fresh: 0, message: 'Nothing on the desk for October 13, 2026 yet. October 6, 2026 has 2.' });
-  assert.deepEqual(applyPull(empty, { issue: issueForPull([], '2026-10-13'), staged: {} }, '2026-10-13'), { fresh: 0, message: 'Nothing on the desk for October 13, 2026 yet.' });
+  assert.deepEqual(said(applyPull(empty, none, '2026-10-13')), { fresh: 0, message: 'Nothing on the desk for October 13, 2026 yet. October 6, 2026 has 2.' });
+  assert.deepEqual(said(applyPull(empty, { issue: issueForPull([], '2026-10-13'), staged: {} }, '2026-10-13')), { fresh: 0, message: 'Nothing on the desk for October 13, 2026 yet.' });
 });
 
 test('the desk row behind an item: a pulled item\'s id, a hand-added item\'s deskId, else none', () => {
@@ -84,8 +85,9 @@ test('Remove clears the stamp only when the row is still stamped for this issue'
 });
 
 test('Undo puts the stamp back only while the row is still free', () => {
-  const rows = [row('r1', ''), row('r2', '2026-10-20'), row('r3', '', { status: 'trashed' })];
+  const rows = [row('r1', ''), row('r2', '2026-10-20'), row('r3', '', { status: 'trashed' }), row('r4', '', { status: 'new' })];
   assert.deepEqual(restampedRow(rows, { id: 'desk_r1' }, '2026-10-06'), { ...rows[0], newsletter_issue: '2026-10-06' });
+  assert.deepEqual(restampedRow(rows, { id: 'misc_k1_1', deskId: 'r4' }, '2026-10-06'), { ...rows[3], newsletter_issue: '2026-10-06' }, 'a Quick add or hand-added row still waiting in Sort is stamped too');
   assert.equal(restampedRow(rows, { id: 'desk_r2' }, '2026-10-06'), null, 'taken by another issue meanwhile');
   assert.equal(restampedRow(rows, { id: 'desk_r3' }, '2026-10-06'), null, 'deleted on the desk meanwhile');
 });
@@ -116,6 +118,56 @@ test('the builder has no Pull button: a date pick and an opened draft pull on th
 test('Remove and Undo tell the desk, one write after another, and a sample never does', () => {
   assert.match(app, /function deleteItemWithUndo[\s\S]*?tellDesk\(entry\.item, true\)/);
   assert.match(app, /function undoRemove[\s\S]*?tellDesk\(item, false\)/);
-  assert.match(app, /function tellDesk\(item, removed\) \{[\s\S]*?if \(state\.issue\?\.sample\) return;/);
   assert.match(app, /deskWrites = deskWrites\.then\(/, 'serialized, so a quick Undo never lands before its Remove');
+});
+
+// The review's findings (Oct 7): each one a way an item came back or went missing.
+
+test('a pull never brings back an item removed while it was out, and hands back what it added', () => {
+  const issue = draft('October 20, 2026');
+  const reply = { issue: issueForPull([row('a', '2026-10-20'), row('b', '2026-10-20')], '2026-10-20'), staged: {} };
+  const { fresh, pulled } = applyPull(issue, reply, '2026-10-20', { skip: new Set(['desk_a']) });
+  assert.equal(fresh, 1);
+  assert.deepEqual(issue.sections.headlines.items.map((i) => i.id), ['desk_b']);
+  assert.deepEqual(pulled.sections.headlines.items.map((i) => i.id), ['desk_b'], 'what came, for the baseline to take in alone');
+});
+
+test('an empty date points only at an issue still to come', () => {
+  const empty = draft('October 27, 2026');
+  const none = { issue: issueForPull([], '2026-10-27'), staged: { '2026-09-08': 9, '2026-11-03': 2 } };
+  assert.equal(applyPull(empty, none, '2026-10-27', { today: '2026-10-07' }).message, 'Nothing on the desk for October 27, 2026 yet. November 3, 2026 has 2.');
+  const onlyPast = { issue: issueForPull([], '2026-10-27'), staged: { '2026-09-08': 9 } };
+  assert.equal(applyPull(empty, onlyPast, '2026-10-27', { today: '2026-10-07' }).message, 'Nothing on the desk for October 27, 2026 yet.', 'never a sent issue');
+});
+
+test('Remove and Undo reach the desk only for a real issue still to go out', () => {
+  assert.equal(tellsDesk(draft('October 20, 2026'), '2026-10-07'), true);
+  assert.equal(tellsDesk(draft('October 7, 2026'), '2026-10-07'), true, 'the day it goes out');
+  assert.equal(tellsDesk(draft('October 6, 2026'), '2026-10-07'), false, 'a sent issue keeps its record on the desk');
+  assert.equal(tellsDesk({ ...draft('October 20, 2026'), sample: 'practice' }, '2026-10-07'), false);
+  assert.equal(tellsDesk(draft(''), '2026-10-07'), false);
+  assert.equal(tellsDesk(null, '2026-10-07'), false);
+});
+
+test('the pull waits for queued desk writes, skips what was removed, and a pull off the Outline says what came', () => {
+  assert.match(app, /async function pullIssue\(\) \{[\s\S]*?await deskWrites;[\s\S]*?fetch\(`\/api\/newsletter-pull/, 'a Remove queued before the pull lands on the desk first');
+  assert.match(app, /applyPull\(issue, data, iso, \{ skip: removedIds\(\), today: todayCentral\(\) \}\)/);
+  assert.match(app, /function deleteItemWithUndo[\s\S]*?removedIds\(\)\.add\(entry\.item\.id\)/);
+  assert.match(app, /function undoRemove[\s\S]*?removedIds\(\)\.delete\(item\.id\)/);
+  assert.match(app, /mergeIssues\(state\.baseline, structuredClone\(pulled\)\)/, 'edits made meanwhile never become the original');
+  assert.match(app, /refreshEditIframe\(frame\)/, 'Preview & Tweak redraws when items arrive there');
+  assert.match(app, /refreshEditIframe\(frame\);\s*setWizardStatus\(message\);/, 'and the status line says what came');
+});
+
+test('every way an issue is replaced stops the pull in flight, and a new pick clears an open ask', () => {
+  assert.match(app, /function resetPull\(\) \{\s*pullRun\+\+;\s*pullBusy = false;\s*pullFailed = false;\s*pullMessage = '';\s*\}/);
+  for (const fn of ['openDraft', 'startNextIssue']) assert.match(app, new RegExp(`function ${fn}\\(\\w*\\) \\{[\\s\\S]*?resetPull\\(\\);`), fn);
+  assert.match(app, /const start = async \(\) => \{\s*resetPull\(\);/, 'Confirm: no pull lands while the open draft is being kept');
+  assert.match(app, /dateSelect\.addEventListener\('change', \(\) => \{\s*scheduleNote\.replaceChildren\(\);/);
+});
+
+test('an item added by hand is sent through the same queue, so its Remove can never land first', () => {
+  assert.match(app, /const sent = deskWrites\.then\(\(\) => sendItemToDesk\(/);
+  assert.match(app, /deskWrites = sent\.catch\(\(\) => \{\}\);/);
+  assert.match(app, /function tellDesk\(item, removed\) \{\s*if \(!tellsDesk\(state\.issue, todayCentral\(\)\)\) return;/);
 });
