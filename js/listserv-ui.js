@@ -5,11 +5,13 @@
  * names and addresses stay in the desk's table and her sheet. Since Oct 8
  * (Kate) the count is Sheet 1's own, a door opens the sign-up sheet with the
  * three steps for adding people under it, and the day Sheet 1 was seen
- * cleared shows as when the listserv was last updated. Downloading them in the listserv's format is forthcoming.
+ * cleared shows as when the listserv was last updated. The download in the
+ * listserv's format her map marked forthcoming was dropped (Kate, Oct 8):
+ * Sheet 1 is the list to add from.
  */
 import { listservStatus, SIGNUP_SHEET, SHEET_STEPS } from './listserv-view.js';
 import { PUBLIC_LINKS, copyLinkButton } from './public-links.js';
-import { hubHead, HUB_LEDES, forthcoming } from './hub-head.js';
+import { hubHead, HUB_LEDES } from './hub-head.js';
 import { faIcon } from './icons.js';
 import { el, button, focusKeyIn, restoreFocus } from './ui-aids.js';
 
@@ -66,7 +68,6 @@ export function renderListserv(container, { signups, today, onRetry }) {
     el('h3', 'section-label hub-label', 'Sign-up form'), formBox,
     el('h3', 'section-label hub-label', 'To be added'), countBox,
     el('h3', 'section-label hub-label', 'Adding people'), addBox,
-    forthcoming("Download the sign-ups in the listserv's format"),
   );
   const side = el('aside', 'qh-side');
   side.append(el('p', 'hub-aside', 'Names and email addresses never show here: the page is open. Sign-ups from before the desk kept a copy are in the sign-up sheet.'));

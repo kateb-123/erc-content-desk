@@ -472,7 +472,8 @@ same: the hub's name as the title and one line under it.
   is the day the listserv was last updated (her note: "when the sheet 1 goes
   from a count to 0 that means it was updated"): the desk's copy stamps its
   rows beyond the newest N as added, and the box says "Last updated <date>." Downloading
-  the sign-ups in the listserv's format is forthcoming.
+  the sign-ups in the listserv's format, her map's Forthcoming item, was
+  DROPPED (Kate, Oct 8): Sheet 1 is the list to add from.
 - **Public links**: the card alone, Copy link on each row.
 - **Policy Exchange** (/#exchange): the site's status (Live, or that it did
   not answer), when it last changed (`/api/hub-updated`), the live link, how

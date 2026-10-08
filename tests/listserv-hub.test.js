@@ -37,10 +37,10 @@ test('the page draws the count\'s note and its Try again from the status', () =>
   assert.doesNotMatch(src, /s\.since/, 'the old since line is gone');
 });
 
-test('the page draws counts and dates only, and the download is forthcoming', () => {
+test('the page draws counts and dates only, and nothing is forthcoming on it (the download was dropped, Kate, Oct 8)', () => {
   const src = readFileSync(new URL('../js/listserv-ui.js', import.meta.url), 'utf8');
   assert.doesNotMatch(src, /\.email\b|\.name\b/, 'never a name or an email');
-  assert.match(src, /forthcoming\(["']Download the sign-ups in the listserv.s format["']\)/);
+  assert.doesNotMatch(src, /forthcoming\(|Download the sign-ups/, 'Sheet 1 is the list to add from; no download');
   assert.match(src, /copyLinkButton\(/, 'the form\'s Copy link');
 });
 
