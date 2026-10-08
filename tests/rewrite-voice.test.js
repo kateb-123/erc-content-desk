@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { VOICE_EXAMPLES } from '../api/_lib/voice-examples.js';
-import { buildRewritePrompt } from '../api/_lib/rewrite.js';
+import { buildRewritePrompt, REWRITE_SCHEMA } from '../api/_lib/rewrite.js';
+import { ERC_VOICE } from '../api/_lib/voice.js';
 
 // Kate's four approved samples (Oct 8), copied byte for byte from
 // .superpowers/samples-source.json, which git ignores.
@@ -33,7 +34,7 @@ test('each sample carries its approved fields and its source text', () => {
     assert.equal(`${ex.type} / ${ex.subtype}`, a.type);
     for (const f of ['source', 'date', 'time', 'location', 'deadline']) assert.equal(ex[f] ?? '', a[f] ?? '', `${f} of sample ${i + 1}`);
     // The one change from the source: a dash in the AEFP call is a comma.
-    assert.equal(ex.original_text, a.original.replace(/\s*[–—]\s*/g, ', '));
+    assert.equal(ex.original_text, a.original.replace(/\s*[\u2013\u2014]\s*/g, ', '));
   });
 });
 
@@ -59,4 +60,45 @@ test('the old caveat is gone: the new samples add no fact', () => {
   const src = read('../api/_lib/voice-examples.js');
   assert.doesNotMatch(src, /CAVEAT/);
   assert.doesNotMatch(src, /add facts she looked up/);
+});
+
+// Kate, Oct 8, on the rewrites: "it will pull things about all the speakers
+// but the main thing is what they're going to be presenting on".
+test('the voice leads with the substance and names a speaker by one role', () => {
+  assert.match(ERC_VOICE, /Lead with what is being presented, found or offered/);
+  assert.match(ERC_VOICE, /a talk's topic and argument, a paper's findings, a call's scope and who can apply/);
+  assert.match(ERC_VOICE, /one role/);
+  assert.match(ERC_VOICE, /Never career history, degrees, honors,? or past posts/);
+  assert.match(ERC_VOICE, /boilerplate/);
+});
+
+test('the voice bans restating the title, the lead-ins and the newsletter an item came from', () => {
+  assert.match(ERC_VOICE, /Never restate the title/);
+  assert.match(ERC_VOICE, /"This report examines"/);
+  assert.match(ERC_VOICE, /"In this talk"/);
+  assert.match(ERC_VOICE, /Never name the newsletter, digest or inbox an item was found in/);
+  assert.match(ERC_VOICE, /No em dashes or en dashes/);
+  assert.match(ERC_VOICE, /at most 70 words/);
+  assert.match(ERC_VOICE, /Never invent a fact/);
+});
+
+test('the prompt: the fields carry the date, time and place, and an item with nothing past its title gets an empty blurb', () => {
+  const prompt = buildRewritePrompt([ITEM]);
+  assert.match(prompt, /Never repeat the date, time, place or deadline/);
+  assert.match(prompt, /says nothing beyond the title, return an empty blurb/);
+  assert.match(REWRITE_SCHEMA.properties.rewrites.items.properties.blurb.description, /Empty when the material says nothing beyond the title/);
+  assert.doesNotMatch(prompt, /the examples that end that way/);
+  assert.doesNotMatch(ERC_VOICE, /empty blurb/, 'the card words share the voice, so the empty-blurb rule stays in the rewrite prompt');
+});
+
+test('no em or en dash in the voice, the samples or the built prompt', () => {
+  const dash = /[\u2013\u2014]/;
+  assert.doesNotMatch(read('../api/_lib/voice.js'), dash);
+  assert.doesNotMatch(read('../api/_lib/voice-examples.js'), dash);
+  assert.doesNotMatch(ERC_VOICE, dash);
+  const prompt = buildRewritePrompt([
+    ITEM,
+    { id: 'x2', headline: 'Gig Em Grants', type: 'opportunity', subtype: 'Funding & Grants', deadline: '2026-11-01', blurb: '', original_text: 'Grants for Aggie teachers.' },
+  ], new Map([['x2', 'The page of the grants.']]));
+  assert.doesNotMatch(prompt, dash);
 });

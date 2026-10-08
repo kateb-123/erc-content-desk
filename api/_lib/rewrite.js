@@ -1,11 +1,11 @@
 /**
- * The ONE batched description rewrite: Events + Opportunities always, and
- * research that arrived without an abstract (drafted from its original
- * text). Research WITH an abstract and headlines are never rewritten — the
- * v1 credit burner stays scoped. A checked row (rewrite_checked) is done
- * for good. buildRewritePrompt leads with a few real before/after examples
- * from Kate's own newsletters (see voice-examples.js) so the model has
- * concrete voice/compression targets on top of ERC_VOICE.
+ * The ONE batched description rewrite: events and opportunities always, a
+ * Report always, and research that arrived without an abstract. Headlines
+ * and other research are never rewritten, so the model call stays scoped. A
+ * checked row (rewrite_checked) is done for good. buildRewritePrompt shows
+ * Kate's four approved samples (voice-examples.js) in the shape of an item,
+ * each with its rewrite, then the items; ERC_VOICE (voice.js) is the system
+ * prompt and holds the voice, the prompt holds the rules for these items.
  */
 import { VOICE_EXAMPLES } from './voice-examples.js';
 import { canRewrite, readyToFinalize } from '../../js/workflow.js';
@@ -34,7 +34,7 @@ export const REWRITE_SCHEMA = {
         required: ['id', 'blurb'],
         properties: {
           id: { type: 'string', description: 'The item id, copied exactly.' },
-          blurb: { type: 'string', description: 'The rewritten blurb, 1-3 sentences, at most 70 words, no padding.' },
+          blurb: { type: 'string', description: 'The rewritten blurb, 1-3 sentences, at most 70 words, no padding. Empty when the material says nothing beyond the title.' },
         },
       },
     },
@@ -71,11 +71,13 @@ export function buildRewritePrompt(rows) {
       ? `original text:\n${String(r.original_text).slice(0, ORIGINAL_TEXT_CAP)}` : '',
   ].filter(Boolean).join('\n')).join('\n\n---\n\n');
   return [
-    'Rewrite each blurb below in the ERC newsletter voice.',
-    'An item with no blurb has none yet — draft one from its original text and fields instead.',
-    'Return one rewrite per item, keyed by its exact id.',
-    'Keep every fact — never add one. Do not restate the date/time/location line-for-line if the blurb flows better without it; the layout shows those separately.',
-    'A short original stays short. Do not add a closing sentence about who would find the item useful; the examples that end that way carry a fact from the source, not a comment.',
+    'Rewrite the description of each item below in the ERC newsletter voice. Return one rewrite per item, keyed by its exact id.',
+    'An item with no description has none yet: draft one from its other text and its fields.',
+    'Never repeat the date, time, place or deadline: the fields carry them and the layout shows them.',
+    "Keep every fact true to the item's own fields and text; never add one.",
+    'A short original stays short. Do not add a closing sentence about who would find the item useful.',
+    'When the material says nothing beyond the title, return an empty blurb for that item; the desk keeps what it has.',
+    '',
     'Examples of the voice, each an item as you will see one, then its rewrite:',
     '',
     exampleBlock(),
