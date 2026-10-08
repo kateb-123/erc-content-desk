@@ -612,7 +612,8 @@ function renderTriage() {
   const table = el('table', 'outline-table');
   const thead = el('thead');
   const hr = el('tr');
-  for (const [text, cls] of [['Item', ''], ['Featured', ''], ['', 'r']]) {
+  // The Featured column is hidden for now (Kate, Oct 7: "remove featured event from everything", to circle back).
+  for (const [text, cls] of [['Item', ''], ['', 'r']]) {
     const th = el('th', cls, text);
     th.scope = 'col';
     hr.appendChild(th);
@@ -637,7 +638,7 @@ function renderTriage() {
     const sr = el('tr', 'outline-section');
     sr.dataset.section = reg.key;
     const std = el('td');
-    std.colSpan = 3;
+    std.colSpan = 2;
     std.appendChild(sectionHandle(issue, reg, populated));
     std.appendChild(el('span', 'outline-section-name', reg.label));
     std.appendChild(el('span', 'outline-section-count', live.length === rows.length ? String(rows.length) : `${live.length} of ${rows.length}`));
@@ -654,7 +655,7 @@ function renderTriage() {
         const gr = el('tr', 'outline-group');
         gr.dataset.section = reg.key;
         const gtd = el('td', '', bucket.label);
-        gtd.colSpan = 3;
+        gtd.colSpan = 2;
         gr.appendChild(gtd);
         tbody.appendChild(gr);
       }
@@ -680,24 +681,8 @@ function renderTriage() {
         cell.appendChild(words);
         td1.appendChild(cell);
 
-        // Featured: events only, one radio across the section.
-        const td2 = el('td');
-        if (reg.key === 'events' && !removed.has(item)) {
-          const lab = el('label', 'outline-featured' + (item.featured ? ' is-on' : ''));
-          const rb = el('input');
-          rb.type = 'radio';
-          rb.name = 'outline-featured';
-          rb.checked = !!item.featured;
-          rb.setAttribute('aria-label', `Feature "${title}"`);
-          rb.addEventListener('change', () => {
-            items.forEach((ev) => { ev.featured = false; });
-            item.featured = true;
-            scheduleSave();
-            renderTriage();
-          });
-          lab.append(rb, item.featured ? ' Featured' : ' Feature');
-          td2.appendChild(lab);
-        }
+        // The Feature radio (events only, one across the section) is hidden for
+        // now (Kate, Oct 7); the email still prints an older draft's featured event.
 
         // The actions, quiet on every row (Kate, Oct 7): Move to… and Remove;
         // Undo on a removed row (the desk's greyed row).
@@ -714,7 +699,7 @@ function renderTriage() {
             showMenu(mv, 'outline-menu', (menu) => {
               for (const r2 of SECTION_REGISTRY) {
                 menu.appendChild(el('div', 'outline-menu-head', r2.label));
-                for (const g2 of r2.groups) {
+                for (const g2 of r2.groups.filter((g) => g.key !== 'featured')) {   // Featured Events is hidden for now (Kate, Oct 7)
                   const here = r2.key === reg.key && g2.key === groupKeyOf(item);
                   const b = button(g2.label || '(no group)', 'outline-menu-item' + (here ? ' is-current' : ''));
                   if (here) b.disabled = true;
@@ -740,7 +725,7 @@ function renderTriage() {
           td3.append(mv, delBtn);
         }
 
-        tr.append(td1, td2, td3);
+        tr.append(td1, td3);
         tbody.appendChild(tr);
       }
     }
@@ -762,7 +747,6 @@ function renderTriage() {
       cell.appendChild(words);
       td1.appendChild(cell);
       const td3 = el('td', 'r outline-actions');
-      td3.colSpan = 2;
       if (!fixed) {
         const mv = button('Move to…', 'ghost-btn outline-move');
         mv.setAttribute('aria-label', `Move the callout "${c.title}" after another section`);
@@ -1126,7 +1110,7 @@ function buildAddItemPanel(iframe) {
   const groupField = field('Group', groupSelect);
   const syncGroups = () => {
     const reg = SECTION_REGISTRY.find((r) => r.key === sectionSelect.value);
-    groupSelect.replaceChildren(...(reg?.groups ?? []).map((g) => option(g.key, g.label)));
+    groupSelect.replaceChildren(...(reg?.groups ?? []).filter((g) => g.key !== 'featured').map((g) => option(g.key, g.label)));   // Featured Events is hidden for now (Kate, Oct 7)
     // A single unlabeled group (Miscellaneous) needs no picker.
     groupField.hidden = !(reg?.groups ?? []).some((g) => g.label);
   };
