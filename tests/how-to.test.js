@@ -102,10 +102,11 @@ test('the deck: the three steps and Send as chapters of slides, then Styles, in 
   assert.doesNotMatch(nl, /Kate|Kathy/, 'no name on a team page');
   assert.doesNotMatch(nl, /Claude/, 'the builder never calls Claude, so no note');
   assert.doesNotMatch(nl, /featured/i, 'Featured is hidden in the builder (Oct 7), so the how-to never mentions it');
+  assert.doesNotMatch(nl, /Pull from the desk/, 'no Pull button since Oct 7: picking the issue pulls');
 });
 
 test('the newsletter how-to says what it should in the desk\'s own words', () => {
-  for (const words of ['Ready to add', 'Quick add', 'Open the builder', 'Pull from the desk', 'Samples', 'Copy HTML', 'Save to the archive', 'Past issues', 'never in Outlook', 'Submit content', 'Sort', 'Finalize', 'Publish']) assert.ok(nl.includes(words), words);
+  for (const words of ['Ready to add', 'Quick add', 'Open the builder', 'Samples', 'Copy HTML', 'Save to the archive', 'Past issues', 'never in Outlook', 'Submit content', 'Sort', 'Finalize', 'Publish']) assert.ok(nl.includes(words), words);
 });
 
 test('every still and every look is a file beside the page, drawn at its own shape, with words for a screen reader', () => {
@@ -164,7 +165,7 @@ test('Styles: a menu of every group in the page\'s order, and a look for each of
 
 test('every control the how-to names is a control the builder names, in the builder\'s own words', () => {
   const names = [
-    'Pull from the desk', 'Samples', 'Sample issue (fictional)', 'Move to…', 'Remove', 'Undo',
+    'Samples', 'Sample issue (fictional)', 'Move to…', 'Remove', 'Undo',
     'Add an item', 'Add a callout', 'Contents strip', 'Reset layout', 'Done', 'Undo changes',
     'How it is laid out', 'Its words', 'Title and details', 'With description', 'Stamp beside the text', 'Headshot beside it all', 'Date card',
     'Picture size, px', 'Zoom available', 'Flyer link', 'Add media', 'Description',
