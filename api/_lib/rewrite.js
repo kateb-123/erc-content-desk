@@ -41,26 +41,31 @@ export const REWRITE_SCHEMA = {
   },
 };
 
+const clean = v => String(v ?? '').trim();
+
+/** An item's fields, a line each, only the ones it has. The samples and the
+ *  items share it, so a sample reads the way a real item does. */
+function fieldLines(r) {
+  const type = [r.type, r.subtype].map(clean).filter(Boolean).join(' / ');
+  return [
+    ['title', r.headline], ['type', type], ['source', r.source], ['authors', r.authors],
+    ['date', r.date], ['time', r.time], ['location', r.location], ['deadline', r.deadline],
+  ].filter(([, v]) => clean(v)).map(([k, v]) => `${k}: ${clean(v)}`);
+}
+
 function exampleBlock() {
   return VOICE_EXAMPLES.map(ex => [
-    'Original:',
-    ex.original,
+    ...fieldLines(ex),
+    `original text:\n${ex.original_text}`,
     '',
-    'Rewrite:',
-    ex.rewrite,
+    `Rewrite:\n${ex.rewrite}`,
   ].join('\n')).join('\n\n---\n\n');
 }
 
 export function buildRewritePrompt(rows) {
   const items = rows.map(r => [
     `id: ${r.id}`,
-    `title: ${r.headline}`,
-    `type: ${r.type} / ${r.subtype}`,
-    r.authors ? `authors: ${r.authors}` : '',
-    r.date ? `date: ${r.date}` : '',
-    r.time ? `time: ${r.time}` : '',
-    r.location ? `location: ${r.location}` : '',
-    r.deadline ? `deadline: ${r.deadline}` : '',
+    ...fieldLines(r),
     r.blurb ? `blurb:\n${r.blurb}` : '',
     !r.blurb && r.original_text
       ? `original text:\n${String(r.original_text).slice(0, ORIGINAL_TEXT_CAP)}` : '',
@@ -71,10 +76,9 @@ export function buildRewritePrompt(rows) {
     'Return one rewrite per item, keyed by its exact id.',
     'Keep every fact — never add one. Do not restate the date/time/location line-for-line if the blurb flows better without it; the layout shows those separately.',
     'A short original stays short. Do not add a closing sentence about who would find the item useful; the examples that end that way carry a fact from the source, not a comment.',
-    'Examples of the voice:',
-    exampleBlock(),
+    'Examples of the voice, each an item as you will see one, then its rewrite:',
     '',
-    "(Note: some of those human rewrites add a fact the editor pulled from the source page — do not do that. Use only facts present in each item's own blurb, original text, or fields below.)",
+    exampleBlock(),
     '',
     'Items:',
     items,
