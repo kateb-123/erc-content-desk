@@ -5,16 +5,25 @@
  */
 import { isoToShort } from './queue-view.js';
 
+/**
+ * Since Oct 8 (Kate: "does it keep a live count from the sheet?"; her pick)
+ * the count is Sheet 1's own row count, read as the page opens (`sheet` says
+ * whether the script answered); the desk's copy gives the last sign-up, and
+ * `updated` the day the listserv was last updated, the day Sheet 1 was seen
+ * cleared. `retry` says the page should offer Try again.
+ */
 export function listservStatus(signups, today) {
-  if (!signups) return { form: 'Checking', last: '', waiting: null, since: '' };
-  if (signups.error) return { form: "Couldn't check just now", last: '', waiting: null, since: '' };
+  if (!signups) return { form: 'Checking', last: '', waiting: null, note: '', retry: false, updated: '' };
+  if (signups.error) return { form: "Couldn't check just now", last: '', waiting: null, note: '', retry: true, updated: '' };
   const form = signups.live ? 'Live, taking sign-ups' : 'Not set up';
-  if (!signups.kept) return { form, last: 'Not known', waiting: null, since: 'The desk starts counting once its sign-up table is set up.' };
+  const counted = signups.sheet === true && Number.isFinite(signups.waiting);
   return {
     form,
-    last: signups.last ? isoToShort(signups.last, today) : 'None yet',
-    waiting: signups.waiting,
-    since: signups.since ? `Counted since ${isoToShort(signups.since, today)}, when the desk began keeping a copy.` : '',
+    last: !signups.kept ? 'Not known' : signups.last ? isoToShort(signups.last, today) : 'None yet',
+    waiting: counted ? signups.waiting : null,
+    note: counted ? 'Rows on Sheet 1, counted as this page opened.' : signups.live ? "Sheet 1 couldn't be counted just now." : '',
+    retry: Boolean(signups.live) && !counted,
+    updated: signups.updated ? isoToShort(signups.updated, today) : '',
   };
 }
 

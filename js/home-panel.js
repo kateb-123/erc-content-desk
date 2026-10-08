@@ -27,7 +27,7 @@ const lower = text => (text ? text[0].toLowerCase() + text.slice(1) : '');
  *   preview    the Exchange check, or null until it lands
  *   archive    the builder's archive index, or null/false
  *   hubUpdated the live site's last change, YYYY-MM-DD; '' when it did not answer, null while asked
- *   signups    { live, waiting, last } from the listserv, or null
+ *   signups    { live, sheet, waiting, last } from the listserv, or null; the count is Sheet 1's (Oct 8)
  */
 export function hubCards({ rows = [], schedule = [], today = '', loaded = false, preview = null, archive = null, hubUpdated = null, signups = null }) {
   const card = (key, rest) => ({ key, label: hub(key).label, href: hub(key).href, count: null, sub: '', foot: '', ...rest });
@@ -56,7 +56,7 @@ export function hubCards({ rows = [], schedule = [], today = '', loaded = false,
       ? { count: loaded ? issueRows(rows, next).length : null, sub: `in the ${isoToShort(next, today)} issue · ${lower(sendsIn(next, today))}` }
       : { sub: 'No issue scheduled' }), foot: sent ? `Last sent ${isoToShort(sent, today)}` : '', links: EMAIL_PAGES.map(p => ({ label: p.label, href: p.href, blank: true })) }),
     // The sign-up sheet rides the card too (Kate, Oct 8), opening in a new tab.
-    card('listserv', { count: signups?.live && Number.isFinite(signups.waiting) ? signups.waiting : null, sub: 'to be added', foot: signupFoot, links: [{ label: SIGNUP_SHEET.label, href: SIGNUP_SHEET.href, blank: true }] }),
+    card('listserv', { count: signups?.sheet && Number.isFinite(signups.waiting) ? signups.waiting : null, sub: 'to be added', foot: signupFoot, links: [{ label: SIGNUP_SHEET.label, href: SIGNUP_SHEET.href, blank: true }] }),
     card('links', { copies: PUBLIC_LINKS }),
     card('exchange', { count: exchange.waiting, sub: 'waiting to publish', foot: exchange.site === 'Live' ? `Live · updated ${exchange.updated}` : '' }),
   ];

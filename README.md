@@ -74,7 +74,7 @@ Environment variables (Vercel project settings):
 | `HUB_REPO`, `HUB_BRANCH`, `HUB_CSV_PATH`, `HUB_CSV_URL` | where the public feed lives (defaults to `kateb-123/erc-policy-exchange-app`, `main`, `data/news.csv`) |
 | `ARCHIVE_REPO`, `ARCHIVE_BRANCH` | where saved issues go (defaults to this repo) |
 | `TURNSTILE_SECRET_KEY` | the bot check for cross-origin submissions |
-| `LISTSERV_URL` | the newsletter sign-up the public site posts through |
+| `LISTSERV_URL` | the newsletter sign-up the public site posts through; its script also answers `?action=count` with Sheet 1's rows for the Listserv hub (`apps-script/listserv-count.gs`) |
 
 The Google Sheet side, once:
 

@@ -7,19 +7,34 @@ import { listservStatus } from '../js/listserv-view.js';
 // is live, the last sign-up, how many wait to be added. Counts and dates
 // only: the page is open (her pick, Sort alone is locked).
 
-test('listservStatus: live, the last sign-up, and how many wait since the desk began keeping a copy', () => {
-  assert.deepEqual(listservStatus({ live: true, kept: true, waiting: 4, last: '2026-10-04', since: '2026-10-01' }, '2026-10-07'), {
-    form: 'Live, taking sign-ups', last: 'Oct 4', waiting: 4, since: 'Counted since Oct 1, when the desk began keeping a copy.',
+// Since Oct 8 (Kate: "does it keep a live count from the sheet?", her pick)
+// the count is Sheet 1's own row count, asked of the sign-up sheet's script
+// as the page opens; the desk's copy still gives the last sign-up.
+test('listservStatus: live, the last sign-up, and Sheet 1\'s rows right now', () => {
+  assert.deepEqual(listservStatus({ live: true, kept: true, sheet: true, waiting: 4, last: '2026-10-04', since: '2026-10-01' }, '2026-10-07'), {
+    form: 'Live, taking sign-ups', last: 'Oct 4', waiting: 4, note: 'Rows on Sheet 1, counted as this page opened.', retry: false, updated: '',
   });
+  // Her note, Oct 8: the day Sheet 1 was seen cleared is the day the listserv was last updated.
+  assert.equal(listservStatus({ live: true, kept: true, sheet: true, waiting: 0, last: '2026-10-06', since: '', updated: '2026-10-08' }, '2026-10-08').updated, 'Oct 8');
 });
 
-test('listservStatus: no sign-ups yet, a form not set up, the copy not set up, still asking', () => {
-  assert.deepEqual(listservStatus({ live: true, kept: true, waiting: 0, last: '', since: '' }, '2026-10-07'),
-    { form: 'Live, taking sign-ups', last: 'None yet', waiting: 0, since: '' });
-  assert.equal(listservStatus({ live: false, kept: true, waiting: 0, last: '', since: '' }, '2026-10-07').form, 'Not set up');
-  assert.deepEqual(listservStatus({ live: true, kept: false, waiting: null, last: '', since: '' }, '2026-10-07'),
-    { form: 'Live, taking sign-ups', last: 'Not known', waiting: null, since: 'The desk starts counting once its sign-up table is set up.' });
-  assert.deepEqual(listservStatus(null, '2026-10-07'), { form: 'Checking', last: '', waiting: null, since: '' });
+test('listservStatus: a form not set up, a copy not set up, a sheet that could not be counted, still asking', () => {
+  assert.deepEqual(listservStatus({ live: true, kept: true, sheet: true, waiting: 0, last: '', since: '' }, '2026-10-07'),
+    { form: 'Live, taking sign-ups', last: 'None yet', waiting: 0, note: 'Rows on Sheet 1, counted as this page opened.', retry: false, updated: '' });
+  assert.equal(listservStatus({ live: false, kept: true, sheet: false, waiting: null, last: '', since: '' }, '2026-10-07').form, 'Not set up');
+  assert.deepEqual(listservStatus({ live: true, kept: false, sheet: true, waiting: 2, last: '', since: '' }, '2026-10-07'),
+    { form: 'Live, taking sign-ups', last: 'Not known', waiting: 2, note: 'Rows on Sheet 1, counted as this page opened.', retry: false, updated: '' }, 'the count needs no desk table');
+  assert.deepEqual(listservStatus({ live: true, kept: true, sheet: false, waiting: null, last: '2026-10-06', since: '' }, '2026-10-07'),
+    { form: 'Live, taking sign-ups', last: 'Oct 6', waiting: null, note: "Sheet 1 couldn't be counted just now.", retry: true, updated: '' });
+  assert.deepEqual(listservStatus(null, '2026-10-07'), { form: 'Checking', last: '', waiting: null, note: '', retry: false, updated: '' });
+});
+
+test('the page draws the count\'s note and its Try again from the status', () => {
+  const src = readFileSync(new URL('../js/listserv-ui.js', import.meta.url), 'utf8');
+  assert.match(src, /s\.note/);
+  assert.match(src, /s\.retry/);
+  assert.match(src, /Last updated \$\{s\.updated\}/, 'the day the listserv was last updated');
+  assert.doesNotMatch(src, /s\.since/, 'the old since line is gone');
 });
 
 test('the page draws counts and dates only, and the download is forthcoming', () => {
@@ -57,6 +72,14 @@ test('the Listserv hub has a door to the sheet, opening in a new tab, with the s
 });
 
 test('the Listserv card carries the sheet as a link, opening in a new tab', () => {
-  const card = hubCards({ rows: [], schedule: [], today: '2026-10-08', loaded: true, signups: { live: true, kept: true, waiting: 0, last: '', since: '' } }).find(c => c.key === 'listserv');
+  const card = hubCards({ rows: [], schedule: [], today: '2026-10-08', loaded: true, signups: { live: true, kept: true, sheet: true, waiting: 0, last: '', since: '' } }).find(c => c.key === 'listserv');
   assert.deepEqual(card.links, [{ label: 'Sign-up sheet', href: SIGNUP_SHEET.href, blank: true }]);
+  assert.equal(card.count, 0);
+  const uncounted = hubCards({ rows: [], schedule: [], today: '2026-10-08', loaded: true, signups: { live: true, kept: true, sheet: false, waiting: null, last: '', since: '' } }).find(c => c.key === 'listserv');
+  assert.equal(uncounted.count, null, 'a sheet that could not be counted leaves the card blank');
+});
+
+test('the desk keeps the whole listserv answer, sheet and updated included, so the page can draw them', () => {
+  const app = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
+  assert.match(app, /state\.signups = \{ live: data\.live, kept: data\.kept, sheet: data\.sheet, waiting: data\.waiting, last: data\.last, since: data\.since, updated: data\.updated \};/);
 });

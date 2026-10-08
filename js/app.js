@@ -801,7 +801,7 @@ loadHubUpdated();
 async function loadSignups() {
   try {
     const data = await readReply(await fetch('/api/listserv'), 'count the sign-ups');
-    state.signups = { live: data.live, kept: data.kept, waiting: data.waiting, last: data.last, since: data.since };
+    state.signups = { live: data.live, kept: data.kept, sheet: data.sheet, waiting: data.waiting, last: data.last, since: data.since, updated: data.updated };
   } catch { state.signups = { error: true }; }
   render();
 }

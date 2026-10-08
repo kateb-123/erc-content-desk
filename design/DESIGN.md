@@ -464,7 +464,14 @@ same: the hub's name as the title and one line under it.
   new tab, under an Adding people label, with her three steps under it (Add
   the people on Sheet 1 to the listserv; Move their rows from Sheet 1 to
   Sheet 2; Clear Sheet 1); the card carries the sheet as a link. The address
-  sits in the code (her pick; the sheet's own sharing guards it). Downloading
+  sits in the code (her pick; the sheet's own sharing guards it). The count
+  is Sheet 1's own row count (her pick, "Count Sheet 1 live"), asked of the
+  sign-up sheet's script as the page opens (`?action=count`,
+  apps-script/listserv-count.gs); when it does not answer, the numeral is
+  blank and the note says so with Try again. The day Sheet 1 is seen cleared
+  is the day the listserv was last updated (her note: "when the sheet 1 goes
+  from a count to 0 that means it was updated"): the desk's copy stamps its
+  rows beyond the newest N as added, and the box says "Last updated <date>." Downloading
   the sign-ups in the listserv's format is forthcoming.
 - **Public links**: the card alone, Copy link on each row.
 - **Policy Exchange** (/#exchange): the site's status (Live, or that it did

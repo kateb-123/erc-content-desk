@@ -39,7 +39,7 @@ test('hubCards: the six hubs in her order, each with its status', () => {
   const cards = hubCards({
     rows: hubRows, schedule: hubSchedule, today: '2026-10-07', loaded: true,
     preview: { adding: [{ id: 'p1' }, { id: 'x' }] }, archive: hubArchive, hubUpdated: '2026-10-01',
-    signups: { live: true, waiting: 4, last: '2026-10-04' },
+    signups: { live: true, sheet: true, waiting: 4, last: '2026-10-04' },
   });
   assert.deepEqual(cards.map(c => [c.key, c.label, c.href, c.count, c.sub, c.foot]), [
     ['team', 'Submit content', '/#team', null, "The team's form", ''],
@@ -84,7 +84,7 @@ test('hubCards: a listserv not set up says so, and one with no sign-ups yet says
   const off = hubCards({ rows: [], schedule: [], today: '2026-10-07', loaded: true, preview: null, archive: null, hubUpdated: null, signups: { live: false, waiting: null, last: '' } });
   assert.equal(off[3].foot, 'Not set up');
   assert.equal(off[3].count, null);
-  const quiet = hubCards({ rows: [], schedule: [], today: '2026-10-07', loaded: true, preview: null, archive: null, hubUpdated: null, signups: { live: true, waiting: 0, last: '' } });
+  const quiet = hubCards({ rows: [], schedule: [], today: '2026-10-07', loaded: true, preview: null, archive: null, hubUpdated: null, signups: { live: true, sheet: true, waiting: 0, last: '' } });
   assert.equal(quiet[3].foot, 'Live');
   assert.equal(quiet[3].count, 0);
 });

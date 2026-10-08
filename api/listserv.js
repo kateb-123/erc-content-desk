@@ -15,6 +15,10 @@
  * the script took (api/_lib/signups.js), and GET answers the Listserv hub:
  * whether the form is set up, how many wait to be added, the last sign-up.
  * Counts and dates only, never a name or an email: the hub is an open page.
+ * Since Oct 8 (her pick, "Count Sheet 1 live") the count is Sheet 1's own
+ * row count, asked of the sign-up sheet's script (?action=count, see
+ * apps-script/listserv-count.gs); the desk's copy gives the last sign-up and
+ * the day the listserv was last updated, the day Sheet 1 was seen cleared.
  */
 import { preflight } from './_lib/cors.js';
 import { checkRequest } from './_lib/turnstile.js';
@@ -54,16 +58,41 @@ export function validateSignup({ name, email }) {
  *  already stands, so a stalled database is given up on, never waited out. */
 export const COPY_TIMEOUT_MS = 3000;
 
+/** How long the sheet's script may take to count Sheet 1. */
+export const COUNT_TIMEOUT_MS = 6000;
+
+/** Sheet 1's rows right now, from the sign-up sheet's script; null when it
+ *  did not answer with a number (down, slow, a sign-in page, an old script). */
+async function sheetCount(url) {
+  try {
+    const response = await fetch(`${url}${url.includes('?') ? '&' : '?'}action=count`, { signal: AbortSignal.timeout(COUNT_TIMEOUT_MS) });
+    if (!response.ok) return null;
+    const data = JSON.parse(await response.text());
+    return data?.ok && Number.isInteger(data.waiting) && data.waiting >= 0 ? data.waiting : null;
+  } catch (err) {
+    console.error('listserv: Sheet 1 could not be counted', err?.message ?? err);
+    return null;
+  }
+}
+
 /** Built over its dependencies so the tests can hand in fakes. */
 export function createListservHandler({ env, mode, signups, copyTimeoutMs = COPY_TIMEOUT_MS }) {
   const kept = () => mode() === 'db';
 
   async function summary(res) {
-    const live = Boolean(env().LISTSERV_URL);
-    const none = { ok: true, live, kept: false, waiting: null, last: '', since: '' };
+    const url = env().LISTSERV_URL;
+    const live = Boolean(url);
+    const waiting = live ? await sheetCount(url) : null;
+    const sheet = waiting !== null;
+    const none = { ok: true, live, kept: false, sheet, waiting, last: '', since: '', updated: '' };
     if (!kept()) return res.status(200).json(none);
     try {
-      return res.status(200).json({ ok: true, live, kept: true, ...(await signups().summary()) });
+      // Sheet 1 holds the newest `waiting` sign-ups: the rest of the desk's
+      // copy was added, stamped today (her note, Oct 8). A failed stamp never
+      // fails the count.
+      if (sheet) { try { await signups().markAdded(waiting); } catch (err) { if (isMissingSignups(err)) throw err; console.error('listserv: the added rows were not stamped', err); } }
+      const copy = await signups().summary();
+      return res.status(200).json({ ok: true, live, kept: true, sheet, waiting, last: copy.last, since: copy.since, updated: copy.updated });
     } catch (err) {
       if (isMissingSignups(err)) return res.status(200).json(none);
       console.error('listserv: the count failed', err);

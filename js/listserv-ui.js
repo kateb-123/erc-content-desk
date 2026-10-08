@@ -3,8 +3,9 @@
  * status and its link, the last sign-up, and how many wait to be added to
  * the listserv. Counts and dates only: the page is open, so the sign-ups'
  * names and addresses stay in the desk's table and her sheet. Since Oct 8
- * (Kate) a door opens the sign-up sheet, with the three steps for adding
- * people under it. Downloading them in the listserv's format is forthcoming.
+ * (Kate) the count is Sheet 1's own, a door opens the sign-up sheet with the
+ * three steps for adding people under it, and the day Sheet 1 was seen
+ * cleared shows as when the listserv was last updated. Downloading them in the listserv's format is forthcoming.
  */
 import { listservStatus, SIGNUP_SHEET, SHEET_STEPS } from './listserv-view.js';
 import { PUBLIC_LINKS, copyLinkButton } from './public-links.js';
@@ -33,18 +34,20 @@ export function renderListserv(container, { signups, today, onRetry }) {
   open.append(' ', faIcon('arrow-up-right-from-square'), el('span', 'sr-only', ' (opens in a new tab)'));
   const formBox = el('div', 'hub-box');
   const status = el('span', s.form.startsWith('Live') ? 'hub-ok' : 'hub-quiet', s.form);
-  // A count that failed says so, with its way to try again (review, Oct 6).
-  const retry = signups?.error && onRetry
+  // A check or a count that failed says so, with its way to try again (review, Oct 6).
+  const retry = s.retry && onRetry
     ? [' ', button('Try again', 'linkish', { focus: 'retry', onClick: () => { retry[1].disabled = true; onRetry(); } })]
     : [];
   formBox.append(
-    stat('Status', status, ...retry),
+    stat('Status', status, ...(signups?.error ? retry : [])),
     stat('Last sign-up', s.last),
     stat('The form', open, ' · ', copy),
   );
+  // Sheet 1's rows right now, and the day the listserv was last updated (Kate, Oct 8).
   const countBox = el('div', 'hub-box hub-count');
   countBox.append(el('span', 'hub-numeral', s.waiting == null ? '' : String(s.waiting)));
-  if (s.since) countBox.append(el('p', 'hub-count-note', s.since));
+  if (s.note) { const note = el('p', 'hub-count-note', s.note); if (!signups?.error) note.append(...retry); countBox.append(note); }
+  if (s.updated) countBox.append(el('p', 'hub-count-note', `Last updated ${s.updated}.`));
 
   // Adding people (Kate, Oct 8): the sheet's door, then her three steps.
   const door = el('a', 'sort-door hub-door');

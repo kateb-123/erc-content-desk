@@ -55,7 +55,7 @@ test("the Exchange's last update is the later of the site's own and the desk's l
 });
 
 test('a sign-up count that failed says so, never Checking forever', () => {
-  assert.deepEqual(listservStatus({ error: true }, '2026-10-07'), { form: "Couldn't check just now", last: '', waiting: null, since: '' });
+  assert.deepEqual(listservStatus({ error: true }, '2026-10-07'), { form: "Couldn't check just now", last: '', waiting: null, note: '', retry: true, updated: '' });
   const card = hubCards({ rows: [], schedule: [], today: '2026-10-07', loaded: true, signups: { error: true } }).find(c => c.key === 'listserv');
   assert.equal(card.count, null);
   assert.equal(card.foot, '');
