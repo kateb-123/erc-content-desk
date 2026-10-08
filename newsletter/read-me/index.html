@@ -17,7 +17,7 @@
   <header class="topbar"></header>
   <main id="main" class="email-page email-readme">
     <h1 class="home-title">Read me</h1>
-    <p class="lede">The newsletter's HTML: what the two pages are, and how to change the email.</p>
+    <p class="lede">The newsletter's HTML: the two pages, what the builder changes, and when to change the template itself.</p>
 
     <h2>The two pages</h2>
     <ul>
@@ -26,22 +26,27 @@
     </ul>
     <p>Both are drawn from the builder's own template the moment they open, so they always match what the builder makes. Copy HTML on either page puts that email's code on the clipboard.</p>
 
-    <h2>Change one email</h2>
-    <p>An issue is built in the <a href="/builder/">Newsletter builder</a>, and every fix goes in its Preview &amp; Tweak step, never in Outlook, so the archive matches what went out. For a change the builder cannot make, press Copy HTML on the Save &amp; Export step, paste the code into Claude, and ask for the change, then paste the result into Outlook. That changes one email only. Example asks:</p>
+    <h2>Change an issue in the builder</h2>
+    <p>Nearly everything about one issue is done in the <a href="/builder/">Newsletter builder</a>, in its Preview &amp; Tweak step, never in Outlook, so the archive matches what went out. The builder can:</p>
     <ul>
-      <li>"Move the Opportunities section above Upcoming Events."</li>
-      <li>"Make the Research Brief label maroon instead of gray."</li>
-      <li>"Shorten the introduction to two sentences."</li>
+      <li>Put the issue in order: drag a section or an item by its grip. Move to… files an item under another section or group. Remove takes it out, and Undo puts it back.</li>
+      <li>Edit any words in place: a title, a description, the introduction, a callout. Use original and Undo changes put the text back.</li>
+      <li>Choose how an item is laid out: Title and details, With description, Stamp beside the text, Headshot beside it all, or a Date card for an event.</li>
+      <li>Add a picture or a flyer to an item (Add media), and set the picture's size.</li>
+      <li>Set a research item's kind: Research Brief, Research Report, Journal Article or ERC Explains.</li>
+      <li>Add an item by hand, or Add a callout in one of three styles: Maroon block, Light gray box or Dotted rule.</li>
+      <li>Turn the Contents strip on or off. Reset layout puts every option back to its default.</li>
+      <li>Copy HTML into Outlook, then Save to the archive, so Past issues shows the email as it went out.</li>
     </ul>
 
-    <h2>Change the email for good</h2>
-    <p>The email's look lives in one file of the desk's code, <code>builder/js/template.js</code>. A change there reaches the builder, the blank template and the sample at once. To make one, open the desk's folder in Claude Code and ask for the change; it writes the code and runs the desk's tests, and the change goes live when it is pushed. Example asks:</p>
+    <h2>Change the template itself</h2>
+    <p>Only for a big style change that every issue after should carry: the masthead, the colors and type, a new section, a new layout. The email's look lives in one file of the desk's code, <code>builder/js/template.js</code>, and a change there reaches the builder, the blank template and the sample at once. Open the desk's folder in Claude Code and ask for the change; it writes the code and runs the desk's tests, and the change goes live when it is pushed. Example asks:</p>
     <ul>
-      <li>"In builder/js/template.js, add a Podcasts section after Headlines."</li>
-      <li>"Change the masthead's date line to read Month Day, Year in small caps."</li>
-      <li>"Give the Share something callout a white button on maroon."</li>
+      <li>"Add a Podcasts section after Headlines, with its own label."</li>
+      <li>"Change the masthead to the new ERC banner."</li>
+      <li>"Use a darker maroon for every section rule and button."</li>
     </ul>
-    <p>Where the desk's code lives, and who can push it, is in the Policy Exchange hub's handoff.</p>
+    <p>If the change is for one issue only, it belongs in the builder. Where the desk's code lives, and who can push it, is in the Policy Exchange hub's handoff.</p>
   </main>
   <script type="module">
     import { renderShell } from "/js/shell-ui.js";

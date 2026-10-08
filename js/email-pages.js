@@ -6,7 +6,7 @@
  * builder and both pages at once; the read me says where that change goes.
  */
 export const EMAIL_PAGES = [
+  { key: 'readme', label: 'Read me', href: '/newsletter/read-me/' },   // first (Kate, Oct 8)
   { key: 'blank', label: 'Blank template', href: '/newsletter/template/' },
   { key: 'sample', label: 'Sample issue', href: '/newsletter/sample/' },
-  { key: 'readme', label: 'Read me', href: '/newsletter/read-me/' },
 ];

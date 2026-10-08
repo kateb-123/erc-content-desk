@@ -441,7 +441,7 @@ same: the hub's name as the title and one line under it.
 - **Newsletter** (/#newsletter): unchanged (her answer); its status, the
   next send, how many are in it and the last sent, rides its card.
   The newsletter's HTML (Kate, Oct 8; her map's "HTML design files"):
-  three links at the card's foot, never downloads (her words: "the builder
+  three links at the card's foot, the read me first, never downloads (her words: "the builder
   has the most recent html template right now. that's what we should be
   using ... they can all link in vercel"). Blank template
   (/newsletter/template/, every section and callout with placeholder words,
@@ -449,8 +449,10 @@ same: the hub's name as the title and one line under it.
   the builder's own practice issue) are each the email drawn in a sheet by
   js/email-page.js through builder/js/template.js the moment the page
   opens, with Copy HTML in the head; Read me (/newsletter/read-me/) says what
-  the two are, how to change one email in Claude, and that a permanent
-  change goes in builder/js/template.js through Claude Code. All three crumb
+  the two are, lists what the builder changes in an issue (her note: "some
+  of those things you can do in the builder"), and keeps Claude Code for big
+  style changes to builder/js/template.js alone; one email is never edited
+  outside the builder. All three crumb
   under Newsletter as The email.
 - **Listserv** (/#listserv): the sign-up form's status, its last sign-up, its
   link with Copy link; how many wait to be added, counted since the desk

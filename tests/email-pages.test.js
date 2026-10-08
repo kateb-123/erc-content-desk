@@ -25,12 +25,13 @@ test('the Newsletter card carries the three pages as links, in her order', () =>
   const card = hubCards({ rows: [], schedule: [], today: '2026-10-08', loaded: true, preview: null, archive: [], hubUpdated: null, signups: null })
     .find(c => c.key === 'newsletter');
   assert.deepEqual(card.links, EMAIL_PAGES.map(p => ({ label: p.label, href: p.href, blank: true })));
+  // The read me leads (Kate, Oct 8: "lets just have the read me first").
   assert.deepEqual(EMAIL_PAGES.map(p => [p.key, p.href]), [
+    ['readme', '/newsletter/read-me/'],
     ['blank', '/newsletter/template/'],
     ['sample', '/newsletter/sample/'],
-    ['readme', '/newsletter/read-me/'],
   ]);
-  assert.deepEqual(EMAIL_PAGES.map(p => p.label), ['Blank template', 'Sample issue', 'Read me']);
+  assert.deepEqual(EMAIL_PAGES.map(p => p.label), ['Read me', 'Blank template', 'Sample issue']);
 });
 
 test('the blank template is the practice issue\'s shape with placeholder words, a stand-in picture only where a slot shows one', () => {
@@ -65,10 +66,16 @@ test('each page draws its issue through the builder\'s own template, with Copy H
   assert.match(script, /renderNewsletter\(await res\.json\(\)\)/);
 });
 
-test('the read me says where a permanent change goes, and how to change one email in Claude; no names', () => {
+test('the read me lists what the builder does, keeps Claude Code for big style changes, and names no one', () => {
   const readme = read('../newsletter/read-me/index.html');
   assert.match(readme, /builder\/js\/template\.js/, 'the one file a permanent change goes in');
   assert.match(readme, /Claude Code/);
+  // Kate, Oct 8: "some of those things you can do in the builder ... big editing is only for like big style changes".
+  for (const words of ['Move to…', 'Remove', 'Undo', 'Add an item', 'Add a callout', 'Contents strip', 'Reset layout', 'Use original', 'Title and details', 'With description', 'Stamp beside the text', 'Headshot beside it all', 'Date card', 'Add media', 'Research Brief', 'ERC Explains', 'Maroon block', 'Light gray box', 'Dotted rule', 'Save to the archive']) {
+    assert.ok(readme.includes(words), `the builder's own words: ${words}`);
+  }
+  assert.match(readme, /big style change/i);
+  assert.doesNotMatch(readme, /paste the code into Claude/, 'one email is never edited outside the builder');
   assert.match(readme, /Blank template/);
   assert.match(readme, /Sample issue/);
   assert.match(readme, /Copy HTML/);
