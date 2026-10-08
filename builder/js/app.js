@@ -5,11 +5,11 @@
  * pure logic lives in model.js, template.js, editpath.js and preview.js.
  */
 
-import { SECTION_REGISTRY, createEmptyIssue, mergeIssues, partitionPulled, countIssueItems, bucketSectionItems, moveItemToGroup, moveItemNear } from './model.js';
+import { SECTION_REGISTRY, createEmptyIssue, countIssueItems, bucketSectionItems, moveItemToGroup, moveItemNear } from './model.js';
 
 // The builder lives INSIDE the desk's project (/builder/), so the desk's API
 // is same-origin: relative fetches, no CORS.
-let pullMessage = ''; // survives the Review re-render after a pull
+let pullMessage = ''; // what the last pull said; survives the Outline's redraws
 import { renderNewsletter, renderProse } from './template.js';
 import { faIcon, busyWords } from '../../js/icons.js';
 import { el, button } from '../../js/ui-aids.js';
@@ -31,6 +31,8 @@ import { CALLOUT_KINDS, CALLOUT_END } from './model.js';
 import { readAllWaiting } from '../../js/reader-client.js';
 import { discardToDesk, draftIsOpen, replaceAskMessage, discardedTitle, discardedDetail, withEntry, withoutEntry, restoreOver } from './discarded.js';
 import { deskSubmission, sendItemToDesk } from './send-to-desk.js';
+// No Pull button (Kate, Oct 7): a date picked and a draft opened pull on their own.
+import { pickNeedsAsk, shouldPull, applyPull, syncRemoval } from './auto-pull.js';
 
 // ---------------------------------------------------------------------------
 // State
@@ -274,7 +276,7 @@ function emptyLine(container, text) {
 
 /**
  * The head of the Outline (the Review step folded in; Kate, Oct 7): the Issue
- * dropdown, Pull from the desk with its status, and Recently discarded, which
+ * dropdown, which pulls on its own, the pull's status, and Recently discarded, which
  * joins the step last.
  * @param {HTMLElement} container - the Outline step
  */
@@ -300,15 +302,21 @@ function renderPullHead(container) {
   let was = dateSelect.value;   // what the list showed before a change, for a Cancel
   // While the restore banner asks, the issue cannot be changed under it.
   dateSelect.disabled = restorePending;
+  // A date picked pulls its items at once (Kate, Oct 7: no Pull button); a
+  // different date over an open draft asks first, then starts fresh.
   dateSelect.addEventListener('change', () => {
     const sample = sampleOf(dateSelect.value);
     if (sample) { openSample(sample); return; }
-    if (!dateSelect.value) return;
-    was = dateSelect.value;
-    if (!state.issue) state.issue = createEmptyIssue();
+    const iso = dateSelect.value;
+    if (!iso) return;
+    if (pickNeedsAsk(state.issue, iso)) { askNewIssue(iso); return; }
+    was = iso;
+    // Nothing open yet, or a sample, which is never kept: the date opens empty and pulls.
+    if (!state.issue || state.issue.sample) { openDraft(emptyIssueFor(iso)); return; }
     // The issue keeps the display string the header renders ("July 1, 2026").
-    state.issue.date = isoToDisplayDate(dateSelect.value);
+    state.issue.date = isoToDisplayDate(iso);
     scheduleSave();
+    pullIssue();
   });
   dateLabel.appendChild(dateSelect);
   // Where a failed schedule load speaks: an error note under the field, with
@@ -358,6 +366,39 @@ function renderPullHead(container) {
     queueMicrotask(() => ok.focus({ preventScroll: true }));
   }
 
+  /**
+   * A different date over an open draft (Kate, Oct 7: ask, then start
+   * fresh). Confirm keeps the open draft on the desk under Recently
+   * discarded, then the date opens empty and pulls; Cancel puts the list back.
+   */
+  function askNewIssue(iso) {
+    const back = () => { scheduleNote.replaceChildren(); dateSelect.disabled = false; dateSelect.value = was; };
+    const start = async () => {
+      const wait = el('span', 'pull-status');
+      wait.append(busyWords(`Opening ${isoToDisplayDate(iso)}…`));
+      scheduleNote.replaceChildren(wait);
+      dateSelect.disabled = true;
+      try {
+        const reply = await discardToDesk(state.issue, { send: (body) => postJson('/api/drafts', body, 'keep the open draft'), clear: clearState });
+        discarded = withEntry(discarded, reply.draft);
+        openDraft(emptyIssueFor(iso));
+      } catch (err) {
+        back();
+        scheduleNote.replaceChildren(inlineNote('error', `Couldn't keep the open draft. ${reasonOf(err)}`, () => askNewIssue(iso)));
+      }
+    };
+    const ask = inlineNote('warning', replaceAskMessage(state.issue));
+    ask.removeAttribute('aria-live');
+    const ok = ghostButton('Confirm');
+    ok.classList.add('ask-confirm');
+    ok.addEventListener('click', start);
+    const no = ghostButton('Cancel');
+    no.addEventListener('click', () => { back(); dateSelect.focus(); });
+    ask.append(ok, ' · ', no);
+    scheduleNote.replaceChildren(ask);
+    queueMicrotask(() => ok.focus({ preventScroll: true }));
+  }
+
   // Fill the dropdown from the desk: scheduled dates plus anything staged,
   // from College Station's today on. The draft's own date stays even once it
   // has passed, or dropped off the desk's schedule; the samples follow.
@@ -382,60 +423,78 @@ function renderPullHead(container) {
   }
   loadSchedule();
 
-  // Pull from the desk: the Content Desk's Newsletter screen stamps items for
-  // an issue; this button fetches them, already builder-shaped. Re-pull adds
-  // only what is new (matched by link, and by the stable desk id). The button
-  // and its status share one row under the field.
+  // What the last pull said, on one row under the field; a failed one is an
+  // error note under it, with Retry. pullIssue draws into them.
   const pullRow = el('div', 'pull-row');
-  // The step's one real action: a filled primary, like the desk's Rewrite/Publish.
-  const pullBtn = button('Pull from the desk', 'btn btn-primary');
-  pullBtn.disabled = restorePending;   // locked while the restore banner asks
-  const pullStatus = el('span', 'pull-status', pullMessage);
-  pullStatus.setAttribute('role', 'status');    // read aloud as it changes
-  pullStatus.setAttribute('aria-live', 'polite');
-  // A failed pull is an error note under the row, with Retry.
-  const pullNote = el('div', 'note-slot');
-  const setPull = (msg, busy = false) => {
-    pullMessage = msg;
-    pullNote.replaceChildren();
-    if (busy && msg) pullStatus.replaceChildren(busyWords(msg));
-    else pullStatus.textContent = msg;
-  };
-  pullBtn.addEventListener('click', async () => {
-    const iso = displayDateToISO(state.issue?.date || '');
-    if (!iso) return setPull('Pick the issue first.');
-    pullBtn.hidden = true;   // gone while pulling; no double-clicks
-    setPull('Pulling…', true);
-    try {
-      const data = await readReply(await fetch(`/api/newsletter-pull?issue=${iso}`), 'pull the issue');
-      if (!countIssueItems(data.issue)) {
-        const staged = Object.entries(data.staged ?? {}).sort(([a], [b]) => a.localeCompare(b));
-        setPull(staged.length
-          ? `Nothing staged for ${isoToDisplayDate(iso)}. The desk has ${staged[0][1]} staged for ${isoToDisplayDate(staged[0][0])}.`
-          : `Nothing staged for ${isoToDisplayDate(iso)}.`);
-        return;
-      }
-      if (!state.issue) state.issue = createEmptyIssue();
-      const { pulled, already } = partitionPulled(data.issue, state.issue);
-      const fresh = countIssueItems(pulled);
-      if (fresh) {
-        pulled.date = ''; // never clobber the issue's own date field
-        mergeIssues(state.issue, pulled);
-        state.baseline = structuredClone(state.issue);
-        scheduleSave();
-      }
-      setPull(already ? `Pulled ${fresh} new · ${already} already here.` : `Pulled ${fresh} from the desk.`);
-      if (fresh) { renderTriage(); syncStepNav(); }
-    } catch {
-      setPull('');
-      pullNote.replaceChildren(inlineNote('error', "Couldn't reach the desk.", () => pullBtn.click()));
-    } finally {
-      pullBtn.hidden = false;
-    }
-  });
-  pullRow.append(pullBtn, pullStatus);
-  container.append(pullRow, pullNote);
+  const status = el('span', 'pull-status');
+  status.setAttribute('role', 'status');    // read aloud as it changes
+  status.setAttribute('aria-live', 'polite');
+  const note = el('div', 'note-slot');
+  pullRow.append(status);
+  container.append(pullRow, note);
+  pullView = { status, note };
+  drawPull();
   renderDiscardedDrafts(container);   // Recently discarded (Sep 23): joins the step after the rest has drawn
+}
+
+/** An empty issue for a picked date. */
+function emptyIssueFor(iso) {
+  const issue = createEmptyIssue();
+  issue.date = isoToDisplayDate(iso);
+  return issue;
+}
+
+/** Counts the pulls, so only the latest one's answer lands. */
+let pullRun = 0;
+let pullBusy = false;
+let pullFailed = false;
+/** The Outline's status row and note slot, as last drawn. */
+let pullView = null;
+
+function drawPull() {
+  if (!pullView) return;
+  if (pullBusy) pullView.status.replaceChildren(busyWords(pullMessage));
+  else pullView.status.textContent = pullMessage;
+  pullView.note.replaceChildren(...(pullFailed ? [inlineNote('error', "Couldn't reach the desk.", pullIssue)] : []));
+}
+
+/**
+ * Bring in what the desk's Next issue stamped for the open issue (Kate,
+ * Oct 7: no Pull button): when a date is picked and each time a draft opens.
+ * Only what the issue does not hold yet is added (by link and by the stable
+ * desk id), so a removed item, which Remove sent back to Ready to add, stays
+ * out. Never while the restore banner asks, and never for a sample.
+ */
+async function pullIssue() {
+  const issue = state.issue;
+  if (restorePending || !shouldPull(issue)) return;
+  const iso = displayDateToISO(issue.date);
+  const run = ++pullRun;
+  pullBusy = true;
+  pullFailed = false;
+  pullMessage = 'Pulling from the desk…';
+  drawPull();
+  try {
+    const data = await readReply(await fetch(`/api/newsletter-pull?issue=${iso}`), 'pull the issue');
+    if (run !== pullRun) return;   // a later pull speaks
+    pullBusy = false;
+    if (state.issue !== issue) { pullMessage = ''; drawPull(); return; }   // the issue changed under it
+    const { fresh, message } = applyPull(issue, data, iso);
+    pullMessage = message;
+    if (fresh) {
+      state.baseline = structuredClone(issue);
+      scheduleSave();
+    }
+    if (fresh && state.step === 'triage') renderTriage();
+    else drawPull();
+    syncStepNav();
+  } catch {
+    if (run !== pullRun) return;
+    pullBusy = false;
+    pullMessage = '';
+    pullFailed = state.issue === issue;
+    drawPull();
+  }
 }
 
 /**
@@ -461,7 +520,9 @@ function settleRemovals() {
  */
 let _undoToastTimer = null;
 function deleteItemWithUndo(itemId, rerender, fromKeyboard = false) {
-  if (!takeOut(state.issue, waitingRemovals(), itemId)) return;
+  const entry = takeOut(state.issue, waitingRemovals(), itemId);
+  if (!entry) return;
+  tellDesk(entry.item, true);
   scheduleSave();
   rerender();
   syncStepNav();
@@ -472,11 +533,27 @@ function deleteItemWithUndo(itemId, rerender, fromKeyboard = false) {
  *  From the keyboard, focus goes to the row's Remove, or on Preview & Edit,
  *  where the card is closed, to the column's title. */
 function undoRemove(itemId, rerender, fromKeyboard = false) {
-  if (!putBack(state.issue, waitingRemovals(), itemId)) return;
+  const item = putBack(state.issue, waitingRemovals(), itemId);
+  if (!item) return;
+  tellDesk(item, false);
   scheduleSave();
   rerender();
   syncStepNav();
   if (fromKeyboard) focusInStep(`[data-remove-item="${CSS.escape(itemId)}"]`, '.edit-column-title');
+}
+
+/**
+ * Remove tells the desk too (Kate, Oct 7): the item goes back to Ready to
+ * add, so the next pull never brings it back, and its Undo stamps it again.
+ * One write after another, so a quick Undo never lands before its Remove.
+ * A sample is never the desk's.
+ */
+let deskWrites = Promise.resolve();
+function tellDesk(item, removed) {
+  if (state.issue?.sample) return;
+  const issueIso = displayDateToISO(state.issue?.date || '');
+  deskWrites = deskWrites.then(() => syncRemoval(item, { issueIso, removed, api: DESK }))
+    .catch(() => setWizardStatus(removed ? "Removed here only: the desk couldn't be reached." : "Back here only: the desk couldn't be reached."));
 }
 
 /** A removed item's greyed row, drawn as the desk draws Next issue's: its
@@ -588,8 +665,8 @@ function outlineMeta(sectionKey, f) {
  * wrong group. The look is chosen on Preview & Tweak, on the email itself.
  */
 function renderTriage() {
-  const container = openStep('triage', 'Pick the issue, pull what the desk staged, and put it in order.',
-    'Pick the issue and pull what the desk staged; pull again any time, only new items are added. What goes out, in the order it goes out: drag a section or an item by its grip to move it in the email, or press the arrow keys on the grip. Move to… files an item under another group; the look is chosen on the next step, on the email itself.');
+  const container = openStep('triage', 'Pick the issue and put it in order.',
+    'Pick the issue and what the desk added for it comes in; each time it opens again, anything new comes in too. Remove sends an item back to Ready to add on the desk. What goes out, in the order it goes out: drag a section or an item by its grip to move it in the email, or press the arrow keys on the grip. Move to… files an item under another group; the look is chosen on the next step, on the email itself.');
   renderPullHead(container);
 
   const issue = state.issue;
@@ -2144,7 +2221,7 @@ function renderEdit() {
     'Click anything on the email and its card opens beside it: how it is laid out, then its words. A callout opens the same way, its style first. Drag an item or a section by the grip at its left to move it. Add an item, Add a callout and the contents strip sit over the email.');
 
   if (!state.issue) {
-    emptyLine(container, 'No issue loaded. Pull from the desk on the Outline step first.');
+    emptyLine(container, 'No issue loaded. Pick the issue on the Outline step first.');
     return;
   }
 
@@ -2320,7 +2397,7 @@ function renderExport() {
 
   // Nothing to export yet: one plain sentence, no buttons.
   if (!state.issue || !countIssueItems(state.issue)) {
-    emptyLine(container, 'Nothing to export yet. Pull from the desk on the Outline step first.');
+    emptyLine(container, 'Nothing to export yet. Pick the issue on the Outline step first.');
     return;
   }
 
@@ -2428,16 +2505,21 @@ function startNextIssue() {
 /**
  * Make a saved draft the builder's current issue: the banner's Restore and
  * Recently discarded's alike. Kept in storage, and drawn on the Outline,
- * which holds the Issue and Pull for one that is still empty.
+ * which holds the Issue for one that is still empty, and pull what the desk added since.
  * @param {object} issue
  */
 function openDraft(issue) {
   state.issue = issue;
   state.baseline = structuredClone(issue);
   state.reached = 0;
+  pullRun++;   // a pull for the issue it replaces never lands here
+  pullBusy = false;
+  pullFailed = false;
   pullMessage = '';
   saveState(issue);
   goTo('triage');
+  // Each opening pulls what the desk added since (Kate, Oct 7).
+  if (shouldPull(issue)) pullIssue();
 }
 
 /** A failure's own words, without the "try again" a Try again or Retry button beside them already says. */
@@ -2496,7 +2578,7 @@ function showRestoreBanner(saved) {
       settle();
       discarded = withEntry(discarded, reply.draft);
       focusDiscarded = fromKeyboard ? reply.draft.id : null;
-      if (state.step === 'triage') renderTriage();   // unlocks the Issue select and Pull; the list leads with it
+      if (state.step === 'triage') renderTriage();   // unlocks the Issue select; the list leads with it
       setWizardStatus('Discarded. Recently discarded keeps it for 90 days.');
     } catch (err) {
       const retry = ghostButton('Try again');
@@ -2654,7 +2736,7 @@ function renderDiscardedDrafts(container) {
 
 // The desk's top bar: the builder crumbs under Newsletter.
 renderShell(document.querySelector('.topbar'), { screen: 'builder' });
-// A saved issue locks the Outline's Issue and Pull before it is drawn, so the first render already knows.
+// A saved issue locks the Outline's Issue before it is drawn, so the first render already knows.
 const savedIssue = loadState();
 restorePending = Boolean(savedIssue);
 goTo('triage');

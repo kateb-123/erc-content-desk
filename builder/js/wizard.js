@@ -8,11 +8,11 @@
 import { countIssueItems } from './model.js';
 
 /** The wizard's steps, in order: Outline, Preview & Tweak, Save & Export
- *  (three since Oct 7, 2026: the Review step's Issue and Pull sit on Outline). */
+ *  (three since Oct 7, 2026: the Review step's Issue sits on Outline, and picking it pulls). */
 export const STEPS = ['triage', 'edit', 'export'];
 
 /** What the status line says when a locked step or Next is pressed too early. */
-export const LOCKED_STEP_MESSAGE = 'Pick an issue and pull from the desk first.';
+export const LOCKED_STEP_MESSAGE = 'Nothing in the issue yet.';
 
 /**
  * The samples the Issue list offers under its dates (Kate, Oct 7: the
@@ -40,7 +40,7 @@ export function sampleOf(value) {
 export const SAMPLE_ARCHIVE_MESSAGE = 'A sample never saves to the archive. Copy HTML and Download .html work as usual.';
 
 /**
- * Outline is always open (the issue is picked and pulled there); Preview &
+ * Outline is always open (the issue is picked there, which pulls); Preview &
  * Tweak and Save & Export need an issue with at least one item: a date alone
  * opens nothing. The step buttons and Next both ask this, so they agree.
  * @param {string} step

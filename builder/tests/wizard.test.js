@@ -17,7 +17,7 @@ test('three steps (Kate, Oct 7): Outline is always open; Preview & Tweak and Sav
   }
   assert.equal(canEnterStep('review', 5), false, 'the Review step is gone: Issue and Pull live on Outline');
   assert.equal(canEnterStep('nowhere', 5), false);
-  assert.equal(LOCKED_STEP_MESSAGE, 'Pick an issue and pull from the desk first.');
+  assert.equal(LOCKED_STEP_MESSAGE, 'Nothing in the issue yet.', 'no Pull button to name since Oct 7: a picked date pulls');
 });
 
 test('a step is current, complete, open or locked; checks survive going back (e29, d9)', () => {
