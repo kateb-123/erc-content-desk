@@ -12,7 +12,9 @@ import { canRewrite, readyToFinalize } from '../../js/workflow.js';
 
 export const REWRITE_MODEL = 'claude-opus-5';
 
-const ORIGINAL_TEXT_CAP = 1500;
+/** Each text an item carries is cut here: room for a talk's abstract or a
+ *  paper's findings, not a whole site. */
+export const TEXT_CAP = 6000;
 
 export function rewriteCandidates(rows) {
   // Finalize's own list, filtered the same way (js/app.js): the stamped-row
@@ -53,6 +55,16 @@ function fieldLines(r) {
   ].filter(([, v]) => clean(v)).map(([k, v]) => `${k}: ${clean(v)}`);
 }
 
+/** Every text the desk has for an item, capped, each once: its current
+ *  description, its original text, and its page when the server read it. */
+function textLines(r, page) {
+  const seen = new Set();
+  return [['current description', r.blurb], ['original text', r.original_text], ['page text', page]]
+    .map(([label, v]) => [label, clean(v).slice(0, TEXT_CAP)])
+    .filter(([, v]) => v && !seen.has(v) && seen.add(v))
+    .map(([label, v]) => `${label}:\n${v}`);
+}
+
 function exampleBlock() {
   return VOICE_EXAMPLES.map(ex => [
     ...fieldLines(ex),
@@ -62,16 +74,16 @@ function exampleBlock() {
   ].join('\n')).join('\n\n---\n\n');
 }
 
-export function buildRewritePrompt(rows) {
+/** pages: the page text api/rewrite.js read for each item, by id. */
+export function buildRewritePrompt(rows, pages = new Map()) {
   const items = rows.map(r => [
     `id: ${r.id}`,
     ...fieldLines(r),
-    r.blurb ? `blurb:\n${r.blurb}` : '',
-    !r.blurb && r.original_text
-      ? `original text:\n${String(r.original_text).slice(0, ORIGINAL_TEXT_CAP)}` : '',
-  ].filter(Boolean).join('\n')).join('\n\n---\n\n');
+    ...textLines(r, pages.get(r.id)),
+  ].join('\n')).join('\n\n---\n\n');
   return [
     'Rewrite the description of each item below in the ERC newsletter voice. Return one rewrite per item, keyed by its exact id.',
+    'Each item gives its fields, then every text the desk has for it: its current description, its original text, and its page text when the page could be read. Read all of it; the substance is often on the page, not in the description.',
     'An item with no description has none yet: draft one from its other text and its fields.',
     'Never repeat the date, time, place or deadline: the fields carry them and the layout shows them.',
     "Keep every fact true to the item's own fields and text; never add one.",

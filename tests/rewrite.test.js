@@ -68,7 +68,7 @@ test('the prompt includes real voice examples ahead of the items', () => {
 test('a description-less item brings its original text (capped) so Claude can draft', () => {
   const rows = [kept({
     id: 'a1', type: 'research', headline: 'Working paper', blurb: '',
-    original_text: `start ${'y'.repeat(2000)} ZZTAIL`, authors: 'Someone',
+    original_text: `start ${'y'.repeat(7000)} ZZTAIL`, authors: 'Someone',   // past the 6,000 cap (Oct 8; was 1,500)
   })];
   const prompt = buildRewritePrompt(rows);
   assert.ok(prompt.includes('original text:'));

@@ -102,3 +102,53 @@ test('no em or en dash in the voice, the samples or the built prompt', () => {
   ], new Map([['x2', 'The page of the grants.']]));
   assert.doesNotMatch(prompt, dash);
 });
+
+// Kate, Oct 8: the rewrites were "too scarce or not really pulling the right
+// information". The model now reads every text the desk has for an item.
+const long = (head, near, tail) => `${head} ${'y'.repeat(5900)} ${near} ${'y'.repeat(2000)} ${tail}`;
+
+test('the prompt carries page text and original text together, with the description, under the fields', () => {
+  const row = {
+    id: 'p1', headline: 'Howdy Policy Trivia Night', type: 'event', subtype: 'A&M', source: 'Aggie Policy Club',
+    date: '2026-10-20', time: '6:00 PM CT', location: 'Rudder Tower', authors: '',
+    blurb: 'Teams answer policy questions.', original_text: 'The flyer: teams of four, prizes for the top three.',
+  };
+  const prompt = buildRewritePrompt([row], new Map([['p1', 'The page: questions on school finance and the STAAR.']]));
+  const at = positions(prompt, [
+    'Items:',
+    'id: p1',
+    'title: Howdy Policy Trivia Night',
+    'type: event / A&M',
+    'source: Aggie Policy Club',
+    'date: 2026-10-20',
+    'time: 6:00 PM CT',
+    'location: Rudder Tower',
+    'current description:\nTeams answer policy questions.',
+    'original text:\nThe flyer: teams of four, prizes for the top three.',
+    'page text:\nThe page: questions on school finance and the STAAR.',
+  ]);
+  assert.ok(at.every(n => n >= 0), String(at));
+  assert.match(prompt, /every text the desk has for it/);
+});
+
+test('each text is capped near 6,000 characters, not 1,500', () => {
+  const row = {
+    id: 'c1', headline: 'T', type: 'research', subtype: 'Report',
+    blurb: long('DESC_HEAD', 'DESC_NEAR', 'DESC_TAIL'),
+    original_text: long('ORIG_HEAD', 'ORIG_NEAR', 'ORIG_TAIL'),
+  };
+  const prompt = buildRewritePrompt([row], new Map([['c1', long('PAGE_HEAD', 'PAGE_NEAR', 'PAGE_TAIL')]]));
+  for (const k of ['DESC', 'ORIG', 'PAGE']) {
+    assert.ok(prompt.includes(`${k}_HEAD`) && prompt.includes(`${k}_NEAR`), `${k} kept up to the cap`);
+    assert.ok(!prompt.includes(`${k}_TAIL`), `${k} cut at the cap`);
+  }
+});
+
+test('no page text line when the page was not read, a text the same as another shown once, a type with no subtype bare', () => {
+  const row = { id: 'd1', headline: 'Gig Em Grants', type: 'opportunity', subtype: '', blurb: 'Same words.', original_text: 'Same words.' };
+  const prompt = buildRewritePrompt([row]);
+  const item = prompt.slice(prompt.indexOf('id: d1'));
+  assert.doesNotMatch(item, /page text:/);
+  assert.equal(item.split('Same words.').length - 1, 1);
+  assert.match(item, /^type: opportunity$/m);
+});
