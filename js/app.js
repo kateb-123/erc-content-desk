@@ -16,6 +16,7 @@ import { renderPast } from './past-ui.js';
 import { renderSchedule } from './schedule-ui.js';
 import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToFinalize, canRewrite } from './workflow.js';
 import { rewriteTargets, landRewrites } from './rewrite-client.js';
+import { unchangedNote } from './finalize-view.js';
 import { todayCentral } from './today.js';
 import { sessionStatus, signIn as signInRequest, signOut as signOutRequest } from './auth-client.js';
 import { isLocked, SIGN_IN_ON, authError, lockedOut, WRONG_PASSWORD } from './auth-view.js';
@@ -420,7 +421,9 @@ async function runRewrite() {
     // Finalize's lede beside the button, not the page header.
     // A rewrite that came back is carried by Finalize's progress line
     // ("0 of 2 rewrites checked"); only an empty answer needs words here.
-    state.rewroteNote = byId.size ? null : (data.warnings?.join(' ') || 'Nothing to rewrite.');
+    // An item answered with nothing stays under Needs a rewrite; the lede says why (Oct 8).
+    const unchanged = (data.unchanged ?? []).filter(id => wanted.has(id)).length;
+    state.rewroteNote = [byId.size || unchanged ? '' : (data.warnings?.join(' ') || 'Nothing to rewrite.'), unchangedNote(unchanged)].filter(Boolean).join(' ') || null;
     setStatus('');
   } catch (err) {
     if (shutOut(err)) return;

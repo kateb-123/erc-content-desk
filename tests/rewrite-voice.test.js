@@ -199,3 +199,24 @@ test('normalizeRewrites strips the dashes from what the model returns', () => {
   ]);
   assert.doesNotMatch(JSON.stringify(rewrites), /[\u2013\u2014]/);
 });
+
+// The review's findings (Oct 8).
+
+test('noDashes: a school year keeps its hyphen, and an em dash range reads "to" as an en dash does', () => {
+  assert.equal(noDashes(`Data for the 2025${EN}26 school year.`), 'Data for the 2025-26 school year.');
+  assert.equal(noDashes(`Data for the 2025 ${EN} 26 school year.`), 'Data for the 2025-26 school year.');
+  assert.equal(noDashes(`Teachers in grades 3${EM}8.`), 'Teachers in grades 3 to 8.');
+  assert.equal(noDashes(`From 2019${EN}2024, wages rose.`), 'From 2019 to 2024, wages rose.', 'two full years are still a range');
+});
+
+test('normalizeRewrites: an item asked for and answered with nothing comes back as unchanged', () => {
+  const rows = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+  const out = normalizeRewrites({ rewrites: [{ id: 'a', blurb: 'New words.' }, { id: 'b', blurb: '  ' }, { id: 'b', blurb: '' }] }, rows);
+  assert.deepEqual(out.rewrites, [{ id: 'a', blurb: 'New words.' }]);
+  assert.deepEqual(out.unchanged, ['b'], 'once, and never c, which the model left out');
+});
+
+test('the rewrite answer carries the unchanged ids, and Finalize says what to do with them', () => {
+  assert.match(read('../api/rewrite.js'), /json\(\{ ok: true, rewrites, warnings, unchanged \}\)/);
+  assert.match(read('../js/app.js'), /unchangedNote\(/);
+});

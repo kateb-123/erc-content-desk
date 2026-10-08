@@ -69,8 +69,8 @@ export function createRewriteHandler({ anthropic = liveClient, readAllRows, fetc
         return res.status(502).json({ ok: false, error: 'Too many to rewrite at once. Rewrite in smaller batches.' });
       }
       const text = response.content.find(b => b.type === 'text')?.text ?? '';
-      const { rewrites, warnings } = normalizeRewrites(parseModelJson(text, 'rewrite'), candidates);
-      return res.status(200).json({ ok: true, rewrites, warnings });
+      const { rewrites, warnings, unchanged } = normalizeRewrites(parseModelJson(text, 'rewrite'), candidates);
+      return res.status(200).json({ ok: true, rewrites, warnings, unchanged });
     } catch (err) {
       console.error('rewrite failed', err);
       return res.status(502).json({ ok: false, error: "The rewrite didn't go through. Try again in a moment." });

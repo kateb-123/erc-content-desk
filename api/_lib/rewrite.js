@@ -9,6 +9,7 @@
  * prompt and holds the voice; the prompt holds the rules for these items.
  */
 import { VOICE_EXAMPLES } from './voice-examples.js';
+import { sameStart } from '../../js/feed-tail.js';
 import { canRewrite, readyToFinalize } from '../../js/workflow.js';
 import { runPool } from '../../js/pool.js';
 
@@ -37,12 +38,15 @@ export const PAGE_BUDGET_MS = 45_000;
 const ABSTRACT_MIN = 400;
 
 /** What the model reads of a page fetchPage brought back: the longest
- *  abstract it offers when it has one, else its text, capped. */
-export function pageTextFor(page) {
+ *  abstract that begins the way the item's own text does (a page can carry
+ *  a related paper's or a banner's too), else the page's text, capped. A
+ *  page with no text of its own gives its longest abstract or description. */
+export function pageTextFor(page, row = {}) {
   if (typeof page === 'string') return clean(page).slice(0, TEXT_CAP);
   const text = clean(page?.text);
+  const own = clean(row.blurb) || clean(row.original_text);
   const abstract = [...(page?.abstracts ?? []), page?.description]
-    .map(clean).sort((a, b) => b.length - a.length)[0] ?? '';
+    .map(clean).filter(a => a && (!text || (own && sameStart(own, a)))).sort((a, b) => b.length - a.length)[0] ?? '';
   return (abstract.length >= ABSTRACT_MIN || !text ? abstract : text).slice(0, TEXT_CAP);
 }
 
@@ -54,7 +58,7 @@ export async function readPages(rows, { fetchPage, limit = PAGE_READS_AT_ONCE, b
   const deadline = Date.now() + budgetMs;
   const reads = runPool(rows, limit, async row => {
     if (!clean(row.link) || row.link_checked === 'mismatch' || Date.now() >= deadline) return;
-    const text = pageTextFor(await fetchPage(clean(row.link)));
+    const text = pageTextFor(await fetchPage(clean(row.link)), row);
     if (text && Date.now() < deadline) pages.set(row.id, text);
   });
   let timer;
@@ -144,6 +148,10 @@ const RANGE = new RegExp(
   `(\\d%?|\\b[AP]M\\b|\\b[ap]\\.m\\.|\\b${DAY}\\b|\\b${MONTH}\\b)[ \\t]*\\u2013[ \\t]*(?=\\$?\\d|${DAY}\\b|${MONTH}\\b|noon\\b|midnight\\b)`,
   'g',
 );
+/** A school year, 2025 and its last two digits: a hyphen, never "to". */
+const SCHOOL_YEAR = /\b((?:19|20)\d\d)[ \t]*[\u2013\u2014][ \t]*(\d\d)\b(?!\d)/g;
+/** An em dash pressed between two numbers, as a range. */
+const EM_RANGE = /(\d)\u2014(?=\d)/g;
 /** An en dash with no space joining two words or a letter and a number. */
 const COMPOUND = /(?<=[\p{L}\p{N}])\u2013(?=[\p{L}\p{N}])/gu;
 /** Any other em or en dash, with the spaces around it. */
@@ -154,6 +162,8 @@ const CLAUSE = /[ \t]*[\u2013\u2014]+[ \t]*/g;
  *  a clause; a dash beside other punctuation just goes. */
 export function noDashes(text) {
   return String(text ?? '')
+    .replace(SCHOOL_YEAR, '$1-$2')
+    .replace(EM_RANGE, '$1 to ')
     .replace(RANGE, '$1 to ')
     .replace(COMPOUND, '-')
     .replace(CLAUSE, (dash, at, all) => {
@@ -171,6 +181,7 @@ export function normalizeRewrites(parsed, rows) {
   const known = new Set(rows.map(r => r.id));
   const rewrites = [];
   const warnings = [];
+  const unchanged = [];   // asked for and answered with nothing: the page says no more than the title
   for (const entry of parsed?.rewrites ?? []) {
     const id = String(entry?.id ?? '');
     const blurb = noDashes(entry?.blurb).trim();
@@ -178,8 +189,8 @@ export function normalizeRewrites(parsed, rows) {
       warnings.push(`Skipped a rewrite that didn't match an item (${id || 'no id'}).`);
       continue;
     }
-    if (!blurb) continue; // nothing to show; not a data problem worth flagging
+    if (!blurb) { if (!unchanged.includes(id)) unchanged.push(id); continue; }
     if (!rewrites.some(r => r.id === id)) rewrites.push({ id, blurb });
   }
-  return { rewrites, warnings };
+  return { rewrites, warnings, unchanged: unchanged.filter(id => !rewrites.some(r => r.id === id)) };
 }

@@ -145,3 +145,12 @@ test('onTheWay says how many rewrites are still coming back, or nothing', () => 
   assert.equal(onTheWay(1), '1 rewrite on its way');
   assert.equal(onTheWay(3), '3 rewrites on their way');
 });
+
+// The rewriter may answer an item with nothing (Oct 8: its page says nothing
+// beyond the title); Finalize says so instead of "Nothing to rewrite."
+test('unchangedNote: how many came back with nothing to add, and what to do', async () => {
+  const { unchangedNote } = await import('../js/finalize-view.js');
+  assert.equal(unchangedNote(0), '');
+  assert.equal(unchangedNote(1), '1 had nothing to add beyond its title. Edit it by hand.');
+  assert.equal(unchangedNote(3), '3 had nothing to add beyond their titles. Edit them by hand.');
+});

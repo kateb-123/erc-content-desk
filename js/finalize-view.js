@@ -38,6 +38,13 @@ export function finalizeGroups(keeps, { pending, review, verified, rewriting = n
   return groups.filter(g => g.rows.length);
 }
 
+/** Items the rewriter answered with nothing (Oct 8: their page says no more
+ *  than the title): they stay under Needs a rewrite, and the lede says why. */
+export function unchangedNote(n) {
+  if (!n) return '';
+  return n === 1 ? '1 had nothing to add beyond its title. Edit it by hand.' : `${n} had nothing to add beyond their titles. Edit them by hand.`;
+}
+
 /** Rewrites started at Keep and not back yet: a quiet count in the lede. */
 export function onTheWay(n) {
   if (!n) return '';

@@ -18,8 +18,9 @@ const kept = o => blankRow({ status: 'kept', ...o });
 const tick = ms => new Promise(r => setTimeout(r, ms));
 const ABSTRACT = `Mathematicians spend time on examples while proving; students rarely do. ${'The projects look at how students use examples. '.repeat(10)}`;
 
-test('pageTextFor: the longest abstract the page offers, else its text, capped', () => {
-  assert.equal(pageTextFor({ text: 'Whole page.', description: '', abstracts: [ABSTRACT, 'A shorter one.'] }), ABSTRACT.trim());
+test('pageTextFor: the longest abstract that is the item\'s own, else its text, capped', () => {
+  // Since the review (Oct 8) an abstract must begin the way the item's text does.
+  assert.equal(pageTextFor({ text: 'Whole page.', description: '', abstracts: [ABSTRACT, 'A shorter one.'] }, { blurb: ABSTRACT.slice(0, 80) }), ABSTRACT.trim());
   // A description tag of a line or two is no abstract: the page's text has more.
   assert.equal(pageTextFor({ text: 'Whole page with the talk in it.', description: 'Welcome to the center.', abstracts: ['Welcome to the center.'] }), 'Whole page with the talk in it.');
   assert.equal(pageTextFor({ text: '', description: 'Only this.', abstracts: ['Only this.'] }), 'Only this.');
@@ -157,4 +158,17 @@ test('the card words are as they were: no sign-in, no page read, the card prompt
   assert.equal(reads, 0);
   assert.equal(model.calls[0].max_tokens, 8000);
   assert.match(model.calls[0].messages[0].content, /home-page card of the ERC Policy Exchange/);
+});
+
+// The review's findings (Oct 8): an abstract on the page is the item's only
+// when it begins the way the item's own text does; any other block (a
+// related paper, a banner) leaves the page's text to speak.
+test('pageTextFor: an abstract counts only when it begins the way the item does', () => {
+  const own = 'Teacher retention rose after the state raised its minimum salary. '.repeat(10);
+  const other = 'A different paper on school meals and attendance across five states. '.repeat(10);
+  const page = { text: 'Menu Home Research. The page text about this paper.', abstracts: [other, own.slice(0, 500)] };
+  const cut = { blurb: 'Teacher retention rose after the state raised its minimum…' };
+  assert.equal(pageTextFor(page, cut), own.slice(0, 500).trim(), 'the item\'s own abstract, not the longer stranger');
+  assert.equal(pageTextFor(page, { blurb: 'A talk on rural grants.' }), 'Menu Home Research. The page text about this paper.', 'no abstract of its own: the page');
+  assert.equal(pageTextFor(page, {}), 'Menu Home Research. The page text about this paper.', 'nothing to match: the page');
 });
