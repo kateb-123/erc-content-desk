@@ -119,7 +119,7 @@ test('the send part teaches the add-in route from the personal mailbox to erc@ta
 test('every option the how-to lists is a control the builder names, in the builder\'s own words', () => {
   const options = nl.slice(nl.indexOf('id="options"'));
   const names = [
-    'Pull from the desk', 'Feature', 'Move to…', 'Remove', 'Undo', 'Recently discarded', 'Restore',
+    'Pull from the desk', 'Move to…', 'Remove', 'Undo', 'Recently discarded', 'Restore',
     'Done', 'Use original', 'Undo changes', 'How it is laid out', 'Title and details', 'With description', 'Stamp beside the text', 'Headshot beside it all', 'Date card',
     'Picture size, px', 'Zoom available', 'Flyer link', 'Kind', 'Research Brief', 'Research Report', 'Journal Article', 'ERC Explains',
     'Its words', 'Its style', 'Maroon block', 'Light gray box', 'Dotted rule', 'Add an item', 'Add a callout', 'Contents strip', 'Reset layout',

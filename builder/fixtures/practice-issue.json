@@ -65,11 +65,11 @@
         "summary": "An hour of made-up conversation. Bring a question you do not need answered." } }
     ] },
     "events": { "enabled": true, "items": [
-      { "id": "pe1", "group": "tamu", "featured": true, "fields": {
+      { "id": "pe1", "group": "tamu", "fields": {
         "title": "Symposium on Made-Up Measures",
         "url": "https://example.org/practice/events/made-up-measures",
         "date": "October 30, 2026", "time": "1:00 to 4:00 PM CT", "location": "Memorial Student Center, Room 0000",
-        "summary": "A half-day of panels on measuring things that did not happen. This is the featured event, so it shows its description; the others below do not." } },
+        "summary": "A half-day of panels on measuring things that did not happen. An event in Upcoming Events shows its description only when its card says so." } },
       { "id": "pe2", "group": "tamu", "fields": { "title": "NSF 102: An Imaginary Program Officer Visits", "url": "https://example.org/practice/events/nsf-102", "date": "October 15, 2026", "time": "10:00 AM CT", "location": "Rudder Tower, Room 000 or Zoom" } },
       { "id": "pe3", "group": "tamu", "fields": { "title": "Distinguished Speaker Series with Dr. Nobody in Particular", "url": "https://example.org/practice/events/nobody-in-particular", "date": "October 21, 2026", "time": "1:30 PM CT", "location": "Harrington Tower, Room 000" } },
       { "id": "pe4", "group": "offcampus", "fields": { "title": "Webinar: Teaching With, Against and About Fictional Data", "url": "https://example.org/practice/events/fictional-data-webinar", "date": "October 22, 2026", "time": "12:00 PM CT", "location": "Webinar", "source": "The Example Institute" } },
