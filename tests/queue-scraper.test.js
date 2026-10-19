@@ -46,6 +46,7 @@ test('scraperStatus: no run yet, not wired up, still asking, and a desk that cou
   assert.deepEqual(scraperStatus({ configured: false, run: null, last: null }, '2026-10-19'), { state: 'off', button: false, line: 'Not wired to the desk yet.', link: null, files: null });
   assert.deepEqual(scraperStatus(null, '2026-10-19'), { state: 'checking', button: false, line: 'Checking the scraper', link: null, files: null });
   assert.deepEqual(scraperStatus({ error: true }, '2026-10-19'), { state: 'error', button: false, line: "The desk couldn't ask GitHub just now.", link: null, files: null });
+  assert.equal(scraperStatus({ error: true, message: 'GitHub answered 404 for the runs.' }, '2026-10-19').line, 'GitHub answered 404 for the runs.', 'the server\'s own words when it had any');
 });
 
 test('the queue page draws the block from the status, under the Sort door, and the app asks again while a run is on', () => {

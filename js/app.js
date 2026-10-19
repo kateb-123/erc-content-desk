@@ -816,7 +816,7 @@ let scraperTimer = 0;
 async function loadScraper() {
   try {
     state.scraper = await readReply(await fetch('/api/bulk?scraper=status'), 'ask about the scraper');
-  } catch { state.scraper = { error: true }; }
+  } catch (err) { state.scraper = { error: true, message: err instanceof TypeError ? '' : err.message }; }
   render();
   clearTimeout(scraperTimer);
   if (state.scraper?.run?.state === 'running') scraperTimer = setTimeout(loadScraper, SCRAPER_POLL_MS);

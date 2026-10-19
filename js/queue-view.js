@@ -119,7 +119,8 @@ function centralTime(iso) {
  *  Counts and a folder, never the items: the page is open. */
 export function scraperStatus(data, today) {
   if (!data) return { state: 'checking', button: false, line: 'Checking the scraper', link: null, files: null };
-  if (data.error) return { state: 'error', button: false, line: "The desk couldn't ask GitHub just now.", link: null, files: null };
+  // A miss keeps the server's own words when it had any ("GitHub answered 404 for the runs."), so a wrong token reads as one.
+  if (data.error) return { state: 'error', button: false, line: data.message || "The desk couldn't ask GitHub just now.", link: null, files: null };
   if (!data.configured) return { state: 'off', button: false, line: 'Not wired to the desk yet.', link: null, files: null };
   const run = data.run ?? { state: 'idle' };
   const last = data.last;
