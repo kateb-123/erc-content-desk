@@ -76,6 +76,15 @@ export async function readAllRows() {
   return rows.map(r => ({ ...valuesToRow(r.values), _rowNumber: r.rowNumber }));
 }
 
+/** Files one of the scraper's spreadsheets (or its run log) into the shared
+ *  drive, under Newsletter Scrape/scrapes/<folder>/, through the Sheet's
+ *  script (its saveFile action; the folder's id is a script property).
+ *  Answers the file's and the folder's Drive addresses. */
+export async function saveFile({ folder, name, contentType, b64 }) {
+  const body = await callSheetApi('saveFile', { folder, name, contentType, b64 }, { timeoutMs: 60000 });
+  return { ok: true, url: body.url ?? '', folderUrl: body.folderUrl ?? '' };
+}
+
 export async function appendRow(row) {
   await callSheetApi('append', { values: rowToValues(row) });
 }

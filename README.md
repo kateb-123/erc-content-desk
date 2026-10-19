@@ -74,6 +74,8 @@ Environment variables (Vercel project settings):
 | `HUB_REPO`, `HUB_BRANCH`, `HUB_CSV_PATH`, `HUB_CSV_URL` | where the public feed lives (defaults to `kateb-123/erc-policy-exchange-app`, `main`, `data/news.csv`) |
 | `ARCHIVE_REPO`, `ARCHIVE_BRANCH` | where saved issues go (defaults to this repo) |
 | `TURNSTILE_SECRET_KEY` | the bot check for cross-origin submissions |
+| `SCRAPER_TOKEN` | the shared secret the scraper's GitHub run uses to deliver its haul to `/api/bulk` (the same value is the `SCRAPER_TOKEN` secret on the scraper repo) |
+| `SCRAPER_GITHUB_TOKEN`, `SCRAPER_REPO` | a token that may start the scraper's workflow and read its `haul/latest.json` (falls back to `GITHUB_TOKEN`), and the repo (defaults to `kateb-123/erc-scraper`). On the Sheet's script, the `SCRAPE_FOLDER_ID` property is the id of the shared drive folder `Newsletter Scrape/scrapes`, where the haul is filed |
 | `LISTSERV_URL` | the newsletter sign-up the public site posts through; its script also answers `?action=count` with Sheet 1's rows for the Listserv hub (`apps-script/listserv-count.gs`) |
 
 The Google Sheet side, once:

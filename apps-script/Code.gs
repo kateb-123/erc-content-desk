@@ -8,8 +8,10 @@
  * account.
  *
  * WHAT IT DOES: reads rows, appends a row, overwrites a row, or writes the
- * header row. That's it. It never deletes anything, never runs arbitrary
- * code sent to it, and only touches the one sheet tab it's told to.
+ * header row. Since October 19, 2026 it also files the scraper's spreadsheets
+ * into the shared drive (saveFile, below). It never runs arbitrary code sent
+ * to it and only touches the one sheet tab it's told to; the one thing it
+ * ever trashes is an older copy of a scraper file being delivered again.
  *
  * SECURITY: when you deploy this as a web app with "Who has access: Anyone",
  * Google does NOT check who's calling — anyone with the URL could call it.
@@ -27,6 +29,11 @@ var TOKEN_PROPERTY_NAME = 'SHEET_API_TOKEN';
 
 /** How long to wait for the sheet lock before giving up, in milliseconds. */
 var LOCK_TIMEOUT_MS = 10000;
+
+/** Name of the script property holding the id of the shared drive folder
+ *  the scraper's runs are filed under (Newsletter Scrape/scrapes). The id is
+ *  the last part of the folder's address in Drive. Not the id itself. */
+var SCRAPE_FOLDER_PROPERTY_NAME = 'SCRAPE_FOLDER_ID';
 
 /**
  * Entry point Google calls for every POST request to the deployed web app.
@@ -90,6 +97,10 @@ function checkToken(requestToken) {
 
 /** Dispatches to the right handler once the token has checked out. */
 function handleAction(body) {
+  switch (body.action) {
+    case 'saveFile':
+      return handleSaveFile(body);   // Drive, not the sheet
+  }
   var sheet = getTargetSheet(body.sheetName);
 
   switch (body.action) {
@@ -189,6 +200,39 @@ function handleHeader(sheet, values) {
   }
   sheet.getRange(1, 1, 1, values.length).setValues([values]);
   return { ok: true };
+}
+
+/**
+ * Files one of the scraper's spreadsheets, or its run log, into the shared
+ * drive: Newsletter Scrape/scrapes/<folder>/<name>, where <folder> is the
+ * run's date. The desk sends the file as base64 (Kate, Oct 19, 2026: the
+ * haul in Drive "so it's available to everyone"). A delivery of the same
+ * file on the same day replaces the earlier copy, which goes to the trash
+ * for 30 days.
+ */
+function handleSaveFile(body) {
+  var folderId = PropertiesService.getScriptProperties().getProperty(SCRAPE_FOLDER_PROPERTY_NAME);
+  if (!folderId) {
+    return { ok: false, error: 'Server is not configured: the ' + SCRAPE_FOLDER_PROPERTY_NAME + ' script property is not set.' };
+  }
+  if (!body.folder || !/^\d{4}-\d{2}-\d{2}$/.test(body.folder)) {
+    return { ok: false, error: 'saveFile needs a "folder" named by date, YYYY-MM-DD.' };
+  }
+  if (!body.name || !/^[A-Za-z0-9][A-Za-z0-9 _-]{0,80}\.(xlsx|txt)$/.test(body.name)) {
+    return { ok: false, error: 'saveFile needs a plain file "name" ending in .xlsx or .txt.' };
+  }
+  if (!body.b64) {
+    return { ok: false, error: 'saveFile needs the file as "b64".' };
+  }
+  var root = DriveApp.getFolderById(folderId);
+  var subs = root.getFoldersByName(body.folder);
+  var folder = subs.hasNext() ? subs.next() : root.createFolder(body.folder);
+  var bytes = Utilities.base64Decode(body.b64);
+  var blob = Utilities.newBlob(bytes, body.contentType || 'application/octet-stream', body.name);
+  var older = folder.getFilesByName(body.name);
+  while (older.hasNext()) older.next().setTrashed(true);
+  var file = folder.createFile(blob);
+  return { ok: true, url: file.getUrl(), folderUrl: folder.getUrl() };
 }
 
 /** Wraps a JS object as the JSON response Apps Script sends back. */

@@ -98,6 +98,43 @@ export function isoToShort(iso, todayIso) {
   return m[1] === String(todayIso ?? '').slice(0, 4) ? day : `${day}, ${m[1]}`;
 }
 
+/* ---- Run the scraper (Kate, Oct 19, 2026) ------------------------------ */
+
+const TYPE_WORDS = [['event', 'event', 'events'], ['research', 'research', 'research'], ['headline', 'headline', 'headlines'], ['opportunity', 'opportunity', 'opportunities']];
+
+function countWords(counts = {}) {
+  return TYPE_WORDS.map(([key, one, many]) => { const n = Number(counts[key] ?? 0); return `${n} ${n === 1 ? one : many}`; }).join(', ');
+}
+
+/** A moment in College Station's clock, "10:02 AM". */
+function centralTime(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' });
+}
+
+/** What the Content queue says about the scraper: the desk's answer
+ *  (/api/bulk?scraper=status: configured, the run's state, the last haul)
+ *  as a state, whether the button shows, one line, and the Drive folder.
+ *  Counts and a folder, never the items: the page is open. */
+export function scraperStatus(data, today) {
+  if (!data) return { state: 'checking', button: false, line: 'Checking the scraper', link: null };
+  if (data.error) return { state: 'error', button: false, line: "The desk couldn't ask GitHub just now.", link: null };
+  if (!data.configured) return { state: 'off', button: false, line: 'Not wired to the desk yet.', link: null };
+  const run = data.run ?? { state: 'idle' };
+  const last = data.last;
+  const link = last?.folderUrl ? { label: 'Open the files', href: last.folderUrl } : null;
+  if (run.state === 'running') return { state: 'running', button: false, line: `Scraping, started ${centralTime(run.startedAt)}`, link: null };
+  if (run.state === 'failed') {
+    const kept = last ? ` The files from ${isoToShort(last.date, today)} are still in Drive.` : '';
+    return { state: 'failed', button: true, line: `The last run failed on GitHub.${kept}`, link };
+  }
+  if (!last) return { state: 'idle', button: true, line: 'No run yet. Every Monday at 7:00, and whenever this is pressed.', link: null };
+  const failed = Number(last.failed ?? 0);
+  const tail = failed ? ` ${failed} source${failed === 1 ? '' : 's'} did not answer.` : '';
+  return { state: 'idle', button: true, line: `Last run ${isoToShort(last.date, today)}: ${countWords(last.counts)}.${tail}`, link };
+}
+
 /** The last issue that went out (Kate, Oct 8: the queue holds "what was
  *  submitted from the last newsletter until now"): the newest send date not
  *  after today, the send day itself included, as Ready to add counts it. */

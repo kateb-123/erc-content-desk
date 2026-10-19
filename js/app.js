@@ -51,6 +51,7 @@ const state = {
   archive: null,            // the builder's archive index for Past issues and Last issue: null loading, false unreadable
   hubUpdated: null,         // the live Exchange's last change, YYYY-MM-DD: null while asked, '' when it did not answer
   signups: null,            // the listserv's count, never names: { live, waiting, last }, or null
+  scraper: null,            // the scraper on GitHub: { configured, run, last } from /api/bulk?scraper=status, or null
   publishPreview: null,
   publishedCsv: '',       // the CSV from the last publish, for the receipt's re-download
   rewroteNote: null,
@@ -637,7 +638,7 @@ function render() {
       onRefresh: reload,
     });
   } else if (state.screen === 'queue') {
-    renderQueue(screens.queue, { ...common, loaded: state.loaded, loadFailed: state.loadFailed, onGoTo: goTo, onRefresh: reload });
+    renderQueue(screens.queue, { ...common, loaded: state.loaded, loadFailed: state.loadFailed, onGoTo: goTo, onRefresh: reload, scraper: state.scraper, onRunScraper: runScraper });
   } else if (state.screen === 'exchange') {
     // What waits to publish comes from the live Exchange check: the quiet one the front page asks for.
     if (state.loaded && !state.publishPreview && !laneCheck.inFlight && laneCheck.failedAt !== state.rows) quietPublishCheck();
@@ -806,6 +807,33 @@ async function loadSignups() {
   render();
 }
 loadSignups();
+
+// The scraper on GitHub (Kate, Oct 19): its run state and the last haul,
+// asked once a visit and again every SCRAPER_POLL_MS while a run is on; a
+// press of Run the scraper starts one and the line shimmers until it lands.
+const SCRAPER_POLL_MS = 20000;
+let scraperTimer = 0;
+async function loadScraper() {
+  try {
+    state.scraper = await readReply(await fetch('/api/bulk?scraper=status'), 'ask about the scraper');
+  } catch { state.scraper = { error: true }; }
+  render();
+  clearTimeout(scraperTimer);
+  if (state.scraper?.run?.state === 'running') scraperTimer = setTimeout(loadScraper, SCRAPER_POLL_MS);
+}
+async function runScraper() {
+  try {
+    await postJson('/api/bulk', { action: 'run' }, 'start the scraper');
+    state.scraper = { ...(state.scraper ?? { configured: true, last: null }), run: { state: 'running', startedAt: new Date().toISOString(), updatedAt: '', url: '' } };
+    render();
+    clearTimeout(scraperTimer);
+    scraperTimer = setTimeout(loadScraper, SCRAPER_POLL_MS);
+  } catch (err) {
+    setStatus(plainError(err, "Couldn't start the scraper."), 'error');
+    render();
+  }
+}
+loadScraper();
 
 // Back, Forward and a typed address switch screens like a menu pick would.
 window.addEventListener('hashchange', () => {

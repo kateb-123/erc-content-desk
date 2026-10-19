@@ -1,5 +1,6 @@
 /**
- * POST /api/bulk — split a dropped file into submission items.
+ * POST /api/bulk — split a dropped file into submission items. Also the
+ * scraper's doors (GET ?scraper=status, POST action run or haul): api/_lib/scraper.js.
  * Two pipelines: spreadsheets (.xlsx/.csv) are row-mapped — one row, one
  * item, no model call (submit-time enrichment fills gaps per item); docs
  * (.docx/.md/.txt) go through the Claude split. Text formats arrive as
@@ -14,6 +15,8 @@ import {
 import { parseModelJson } from './_lib/reply-json.js';
 import { rowsToItems } from './_lib/bulk-rows.js';
 import { parseCsv } from './_lib/hub.js';
+import { createScraperHandler } from './_lib/scraper.js';
+import { saveFile } from './_lib/sheets.js';
 
 export const config = { maxDuration: 300 };
 
@@ -21,8 +24,12 @@ const MAX_TEXT_LENGTH = 200000;
 const MAX_SHEET_ROWS = 500;   // a spreadsheet needs no model call, so it may run long (Kate, Sep 22)
 const MAX_FILE_BYTES = 3 * 1024 * 1024;
 const anthropic = new Anthropic();
+// Run the scraper (Kate, Oct 19): its status, a run, and the haul it delivers
+// ride this function too, since api/ holds the Hobby plan's twelve.
+const scraper = createScraperHandler({ saveFile });
 
 export default async function handler(req, res) {
+  if (scraper.handles(req)) return scraper.handle(req, res);
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, error: 'Use POST.' });
   }

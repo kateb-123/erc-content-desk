@@ -7,14 +7,18 @@
  * page is built once and only the list redraws, so the search keeps its
  * typing. Since Oct 8 it opens on what came in since the last issue went
  * out, with Everything as a second tab (Kate: "the queue has too many
- * items"; her pick of a second tab).
+ * items"; her pick of a second tab). Since Oct 19 the scraper's block sits
+ * under the Sort door (Kate: "a button that will run the scraper"): Run the
+ * scraper starts a run on GitHub, the line under it says what the last run
+ * found and opens the files in Drive, and while a run is on the button goes
+ * and the line shimmers. Open, like the page: counts and a folder only.
  */
-import { contentQueue, lastIssueSent, isoToShort } from './queue-view.js';
+import { contentQueue, lastIssueSent, isoToShort, scraperStatus } from './queue-view.js';
 import { tabBar } from './page-head.js';
 import { sortList } from './sort-view.js';
 import { hubHead, HUB_LEDES, forthcoming } from './hub-head.js';
 import { faIcon } from './icons.js';
-import { el, busyLine, tryAgain } from './ui-aids.js';
+import { el, button, busyLine, tryAgain } from './ui-aids.js';
 
 let term = '';   // the search, for the visit
 let tab = 'since';   // the open tab, for the visit: since the last issue, or all
@@ -56,7 +60,9 @@ function build(container, onGoTo) {
   const doorWords = el('span', 'door-words');
   doorWords.append(el('span', 'door-name', 'Content Sort'), el('span', 'door-note'));
   door.append(faIcon('lock'), doorWords, faIcon('arrow-right'));
-  side.append(door, el('p', 'qh-side-note', 'Password protected. Sort and Finalize ask the desk password.'), forthcoming('How to sort'));
+  const scraperBox = el('div', 'qh-scraper');
+  scraperBox.append(el('h3', 'section-label hub-label', 'Scraper'), el('div', 'qh-scraper-body'));
+  side.append(door, el('p', 'qh-side-note', 'Password protected. Sort and Finalize ask the desk password.'), scraperBox, forthcoming('How to sort'));
 
   split.append(main, side);
   page.append(hubHead('Content queue', HUB_LEDES.queue), el('div', 'qh-tabs'), split);
@@ -64,9 +70,34 @@ function build(container, onGoTo) {
   return page;
 }
 
+/** The scraper's block from its status: the button while a run can start,
+ *  then the line, shimmering while one is on, with the Drive folder. */
+function drawScraper(box, s, onRunScraper) {
+  const kids = [];
+  if (s.button) {
+    kids.push(button('Run the scraper', 'btn-outline', {
+      focus: 'run-scraper',
+      onClick: event => { event.currentTarget.disabled = true; onRunScraper?.(); },
+    }));
+  }
+  const line = s.state === 'checking' ? busyLine(s.line)
+    : s.state === 'running' ? busyLine(s.line)
+      : el('p', `qh-scraper-line${s.state === 'failed' || s.state === 'error' ? ' is-warn' : ''}`, s.line);
+  if (s.link) {
+    const open = el('a', 'qh-scraper-link', s.link.label);
+    open.href = s.link.href;
+    open.target = '_blank';
+    open.rel = 'noopener';
+    line.append(' ', open);
+  }
+  kids.push(line);
+  box.replaceChildren(...kids);
+}
+
 export function renderQueue(container, props) {
-  const { rows, schedule, today, loaded, loadFailed, onGoTo, onRefresh } = props;
+  const { rows, schedule, today, loaded, loadFailed, onGoTo, onRefresh, scraper, onRunScraper } = props;
   const page = container.querySelector('.queue-hub') ?? build(container, onGoTo);
+  drawScraper(page.querySelector('.qh-scraper-body'), scraperStatus(scraper, today), onRunScraper);
   const list = page.querySelector('.qh-list');
   const count = page.querySelector('.qh-count');
   const search = page.querySelector('.qh-search');
