@@ -100,6 +100,8 @@ function handleAction(body) {
   switch (body.action) {
     case 'saveFile':
       return handleSaveFile(body);   // Drive, not the sheet
+    case 'appendScrape':
+      return withLock(function () { return handleAppendScrape(body); });   // the Newsletter scrapes Sheet in Drive
   }
   var sheet = getTargetSheet(body.sheetName);
 
@@ -233,6 +235,90 @@ function handleSaveFile(body) {
   while (older.hasNext()) older.next().setTrashed(true);
   var file = folder.createFile(blob);
   return { ok: true, url: file.getUrl(), folderUrl: folder.getUrl() };
+}
+
+/** The spreadsheet the scrape by issue is kept in, inside the scrapes folder. */
+var SCRAPES_SHEET_NAME = 'Newsletter scrapes';
+var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** "2026-10-27" as a tab name, "Oct 27, 2026"; a run with no issue is "Run 2026-10-19". */
+function scrapeTabName(issue, run) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(issue || '');
+  if (!m) return 'Run ' + run;
+  return MONTHS[Number(m[2]) - 1] + ' ' + Number(m[3]) + ', ' + m[1];
+}
+
+/** Finds the Newsletter scrapes Sheet in the scrapes folder, or makes it there. */
+function scrapesSpreadsheet(folder) {
+  var files = folder.getFilesByType(MimeType.GOOGLE_SHEETS);
+  while (files.hasNext()) {
+    var file = files.next();
+    if (file.getName() === SCRAPES_SHEET_NAME) return SpreadsheetApp.openById(file.getId());
+  }
+  var made = SpreadsheetApp.create(SCRAPES_SHEET_NAME);
+  DriveApp.getFileById(made.getId()).moveTo(folder);
+  return made;
+}
+
+/**
+ * Puts a run's rows on the tab of the issue they feed (Kate, Oct 19, 2026:
+ * "a new sheet based on the scrape, by the newsletter send out dates"; her
+ * pick: one Sheet, a tab per issue). The tab is made on first use with the
+ * header frozen; the newest issue's tab sits first; a run delivered again
+ * replaces its own rows, so nothing is doubled. Links are clickable.
+ */
+function handleAppendScrape(body) {
+  var folderId = PropertiesService.getScriptProperties().getProperty(SCRAPE_FOLDER_PROPERTY_NAME);
+  if (!folderId) {
+    return { ok: false, error: 'Server is not configured: the ' + SCRAPE_FOLDER_PROPERTY_NAME + ' script property is not set.' };
+  }
+  if (!body.run || !/^\d{4}-\d{2}-\d{2}$/.test(body.run)) {
+    return { ok: false, error: 'appendScrape needs the "run" date, YYYY-MM-DD.' };
+  }
+  if (!Array.isArray(body.header) || !Array.isArray(body.rows)) {
+    return { ok: false, error: 'appendScrape needs a "header" array and a "rows" array.' };
+  }
+  var ss = scrapesSpreadsheet(DriveApp.getFolderById(folderId));
+  var name = scrapeTabName(body.issue, body.run);
+  var sheet = ss.getSheetByName(name);
+  var width = body.header.length;
+  if (!sheet) {
+    sheet = ss.insertSheet(name, 0);
+    var leftover = ss.getSheetByName('Sheet1');
+    if (leftover && ss.getSheets().length > 1 && leftover.getLastRow() === 0) ss.deleteSheet(leftover);
+  }
+  if (sheet.getLastRow() === 0) {
+    sheet.getRange(1, 1, 1, width).setValues([body.header]).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+  // The same run delivered again replaces its rows: the Run column is the first.
+  var last = sheet.getLastRow();
+  if (last > 1) {
+    var runs = sheet.getRange(2, 1, last - 1, 1).getValues();
+    for (var r = runs.length - 1; r >= 0; r--) {
+      if (String(runs[r][0]) === body.run) sheet.deleteRow(r + 2);
+    }
+  }
+  if (body.rows.length) {
+    var start = sheet.getLastRow() + 1;
+    var values = body.rows.map(function (row) {
+      var out = [];
+      for (var i = 0; i < width; i++) out.push(row[i] == null ? '' : row[i]);
+      return out;
+    });
+    sheet.getRange(start, 1, values.length, width).setValues(values);
+    var linkCol = body.header.indexOf('Link') + 1;
+    if (linkCol > 0) {
+      var formulas = values.map(function (row) {
+        var url = String(row[linkCol - 1] || '');
+        return [url ? '=HYPERLINK("' + url.replace(/"/g, '""') + '","' + url.replace(/"/g, '""') + '")' : ''];
+      });
+      sheet.getRange(start, linkCol, values.length, 1).setFormulas(formulas);
+    }
+  }
+  ss.setActiveSheet(sheet);
+  ss.moveActiveSheet(1);
+  return { ok: true, sheetUrl: ss.getUrl() + '#gid=' + sheet.getSheetId(), tab: name };
 }
 
 /** Wraps a JS object as the JSON response Apps Script sends back. */

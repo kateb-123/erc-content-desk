@@ -16,7 +16,8 @@ import { parseModelJson } from './_lib/reply-json.js';
 import { rowsToItems } from './_lib/bulk-rows.js';
 import { parseCsv } from './_lib/hub.js';
 import { createScraperHandler } from './_lib/scraper.js';
-import { saveFile } from './_lib/sheets.js';
+import { saveFile, appendScrape } from './_lib/sheets.js';
+import { readSchedule } from './_lib/store.js';
 
 export const config = { maxDuration: 300 };
 
@@ -26,7 +27,7 @@ const MAX_FILE_BYTES = 3 * 1024 * 1024;
 const anthropic = new Anthropic();
 // Run the scraper (Kate, Oct 19): its status, a run, and the haul it delivers
 // ride this function too, since api/ holds the Hobby plan's twelve.
-const scraper = createScraperHandler({ saveFile });
+const scraper = createScraperHandler({ saveFile, appendScrape, readSchedule });
 
 export default async function handler(req, res) {
   if (scraper.handles(req)) return scraper.handle(req, res);

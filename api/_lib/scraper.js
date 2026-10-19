@@ -17,6 +17,14 @@
  * Nothing enters the queue by itself: the team opens the files in Drive and
  * drops what it wants on the bulk door, as a run by hand works today.
  *
+ * The scrape by issue (Kate, Oct 19: "a new sheet based on the scrape, by
+ * the newsletter send out dates"; her pick: one Sheet, a tab per issue): the
+ * haul's spreadsheets are read into one table, each row stamped with the
+ * run and handed to the script for the tab of the issue the run feeds, the
+ * next send date on or after the run (the schedule the desk already keeps).
+ * The script keeps "Newsletter scrapes" in the scrapes folder and replaces
+ * that run's rows if the same run is delivered again.
+ *
  * Server-side only: reads SCRAPER_GITHUB_TOKEN (or GITHUB_TOKEN), SCRAPER_REPO
  * and SCRAPER_TOKEN from the environment.
  */
@@ -32,6 +40,40 @@ const CONTENT_TYPES = {
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   txt: 'text/plain',
 };
+/** One table for every type: the run first, then the writer's base columns,
+ *  then each type's extras in the writer's order (erc-scraper, writer.py). */
+export const SCRAPE_HEADER = ['Run', 'Title', 'Link', 'Type', 'Subtype', 'Description', 'Source', 'Date', 'Time', 'Location', 'Authors', 'Note', 'Deadline'];
+
+/** The issue a run feeds: the next send date on or after it, else nothing. */
+export function issueFor(schedule, runDate) {
+  return (schedule ?? []).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(String(d))).sort().find(d => d >= runDate) ?? '';
+}
+
+/** The haul's spreadsheets as one table under SCRAPE_HEADER, every row
+ *  stamped with the run date; the run log and anything else left out. */
+export async function scrapeRows(files, runDate) {
+  const XLSX = await import('xlsx');
+  const rows = [];
+  for (const f of files) {
+    if (!/\.xlsx$/i.test(String(f?.name ?? ''))) continue;
+    let sheet;
+    try {
+      const book = XLSX.read(Buffer.from(String(f.b64 ?? ''), 'base64'), { type: 'buffer' });
+      sheet = book.Sheets[book.SheetNames[0]];
+    } catch {
+      continue;   // a file that will not open is still in Drive; the rest go on the tab
+    }
+    if (!sheet) continue;
+    const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+    const header = (matrix[0] ?? []).map(h => String(h ?? '').trim());
+    for (const values of matrix.slice(1)) {
+      if (!values.some(v => String(v ?? '').trim())) continue;
+      const byName = Object.fromEntries(header.map((h, i) => [h, String(values[i] ?? '')]));
+      rows.push(SCRAPE_HEADER.map(h => (h === 'Run' ? runDate : byName[h] ?? '')));
+    }
+  }
+  return { header: SCRAPE_HEADER, rows };
+}
 
 /** GitHub's newest run of the workflow, as the desk reads it. */
 export function runState(body) {
@@ -68,7 +110,7 @@ export function haulChecks(body, secret) {
  * `handles(req)` says whether a request is one of the three doors;
  * `handle(req, res)` answers it.
  */
-export function createScraperHandler({ fetch = globalThis.fetch, saveFile, env = process.env } = {}) {
+export function createScraperHandler({ fetch = globalThis.fetch, saveFile, appendScrape, readSchedule = async () => [], env = process.env } = {}) {
   const repo = env.SCRAPER_REPO || DEFAULT_REPO;
   const ghToken = env.SCRAPER_GITHUB_TOKEN || env.GITHUB_TOKEN || '';
   const api = path => `${GITHUB}/repos/${repo}/${path}`;
@@ -151,7 +193,24 @@ export function createScraperHandler({ fetch = globalThis.fetch, saveFile, env =
     } catch (err) {
       return res.status(502).json({ ok: false, error: `Couldn't file the haul in Drive after ${saved.length} of ${files.length}: ${err.message}` });
     }
-    return res.status(200).json({ ok: true, folderUrl, saved });
+    // Then the rows into the issue's tab of Newsletter scrapes.
+    let issue = '';
+    let sheetUrl = '';
+    let tab = '';
+    try {
+      const { header, rows } = await scrapeRows(files, date);
+      if (rows.length && appendScrape) {
+        let schedule = [];
+        try { schedule = await readSchedule(); } catch { schedule = []; }
+        issue = issueFor(schedule, date);
+        const reply = await appendScrape({ issue, run: date, header, rows });
+        sheetUrl = reply?.sheetUrl ?? '';
+        tab = reply?.tab ?? '';
+      }
+    } catch (err) {
+      return res.status(502).json({ ok: false, error: `The files are in Drive, but the rows couldn't be written to Newsletter scrapes: ${err.message}` });
+    }
+    return res.status(200).json({ ok: true, folderUrl, saved, issue, sheetUrl, tab });
   }
 
   async function handle(req, res) {

@@ -438,10 +438,15 @@ same: the hub's name as the title and one line under it.
   22 events, 32 research, 152 headlines, 17 opportunities.") with Open the
   files, the run's folder in the shared drive, in a new tab; while a run is
   on the button goes and the line shimmers with the start time; a failed run
-  says so in the warning colour with the button back. Nothing enters the
-  queue by itself: the team opens the files in Drive and drops what it wants
-  on the bulk door, as before. Counts and a folder only, since the page is
-  open.
+  says so in the warning colour with the button back. The haul lands twice
+  in Drive (her pick, Oct 19: "a new sheet based on the scrape, by the
+  newsletter send out dates", one Sheet with a tab per issue): the run's
+  spreadsheets in a folder named by date, for the bulk door, and every row
+  on the tab of the issue the run feeds in the Newsletter scrapes Sheet,
+  newest issue first, so the line reads "Last run Oct 19, for the Oct 27
+  issue: …" with Open the sheet, then "the files". Nothing enters the queue
+  by itself: the team reads the tab, and drops the files it wants on the
+  bulk door, as before. Counts and links only, since the page is open.
   Since Oct 8 (Kate: "the queue has too many items. It should just be what
   was submitted from the last newsletter until now"; her pick of a second
   tab): the desk's tab row under the head, Since the last issue (opens

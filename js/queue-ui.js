@@ -89,6 +89,13 @@ function drawScraper(box, s, onRunScraper) {
     open.target = '_blank';
     open.rel = 'noopener';
     line.append(' ', open);
+    if (s.files) {
+      const folder = el('a', 'qh-scraper-link', s.files.label);
+      folder.href = s.files.href;
+      folder.target = '_blank';
+      folder.rel = 'noopener';
+      line.append(' · ', folder);
+    }
   }
   kids.push(line);
   box.replaceChildren(...kids);

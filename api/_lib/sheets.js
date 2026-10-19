@@ -85,6 +85,14 @@ export async function saveFile({ folder, name, contentType, b64 }) {
   return { ok: true, url: body.url ?? '', folderUrl: body.folderUrl ?? '' };
 }
 
+/** Puts a run's rows on the tab of the issue they feed in the Newsletter
+ *  scrapes Sheet (the script's appendScrape action; the Sheet lives in the
+ *  scrapes folder and is made on first use). Answers the tab's address. */
+export async function appendScrape({ issue, run, header, rows }) {
+  const body = await callSheetApi('appendScrape', { issue, run, header, rows }, { timeoutMs: 90000 });
+  return { ok: true, sheetUrl: body.sheetUrl ?? '', tab: body.tab ?? '' };
+}
+
 export async function appendRow(row) {
   await callSheetApi('append', { values: rowToValues(row) });
 }

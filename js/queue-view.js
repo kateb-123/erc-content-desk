@@ -118,21 +118,25 @@ function centralTime(iso) {
  *  as a state, whether the button shows, one line, and the Drive folder.
  *  Counts and a folder, never the items: the page is open. */
 export function scraperStatus(data, today) {
-  if (!data) return { state: 'checking', button: false, line: 'Checking the scraper', link: null };
-  if (data.error) return { state: 'error', button: false, line: "The desk couldn't ask GitHub just now.", link: null };
-  if (!data.configured) return { state: 'off', button: false, line: 'Not wired to the desk yet.', link: null };
+  if (!data) return { state: 'checking', button: false, line: 'Checking the scraper', link: null, files: null };
+  if (data.error) return { state: 'error', button: false, line: "The desk couldn't ask GitHub just now.", link: null, files: null };
+  if (!data.configured) return { state: 'off', button: false, line: 'Not wired to the desk yet.', link: null, files: null };
   const run = data.run ?? { state: 'idle' };
   const last = data.last;
-  const link = last?.folderUrl ? { label: 'Open the files', href: last.folderUrl } : null;
-  if (run.state === 'running') return { state: 'running', button: false, line: `Scraping, started ${centralTime(run.startedAt)}`, link: null };
+  // The issue's tab of Newsletter scrapes leads when the run has one; the run's folder otherwise, and beside it.
+  const folder = last?.folderUrl ? { label: 'Open the files', href: last.folderUrl } : null;
+  const link = last?.sheetUrl ? { label: 'Open the sheet', href: last.sheetUrl } : folder;
+  const files = last?.sheetUrl && folder ? { label: 'the files', href: folder.href } : null;
+  if (run.state === 'running') return { state: 'running', button: false, line: `Scraping, started ${centralTime(run.startedAt)}`, link: null, files: null };
   if (run.state === 'failed') {
     const kept = last ? ` The files from ${isoToShort(last.date, today)} are still in Drive.` : '';
-    return { state: 'failed', button: true, line: `The last run failed on GitHub.${kept}`, link };
+    return { state: 'failed', button: true, line: `The last run failed on GitHub.${kept}`, link, files };
   }
-  if (!last) return { state: 'idle', button: true, line: 'No run yet. Every Monday at 7:00, and whenever this is pressed.', link: null };
+  if (!last) return { state: 'idle', button: true, line: 'No run yet. Every Monday at 7:00, and whenever this is pressed.', link: null, files: null };
   const failed = Number(last.failed ?? 0);
   const tail = failed ? ` ${failed} source${failed === 1 ? '' : 's'} did not answer.` : '';
-  return { state: 'idle', button: true, line: `Last run ${isoToShort(last.date, today)}: ${countWords(last.counts)}.${tail}`, link };
+  const issue = last.issue ? `, for the ${isoToShort(last.issue, today)} issue` : '';
+  return { state: 'idle', button: true, line: `Last run ${isoToShort(last.date, today)}${issue}: ${countWords(last.counts)}.${tail}`, link, files };
 }
 
 /** The last issue that went out (Kate, Oct 8: the queue holds "what was

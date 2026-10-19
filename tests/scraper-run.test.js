@@ -7,7 +7,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createScraperHandler, runState, haulChecks, SCRAPER_WORKFLOW } from '../api/_lib/scraper.js';
+import { createScraperHandler, runState, haulChecks, issueFor, scrapeRows, SCRAPE_HEADER, SCRAPER_WORKFLOW } from '../api/_lib/scraper.js';
 
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8');
 
@@ -134,14 +134,15 @@ test('haul: every file goes to the Sheet\'s script under the date folder, and th
   const saved = [];
   const saveFile = async file => { saved.push(file); return { ok: true, url: `https://drive.google.com/file/${file.name}`, folderUrl: 'https://drive.google.com/drive/folders/abc' }; };
   const res = fakeRes();
-  await createScraperHandler({ fetch: github().fetch, saveFile, env: ENV }).handle({ method: 'POST', query: {}, body: HAUL }, res);
+  const real = { ...HAUL, files: [await xlsxFile('Events.xlsx', [['Title', 'Link', 'Type'], ['Howdy Policy Trivia Night', 'https://example.org/trivia', 'event']]), HAUL.files[1]] };
+  await createScraperHandler({ fetch: github().fetch, saveFile, appendScrape: async () => ({ ok: true, sheetUrl: 'https://docs.google.com/spreadsheets/d/s#gid=7', tab: 'Oct 27, 2026' }), readSchedule: async () => ['2026-10-20', '2026-10-27'], env: ENV }).handle({ method: 'POST', query: {}, body: real }, res);
   assert.equal(res.code, 200);
-  assert.deepEqual(res.body, { ok: true, folderUrl: 'https://drive.google.com/drive/folders/abc', saved: ['Events.xlsx', 'run-log.txt'] });
+  assert.deepEqual(res.body, { ok: true, folderUrl: 'https://drive.google.com/drive/folders/abc', saved: ['Events.xlsx', 'run-log.txt'], issue: '2026-10-20', sheetUrl: 'https://docs.google.com/spreadsheets/d/s#gid=7', tab: 'Oct 27, 2026' });
   assert.deepEqual(saved.map(f => [f.folder, f.name, f.contentType]), [
     ['2026-10-19', 'Events.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
     ['2026-10-19', 'run-log.txt', 'text/plain'],
   ]);
-  assert.equal(saved[0].b64, HAUL.files[0].b64);
+  assert.equal(saved[0].b64, real.files[0].b64);
 });
 
 test('haul: a wrong token is refused before any file is saved; a Drive failure is reported', async () => {
@@ -152,7 +153,7 @@ test('haul: a wrong token is refused before any file is saved; a Drive failure i
   assert.equal(res.code, 401);
   assert.equal(saves, 0);
   const res2 = fakeRes();
-  await createScraperHandler({ fetch: github().fetch, saveFile: async () => { throw new Error('Sheet API error: no folder'); }, env: ENV }).handle({ method: 'POST', query: {}, body: HAUL }, res2);
+  await createScraperHandler({ fetch: github().fetch, saveFile: async () => { throw new Error('Sheet API error: no folder'); }, appendScrape: async () => ({ ok: true }), readSchedule: async () => [], env: ENV }).handle({ method: 'POST', query: {}, body: HAUL }, res2);
   assert.equal(res2.code, 502);
   assert.match(res2.body.error, /no folder/);
 });
@@ -171,4 +172,73 @@ test('the bulk door hands these three to the scraper handler and keeps its file 
   assert.match(gs, /Utilities\.base64Decode/);
   const readme = read('../README.md');
   for (const name of ['SCRAPER_TOKEN', 'SCRAPER_GITHUB_TOKEN', 'SCRAPER_REPO', 'SCRAPE_FOLDER_ID']) assert.ok(readme.includes(name), `README names ${name}`);
+});
+
+// The scrape by issue (Kate, Oct 19: "a new sheet based on the scrape, by the
+// newsletter send out dates"; her pick: one Sheet, a tab per issue). The
+// desk reads the run's spreadsheets, stamps every row with the run and the
+// issue it feeds (the next send date on or after the run), and hands them to
+// the script, which keeps "Newsletter scrapes" in the scrapes folder.
+test('issueFor: the next send date on or after the run, else nothing', () => {
+  assert.equal(issueFor(['2026-10-20', '2026-11-03'], '2026-10-21'), '2026-11-03');
+  assert.equal(issueFor(['2026-10-20', '2026-11-03'], '2026-10-20'), '2026-10-20');
+  assert.equal(issueFor(['2026-10-20', '2026-11-03'], '2026-11-04'), '');
+  assert.equal(issueFor([], '2026-10-21'), '');
+});
+
+async function xlsxFile(name, matrix) {
+  const XLSX = await import('xlsx');
+  const book = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(book, XLSX.utils.aoa_to_sheet(matrix), 'Items');
+  return { name, b64: XLSX.write(book, { type: 'base64', bookType: 'xlsx' }) };
+}
+
+test('scrapeRows: the spreadsheets become one table, the run first, every type\'s columns in the writer\'s order, the log left out', async () => {
+  const files = [
+    await xlsxFile('Events.xlsx', [['Title', 'Link', 'Type', 'Subtype', 'Description', 'Source', 'Date', 'Time', 'Location'], ['Howdy Policy Trivia Night', 'https://example.org/trivia', 'event', 'A&M', 'Bring a team.', 'Aggie Policy Club', '2026-10-30', '6:00 PM CT', 'Rudder 401']]),
+    await xlsxFile('Headlines-1.xlsx', [['Title', 'Link', 'Type', 'Subtype', 'Description', 'Source', 'Date'], ['Twelfth Man Tutoring Expands', 'https://example.org/tutoring', 'headline', 'Texas', '', 'Made-Up Times', '2026-10-18']]),
+    await xlsxFile('Headlines-2.xlsx', [['Title', 'Link', 'Type', 'Subtype', 'Description', 'Source', 'Date'], ['Reveille Reads', 'https://example.org/reveille', 'headline', 'National', 'A dog.', 'Pretend Post', '2026-10-17']]),
+    { name: 'run-log.txt', b64: Buffer.from('ERC scrape').toString('base64') },
+  ];
+  const { header, rows } = await scrapeRows(files, '2026-10-19');
+  assert.deepEqual(header, SCRAPE_HEADER);
+  assert.deepEqual(SCRAPE_HEADER, ['Run', 'Title', 'Link', 'Type', 'Subtype', 'Description', 'Source', 'Date', 'Time', 'Location', 'Authors', 'Note', 'Deadline']);
+  assert.equal(rows.length, 3);
+  assert.deepEqual(rows[0], ['2026-10-19', 'Howdy Policy Trivia Night', 'https://example.org/trivia', 'event', 'A&M', 'Bring a team.', 'Aggie Policy Club', '2026-10-30', '6:00 PM CT', 'Rudder 401', '', '', '']);
+  assert.deepEqual(rows[2].slice(0, 4), ['2026-10-19', 'Reveille Reads', 'https://example.org/reveille', 'headline']);
+});
+
+test('haul: the rows go to the issue\'s tab, once, after the files; no schedule files them under the run date', async () => {
+  const calls = [];
+  const appendScrape = async payload => { calls.push(payload); return { ok: true, sheetUrl: 'https://docs.google.com/spreadsheets/d/s#gid=1', tab: 'Oct 27, 2026' }; };
+  const events = await xlsxFile('Events.xlsx', [['Title', 'Link', 'Type'], ['Howdy Policy Trivia Night', 'https://example.org/trivia', 'event']]);
+  const body = { ...HAUL, files: [events, HAUL.files[1]] };
+  const res = fakeRes();
+  await createScraperHandler({ fetch: github().fetch, saveFile: async () => ({ ok: true, folderUrl: 'f' }), appendScrape, readSchedule: async () => ['2026-10-27'], env: ENV }).handle({ method: 'POST', query: {}, body }, res);
+  assert.equal(res.code, 200);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].issue, '2026-10-27');
+  assert.equal(calls[0].run, '2026-10-19');
+  assert.deepEqual(calls[0].header, SCRAPE_HEADER);
+  assert.deepEqual(calls[0].rows[0].slice(0, 4), ['2026-10-19', 'Howdy Policy Trivia Night', 'https://example.org/trivia', 'event']);
+  assert.equal(res.body.issue, '2026-10-27');
+
+  const res2 = fakeRes();
+  await createScraperHandler({ fetch: github().fetch, saveFile: async () => ({ ok: true, folderUrl: 'f' }), appendScrape, readSchedule: async () => { throw new Error('no sheet'); }, env: ENV }).handle({ method: 'POST', query: {}, body }, res2);
+  assert.equal(res2.code, 200);
+  assert.equal(calls[1].issue, '', 'no schedule, no issue: the script files it under the run date');
+});
+
+test('haul: a Sheet write that fails after the files are filed is reported, and the script replaces that run\'s rows on a re-delivery', async () => {
+  const events = await xlsxFile('Events.xlsx', [['Title', 'Link', 'Type'], ['Howdy Policy Trivia Night', 'https://example.org/trivia', 'event']]);
+  const res = fakeRes();
+  await createScraperHandler({ fetch: github().fetch, saveFile: async () => ({ ok: true, folderUrl: 'f' }), appendScrape: async () => { throw new Error('Sheet API error: locked'); }, readSchedule: async () => [], env: ENV }).handle({ method: 'POST', query: {}, body: { ...HAUL, files: [events] } }, res);
+  assert.equal(res.code, 502);
+  assert.match(res.body.error, /Newsletter scrapes.*locked/);
+  const gs = read('../apps-script/Code.gs');
+  assert.match(gs, /case 'appendScrape':/);
+  assert.match(gs, /Newsletter scrapes/);
+  assert.match(gs, /deleteRow|deleteRows/, 'an earlier delivery of the same run is replaced, never doubled');
+  const sheets = read('../api/_lib/sheets.js');
+  assert.match(sheets, /export async function appendScrape\(/);
 });
