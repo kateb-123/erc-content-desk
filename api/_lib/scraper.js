@@ -106,12 +106,49 @@ export function haulChecks(body, secret) {
   return null;
 }
 
+/** A spreadsheet's data rows, or -1 when it will not open; the run log is not a spreadsheet. */
+async function xlsxRowCount(file) {
+  const XLSX = await import('xlsx');
+  try {
+    const book = XLSX.read(Buffer.from(String(file.b64 ?? ''), 'base64'), { type: 'buffer' });
+    const sheet = book.Sheets[book.SheetNames[0]];
+    if (!sheet) return 0;
+    const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+    return matrix.slice(1).filter(values => values.some(v => String(v ?? '').trim())).length;
+  } catch {
+    return -1;
+  }
+}
+
+/** The file names a delivery is filed under (Kate, Oct 20: runs every day).
+ *  The day's first delivery keeps the scraper's plain names; a later one the
+ *  same day carries the run's Central time ("Events 14-59.xlsx"), so the
+ *  morning's files stay in Drive. A spreadsheet with no rows is dropped. */
+export async function haulNames(files, { secondOfDay, time }) {
+  const out = [];
+  for (const f of files) {
+    const name = String(f?.name ?? '');
+    if (/\.xlsx$/i.test(name) && (await xlsxRowCount(f)) === 0) continue;
+    if (!secondOfDay) { out.push(f); continue; }
+    const m = /^(.*)(\.[A-Za-z0-9]+)$/.exec(name);
+    out.push({ ...f, name: m ? `${m[1]} ${time}${m[2]}` : `${name} ${time}` });
+  }
+  return out;
+}
+
+/** "14-59": the hour and minute in College Station, safe in a file name. */
+function centralClock(date) {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', hour12: false, hour: '2-digit', minute: '2-digit' }).formatToParts(date);
+  const get = type => parts.find(p => p.type === type)?.value ?? '00';
+  return `${get('hour') === '24' ? '00' : get('hour')}-${get('minute')}`;
+}
+
 /**
  * The handler, with GitHub and the Sheet's script injectable for tests.
  * `handles(req)` says whether a request is one of the three doors;
  * `handle(req, res)` answers it.
  */
-export function createScraperHandler({ fetch = globalThis.fetch, saveFile, appendScrape, readSchedule = async () => [], env = process.env } = {}) {
+export function createScraperHandler({ fetch = globalThis.fetch, saveFile, appendScrape, readSchedule = async () => [], env = process.env, now = () => new Date() } = {}) {
   const repo = env.SCRAPER_REPO || DEFAULT_REPO;
   const ghToken = env.SCRAPER_GITHUB_TOKEN || env.GITHUB_TOKEN || '';
   const api = path => `${GITHUB}/repos/${repo}/${path}`;
@@ -181,7 +218,13 @@ export function createScraperHandler({ fetch = globalThis.fetch, saveFile, appen
   async function haul(req, res) {
     const problem = haulChecks(req.body, env.SCRAPER_TOKEN || '');
     if (problem) return res.status(problem === 'Bad token.' ? 401 : 400).json({ ok: false, error: problem });
-    const { date, files } = req.body;
+    const { date } = req.body;
+    // A second delivery on the same day keeps its own files (GitHub's latest.json says whether the day has one).
+    let secondOfDay = false;
+    if (ghToken) {
+      try { secondOfDay = (await latest())?.date === date; } catch { secondOfDay = false; }
+    }
+    const files = await haulNames(req.body.files, { secondOfDay, time: centralClock(now()) });
     let folderUrl = '';
     const saved = [];
     try {

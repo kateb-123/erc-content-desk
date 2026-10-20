@@ -7,7 +7,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createScraperHandler, runState, haulChecks, issueFor, scrapeRows, SCRAPE_HEADER, SCRAPER_WORKFLOW } from '../api/_lib/scraper.js';
+import { createScraperHandler, runState, haulChecks, issueFor, scrapeRows, haulNames, SCRAPE_HEADER, SCRAPER_WORKFLOW } from '../api/_lib/scraper.js';
 
 const read = path => readFileSync(new URL(path, import.meta.url), 'utf8');
 
@@ -135,7 +135,8 @@ test('haul: every file goes to the Sheet\'s script under the date folder, and th
   const saveFile = async file => { saved.push(file); return { ok: true, url: `https://drive.google.com/file/${file.name}`, folderUrl: 'https://drive.google.com/drive/folders/abc' }; };
   const res = fakeRes();
   const real = { ...HAUL, files: [await xlsxFile('Events.xlsx', [['Title', 'Link', 'Type'], ['Howdy Policy Trivia Night', 'https://example.org/trivia', 'event']]), HAUL.files[1]] };
-  await createScraperHandler({ fetch: github().fetch, saveFile, appendScrape: async () => ({ ok: true, sheetUrl: 'https://docs.google.com/spreadsheets/d/s#gid=7', tab: 'Oct 27, 2026' }), readSchedule: async () => ['2026-10-20', '2026-10-27'], env: ENV }).handle({ method: 'POST', query: {}, body: real }, res);
+  // The day's first delivery (GitHub's last haul is from another day), so the names stay plain.
+  await createScraperHandler({ fetch: github({ latest: { ...LATEST, date: '2026-10-12' } }).fetch, saveFile, appendScrape: async () => ({ ok: true, sheetUrl: 'https://docs.google.com/spreadsheets/d/s#gid=7', tab: 'Oct 27, 2026' }), readSchedule: async () => ['2026-10-20', '2026-10-27'], env: ENV }).handle({ method: 'POST', query: {}, body: real }, res);
   assert.equal(res.code, 200);
   assert.deepEqual(res.body, { ok: true, folderUrl: 'https://drive.google.com/drive/folders/abc', saved: ['Events.xlsx', 'run-log.txt'], issue: '2026-10-20', sheetUrl: 'https://docs.google.com/spreadsheets/d/s#gid=7', tab: 'Oct 27, 2026' });
   assert.deepEqual(saved.map(f => [f.folder, f.name, f.contentType]), [
@@ -244,4 +245,35 @@ test('haul: a Sheet write that fails after the files are filed is reported, and 
   assert.match(append, /onTab\[/, 'links already on the tab are skipped');
   const sheets = read('../api/_lib/sheets.js');
   assert.match(sheets, /export async function appendScrape\(/);
+});
+
+// A second run on the same day (Kate, Oct 20: running it daily): its files
+// keep their own names, with the run's time in them, so the morning's files
+// stay in Drive; and a spreadsheet with no rows is never sent at all.
+test('haulNames: the day\'s first delivery keeps plain names; a later one carries the time; empties are dropped', async () => {
+  const empty = await xlsxFile('Research.xlsx', [['Title', 'Link', 'Type']]);
+  const full = await xlsxFile('Events.xlsx', [['Title', 'Link', 'Type'], ['Howdy Policy Trivia Night', 'https://example.org/trivia', 'event']]);
+  const log = { name: 'run-log.txt', b64: Buffer.from('ERC scrape').toString('base64') };
+  const first = await haulNames([full, empty, log], { secondOfDay: false, time: '14-59' });
+  assert.deepEqual(first.map(f => f.name), ['Events.xlsx', 'run-log.txt']);
+  const second = await haulNames([full, empty, log], { secondOfDay: true, time: '14-59' });
+  assert.deepEqual(second.map(f => f.name), ['Events 14-59.xlsx', 'run-log 14-59.txt']);
+  assert.equal(second[0].b64, full.b64, 'the file itself is untouched');
+});
+
+test('haul: a delivery on a day that already has one files under timed names', async () => {
+  const saved = [];
+  const saveFile = async file => { saved.push(file.name); return { ok: true, folderUrl: 'f' }; };
+  const full = await xlsxFile('Events.xlsx', [['Title', 'Link', 'Type'], ['Howdy Policy Trivia Night', 'https://example.org/trivia', 'event']]);
+  const body = { ...HAUL, date: '2026-10-19', files: [full, HAUL.files[1]] };
+  const res = fakeRes();
+  await createScraperHandler({ fetch: github({ latest: { ...LATEST, date: '2026-10-19' } }).fetch, saveFile, appendScrape: async () => ({ ok: true }), readSchedule: async () => [], env: ENV, now: () => new Date('2026-10-19T19:59:00Z') }).handle({ method: 'POST', query: {}, body }, res);
+  assert.equal(res.code, 200);
+  assert.deepEqual(saved, ['Events 14-59.xlsx', 'run-log 14-59.txt'], 'Central time in the names');
+  assert.deepEqual(res.body.saved, ['Events 14-59.xlsx', 'run-log 14-59.txt']);
+
+  const saved2 = [];
+  const res2 = fakeRes();
+  await createScraperHandler({ fetch: github({ latest: { ...LATEST, date: '2026-10-18' } }).fetch, saveFile: async file => { saved2.push(file.name); return { ok: true, folderUrl: 'f' }; }, appendScrape: async () => ({ ok: true }), readSchedule: async () => [], env: ENV, now: () => new Date('2026-10-19T19:59:00Z') }).handle({ method: 'POST', query: {}, body }, res2);
+  assert.deepEqual(saved2, ['Events.xlsx', 'run-log.txt'], 'the day\'s first delivery keeps plain names');
 });
