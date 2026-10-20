@@ -444,9 +444,13 @@ same: the hub's name as the title and one line under it.
   spreadsheets in a folder named by date, for the bulk door, and every row
   on the tab of the issue the run feeds in the Newsletter scrapes Sheet,
   newest issue first, so the line reads "Last run Oct 19, for the Oct 27
-  issue: …" with Open the sheet, then "the files". Nothing enters the queue
-  by itself: the team reads the tab, and drops the files it wants on the
-  bulk door, as before. Counts and links only, since the page is open.
+  issue: …" with Open the sheet, then "the files". Runs between two send
+  dates stack on the coming issue's tab, the Run column saying which day;
+  a link already on the tab is never written twice and the script never
+  removes a row, so what the team deletes by hand stays deleted (Kate,
+  Oct 20). Nothing enters the queue by itself: the team reads the tab, and
+  drops the files it wants on the bulk door, as before. Counts and links
+  only, since the page is open.
   Since Oct 8 (Kate: "the queue has too many items. It should just be what
   was submitted from the last newsletter until now"; her pick of a second
   tab): the desk's tab row under the head, Since the last issue (opens

@@ -238,7 +238,10 @@ test('haul: a Sheet write that fails after the files are filed is reported, and 
   const gs = read('../apps-script/Code.gs');
   assert.match(gs, /case 'appendScrape':/);
   assert.match(gs, /Newsletter scrapes/);
-  assert.match(gs, /deleteRow|deleteRows/, 'an earlier delivery of the same run is replaced, never doubled');
+  // Kate, Oct 20: what the team deletes by hand stays deleted; a second run the same day only adds what is new.
+  const append = gs.slice(gs.indexOf('function handleAppendScrape'));
+  assert.doesNotMatch(append, /deleteRow/, 'the script never removes a row');
+  assert.match(append, /onTab\[/, 'links already on the tab are skipped');
   const sheets = read('../api/_lib/sheets.js');
   assert.match(sheets, /export async function appendScrape\(/);
 });

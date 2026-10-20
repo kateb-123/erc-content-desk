@@ -264,8 +264,10 @@ function scrapesSpreadsheet(folder) {
  * Puts a run's rows on the tab of the issue they feed (Kate, Oct 19, 2026:
  * "a new sheet based on the scrape, by the newsletter send out dates"; her
  * pick: one Sheet, a tab per issue). The tab is made on first use with the
- * header frozen; the newest issue's tab sits first; a run delivered again
- * replaces its own rows, so nothing is doubled. Links are clickable.
+ * header frozen; the newest issue's tab sits first. A link already on the
+ * tab is never written twice, and the script never removes a row, so what
+ * the team deletes by hand stays deleted and a second run the same day
+ * only adds what is new (Kate, Oct 20). Links are clickable.
  */
 function handleAppendScrape(body) {
   var folderId = PropertiesService.getScriptProperties().getProperty(SCRAPE_FOLDER_PROPERTY_NAME);
@@ -291,23 +293,27 @@ function handleAppendScrape(body) {
     sheet.getRange(1, 1, 1, width).setValues([body.header]).setFontWeight('bold');
     sheet.setFrozenRows(1);
   }
-  // The same run delivered again replaces its rows: the Run column is the first.
+  // Only links not already on the tab are written; nothing on the tab is ever removed here.
+  var linkCol = body.header.indexOf('Link') + 1;
+  var onTab = {};
   var last = sheet.getLastRow();
-  if (last > 1) {
-    var runs = sheet.getRange(2, 1, last - 1, 1).getValues();
-    for (var r = runs.length - 1; r >= 0; r--) {
-      if (String(runs[r][0]) === body.run) sheet.deleteRow(r + 2);
-    }
+  if (linkCol > 0 && last > 1) {
+    sheet.getRange(2, linkCol, last - 1, 1).getValues().forEach(function (cell) {
+      if (cell[0]) onTab[String(cell[0]).trim()] = true;
+    });
   }
-  if (body.rows.length) {
+  var fresh = body.rows.filter(function (row) {
+    var link = linkCol > 0 ? String(row[linkCol - 1] || '').trim() : '';
+    return !link || !onTab[link];
+  });
+  if (fresh.length) {
     var start = sheet.getLastRow() + 1;
-    var values = body.rows.map(function (row) {
+    var values = fresh.map(function (row) {
       var out = [];
       for (var i = 0; i < width; i++) out.push(row[i] == null ? '' : row[i]);
       return out;
     });
     sheet.getRange(start, 1, values.length, width).setValues(values);
-    var linkCol = body.header.indexOf('Link') + 1;
     if (linkCol > 0) {
       var formulas = values.map(function (row) {
         var url = String(row[linkCol - 1] || '');
@@ -318,7 +324,7 @@ function handleAppendScrape(body) {
   }
   ss.setActiveSheet(sheet);
   ss.moveActiveSheet(1);
-  return { ok: true, sheetUrl: ss.getUrl() + '#gid=' + sheet.getSheetId(), tab: name };
+  return { ok: true, sheetUrl: ss.getUrl() + '#gid=' + sheet.getSheetId(), tab: name, added: fresh.length, skipped: body.rows.length - fresh.length };
 }
 
 /** Wraps a JS object as the JSON response Apps Script sends back. */

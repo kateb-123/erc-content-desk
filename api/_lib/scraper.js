@@ -22,8 +22,9 @@
  * haul's spreadsheets are read into one table, each row stamped with the
  * run and handed to the script for the tab of the issue the run feeds, the
  * next send date on or after the run (the schedule the desk already keeps).
- * The script keeps "Newsletter scrapes" in the scrapes folder and replaces
- * that run's rows if the same run is delivered again.
+ * The script keeps "Newsletter scrapes" in the scrapes folder, writes only
+ * links not already on the tab and never removes a row, so hand deletions
+ * stay deleted (Kate, Oct 20).
  *
  * Server-side only: reads SCRAPER_GITHUB_TOKEN (or GITHUB_TOKEN), SCRAPER_REPO
  * and SCRAPER_TOKEN from the environment.
