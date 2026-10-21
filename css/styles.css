@@ -1000,6 +1000,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .step-sub { display: block; font: var(--meta-type); font-size: 12px; line-height: 16px; color: var(--text-helper); font-weight: 400; margin-top: var(--spacing-01); }
 .steps-small .step { font-size: 12px; line-height: 16px; }
 .steps-small .step-sub { display: none; }
+/* In the hub's table only the current step is named (Kate, Oct 21: the full row was "a bit busy"; her pick A). */
+.steps-small .step-words { display: none; }
+.steps-small .step.is-now .step-words { display: block; }
 .brief-page .steps { margin: 0 0 var(--spacing-08); }
 .brief-split { margin-top: 0; }
 .brief-stage { padding: var(--spacing-05) var(--spacing-06); }

@@ -533,7 +533,9 @@ record, her notes); and **D**, a brief's own page (/#briefs/<id>) as the
 stepper across the top with dates under the steps, then only the stage it
 is at as one box, with the folder's files beside it, each a link into Drive.
 The stepper is the builder's progress indicator idiom: a 20px dot and a
-line, teal for done and now, the current dot ringed. The front page's card
+line, teal for done and now, the current dot ringed; in the table only the
+current step is named (the full row read "a bit busy", her pick A of three
+quieter rows, Oct 21), on the brief's page every step is. The front page's card
 is the seventh, locked, counting what is not live ("3 · in progress · 1
 with an author") only once her sign-in has read the list. Round 1 (Oct 21)
 built the hub, New brief, the paper stage with Save notes, the card and the

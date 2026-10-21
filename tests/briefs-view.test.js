@@ -5,6 +5,7 @@
 // the table's order.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { STAGES, stepStates, waitsFor, briefSlug, hubRows, briefTitle, stageLabel } from '../js/briefs-view.js';
 
 test('the seven stages, in her order, the last two round two', () => {
@@ -72,4 +73,10 @@ test('hubRows: in progress first by stage then by when it moved, live last, each
   assert.equal(rows[2].steps.find(s => s.state === 'now').key, 'proof');
   assert.equal(rows[2].waits.title, 'Your Grammarly pass');
   assert.equal(rows[0].href, '/#briefs/e');
+});
+
+test('in the hub\'s table only the current step is named; the brief\'s page names them all (Kate, Oct 21, her pick A)', () => {
+  const css = readFileSync(new URL('../css/styles.css', import.meta.url), 'utf8');
+  assert.match(css, /\.steps-small \.step-words \{ display: none; \}/);
+  assert.match(css, /\.steps-small \.step\.is-now \.step-words \{ display: block; \}/);
 });
