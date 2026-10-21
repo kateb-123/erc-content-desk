@@ -127,6 +127,9 @@ language only, four authors, TAMU corresponding). A second Holzman paper
 (2025, English learners) and `Avitabile_JMP.pdf` are also waiting, so the
 folder name `holzman-2026b` needs a rethink; `holzman-2026` is the older
 EMERGE brief. Her answer (Oct 21): a topic word, `holzman-2026-alignment`.
+The folders live on the team drive (Oct 21, her folders): `Education
+Research Center/ERC Content Desk/ERC Research Briefs`, the desk's Drive home;
+that inner folder's id is the Sheet script's `BRIEFS_FOLDER_ID` property.
 
 ## How Kate works on this
 

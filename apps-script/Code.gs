@@ -36,8 +36,9 @@ var LOCK_TIMEOUT_MS = 10000;
 var SCRAPE_FOLDER_PROPERTY_NAME = 'SCRAPE_FOLDER_ID';
 
 /** Name of the script property holding the id of the team drive folder
- *  Research briefs, where each brief gets a folder of its own (Kate, Oct 20,
- *  2026). The id is the last part of the folder's address. Not the id itself. */
+ *  ERC Content Desk/ERC Research Briefs, where each brief gets a folder of
+ *  its own (Kate, Oct 20 and 21, 2026). The id is the last part of the
+ *  folder's address. Not the id itself. */
 var BRIEFS_FOLDER_PROPERTY_NAME = 'BRIEFS_FOLDER_ID';
 var FILE_NAME_RULE = /^[A-Za-z0-9][A-Za-z0-9 _.-]{0,120}\.(xlsx|txt|pdf|md|docx|png|jpg|jpeg)$/;
 
@@ -346,8 +347,8 @@ function handleAppendScrape(body) {
 }
 
 /**
- * A brief's own folder under Research briefs on the team drive (Kate, Oct 20,
- * 2026): lastname-year-topic, made on first use, found after. The desk files
+ * A brief's own folder under ERC Content Desk/ERC Research Briefs on the team
+ * drive (Kate, Oct 20 and 21, 2026): lastname-year-topic, made on first use, found after. The desk files
  * the paper, her notes, the drafts and the Word doc into it by its id.
  */
 function handleBriefFolder(body) {
