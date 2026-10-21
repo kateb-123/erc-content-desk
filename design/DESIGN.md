@@ -515,7 +515,7 @@ the first slice is the status queue, the paper and her notes, Claude's
 whole-markdown draft with figures flagged, and the markdown and author Word
 doc to download; the author round stays a Word doc by email; Kate only; built
 here. Then (Oct 21, one question at a time): the files live in a folder a
-brief on the TEAM drive, `Research briefs/<lastname>-<year>-<topic>`,
+brief on the TEAM drive, `ERC Content Desk/ERC Research Briefs/<lastname>-<year>-<topic>` (her folders, Oct 21),
 written and read through the Sheet's own Apps Script (briefFolder, saveFile
 with a folderId, listFiles, getFile; the folder's id is the script's
 `BRIEFS_FOLDER_ID` property); the twelfth function slot came from folding
