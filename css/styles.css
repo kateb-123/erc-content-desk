@@ -968,6 +968,64 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .qh-scraper-body > .load-line { margin: 0; }
 .qh-scraper-link { color: var(--link-primary); text-decoration: underline; }
 
+/* Research briefs (Kate, Oct 20 and 21, her picks A and D): the hub as a
+   full-width table with a stepper per row; a brief's page as the stepper,
+   then the stage it is at beside the folder's files. */
+.briefs-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-06); }
+.briefs-head .hub-head { margin-bottom: var(--spacing-06); }
+.briefs-head button.primary { flex: none; margin-top: var(--spacing-02); }
+.briefs-table { width: 100%; border-collapse: collapse; font: var(--meta-type); }
+.briefs-table th { text-align: left; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); padding: var(--spacing-04) var(--spacing-05); border-bottom: 2px solid var(--mark); background: var(--layer-01); }
+.briefs-table td { padding: var(--spacing-05); border-bottom: 1px solid var(--line-in); vertical-align: top; }
+.briefs-row:hover td { background: var(--row-hover); cursor: pointer; }
+.briefs-table .col-brief { width: 30%; }
+.briefs-table .col-waits { width: 22%; }
+.briefs-table .col-go { width: 40px; text-align: right; color: var(--accent); }
+.briefs-title { font: var(--body-type); font-weight: 600; color: var(--ink); }
+.briefs-link { color: var(--ink); text-decoration: none; }
+.briefs-link:hover { color: var(--link-primary); text-decoration: underline; }
+.briefs-meta { font: var(--meta-type); color: var(--text-helper); margin-top: var(--spacing-01); }
+.briefs-empty { font: var(--body-type); color: var(--text-helper); padding: var(--spacing-06) 0; }
+/* The stepper: the builder's progress indicator idiom, done, now, later. */
+.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-style: none; }
+.step { flex: 1 1 0; position: relative; padding: 0 var(--spacing-03) 0 0; font: var(--meta-type); color: var(--text-helper); }
+.step::before { content: ''; display: block; height: 2px; background: var(--layer-accent-01); margin: 9px 0 var(--spacing-03); }
+.step.is-done::before, .step.is-now::before { background: var(--accent); }
+.step-dot { position: absolute; top: 0; left: 0; width: 20px; height: 20px; border-radius: 50%; box-sizing: border-box; border: 2px solid var(--border-strong-01); background: var(--layer); display: flex; align-items: center; justify-content: center; color: var(--text-on-color); font-size: 10px; }
+.step.is-done .step-dot, .step.is-now .step-dot { background: var(--accent); border-color: var(--accent); }
+.step.is-now .step-dot { box-shadow: 0 0 0 3px var(--accent-10); }
+.step.is-now { color: var(--ink); font-weight: 700; }
+.step.is-later.is-round-two .step-dot { border-style: dashed; }
+.step-words { display: block; }
+.step-sub { display: block; font: var(--meta-type); font-size: 12px; line-height: 16px; color: var(--text-helper); font-weight: 400; margin-top: var(--spacing-01); }
+.steps-small .step { font-size: 12px; line-height: 16px; }
+.steps-small .step-sub { display: none; }
+.brief-page .steps { margin: 0 0 var(--spacing-08); }
+.brief-split { margin-top: 0; }
+.brief-stage { padding: var(--spacing-05) var(--spacing-06); }
+.brief-paper { margin: 0 0 var(--spacing-05); font: var(--body-type); color: var(--ink); }
+.brief-paper .fa-solid { color: var(--icon-secondary); margin-right: var(--spacing-02); }
+.brief-notes { width: 100%; box-sizing: border-box; min-height: 140px; padding: var(--spacing-04); border: 1px solid var(--border-strong-01); border-radius: var(--radius-input); font: var(--body-type); color: var(--ink); resize: vertical; }
+.brief-actions { display: flex; align-items: center; gap: var(--spacing-05); margin-top: var(--spacing-04); }
+.brief-saved, .brief-next, .brief-files-note { font: var(--meta-type); color: var(--text-helper); margin: 0; }
+.brief-next { margin-top: var(--spacing-05); }
+.brief-files { padding: var(--spacing-03) var(--spacing-06); }
+.brief-file-list { list-style: none; margin: 0; padding: 0; }
+.brief-file-list li { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-03) 0; border-top: 1px solid var(--line-in); font: var(--meta-type); }
+.brief-file-list li:first-child { border-top: 0; }
+.brief-file-list .fa-solid { color: var(--icon-secondary); width: 16px; }
+.brief-file { color: var(--link-primary); text-decoration: underline; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.brief-file-when { color: var(--text-helper); flex: none; }
+.new-brief { padding: var(--spacing-06); margin-bottom: var(--spacing-07); display: flex; flex-direction: column; gap: var(--spacing-05); }
+.new-brief .hub-label { margin-bottom: 0; }
+.new-brief input[type="text"], .new-brief input:not([type]), .new-brief textarea { width: 100%; box-sizing: border-box; height: 40px; padding: 0 var(--spacing-04); border: 1px solid var(--border-strong-01); border-radius: var(--radius-input); font: var(--body-type); color: var(--ink); }
+.new-brief textarea { height: auto; padding: var(--spacing-04); resize: vertical; }
+.new-brief input[type="file"] { font: var(--meta-type); }
+.field-hint { margin: var(--spacing-02) 0 0; font: var(--meta-type); color: var(--text-helper); }
+.new-brief-folder { margin: 0; }
+.new-brief-actions { display: flex; gap: var(--spacing-04); align-items: center; }
+.new-brief .field-error:empty { display: none; }
+
 /* A hub's status box (the Policy Exchange, the Listserv): label, value. */
 .hub-label { margin: 0 0 var(--spacing-04); padding-bottom: var(--spacing-02); border-bottom: 2px solid var(--mark); display: inline-block; }
 .hub-label ~ .hub-label { margin-top: var(--spacing-07); }

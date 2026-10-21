@@ -7,6 +7,7 @@ import { exchangeStatus } from './exchange-view.js';
 import { PUBLIC_LINKS } from './public-links.js';
 import { EMAIL_PAGES } from './email-pages.js';
 import { SIGNUP_SHEET } from './listserv-view.js';
+import { briefsCard } from './briefs-view.js';
 
 /** Recently added: the newest rows first, deleted ones left out. */
 export function recentlyAdded(rows, count = 4) {
@@ -29,7 +30,7 @@ const lower = text => (text ? text[0].toLowerCase() + text.slice(1) : '');
  *   hubUpdated the live site's last change, YYYY-MM-DD; '' when it did not answer, null while asked
  *   signups    { live, sheet, waiting, last } from the listserv, or null; the count is Sheet 1's (Oct 8)
  */
-export function hubCards({ rows = [], schedule = [], today = '', loaded = false, preview = null, archive = null, hubUpdated = null, signups = null }) {
+export function hubCards({ rows = [], schedule = [], today = '', loaded = false, preview = null, archive = null, hubUpdated = null, signups = null, briefs = null }) {
   const card = (key, rest) => ({ key, label: hub(key).label, href: hub(key).href, count: null, sub: '', foot: '', ...rest });
 
   // Content queue: what waits for Sort, exactly as Sort's list counts it, and how many came from outside.
@@ -59,5 +60,7 @@ export function hubCards({ rows = [], schedule = [], today = '', loaded = false,
     card('listserv', { count: signups?.sheet && Number.isFinite(signups.waiting) ? signups.waiting : null, sub: 'to be added', foot: signupFoot, links: [{ label: SIGNUP_SHEET.label, href: SIGNUP_SHEET.href, blank: true }] }),
     card('links', { copies: PUBLIC_LINKS }),
     card('exchange', { count: exchange.waiting, sub: 'waiting to publish', foot: exchange.site === 'Live' ? `Live · updated ${exchange.updated}` : '' }),
+    // Research briefs (Kate, Oct 20): hers alone; the count only once her sign-in has read the list.
+    card('briefs', { ...briefsCard(briefs), foot: 'Password protected', lock: true }),
   ];
 }

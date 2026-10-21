@@ -18,6 +18,7 @@ export const HUB_LEDES = {
   queue: 'Everything submitted, and where it stands now.',
   listserv: 'Sign-ups for the ERC newsletter.',
   exchange: 'The public site, and what waits to go on it.',
+  briefs: 'Where each brief stands, and what it waits for.',
 };
 
 /** A line saying something is coming, in the quiet grey (her red Forthcoming). */

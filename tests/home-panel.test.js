@@ -35,11 +35,12 @@ const hubRows = [
 const hubSchedule = ['2026-10-06', '2026-10-20', '2026-11-03'];
 const hubArchive = [{ date: '2026-10-06', label: 'October 6, 2026' }, { date: '2026-09-22', label: 'September 22, 2026' }];
 
-test('hubCards: the six hubs in her order, each with its status', () => {
+test('hubCards: the seven hubs in her order, each with its status', () => {
   const cards = hubCards({
     rows: hubRows, schedule: hubSchedule, today: '2026-10-07', loaded: true,
     preview: { adding: [{ id: 'p1' }, { id: 'x' }] }, archive: hubArchive, hubUpdated: '2026-10-01',
     signups: { live: true, sheet: true, waiting: 4, last: '2026-10-04' },
+    briefs: [{ id: 'a', stage: 'proof' }, { id: 'b', stage: 'author' }, { id: 'c', stage: 'live' }],
   });
   assert.deepEqual(cards.map(c => [c.key, c.label, c.href, c.count, c.sub, c.foot]), [
     ['team', 'Submit content', '/#team', null, "The team's form", ''],
@@ -48,7 +49,13 @@ test('hubCards: the six hubs in her order, each with its status', () => {
     ['listserv', 'Listserv', '/#listserv', 4, 'to be added', 'Live · last sign-up Oct 4'],
     ['links', 'Public links', '', null, '', ''],
     ['exchange', 'Policy Exchange', '/#exchange', 2, 'waiting to publish', 'Live · updated Oct 1'],
+    // Research briefs (Kate, Oct 20): the seventh card, hers alone, counting what is not live yet.
+    ['briefs', 'Research briefs', '/#briefs', 2, 'in progress · 1 with an author', 'Password protected'],
   ]);
+  assert.equal(cards[6].lock, true, 'the lock on its line');
+  // Not signed in, the list is not known: the card says only that it is locked.
+  const quiet = hubCards({ rows: hubRows, schedule: hubSchedule, today: '2026-10-07', loaded: true, preview: null, archive: [], hubUpdated: '', signups: null, briefs: null });
+  assert.deepEqual([quiet[6].count, quiet[6].sub, quiet[6].foot], [null, '', 'Password protected']);
   assert.deepEqual(cards[0].links, [{ label: 'How to submit content', href: '/how-to/submit-content/' }]);
   assert.equal(cards[1].lock, true, 'Sort wears the lock on its line');
   assert.deepEqual(cards[4].copies.map(l => l.key), ['exchange', 'share', 'listserv'], 'her drawing\'s order');
@@ -57,7 +64,7 @@ test('hubCards: the six hubs in her order, each with its status', () => {
 
 test('hubCards: before the rows are in, no counts; what is not known says nothing', () => {
   const cards = hubCards({ rows: [], schedule: hubSchedule, today: '2026-10-07', loaded: false, preview: null, archive: null, hubUpdated: null, signups: null });
-  assert.deepEqual(cards.map(c => c.count), [null, null, null, null, null, null]);
+  assert.deepEqual(cards.map(c => c.count), [null, null, null, null, null, null, null]);
   assert.equal(cards[1].sub, 'waiting for Sort');
   assert.equal(cards[2].foot, '', 'no archive yet, no last sent');
   assert.equal(cards[3].foot, '');

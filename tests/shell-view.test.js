@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { HUBS, crumbs, openedScreen, screenHash, pageTitle } from '../js/shell-view.js';
+import { HUBS, crumbs, openedScreen, openedId, briefHash, screenHash, pageTitle } from '../js/shell-view.js';
 
 // Kate's drawn map (Oct 6, 2026): the desk is six hubs, each a card on the
 // front page and a page of its own; Sort sits under the Content queue and the
 // builder and Publish under their hubs. The top bar carries the breadcrumb
 // alone (her pick A): Content Desk, the hub, the page.
 
-test('the six hubs, in the order the front page lays them out', () => {
+test('the seven hubs, in the order the front page lays them out (Research briefs seventh, Kate, Oct 20)', () => {
   assert.deepEqual(HUBS.map(h => [h.key, h.label, h.href]), [
     ['team', 'Submit content', '/#team'],
     ['queue', 'Content queue', '/#queue'],
@@ -15,7 +15,23 @@ test('the six hubs, in the order the front page lays them out', () => {
     ['listserv', 'Listserv', '/#listserv'],
     ['links', 'Public links', ''],   // no page of its own: Copy link works on the card
     ['exchange', 'Policy Exchange', '/#exchange'],
+    ['briefs', 'Research briefs', '/#briefs'],
   ]);
+});
+
+// A brief's own page (Kate's pick D, Oct 20): /#briefs/<id> opens the brief
+// screen, the id read from the address, and the crumb carries its title.
+test('a brief\'s address opens the brief screen, keeps its id, and crumbs under Research briefs', () => {
+  assert.equal(openedScreen('#briefs'), 'briefs');
+  assert.equal(openedScreen('#briefs/reveille-2026-yell'), 'brief');
+  assert.equal(openedId('#briefs/reveille-2026-yell'), 'reveille-2026-yell');
+  assert.equal(openedId('#briefs'), '');
+  assert.equal(briefHash('reveille-2026-yell'), '#briefs/reveille-2026-yell');
+  const desk = { label: 'ERC Content Desk', href: '/' };
+  assert.deepEqual(crumbs('briefs'), [desk, { label: 'Research briefs' }]);
+  assert.deepEqual(crumbs('brief', { page: "Gig 'em and Go" }), [desk, { label: 'Research briefs', href: '/#briefs' }, { label: "Gig 'em and Go" }]);
+  assert.deepEqual(crumbs('brief'), [desk, { label: 'Research briefs', href: '/#briefs' }, { label: 'Brief' }]);
+  assert.equal(pageTitle('briefs'), 'Research briefs · ERC Content Desk');
 });
 
 test('the breadcrumb: the desk alone on the front page, then the hub, then the page under it', () => {

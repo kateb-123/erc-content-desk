@@ -35,6 +35,12 @@ var LOCK_TIMEOUT_MS = 10000;
  *  the last part of the folder's address in Drive. Not the id itself. */
 var SCRAPE_FOLDER_PROPERTY_NAME = 'SCRAPE_FOLDER_ID';
 
+/** Name of the script property holding the id of the team drive folder
+ *  Research briefs, where each brief gets a folder of its own (Kate, Oct 20,
+ *  2026). The id is the last part of the folder's address. Not the id itself. */
+var BRIEFS_FOLDER_PROPERTY_NAME = 'BRIEFS_FOLDER_ID';
+var FILE_NAME_RULE = /^[A-Za-z0-9][A-Za-z0-9 _.-]{0,120}\.(xlsx|txt|pdf|md|docx|png|jpg|jpeg)$/;
+
 /**
  * Entry point Google calls for every POST request to the deployed web app.
  */
@@ -102,6 +108,12 @@ function handleAction(body) {
       return handleSaveFile(body);   // Drive, not the sheet
     case 'appendScrape':
       return withLock(function () { return handleAppendScrape(body); });   // the Newsletter scrapes Sheet in Drive
+    case 'briefFolder':
+      return handleBriefFolder(body);   // Research briefs on the team drive
+    case 'listFiles':
+      return handleListFiles(body);
+    case 'getFile':
+      return handleGetFile(body);
   }
   var sheet = getTargetSheet(body.sheetName);
 
@@ -214,21 +226,27 @@ function handleHeader(sheet, values) {
  */
 function handleSaveFile(body) {
   var folderId = PropertiesService.getScriptProperties().getProperty(SCRAPE_FOLDER_PROPERTY_NAME);
-  if (!folderId) {
+  if (!folderId && !body.folderId) {
     return { ok: false, error: 'Server is not configured: the ' + SCRAPE_FOLDER_PROPERTY_NAME + ' script property is not set.' };
   }
-  if (!body.folder || !/^\d{4}-\d{2}-\d{2}$/.test(body.folder)) {
-    return { ok: false, error: 'saveFile needs a "folder" named by date, YYYY-MM-DD.' };
-  }
-  if (!body.name || !/^[A-Za-z0-9][A-Za-z0-9 _-]{0,80}\.(xlsx|txt)$/.test(body.name)) {
-    return { ok: false, error: 'saveFile needs a plain file "name" ending in .xlsx or .txt.' };
+  if (!body.name || !FILE_NAME_RULE.test(body.name)) {
+    return { ok: false, error: 'saveFile needs a plain file "name" ending in .xlsx, .txt, .pdf, .md, .docx, .png or .jpg.' };
   }
   if (!body.b64) {
     return { ok: false, error: 'saveFile needs the file as "b64".' };
   }
-  var root = DriveApp.getFolderById(folderId);
-  var subs = root.getFoldersByName(body.folder);
-  var folder = subs.hasNext() ? subs.next() : root.createFolder(body.folder);
+  var folder;
+  if (body.folderId) {
+    // A brief's own folder (briefFolder gave its id).
+    folder = DriveApp.getFolderById(String(body.folderId));
+  } else {
+    if (!body.folder || !/^\d{4}-\d{2}-\d{2}$/.test(body.folder)) {
+      return { ok: false, error: 'saveFile needs a "folder" named by date, YYYY-MM-DD, or a "folderId".' };
+    }
+    var root = DriveApp.getFolderById(folderId);
+    var subs = root.getFoldersByName(body.folder);
+    folder = subs.hasNext() ? subs.next() : root.createFolder(body.folder);
+  }
   var bytes = Utilities.base64Decode(body.b64);
   var blob = Utilities.newBlob(bytes, body.contentType || 'application/octet-stream', body.name);
   var older = folder.getFilesByName(body.name);
@@ -325,6 +343,47 @@ function handleAppendScrape(body) {
   ss.setActiveSheet(sheet);
   ss.moveActiveSheet(1);
   return { ok: true, sheetUrl: ss.getUrl() + '#gid=' + sheet.getSheetId(), tab: name, added: fresh.length, skipped: body.rows.length - fresh.length };
+}
+
+/**
+ * A brief's own folder under Research briefs on the team drive (Kate, Oct 20,
+ * 2026): lastname-year-topic, made on first use, found after. The desk files
+ * the paper, her notes, the drafts and the Word doc into it by its id.
+ */
+function handleBriefFolder(body) {
+  var rootId = PropertiesService.getScriptProperties().getProperty(BRIEFS_FOLDER_PROPERTY_NAME);
+  if (!rootId) {
+    return { ok: false, error: 'Server is not configured: the ' + BRIEFS_FOLDER_PROPERTY_NAME + ' script property is not set.' };
+  }
+  if (!body.name || !/^[a-z0-9][a-z0-9-]{0,80}$/.test(body.name)) {
+    return { ok: false, error: 'briefFolder needs a plain "name": letters, digits and dashes.' };
+  }
+  var root = DriveApp.getFolderById(rootId);
+  var subs = root.getFoldersByName(body.name);
+  var folder = subs.hasNext() ? subs.next() : root.createFolder(body.name);
+  return { ok: true, id: folder.getId(), url: folder.getUrl() };
+}
+
+/** What a folder holds, newest first: name, the day it last changed, its address, its size. */
+function handleListFiles(body) {
+  if (!body.folderId) return { ok: false, error: 'listFiles needs a "folderId".' };
+  var files = DriveApp.getFolderById(String(body.folderId)).getFiles();
+  var out = [];
+  while (files.hasNext()) {
+    var f = files.next();
+    out.push({ name: f.getName(), updated: f.getLastUpdated().toISOString().slice(0, 10), url: f.getUrl(), size: f.getSize() });
+  }
+  out.sort(function (a, b) { return a.updated < b.updated ? 1 : a.updated > b.updated ? -1 : a.name.localeCompare(b.name); });
+  return { ok: true, files: out };
+}
+
+/** One file's bytes, base64, by name within a folder (the paper, for drafting). */
+function handleGetFile(body) {
+  if (!body.folderId || !body.name) return { ok: false, error: 'getFile needs a "folderId" and a "name".' };
+  var files = DriveApp.getFolderById(String(body.folderId)).getFilesByName(String(body.name));
+  if (!files.hasNext()) return { ok: false, error: 'No file named ' + body.name + ' in that folder.' };
+  var blob = files.next().getBlob();
+  return { ok: true, name: blob.getName(), contentType: blob.getContentType(), b64: Utilities.base64Encode(blob.getBytes()) };
 }
 
 /** Wraps a JS object as the JSON response Apps Script sends back. */

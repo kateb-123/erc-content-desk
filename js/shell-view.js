@@ -17,6 +17,8 @@ export const HUBS = [
   { key: 'listserv', label: 'Listserv', href: '/#listserv' },
   { key: 'links', label: 'Public links', href: '' },
   { key: 'exchange', label: 'Policy Exchange', href: '/#exchange' },
+  // The seventh (Kate, Oct 20, 2026): the research-brief pipeline, hers alone.
+  { key: 'briefs', label: 'Research briefs', href: '/#briefs' },
 ];
 
 // Each screen: the hub it belongs to, its address, and the page it is under
@@ -37,7 +39,12 @@ const SCREENS = {
   builder: { hub: 'newsletter', hash: null, page: 'Builder', title: 'Newsletter builder' },
   // The newsletter's HTML pages (Kate, Oct 8): the blank template, the sample and the read me, each a page of its own.
   emailpage: { hub: 'newsletter', hash: null, page: 'The email' },
+  briefs: { hub: 'briefs', hash: '#briefs' },
+  // One brief's page: /#briefs/<id>, the id read from the address (openedId); the crumb carries its title.
+  brief: { hub: 'briefs', hash: null, page: 'Brief' },
 };
+
+const BRIEF_PREFIX = '#briefs/';
 
 // Old addresses keep landing where they used to.
 const OLD_HASHES = { '#issue': 'issue', '#build': 'issue' };   // Send to Newsletter folded into Next issue (Sep 18)
@@ -47,9 +54,9 @@ const hubOf = screen => HUBS.find(h => h.key === SCREENS[screen]?.hub) ?? null;
 /** The breadcrumb: the desk alone on the front page; the desk then the hub
  *  elsewhere; then the page under the hub where one stands. The last crumb
  *  is where you are, so it carries no link. */
-export function crumbs(screen) {
+export function crumbs(screen, { page: pageLabel } = {}) {
   const hub = hubOf(screen);
-  const page = SCREENS[screen]?.page;
+  const page = pageLabel || SCREENS[screen]?.page;
   const trail = [{ ...DESK }];
   if (hub) trail.push({ label: hub.label, href: hub.href });
   if (page) trail.push({ label: page });
@@ -62,8 +69,18 @@ export function crumbs(screen) {
 export function openedScreen(hash) {
   const key = String(hash ?? '');
   if (OLD_HASHES[key]) return OLD_HASHES[key];
+  if (key.startsWith(BRIEF_PREFIX) && key.length > BRIEF_PREFIX.length) return 'brief';
   return Object.keys(SCREENS).find(s => SCREENS[s].hash && SCREENS[s].hash === key) ?? 'home';
 }
+
+/** The brief a /#briefs/<id> address names; '' for any other address. */
+export function openedId(hash) {
+  const key = String(hash ?? '');
+  return key.startsWith(BRIEF_PREFIX) ? decodeURIComponent(key.slice(BRIEF_PREFIX.length)) : '';
+}
+
+/** A brief's own address. */
+export const briefHash = id => `${BRIEF_PREFIX}${encodeURIComponent(id)}`;
 
 /** The address a screen keeps, so a reload or a bookmark lands back on it;
  *  the front page has none. */

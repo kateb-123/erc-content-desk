@@ -1,5 +1,7 @@
 /**
- * GET /api/hub-updated — when the Exchange's news.csv last changed.
+ * GET /api/publish?updated=1 — when the Exchange's news.csv last changed.
+ * (It was /api/hub-updated until Oct 21, 2026, when its function slot went
+ * to /api/briefs: api/ holds the Hobby plan's twelve.)
  *
  * Home used to read this from the GitHub API in the browser. The Exchange
  * repo is private now, so that returns nothing; and the file is served
@@ -10,7 +12,7 @@
 const CSV_URL = process.env.HUB_CSV_URL
   || 'https://erc-policy-exchange.vercel.app/data/news.csv';
 
-export default async function handler(req, res) {
+export default async function hubUpdated(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ ok: false, errors: ['Use GET.'] });
   }

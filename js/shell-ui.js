@@ -30,7 +30,7 @@ function build(header) {
 /** signedIn and onSignOut: the desk's own sign-in (Kate, Sep 23); while it
  *  holds, Sign out sits at the bar's right end. `bare` is a sign-in screen's
  *  bar: the brand alone, nothing to go to. The builder passes none of these. */
-export function renderShell(header, { screen, onGo, signedIn = false, onSignOut, bare = false } = {}) {
+export function renderShell(header, { screen, onGo, signedIn = false, onSignOut, bare = false, page } = {}) {
   if (!header) return;
   if (!header.dataset.built) build(header);
   const trail = header.querySelector('.topbar-crumbs');
@@ -41,7 +41,7 @@ export function renderShell(header, { screen, onGo, signedIn = false, onSignOut,
     header.querySelector('.topbar-lanes').replaceChildren();
     return;
   }
-  crumbs(screen).forEach((crumb, i) => {
+  crumbs(screen, { page }).forEach((crumb, i) => {
     if (i) parts.push(el('span', 'topbar-sep', '/'));
     if (crumb.href) {
       const a = deskLink(crumb.label, crumb.href, onGo);

@@ -60,7 +60,7 @@ function card(item, onGoTo) {
 }
 
 export function renderHome(container, props) {
-  const { rows, schedule, today, loaded, loadFailed, preview, archive, hubUpdated, signups, onGoTo, onRefresh } = props;
+  const { rows, schedule, today, loaded, loadFailed, preview, archive, hubUpdated, signups, briefs, onGoTo, onRefresh } = props;
   let page = container.querySelector('.home-page');
   if (!page) {
     page = el('div', 'home-page');
@@ -72,7 +72,7 @@ export function renderHome(container, props) {
   const grid = page.querySelector('.desk-cards');
   // A Copy link that just said Copied keeps its word across a redraw: only
   // the cards that count anything are redrawn.
-  const cards = hubCards({ rows, schedule, today, loaded, preview, archive, hubUpdated, signups });
+  const cards = hubCards({ rows, schedule, today, loaded, preview, archive, hubUpdated, signups, briefs });
   const kept = new Map([...grid.children].map(c => [c.dataset.key, c]));
   grid.replaceChildren(...cards.map(item => (item.copies && kept.get(item.key)) || card(item, onGoTo)));
   const note = page.querySelector('.home-note');

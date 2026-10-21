@@ -496,7 +496,7 @@ same: the hub's name as the title and one line under it.
   DROPPED (Kate, Oct 8): Sheet 1 is the list to add from.
 - **Public links**: the card alone, Copy link on each row.
 - **Policy Exchange** (/#exchange): the site's status (Live, or that it did
-  not answer), when it last changed (`/api/hub-updated`), the live link, how
+  not answer), when it last changed (`/api/publish?updated=1`, its own function until Oct 21), the live link, how
   many wait to publish; Publish opens from it as a page of its own,
   /#publish, titled Publish, the way the builder sits under Newsletter. The
   code, the handoff and where the logins are kept are forthcoming; the logins
@@ -504,6 +504,41 @@ same: the hub's name as the title and one line under it.
 
 Her red Forthcoming items show as quiet grey lines with a clock, each to be
 built in a round of its own.
+
+## The seventh hub: Research briefs (Oct 20 and 21)
+
+Kate's go (Oct 20, 2026; `docs/research-briefs-handoff.md`): the
+research-brief pipeline, journal article to published brief, joins the desk
+as a seventh hub, **Research briefs** (/#briefs), hers alone behind the same
+lock as Sort (`LOCKED_SCREENS` holds briefs and brief). Her four answers:
+the first slice is the status queue, the paper and her notes, Claude's
+whole-markdown draft with figures flagged, and the markdown and author Word
+doc to download; the author round stays a Word doc by email; Kate only; built
+here. Then (Oct 21, one question at a time): the files live in a folder a
+brief on the TEAM drive, `Research briefs/<lastname>-<year>-<topic>`,
+written and read through the Sheet's own Apps Script (briefFolder, saveFile
+with a folderId, listFiles, getFile; the folder's id is the script's
+`BRIEFS_FOLDER_ID` property); the twelfth function slot came from folding
+the Exchange's last-changed check into `/api/publish?updated=1`; her edits
+come back as a paste box or a dropped .md; a repeating author gets a topic
+word. Her picks of six drawn layouts: **A**, the hub as a full-width table,
+one row a brief, with a stepper across the seven stages (Paper and notes,
+Draft, Your proof, With author, Approved, HTML, Live; the last two round
+two, their dots dashed) and a Waits for column in words ("Your Grammarly
+pass · drafted Oct 20, 1,480 words"; "Dr. Bowen's edits · sent Oct 2, 18
+days"), New brief as the primary at the head opening the form above the
+table (the paper as a PDF up to 3 MB, the author's last name, year and topic
+word naming the folder, the paper's title, authors, journal, the author of
+record, her notes); and **D**, a brief's own page (/#briefs/<id>) as the
+stepper across the top with dates under the steps, then only the stage it
+is at as one box, with the folder's files beside it, each a link into Drive.
+The stepper is the builder's progress indicator idiom: a 20px dot and a
+line, teal for done and now, the current dot ringed. The front page's card
+is the seventh, locked, counting what is not live ("3 · in progress · 1
+with an author") only once her sign-in has read the list. Round 1 (Oct 21)
+built the hub, New brief, the paper stage with Save notes, the card and the
+lock; the draft, her proof and the author round are the next rounds, and a
+brief past the paper stage says so on its page.
 
 ## Her notes after the hubs (Oct 6)
 

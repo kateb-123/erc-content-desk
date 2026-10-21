@@ -11,6 +11,8 @@
  *                     pins alone; a pick not on the Exchange yet is held.
  * Never modifies or deletes an existing hub row.
  *
+ * GET  /api/publish?updated=1 — when the Exchange last changed (api/_lib/hub-updated.js).
+ *
  * Behind the desk password (Kate, Sep 23): both need a signed-in browser,
  * and the write asks for the password once more, in the body.
  */
@@ -23,6 +25,7 @@ import { FEATURED_PATH, hubRows, parseFeatured, nowPicks, nowCards, featuredText
 import { refuseUnlessPassword } from './_lib/session.js';
 import { todayCentral } from '../js/today.js';
 import { PUBLISH_PAUSED } from '../js/flags.js';
+import hubUpdated from './_lib/hub-updated.js';
 
 export const config = { maxDuration: 300 };
 
@@ -36,6 +39,8 @@ export function createPublishHandler({
   session = {}, today = () => todayCentral(), clock = () => new Date().toISOString(),
 }) {
   return async function handler(req, res) {
+    // When the Exchange last changed rides this function (Oct 21): a GET with ?updated.
+    if (req.method === 'GET' && req.query?.updated != null) return hubUpdated(req, res);
     try {
       // The sign-in is off (Kate, Sep 30): the check is open; the write still
       // asks for the password, below.

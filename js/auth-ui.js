@@ -9,7 +9,7 @@
 import { signInLine } from './auth-view.js';
 import { el, button, busyLine, focusKeyIn, restoreFocus } from './ui-aids.js';
 
-const TITLES = { home: 'Desk', sort: 'Content Sort', finalize: 'Content Sort', publish: 'Policy Exchange' };
+const TITLES = { home: 'Desk', sort: 'Content Sort', finalize: 'Content Sort', publish: 'Policy Exchange', briefs: 'Research briefs', brief: 'Research briefs' };
 
 export function renderSignIn(container, { screen, checking, busy, error, onSignIn, onGoTo }) {
   const focusKey = focusKeyIn(container);

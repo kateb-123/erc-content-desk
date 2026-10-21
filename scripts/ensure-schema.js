@@ -15,4 +15,5 @@ await store.ensureSchema();
 const rows = await store.readAllRows();
 const [{ kept }] = await liveQuery()('SELECT count(*)::int AS kept FROM drafts');
 const [{ signups }] = await liveQuery()('SELECT count(*)::int AS signups FROM signups');
-console.log(`schema ok; ${rows.length} rows read back with every column present; drafts table ready, ${kept} kept; signups table ready, ${signups} kept`);
+const [{ briefs }] = await liveQuery()('SELECT count(*)::int AS briefs FROM briefs');
+console.log(`schema ok; ${rows.length} rows read back with every column present; drafts table ready, ${kept} kept; signups table ready, ${signups} kept; briefs table ready, ${briefs} briefs`);

@@ -8,7 +8,7 @@
  *  then her drawn map (Oct 6): Sort is "password protected (Kate only)", and
  *  only Sort, with Finalize, its tab. Everything else opens to anyone; the
  *  password lives on at Publish's Confirm, the one write to the public site. */
-export const LOCKED_SCREENS = new Set(['sort', 'finalize']);
+export const LOCKED_SCREENS = new Set(['sort', 'finalize', 'briefs', 'brief']);   // Research briefs: Kate only (Oct 20)
 
 /** Whether any page asks for a sign-in at all. */
 export const SIGN_IN_ON = LOCKED_SCREENS.size > 0;
@@ -17,7 +17,7 @@ export function isLocked(screen) {
   return LOCKED_SCREENS.has(screen);
 }
 
-const PAGE_OF = { sort: 'Content Sort', finalize: 'Content Sort', publish: 'Policy Exchange' };
+const PAGE_OF = { sort: 'Content Sort', finalize: 'Content Sort', publish: 'Policy Exchange', briefs: 'Research briefs', brief: 'Research briefs' };
 
 /** The one line over the field: which page the sign-in opens. */
 export function signInLine(screen) {

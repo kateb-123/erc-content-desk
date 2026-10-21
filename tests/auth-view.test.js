@@ -19,7 +19,7 @@ test('the page and the server use the same two sentences, so the page can act on
 // "password protected (Kate only)", and only Sort. Finalize is a tab of it.
 // Everything else opens to anyone; Publish's Confirm still asks the password.
 test('only Content Sort is locked: Sort and its Finalize tab', () => {
-  assert.deepEqual([...LOCKED_SCREENS].sort(), ['finalize', 'sort']);
+  assert.deepEqual([...LOCKED_SCREENS].sort(), ['brief', 'briefs', 'finalize', 'sort']);   // Research briefs is Kate only (Oct 20)
   for (const s of ['sort', 'finalize']) assert.equal(isLocked(s), true, s);
   for (const s of ['home', 'team', 'queue', 'issue', 'schedule', 'past', 'listserv', 'exchange', 'publish', 'builder']) assert.equal(isLocked(s), false, s);
 });
@@ -29,6 +29,8 @@ test('the sign-in names the page it opens', () => {
   assert.equal(signInLine('finalize'), 'Sign in to open Content Sort.');
   assert.equal(signInLine('publish'), 'Sign in to open Policy Exchange.');
   assert.equal(signInLine('home'), 'Sign in to open the desk.');
+  assert.equal(signInLine('briefs'), 'Sign in to open Research briefs.');
+  assert.equal(signInLine('brief'), 'Sign in to open Research briefs.');
 });
 
 test('a refused sign-in reads as one plain sentence', () => {

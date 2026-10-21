@@ -6,7 +6,7 @@ import { busyWords } from './icons.js';
 import { renderHome } from './home-ui.js';
 import { renderTeam } from './team-ui.js';
 import { renderShell } from './shell-ui.js';
-import { openedScreen, screenHash, pageTitle } from './shell-view.js';
+import { openedScreen, openedId, briefHash, screenHash, pageTitle } from './shell-view.js';
 import { renderIssue, resetIssueEntry, pickIssue } from './issue-ui.js';
 import { nextIssueDate } from './schedule.js';
 import { renderSort } from './sort-ui.js';
@@ -24,6 +24,8 @@ import { renderSignIn } from './auth-ui.js';
 import { renderQueue } from './queue-ui.js';
 import { renderExchange } from './exchange-ui.js';
 import { renderListserv } from './listserv-ui.js';
+import { renderBriefs, renderBrief } from './briefs-ui.js';
+import { briefTitle } from './briefs-view.js';
 
 
 const state = {
@@ -52,13 +54,16 @@ const state = {
   hubUpdated: null,         // the live Exchange's last change, YYYY-MM-DD: null while asked, '' when it did not answer
   signups: null,            // the listserv's count, never names: { live, waiting, last }, or null
   scraper: null,            // the scraper on GitHub: { configured, run, last } from /api/bulk?scraper=status, or null
+  // The Research briefs hub (Kate, Oct 20), hers alone: the list once her sign-in has read it, the open brief and its folder.
+  briefs: null, briefsError: false, briefId: '', brief: null, briefFiles: undefined, briefError: '',
+  newBriefOpen: false, creatingBrief: false, createError: '', savingNotes: false, notesSaved: '',
   publishPreview: null,
   publishedCsv: '',       // the CSV from the last publish, for the receipt's re-download
   rewroteNote: null,
   lastKeepAll: null,        // [{ id, old }] from the last Keep all remaining, until undone or left
 };
 
-const screens = Object.fromEntries(['home', 'team', 'queue', 'issue', 'schedule', 'past', 'sort', 'finalize', 'listserv', 'exchange', 'publish']
+const screens = Object.fromEntries(['home', 'team', 'queue', 'issue', 'schedule', 'past', 'sort', 'finalize', 'listserv', 'exchange', 'publish', 'briefs', 'brief']
   .map(name => [name, document.querySelector(`#screen-${name}`)]));
 const statusEl = document.querySelector('#desk-status');
 
@@ -312,6 +317,9 @@ function goTo(key) {
   if (key === 'sort' && state.screen !== 'sort' && may) readBeforeSort();
   if (key === 'issue' && state.screen !== 'issue' && state.screen !== 'schedule') resetIssueEntry();   // Schedule hands a date over
   if (key === 'finalize' && state.screen !== 'finalize') { resetFinalizeEntry(); state.lastKeepAll = null; }
+  // The briefs (Oct 21): the list once, the open brief whenever its id changed; a locked arrival waits for the sign-in.
+  if (key === 'briefs' && may && !state.briefs) loadBriefs();
+  if (key === 'brief' && may && (!state.brief || state.brief.id !== state.briefId)) loadBrief(state.briefId);
   // The ticks survive a hop to another screen; only the receipt resets.
   if (key === 'publish' && state.screen !== 'publish') {
     // The check is read-only and CACHED: it runs on first arrival and again
@@ -518,6 +526,7 @@ async function publishNow({ password, highlights, only }) {
 async function checkSession() {
   try { state.auth = await sessionStatus(); } catch { state.auth = false; }
   render();
+  if (state.auth) loadBriefs();   // the front page's card counts them only for her
   if (state.auth && state.loaded) arrive(state.screen);
 }
 
@@ -528,6 +537,7 @@ async function signInNow(password) {
   try {
     await signInRequest(password);
     state.auth = true;
+    loadBriefs();
   } catch (err) {
     state.auth = false;
     state.authError = authError(err);
@@ -551,6 +561,76 @@ async function signOutNow() {
 function arrive(screen) {
   if (screen === 'sort') readBeforeSort();
   if (screen === 'publish' && !state.publishPreview) loadPublishPreview();
+  if (screen === 'briefs' && !state.briefs) loadBriefs();
+  if (screen === 'brief' && (!state.brief || state.brief.id !== state.briefId)) loadBrief(state.briefId);
+}
+
+/* ---- Research briefs (Kate, Oct 20): hers alone, behind the sign-in --------- */
+
+async function loadBriefs() {
+  try {
+    const data = await readReply(await fetch('/api/briefs?list=1'), 'list the briefs');
+    state.briefs = data.briefs;
+    state.briefsError = false;
+  } catch (err) {
+    if (lockedOut(err)) { state.auth = false; state.briefs = null; } else { state.briefsError = true; }
+  }
+  render();
+}
+
+async function loadBrief(id) {
+  if (!id) return;
+  state.brief = null; state.briefFiles = undefined; state.briefError = ''; state.notesSaved = '';
+  render();
+  try {
+    const data = await readReply(await fetch(`/api/briefs?id=${encodeURIComponent(id)}`), 'open the brief');
+    if (state.briefId !== id) return;   // she moved on while it loaded
+    state.brief = data.brief;
+    state.briefFiles = data.files;
+  } catch (err) {
+    if (lockedOut(err)) state.auth = false;
+    else state.briefError = plainError(err);
+  }
+  render();
+}
+
+function openBrief(id) {
+  state.briefId = id;
+  state.brief = null;
+  goTo('brief');
+}
+
+async function createBrief(payload) {
+  state.creatingBrief = true; state.createError = '';
+  render();
+  try {
+    const data = await postJson('/api/briefs', { action: 'create', ...payload }, 'create the brief');
+    state.creatingBrief = false; state.newBriefOpen = false;
+    state.briefs = [...(state.briefs ?? []), data.brief];
+    setStatus(`Started: ${briefTitle(data.brief)}`, 'ok');
+    openBrief(data.brief.id);
+  } catch (err) {
+    state.creatingBrief = false;
+    if (lockedOut(err)) state.auth = false;
+    else state.createError = plainError(err);
+    render();
+  }
+}
+
+async function saveBriefNotes(notes) {
+  const id = state.briefId;
+  state.savingNotes = true; state.notesSaved = '';
+  render();
+  try {
+    const data = await postJson('/api/briefs', { action: 'notes', id, notes }, 'save the notes');
+    if (state.briefId === id) { state.brief = data.brief; state.notesSaved = 'Saved.'; }
+    state.briefs = (state.briefs ?? []).map(b => (b.id === id ? data.brief : b));
+  } catch (err) {
+    if (lockedOut(err)) state.auth = false;
+    else setStatus(plainError(err), 'error');
+  }
+  state.savingNotes = false;
+  render();
 }
 
 /** Add on Next issue: the rows are stamped in place at once and the write
@@ -571,12 +651,13 @@ function unsendFromNewsletter(ids) {
   setStatus(`Taken out of the issue: ${targets.length === 1 ? (targets[0].headline || targets[0].link || 'this item') : `${targets.length} items`}`, 'ok');
 }
 
-const SCREEN_ORDER = ['home', 'team', 'queue', 'sort', 'finalize', 'issue', 'schedule', 'past', 'listserv', 'exchange', 'publish'];
+const SCREEN_ORDER = ['home', 'team', 'queue', 'sort', 'finalize', 'issue', 'schedule', 'past', 'listserv', 'exchange', 'publish', 'briefs', 'brief'];
 // Every screen but the front page has an address (/#sort, /#newsletter,
 // /#exchange, and the old screens' own until they fold into the lanes), so a
 // typed or bookmarked one opens there and a reload stays put.
 const openedAt = openedScreen(location.hash);
 state.screen = openedAt;
+state.briefId = openedId(location.hash);
 let shownScreen = null;
 
 /** A screen switch tells assistive tech where it landed: the incoming title
@@ -592,13 +673,13 @@ function render() {
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
   // A sign-in screen's bar carries the brand alone (Kate's pick B, Sep 23).
   const locked = isLocked(state.screen) && state.auth !== true;
-  renderShell(document.querySelector('.topbar'), { screen: state.screen, onGo: goTo, signedIn: state.auth === true, onSignOut: signOutNow, bare: locked });
+  renderShell(document.querySelector('.topbar'), { screen: state.screen, onGo: goTo, signedIn: state.auth === true, onSignOut: signOutNow, bare: locked, page: state.screen === 'brief' ? briefTitle(state.brief ?? { id: state.briefId }) : undefined });
   document.title = pageTitle(state.screen);
   // The top bar's links switch screens in place. Every screen but the front
   // page keeps an address, as a history entry, so Back and a reload land
   // where the reader was. The skip link moves focus without touching the
   // address.
-  const hash = screenHash(state.screen);
+  const hash = state.screen === 'brief' ? briefHash(state.briefId) : screenHash(state.screen);
   if (location.hash !== hash) {
     if (shownScreen === null) history.replaceState(null, '', hash || location.pathname);
     else history.pushState(null, '', hash || location.pathname);
@@ -633,9 +714,21 @@ function render() {
     if (state.loaded && !state.publishPreview && !laneCheck.inFlight && laneCheck.failedAt !== state.rows) quietPublishCheck();
     renderHome(screens.home, {
       ...common, loaded: state.loaded, loadFailed: state.loadFailed,
-      preview: state.publishPreview, archive: state.archive, hubUpdated: state.hubUpdated, signups: state.signups,
+      preview: state.publishPreview, archive: state.archive, hubUpdated: state.hubUpdated, signups: state.signups, briefs: state.briefs,
       onGoTo: goTo,
       onRefresh: reload,
+    });
+  } else if (state.screen === 'briefs') {
+    renderBriefs(screens.briefs, {
+      briefs: state.briefs ?? [], loaded: Array.isArray(state.briefs), error: state.briefsError, today,
+      onOpen: openBrief, onRefresh: () => { state.briefsError = false; render(); loadBriefs(); },
+      newOpen: state.newBriefOpen, onToggleNew: () => { state.newBriefOpen = !state.newBriefOpen; state.createError = ''; render(); },
+      onCreate: createBrief, creating: state.creatingBrief, createError: state.createError,
+    });
+  } else if (state.screen === 'brief') {
+    renderBrief(screens.brief, {
+      brief: state.brief, files: state.briefFiles, loading: state.briefFiles === undefined, error: state.briefError, today,
+      onRefresh: () => loadBrief(state.briefId), onSaveNotes: saveBriefNotes, savingNotes: state.savingNotes, notesSaved: state.notesSaved,
     });
   } else if (state.screen === 'queue') {
     renderQueue(screens.queue, { ...common, loaded: state.loaded, loadFailed: state.loadFailed, onGoTo: goTo, onRefresh: reload, scraper: state.scraper, onRunScraper: runScraper });
@@ -785,10 +878,11 @@ async function loadArchive() {
 loadArchive();
 
 // When the live Exchange last changed: the same Last-Modified the site shows
-// as Updated (api/hub-updated.js). Asked once a visit; a miss claims nothing.
+// as Updated (api/_lib/hub-updated.js, riding /api/publish since Oct 21).
+// Asked once a visit; a miss claims nothing.
 async function loadHubUpdated() {
   try {
-    const data = await readReply(await fetch('/api/hub-updated'), 'check the Exchange');
+    const data = await readReply(await fetch('/api/publish?updated=1'), 'check the Exchange');
     const when = new Date(data.lastModified);
     state.hubUpdated = data.lastModified && !Number.isNaN(when.getTime()) ? todayCentral(when) : '';
   } catch { state.hubUpdated = ''; }
@@ -838,7 +932,9 @@ loadScraper();
 // Back, Forward and a typed address switch screens like a menu pick would.
 window.addEventListener('hashchange', () => {
   const target = openedScreen(location.hash);
-  if (target !== state.screen) goTo(target);
+  const id = openedId(location.hash);
+  if (target === 'brief' && id !== state.briefId) { state.briefId = id; state.brief = null; }
+  if (target !== state.screen || target === 'brief') goTo(target);
 });
 
 // The skip link focuses the page's main without a #main in the address, so

@@ -2,7 +2,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 process.env.ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || 'test-key';
-const { default: hubUpdated } = await import('../api/hub-updated.js');
+const { default: hubUpdated } = await import('../api/_lib/hub-updated.js');
+import { readFileSync } from 'node:fs';
+
+// Since Oct 21 it rides /api/publish as GET ?updated=1: api/ holds the Hobby plan's twelve functions, and the slot went to /api/briefs.
+test('it answers on /api/publish?updated, and the old function file is gone', () => {
+  const publish = readFileSync(new URL('../api/publish.js', import.meta.url), 'utf8');
+  assert.match(publish, /import hubUpdated from '\.\/_lib\/hub-updated\.js';/);
+  assert.match(publish, /req\.method === 'GET' && req\.query\?\.updated != null\) return hubUpdated\(req, res\)/);
+  assert.throws(() => readFileSync(new URL('../api/hub-updated.js', import.meta.url)));
+  assert.match(readFileSync(new URL('../js/app.js', import.meta.url), 'utf8'), /fetch\('\/api\/publish\?updated=1'\)/);
+});
 
 function fakeRes() {
   return {

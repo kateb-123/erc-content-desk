@@ -80,9 +80,28 @@ export async function readAllRows() {
  *  drive, under Newsletter Scrape/scrapes/<folder>/, through the Sheet's
  *  script (its saveFile action; the folder's id is a script property).
  *  Answers the file's and the folder's Drive addresses. */
-export async function saveFile({ folder, name, contentType, b64 }) {
-  const body = await callSheetApi('saveFile', { folder, name, contentType, b64 }, { timeoutMs: 60000 });
+export async function saveFile({ folder, folderId, name, contentType, b64 }) {
+  const body = await callSheetApi('saveFile', { folder, folderId, name, contentType, b64 }, { timeoutMs: 60000 });
   return { ok: true, url: body.url ?? '', folderUrl: body.folderUrl ?? '' };
+}
+
+/** A brief's own folder under Research briefs on the team drive (Kate,
+ *  Oct 20): made on first use, found after. Answers { id, url }. */
+export async function briefFolder(name) {
+  const body = await callSheetApi('briefFolder', { name }, { timeoutMs: 30000 });
+  return { id: body.id, url: body.url ?? '' };
+}
+
+/** What a folder holds: [{ name, updated, url, size }]. */
+export async function listFiles(folderId) {
+  const body = await callSheetApi('listFiles', { folderId }, { timeoutMs: 30000 });
+  return Array.isArray(body.files) ? body.files : [];
+}
+
+/** One file's bytes, base64, with its type. */
+export async function getFile(folderId, name) {
+  const body = await callSheetApi('getFile', { folderId, name }, { timeoutMs: 90000 });
+  return { name: body.name ?? name, contentType: body.contentType ?? 'application/octet-stream', b64: body.b64 ?? '' };
 }
 
 /** Puts a run's rows on the tab of the issue they feed in the Newsletter
