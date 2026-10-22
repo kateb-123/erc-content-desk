@@ -69,11 +69,26 @@ export async function paperText(file, { pdfjs = loadPdfjs } = {}) {
  * paper's tables and figures (round 2). Drawn at twice the page's size so the
  * Word doc's side-by-side stays sharp. Browser only.
  */
-/** What the desk's figure door takes, as base64: 1.5 MB of PNG. A scanned page at 2x can pass it, so the crop is drawn smaller until it fits (review, Oct 22). */
+/** What the desk's figure door takes, as base64: 1.5 MB of PNG. A scanned page at 2x can pass it, so the cut is drawn smaller until it fits (review, Oct 22). */
 export const CROP_B64_MAX = 1.5 * 1024 * 1024 * 4 / 3;
 const CROP_SCALES = [2, 1.5, 1.2, 1];
 
-export async function pagePng(bytes, pageNumber, { pdfjs = loadPdfjs, scales = CROP_SCALES, maxB64 = CROP_B64_MAX } = {}) {
+/**
+ * The part of a drawn page to keep (Kate, Oct 22: the model marks the box,
+ * the desk cuts it): the read's box widened by a margin on each side, in the
+ * drawn page's pixels, held to the page. No box keeps the whole page.
+ */
+export function cropRect({ width, height }, box, margin = 0.015) {
+  if (!box) return { x: 0, y: 0, w: width, h: height };
+  const x = Math.floor(Math.max(0, box.left - margin) * width);
+  const y = Math.floor(Math.max(0, box.top - margin) * height);
+  const x2 = Math.ceil(Math.min(1, box.right + margin) * width);
+  const y2 = Math.ceil(Math.min(1, box.bottom + margin) * height);
+  return { x, y, w: x2 - x, h: y2 - y };
+}
+
+/** One table or figure cut out of the paper as a PNG, base64: the page drawn with pdf.js, then the box kept. */
+export async function pagePng(bytes, pageNumber, { pdfjs = loadPdfjs, scales = CROP_SCALES, maxB64 = CROP_B64_MAX, box = null } = {}) {
   const lib = await pdfjs();
   // pdf.js hands the buffer to its worker and leaves the caller's copy detached, so each page gets a copy of its own.
   const doc = await lib.getDocument({ data: bytes.slice() }).promise;
@@ -85,10 +100,34 @@ export async function pagePng(bytes, pageNumber, { pdfjs = loadPdfjs, scales = C
     canvas.width = Math.ceil(viewport.width);
     canvas.height = Math.ceil(viewport.height);
     await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-    b64 = canvas.toDataURL('image/png').split(',')[1] ?? '';
+    const r = cropRect(canvas, box);
+    const cut = document.createElement('canvas');
+    cut.width = r.w;
+    cut.height = r.h;
+    cut.getContext('2d').drawImage(canvas, r.x, r.y, r.w, r.h, 0, 0, r.w, r.h);
+    b64 = cut.toDataURL('image/png').split(',')[1] ?? '';
     if (b64.length <= maxB64) break;
   }
   return b64;
+}
+
+/** The proposed chart as a PNG, base64, for the figures folder and the author's Word doc: the SVG drawn at twice its size on white. */
+export async function svgPng(svg, { scale = 2 } = {}) {
+  const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+  try {
+    const img = new Image();
+    await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = () => reject(new Error("couldn't draw the chart")); img.src = url; });
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(img.width * scale);
+    canvas.height = Math.ceil(img.height * scale);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/png').split(',')[1] ?? '';
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 const blank = value => !String(value ?? '').trim();

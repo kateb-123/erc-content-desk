@@ -25,7 +25,8 @@ import { renderQueue } from './queue-ui.js';
 import { renderExchange } from './exchange-ui.js';
 import { renderListserv } from './listserv-ui.js';
 import { renderBriefs, renderBrief, clearBriefDraft } from './briefs-ui.js';
-import { paperText, pagePng } from './paper-read.js';
+import { paperText, pagePng, svgPng } from './paper-read.js';
+import { chartSvg } from './brief-visual.js';
 import { briefTitle, restartDraft } from './briefs-view.js';
 
 
@@ -674,19 +675,34 @@ async function refreshBrief(id) {
 
 /** The chosen tables and figures, cut out of the paper's pages as pictures and filed beside the draft. */
 async function cropFigures(id) {
-  const figures = state.brief?.extra?.draft?.result?.figures ?? [];
-  const todo = figures.filter(f => f.page > 0 && !(state.brief?.extra?.draft?.crops ?? []).includes(f.crop));
-  if (!todo.length) return;
-  const paper = await readReply(await fetch(`/api/briefs?id=${encodeURIComponent(id)}&paper=1`, { credentials: 'same-origin' }), 'fetch the paper');
-  const bytes = Uint8Array.from(atob(paper.b64), c => c.charCodeAt(0));
-  for (const f of todo) {
+  const result = state.brief?.extra?.draft?.result ?? {};
+  const done = () => state.brief?.extra?.draft?.crops ?? [];
+  const todo = (result.figures ?? []).filter(f => f.page > 0 && !done().includes(f.crop));
+  const failed = name => { state.cropFailed = [...(state.cropFailed ?? []), name]; };
+  if (todo.length) {
+    const paper = await readReply(await fetch(`/api/briefs?id=${encodeURIComponent(id)}&paper=1`, { credentials: 'same-origin' }), 'fetch the paper');
+    const bytes = Uint8Array.from(atob(paper.b64), c => c.charCodeAt(0));
+    for (const f of todo) {
+      try {
+        // The read's box around the table or figure (Kate, Oct 22: the model marks it, the desk cuts it); no box keeps the page.
+        const b64 = await pagePng(bytes, f.page, { box: f.box ?? null });
+        const data = await postJson('/api/briefs', { action: 'figure', id, name: f.crop, b64 }, 'file the cut');
+        if (state.briefId === id) state.brief = data.brief;
+      } catch (err) {
+        console.warn('cut failed', f.crop, err);   // a missing cut never stops the draft; its row says it was not cut out
+        failed(f.crop);
+      }
+    }
+  }
+  // The proposed chart as a picture beside the cuts, for the author round's Word doc.
+  if (result.visual?.kind === 'chart' && !done().includes('proposed-figure-1.png')) {
     try {
-      const b64 = await pagePng(bytes, f.page);
-      const data = await postJson('/api/briefs', { action: 'figure', id, name: f.crop, b64 }, 'file the crop');
+      const b64 = await svgPng(chartSvg(result.visual));
+      const data = await postJson('/api/briefs', { action: 'figure', id, name: 'proposed-figure-1.png', b64 }, 'file the chart');
       if (state.briefId === id) state.brief = data.brief;
     } catch (err) {
-      console.warn('crop failed', f.crop, err);   // a missing crop never stops the draft; the row says it was not cut out
-      state.cropFailed = [...(state.cropFailed ?? []), f.crop];
+      console.warn('chart picture failed', err);
+      failed('proposed-figure-1.png');
     }
   }
 }

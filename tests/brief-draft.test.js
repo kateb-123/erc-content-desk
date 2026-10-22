@@ -32,9 +32,10 @@ const extract = {
 
 test('the eight sections and the steps in order; nextDraftStep walks them and ends', () => {
   assert.deepEqual(SECTION_DEFS.map(s => s.key), ['exec_summary', 'highlights', 'introduction', 'research_overview', 'key_findings', 'policy_implications', 'conclusions', 'references']);
-  assert.deepEqual(DRAFT_STEPS, ['extract', 'plan', 'exec_summary', 'highlights', 'introduction', 'research_overview', 'key_findings', 'policy_implications', 'conclusions', 'references', 'check', 'assemble']);
+  assert.deepEqual(DRAFT_STEPS, ['extract', 'plan', 'visual', 'exec_summary', 'highlights', 'introduction', 'research_overview', 'key_findings', 'policy_implications', 'conclusions', 'references', 'check', 'assemble']);
   assert.equal(nextDraftStep([]), 'extract');
-  assert.equal(nextDraftStep(['extract', 'plan']), 'exec_summary');
+  assert.equal(nextDraftStep(['extract', 'plan']), 'visual');
+  assert.equal(nextDraftStep(['extract', 'plan', 'visual']), 'exec_summary');
   assert.equal(nextDraftStep(DRAFT_STEPS), null);
   assert.equal(nextDraftStep(['plan']), 'extract', 'order holds even if a later step somehow came first');
 });
@@ -183,4 +184,85 @@ test('a crop name is never one the desk refuses: a long label is cut to 60 chara
 test('parsePlan takes the suggested title bare or in bold, the way a model writes a label', () => {
   assert.equal(parsePlan('**Suggested brief title:** Majors That Lead Somewhere\n').title, 'Majors That Lead Somewhere');
   assert.equal(parsePlan('- Suggested brief title: "Sorted and Tracked"').title, 'Sorted and Tracked');
+});
+
+import { VISUAL_SCHEMA, buildVisualPrompt, normalizeVisual, visualMarkdown, normalizeBox } from '../js/brief-draft.js';
+
+test('the steps: the plan is followed by the proposal of the brief\'s one visual, before any section is written', () => {
+  assert.deepEqual(DRAFT_STEPS.slice(0, 4), ['extract', 'plan', 'visual', 'exec_summary']);
+  assert.equal(stepWords('visual'), "Proposing the brief's table or chart");
+});
+
+test('the read marks a box around each table or figure on its page (Kate, Oct 22: the model marks it, the desk cuts it)', () => {
+  const item = EXTRACT_SCHEMA.properties.recommended_visuals.items;
+  assert.ok(item.required.includes('box'));
+  assert.deepEqual(item.properties.box.required, ['left', 'top', 'right', 'bottom']);
+  assert.match(EXTRACT_PROMPT, /box/);
+  assert.deepEqual(normalizeBox({ left: 0.1, top: 0.2, right: 0.9, bottom: 0.6 }), { left: 0.1, top: 0.2, right: 0.9, bottom: 0.6 });
+  assert.deepEqual(normalizeBox({ left: -0.2, top: 0.2, right: 1.4, bottom: 0.6 }), { left: 0, top: 0.2, right: 1, bottom: 0.6 }, 'held to the page');
+  assert.equal(normalizeBox({ left: 0.5, top: 0.2, right: 0.52, bottom: 0.6 }), null, 'a sliver is no box');
+  assert.equal(normalizeBox({ left: 0.9, top: 0.2, right: 0.1, bottom: 0.6 }), null, 'backwards is no box');
+  assert.equal(normalizeBox(null), null);
+  assert.equal(normalizeBox({ left: 'a', top: 0, right: 1, bottom: 1 }), null);
+  const ex = normalizeExtract({ ...extract, recommended_visuals: [{ kind: 'table', source_label: 'Table 2', page: 4, why: 'w', suggested_caption: 'c', box: { left: 0.1, top: 0.1, right: 0.9, bottom: 0.5 } }] });
+  assert.deepEqual(ex.recommended_visuals[0].box, { left: 0.1, top: 0.1, right: 0.9, bottom: 0.5 });
+  assert.deepEqual(figuresInventory(ex).items[0].box, { left: 0.1, top: 0.1, right: 0.9, bottom: 0.5 });
+});
+
+test('the plan names the brief\'s visual as a chart or a table, the plan\'s pick (Kate, Oct 22: "maybe a chart or a table", the plan picks per paper)', () => {
+  const prompt = buildPlanPrompt(extract, 'notes');
+  assert.match(prompt, /## The brief's visual/);
+  assert.match(prompt, /Figure 1/);
+  assert.match(prompt, /Table 1/);
+});
+
+test('buildVisualPrompt builds the visual the plan names, with its data table, every number from the paper', () => {
+  const prompt = buildVisualPrompt(extract, '## The brief\'s visual (page 3)\nFigure 1, from the paper\'s Figure 2.', 'Keep the bars.');
+  assert.match(prompt, /TASK: Build the brief's one visual/);
+  assert.match(prompt, /Figure 1, from the paper's Figure 2/);
+  assert.match(prompt, /Keep the bars/);
+  assert.match(prompt, /data table/);
+  assert.equal(VISUAL_SCHEMA.additionalProperties, false);
+  assert.deepEqual(VISUAL_SCHEMA.properties.kind.enum, ['table', 'chart']);
+});
+
+test('normalizeVisual: a chart keeps 2 to 8 bars and its table; a chart it cannot draw becomes the table; nothing usable is an error', () => {
+  const chart = normalizeVisual({ kind: 'chart', source_label: ' Figure 2 ', title: 'Courses fell with later reclassification', kept: 'k', columns: ['Group', 'Courses'], rows: [['Never EL', '2.60'], ['High school', '0.72', 'extra']], value_label: 'College-level courses', value_format: 'number', bars: [{ label: 'Never EL', value: 2.6 }, { label: 'High school', value: 0.72 }] });
+  assert.equal(chart.kind, 'chart');
+  assert.equal(chart.name, 'Figure 1');
+  assert.equal(chart.source_label, 'Figure 2');
+  assert.deepEqual(chart.rows, [['Never EL', '2.60'], ['High school', '0.72']], 'rows held to the columns');
+  const one = normalizeVisual({ ...chart, kind: 'chart', bars: [{ label: 'a', value: 1 }] });
+  assert.equal(one.kind, 'table');
+  assert.equal(one.name, 'Table 1');
+  assert.deepEqual(one.bars, []);
+  assert.equal(normalizeVisual({ ...chart, bars: [{ label: 'a', value: -1 }, { label: 'b', value: 2 }] }).kind, 'table', 'a negative bar is told as a table');
+  assert.equal(normalizeVisual({ ...chart, bars: Array.from({ length: 9 }, (_, i) => ({ label: `g${i}`, value: i + 1 })) }).kind, 'table', 'too many bars');
+  assert.equal(normalizeVisual({ ...chart, bars: [{ label: 'a', value: 'NaN' }, { label: 'b', value: 2 }] }).kind, 'table');
+  const pct = normalizeVisual({ ...chart, value_format: 'percent' });
+  assert.equal(pct.value_format, 'percent');
+  assert.equal(normalizeVisual({ ...chart, value_format: 'odd' }).value_format, 'number');
+  assert.throws(() => normalizeVisual({ kind: 'table', title: 't', columns: [], rows: [], bars: [] }), /proposal/);
+  assert.throws(() => normalizeVisual(null), /proposal/);
+});
+
+test('visualMarkdown: the proposal as a file, its name and title, the table, where it came from', () => {
+  const md = visualMarkdown(normalizeVisual({ kind: 'table', source_label: 'Table 3', title: 'Matched workers earned more', kept: 'Kept: the two groups.', columns: ['Workers', 'Earnings'], rows: [['Matched', '$52,000'], ['Not | matched', '$44,000']], value_label: '', value_format: 'number', bars: [] }));
+  assert.match(md, /^# Table 1\. Matched workers earned more\n/);
+  assert.match(md, /\| Workers \| Earnings \|\n\|---\|---\|\n\| Matched \| \$52,000 \|/);
+  assert.match(md, /Not \\\| matched/, 'a bar inside a cell is escaped');
+  assert.match(md, /From the paper's Table 3\. Kept: the two groups\./);
+  const chartMd = visualMarkdown(normalizeVisual({ kind: 'chart', source_label: 'Figure 2', title: 'T', kept: 'k', columns: ['G', 'V'], rows: [['a', '1'], ['b', '2']], value_label: 'Courses', value_format: 'number', bars: [{ label: 'a', value: 1 }, { label: 'b', value: 2 }] }));
+  assert.match(chartMd, /^# Figure 1\. T\n/);
+  assert.match(chartMd, /A bar chart of Courses; its numbers:/);
+  assert.match(chartMd, /proposed-figure-1\.png/);
+});
+
+test('the findings mark where the proposal goes by its name, a chart as Figure 1', () => {
+  const visual = normalizeVisual({ kind: 'chart', source_label: 'Figure 2', title: 'T', kept: 'k', columns: ['G', 'V'], rows: [['a', '1'], ['b', '2']], value_label: 'V', value_format: 'number', bars: [{ label: 'a', value: 1 }, { label: 'b', value: 2 }] });
+  const prompt = buildSectionPrompt(extract, 'plan', '', 'key_findings', [], visual);
+  assert.match(prompt, /\[Figure 1 here\]/);
+  assert.doesNotMatch(prompt, /\[Table 1 here\]/);
+  assert.match(prompt, /THE BRIEF'S VISUAL: Figure 1, T/);
+  assert.match(buildSectionPrompt(extract, 'plan', '', 'key_findings', []), /\[Table 1 here\]/, 'no proposal yet, the table as before');
 });

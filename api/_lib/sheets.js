@@ -80,8 +80,8 @@ export async function readAllRows() {
  *  drive, under Newsletter Scrape/scrapes/<folder>/, through the Sheet's
  *  script (its saveFile action; the folder's id is a script property).
  *  Answers the file's and the folder's Drive addresses. */
-export async function saveFile({ folder, folderId, name, contentType, b64 }) {
-  const body = await callSheetApi('saveFile', { folder, folderId, name, contentType, b64 }, { timeoutMs: 60000 });
+export async function saveFile({ folder, folderId, sub, name, contentType, b64 }) {
+  const body = await callSheetApi('saveFile', { folder, folderId, sub, name, contentType, b64 }, { timeoutMs: 60000 });
   return { ok: true, url: body.url ?? '', folderUrl: body.folderUrl ?? '' };
 }
 
@@ -98,9 +98,9 @@ export async function listFiles(folderId) {
   return Array.isArray(body.files) ? body.files : [];
 }
 
-/** One file's bytes, base64, with its type. */
-export async function getFile(folderId, name) {
-  const body = await callSheetApi('getFile', { folderId, name }, { timeoutMs: 90000 });
+/** One file's bytes, base64, with its type; with `sub`, from that folder inside first (a brief's figures). */
+export async function getFile(folderId, name, { sub } = {}) {
+  const body = await callSheetApi('getFile', { folderId, name, sub }, { timeoutMs: 90000 });
   return { name: body.name ?? name, contentType: body.contentType ?? 'application/octet-stream', b64: body.b64 ?? '' };
 }
 

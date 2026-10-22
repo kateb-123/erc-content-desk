@@ -67,8 +67,8 @@ function stepRowWords(step, state) {
   const section = SECTION_DEFS.find(s => s.key === step);
   if (state === 'now') return stepWords(step);
   if (section) return state === 'done' ? `Wrote the ${section.title}` : `Write the ${section.title}`;
-  const past = { extract: 'Read the paper', plan: 'Planned the pages', check: 'Checked the draft against the paper', assemble: 'Put the files together' };
-  const plain = { extract: 'Read the paper', plan: 'Plan the pages', check: 'Check the draft against the paper', assemble: 'Put the files together' };
+  const past = { extract: 'Read the paper', plan: 'Planned the pages', visual: 'Proposed the table or chart', check: 'Checked the draft against the paper', assemble: 'Put the files together' };
+  const plain = { extract: 'Read the paper', plan: 'Plan the pages', visual: 'Propose the table or chart', check: 'Check the draft against the paper', assemble: 'Put the files together' };
   return (state === 'done' ? past : plain)[step] ?? step;
 }
 

@@ -620,6 +620,33 @@ brief past the paper stage says so on its page.
   until it fits; the crop's name is held to the door's rule; the form says
   when the paper and a Word file would not fit one upload; a draft's end
   refreshes the page without blanking it; the crops wait has busy words.
+- **Theirs and the proposal** (Kate, Oct 22: "i want to see their figure
+  and the proposed new one before it goes off to the author"; her picks:
+  the model marks it and the desk cuts it, layout A, the plan picks a chart
+  or a table per paper, D1 maroon bars, no edits until round 3). The deep
+  read marks a box around each table or figure on its page; the browser
+  draws that page with pdf.js and keeps the box with a small margin, so a
+  cut is the table or figure, not the page, and files it in the brief's
+  `figures` folder. A step after the plan, "Proposing the brief's table or
+  chart", builds the brief's one visual as the plan names it: Table 1, or
+  Figure 1, a bar chart when its point is a trend or a comparison of 2 to 8
+  groups and the paper prints the values, always with its numbers as a
+  table (`proposed-table-1.md` or `proposed-figure-1.md`); the findings mark
+  its place by that name. On the Draft box, under the brief, a section
+  named for it holds the pair at equal width, In the paper on the left (the
+  cut, opening the file in Drive), Proposed for the brief on the right (the
+  table in the desk's table idiom, or the chart with "The chart's numbers"
+  under it), then "Kept: ... Left out: ..."; the other cuts follow as rows,
+  280px each, with their label, caption and pill. The chart is drawn by
+  `js/brief-visual.js` in the printed brief's colours from the Texas A&M
+  brand guide, Aggie Maroon bars and Dark Gray words in Open Sans, the
+  value on each bar, upright columns for short labels and full-width bars
+  under each name for long ones, and filed as `proposed-figure-1.png` for
+  the author's Word doc: the brief's maroon, not the desk's, the way the
+  email template keeps its own. A cut not made says so with Cut them out,
+  or Try the cuts again after a failure. The figures folder needs the
+  latest Code.gs pasted and deployed; until then the cuts land beside the
+  draft, and the page finds them there.
 
 
 - **The highlight's own Save**: once the picks change, Update the highlight

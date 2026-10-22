@@ -10,6 +10,7 @@
 import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, notesKind, createLock, wordCount, draftProgress, draftWait } from './briefs-view.js';
 import { fillFromPaper } from './paper-read.js';
 import { renderMarkdown } from './markdown-lite.js';
+import { chartSvg, chartAlt } from './brief-visual.js';
 import { hubHead, HUB_LEDES } from './hub-head.js';
 import { isoToShort } from './queue-view.js';
 import { faIcon, busyWords } from './icons.js';
@@ -431,7 +432,57 @@ function flagLines(md) {
 }
 
 /** The Draft box (round 2): the whole brief at once, the downloads, the figures to look at, the number flags, the check's notes. */
-function draftBox(brief, { onWriteDraft, error, cropFailed = [] }) {
+/** The proposed chart's picture in the figures folder, for the author round's Word doc. */
+const PROPOSED_CHART = 'proposed-figure-1.png';
+
+/** A cut of the paper's table or figure as the page shows it: the picture from the figures folder, or why there is none. */
+function clipOf(f, { brief, crops, cropFailed, files }) {
+  if (!crops.has(f.crop)) {
+    const why = cropFailed.includes(f.crop) ? 'Not cut out. Try the cuts again below.' : 'Not cut out yet.';
+    return el('p', `meta draft-clip-none${cropFailed.includes(f.crop) ? ' draft-crop-miss' : ''}`, why);
+  }
+  const file = (files ?? []).find(x => x.name === f.crop || x.name === `figures/${f.crop}`);
+  const src = `/api/briefs?id=${encodeURIComponent(brief.id)}&image=${encodeURIComponent(f.crop)}&v=${encodeURIComponent(brief.stageAt ?? '')}`;
+  const link = el('a', 'draft-clip');
+  link.href = file?.url || src;
+  link.target = '_blank';
+  link.rel = 'noopener';
+  const img = el('img');
+  img.src = src;
+  img.alt = `${f.label} as the paper prints it`;
+  img.loading = 'lazy';
+  img.addEventListener('error', () => link.replaceWith(el('p', 'meta draft-crop-miss', 'The picture did not load. It is in the figures folder.')));
+  link.append(img);
+  return link;
+}
+
+/** The proposal as it would sit in the brief: the table, or the chart drawn in the brief's colours with its numbers under it. */
+function proposalOf(visual) {
+  const wrap = el('div', 'draft-proposal');
+  if (visual.kind === 'chart') {
+    const chart = el('div', 'draft-chart');
+    chart.innerHTML = chartSvg(visual);   // drawn by the desk; every word from the model escaped
+    chart.firstElementChild?.setAttribute('aria-label', chartAlt(visual));
+    wrap.append(chart);
+  }
+  const table = el('table', 'draft-proposal-table');
+  table.append(el('caption', '', visual.kind === 'chart' ? "The chart's numbers" : `${visual.name}. ${visual.title}`));
+  const head = el('tr');
+  for (const c of visual.columns) head.append(el('th', '', c));
+  const thead = el('thead');
+  thead.append(head);
+  const tbody = el('tbody');
+  for (const r of visual.rows) {
+    const tr = el('tr');
+    for (const c of r) tr.append(el('td', '', c));
+    tbody.append(tr);
+  }
+  table.append(thead, tbody);
+  wrap.append(table);
+  return wrap;
+}
+
+function draftBox(brief, { onWriteDraft, error, cropFailed = [], files = [] }) {
   const d = brief.extra?.draft ?? {};
   const r = d.result;
   const box = el('div', 'hub-box brief-stage');
@@ -461,24 +512,51 @@ function draftBox(brief, { onWriteDraft, error, cropFailed = [] }) {
   article.innerHTML = renderMarkdown(r.draft ?? '');   // every character escaped by the renderer; only its own tags
   box.append(tools, article);
 
-  box.append(el('h3', 'section-label hub-label', 'Tables and figures in the paper'));
-  if (r.figures?.length) {
+  const crops = new Set(d.crops ?? []);
+  const figures = r.figures ?? [];
+  const visual = r.visual ?? null;
+  const theirs = visual ? (figures.find(f => f.label === visual.source_label) ?? figures[0] ?? null) : null;
+  const cut = { brief, crops, cropFailed, files, onWriteDraft };
+
+  // Her pick A (Oct 22: "i want to see their figure and the proposed new one before it goes off to the author"):
+  // the paper's own, cut out by the read's box, beside the proposal, at equal width.
+  if (visual) {
+    box.append(el('h3', 'section-label hub-label', `${visual.name}, theirs and the proposal`));
+    const pair = el('div', 'draft-pair');
+    const left = el('div', 'draft-pair-side');
+    left.append(el('p', 'draft-pair-head', theirs ? `In the paper: ${theirs.label}, p. ${theirs.page}` : `In the paper: ${visual.source_label || 'not named'}`));
+    left.append(theirs ? clipOf(theirs, cut) : el('p', 'meta', 'The read did not mark this one on a page.'));
+    const right = el('div', 'draft-pair-side');
+    right.append(el('p', 'draft-pair-head', `Proposed for the brief: ${visual.name}`), proposalOf(visual));
+    if (visual.kept) right.append(el('p', 'meta', visual.kept));
+    pair.append(left, right);
+    box.append(pair);
+  }
+
+  const others = figures.filter(f => f !== theirs);
+  box.append(el('h3', 'section-label hub-label', visual ? 'Other tables and figures' : 'Tables and figures in the paper'));
+  if (others.length) {
     const list = el('ul', 'draft-figures');
-    const crops = new Set(d.crops ?? []);
-    for (const f of r.figures) {
-      const li = el('li');
-      li.append(el('span', '', `${f.label}, p. ${f.page}: ${f.caption}`));
+    for (const f of others) {
+      const li = el('li', 'draft-figure');
+      const words = el('div', 'draft-figure-words');
+      words.append(el('p', 'draft-pair-head', `${f.label}, p. ${f.page}`), el('p', '', f.caption));
       const pill = el('span', `draft-pill${f.rework === 'Prose' ? ' is-ok' : ''}`, f.rework);
-      const side = el('span', 'draft-figure-side');
-      side.append(pill);
-      if (crops.has(f.crop)) side.append(el('span', 'meta', ' · cut out, in the folder'));
-      else if (cropFailed.includes(f.crop)) side.append(el('span', 'meta draft-crop-miss', ' · not cut out; Write it again tries once more'));
-      li.append(side);
+      const pills = el('p');
+      pills.append(pill);
+      words.append(pills);
+      li.append(clipOf(f, cut), words);
       list.append(li);
     }
     box.append(list);
   } else {
-    box.append(el('p', 'brief-files-note', 'Nothing in the paper earned a place; the brief tells it in words.'));
+    box.append(el('p', 'brief-files-note', figures.length ? 'Nothing else in the paper earned a place.' : 'Nothing in the paper earned a place; the brief tells it in words.'));
+  }
+  const missing = figures.filter(f => f.page > 0 && !crops.has(f.crop));
+  if (missing.length || (visual?.kind === 'chart' && !crops.has(PROPOSED_CHART))) {
+    const again = el('div', 'brief-actions');
+    again.append(button(missing.some(f => cropFailed.includes(f.crop)) ? 'Try the cuts again' : 'Cut them out', 'linkish', { focus: 'cut-again', onClick: () => onWriteDraft() }));
+    box.append(again);
   }
 
   box.append(el('h3', 'section-label hub-label', 'Numbers the paper disagrees with itself on'), flagLines(r.numberFlags));
@@ -497,9 +575,9 @@ function draftBox(brief, { onWriteDraft, error, cropFailed = [] }) {
 /** What she has typed in the brief page's notes box and not yet saved, kept across redraws (review, Oct 22). */
 let typedNotes = { id: '', text: null };
 
-function stageBox(brief, { onSaveNotes, onReadNotes, onWriteDraft, savingNotes, notesSaved, draftRunning, draftError, cropFailed }) {
+function stageBox(brief, { onSaveNotes, onReadNotes, onWriteDraft, savingNotes, notesSaved, draftRunning, draftError, cropFailed, files }) {
   if (brief.stage === 'draft' || draftRunning) return draftRunningBox(brief, { running: draftRunning, error: draftError, onWriteDraft });
-  if (brief.stage === 'proof' && brief.extra?.draft?.result) return draftBox(brief, { onWriteDraft, error: draftError, cropFailed });
+  if (brief.stage === 'proof' && brief.extra?.draft?.result) return draftBox(brief, { onWriteDraft, error: draftError, cropFailed, files });
   const box = el('div', 'hub-box brief-stage');
   if (brief.stage !== 'paper') {
     box.append(el('p', 'brief-files-note', `${stageLabel(brief.stage)} comes in the next round. The folder holds everything so far.`));
@@ -560,7 +638,7 @@ export function renderBrief(container, props) {
   for (const s of stepStates(brief.stage)) if (s.later && s.state === 'later') subs[s.key] = s.key === 'html' || s.key === 'live' ? 'round two' : subs[s.key];
   const split = el('div', 'qh-split brief-split');
   const main = el('div');
-  main.append(el('h3', 'section-label hub-label', stageLabel(brief.stage)), stageBox(brief, { onSaveNotes, onReadNotes, onWriteDraft, savingNotes, notesSaved, draftRunning, draftError }));
+  main.append(el('h3', 'section-label hub-label', stageLabel(brief.stage)), stageBox(brief, { onSaveNotes, onReadNotes, onWriteDraft, savingNotes, notesSaved, draftRunning, draftError, cropFailed: cropFailed ?? [], files: files ?? [] }));
   const aside = el('aside', 'qh-side');
   aside.append(el('h3', 'section-label hub-label', 'In the folder'), filesBox(loading ? undefined : files));
   split.append(main, aside);

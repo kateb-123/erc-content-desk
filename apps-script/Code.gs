@@ -41,6 +41,8 @@ var SCRAPE_FOLDER_PROPERTY_NAME = 'SCRAPE_FOLDER_ID';
  *  folder's address. Not the id itself. */
 var BRIEFS_FOLDER_PROPERTY_NAME = 'BRIEFS_FOLDER_ID';
 var FILE_NAME_RULE = /^[A-Za-z0-9][A-Za-z0-9 _.-]{0,120}\.(xlsx|txt|pdf|md|docx|png|jpg|jpeg)$/;
+/** A folder inside a brief's folder, by name: the figures (Oct 22). */
+var SUB_RULE = /^[a-z]{1,20}$/;
 
 /**
  * Entry point Google calls for every POST request to the deployed web app.
@@ -238,8 +240,13 @@ function handleSaveFile(body) {
   }
   var folder;
   if (body.folderId) {
-    // A brief's own folder (briefFolder gave its id).
+    // A brief's own folder (briefFolder gave its id), or a folder inside it by name (its figures).
     folder = DriveApp.getFolderById(String(body.folderId));
+    if (body.sub) {
+      if (!SUB_RULE.test(body.sub)) return { ok: false, error: 'saveFile needs a plain "sub": lowercase letters only.' };
+      var inside = folder.getFoldersByName(body.sub);
+      folder = inside.hasNext() ? inside.next() : folder.createFolder(body.sub);
+    }
   } else {
     if (!body.folder || !/^\d{4}-\d{2}-\d{2}$/.test(body.folder)) {
       return { ok: false, error: 'saveFile needs a "folder" named by date, YYYY-MM-DD, or a "folderId".' };
@@ -368,11 +375,20 @@ function handleBriefFolder(body) {
 /** What a folder holds, newest first: name, the day it last changed, its address, its size. */
 function handleListFiles(body) {
   if (!body.folderId) return { ok: false, error: 'listFiles needs a "folderId".' };
-  var files = DriveApp.getFolderById(String(body.folderId)).getFiles();
+  var root = DriveApp.getFolderById(String(body.folderId));
   var out = [];
-  while (files.hasNext()) {
-    var f = files.next();
-    out.push({ name: f.getName(), updated: f.getLastUpdated().toISOString().slice(0, 10), url: f.getUrl(), size: f.getSize() });
+  var add = function (files, prefix) {
+    while (files.hasNext()) {
+      var f = files.next();
+      out.push({ name: prefix + f.getName(), updated: f.getLastUpdated().toISOString().slice(0, 10), url: f.getUrl(), size: f.getSize() });
+    }
+  };
+  add(root.getFiles(), '');
+  // The folders inside (a brief's figures), one level down, named before each file.
+  var subs = root.getFolders();
+  while (subs.hasNext()) {
+    var sub = subs.next();
+    add(sub.getFiles(), sub.getName() + '/');
   }
   out.sort(function (a, b) { return a.updated < b.updated ? 1 : a.updated > b.updated ? -1 : a.name.localeCompare(b.name); });
   return { ok: true, files: out };
@@ -381,7 +397,14 @@ function handleListFiles(body) {
 /** One file's bytes, base64, by name within a folder (the paper, for drafting). */
 function handleGetFile(body) {
   if (!body.folderId || !body.name) return { ok: false, error: 'getFile needs a "folderId" and a "name".' };
-  var files = DriveApp.getFolderById(String(body.folderId)).getFilesByName(String(body.name));
+  var folder = DriveApp.getFolderById(String(body.folderId));
+  var files = null;
+  if (body.sub && SUB_RULE.test(body.sub)) {
+    // A brief's figures: the folder inside first, then the brief's folder, where a cut filed before the figures folder sits.
+    var inside = folder.getFoldersByName(body.sub);
+    if (inside.hasNext()) files = inside.next().getFilesByName(String(body.name));
+  }
+  if (!files || !files.hasNext()) files = folder.getFilesByName(String(body.name));
   if (!files.hasNext()) return { ok: false, error: 'No file named ' + body.name + ' in that folder.' };
   var blob = files.next().getBlob();
   return { ok: true, name: blob.getName(), contentType: blob.getContentType(), b64: Utilities.base64Encode(blob.getBytes()) };

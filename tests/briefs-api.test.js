@@ -276,14 +276,18 @@ function draftWorld({ extra = {}, model } = {}) {
   };
   const drive = {
     briefFolder: async name => ({ id: 'fld-' + name, url: 'https://drive/' + name }),
-    saveFile: async f => { files.push([f.name, f.contentType, f.b64 ? Buffer.from(f.b64, 'base64').toString('utf8').slice(0, 40) : '']); return { ok: true, url: 'u' }; },
+    saveFile: async f => { files.push([f.name, f.contentType, f.b64 ? Buffer.from(f.b64, 'base64').toString('utf8').slice(0, 40) : '', f.sub ?? '']); return { ok: true, url: 'u' }; },
     listFiles: async () => [],
-    getFile: async (folderId, name) => ({ name, contentType: 'application/pdf', b64: Buffer.from('%PDF-1.4 the paper').toString('base64') }),
+    getFile: async (folderId, name, opts = {}) => (/\.png$/.test(name)
+      ? { name, contentType: 'image/png', b64: Buffer.from(`png of ${name} in ${opts.sub ?? ''}`).toString('base64') }
+      : { name, contentType: 'application/pdf', b64: Buffer.from('%PDF-1.4 the paper').toString('base64') }),
   };
-  const extractJson = JSON.stringify({ title: 'Race, Nativity, and the Labor Market Returns to College Major-Occupation Alignment', authors: ['Brian Holzman', 'Jeehee Han'], journal: 'AERA Open', year: 2026, design: 'observational', research_questions: ['q'], sample: 's', methods_summary: 'm', key_numbers: [{ value: '1,366,603', context: 'workers, p. 8' }], findings: [{ title: 'Match pays', summary: 'Matched workers earn more.' }], policy_recommendations: ['r'], apa_citation: 'Holzman, B., & Han, J. (2026). Race, nativity. AERA Open.', recommended_visuals: [{ kind: 'table', source_label: 'Table 3', page: 12, why: 'the premium', suggested_caption: 'Earnings by match' }], number_flags: [] });
+  const extractJson = JSON.stringify({ title: 'Race, Nativity, and the Labor Market Returns to College Major-Occupation Alignment', authors: ['Brian Holzman', 'Jeehee Han'], journal: 'AERA Open', year: 2026, design: 'observational', research_questions: ['q'], sample: 's', methods_summary: 'm', key_numbers: [{ value: '1,366,603', context: 'workers, p. 8' }], findings: [{ title: 'Match pays', summary: 'Matched workers earn more.' }], policy_recommendations: ['r'], apa_citation: 'Holzman, B., & Han, J. (2026). Race, nativity. AERA Open.', recommended_visuals: [{ kind: 'table', source_label: 'Table 3', page: 12, why: 'the premium', suggested_caption: 'Earnings by match', box: { left: 0.1, top: 0.2, right: 0.9, bottom: 0.6 } }], number_flags: [] });
+  const visualJson = JSON.stringify({ kind: 'table', source_label: 'Table 3', title: 'Matched workers earned more', kept: 'Kept: the two groups. Left out: the controls.', columns: ['Workers', 'Median earnings'], rows: [['Matched', '$52,000'], ['Not matched', '$44,000']], value_label: '', value_format: 'number', bars: [] });
   const draftModel = model ?? (async ({ prompt, schema }) => {
     calls.push({ prompt, schema: Boolean(schema) });
     if (prompt.startsWith('Do a deep, close reading')) return extractJson;
+    if (/TASK: Build the brief's one visual/.test(prompt)) return visualJson;
     if (/TASK: Write the page plan/.test(prompt)) return '# Page Plan: Holzman (2026)\n\nSuggested brief title: Majors That Lead Somewhere\n\n## Plan\n| Page | Content |\n|---|---|\n| Cover | Exec |\n';
     if (/Below is a complete ERC research brief draft/.test(prompt)) return JSON.stringify({ sections: [{ key: 'exec_summary', content: 'Checked exec. This brief summarizes a research study in AERA Open.' }], flags: [{ section: 'key_findings', note: 'Could not find 2.1%.' }] });
     const m = /TASK: (?:Write|Produce) (?:the )?([A-Za-z ]+?)(?: as|[.:])/.exec(prompt);
@@ -295,7 +299,7 @@ function draftWorld({ extra = {}, model } = {}) {
 
 const post = (handler, body) => { const res = fakeRes(); return handler({ method: 'POST', query: {}, body }, res).then(() => res); };
 
-test('POST draft: the first step is the deep read; the extract is kept on the brief and as extract.json, the brief author too, the stage moves to draft, and the next step is the plan', async () => {
+test('POST draft: the first step is the deep read; the extract is kept on the brief and as extract.md, the brief author too, the stage moves to draft, and the next step is the plan', async () => {
   const { handler, files, calls } = draftWorld();
   const res = await post(handler, { action: 'draft', id: 'holzman-2026-alignment', briefAuthor: 'Kate Barnes' });
   assert.equal(res.code, 200, JSON.stringify(res.body));
@@ -307,7 +311,8 @@ test('POST draft: the first step is the deep read; the extract is kept on the br
   assert.deepEqual(res.body.brief.extra.draft.done, ['extract']);
   assert.equal(calls[0].schema, true);
   assert.ok(calls[0].prompt.startsWith(EXTRACT_PROMPT.slice(0, 40)));
-  assert.deepEqual(files.map(f => f[0]), ['extract.json']);
+  assert.deepEqual(files.map(f => f[0]), ['extract.md']);
+  assert.match(files[0][2], /^# What the desk read from the paper/);
 });
 
 test('POST draft walks every step to the end: plan with its title and page-plan.md, each section with the ones before it, the check replacing what it corrected, then the four files, the words and the proof stage', async () => {
@@ -331,7 +336,12 @@ test('POST draft walks every step to the end: plan with its title and page-plan.
   assert.match(brief.extra.draft.result.grammarly, /^Majors That Lead Somewhere\n\nExecutive Summary\n/);
   assert.equal(brief.extra.draft.result.figures[0].crop, 'figure-table-3-p12.png');
   assert.equal(brief.extra.draft.result.band, 'Under the floor of 1,300');
-  assert.deepEqual(files.map(f => f[0]), ['extract.json', 'page-plan.md', 'page-plan.md', 'brief-draft.md', 'brief-for-grammarly.md', 'figures.md']);
+  assert.deepEqual(files.map(f => f[0]), ['extract.md', 'page-plan.md', 'proposed-table-1.md', 'page-plan.md', 'brief-draft.md', 'brief-for-grammarly.md', 'figures.md']);
+  assert.equal(files.find(f => f[0] === 'proposed-table-1.md')[3], 'figures', 'the proposal sits in the figures folder');
+  assert.equal(brief.extra.draft.visual.name, 'Table 1');
+  assert.deepEqual(brief.extra.draft.result.visual, brief.extra.draft.visual, 'the proposal rides the result for the page');
+  assert.deepEqual(brief.extra.draft.result.figures[0].box, { left: 0.1, top: 0.2, right: 0.9, bottom: 0.6 }, 'the box rides the inventory for the cut');
+  assert.match(keyFindingsCallOf(calls), /\[Table 1 here\]/, 'the findings mark where the proposal goes, by its name');
   const keyFindingsCall = calls.find(c => /Key Findings as 2 to 4 findings/.test(c.prompt));
   assert.match(keyFindingsCall.prompt, /## introduction\nIntroduction words\./, 'the sections so far ride along');
   assert.match(keyFindingsCall.prompt, /Lead with the match premium/, 'her notes ride along');
@@ -357,6 +367,7 @@ test('GET ?id&paper=1 hands the paper back for the crops; POST figure files a cr
   const ok = await post(handler, { action: 'figure', id: 'holzman-2026-alignment', name: 'figure-table-3-p12.png', b64: Buffer.from('png bytes').toString('base64') });
   assert.equal(ok.code, 200, JSON.stringify(ok.body));
   assert.deepEqual(files.at(-1).slice(0, 2), ['figure-table-3-p12.png', 'image/png']);
+  assert.equal(files.at(-1)[3], 'figures', 'a cut lands in the figures folder');
   assert.deepEqual(ok.body.brief.extra.draft.crops, ['figure-table-3-p12.png']);
   const bad = await post(handler, { action: 'figure', id: 'holzman-2026-alignment', name: '../evil.png', b64: 'eA==' });
   assert.equal(bad.code, 400);
@@ -391,6 +402,7 @@ test('Write it again clears the old run: no sections, flags, result or crops rid
   assert.deepEqual(d.checkFlags ?? [], []);
   assert.deepEqual(d.crops ?? [], []);
   await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });   // plan
+  await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });   // visual
   await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });   // exec_summary
   const exec = calls.at(-1).prompt;
   assert.match(exec, /This is the first section drafted/);
@@ -404,4 +416,55 @@ test('POST draft with notes saves them on the row and as notes.md before the ste
   assert.ok(files.some(([name]) => name === 'notes.md'), 'notes.md refiled');
   await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });   // plan reads the notes
   assert.match(calls.at(-1).prompt, /Keep Table 3/);
+});
+
+const keyFindingsCallOf = calls => calls.find(c => /Key Findings as 2 to 4 findings/.test(c.prompt))?.prompt ?? '';
+
+test('every file the draft saves has a name the Sheet\'s script takes (live bug, Oct 22: the script refuses .json, so extract.json would have failed the first real draft)', async () => {
+  const code = readFileSync(new URL('../apps-script/Code.gs', import.meta.url), 'utf8');
+  const rule = new RegExp(/var FILE_NAME_RULE = \/(.+)\/;/.exec(code)[1]);
+  const { handler, files } = draftWorld();
+  for (let i = 0; i < DRAFT_STEPS.length; i++) await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });
+  await post(handler, { action: 'figure', id: 'holzman-2026-alignment', name: 'figure-table-3-p12.png', b64: Buffer.from('png').toString('base64') });
+  await post(handler, { action: 'figure', id: 'holzman-2026-alignment', name: 'proposed-figure-1.png', b64: Buffer.from('png').toString('base64') });
+  for (const [name] of files) assert.match(name, rule, `${name} would be refused by the script`);
+});
+
+test('POST figure takes the proposed chart as proposed-figure-1.png, into the figures folder, and keeps it with the cuts', async () => {
+  const { handler, files } = draftWorld();
+  const ok = await post(handler, { action: 'figure', id: 'holzman-2026-alignment', name: 'proposed-figure-1.png', b64: Buffer.from('png').toString('base64') });
+  assert.equal(ok.code, 200, JSON.stringify(ok.body));
+  assert.deepEqual(files.at(-1).slice(0, 2), ['proposed-figure-1.png', 'image/png']);
+  assert.equal(files.at(-1)[3], 'figures');
+  assert.deepEqual(ok.body.brief.extra.draft.crops, ['proposed-figure-1.png']);
+  for (const name of ['proposed-figure-2.png', 'proposed-table-1.png', 'proposed.png']) {
+    assert.equal((await post(handler, { action: 'figure', id: 'holzman-2026-alignment', name, b64: 'eA==' })).code, 400, name);
+  }
+});
+
+test('GET ?id&image= hands a cut back as a picture from the figures folder, a plain name only, for the brief\'s page (Kate, Oct 22: "i want to see their figure and the proposed new one")', async () => {
+  const { handler } = draftWorld();
+  const res = { code: 0, headers: {}, sent: null, status(c) { this.code = c; return this; }, setHeader(k, v) { this.headers[k.toLowerCase()] = v; }, send(b) { this.sent = b; return this; }, json(o) { this.body = o; return this; } };
+  await handler({ method: 'GET', query: { id: 'holzman-2026-alignment', image: 'figure-table-3-p12.png' }, body: {} }, res);
+  assert.equal(res.code, 200);
+  assert.equal(res.headers['content-type'], 'image/png');
+  assert.match(res.headers['cache-control'], /^private/);
+  assert.equal(Buffer.from(res.sent).toString('utf8'), 'png of figure-table-3-p12.png in figures');
+  const bad = fakeRes();
+  await handler({ method: 'GET', query: { id: 'holzman-2026-alignment', image: '../paper.pdf' }, body: {} }, bad);
+  assert.equal(bad.code, 400);
+});
+
+test('the image door needs the sign-in like every other', async () => {
+  const handler = createBriefsHandler({ session: { refuse: async (req, res) => { res.status(401).json({ ok: false }); return true; } }, briefs: () => ({}), drive: {}, mode: () => 'db' });
+  const res = fakeRes();
+  await handler({ method: 'GET', query: { id: 'x', image: 'figure-table-3-p12.png' }, body: {} }, res);
+  assert.equal(res.code, 401);
+});
+
+test('Write it again clears the proposal with the rest, so a new plan gets a new visual', async () => {
+  const { handler } = draftWorld();
+  for (let i = 0; i < DRAFT_STEPS.length; i++) await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });
+  const res = await post(handler, { action: 'draft', id: 'holzman-2026-alignment', step: 'extract' });
+  assert.equal(res.body.brief.extra.draft.visual, undefined);
 });

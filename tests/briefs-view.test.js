@@ -98,16 +98,16 @@ test('wordCount counts words the way the brief does', () => {
 });
 
 test('draftProgress: the steps as the running box shows them, done, now and later, the current one in its busy words (round 2)', () => {
-  const brief = { stage: 'draft', extra: { draft: { done: ['extract', 'plan', 'exec_summary'], step: 'highlights' } } };
+  const brief = { stage: 'draft', extra: { draft: { done: ['extract', 'plan', 'visual', 'exec_summary'], step: 'highlights' } } };
   const rows = draftProgress(brief, { running: true });
-  assert.deepEqual(rows.map(r => [r.key, r.state]).slice(0, 5), [['extract', 'done'], ['plan', 'done'], ['exec_summary', 'done'], ['highlights', 'now'], ['introduction', 'later']]);
-  assert.equal(rows[3].words, 'Writing the brief, Report Highlights');
+  assert.deepEqual(rows.map(r => [r.key, r.state]).slice(0, 6), [['extract', 'done'], ['plan', 'done'], ['visual', 'done'], ['exec_summary', 'done'], ['highlights', 'now'], ['introduction', 'later']]);
+  assert.equal(rows[4].words, 'Writing the brief, Report Highlights');
   assert.equal(rows[0].words, 'Read the paper');
   assert.equal(rows[1].words, 'Planned the pages');
-  assert.equal(rows[2].words, 'Wrote the Executive Summary');
+  assert.equal(rows[3].words, 'Wrote the Executive Summary');
   assert.equal(rows.at(-1).words, 'Put the files together');
   const paused = draftProgress(brief, { running: false });
-  assert.equal(paused[3].state, 'later', 'nothing is "now" while nothing runs');
+  assert.equal(paused[4].state, 'later', 'nothing is "now" while nothing runs');
   assert.equal(draftProgress({ stage: 'paper', extra: {} }, { running: false }).every(r => r.state === 'later'), true);
 });
 
@@ -167,4 +167,13 @@ test('draftProgress: once every step is done and the browser is still at work, t
   assert.equal(draftWait(brief, { running: true }), 'Cutting the tables and figures out of the paper');
   assert.equal(draftWait(brief, { running: false }), '');
   assert.equal(draftWait({ stage: 'draft', extra: { draft: { done: ['extract'], step: 'plan' } } }, { running: true }), '');
+});
+
+test('draftProgress names the proposal step in the running box', () => {
+  const rows = draftProgress({ stage: 'draft', extra: { draft: { done: ['extract', 'plan'], step: 'visual' } } }, { running: true });
+  assert.equal(rows[2].key, 'visual');
+  assert.equal(rows[2].words, "Proposing the brief's table or chart");
+  const done = draftProgress({ stage: 'draft', extra: { draft: { done: ['extract', 'plan', 'visual'] } } });
+  assert.equal(done[2].words, 'Proposed the table or chart');
+  assert.equal(draftProgress({ stage: 'paper', extra: {} })[2].words, 'Propose the table or chart');
 });

@@ -20,8 +20,8 @@ export const SECTION_DEFS = [
   { key: 'references', title: 'References', min: 0, max: 0 },
 ];
 
-/** The steps in order: the deep read, the page plan, the eight sections, the check against the paper, the files. */
-export const DRAFT_STEPS = ['extract', 'plan', ...SECTION_DEFS.map(s => s.key), 'check', 'assemble'];
+/** The steps in order: the deep read, the page plan, the brief's one visual, the eight sections, the check against the paper, the files. */
+export const DRAFT_STEPS = ['extract', 'plan', 'visual', ...SECTION_DEFS.map(s => s.key), 'check', 'assemble'];
 
 /** The first step not yet done, in order; null once every step is. */
 export function nextDraftStep(done) {
@@ -33,7 +33,7 @@ export function nextDraftStep(done) {
 export function stepWords(step) {
   const section = SECTION_DEFS.find(s => s.key === step);
   if (section) return `Writing the brief, ${section.title}`;
-  return { extract: 'Reading the paper', plan: 'Planning the pages', check: 'Checking the draft against the paper', assemble: 'Putting the files together' }[step] ?? 'Working';
+  return { extract: 'Reading the paper', plan: 'Planning the pages', visual: "Proposing the brief's table or chart", check: 'Checking the draft against the paper', assemble: 'Putting the files together' }[step] ?? 'Working';
 }
 
 export const STYLE_SYSTEM_PROMPT = `You are the Education Research Center (Texas A&M University) research brief writer. You translate peer-reviewed education research into ADA-compliant briefs for policymakers and the public.
@@ -84,7 +84,7 @@ Close-reading protocol:
 
 Extract the structured record requested by the output schema. For "design": choose "causal" only for randomized experiments or regression discontinuity/cutoff designs; otherwise choose observational, descriptive, or qualitative as appropriate. For "key_numbers": pull the exact statistics a policy brief would cite, each with enough context (and page number) to use verbatim. For "apa_citation": produce a correct APA 7 reference for this article.
 
-For "recommended_visuals": identify at most 3 figures or tables from the paper that would EARN A PLACE in a short policy brief (clearer than prose could be; central to the findings). List them best first. For each, give its label in the paper (e.g. "Figure 2"), the PDF page it appears on (the page's position in the file, starting at 1, not the printed page number), why it earns a place, and a plain-language caption a policymaker would understand. If nothing earns a place, return an empty array; do not pad.
+For "recommended_visuals": identify at most 3 figures or tables from the paper that would EARN A PLACE in a short policy brief (clearer than prose could be; central to the findings). List them best first. For each, give its label in the paper (e.g. "Figure 2"), the PDF page it appears on (the page's position in the file, starting at 1, not the printed page number), why it earns a place, a plain-language caption a policymaker would understand, and its "box": where it sits on that page, as left, top, right and bottom fractions of the page's width and height measured from the top-left corner (0 to 1), wide enough to take in its title, every row, axis and label, and its notes, and nothing else on the page. If nothing earns a place, return an empty array; do not pad.
 
 For "number_flags": list every place the paper disagrees with itself on a number a brief might use (an introduction that rounds what a table reports, a sample size that differs between sections, a percent that is really percentage points). For each give the claim as written, where it is (section and page), what conflicts with it and where, and which value the brief should use and why (usually the table). An empty array means the paper agrees with itself.`;
 
@@ -107,8 +107,11 @@ export const EXTRACT_SCHEMA = {
       type: 'array',
       items: {
         type: 'object',
-        properties: { kind: { type: 'string', enum: ['figure', 'table'] }, source_label: { type: 'string' }, page: { type: 'integer' }, why: { type: 'string' }, suggested_caption: { type: 'string' } },
-        required: ['kind', 'source_label', 'page', 'why', 'suggested_caption'], additionalProperties: false,
+        properties: {
+          kind: { type: 'string', enum: ['figure', 'table'] }, source_label: { type: 'string' }, page: { type: 'integer' }, why: { type: 'string' }, suggested_caption: { type: 'string' },
+          box: { type: 'object', properties: { left: { type: 'number' }, top: { type: 'number' }, right: { type: 'number' }, bottom: { type: 'number' } }, required: ['left', 'top', 'right', 'bottom'], additionalProperties: false },
+        },
+        required: ['kind', 'source_label', 'page', 'why', 'suggested_caption', 'box'], additionalProperties: false,
       },
     },
     number_flags: {
@@ -127,6 +130,20 @@ export const EXTRACT_SCHEMA = {
 const DESIGNS = ['causal', 'observational', 'descriptive', 'qualitative'];
 const str = v => String(v ?? '').trim();
 const list = v => (Array.isArray(v) ? v : []);
+
+/**
+ * Where a table or figure sits on its page, as the read marked it: fractions
+ * of the page from its top-left corner, held to the page. A box too thin to
+ * hold anything, or drawn backwards, is no box, and the cut is the whole page.
+ */
+export function normalizeBox(box) {
+  if (!box || typeof box !== 'object') return null;
+  const n = k => (typeof box[k] === 'number' && Number.isFinite(box[k]) ? Math.min(1, Math.max(0, box[k])) : null);
+  const [left, top, right, bottom] = ['left', 'top', 'right', 'bottom'].map(n);
+  if ([left, top, right, bottom].some(v => v === null)) return null;
+  if (right - left < 0.05 || bottom - top < 0.03) return null;
+  return { left, top, right, bottom };
+}
 
 /** The extract as the desk keeps it: every key present, the design one of the four, nothing invented. */
 export function normalizeExtract(json) {
@@ -147,7 +164,7 @@ export function normalizeExtract(json) {
     policy_recommendations: list(json.policy_recommendations).map(str).filter(Boolean),
     apa_citation: str(json.apa_citation),
     recommended_visuals: list(json.recommended_visuals)
-      .map(v => ({ kind: v?.kind === 'figure' ? 'figure' : 'table', source_label: str(v?.source_label), page: Number.parseInt(v?.page, 10) || 0, why: str(v?.why), suggested_caption: str(v?.suggested_caption) }))
+      .map(v => ({ kind: v?.kind === 'figure' ? 'figure' : 'table', source_label: str(v?.source_label), page: Number.parseInt(v?.page, 10) || 0, why: str(v?.why), suggested_caption: str(v?.suggested_caption), box: normalizeBox(v?.box) }))
       .filter(v => v.source_label),
     number_flags: list(json.number_flags).map(f => ({ claim: str(f?.claim), where: str(f?.where), conflict: str(f?.conflict), used: str(f?.used) })).filter(f => f.claim),
   };
@@ -188,7 +205,7 @@ export function buildPlanPrompt(extract, notes) {
     ...PAGE_CAPACITY.map(([type, words, from]) => `| ${type} | ${words} | ${from} |`),
     'Counts include headings and table text, so prose budgets sit under the ceilings.',
     '5. "## Plan (cover + 4 body pages)": a table with Page, Content, Prose budget, Visual; the cover carries the Executive Summary and 3 Report Highlights; findings get a page with the brief\'s one table; Policy Implications and Conclusions close; the last page holds Conclusions, References, the paper card and About ERC. Then "**Body prose total:**" against the band 1,300 to 2,000.',
-    '6. "## Table 1 (page N)": the brief\'s one table, adapted from the paper\'s best table (name the paper\'s table and columns), as a markdown table a policymaker can read; a results list stays a table, a figure must show a relationship. Say which subgroup results stay in prose.',
+    '6. "## The brief\'s visual (page N)": the brief\'s one visual, adapted from the paper\'s best table or figure (name it). Say whether it is Figure 1, a bar chart, or Table 1: a chart when its point is a trend over time or a comparison across 2 to 8 groups AND the paper prints the values; a table for results, several measures, or anything the paper does not print as numbers. Say what it keeps and which subgroup results stay in prose.',
     '7. "## Rule once authors approve": wording is frozen after author sign-off; layout may move content or change spacing; any wording cut goes back to the editor as a flag.',
     '8. "## Number flags (paper conflicts with itself)": a numbered list from the record\'s number_flags, each naming the value the brief uses; or "None found."',
     'Output ONLY the markdown document.',
@@ -201,19 +218,112 @@ export function parsePlan(plan) {
   return { title: m ? m[1].replace(/^["“]|["”]$/g, '').trim() : '' };
 }
 
+/**
+ * The brief's one visual, proposed (Kate, Oct 22: "i want to see their
+ * figure and the proposed new one before it goes off to the author"; the
+ * plan picks a chart or a table per paper). Always its table, which is the
+ * chart's data table too (the brand guide pairs every chart with one); a
+ * chart's bars as numbers for the desk to draw.
+ */
+export const VISUAL_SCHEMA = {
+  type: 'object',
+  properties: {
+    kind: { type: 'string', enum: ['table', 'chart'] },
+    source_label: { type: 'string' },
+    title: { type: 'string' },
+    kept: { type: 'string' },
+    columns: { type: 'array', items: { type: 'string' } },
+    rows: { type: 'array', items: { type: 'array', items: { type: 'string' } } },
+    value_label: { type: 'string' },
+    value_format: { type: 'string', enum: ['number', 'percent'] },
+    bars: { type: 'array', items: { type: 'object', properties: { label: { type: 'string' }, value: { type: 'number' } }, required: ['label', 'value'], additionalProperties: false } },
+  },
+  required: ['kind', 'source_label', 'title', 'kept', 'columns', 'rows', 'value_label', 'value_format', 'bars'],
+  additionalProperties: false,
+};
+
+/** The proposal's prompt: the record, the plan (which names the visual and its form), her notes. */
+export function buildVisualPrompt(extract, plan, notes) {
+  return [
+    'Structured record of the attached paper:',
+    JSON.stringify(extract, null, 2),
+    '',
+    'THE PAGE PLAN (its section "The brief\'s visual" names the visual and whether it is a chart or a table):',
+    str(plan) || '(no plan)',
+    '',
+    notesBlock(notes),
+    '',
+    'TASK: Build the brief\'s one visual exactly as the page plan names it.',
+    '- kind: "chart" for a bar chart (Figure 1) or "table" (Table 1), as the plan says.',
+    '- source_label: the paper\'s table or figure it is drawn from, as the paper labels it (e.g. "Table 3").',
+    '- title: one plain sentence a policymaker reads as the finding, in sentence case, no period at the end.',
+    '- kept: one or two short sentences, "Kept: ... Left out: ...", naming what moved to prose.',
+    '- columns and rows: the visual as a data table a policymaker can read, every cell a string. Fill them for a chart too: they are the chart\'s data table.',
+    '- For a chart: bars holds 2 to 8 bars, each a short group or time label and its value as a number; value_label names what the bars measure ("Share who felt at home", "College-level courses taken"); value_format is "percent" when the values are percents, else "number". Bars start at zero, so use no negative values; if the values are not all zero or more, make it a table.',
+    '- For a table: bars is empty, value_label is empty and value_format is "number".',
+    'Every number must be copied verbatim from the attached paper (a table\'s cells, or values the paper prints on or beside a figure). Never read a value off a bar\'s height. If the paper does not print the values a chart needs, make it a table of what it does print.',
+  ].join('\n');
+}
+
+const cell = v => str(v).replace(/\s+/g, ' ');
+
+/** The proposal as the desk keeps it: a chart it can draw, or the table; its name, Figure 1 or Table 1. */
+export function normalizeVisual(json) {
+  if (!json || typeof json !== 'object') throw new Error('the proposal came back empty');
+  const columns = list(json.columns).map(cell).filter(Boolean);
+  const rows = list(json.rows).map(r => list(r).map(cell).slice(0, columns.length)).filter(r => r.some(Boolean))
+    .map(r => [...r, ...Array(Math.max(0, columns.length - r.length)).fill('')]);
+  const bars = list(json.bars).map(b => ({ label: cell(b?.label), value: typeof b?.value === 'number' ? b.value : Number.NaN }));
+  const drawable = bars.length >= 2 && bars.length <= 8 && bars.every(b => b.label && Number.isFinite(b.value) && b.value >= 0) && bars.some(b => b.value > 0);
+  const kind = json.kind === 'chart' && drawable ? 'chart' : 'table';
+  if (!columns.length || !rows.length) {
+    if (kind !== 'chart') throw new Error('the proposal came back without a table');
+  }
+  const title = str(json.title).replace(/\.$/, '');
+  if (!title) throw new Error('the proposal came back without a title');
+  return {
+    kind,
+    name: kind === 'chart' ? 'Figure 1' : 'Table 1',
+    source_label: str(json.source_label),
+    title,
+    kept: str(json.kept),
+    columns: columns.length ? columns : [str(json.value_label) || 'Group', 'Value'],
+    rows: rows.length ? rows : bars.map(b => [b.label, String(b.value)]),
+    value_label: kind === 'chart' ? str(json.value_label) : '',
+    value_format: kind === 'chart' && json.value_format === 'percent' ? 'percent' : 'number',
+    bars: kind === 'chart' ? bars : [],
+  };
+}
+
+const mdCell = v => String(v ?? '').replace(/\|/g, '\\|');
+
+/** The proposal as a file in the figures folder: its name and title, the table, where it came from. */
+export function visualMarkdown(visual) {
+  const head = [`# ${visual.name}. ${visual.title}`, ''];
+  if (visual.kind === 'chart') head.push(`A bar chart of ${visual.value_label || 'the values'}; its numbers:`, '');
+  const table = [
+    `| ${visual.columns.map(mdCell).join(' | ')} |`,
+    `|${visual.columns.map(() => '---').join('|')}|`,
+    ...visual.rows.map(r => `| ${r.map(mdCell).join(' | ')} |`),
+  ];
+  const foot = ['', `From the paper's ${visual.source_label || 'table or figure'}. ${visual.kept}`.trim()];
+  if (visual.kind === 'chart') foot.push('', 'The chart itself: proposed-figure-1.png, beside this file.');
+  return `${[...head, ...table, ...foot].join('\n')}\n`;
+}
+
 const SECTION_INSTRUCTIONS = {
   exec_summary: 'Write the Executive Summary as two short paragraphs: first the stakes, then the study and its headline result. The FIRST sentence of the second paragraph must name the journal and signal that this brief summarizes a larger study, in the pattern: "This brief summarizes a research study in {JOURNAL} that examines ...".',
   highlights: 'Write Report Highlights: exactly 3 items. Each item is a bold takeaway line in the pattern "**01. <takeaway>.**" on its own line, followed on the next line by one number-forward supporting sentence or two. This is the punchiest register in the brief: a bold takeaway followed by number-forward support. Livelier than body prose but still factual.',
   introduction: 'Write the Introduction. Open on human stakes with a statistic: who is affected, why it matters for Texas and US education policy, what problem the study addresses. Urgency without alarm. Claims about the broader literature should be conservative and clearly framed; number any outside source with a superscript and list it in References.',
   research_overview: 'Write the Research Overview. It MUST open with the house pattern: "This brief draws on [data source]..." Then research questions, sample, and methods in plain language; this is the most methodical and most hedged section. Define the design for a lay reader with the plain term first (for example "a cutoff-based (regression discontinuity) design"). End by stating the study\'s limitations plainly. Do not compress this section.',
-  key_findings: 'Write Key Findings as 2 to 4 findings. Format each as "### Finding N" on its own line followed by a short bold finding title line, then a paragraph that leads with the number-bearing subject ("Students who received the email were 8.8 percentage points more likely to...") and then interprets, tying back to the larger issue. Where the page plan places the brief\'s table, write "[Table 1 here]" on its own line at that spot. Verbatim numbers with context. This is the heart of the brief; do not compress it.',
+  key_findings: 'Write Key Findings as 2 to 4 findings. Format each as "### Finding N" on its own line followed by a short bold finding title line, then a paragraph that leads with the number-bearing subject ("Students who received the email were 8.8 percentage points more likely to...") and then interprets, tying back to the larger issue. Where the page plan places the brief\'s visual, write "[{VISUAL} here]" on its own line at that spot. Verbatim numbers with context. This is the heart of the brief; do not compress it.',
   policy_implications: 'Write Policy Implications. Paper-first: lead with what the authors themselves recommend. Format each item as a NUMBERED bold action phrase on its own line ("1. **Use low-cost encouragement to widen the pipeline.**") followed by a plain-language explanation paragraph; the justification trails the ask, and asks are softened ("may consider", "can implement"), never commands. For qualitative studies, a split into "Implications for Practice" and "Implications for Policy" is allowed. If the paper makes no recommendations at all, title the items as Considerations, back every claim with cited peer-reviewed literature, and flag any claim you cannot cite.',
   conclusions: 'Write the Conclusions: a forward-looking wrap-up that restates the stakes in fresh words without introducing new claims. One slightly rhetorical closing move is allowed, framed declaratively, never as a question ("The real question is whether their schools will get the support they need.").',
   references: 'Produce the References list in APA 7. Include the focal article citation exactly as extracted. Include any other works explicitly cited in earlier sections, numbered to match their superscripts, and no others. One reference per line.',
 };
 
 /** One section's prompt: the record, the plan, her notes, what is drafted so far, the task and its band. */
-export function buildSectionPrompt(extract, plan, notes, key, prior) {
+export function buildSectionPrompt(extract, plan, notes, key, prior, visual = null) {
   const def = SECTION_DEFS.find(s => s.key === key);
   if (!def) throw new Error(`no section named ${key}`);
   const target = def.max > 0 ? `Target length: ${def.min} to ${def.max} words.` : 'No word target; include every needed reference.';
@@ -224,14 +334,15 @@ export function buildSectionPrompt(extract, plan, notes, key, prior) {
     'Structured record of the attached paper:',
     JSON.stringify(extract, null, 2),
     '',
-    'THE PAGE PLAN (the budgets and the table it names bind this section):',
+    'THE PAGE PLAN (the budgets and the visual it names bind this section):',
     str(plan) || '(no plan)',
     '',
+    visual ? `THE BRIEF'S VISUAL: ${visual.name}, ${visual.title}. Refer to it as ${visual.name}.` : '',
     notesBlock(notes),
     '',
     priorText,
     '',
-    `TASK: ${SECTION_INSTRUCTIONS[key]}`,
+    `TASK: ${SECTION_INSTRUCTIONS[key].replace('{VISUAL}', visual?.name ?? 'Table 1')}`,
     designNote(extract),
     target,
     `The journal is ${extract.journal}. Before writing, re-read the parts of the attached paper relevant to this section closely, including any tables, figure notes, and appendices they reference. Every number you cite must be located in the paper and copied verbatim; if you cannot find a number in the paper, do not use it. Output ONLY the section text itself: no section heading, no preamble, no commentary.`,
@@ -316,7 +427,7 @@ const cropName = (label, page, n) => {
 export function figuresInventory(extract) {
   const items = (extract.recommended_visuals ?? []).map((v, i) => ({
     label: v.source_label, kind: v.kind, page: v.page, caption: v.suggested_caption, why: v.why,
-    rework: REWORK[i] ?? 'Prose', crop: cropName(v.source_label, v.page, i + 1),
+    rework: REWORK[i] ?? 'Prose', crop: cropName(v.source_label, v.page, i + 1), box: v.box ?? null,
   }));
   const rows = items.map(i => `| ${i.label} | ${i.page} | ${i.caption} | ${i.rework} |`);
   const md = [

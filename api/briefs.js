@@ -26,6 +26,7 @@ import { buildPaperPrompt, normalizePaperFields, PAPER_TEXT_MAX, PAPER_SCHEMA } 
 import {
   DRAFT_STEPS, SECTION_DEFS, nextDraftStep, stepWords, STYLE_SYSTEM_PROMPT, EXTRACT_PROMPT, EXTRACT_SCHEMA, normalizeExtract,
   buildPlanPrompt, parsePlan, buildSectionPrompt, buildCheckPrompt, CHECK_SCHEMA,
+  VISUAL_SCHEMA, buildVisualPrompt, normalizeVisual, visualMarkdown,
   assembleDraft, grammarlyCopy, figuresInventory, numberFlagsMd, bodyWordCount, wordBand, checkStyle, draftFiles,
 } from '../js/brief-draft.js';
 import { getFile } from './_lib/sheets.js';
@@ -74,6 +75,10 @@ const DOCX_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingm
 /** A crop of the paper's page, as the browser cuts it: a PNG under a plain name, 1.5 MB at most. */
 export const MAX_CROP_BYTES = 1.5 * 1024 * 1024;
 const CROP_NAME = /^figure-[a-z0-9-]{1,60}-p\d{1,3}\.png$/;
+/** The proposed chart as a picture, drawn in the browser (Kate, Oct 22). */
+const PROPOSED_NAME = /^proposed-figure-1\.png$/;
+/** The cuts and the proposal live in a folder of their own inside the brief's folder. */
+const FIGURES = 'figures';
 
 /**
  * The draft's model call: the style prompt and the paper's PDF, both cached
@@ -131,6 +136,15 @@ export function createBriefsHandler({
         if (!id) return res.status(200).json({ ok: true, briefs: await store.list() });
         const brief = await store.get(id);
         if (!brief) return res.status(404).json({ ok: false, error: 'No brief by that name.' });
+        if (req.query?.image) {
+          // A cut or the proposed chart, as a picture for the brief's page (Kate, Oct 22: "i want to see their figure and the proposed new one").
+          const name = text(req.query.image, 80);
+          if (!CROP_NAME.test(name) && !PROPOSED_NAME.test(name)) return res.status(400).json({ ok: false, error: 'No picture by that name.' });
+          const file = await drive.getFile(brief.folderId, name, { sub: FIGURES });
+          res.setHeader('Content-Type', 'image/png');
+          res.setHeader('Cache-Control', 'private, max-age=86400');
+          return res.status(200).send(Buffer.from(file.b64 ?? '', 'base64'));
+        }
         if (req.query?.paper) {
           // The paper itself, for the browser to cut the chosen tables and figures out of.
           const paper = await drive.getFile(brief.folderId, brief.paperName);
@@ -176,12 +190,12 @@ export function createBriefsHandler({
         const brief = id && await store.get(id);
         if (!brief) return res.status(404).json({ ok: false, error: 'No brief by that name.' });
         const name = text(req.body?.name, 80);
-        if (!CROP_NAME.test(name)) return res.status(400).json({ ok: false, error: 'A crop is named figure-<label>-p<page>.png.' });
+        if (!CROP_NAME.test(name) && !PROPOSED_NAME.test(name)) return res.status(400).json({ ok: false, error: 'A crop is named figure-<label>-p<page>.png.' });
         const b64 = String(req.body?.b64 ?? '');
         const bytes = Buffer.from(b64, 'base64').length;
         if (!bytes) return res.status(400).json({ ok: false, error: 'The crop came through empty.' });
         if (bytes > MAX_CROP_BYTES) return res.status(400).json({ ok: false, error: 'That crop is over 1.5 MB.' });
-        await drive.saveFile({ folderId: brief.folderId, name, contentType: 'image/png', b64 });
+        await drive.saveFile({ folderId: brief.folderId, sub: FIGURES, name, contentType: 'image/png', b64 });
         const draftExtra = { ...(brief.extra?.draft ?? {}) };
         draftExtra.crops = [...new Set([...(draftExtra.crops ?? []), name])];
         const updated = await store.update(id, { extra: { ...(brief.extra ?? {}), draft: draftExtra } });
@@ -231,6 +245,7 @@ export function createBriefsHandler({
       d.done = d.done.filter(s => DRAFT_STEPS.indexOf(s) < at);
       for (const key of Object.keys(d.sections)) if (DRAFT_STEPS.indexOf(key) >= at) delete d.sections[key];
       if (at <= DRAFT_STEPS.indexOf('plan')) { delete d.plan; delete d.title; }
+      if (at <= DRAFT_STEPS.indexOf('visual')) delete d.visual;
       if (at <= DRAFT_STEPS.indexOf('check')) delete d.checkFlags;
       delete d.result;
       delete d.crops;
@@ -263,16 +278,22 @@ export function createBriefsHandler({
         const ask = (prompt, schema, maxTokens, effort) => draftModel({ system: STYLE_SYSTEM_PROMPT, prompt, pdfB64: paper.b64, schema, maxTokens, effort });
         if (step === 'extract') {
           d.extract = normalizeExtract(parseModelJson(await ask(EXTRACT_PROMPT, EXTRACT_SCHEMA, 12000, 'high'), 'the read of the paper'));
-          await drive.saveFile({ folderId: brief.folderId, name: 'extract.json', contentType: 'application/json', b64: Buffer.from(JSON.stringify(d.extract, null, 2), 'utf8').toString('base64') });
+          // A .md, since the Sheet's script files only the names its rule allows, and .json is not one (Oct 22).
+          const md = `# What the desk read from the paper\n\n\`\`\`json\n${JSON.stringify(d.extract, null, 2)}\n\`\`\`\n`;
+          await drive.saveFile({ folderId: brief.folderId, name: 'extract.md', contentType: 'text/markdown', b64: Buffer.from(md, 'utf8').toString('base64') });
         } else if (step === 'plan') {
           if (!d.extract) throw new Error('the paper has not been read yet');
           d.plan = String(await ask(buildPlanPrompt(d.extract, brief.notes), null, 6000, 'medium')).trim();
           d.title = parsePlan(d.plan).title;
           await drive.saveFile({ folderId: brief.folderId, name: 'page-plan.md', contentType: 'text/markdown', b64: Buffer.from(`${d.plan}\n`, 'utf8').toString('base64') });
+        } else if (step === 'visual') {
+          if (!d.extract) throw new Error('the paper has not been read yet');
+          d.visual = normalizeVisual(parseModelJson(await ask(buildVisualPrompt(d.extract, d.plan ?? '', brief.notes), VISUAL_SCHEMA, 6000, 'medium'), 'the proposal'));
+          await drive.saveFile({ folderId: brief.folderId, sub: FIGURES, name: `proposed-${d.visual.kind === 'chart' ? 'figure' : 'table'}-1.md`, contentType: 'text/markdown', b64: Buffer.from(visualMarkdown(d.visual), 'utf8').toString('base64') });
         } else if (sectionKeys.includes(step)) {
           if (!d.extract) throw new Error('the paper has not been read yet');
           const prior = sectionKeys.filter(k => d.sections[k] != null && k !== step).map(k => ({ key: k, content: d.sections[k] }));
-          d.sections[step] = String(await ask(buildSectionPrompt(d.extract, d.plan ?? '', brief.notes, step, prior), null, 8000, 'medium')).trim();
+          d.sections[step] = String(await ask(buildSectionPrompt(d.extract, d.plan ?? '', brief.notes, step, prior, d.visual ?? null), null, 8000, 'medium')).trim();
         } else if (step === 'check') {
           const sections = sectionKeys.filter(k => d.sections[k] != null).map(k => ({ key: k, content: d.sections[k] }));
           if (!sections.length) throw new Error('no sections to check yet');
@@ -302,6 +323,7 @@ export function createBriefsHandler({
     return {
       plan: d.plan ?? '', draft: draftMd, grammarly: grammarlyCopy(draftMd), figures: inventory.items, figuresMd: inventory.md,
       numberFlags: numberFlagsMd(extract.number_flags), styleFlags: checkStyle(sections, extract.journal ?? ''), words, band: wordBand(words),
+      visual: d.visual ?? null,
     };
   }
 

@@ -1066,10 +1066,23 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .brief-read a { color: var(--link-primary); }
 .brief-stage .hub-label + .draft-figures, .brief-stage .hub-label + .draft-flags, .brief-stage .hub-label + .draft-notes { margin-top: var(--spacing-04); }
 .draft-figures, .draft-notes { list-style: none; padding: 0; margin: 0 0 var(--spacing-06); }
-.draft-figures li { display: flex; justify-content: space-between; gap: var(--spacing-04); padding: var(--spacing-03) 0; border-bottom: 1px solid var(--line-in); }
-.draft-figures li:last-child { border-bottom: 0; }
-.draft-figure-side { display: flex; align-items: center; gap: var(--spacing-02); white-space: nowrap; }
-.draft-figure-side .meta { font: var(--meta-type); color: var(--muted); }
+/* Theirs and the proposal, her pick A (Oct 22): the paper's cut beside the brief's own at equal width. */
+.draft-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--spacing-06); align-items: start; margin: var(--spacing-04) 0 var(--spacing-07); }
+.draft-pair-side { display: grid; gap: var(--spacing-03); align-content: start; min-width: 0; }
+.draft-pair-head { margin: 0; font: var(--meta-type); font-weight: 700; color: var(--text-primary); }
+.draft-clip { display: block; border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer-02); overflow: hidden; }
+.draft-clip img { display: block; width: 100%; height: auto; }
+.draft-clip-none { margin: 0; padding: var(--spacing-05); border: 1px dashed var(--border-strong-01); border-radius: var(--radius); }
+.draft-chart { border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer-02); overflow: hidden; }
+.draft-chart svg { display: block; width: 100%; height: auto; }
+.draft-proposal { display: grid; gap: var(--spacing-04); }
+.draft-proposal-table { border-collapse: collapse; width: 100%; font: var(--meta-type); }
+.draft-proposal-table caption { text-align: left; font: var(--body-type, 400 16px/24px inherit); font-weight: 700; padding-bottom: var(--spacing-03); }
+.draft-proposal-table th { text-align: left; font: var(--label-type); letter-spacing: 1.25px; text-transform: uppercase; padding: var(--spacing-03); border-bottom: 2px solid var(--border-interactive); }
+.draft-proposal-table td { padding: var(--spacing-03); border-bottom: 1px solid var(--line-in); vertical-align: top; }
+.draft-figure { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: var(--spacing-06); align-items: start; padding: var(--spacing-05) 0; border-top: 1px solid var(--line-in); }
+.draft-figure-words { display: grid; gap: var(--spacing-02); }
+.draft-figure-words p { margin: 0; }
 .draft-notes li { padding: var(--spacing-02) 0; font: var(--meta-type); color: var(--text-primary); }
 .draft-flags { display: grid; gap: var(--spacing-03); margin: 0 0 var(--spacing-06); }
 .draft-flags p { margin: 0; }
