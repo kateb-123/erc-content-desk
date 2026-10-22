@@ -1031,6 +1031,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .new-brief-lock { font: var(--meta-type); color: var(--muted); margin: 0; }
 .new-brief-lock:empty { display: none; }
 .new-brief .primary:disabled { color: var(--text-locked); }
+.new-brief-paste { width: 100%; box-sizing: border-box; min-height: 120px; }
+.new-brief .card-field[hidden], .new-brief .linkish[hidden] { display: none; }
+.new-brief .card-field .linkish { align-self: flex-start; margin-top: var(--spacing-02); }
 .new-brief .hub-label { margin-bottom: 0; }
 .new-brief input[type="text"], .new-brief input:not([type]), .new-brief textarea { width: 100%; box-sizing: border-box; height: 40px; padding: 0 var(--spacing-04); border: 1px solid var(--border-strong-01); border-radius: var(--radius-input); font: var(--body-type); color: var(--ink); }
 .new-brief textarea { height: auto; padding: var(--spacing-04); resize: vertical; }

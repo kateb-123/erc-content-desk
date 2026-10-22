@@ -59,7 +59,7 @@ function fakeRes() {
 }
 
 /** The handler over fakes: a session that holds (or not), a store, the Sheet's script. */
-function handlerWith({ signedIn = true, rows = [ROW], script = {}, readModel = async () => '{}' } = {}) {
+function handlerWith({ signedIn = true, rows = [ROW], script = {}, readModel = async () => '{}', wordToMarkdown = async () => '' } = {}) {
   const saved = [];
   const store = {
     async list() { return rows.map(r => ({ id: r.id, stage: r.stage })); },
@@ -72,7 +72,7 @@ function handlerWith({ signedIn = true, rows = [ROW], script = {}, readModel = a
     saveFile: async f => { saved.push(['file', f.folderId, f.name, f.contentType]); return { ok: true, url: 'u' }; },
     listFiles: async folderId => (script.listFails ? Promise.reject(new Error('no drive')) : [{ name: 'reveille.pdf', updated: '2026-10-19', url: 'u', size: 1000 }]),
   };
-  const handler = createBriefsHandler({ session: { refuse: async (req, res) => { if (signedIn) return false; res.status(401).json({ ok: false, error: 'Sign in to the desk first.' }); return true; } }, briefs: () => store, drive, mode: () => 'db', readModel });
+  const handler = createBriefsHandler({ session: { refuse: async (req, res) => { if (signedIn) return false; res.status(401).json({ ok: false, error: 'Sign in to the desk first.' }); return true; } }, briefs: () => store, drive, mode: () => 'db', readModel, wordToMarkdown });
   return { handler, saved };
 }
 
@@ -187,4 +187,53 @@ test('POST read needs the sign-in like every other door', async () => {
   const res = fakeRes();
   await handler({ method: 'POST', query: {}, body: { action: 'read', text: 'some paper' } }, res);
   assert.equal(res.code, 401);
+});
+
+test('POST notes-text: a Word .docx goes up as base64 and comes back as markdown notes, through the desk\'s Word reader (Kate, Oct 22: "what if someone wants to upload a word doc?")', async () => {
+  const asked = [];
+  const wordToMarkdown = async buffer => { asked.push(buffer.length); return '# Nagro notes\n\n- lead with the survey\\.\n\nTable 2 \\(columns 2 and 4\\) is the visual\\.\n'; };
+  const { handler } = handlerWith({ wordToMarkdown });
+  const res = fakeRes();
+  await handler({ method: 'POST', query: {}, body: { action: 'notes-text', name: 'Nagro brief notes.docx', b64: Buffer.from('PK fake docx bytes').toString('base64') } }, res);
+  assert.equal(res.code, 200, JSON.stringify(res.body));
+  assert.equal(res.body.notes, '# Nagro notes\n\n- lead with the survey.\n\nTable 2 (columns 2 and 4) is the visual.', 'the reader\'s markdown escapes are gone');
+  assert.deepEqual(asked, ['PK fake docx bytes'.length]);
+});
+
+test('POST notes-text refuses what is not a .docx, an empty file, and a Word file the reader cannot open', async () => {
+  const { handler } = handlerWith({ wordToMarkdown: async () => { throw new Error('not a docx'); } });
+  let res = fakeRes();
+  await handler({ method: 'POST', query: {}, body: { action: 'notes-text', name: 'notes.pdf', b64: 'eA==' } }, res);
+  assert.equal(res.code, 400);
+  assert.match(res.body.error, /\.docx/);
+  res = fakeRes();
+  await handler({ method: 'POST', query: {}, body: { action: 'notes-text', name: 'notes.docx', b64: '' } }, res);
+  assert.equal(res.code, 400);
+  res = fakeRes();
+  await handler({ method: 'POST', query: {}, body: { action: 'notes-text', name: 'notes.docx', b64: 'eA==' } }, res);
+  assert.equal(res.code, 502);
+  assert.match(res.body.error, /read that Word file/i);
+});
+
+test('POST create keeps the original Word file beside notes.md when the notes came as a .docx', async () => {
+  const { handler, saved } = handlerWith({ rows: [] });
+  const res = fakeRes();
+  await handler({ method: 'POST', query: {}, body: {
+    action: 'create', authorLast: 'Nagro', year: '2026', topic: 'reading', paperName: 'nagro.pdf', paperB64: Buffer.from('%PDF-1.4 x').toString('base64'),
+    notes: '# Nagro notes', notesName: 'Nagro brief notes.docx', notesB64: Buffer.from('PK fake docx').toString('base64'),
+  } }, res);
+  assert.equal(res.code, 200, JSON.stringify(res.body));
+  const files = saved.filter(s => s[0] === 'file').map(s => s.slice(2));
+  assert.deepEqual(files, [['nagro.pdf', 'application/pdf'], ['notes.md', 'text/markdown'], ['notes-original.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']]);
+});
+
+test('POST create ignores a notes original that is not a .docx (a .md original is notes.md already)', async () => {
+  const { handler, saved } = handlerWith({ rows: [] });
+  const res = fakeRes();
+  await handler({ method: 'POST', query: {}, body: {
+    action: 'create', authorLast: 'Nagro', year: '2026', topic: 'reading', paperName: 'nagro.pdf', paperB64: Buffer.from('%PDF-1.4 x').toString('base64'),
+    notes: '# Nagro notes', notesName: 'notes.md', notesB64: Buffer.from('# Nagro notes').toString('base64'),
+  } }, res);
+  assert.equal(res.code, 200);
+  assert.deepEqual(saved.filter(s => s[0] === 'file').map(s => s[2]), ['nagro.pdf', 'notes.md']);
 });

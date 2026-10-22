@@ -611,6 +611,18 @@ async function readPaper(file) {
   return data.fields;
 }
 
+/** Her notes as a Word file (Oct 22): the .docx goes up as base64 and the desk's Word reader hands back markdown. */
+async function readNotesWord(file) {
+  const b64 = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '');
+    reader.onerror = () => reject(new Error("Couldn't read that file."));
+    reader.readAsDataURL(file);
+  });
+  const data = await postJson('/api/briefs', { action: 'notes-text', name: file.name, b64 }, 'read the Word file');
+  return { notes: data.notes, b64 };
+}
+
 async function createBrief(payload) {
   state.creatingBrief = true; state.createError = '';
   render();
@@ -735,13 +747,13 @@ function render() {
       briefs: state.briefs ?? [], loaded: Array.isArray(state.briefs), error: state.briefsError, today,
       onOpen: openBrief, onRefresh: () => { state.briefsError = false; render(); loadBriefs(); },
       newOpen: state.newBriefOpen, onToggleNew: () => { state.newBriefOpen = !state.newBriefOpen; state.createError = ''; if (!state.newBriefOpen) clearBriefDraft(); render(); },
-      onReadPaper: readPaper,
+      onReadPaper: readPaper, onReadNotes: readNotesWord,
       onCreate: createBrief, creating: state.creatingBrief, createError: state.createError,
     });
   } else if (state.screen === 'brief') {
     renderBrief(screens.brief, {
       brief: state.brief, files: state.briefFiles, loading: state.briefFiles === undefined, error: state.briefError, today,
-      onRefresh: () => loadBrief(state.briefId), onSaveNotes: saveBriefNotes, savingNotes: state.savingNotes, notesSaved: state.notesSaved,
+      onRefresh: () => loadBrief(state.briefId), onSaveNotes: saveBriefNotes, onReadNotes: readNotesWord, savingNotes: state.savingNotes, notesSaved: state.notesSaved,
     });
   } else if (state.screen === 'queue') {
     renderQueue(screens.queue, { ...common, loaded: state.loaded, loadFailed: state.loadFailed, onGoTo: goTo, onRefresh: reload, scraper: state.scraper, onRunScraper: runScraper });

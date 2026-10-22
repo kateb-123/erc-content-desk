@@ -562,6 +562,19 @@ brief past the paper stage says so on its page.
   both files across redraws (a refusal, Creating…), the desk's rule that a
   redraw never drops what you are typing. On the brief's page the notes box
   keeps its own file field under it, "Or your notes as a file".
+- **Notes as text, Word or pasted** (Kate, Oct 22: "what if someone wants to
+  upload a word doc? so text, word or .md? or a copy paste option?"): the
+  notes file field takes a .md, .txt or Word .docx (`notesKind`); a text file
+  is read in the browser, a Word file goes to `/api/briefs` as `notes-text`
+  and the desk's Word reader (mammoth, the bulk upload's) hands back markdown
+  with its escapes removed (`plainMarkdown`), up to 2 MB, the original kept
+  beside notes.md as `notes-original.docx`. Under the field, "Paste instead"
+  is a quiet word that opens the box "Your notes, as words"; the box also
+  appears filled once a file is read, so she sees what the desk got and can
+  fix it, and its words are the notes ("31 words from nagro-notes.docx", "10
+  words, pasted"). Create's lock reads "Choose your notes file, or paste
+  them, first." The brief's page takes the same three kinds in its own file
+  field.
 ## Her notes after the hubs (Oct 6)
 
 - **The highlight's own Save**: once the picks change, Update the highlight

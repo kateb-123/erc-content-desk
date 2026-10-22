@@ -79,8 +79,16 @@ export const NOTES_MAX = 20000;
  * md"): a .md, .markdown or .txt fills the notes box; anything else is
  * refused with the reason. The text is trimmed, never otherwise changed.
  */
+/** What kind of notes file this is: 'text' is read in the browser, 'word' (a .docx) goes to the desk's Word reader, '' is refused. */
+export function notesKind(name) {
+  const n = String(name ?? '');
+  if (/\.(md|markdown|txt)$/i.test(n)) return 'text';
+  if (/\.docx$/i.test(n)) return 'word';
+  return '';
+}
+
 export function notesFile(name, text) {
-  if (!/\.(md|markdown|txt)$/i.test(String(name ?? ''))) return { ok: false, error: 'Notes come as a .md or .txt file. Save the Word file as text first.' };
+  if (!notesKind(name)) return { ok: false, error: 'Notes come as a .md, .txt or Word .docx file, or pasted in.' };
   const notes = String(text ?? '').trim();
   if (!notes) return { ok: false, error: 'That file is empty.' };
   if (notes.length > NOTES_MAX) return { ok: false, error: `That file is over ${NOTES_MAX.toLocaleString('en-US')} characters, more than a brief's notes hold. Trim it first.` };
@@ -95,7 +103,7 @@ export function notesFile(name, text) {
 export function createLock({ paper, notes, reading }) {
   if (!paper && !notes) return 'Choose the paper and your notes first.';
   if (!paper) return 'Choose the paper first.';
-  if (!notes) return 'Choose your notes file first.';
+  if (!notes) return 'Choose your notes file, or paste them, first.';
   if (reading) return 'Reading the paper first.';
   return '';
 }

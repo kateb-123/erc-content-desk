@@ -47,6 +47,19 @@ async function liveReadModel(prompt) {
   if (response.stop_reason === 'max_tokens') throw new Error('the reply was cut short');
   return response.content.filter(part => part.type === 'text').map(part => part.text).join('');
 }
+
+/** A Word file's words as markdown, through the desk's Word reader (the one the bulk upload uses). */
+async function liveWordToMarkdown(buffer) {
+  const mammoth = await import('mammoth');
+  return String((await mammoth.convertToMarkdown({ buffer })).value ?? '');
+}
+
+/** The Word reader escapes punctuation for strict markdown ("count\."); notes are read by people, so the backslashes go. */
+export const plainMarkdown = text => String(text ?? '').replace(/\\([\\.\-*_#`[\]()>+!])/g, '$1');
+
+/** The largest notes file the desk takes: Word files with a picture or two stay well under it. */
+export const MAX_NOTES_BYTES = 2 * 1024 * 1024;
+const DOCX_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 const text = (value, max = MAX_TEXT) => String(value ?? '').trim().slice(0, max);
 
 /** 'Yell leaders (final).PDF' as 'yell-leaders-final.pdf'. */
@@ -61,6 +74,7 @@ export function createBriefsHandler({
   drive = { briefFolder, saveFile, listFiles },
   mode = () => pickMode(process.env),
   readModel = liveReadModel,
+  wordToMarkdown = liveWordToMarkdown,
 } = {}) {
   return async function handler(req, res) {
     if (!['GET', 'POST'].includes(req.method)) return res.status(405).json({ ok: false, error: 'Use GET or POST.' });
@@ -90,6 +104,20 @@ export function createBriefsHandler({
           return res.status(502).json({ ok: false, error: `The desk couldn't read the paper: ${err.message}. Type the title, authors, journal and year.` });
         }
         return res.status(200).json({ ok: true, fields });
+      }
+      if (action === 'notes-text') {
+        // Her notes as a Word file (Kate, Oct 22): the .docx comes up as base64 and goes back as markdown.
+        const name = text(req.body?.name, 200);
+        if (!/\.docx$/i.test(name)) return res.status(400).json({ ok: false, error: 'Only a Word .docx is read here; a .md or .txt is read in the browser.' });
+        const b64 = String(req.body?.b64 ?? '');
+        const buffer = Buffer.from(b64, 'base64');
+        if (!buffer.length) return res.status(400).json({ ok: false, error: 'That Word file came through empty. Choose it again.' });
+        if (buffer.length > MAX_NOTES_BYTES) return res.status(400).json({ ok: false, error: 'That Word file is over 2 MB. Take the pictures out and try again.' });
+        let notes;
+        try { notes = plainMarkdown(await wordToMarkdown(buffer)).trim(); } catch (err) {
+          return res.status(502).json({ ok: false, error: `The desk couldn't read that Word file: ${err.message}. Save it as .txt and choose that instead.` });
+        }
+        return res.status(200).json({ ok: true, notes: notes.slice(0, MAX_TEXT) });
       }
       if (action === 'create') return create(store, req.body, res);
       if (action === 'notes') {
@@ -128,6 +156,12 @@ export function createBriefsHandler({
     const fileName = plainPdfName(paperName);
     await drive.saveFile({ folderId: folder.id, name: fileName, contentType: 'application/pdf', b64: paperB64 });
     await drive.saveFile({ folderId: folder.id, ...notesFile(notes) });
+    // Notes that came as a Word file keep their original beside notes.md; a .md or .txt original is notes.md already.
+    const notesName = text(body?.notesName, 200);
+    const notesB64 = String(body?.notesB64 ?? '');
+    if (/\.docx$/i.test(notesName) && notesB64 && Buffer.from(notesB64, 'base64').length <= MAX_NOTES_BYTES) {
+      await drive.saveFile({ folderId: folder.id, name: 'notes-original.docx', contentType: DOCX_TYPE, b64: notesB64 });
+    }
     const brief = await store.create({
       id, title: text(body?.title, 300), paperTitle: text(body?.paperTitle, 500), authors: text(body?.authors, 500), journal: text(body?.journal, 200),
       year: Number(year), authorOfRecord: text(body?.authorOfRecord, 120), folderId: folder.id, folderUrl: folder.url ?? '', paperName: fileName, notes,
