@@ -14,8 +14,11 @@ const FONT = "'Open Sans', Arial, sans-serif";
 
 const esc = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-/** A value as the brief prints it: the paper's own decimals, a percent with its sign. */
-const fmt = (v, format) => `${Number(v).toLocaleString('en-US', { maximumFractionDigits: 3 })}${format === 'percent' ? '%' : ''}`;
+/** A bar's value as the paper prints it, never rounded (review, Oct 22); a percent with its sign, once. */
+const shown = (b, format) => {
+  const printed = String(b.printed ?? '').trim() || String(b.value);
+  return format === 'percent' && !printed.endsWith('%') ? `${printed}%` : printed;
+};
 
 /** Words broken into lines of at most `width` characters, at most `max` lines, the last cut with an ellipsis. */
 function wrap(text, width, max) {
@@ -64,7 +67,7 @@ export function chartSvg(visual) {
       const h = (b.value / max) * (plotH - 24);
       const x = 20 + slot * i + (slot - bw) / 2;
       body += `<rect x="${x.toFixed(1)}" y="${(base - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" fill="${CHART_COLOURS.bar}"/>`;
-      body += text((x + bw / 2).toFixed(1), (base - h - 8).toFixed(1), fmt(b.value, visual.value_format), { size: 18, weight: 700, anchor: 'middle' });
+      body += text((x + bw / 2).toFixed(1), (base - h - 8).toFixed(1), shown(b, visual.value_format), { size: 18, weight: 700, anchor: 'middle' });
       body += text((x + bw / 2).toFixed(1), base + 24, b.label, { size: 15, fill: CHART_COLOURS.quiet, anchor: 'middle' });
     });
     body += `<line x1="20" y1="${base}" x2="${W - 20}" y2="${base}" stroke="${CHART_COLOURS.rule}" stroke-width="1"/>`;
@@ -78,7 +81,7 @@ export function chartSvg(visual) {
       const w = (b.value / max) * plotW;
       body += text(20, y + 14, wrap(b.label, 54, 1)[0], { size: 15 });
       body += `<rect x="20" y="${y + 22}" width="${w.toFixed(1)}" height="26" fill="${CHART_COLOURS.bar}"/>`;
-      body += text((20 + w + 8).toFixed(1), y + 41, fmt(b.value, visual.value_format), { size: 18, weight: 700 });
+      body += text((20 + w + 8).toFixed(1), y + 41, shown(b, visual.value_format), { size: 18, weight: 700 });
     });
     body += `<line x1="20" y1="${top}" x2="20" y2="${top + bars.length * row}" stroke="${CHART_COLOURS.rule}" stroke-width="1"/>`;
     H = top + bars.length * row + 24;

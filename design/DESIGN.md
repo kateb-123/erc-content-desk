@@ -631,8 +631,11 @@ brief past the paper stage says so on its page.
   chart", builds the brief's one visual as the plan names it: Table 1, or
   Figure 1, a bar chart when its point is a trend or a comparison of 2 to 8
   groups and the paper prints the values, always with its numbers as a
-  table (`proposed-table-1.md` or `proposed-figure-1.md`); the findings mark
-  its place by that name. On the Draft box, under the brief, a section
+  table (`proposed-visual.md`, one name so a rerun replaces it); it marks
+  its own source's page and box, so the pair beside it is always its source
+  (the review, Oct 22: an exact-words match had paired another table), and
+  each bar keeps its value as the paper prints it; the findings mark its
+  place by that name. On the Draft box, under the brief, a section
   named for it holds the pair at equal width, In the paper on the left (the
   cut, opening the file in Drive), Proposed for the brief on the right (the
   table in the desk's table idiom, or the chart with "The chart's numbers"
@@ -644,7 +647,9 @@ brief past the paper stage says so on its page.
   under each name for long ones, and filed as `proposed-figure-1.png` for
   the author's Word doc: the brief's maroon, not the desk's, the way the
   email template keeps its own. A cut not made says so with Cut them out,
-  or Try the cuts again after a failure. The figures folder needs the
+  or Try the cuts again after a failure; the cuts run under the draft with
+  the busy words in that spot, so she keeps her place; a page the paper does
+  not have is refused, never cut from the last page. The figures folder needs the
   latest Code.gs pasted and deployed; until then the cuts land beside the
   draft, and the page finds them there.
 

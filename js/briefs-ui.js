@@ -7,7 +7,7 @@
  * beside it. Round 1 draws the first stage, Paper and notes; the later ones
  * say they come in the next round.
  */
-import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, notesKind, createLock, wordCount, draftProgress, draftWait } from './briefs-view.js';
+import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, notesKind, createLock, wordCount, draftProgress, draftWait, pairFor, cutsToMake } from './briefs-view.js';
 import { fillFromPaper } from './paper-read.js';
 import { renderMarkdown } from './markdown-lite.js';
 import { chartSvg, chartAlt } from './brief-visual.js';
@@ -441,7 +441,8 @@ function clipOf(f, { brief, crops, cropFailed, files }) {
     const why = cropFailed.includes(f.crop) ? 'Not cut out. Try the cuts again below.' : 'Not cut out yet.';
     return el('p', `meta draft-clip-none${cropFailed.includes(f.crop) ? ' draft-crop-miss' : ''}`, why);
   }
-  const file = (files ?? []).find(x => x.name === f.crop || x.name === `figures/${f.crop}`);
+  // The figures folder's copy first: an older cut can sit beside the draft from before the folder (review, Oct 22).
+  const file = (files ?? []).find(x => x.name === `figures/${f.crop}`) ?? (files ?? []).find(x => x.name === f.crop);
   const src = `/api/briefs?id=${encodeURIComponent(brief.id)}&image=${encodeURIComponent(f.crop)}&v=${encodeURIComponent(brief.stageAt ?? '')}`;
   const link = el('a', 'draft-clip');
   link.href = file?.url || src;
@@ -482,7 +483,7 @@ function proposalOf(visual) {
   return wrap;
 }
 
-function draftBox(brief, { onWriteDraft, error, cropFailed = [], files = [] }) {
+function draftBox(brief, { onWriteDraft, error, cropFailed = [], files = [], cutting = false }) {
   const d = brief.extra?.draft ?? {};
   const r = d.result;
   const box = el('div', 'hub-box brief-stage');
@@ -504,8 +505,8 @@ function draftBox(brief, { onWriteDraft, error, cropFailed = [], files = [] }) {
     downloadButton('brief-draft.md', r.draft ?? ''),
     downloadButton('brief-for-grammarly.md', r.grammarly ?? ''),
     downloadButton('page-plan.md', r.plan ?? ''),
-    button('Write it again', 'linkish', { focus: 'write-again', onClick: () => onWriteDraft({ restart: true }) }),
   );
+  if (!cutting) row.append(button('Write it again', 'linkish', { focus: 'write-again', onClick: () => onWriteDraft({ restart: true }) }));
   const tools = el('div', 'draft-tools');
   tools.append(meta, row);
   const article = el('article', 'brief-read');
@@ -515,7 +516,7 @@ function draftBox(brief, { onWriteDraft, error, cropFailed = [], files = [] }) {
   const crops = new Set(d.crops ?? []);
   const figures = r.figures ?? [];
   const visual = r.visual ?? null;
-  const theirs = visual ? (figures.find(f => f.label === visual.source_label) ?? figures[0] ?? null) : null;
+  const { theirs, others } = pairFor(figures, visual);
   const cut = { brief, crops, cropFailed, files, onWriteDraft };
 
   // Her pick A (Oct 22: "i want to see their figure and the proposed new one before it goes off to the author"):
@@ -533,7 +534,6 @@ function draftBox(brief, { onWriteDraft, error, cropFailed = [], files = [] }) {
     box.append(pair);
   }
 
-  const others = figures.filter(f => f !== theirs);
   box.append(el('h3', 'section-label hub-label', visual ? 'Other tables and figures' : 'Tables and figures in the paper'));
   if (others.length) {
     const list = el('ul', 'draft-figures');
@@ -550,12 +550,20 @@ function draftBox(brief, { onWriteDraft, error, cropFailed = [], files = [] }) {
     }
     box.append(list);
   } else {
-    box.append(el('p', 'brief-files-note', figures.length ? 'Nothing else in the paper earned a place.' : 'Nothing in the paper earned a place; the brief tells it in words.'));
+    box.append(el('p', 'brief-files-note', visual ? 'No other table or figure earned a place.' : 'Nothing in the paper earned a place; the brief tells it in words.'));
   }
-  const missing = figures.filter(f => f.page > 0 && !crops.has(f.crop));
-  if (missing.length || (visual?.kind === 'chart' && !crops.has(PROPOSED_CHART))) {
+  const missing = cutsToMake(r, [...crops]);
+  const chartMissing = visual?.kind === 'chart' && !crops.has(PROPOSED_CHART);
+  if (cutting) {
+    // The cuts run under the draft, so she keeps her place on the page (review, Oct 22).
+    const line = el('p', 'draft-wait');
+    line.append(busyWords('Cutting the tables and figures out of the paper'));
+    box.append(line);
+  } else if (missing.length || chartMissing) {
+    const failed = [...missing.map(c => c.crop), ...(chartMissing ? [PROPOSED_CHART] : [])].some(n => cropFailed.includes(n));
     const again = el('div', 'brief-actions');
-    again.append(button(missing.some(f => cropFailed.includes(f.crop)) ? 'Try the cuts again' : 'Cut them out', 'linkish', { focus: 'cut-again', onClick: () => onWriteDraft() }));
+    again.append(button(failed ? 'Try the cuts again' : 'Cut them out', 'linkish', { focus: 'cut-again', onClick: () => onWriteDraft() }));
+    if (chartMissing && cropFailed.includes(PROPOSED_CHART)) again.append(el('span', 'meta draft-crop-miss', "The chart's picture for the folder did not save."));
     box.append(again);
   }
 
@@ -576,8 +584,9 @@ function draftBox(brief, { onWriteDraft, error, cropFailed = [], files = [] }) {
 let typedNotes = { id: '', text: null };
 
 function stageBox(brief, { onSaveNotes, onReadNotes, onWriteDraft, savingNotes, notesSaved, draftRunning, draftError, cropFailed, files }) {
-  if (brief.stage === 'draft' || draftRunning) return draftRunningBox(brief, { running: draftRunning, error: draftError, onWriteDraft });
-  if (brief.stage === 'proof' && brief.extra?.draft?.result) return draftBox(brief, { onWriteDraft, error: draftError, cropFailed, files });
+  const proofReady = brief.stage === 'proof' && Boolean(brief.extra?.draft?.result);
+  if (brief.stage === 'draft' || (draftRunning && !proofReady)) return draftRunningBox(brief, { running: draftRunning, error: draftError, onWriteDraft });
+  if (proofReady) return draftBox(brief, { onWriteDraft, error: draftError, cropFailed, files, cutting: Boolean(draftRunning) });
   const box = el('div', 'hub-box brief-stage');
   if (brief.stage !== 'paper') {
     box.append(el('p', 'brief-files-note', `${stageLabel(brief.stage)} comes in the next round. The folder holds everything so far.`));

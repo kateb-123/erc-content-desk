@@ -283,7 +283,7 @@ function draftWorld({ extra = {}, model } = {}) {
       : { name, contentType: 'application/pdf', b64: Buffer.from('%PDF-1.4 the paper').toString('base64') }),
   };
   const extractJson = JSON.stringify({ title: 'Race, Nativity, and the Labor Market Returns to College Major-Occupation Alignment', authors: ['Brian Holzman', 'Jeehee Han'], journal: 'AERA Open', year: 2026, design: 'observational', research_questions: ['q'], sample: 's', methods_summary: 'm', key_numbers: [{ value: '1,366,603', context: 'workers, p. 8' }], findings: [{ title: 'Match pays', summary: 'Matched workers earn more.' }], policy_recommendations: ['r'], apa_citation: 'Holzman, B., & Han, J. (2026). Race, nativity. AERA Open.', recommended_visuals: [{ kind: 'table', source_label: 'Table 3', page: 12, why: 'the premium', suggested_caption: 'Earnings by match', box: { left: 0.1, top: 0.2, right: 0.9, bottom: 0.6 } }], number_flags: [] });
-  const visualJson = JSON.stringify({ kind: 'table', source_label: 'Table 3', title: 'Matched workers earned more', kept: 'Kept: the two groups. Left out: the controls.', columns: ['Workers', 'Median earnings'], rows: [['Matched', '$52,000'], ['Not matched', '$44,000']], value_label: '', value_format: 'number', bars: [] });
+  const visualJson = JSON.stringify({ kind: 'table', source_label: 'Table 3', page: 12, box: { left: 0.1, top: 0.2, right: 0.9, bottom: 0.6 }, title: 'Matched workers earned more', kept: 'Kept: the two groups. Left out: the controls.', columns: ['Workers', 'Median earnings'], rows: [['Matched', '$52,000'], ['Not matched', '$44,000']], value_label: '', value_format: 'number', bars: [] });
   const draftModel = model ?? (async ({ prompt, schema, maxTokens, effort }) => {
     calls.push({ prompt, schema: Boolean(schema), maxTokens, effort });
     if (prompt.startsWith('Do a deep, close reading')) return extractJson;
@@ -336,8 +336,9 @@ test('POST draft walks every step to the end: plan with its title and page-plan.
   assert.match(brief.extra.draft.result.grammarly, /^Majors That Lead Somewhere\n\nExecutive Summary\n/);
   assert.equal(brief.extra.draft.result.figures[0].crop, 'figure-table-3-p12.png');
   assert.equal(brief.extra.draft.result.band, 'Under the floor of 1,300');
-  assert.deepEqual(files.map(f => f[0]), ['extract.md', 'page-plan.md', 'proposed-table-1.md', 'page-plan.md', 'brief-draft.md', 'brief-for-grammarly.md', 'figures.md']);
-  assert.equal(files.find(f => f[0] === 'proposed-table-1.md')[3], 'figures', 'the proposal sits in the figures folder');
+  assert.deepEqual(files.map(f => f[0]), ['extract.md', 'page-plan.md', 'proposed-visual.md', 'page-plan.md', 'brief-draft.md', 'brief-for-grammarly.md', 'figures.md']);
+  assert.equal(files.find(f => f[0] === 'proposed-visual.md')[3], 'figures', 'the proposal sits in the figures folder, one name whatever its kind, so a rerun replaces it');
+  assert.match(files.find(f => f[0] === 'figures.md')[2], /^# Tables and figures in the paper/, 'figures.md is the inventory (review, Oct 22)');
   assert.equal(brief.extra.draft.visual.name, 'Table 1');
   assert.deepEqual(brief.extra.draft.result.visual, brief.extra.draft.visual, 'the proposal rides the result for the page');
   assert.deepEqual(brief.extra.draft.result.figures[0].box, { left: 0.1, top: 0.2, right: 0.9, bottom: 0.6 }, 'the box rides the inventory for the cut');

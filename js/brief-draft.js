@@ -251,15 +251,17 @@ export const VISUAL_SCHEMA = {
   properties: {
     kind: { type: 'string', enum: ['table', 'chart'] },
     source_label: { type: 'string' },
+    page: { type: 'integer' },
+    box: { type: 'object', properties: { left: { type: 'number' }, top: { type: 'number' }, right: { type: 'number' }, bottom: { type: 'number' } }, required: ['left', 'top', 'right', 'bottom'], additionalProperties: false },
     title: { type: 'string' },
     kept: { type: 'string' },
     columns: { type: 'array', items: { type: 'string' } },
     rows: { type: 'array', items: { type: 'array', items: { type: 'string' } } },
     value_label: { type: 'string' },
     value_format: { type: 'string', enum: ['number', 'percent'] },
-    bars: { type: 'array', items: { type: 'object', properties: { label: { type: 'string' }, value: { type: 'number' } }, required: ['label', 'value'], additionalProperties: false } },
+    bars: { type: 'array', items: { type: 'object', properties: { label: { type: 'string' }, value: { type: 'number' }, printed: { type: 'string' } }, required: ['label', 'value', 'printed'], additionalProperties: false } },
   },
-  required: ['kind', 'source_label', 'title', 'kept', 'columns', 'rows', 'value_label', 'value_format', 'bars'],
+  required: ['kind', 'source_label', 'page', 'box', 'title', 'kept', 'columns', 'rows', 'value_label', 'value_format', 'bars'],
   additionalProperties: false,
 };
 
@@ -277,10 +279,11 @@ export function buildVisualPrompt(extract, plan, notes) {
     'TASK: Build the brief\'s one visual exactly as the page plan names it.',
     '- kind: "chart" for a bar chart (Figure 1) or "table" (Table 1), as the plan says.',
     '- source_label: the paper\'s table or figure it is drawn from, as the paper labels it (e.g. "Table 3").',
+    '- page and box: where that table or figure sits, so the desk can cut it out for the comparison: the PDF page (its position in the file, starting at 1, not the printed page number) and its box on that page, left, top, right and bottom as fractions of the page\'s width and height from the top-left corner (0 to 1), wide enough for its title, every row, axis and label, and its notes.',
     '- title: one plain sentence a policymaker reads as the finding, in sentence case, no period at the end.',
     '- kept: one or two short sentences, "Kept: ... Left out: ...", naming what moved to prose.',
     '- columns and rows: the visual as a data table a policymaker can read, every cell a string. Fill them for a chart too: they are the chart\'s data table.',
-    '- For a chart: bars holds 2 to 8 bars, each a short group or time label and its value as a number; value_label names what the bars measure ("Share who felt at home", "College-level courses taken"); value_format is "percent" when the values are percents, else "number". Bars start at zero, so use no negative values; if the values are not all zero or more, make it a table.',
+    '- For a chart: bars holds 2 to 8 bars, each a short group or time label, its value as a number, and "printed", the value exactly as the paper prints it ("0.1250", "45.0%"); value_label names what the bars measure ("Share who felt at home", "College-level courses taken"); value_format is "percent" when the values are percents, else "number". Bars start at zero, so use no negative values; if the values are not all zero or more, make it a table.',
     '- For a table: bars is empty, value_label is empty and value_format is "number".',
     'Every number must be copied verbatim from the attached paper (a table\'s cells, or values the paper prints on or beside a figure). Never read a value off a bar\'s height. If the paper does not print the values a chart needs, make it a table of what it does print.',
   ].join('\n');
@@ -288,28 +291,51 @@ export function buildVisualPrompt(extract, plan, notes) {
 
 const cell = v => str(v).replace(/\s+/g, ' ');
 
-/** The proposal as the desk keeps it: a chart it can draw, or the table; its name, Figure 1 or Table 1. */
+/** The kind and number in a table or figure's label ("Table 3", "Fig. 2", "Appendix Table A4"), so two ways of naming it match. */
+const visualKey = label => {
+  const m = /\b(table|figure|fig\.?)\s*([a-z]?\d+[a-z]?)\b/i.exec(String(label ?? ''));
+  return m ? `${/^tab/i.test(m[1]) ? 'table' : 'figure'} ${m[2].toLowerCase()}` : '';
+};
+
+/** Whether two labels name the same table or figure: "Table 3" and "Table 3. Earnings by match" do; "Table 2" and "Table 3" do not. */
+export const sameVisual = (a, b) => { const k = visualKey(a); return Boolean(k) && k === visualKey(b); };
+
+/**
+ * The proposal as the desk keeps it: a chart it can draw, or the table; its
+ * name, Figure 1 or Table 1; where its source sits in the paper, for the cut
+ * beside it (review, Oct 22: the pair matched labels by exact words and could
+ * show another table). A blank header stays, so the headers keep over their
+ * cells; each bar keeps the value as the paper prints it.
+ */
 export function normalizeVisual(json) {
   if (!json || typeof json !== 'object') throw new Error('the proposal came back empty');
-  const columns = list(json.columns).map(cell).filter(Boolean);
+  const named = list(json.columns).map(cell);
+  const columns = named.some(Boolean) ? named : [];
   const rows = list(json.rows).map(r => list(r).map(cell).slice(0, columns.length)).filter(r => r.some(Boolean))
     .map(r => [...r, ...Array(Math.max(0, columns.length - r.length)).fill('')]);
-  const bars = list(json.bars).map(b => ({ label: cell(b?.label), value: typeof b?.value === 'number' ? b.value : Number.NaN }));
+  const bars = list(json.bars).map(b => {
+    const value = typeof b?.value === 'number' ? b.value : Number.NaN;
+    return { label: cell(b?.label), value, printed: cell(b?.printed) || (Number.isFinite(value) ? String(value) : '') };
+  });
   const drawable = bars.length >= 2 && bars.length <= 8 && bars.every(b => b.label && Number.isFinite(b.value) && b.value >= 0) && bars.some(b => b.value > 0);
   const kind = json.kind === 'chart' && drawable ? 'chart' : 'table';
-  if (!columns.length || !rows.length) {
-    if (kind !== 'chart') throw new Error('the proposal came back without a table');
-  }
+  if ((!columns.length || !rows.length) && kind !== 'chart') throw new Error('the proposal came back without a table');
   const title = str(json.title).replace(/\.$/, '');
   if (!title) throw new Error('the proposal came back without a title');
+  const source = str(json.source_label);
+  const page = Math.max(0, Number.parseInt(json.page, 10) || 0);
+  const useBars = !columns.length || !rows.length;
   return {
     kind,
     name: kind === 'chart' ? 'Figure 1' : 'Table 1',
-    source_label: str(json.source_label),
+    source_label: source,
+    page,
+    box: normalizeBox(json.box),
+    crop: page > 0 ? cropName(source, page, 'source') : '',
     title,
     kept: str(json.kept),
-    columns: columns.length ? columns : [str(json.value_label) || 'Group', 'Value'],
-    rows: rows.length ? rows : bars.map(b => [b.label, String(b.value)]),
+    columns: useBars ? ['Group', str(json.value_label) || 'Value'] : columns,
+    rows: useBars ? bars.map(b => [b.label, b.printed]) : rows,
     value_label: kind === 'chart' ? str(json.value_label) : '',
     value_format: kind === 'chart' && json.value_format === 'percent' ? 'percent' : 'number',
     bars: kind === 'chart' ? bars : [],
@@ -329,6 +355,7 @@ export function visualMarkdown(visual) {
   ];
   const foot = ['', `From the paper's ${visual.source_label || 'table or figure'}. ${visual.kept}`.trim()];
   if (visual.kind === 'chart') foot.push('', 'The chart itself: proposed-figure-1.png, beside this file.');
+  else foot.push('', 'A proposed-figure-1.png beside this file is from an earlier draft that proposed a chart.');
   return `${[...head, ...table, ...foot].join('\n')}\n`;
 }
 
@@ -511,12 +538,14 @@ export function checkStyle(sections, journal) {
 }
 
 /** The four files that land in the brief's folder. */
-export function draftFiles({ plan, draft, grammarly, figures }) {
+export function draftFiles({ plan, draft, grammarly, figures, figuresMd }) {
+  // The inventory as markdown; the result also carries its items, which are not a file (review, Oct 22: "[object Object]").
+  const inventory = typeof figuresMd === 'string' ? figuresMd : typeof figures === 'string' ? figures : '';
   const md = text => (String(text ?? '').endsWith('\n') ? String(text) : `${text ?? ''}\n`);
   return [
     { name: 'page-plan.md', contentType: 'text/markdown', text: md(plan) },
     { name: 'brief-draft.md', contentType: 'text/markdown', text: md(draft) },
     { name: 'brief-for-grammarly.md', contentType: 'text/markdown', text: md(grammarly) },
-    { name: 'figures.md', contentType: 'text/markdown', text: md(figures) },
+    { name: 'figures.md', contentType: 'text/markdown', text: md(inventory) },
   ];
 }

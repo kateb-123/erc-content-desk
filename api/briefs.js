@@ -292,7 +292,7 @@ export function createBriefsHandler({
         } else if (step === 'visual') {
           if (!d.extract) throw new Error('the paper has not been read yet');
           d.visual = normalizeVisual(parseModelJson(await ask(buildVisualPrompt(d.extract, d.plan ?? '', brief.notes), VISUAL_SCHEMA), 'the proposal'));
-          await drive.saveFile({ folderId: brief.folderId, sub: FIGURES, name: `proposed-${d.visual.kind === 'chart' ? 'figure' : 'table'}-1.md`, contentType: 'text/markdown', b64: Buffer.from(visualMarkdown(d.visual), 'utf8').toString('base64') });
+          await drive.saveFile({ folderId: brief.folderId, sub: FIGURES, name: 'proposed-visual.md', contentType: 'text/markdown', b64: Buffer.from(visualMarkdown(d.visual), 'utf8').toString('base64') });
         } else if (sectionKeys.includes(step)) {
           if (!d.extract) throw new Error('the paper has not been read yet');
           const prior = sectionKeys.filter(k => d.sections[k] != null && k !== step).map(k => ({ key: k, content: d.sections[k] }));

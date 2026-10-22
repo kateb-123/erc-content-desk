@@ -92,7 +92,10 @@ export async function pagePng(bytes, pageNumber, { pdfjs = loadPdfjs, scales = C
   const lib = await pdfjs();
   // pdf.js hands the buffer to its worker and leaves the caller's copy detached, so each page gets a copy of its own.
   const doc = await lib.getDocument({ data: bytes.slice() }).promise;
-  const page = await doc.getPage(Math.min(Math.max(1, pageNumber), doc.numPages));
+  // A page the paper does not have is refused, never cut from the last page instead (review, Oct 22).
+  if (!(pageNumber >= 1)) throw new Error('no page given for this one');
+  if (pageNumber > doc.numPages) throw new Error(`page ${pageNumber} is past the paper's ${doc.numPages} pages`);
+  const page = await doc.getPage(pageNumber);
   let b64 = '';
   for (const scale of scales) {
     const viewport = page.getViewport({ scale });

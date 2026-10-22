@@ -4,7 +4,7 @@
 // empty ones, never what she typed.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { pageText, fillFromPaper, PAPER_PAGES, PAPER_TEXT_CAP, PDFJS_URL, PDFJS_WORKER_URL, cropRect } from '../js/paper-read.js';
+import { pageText, fillFromPaper, PAPER_PAGES, PAPER_TEXT_CAP, PDFJS_URL, PDFJS_WORKER_URL, cropRect, pagePng } from '../js/paper-read.js';
 
 test('pageText joins a page\'s text items into lines, a break where pdf.js marks the end of a line', () => {
   const items = [
@@ -66,4 +66,10 @@ test('cropRect: the marked box with a little margin, in the drawn page\'s pixels
   const r = cropRect(page, { left: 0.1, top: 0.2, right: 0.9, bottom: 0.5 }, 0.02);
   assert.deepEqual(r, { x: Math.floor(0.08 * 1224), y: Math.floor(0.18 * 1584), w: Math.ceil(0.92 * 1224) - Math.floor(0.08 * 1224), h: Math.ceil(0.52 * 1584) - Math.floor(0.18 * 1584) });
   assert.deepEqual(cropRect(page, { left: 0, top: 0, right: 1, bottom: 1 }, 0.02), { x: 0, y: 0, w: 1224, h: 1584 }, 'the margin never runs off the page');
+});
+
+test('review, Oct 22: a page past the paper\'s end is refused, never cut from the last page instead', async () => {
+  const lib = { getDocument: () => ({ promise: Promise.resolve({ numPages: 20, getPage: async () => { throw new Error('should not draw'); } }) }) };
+  await assert.rejects(pagePng(new Uint8Array(4), 245, { pdfjs: async () => lib }), /page 245 is past the paper's 20 pages/);
+  await assert.rejects(pagePng(new Uint8Array(4), 0, { pdfjs: async () => lib }), /no page/);
 });

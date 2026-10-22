@@ -11,7 +11,7 @@
  */
 import { isoToShort } from './queue-view.js';
 
-import { DRAFT_STEPS, SECTION_DEFS, nextDraftStep, stepWords } from './brief-draft.js';
+import { DRAFT_STEPS, SECTION_DEFS, nextDraftStep, stepWords, sameVisual } from './brief-draft.js';
 
 export const STAGES = [
   { key: 'paper', label: 'Paper and notes' },
@@ -175,4 +175,28 @@ export function briefsCard(briefs) {
   const open = briefs.filter(b => b.stage !== 'live');
   const withAuthor = open.filter(b => b.stage === 'author').length;
   return { count: open.length, sub: `in progress${withAuthor ? ` · ${plural(withAuthor, 'with an author', 'with authors')}` : ''}` };
+}
+
+/**
+ * The pair on the Draft box: the proposal's own source, cut by its own box,
+ * or the read's cut of the same table or figure named another way; never a
+ * different one in its place (review, Oct 22). The others leave it out.
+ */
+export function pairFor(figures, visual) {
+  const list = figures ?? [];
+  if (!visual) return { theirs: null, others: list };
+  const same = f => sameVisual(f.label, visual.source_label);
+  const theirs = visual.crop
+    ? { label: visual.source_label, page: visual.page, crop: visual.crop, box: visual.box ?? null }
+    : (list.find(same) ?? null);
+  const others = list.filter(f => !(theirs && (f.crop === theirs.crop || same(f))));
+  return { theirs, others };
+}
+
+/** The cuts still to make: each listed table or figure with a page, and the proposal's source, once each, its own box winning. */
+export function cutsToMake({ figures = [], visual = null } = {}, done = []) {
+  const cuts = new Map();
+  for (const f of figures ?? []) if (f.page > 0) cuts.set(f.crop, { crop: f.crop, page: f.page, box: f.box ?? null });
+  if (visual?.crop && visual.page > 0) cuts.set(visual.crop, { crop: visual.crop, page: visual.page, box: visual.box ?? null });
+  return [...cuts.values()].filter(c => !done.includes(c.crop));
 }

@@ -285,3 +285,53 @@ test('the paper read gets more room and thinks at medium, since the check re-ver
   assert.deepEqual(budgetFor('key_findings'), budgetFor('exec_summary'), 'every section the same');
   assert.match(EXTRACT_PROMPT, /at most 15/, 'the key numbers are bounded so the reply stays short');
 });
+
+import { sameVisual } from '../js/brief-draft.js';
+
+const chartJson = (over = {}) => ({ kind: 'chart', source_label: 'Table 2', page: 10, box: { left: 0.1, top: 0.2, right: 0.9, bottom: 0.5 }, title: 'T', kept: 'k', columns: ['Group', 'Courses'], rows: [['a', '1.0'], ['b', '2.50']], value_label: 'Courses', value_format: 'number', bars: [{ label: 'a', value: 1, printed: '1.0' }, { label: 'b', value: 2.5, printed: '2.50' }], ...over });
+
+test('review, Oct 22: a blank stub header is kept, so the headers stay over their cells and no column is lost', () => {
+  const v = normalizeVisual(chartJson({ kind: 'table', columns: ['', 'Treatment', 'Control'], rows: [['Enrolled', '45%', '38%'], ['Persisted', '30%', '25%']], bars: [] }));
+  assert.deepEqual(v.columns, ['', 'Treatment', 'Control']);
+  assert.deepEqual(v.rows, [['Enrolled', '45%', '38%'], ['Persisted', '30%', '25%']]);
+  assert.match(visualMarkdown(v), /\|  \| Treatment \| Control \|\n\|---\|---\|---\|\n\| Enrolled \| 45% \| 38% \|/);
+  const noColumns = normalizeVisual(chartJson({ columns: [], rows: [] }));
+  assert.deepEqual(noColumns.columns, ['Group', 'Courses'], 'a chart with no table gets a group column and its measure');
+  assert.deepEqual(noColumns.rows, [['a', '1.0'], ['b', '2.50']], 'its rows read as the paper prints them');
+});
+
+test('review, Oct 22: the proposal marks its own source on the page, so the pair is always its source, cut by its own box', () => {
+  const item = VISUAL_SCHEMA.properties;
+  assert.ok(VISUAL_SCHEMA.required.includes('page') && VISUAL_SCHEMA.required.includes('box'));
+  assert.deepEqual(item.box.required, ['left', 'top', 'right', 'bottom']);
+  assert.ok(item.bars.items.required.includes('printed'));
+  assert.match(buildVisualPrompt(extract, 'plan', ''), /page/);
+  const v = normalizeVisual(chartJson());
+  assert.equal(v.page, 10);
+  assert.deepEqual(v.box, { left: 0.1, top: 0.2, right: 0.9, bottom: 0.5 });
+  assert.equal(v.crop, 'figure-table-2-p10.png');
+  assert.equal(normalizeVisual(chartJson({ page: 0 })).crop, '', 'no page, no cut');
+  assert.equal(normalizeVisual(chartJson({ box: null })).box, null);
+});
+
+test('review, Oct 22: a chart keeps each value as the paper prints it', () => {
+  const v = normalizeVisual(chartJson({ bars: [{ label: 'a', value: 0.0004, printed: '0.0004' }, { label: 'b', value: 0.125, printed: '0.1250' }] }));
+  assert.deepEqual(v.bars.map(b => b.printed), ['0.0004', '0.1250']);
+  assert.equal(normalizeVisual(chartJson({ bars: [{ label: 'a', value: 2, printed: '' }, { label: 'b', value: 3 }] })).bars[0].printed, '2', 'no printed form, the number itself');
+});
+
+test('sameVisual: a table or figure named two ways is the same one; a different number is not', () => {
+  assert.ok(sameVisual('Table 3', 'Table 3. Earnings by match'));
+  assert.ok(sameVisual('table 3', 'Table 3 (Panel A)'));
+  assert.ok(sameVisual('Fig. 2', 'Figure 2'));
+  assert.ok(sameVisual('Table A4', 'Appendix Table A4'));
+  assert.ok(!sameVisual('Table 2', 'Table 3'));
+  assert.ok(!sameVisual('Table 2', 'Figure 2'));
+  assert.ok(!sameVisual('', 'Table 2'));
+  assert.ok(!sameVisual('Table 12', 'Table 1'));
+});
+
+test('review, Oct 22: figures.md is the inventory table, not "[object Object]"', () => {
+  const files = draftFiles({ plan: 'p', draft: 'd', grammarly: 'g', figures: [{ label: 'Table 2' }], figuresMd: '# Tables and figures in the paper\n' });
+  assert.equal(files.find(f => f.name === 'figures.md').text, '# Tables and figures in the paper\n');
+});

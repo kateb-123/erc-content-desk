@@ -177,3 +177,30 @@ test('draftProgress names the proposal step in the running box', () => {
   assert.equal(done[2].words, 'Proposed the table or chart');
   assert.equal(draftProgress({ stage: 'paper', extra: {} })[2].words, 'Propose the table or chart');
 });
+
+import { pairFor, cutsToMake } from '../js/briefs-view.js';
+
+const fig = (label, page) => ({ label, page, crop: `figure-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-p${page}.png`, box: null, caption: 'c', rework: 'Prose' });
+
+test('pairFor: theirs is the proposal\'s own source, cut by its own box; the others leave it out (review, Oct 22: the wrong figure was paired on a label mismatch)', () => {
+  const figures = [fig('Figure 1', 4), fig('Table 3. Earnings by match', 12)];
+  const own = pairFor(figures, { source_label: 'Table 3', page: 12, crop: 'figure-table-3-p12.png', box: { left: 0.1, top: 0.1, right: 0.9, bottom: 0.5 } });
+  assert.equal(own.theirs.crop, 'figure-table-3-p12.png');
+  assert.equal(own.theirs.label, 'Table 3');
+  assert.deepEqual(own.others.map(f => f.label), ['Figure 1'], 'the same table listed by the read is not shown twice');
+  const loose = pairFor(figures, { source_label: 'table 3 (panel A)', page: 0, crop: '' });
+  assert.equal(loose.theirs.label, 'Table 3. Earnings by match', 'no page of its own: the read\'s cut of the same table');
+  const none = pairFor(figures, { source_label: 'Table A9', page: 0, crop: '' });
+  assert.equal(none.theirs, null, 'never another table in its place');
+  assert.equal(none.others.length, 2);
+  assert.deepEqual(pairFor(figures, null), { theirs: null, others: figures });
+});
+
+test('cutsToMake: every listed table or figure with a page, and the proposal\'s source, each once, minus what is already cut', () => {
+  const figures = [fig('Figure 1', 4), fig('Table 3', 12), fig('Table 9', 0)];
+  const visual = { source_label: 'Table 3', page: 12, crop: 'figure-table-3-p12.png', box: { left: 0, top: 0, right: 1, bottom: 0.5 } };
+  assert.deepEqual(cutsToMake({ figures, visual }, []).map(c => c.crop), ['figure-figure-1-p4.png', 'figure-table-3-p12.png']);
+  assert.deepEqual(cutsToMake({ figures, visual }, []).find(c => c.crop === 'figure-table-3-p12.png').box, visual.box, 'the proposal\'s own box wins');
+  assert.deepEqual(cutsToMake({ figures, visual }, ['figure-figure-1-p4.png']).map(c => c.crop), ['figure-table-3-p12.png']);
+  assert.deepEqual(cutsToMake({ figures: [], visual: { source_label: 'Table 2', page: 5, crop: 'figure-table-2-p5.png', box: null } }, []).map(c => c.crop), ['figure-table-2-p5.png']);
+});

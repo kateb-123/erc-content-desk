@@ -59,3 +59,10 @@ test('chartAlt: the alt text names the figure and stays under 125 characters, as
   assert.equal(chartAlt(visual()), 'Figure 1. Howdies rose every week of the fall');
   assert.ok(chartAlt(visual({ title: 'x'.repeat(300) })).length <= 125);
 });
+
+test('review, Oct 22: the value on a bar is the paper\'s own, never rounded; a percent gets its sign once', () => {
+  const svg = chartSvg(visual({ bars: [{ label: 'a', value: 0.0004, printed: '0.0004' }, { label: 'b', value: 0.125, printed: '0.1250' }] }));
+  assert.match(svg, />0\.0004<\/text>[\s\S]*>0\.1250<\/text>/);
+  const pct = chartSvg(visual({ value_format: 'percent', bars: [{ label: 'a', value: 45, printed: '45.0%' }, { label: 'b', value: 38, printed: '38.0' }] }));
+  assert.match(pct, />45\.0%<\/text>[\s\S]*>38\.0%<\/text>/);
+});
