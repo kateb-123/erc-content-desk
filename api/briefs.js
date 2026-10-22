@@ -18,11 +18,23 @@ import { pickMode } from './_lib/store.js';
 import { liveQuery } from './_lib/db.js';
 import { createBriefs, isMissingTable, MAX_PAPER_BYTES, NEEDS_DB, NO_TABLE } from './_lib/briefs.js';
 import { briefFolder, saveFile, listFiles } from './_lib/sheets.js';
+import Anthropic from '@anthropic-ai/sdk';
 import { briefSlug, slugPart, NOTES_MAX } from '../js/briefs-view.js';
+import { REWRITE_MODEL } from './_lib/rewrite.js';
+import { parseModelJson } from './_lib/reply-json.js';
+import { buildPaperPrompt, normalizePaperFields, PAPER_TEXT_MAX } from './_lib/paper-fields.js';
 
 export const config = { maxDuration: 60 };
 
 const MAX_TEXT = NOTES_MAX;
+
+/** The read action's one model call: the prompt in, the reply's text out. Built lazily so importing this file never needs the key. */
+let client;
+async function liveReadModel(prompt) {
+  client ??= new Anthropic();
+  const response = await client.messages.create({ model: REWRITE_MODEL, max_tokens: 600, messages: [{ role: 'user', content: prompt }] });
+  return response.content.filter(part => part.type === 'text').map(part => part.text).join('');
+}
 const text = (value, max = MAX_TEXT) => String(value ?? '').trim().slice(0, max);
 
 /** 'Yell leaders (final).PDF' as 'yell-leaders-final.pdf'. */
@@ -36,6 +48,7 @@ export function createBriefsHandler({
   briefs = () => createBriefs(liveQuery()),
   drive = { briefFolder, saveFile, listFiles },
   mode = () => pickMode(process.env),
+  readModel = liveReadModel,
 } = {}) {
   return async function handler(req, res) {
     if (!['GET', 'POST'].includes(req.method)) return res.status(405).json({ ok: false, error: 'Use GET or POST.' });
@@ -54,6 +67,18 @@ export function createBriefsHandler({
       }
 
       const action = text(req.body?.action, 20);
+      if (action === 'read') {
+        // The paper's first pages as text (the browser read them with pdf.js); the model names the paper.
+        const paper = String(req.body?.text ?? '').trim().slice(0, PAPER_TEXT_MAX);
+        if (!paper) return res.status(400).json({ ok: false, error: 'There was nothing to read in that PDF. Type the title, authors, journal and year.' });
+        let fields;
+        try {
+          fields = normalizePaperFields(parseModelJson(await readModel(buildPaperPrompt(paper)), 'the paper read'));
+        } catch (err) {
+          return res.status(502).json({ ok: false, error: `The desk couldn't read the paper: ${err.message}. Type the title, authors, journal and year.` });
+        }
+        return res.status(200).json({ ok: true, fields });
+      }
       if (action === 'create') return create(store, req.body, res);
       if (action === 'notes') {
         const id = text(req.body?.id, 120);

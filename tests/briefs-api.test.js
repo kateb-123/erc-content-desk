@@ -59,7 +59,7 @@ function fakeRes() {
 }
 
 /** The handler over fakes: a session that holds (or not), a store, the Sheet's script. */
-function handlerWith({ signedIn = true, rows = [ROW], script = {} } = {}) {
+function handlerWith({ signedIn = true, rows = [ROW], script = {}, readModel = async () => '{}' } = {}) {
   const saved = [];
   const store = {
     async list() { return rows.map(r => ({ id: r.id, stage: r.stage })); },
@@ -72,7 +72,7 @@ function handlerWith({ signedIn = true, rows = [ROW], script = {} } = {}) {
     saveFile: async f => { saved.push(['file', f.folderId, f.name, f.contentType]); return { ok: true, url: 'u' }; },
     listFiles: async folderId => (script.listFails ? Promise.reject(new Error('no drive')) : [{ name: 'reveille.pdf', updated: '2026-10-19', url: 'u', size: 1000 }]),
   };
-  const handler = createBriefsHandler({ session: { refuse: async (req, res) => { if (signedIn) return false; res.status(401).json({ ok: false, error: 'Sign in to the desk first.' }); return true; } }, briefs: () => store, drive, mode: () => 'db' });
+  const handler = createBriefsHandler({ session: { refuse: async (req, res) => { if (signedIn) return false; res.status(401).json({ ok: false, error: 'Sign in to the desk first.' }); return true; } }, briefs: () => store, drive, mode: () => 'db', readModel });
   return { handler, saved };
 }
 
@@ -156,4 +156,35 @@ test('the Sheet\'s script gained the briefs doors, and sheets.js wraps them', ()
   const sheets = read('../api/_lib/sheets.js');
   for (const fn of ['export async function briefFolder(', 'export async function listFiles(', 'export async function getFile(']) assert.ok(sheets.includes(fn), fn);
   assert.match(read('../README.md'), /BRIEFS_FOLDER_ID/);
+});
+
+test('POST read: the paper\'s first pages as text go to the model, and the fields come back shaped (Kate, Oct 22: "id rather it read it and filled it in")', async () => {
+  const asked = [];
+  const readModel = async prompt => { asked.push(prompt); return '{"title":" Screen or Barrier? Science of Reading Certification Exams and Teacher Supply in Texas ","authors":"Andrew Avitabile","journal":"","year":"2026","firstAuthorLast":"Avitabile"}'; };
+  const { handler } = handlerWith({ readModel });
+  const res = fakeRes();
+  await handler({ method: 'POST', query: {}, body: { action: 'read', text: 'Screen or Barrier? Science of Reading Certification Exams and Teacher Supply in Texas\nAndrew Avitabile\nUniversity of Virginia\nLast Updated October 5, 2026' } }, res);
+  assert.equal(res.code, 200, JSON.stringify(res.body));
+  assert.deepEqual(res.body.fields, { title: 'Screen or Barrier? Science of Reading Certification Exams and Teacher Supply in Texas', authors: 'Andrew Avitabile', journal: '', year: '2026', firstAuthorLast: 'Avitabile' });
+  assert.equal(asked.length, 1);
+  assert.match(asked[0], /Andrew Avitabile/);
+});
+
+test('POST read refuses an empty text, and a model reply that is not JSON is a plain failure, not a crash', async () => {
+  const { handler } = handlerWith({ readModel: async () => 'Sorry, I cannot do that.' });
+  let res = fakeRes();
+  await handler({ method: 'POST', query: {}, body: { action: 'read', text: '   ' } }, res);
+  assert.equal(res.code, 400);
+  assert.match(res.body.error, /nothing to read/i);
+  res = fakeRes();
+  await handler({ method: 'POST', query: {}, body: { action: 'read', text: 'some paper' } }, res);
+  assert.equal(res.code, 502);
+  assert.match(res.body.error, /read the paper/i);
+});
+
+test('POST read needs the sign-in like every other door', async () => {
+  const { handler } = handlerWith({ signedIn: false, readModel: async () => '{}' });
+  const res = fakeRes();
+  await handler({ method: 'POST', query: {}, body: { action: 'read', text: 'some paper' } }, res);
+  assert.equal(res.code, 401);
 });

@@ -24,7 +24,8 @@ import { renderSignIn } from './auth-ui.js';
 import { renderQueue } from './queue-ui.js';
 import { renderExchange } from './exchange-ui.js';
 import { renderListserv } from './listserv-ui.js';
-import { renderBriefs, renderBrief } from './briefs-ui.js';
+import { renderBriefs, renderBrief, clearBriefDraft } from './briefs-ui.js';
+import { paperText } from './paper-read.js';
 import { briefTitle } from './briefs-view.js';
 
 
@@ -600,11 +601,19 @@ function openBrief(id) {
   goTo('brief');
 }
 
+/** The paper read (Oct 22): pdf.js gives the first pages as text, the desk's model names the paper, the form fills its empty boxes. */
+async function readPaper(file) {
+  const text = await paperText(file);
+  const data = await postJson('/api/briefs', { action: 'read', text, name: file.name }, 'read the paper');
+  return data.fields;
+}
+
 async function createBrief(payload) {
   state.creatingBrief = true; state.createError = '';
   render();
   try {
     const data = await postJson('/api/briefs', { action: 'create', ...payload }, 'create the brief');
+    clearBriefDraft();
     state.creatingBrief = false; state.newBriefOpen = false;
     state.briefs = [...(state.briefs ?? []), data.brief];
     setStatus(`Started: ${briefTitle(data.brief)}`, 'ok');
@@ -722,7 +731,8 @@ function render() {
     renderBriefs(screens.briefs, {
       briefs: state.briefs ?? [], loaded: Array.isArray(state.briefs), error: state.briefsError, today,
       onOpen: openBrief, onRefresh: () => { state.briefsError = false; render(); loadBriefs(); },
-      newOpen: state.newBriefOpen, onToggleNew: () => { state.newBriefOpen = !state.newBriefOpen; state.createError = ''; render(); },
+      newOpen: state.newBriefOpen, onToggleNew: () => { state.newBriefOpen = !state.newBriefOpen; state.createError = ''; if (!state.newBriefOpen) clearBriefDraft(); render(); },
+      onReadPaper: readPaper,
       onCreate: createBrief, creating: state.creatingBrief, createError: state.createError,
     });
   } else if (state.screen === 'brief') {

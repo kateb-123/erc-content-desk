@@ -8,6 +8,7 @@
  * say they come in the next round.
  */
 import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile } from './briefs-view.js';
+import { fillFromPaper } from './paper-read.js';
 import { hubHead, HUB_LEDES } from './hub-head.js';
 import { isoToShort } from './queue-view.js';
 import { faIcon } from './icons.js';
@@ -66,24 +67,72 @@ function notesPicker(notes, problem) {
   return field('Or your notes as a file', pick, 'A .md or .txt. It fills the box above.');
 }
 
-/** The New brief form: the paper, who and what, her notes. */
-function newBriefForm({ onCreate, onCancel, creating, error }) {
+/**
+ * What the New brief form holds between redraws: the chosen PDF and every
+ * box's words, so a Creating… redraw or a refusal never drops what she typed
+ * (the desk's rule: a redraw never drops what you are typing). Cleared when
+ * the brief is made or the form is cancelled.
+ */
+const draft = { file: null, values: {} };
+export function clearBriefDraft() { draft.file = null; draft.values = {}; }
+
+/** The New brief form: the paper, who and what, her notes. Choosing the paper reads it and fills the empty boxes (Oct 22). */
+function newBriefForm({ onCreate, onCancel, onReadPaper, creating, error }) {
   const box = el('form', 'hub-box new-brief');
   box.noValidate = true;
   const paper = input('file');
   paper.accept = 'application/pdf,.pdf';
+  const defaultYear = String(new Date().getFullYear());
   const last = input(); last.autocomplete = 'off';
-  const year = input(); year.inputMode = 'numeric'; year.maxLength = 4; year.value = String(new Date().getFullYear());
+  const year = input(); year.inputMode = 'numeric'; year.maxLength = 4; year.value = defaultYear;
   const topic = input(); topic.placeholder = 'one word, like alignment';
   const paperTitle = input();
   const authors = input(); authors.placeholder = 'as the paper lists them';
   const journal = input();
   const record = input(); record.placeholder = 'Dr. Lastname, the one the email goes to';
   const notes = el('textarea'); notes.rows = 5; notes.placeholder = 'What to lead with, what to keep, which table is the visual.';
+  const boxes = { last, year, topic, paperTitle, authors, journal, record, notes };
+  for (const [key, control] of Object.entries(boxes)) {
+    if (draft.values[key] != null) control.value = draft.values[key];
+    control.addEventListener('input', () => { draft.values[key] = control.value; });
+  }
+  if (draft.file) {
+    try { const dt = new DataTransfer(); dt.items.add(draft.file); paper.files = dt.files; } catch { /* an older browser: the file is still in the draft */ }
+  }
   const folderLine = el('p', 'field-hint new-brief-folder');
   const sayFolder = () => { const slug = briefSlug({ authorLast: last.value, year: year.value, topic: topic.value }); folderLine.textContent = slug ? `Folder: ${slug}` : 'Folder: the last name, the year and the topic word'; };
   for (const c of [last, year, topic]) c.addEventListener('input', sayFolder);
   sayFolder();
+
+  // The paper read: choosing a PDF fills the title, authors, journal, year and last name where they are empty.
+  const readLine = el('p', 'field-hint new-brief-read');
+  readLine.setAttribute('role', 'status');
+  let reading = 0;
+  paper.addEventListener('change', async () => {
+    const file = paper.files?.[0];
+    if (!file) return;
+    draft.file = file;
+    if (!/\.pdf$/i.test(file.name) || !onReadPaper) return;
+    const turn = ++reading;
+    readLine.replaceChildren(busyLine('Reading the paper'));
+    try {
+      const found = await onReadPaper(file);
+      if (turn !== reading) return;
+      const fill = fillFromPaper(found, { paperTitle: paperTitle.value, authors: authors.value, journal: journal.value, year: year.value, authorLast: last.value }, { defaultYear });
+      const names = { paperTitle: 'title', authors: 'authors', journal: 'journal', year: 'year', authorLast: 'last name' };
+      for (const [key, value] of Object.entries(fill)) {
+        const control = key === 'authorLast' ? last : boxes[key];
+        control.value = value;
+        draft.values[key === 'authorLast' ? 'last' : key] = value;
+      }
+      sayFolder();
+      const filled = Object.keys(fill).map(k => names[k]);
+      readLine.textContent = filled.length ? `Read from the paper: ${filled.join(', ')}. Check them.` : 'Read the paper; the boxes already had their words.';
+    } catch (err) {
+      if (turn !== reading) return;
+      readLine.textContent = `Couldn't read the paper (${String(err?.message ?? err)}). Type the title, authors, journal and year.`;
+    }
+  });
 
   const grid = el('div', 'card-grid');
   grid.append(
@@ -104,7 +153,8 @@ function newBriefForm({ onCreate, onCancel, creating, error }) {
 
   box.append(
     el('h3', 'section-label hub-label', 'New brief'),
-    field('The paper, as a PDF', paper, `Up to ${MAX_PAPER_MB} MB. Bigger: Preview, File, Export, Reduce File Size.`),
+    field('The paper, as a PDF', paper, `Up to ${MAX_PAPER_MB} MB. Bigger: Preview, File, Export, Reduce File Size. The desk reads it and fills the boxes it can.`),
+    readLine,
     grid, folderLine,
     field("The paper's title", paperTitle),
     field('Authors', authors),
@@ -117,7 +167,7 @@ function newBriefForm({ onCreate, onCancel, creating, error }) {
   box.addEventListener('submit', async event => {
     event.preventDefault();
     problem.textContent = '';
-    const file = paper.files?.[0];
+    const file = paper.files?.[0] ?? draft.file;
     if (!file) { problem.textContent = 'Choose the paper, a PDF.'; paper.focus(); return; }
     if (!/\.pdf$/i.test(file.name)) { problem.textContent = 'The paper must be a PDF.'; paper.focus(); return; }
     if (file.size > MAX_PAPER_MB * 1024 * 1024) { problem.textContent = `That PDF is over ${MAX_PAPER_MB} MB. Shrink it first (Preview, File, Export, Reduce File Size).`; paper.focus(); return; }
@@ -138,7 +188,7 @@ function newBriefForm({ onCreate, onCancel, creating, error }) {
 
 /** The hub: the table of briefs, New brief above it. */
 export function renderBriefs(container, props) {
-  const { briefs, loaded, error, today, onOpen, onRefresh, newOpen, onToggleNew, onCreate, creating, createError } = props;
+  const { briefs, loaded, error, today, onOpen, onRefresh, newOpen, onToggleNew, onCreate, onReadPaper, creating, createError } = props;
   const focusKey = focusKeyIn(container);
   const page = el('div', 'hub-page briefs-page');
   const head = el('div', 'briefs-head');
@@ -147,7 +197,7 @@ export function renderBriefs(container, props) {
     head.append(button('New brief', 'primary', { focus: 'new-brief', icon: 'file-arrow-up', onClick: onToggleNew }));
   }
   page.append(head);
-  if (newOpen) page.append(newBriefForm({ onCreate, onCancel: onToggleNew, creating, error: createError }));
+  if (newOpen) page.append(newBriefForm({ onCreate, onCancel: onToggleNew, onReadPaper, creating, error: createError }));
 
   if (!loaded) {
     page.append(error ? tryAgain(onRefresh) : busyLine('Loading the briefs'));
