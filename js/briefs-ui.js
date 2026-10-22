@@ -9,6 +9,7 @@
  */
 import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, notesKind, createLock, wordCount, draftProgress } from './briefs-view.js';
 import { fillFromPaper } from './paper-read.js';
+import { renderMarkdown } from './markdown-lite.js';
 import { hubHead, HUB_LEDES } from './hub-head.js';
 import { isoToShort } from './queue-view.js';
 import { faIcon, busyWords } from './icons.js';
@@ -437,8 +438,7 @@ function draftBox(brief, { onWriteDraft }) {
     el('span', 'meta', `${Number(r.words ?? 0).toLocaleString('en-US')} words of body prose · band 1,300 to 2,000`),
     el('span', `draft-pill${bandOk ? ' is-ok' : ''}`, r.band),
   );
-  const md = el('pre', 'draft-md');
-  md.textContent = r.draft ?? '';
+  // Her pick A (Oct 22): the brief as reading text at reading width, the tools in one row above it.
   const row = el('div', 'draft-downloads');
   row.append(
     downloadButton('brief-draft.md', r.draft ?? ''),
@@ -446,7 +446,11 @@ function draftBox(brief, { onWriteDraft }) {
     downloadButton('page-plan.md', r.plan ?? ''),
     button('Write it again', 'linkish', { focus: 'write-again', onClick: () => onWriteDraft({ restart: true }) }),
   );
-  box.append(meta, md, row);
+  const tools = el('div', 'draft-tools');
+  tools.append(meta, row);
+  const article = el('article', 'brief-read');
+  article.innerHTML = renderMarkdown(r.draft ?? '');   // every character escaped by the renderer; only its own tags
+  box.append(tools, article);
 
   box.append(el('h3', 'section-label hub-label', 'Tables and figures in the paper'));
   if (r.figures?.length) {

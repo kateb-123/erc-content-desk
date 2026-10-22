@@ -1046,8 +1046,22 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .draft-meta .meta { font: var(--meta-type); color: var(--muted); }
 .draft-pill { display: inline-block; padding: var(--spacing-01) var(--spacing-04); border-radius: var(--radius-pill); background: var(--tag-background-review); color: var(--tag-color-review); font: 600 12px/18px var(--font-body, inherit); white-space: nowrap; }
 .draft-pill.is-ok { background: var(--tag-background-gray); color: var(--tag-color-gray); }
-.draft-md { white-space: pre-wrap; font: var(--meta-type); font-size: 14px; line-height: 22px; background: var(--layer-01); border-radius: var(--radius); padding: var(--spacing-05) var(--spacing-06); max-height: 480px; overflow: auto; margin: 0 0 var(--spacing-05); }
-.draft-downloads { display: flex; gap: var(--spacing-04); align-items: center; flex-wrap: wrap; margin: 0 0 var(--spacing-06); }
+.draft-tools { display: flex; flex-direction: column; gap: var(--spacing-04); padding: 0 0 var(--spacing-05); margin: 0 0 var(--spacing-06); border-bottom: 1px solid var(--line-in); }
+.draft-tools .draft-meta { margin: 0; }
+.draft-downloads { display: flex; gap: var(--spacing-04); align-items: center; flex-wrap: wrap; margin: 0; }
+/* The brief as reading text (her pick A, Oct 22): the desk's type at reading width, a maize rule under each section. */
+.brief-read { max-width: 720px; font: var(--body-type, 400 16px/26px inherit); line-height: 26px; color: var(--text-primary); margin: 0 0 var(--spacing-07); }
+.brief-read h1 { font: 700 28px/36px inherit; margin: 0 0 var(--spacing-03); }
+.brief-read .brief-cover { color: var(--muted); font: var(--meta-type); margin: 0 0 var(--spacing-06); }
+.brief-read h2 { font: 600 20px/28px inherit; margin: var(--spacing-07) 0 var(--spacing-03); padding-bottom: var(--spacing-02); border-bottom: 2px solid var(--border-interactive); }
+.brief-read h3 { font: 700 16px/24px inherit; margin: var(--spacing-05) 0 var(--spacing-02); }
+.brief-read p { margin: 0 0 var(--spacing-04); }
+.brief-read ol, .brief-read ul { padding-left: 22px; margin: 0 0 var(--spacing-04); }
+.brief-read li { margin: 0 0 var(--spacing-03); }
+.brief-read table { border-collapse: collapse; width: 100%; margin: var(--spacing-04) 0 var(--spacing-05); font: var(--meta-type); }
+.brief-read th { text-align: left; padding: var(--spacing-02) var(--spacing-03); border-bottom: 2px solid var(--border-interactive); font: var(--label-type, 700 12px/18px inherit); letter-spacing: 1px; text-transform: uppercase; }
+.brief-read td { padding: var(--spacing-02) var(--spacing-03); border-bottom: 1px solid var(--line-in); vertical-align: top; }
+.brief-read a { color: var(--link-primary); }
 .brief-stage .hub-label + .draft-figures, .brief-stage .hub-label + .draft-flags, .brief-stage .hub-label + .draft-notes { margin-top: var(--spacing-04); }
 .draft-figures, .draft-notes { list-style: none; padding: 0; margin: 0 0 var(--spacing-06); }
 .draft-figures li { display: flex; justify-content: space-between; gap: var(--spacing-04); padding: var(--spacing-03) 0; border-bottom: 1px solid var(--line-in); }
