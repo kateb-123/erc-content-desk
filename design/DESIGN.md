@@ -542,26 +542,26 @@ built the hub, New brief, the paper stage with Save notes, the card and the
 lock; the draft, her proof and the author round are the next rounds, and a
 brief past the paper stage says so on its page.
 
-- **The paper read** (Kate, Oct 22: "id rather it read it and filled it in"):
-  choosing the PDF on New brief reads its first two pages in the browser
-  (pdf.js 4.10.38 from cdnjs, loaded only then; `js/paper-read.js`), sends
-  that text to `/api/briefs` as `read`, and the model names the paper
-  (`api/_lib/paper-fields.js`: title, authors, journal, year, the first
-  author's last name, nothing invented, no journal for a working paper).
-  The form fills only its EMPTY boxes, and the year only while it still
-  holds the default, then says "Read from the paper: title, authors, journal,
-  year, last name. Check them." under the PDF field in the busy words' slot;
-  a failed read says so there and she types them. The form keeps every box
-  and the chosen PDF across redraws (a refusal, Creating…), the desk's rule
-  that a redraw never drops what you are typing.
-- **Notes as a file** (Kate, Oct 22: "i just want to upload my md"): under
-  the notes box on New brief and on the brief's page, a file field, "Or your
-  notes as a file", takes a .md, .markdown or .txt and fills the box with its
-  text (`notesFile` in `js/briefs-view.js`: trimmed, never otherwise changed;
-  empty, another kind of file, or more than the API's 20,000 characters is
-  refused on the form's own error line). Save or Create then sends it the way
-  typed notes go, so notes.md in the folder is the same file either way.
-
+- **New brief in her order** (Kate, Oct 22: "you should have to upload the
+  paper and notes, then it reads and fills out the byline before it moves
+  onto content"): the form opens with two file fields side by side, the
+  paper as a PDF and her notes as a .md or .txt, both needed (`notesFile` in
+  `js/briefs-view.js` takes the notes file's text; a KB count and a word
+  count sit under them). Create the brief is locked and says why on the line
+  under it (`createLock`: "Choose the paper and your notes first.", "Choose
+  your notes file first.", "Reading the paper first."). Choosing the PDF
+  reads its first two pages in the browser (pdf.js 4.10.38 from cdnjs,
+  loaded only then; `js/paper-read.js`), sends that text to `/api/briefs` as
+  `read`, and the model names the paper (`api/_lib/paper-fields.js`: title,
+  authors, journal, year, the first author's last name, nothing invented, no
+  journal for a working paper). The byline then appears under the files,
+  filled where its boxes were empty (the year only while it held the
+  default), with "Read from the paper: title, authors, journal, year, last
+  name. Check them." in a status line, and the cursor in the topic word; a
+  failed read says so there and she types them. The form keeps every box and
+  both files across redraws (a refusal, Creating…), the desk's rule that a
+  redraw never drops what you are typing. On the brief's page the notes box
+  keeps its own file field under it, "Or your notes as a file".
 ## Her notes after the hubs (Oct 6)
 
 - **The highlight's own Save**: once the picks change, Update the highlight

@@ -7,7 +7,7 @@
  * beside it. Round 1 draws the first stage, Paper and notes; the later ones
  * say they come in the next round.
  */
-import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile } from './briefs-view.js';
+import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, createLock, wordCount } from './briefs-view.js';
 import { fillFromPaper } from './paper-read.js';
 import { hubHead, HUB_LEDES } from './hub-head.js';
 import { isoToShort } from './queue-view.js';
@@ -68,20 +68,36 @@ function notesPicker(notes, problem) {
 }
 
 /**
- * What the New brief form holds between redraws: the chosen PDF and every
- * box's words, so a Creating… redraw or a refusal never drops what she typed
- * (the desk's rule: a redraw never drops what you are typing). Cleared when
- * the brief is made or the form is cancelled.
+ * What the New brief form holds between redraws: the chosen files, the notes
+ * file's text and every box's words, so a Creating… redraw or a refusal
+ * never drops what she typed (the desk's rule: a redraw never drops what you
+ * are typing). Cleared when the brief is made or the form is cancelled.
  */
-const draft = { file: null, values: {} };
-export function clearBriefDraft() { draft.file = null; draft.values = {}; }
+const draft = { file: null, notesFile: null, notes: '', values: {}, read: false };
+export function clearBriefDraft() { draft.file = null; draft.notesFile = null; draft.notes = ''; draft.values = {}; draft.read = false; }
 
-/** The New brief form: the paper, who and what, her notes. Choosing the paper reads it and fills the empty boxes (Oct 22). */
+/** A file input showing a chosen file again after a redraw (older browsers skip it; the draft still holds the file). */
+function showFile(control, file) {
+  if (!file) return;
+  try { const dt = new DataTransfer(); dt.items.add(file); control.files = dt.files; } catch { /* the file is still in the draft */ }
+}
+
+/**
+ * The New brief form in her order (Kate, Oct 22): the two files first, the
+ * paper and her notes, both needed; once the paper is in, the desk reads it
+ * and the byline appears under the files, filled, for her to check and finish
+ * with the topic word and the author of record; Create opens the brief's
+ * page, where the draft comes next.
+ */
 function newBriefForm({ onCreate, onCancel, onReadPaper, creating, error }) {
   const box = el('form', 'hub-box new-brief');
   box.noValidate = true;
   const paper = input('file');
   paper.accept = 'application/pdf,.pdf';
+  const notesPick = input('file');
+  notesPick.accept = '.md,.markdown,.txt,text/markdown,text/plain';
+  const paperMeta = el('p', 'field-hint new-brief-filemeta');
+  const notesMeta = el('p', 'field-hint new-brief-filemeta');
   const defaultYear = String(new Date().getFullYear());
   const last = input(); last.autocomplete = 'off';
   const year = input(); year.inputMode = 'numeric'; year.maxLength = 4; year.value = defaultYear;
@@ -90,30 +106,66 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, creating, error }) {
   const authors = input(); authors.placeholder = 'as the paper lists them';
   const journal = input();
   const record = input(); record.placeholder = 'Dr. Lastname, the one the email goes to';
-  const notes = el('textarea'); notes.rows = 5; notes.placeholder = 'What to lead with, what to keep, which table is the visual.';
-  const boxes = { last, year, topic, paperTitle, authors, journal, record, notes };
+  const boxes = { last, year, topic, paperTitle, authors, journal, record };
   for (const [key, control] of Object.entries(boxes)) {
     if (draft.values[key] != null) control.value = draft.values[key];
     control.addEventListener('input', () => { draft.values[key] = control.value; });
   }
-  if (draft.file) {
-    try { const dt = new DataTransfer(); dt.items.add(draft.file); paper.files = dt.files; } catch { /* an older browser: the file is still in the draft */ }
-  }
+  showFile(paper, draft.file);
+  showFile(notesPick, draft.notesFile);
+
+  const problem = el('p', 'field-error');
+  problem.setAttribute('role', 'alert');
+  if (error) problem.textContent = error;
+
+  // The byline: hidden until the paper is in, then filled by the read.
+  const byline = el('div', 'new-brief-byline');
+  const readLine = el('p', 'field-hint new-brief-read');
+  readLine.setAttribute('role', 'status');
   const folderLine = el('p', 'field-hint new-brief-folder');
   const sayFolder = () => { const slug = briefSlug({ authorLast: last.value, year: year.value, topic: topic.value }); folderLine.textContent = slug ? `Folder: ${slug}` : 'Folder: the last name, the year and the topic word'; };
   for (const c of [last, year, topic]) c.addEventListener('input', sayFolder);
   sayFolder();
+  const pair = (a, b) => { const g = el('div', 'card-grid'); g.append(a, b); return g; };
+  const topicField = field('Topic word', topic, 'Tells two papers by one author apart.');
+  topicField.append(folderLine);
+  byline.append(
+    el('h3', 'section-label hub-label', 'The byline'),
+    readLine,
+    field("The paper's title", paperTitle),
+    pair(field('Authors', authors), field('Journal', journal)),
+    pair(field("Author's last name", last), field('Year', year)),
+    pair(topicField, field('Author of record', record)),
+  );
 
-  // The paper read: choosing a PDF fills the title, authors, journal, year and last name where they are empty.
-  const readLine = el('p', 'field-hint new-brief-read');
-  readLine.setAttribute('role', 'status');
+  // Create: locked, and saying why, until both files are in and the read is done.
+  const create = button(creating ? 'Creating…' : 'Create the brief', 'primary', { focus: 'nb-create', icon: creating ? null : 'file-arrow-up' });
+  create.type = 'submit';
+  const lockLine = el('p', 'new-brief-lock');
   let reading = 0;
+  const sayLock = () => {
+    const why = createLock({ paper: Boolean(draft.file), notes: Boolean(draft.notesFile), reading: reading > 0 && !draft.read });
+    create.disabled = Boolean(creating) || Boolean(why);
+    lockLine.textContent = why;
+    byline.hidden = !draft.file;
+  };
+
+  const sayPaper = () => { paperMeta.textContent = draft.file ? `${Math.max(1, Math.round(draft.file.size / 1024))} KB` : ''; };
+  const sayNotes = () => { notesMeta.textContent = draft.notesFile ? `${wordCount(draft.notes).toLocaleString('en-US')} words` : ''; };
+  sayPaper(); sayNotes();
+
+  // The paper read: choosing the PDF fills the title, authors, journal, year and last name where they are empty.
   paper.addEventListener('change', async () => {
     const file = paper.files?.[0];
     if (!file) return;
-    draft.file = file;
-    if (!/\.pdf$/i.test(file.name) || !onReadPaper) return;
+    problem.textContent = '';
+    if (!/\.pdf$/i.test(file.name)) { problem.textContent = 'The paper must be a PDF.'; paper.value = ''; return; }
+    if (file.size > MAX_PAPER_MB * 1024 * 1024) { problem.textContent = `That PDF is over ${MAX_PAPER_MB} MB. Shrink it first (Preview, File, Export, Reduce File Size).`; paper.value = ''; return; }
+    draft.file = file; draft.read = false;
+    sayPaper();
+    if (!onReadPaper) { draft.read = true; sayLock(); return; }
     const turn = ++reading;
+    sayLock();
     readLine.replaceChildren(busyLine('Reading the paper'));
     try {
       const found = await onReadPaper(file);
@@ -132,45 +184,49 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, creating, error }) {
       if (turn !== reading) return;
       readLine.textContent = `Couldn't read the paper (${String(err?.message ?? err)}). Type the title, authors, journal and year.`;
     }
+    draft.read = true;
+    sayLock();
+    if (!topic.value) topic.focus();
   });
 
-  const grid = el('div', 'card-grid');
-  grid.append(
-    field("Author's last name", last),
-    field('Year', year),
-    field('Topic word', topic, 'Tells two papers by one author apart.'),
-    field('Author of record', record),
-  );
-  const problem = el('p', 'field-error');
-  problem.setAttribute('role', 'alert');
-  if (error) problem.textContent = error;
+  // Her notes: the file's text rides with the brief as its notes.
+  notesPick.addEventListener('change', () => {
+    const file = notesPick.files?.[0];
+    if (!file) return;
+    problem.textContent = '';
+    const reader = new FileReader();
+    reader.onload = () => {
+      const got = notesFile(file.name, reader.result);
+      if (!got.ok) { problem.textContent = got.error; notesPick.value = ''; draft.notesFile = null; draft.notes = ''; sayNotes(); sayLock(); return; }
+      draft.notesFile = file; draft.notes = got.notes;
+      sayNotes(); sayLock();
+    };
+    reader.onerror = () => { problem.textContent = "Couldn't read that file."; };
+    reader.readAsText(file);
+  });
+
+  const files = el('div', 'card-grid new-brief-files');
+  const paperField = field('The paper, as a PDF', paper, `Up to ${MAX_PAPER_MB} MB. Bigger: Preview, File, Export, Reduce File Size.`);
+  paperField.append(paperMeta);
+  const notesField = field('Your notes, as a .md or .txt', notesPick, 'What to lead with, what to keep, which table is the visual.');
+  notesField.append(notesMeta);
+  files.append(paperField, notesField);
+
   const actions = el('div', 'new-brief-actions');
-  const create = button(creating ? 'Creating…' : 'Create the brief', 'primary', { focus: 'nb-create', icon: creating ? null : 'file-arrow-up' });
-  create.type = 'submit';
-  create.disabled = Boolean(creating);
   const cancel = button('Cancel', 'btn-outline', { onClick: onCancel });
   actions.append(create, cancel);
+  const createBlock = el('div', 'new-brief-create');
+  createBlock.append(actions, lockLine);
+  sayLock();
 
-  box.append(
-    el('h3', 'section-label hub-label', 'New brief'),
-    field('The paper, as a PDF', paper, `Up to ${MAX_PAPER_MB} MB. Bigger: Preview, File, Export, Reduce File Size. The desk reads it and fills the boxes it can.`),
-    readLine,
-    grid, folderLine,
-    field("The paper's title", paperTitle),
-    field('Authors', authors),
-    field('Journal', journal),
-    field('Your notes', notes),
-    notesPicker(notes, problem),
-    problem, actions,
-  );
+  box.append(el('h3', 'section-label hub-label', 'New brief'), files, byline, problem, createBlock);
 
   box.addEventListener('submit', async event => {
     event.preventDefault();
     problem.textContent = '';
     const file = paper.files?.[0] ?? draft.file;
     if (!file) { problem.textContent = 'Choose the paper, a PDF.'; paper.focus(); return; }
-    if (!/\.pdf$/i.test(file.name)) { problem.textContent = 'The paper must be a PDF.'; paper.focus(); return; }
-    if (file.size > MAX_PAPER_MB * 1024 * 1024) { problem.textContent = `That PDF is over ${MAX_PAPER_MB} MB. Shrink it first (Preview, File, Export, Reduce File Size).`; paper.focus(); return; }
+    if (!draft.notesFile) { problem.textContent = 'Choose your notes file, a .md or .txt.'; notesPick.focus(); return; }
     if (!briefSlug({ authorLast: last.value, year: year.value, topic: topic.value })) { problem.textContent = "The author's last name and a four-digit year name the folder."; last.focus(); return; }
     const paperB64 = await new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -180,7 +236,7 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, creating, error }) {
     });
     onCreate({
       authorLast: last.value.trim(), year: year.value.trim(), topic: topic.value.trim(), paperTitle: paperTitle.value.trim(), authors: authors.value.trim(),
-      journal: journal.value.trim(), authorOfRecord: record.value.trim(), notes: notes.value, paperName: file.name, paperB64,
+      journal: journal.value.trim(), authorOfRecord: record.value.trim(), notes: draft.notes, paperName: file.name, paperB64,
     });
   });
   return box;

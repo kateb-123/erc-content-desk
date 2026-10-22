@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { STAGES, stepStates, waitsFor, briefSlug, hubRows, briefTitle, stageLabel, notesFile, NOTES_MAX } from '../js/briefs-view.js';
+import { STAGES, stepStates, waitsFor, briefSlug, hubRows, briefTitle, stageLabel, notesFile, NOTES_MAX, createLock, wordCount } from '../js/briefs-view.js';
 
 test('the seven stages, in her order, the last two round two', () => {
   assert.deepEqual(STAGES.map(s => [s.key, s.label, Boolean(s.later)]), [
@@ -63,6 +63,22 @@ test('notesFile: her notes as a dropped .md or .txt fill the notes box; anything
   assert.deepEqual(notesFile('notes.md', ''), { ok: false, error: 'That file is empty.' });
   assert.deepEqual(notesFile('notes.md', 'a'.repeat(20001)), { ok: false, error: 'That file is over 20,000 characters, more than a brief\'s notes hold. Trim it first.' });
   assert.equal(notesFile('notes.md', 'a'.repeat(20000)).ok, true, 'the limit is the API\'s own, MAX_TEXT');
+});
+
+test('createLock: New brief needs the paper and the notes file, then waits for the read; the reason says which (Kate, Oct 22: "you should have to upload the paper and notes, then it reads and fills out the byline")', () => {
+  assert.equal(createLock({ paper: false, notes: false, reading: false }), 'Choose the paper and your notes first.');
+  assert.equal(createLock({ paper: true, notes: false, reading: false }), 'Choose your notes file first.');
+  assert.equal(createLock({ paper: false, notes: true, reading: false }), 'Choose the paper first.');
+  assert.equal(createLock({ paper: true, notes: true, reading: true }), 'Reading the paper first.');
+  assert.equal(createLock({ paper: true, notes: true, reading: false }), '');
+  assert.equal(createLock({ paper: true, notes: false, reading: true }), 'Choose your notes file first.', 'the files come before the wait');
+});
+
+test('wordCount counts words the way the brief does', () => {
+  assert.equal(wordCount('# Race, Nativity\n\n- linkage: majors to occupations\n'), 6);
+  assert.equal(wordCount('   '), 0);
+  assert.equal(wordCount(''), 0);
+  assert.equal(wordCount(null), 0);
 });
 
 test('briefTitle: her title once there is one, the paper\'s until then', () => {

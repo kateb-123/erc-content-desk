@@ -87,6 +87,22 @@ export function notesFile(name, text) {
   return { ok: true, notes };
 }
 
+/**
+ * Why Create the brief is locked (Kate, Oct 22: "you should have to upload
+ * the paper and notes, then it reads and fills out the byline"): the two
+ * files come first, then the read has to finish. Empty once it may go.
+ */
+export function createLock({ paper, notes, reading }) {
+  if (!paper && !notes) return 'Choose the paper and your notes first.';
+  if (!paper) return 'Choose the paper first.';
+  if (!notes) return 'Choose your notes file first.';
+  if (reading) return 'Reading the paper first.';
+  return '';
+}
+
+/** Words in a notes file, the way the brief counts its own: a token with a letter or a digit in it, so "#" and "-" are not words. */
+export const wordCount = text => String(text ?? '').split(/\s+/).filter(t => /[\p{L}\p{N}]/u.test(t)).length;
+
 /** Her title once there is one, the paper's until then, the folder's name as a last resort. */
 export const briefTitle = brief => brief.title || brief.paperTitle || brief.id;
 

@@ -1020,10 +1020,17 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .brief-file { color: var(--link-primary); text-decoration: underline; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
 .brief-file-when { color: var(--text-helper); flex: none; }
 .new-brief { padding: var(--spacing-06); margin-bottom: var(--spacing-07); display: flex; flex-direction: column; gap: var(--spacing-05); }
-/* The paper read's line under the PDF field: the busy words left-aligned like a hint, nothing when there is nothing to say (Oct 22). */
-.new-brief-read { margin: calc(-1 * var(--spacing-04)) 0 0; }
+/* New brief in her order (Oct 22): the two files side by side, then the byline once the paper is in, then Create, locked and saying why until both files are in and the read is done. */
+.new-brief-byline { display: flex; flex-direction: column; gap: var(--spacing-05); }
+.new-brief-byline[hidden] { display: none; }
+.new-brief-read { margin: 0; }
 .new-brief-read:empty { display: none; }
 .new-brief-read .load-line { margin: 0; text-align: left; }
+.new-brief-filemeta:empty { display: none; }
+.new-brief-create { display: flex; flex-direction: column; gap: var(--spacing-02); }
+.new-brief-lock { font: var(--meta-type); color: var(--muted); margin: 0; }
+.new-brief-lock:empty { display: none; }
+.new-brief .primary:disabled { color: var(--text-locked); }
 .new-brief .hub-label { margin-bottom: 0; }
 .new-brief input[type="text"], .new-brief input:not([type]), .new-brief textarea { width: 100%; box-sizing: border-box; height: 40px; padding: 0 var(--spacing-04); border: 1px solid var(--border-strong-01); border-radius: var(--radius-input); font: var(--body-type); color: var(--ink); }
 .new-brief textarea { height: auto; padding: var(--spacing-04); resize: vertical; }
