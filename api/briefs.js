@@ -23,8 +23,15 @@ import { briefSlug, slugPart, NOTES_MAX } from '../js/briefs-view.js';
 import { REWRITE_MODEL } from './_lib/rewrite.js';
 import { parseModelJson } from './_lib/reply-json.js';
 import { buildPaperPrompt, normalizePaperFields, PAPER_TEXT_MAX, PAPER_SCHEMA } from './_lib/paper-fields.js';
+import {
+  DRAFT_STEPS, SECTION_DEFS, nextDraftStep, stepWords, STYLE_SYSTEM_PROMPT, EXTRACT_PROMPT, EXTRACT_SCHEMA, normalizeExtract,
+  buildPlanPrompt, parsePlan, buildSectionPrompt, buildCheckPrompt, CHECK_SCHEMA,
+  assembleDraft, grammarlyCopy, figuresInventory, numberFlagsMd, bodyWordCount, wordBand, checkStyle, draftFiles,
+} from './_lib/brief-draft.js';
+import { getFile } from './_lib/sheets.js';
 
-export const config = { maxDuration: 60 };
+/** The draft's steps read the whole paper and write a section each; five minutes is the plan's ceiling, as for the rewrite. */
+export const config = { maxDuration: 300 };
 
 const MAX_TEXT = NOTES_MAX;
 
@@ -60,6 +67,39 @@ export const plainMarkdown = text => String(text ?? '').replace(/\\([\\.\-*_#`[\
 /** The largest notes file the desk takes: Word files with a picture or two stay well under it. */
 export const MAX_NOTES_BYTES = 2 * 1024 * 1024;
 const DOCX_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+/** A crop of the paper's page, as the browser cuts it: a PNG under a plain name, 1.5 MB at most. */
+export const MAX_CROP_BYTES = 1.5 * 1024 * 1024;
+const CROP_NAME = /^figure-[a-z0-9-]{1,60}-p\d{1,3}\.png$/;
+
+/**
+ * The draft's model call: the style prompt and the paper's PDF, both cached
+ * across the steps, then the step's prompt; held to a schema where one is
+ * given. The paper goes in as a document so the model reads its tables and
+ * figures, not a text dump. Built lazily so importing this file never needs
+ * the key.
+ */
+async function liveDraftModel({ system, prompt, pdfB64, schema, maxTokens = 8000, effort = 'high' }) {
+  client ??= new Anthropic({ timeout: 280_000, maxRetries: 1 });
+  const response = await client.messages.create({
+    model: REWRITE_MODEL,
+    max_tokens: maxTokens,
+    system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
+    output_config: schema ? { effort, format: { type: 'json_schema', schema } } : { effort },
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfB64 }, cache_control: { type: 'ephemeral' } },
+        { type: 'text', text: prompt },
+      ],
+    }],
+  });
+  if (response.stop_reason === 'max_tokens') throw new Error('the reply was cut short');
+  return response.content.filter(part => part.type === 'text').map(part => part.text).join('');
+}
+
+/** "October 2026", College Station's month. */
+const monthOf = ms => new Date(ms).toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'America/Chicago' });
 const text = (value, max = MAX_TEXT) => String(value ?? '').trim().slice(0, max);
 
 /** 'Yell leaders (final).PDF' as 'yell-leaders-final.pdf'. */
@@ -71,10 +111,12 @@ const notesFile = notes => ({ name: 'notes.md', contentType: 'text/markdown', b6
 export function createBriefsHandler({
   session = { refuse: refuseUnlessSignedIn },
   briefs = () => createBriefs(liveQuery()),
-  drive = { briefFolder, saveFile, listFiles },
+  drive = { briefFolder, saveFile, listFiles, getFile },
   mode = () => pickMode(process.env),
   readModel = liveReadModel,
   wordToMarkdown = liveWordToMarkdown,
+  draftModel = liveDraftModel,
+  now = () => Date.now(),
 } = {}) {
   return async function handler(req, res) {
     if (!['GET', 'POST'].includes(req.method)) return res.status(405).json({ ok: false, error: 'Use GET or POST.' });
@@ -87,6 +129,11 @@ export function createBriefsHandler({
         if (!id) return res.status(200).json({ ok: true, briefs: await store.list() });
         const brief = await store.get(id);
         if (!brief) return res.status(404).json({ ok: false, error: 'No brief by that name.' });
+        if (req.query?.paper) {
+          // The paper itself, for the browser to cut the chosen tables and figures out of.
+          const paper = await drive.getFile(brief.folderId, brief.paperName);
+          return res.status(200).json({ ok: true, name: paper.name, b64: paper.b64 });
+        }
         let files = null;
         try { files = brief.folderId ? await drive.listFiles(brief.folderId) : []; } catch { files = null; }
         return res.status(200).json({ ok: true, brief, files });
@@ -120,6 +167,24 @@ export function createBriefsHandler({
         return res.status(200).json({ ok: true, notes: notes.slice(0, MAX_TEXT) });
       }
       if (action === 'create') return await create(store, req.body, res);   // awaited, so a Drive refusal lands in the catch below, not as a crash
+      if (action === 'draft') return await draft(store, req.body, res);
+      if (action === 'figure') {
+        // A crop of the paper's page, cut in the browser, filed beside the draft.
+        const id = text(req.body?.id, 120);
+        const brief = id && await store.get(id);
+        if (!brief) return res.status(404).json({ ok: false, error: 'No brief by that name.' });
+        const name = text(req.body?.name, 80);
+        if (!CROP_NAME.test(name)) return res.status(400).json({ ok: false, error: 'A crop is named figure-<label>-p<page>.png.' });
+        const b64 = String(req.body?.b64 ?? '');
+        const bytes = Buffer.from(b64, 'base64').length;
+        if (!bytes) return res.status(400).json({ ok: false, error: 'The crop came through empty.' });
+        if (bytes > MAX_CROP_BYTES) return res.status(400).json({ ok: false, error: 'That crop is over 1.5 MB.' });
+        await drive.saveFile({ folderId: brief.folderId, name, contentType: 'image/png', b64 });
+        const draftExtra = { ...(brief.extra?.draft ?? {}) };
+        draftExtra.crops = [...new Set([...(draftExtra.crops ?? []), name])];
+        const updated = await store.update(id, { extra: { ...(brief.extra ?? {}), draft: draftExtra } });
+        return res.status(200).json({ ok: true, brief: updated });
+      }
       if (action === 'notes') {
         const id = text(req.body?.id, 120);
         const brief = id && await store.get(id);
@@ -138,6 +203,86 @@ export function createBriefsHandler({
       return res.status(502).json({ ok: false, error: `The desk couldn't do that: ${err.message}` });
     }
   };
+
+  /**
+   * One step of the draft (Kate, Oct 22; the stage in docs/research-briefs-handoff.md):
+   * the browser calls this once per step, in order, and shows each step's
+   * words; every step keeps what it made on the brief's row and in its
+   * folder, so a step that fails can be tried again and a page left mid-way
+   * picks up where it stopped.
+   */
+  async function draft(store, body, res) {
+    const id = text(body?.id, 120);
+    const brief = id && await store.get(id);
+    if (!brief) return res.status(404).json({ ok: false, error: 'No brief by that name.' });
+    const extra = { ...(brief.extra ?? {}) };
+    if (text(body?.briefAuthor, 120)) extra.briefAuthor = text(body?.briefAuthor, 120);
+    const d = { ...(extra.draft ?? {}) };
+    d.done = [...(d.done ?? [])];
+    d.sections = { ...(d.sections ?? {}) };
+    const step = text(body?.step, 40) || nextDraftStep(d.done);
+    if (!step) return res.status(200).json({ ok: true, brief, step: null, next: null });
+    if (!DRAFT_STEPS.includes(step)) return res.status(400).json({ ok: false, error: `No draft step named ${step}.` });
+
+    const patch = { extra };
+    if (brief.stage === 'paper') { patch.stage = 'draft'; patch.stageAt = new Date(now()).toISOString(); }
+    const sectionKeys = SECTION_DEFS.map(s => s.key);
+    try {
+      if (step === 'assemble') {
+        const result = assemble(brief, d, extra.briefAuthor);
+        d.result = result;
+        for (const file of draftFiles(result)) {
+          await drive.saveFile({ folderId: brief.folderId, name: file.name, contentType: file.contentType, b64: Buffer.from(file.text, 'utf8').toString('base64') });
+        }
+        patch.words = result.words;
+        patch.stage = 'proof';
+        patch.stageAt = new Date(now()).toISOString();
+      } else {
+        const paper = await drive.getFile(brief.folderId, brief.paperName);
+        const ask = (prompt, schema, maxTokens, effort) => draftModel({ system: STYLE_SYSTEM_PROMPT, prompt, pdfB64: paper.b64, schema, maxTokens, effort });
+        if (step === 'extract') {
+          d.extract = normalizeExtract(parseModelJson(await ask(EXTRACT_PROMPT, EXTRACT_SCHEMA, 12000, 'high'), 'the read of the paper'));
+          await drive.saveFile({ folderId: brief.folderId, name: 'extract.json', contentType: 'application/json', b64: Buffer.from(JSON.stringify(d.extract, null, 2), 'utf8').toString('base64') });
+        } else if (step === 'plan') {
+          if (!d.extract) throw new Error('the paper has not been read yet');
+          d.plan = String(await ask(buildPlanPrompt(d.extract, brief.notes), null, 6000, 'medium')).trim();
+          d.title = parsePlan(d.plan).title;
+          await drive.saveFile({ folderId: brief.folderId, name: 'page-plan.md', contentType: 'text/markdown', b64: Buffer.from(`${d.plan}\n`, 'utf8').toString('base64') });
+        } else if (sectionKeys.includes(step)) {
+          if (!d.extract) throw new Error('the paper has not been read yet');
+          const prior = sectionKeys.filter(k => d.sections[k] != null && k !== step).map(k => ({ key: k, content: d.sections[k] }));
+          d.sections[step] = String(await ask(buildSectionPrompt(d.extract, d.plan ?? '', brief.notes, step, prior), null, 8000, 'medium')).trim();
+        } else if (step === 'check') {
+          const sections = sectionKeys.filter(k => d.sections[k] != null).map(k => ({ key: k, content: d.sections[k] }));
+          if (!sections.length) throw new Error('no sections to check yet');
+          const checked = parseModelJson(await ask(buildCheckPrompt(d.extract, sections), CHECK_SCHEMA, 16000, 'high'), 'the check');
+          for (const s of checked.sections ?? []) if (sectionKeys.includes(s.key) && typeof s.content === 'string' && s.content.trim()) d.sections[s.key] = s.content.trim();
+          d.checkFlags = (checked.flags ?? []).map(f => ({ section: String(f.section ?? ''), note: String(f.note ?? '') })).filter(f => f.note);
+        }
+      }
+    } catch (err) {
+      console.error('draft step failed', step, err);
+      return res.status(502).json({ ok: false, error: `The desk couldn't write the draft at ${stepWords(step)}: ${err.message}. Try the step again.` });
+    }
+    if (!d.done.includes(step)) d.done.push(step);
+    d.step = nextDraftStep(d.done);
+    extra.draft = d;
+    const updated = await store.update(id, patch);
+    return res.status(200).json({ ok: true, brief: updated, step, next: d.step });
+  }
+
+  /** The files from what the steps made: the brief, the Grammarly copy, the figures, the flags, the word band. */
+  function assemble(brief, d, briefAuthor) {
+    const extract = d.extract ?? { title: brief.paperTitle, authors: (brief.authors || '').split(/\s*(?:,|\band\b)\s*/).filter(Boolean), journal: brief.journal, recommended_visuals: [], number_flags: [] };
+    const draftMd = assembleDraft({ extract, sections: d.sections, title: d.title, briefAuthor, month: monthOf(now()) });
+    const inventory = figuresInventory(extract);
+    const sections = SECTION_DEFS.filter(s => d.sections[s.key] != null).map(s => ({ key: s.key, content: d.sections[s.key] }));
+    const words = bodyWordCount(d.sections);
+    return {
+      plan: d.plan ?? '', draft: draftMd, grammarly: grammarlyCopy(draftMd), figures: inventory.items, figuresMd: inventory.md,
+      numberFlags: numberFlagsMd(extract.number_flags), styleFlags: checkStyle(sections, extract.journal ?? ''), words, band: wordBand(words),
+    };
+  }
 
   async function create(store, body, res) {
     const authorLast = text(body?.authorLast, 80);

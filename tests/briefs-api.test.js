@@ -259,3 +259,105 @@ test('POST create: a Drive refusal is a plain 502, never a crash; an unknown act
   assert.match(res2.body.error, /couldn't do that: Sheet API error/);
   void handler;
 });
+
+// ---- Round 2: the draft (Kate, Oct 22, her Go) ----
+import { DRAFT_STEPS, EXTRACT_PROMPT } from '../api/_lib/brief-draft.js';
+
+/** A store that keeps state across steps, and a drive that records files and hands the paper back. */
+function draftWorld({ extra = {}, model } = {}) {
+  const rows = new Map([['holzman-2026-alignment', { id: 'holzman-2026-alignment', title: '', paperTitle: 'Race, Nativity', authors: 'Brian Holzman and Jeehee Han', journal: 'AERA Open', year: 2026, design: '', authorOfRecord: 'Dr. Holzman', stage: 'paper', stageAt: '2026-10-22T10:00:00.000Z', createdAt: '2026-10-22T10:00:00.000Z', folderId: 'fld-1', folderUrl: 'https://drive/fld-1', paperName: 'holzman.pdf', notes: 'Lead with the match premium.', words: 0, extra }]]);
+  const files = [];
+  const calls = [];
+  const store = {
+    async list() { return [...rows.values()]; },
+    async get(id) { return rows.get(id) ? { ...rows.get(id) } : null; },
+    async create(b) { rows.set(b.id, { ...b, stage: 'paper', extra: b.extra ?? {} }); return rows.get(b.id); },
+    async update(id, patch) { rows.set(id, { ...rows.get(id), ...patch }); return { ...rows.get(id) }; },
+  };
+  const drive = {
+    briefFolder: async name => ({ id: 'fld-' + name, url: 'https://drive/' + name }),
+    saveFile: async f => { files.push([f.name, f.contentType, f.b64 ? Buffer.from(f.b64, 'base64').toString('utf8').slice(0, 40) : '']); return { ok: true, url: 'u' }; },
+    listFiles: async () => [],
+    getFile: async (folderId, name) => ({ name, contentType: 'application/pdf', b64: Buffer.from('%PDF-1.4 the paper').toString('base64') }),
+  };
+  const extractJson = JSON.stringify({ title: 'Race, Nativity, and the Labor Market Returns to College Major-Occupation Alignment', authors: ['Brian Holzman', 'Jeehee Han'], journal: 'AERA Open', year: 2026, design: 'observational', research_questions: ['q'], sample: 's', methods_summary: 'm', key_numbers: [{ value: '1,366,603', context: 'workers, p. 8' }], findings: [{ title: 'Match pays', summary: 'Matched workers earn more.' }], policy_recommendations: ['r'], apa_citation: 'Holzman, B., & Han, J. (2026). Race, nativity. AERA Open.', recommended_visuals: [{ kind: 'table', source_label: 'Table 3', page: 12, why: 'the premium', suggested_caption: 'Earnings by match' }], number_flags: [] });
+  const draftModel = model ?? (async ({ prompt, schema }) => {
+    calls.push({ prompt, schema: Boolean(schema) });
+    if (prompt.startsWith('Do a deep, close reading')) return extractJson;
+    if (/TASK: Write the page plan/.test(prompt)) return '# Page Plan: Holzman (2026)\n\nSuggested brief title: Majors That Lead Somewhere\n\n## Plan\n| Page | Content |\n|---|---|\n| Cover | Exec |\n';
+    if (/Below is a complete ERC research brief draft/.test(prompt)) return JSON.stringify({ sections: [{ key: 'exec_summary', content: 'Checked exec. This brief summarizes a research study in AERA Open.' }], flags: [{ section: 'key_findings', note: 'Could not find 2.1%.' }] });
+    const m = /TASK: (?:Write|Produce) (?:the )?([A-Za-z ]+?)(?: as|[.:])/.exec(prompt);
+    return `${m ? m[1] : 'Section'} words.`;
+  });
+  const handler = createBriefsHandler({ session: { refuse: async () => false }, briefs: () => store, drive, mode: () => 'db', draftModel, now: () => new Date('2026-10-22T16:00:00.000Z').getTime() });
+  return { handler, store, files, calls, rows };
+}
+
+const post = (handler, body) => { const res = fakeRes(); return handler({ method: 'POST', query: {}, body }, res).then(() => res); };
+
+test('POST draft: the first step is the deep read; the extract is kept on the brief and as extract.json, the brief author too, the stage moves to draft, and the next step is the plan', async () => {
+  const { handler, files, calls } = draftWorld();
+  const res = await post(handler, { action: 'draft', id: 'holzman-2026-alignment', briefAuthor: 'Kate Barnes' });
+  assert.equal(res.code, 200, JSON.stringify(res.body));
+  assert.equal(res.body.step, 'extract');
+  assert.equal(res.body.next, 'plan');
+  assert.equal(res.body.brief.stage, 'draft');
+  assert.equal(res.body.brief.extra.briefAuthor, 'Kate Barnes');
+  assert.equal(res.body.brief.extra.draft.extract.design, 'observational');
+  assert.deepEqual(res.body.brief.extra.draft.done, ['extract']);
+  assert.equal(calls[0].schema, true);
+  assert.ok(calls[0].prompt.startsWith(EXTRACT_PROMPT.slice(0, 40)));
+  assert.deepEqual(files.map(f => f[0]), ['extract.json']);
+});
+
+test('POST draft walks every step to the end: plan with its title and page-plan.md, each section with the ones before it, the check replacing what it corrected, then the four files, the words and the proof stage', async () => {
+  const { handler, files, calls, rows } = draftWorld();
+  let res;
+  for (let i = 0; i < DRAFT_STEPS.length; i++) {
+    res = await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });
+    assert.equal(res.code, 200, `${DRAFT_STEPS[i]}: ${JSON.stringify(res.body)}`);
+    assert.equal(res.body.step, DRAFT_STEPS[i]);
+  }
+  assert.equal(res.body.next, null);
+  const brief = rows.get('holzman-2026-alignment');
+  assert.equal(brief.extra.draft.title, 'Majors That Lead Somewhere');
+  assert.equal(brief.extra.draft.sections.exec_summary, 'Checked exec. This brief summarizes a research study in AERA Open.', 'the check\'s correction took');
+  assert.equal(brief.extra.draft.sections.key_findings, 'Key Findings words.');
+  assert.deepEqual(brief.extra.draft.checkFlags, [{ section: 'key_findings', note: 'Could not find 2.1%.' }]);
+  assert.equal(brief.stage, 'proof');
+  assert.equal(brief.stageAt, '2026-10-22T16:00:00.000Z');
+  assert.ok(brief.words > 0);
+  assert.ok(brief.extra.draft.result.draft.startsWith('# Majors That Lead Somewhere\n\n**ERC Research Brief | October 2026**'));
+  assert.match(brief.extra.draft.result.grammarly, /^Majors That Lead Somewhere\n\nExecutive Summary\n/);
+  assert.equal(brief.extra.draft.result.figures[0].crop, 'figure-table-3-p12.png');
+  assert.equal(brief.extra.draft.result.band, 'Under the floor of 1,300');
+  assert.deepEqual(files.map(f => f[0]), ['extract.json', 'page-plan.md', 'page-plan.md', 'brief-draft.md', 'brief-for-grammarly.md', 'figures.md']);
+  const keyFindingsCall = calls.find(c => /Key Findings as 2 to 4 findings/.test(c.prompt));
+  assert.match(keyFindingsCall.prompt, /## introduction\nIntroduction words\./, 'the sections so far ride along');
+  assert.match(keyFindingsCall.prompt, /Lead with the match premium/, 'her notes ride along');
+  const again = await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });
+  assert.equal(again.body.step, null, 'nothing left to do');
+});
+
+test('POST draft: a model failure is a plain 502 naming the step, and the step stays undone so it can be tried again', async () => {
+  const { handler, rows } = draftWorld({ model: async () => { throw new Error('overloaded'); } });
+  const res = await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });
+  assert.equal(res.code, 502);
+  assert.match(res.body.error, /couldn't write the draft at Reading the paper: overloaded/);
+  assert.deepEqual(rows.get('holzman-2026-alignment').extra.draft?.done ?? [], []);
+});
+
+test('GET ?id&paper=1 hands the paper back for the crops; POST figure files a crop by a plain name only', async () => {
+  const { handler, files } = draftWorld();
+  const res = fakeRes();
+  await handler({ method: 'GET', query: { id: 'holzman-2026-alignment', paper: '1' }, body: {} }, res);
+  assert.equal(res.code, 200);
+  assert.equal(res.body.name, 'holzman.pdf');
+  assert.equal(Buffer.from(res.body.b64, 'base64').toString('utf8'), '%PDF-1.4 the paper');
+  const ok = await post(handler, { action: 'figure', id: 'holzman-2026-alignment', name: 'figure-table-3-p12.png', b64: Buffer.from('png bytes').toString('base64') });
+  assert.equal(ok.code, 200, JSON.stringify(ok.body));
+  assert.deepEqual(files.at(-1).slice(0, 2), ['figure-table-3-p12.png', 'image/png']);
+  assert.deepEqual(ok.body.brief.extra.draft.crops, ['figure-table-3-p12.png']);
+  const bad = await post(handler, { action: 'figure', id: 'holzman-2026-alignment', name: '../evil.png', b64: 'eA==' });
+  assert.equal(bad.code, 400);
+});
