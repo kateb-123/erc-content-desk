@@ -38,6 +38,16 @@ test('fillFromPaper: the year box starts with this year filled in, so the paper\
   assert.equal('year' in fillFromPaper({ ...found, year: '' }, { paperTitle: '', authors: '', journal: '', year: '2026', authorLast: '' }, { defaultYear: '2026' }), false, 'no year from the paper, nothing to fill');
 });
 
+test('fillFromPaper: a box the desk filled from an earlier PDF counts as empty, so a second PDF refills it, while her own words still stay', () => {
+  const first = { title: 'Wrong paper', authors: 'A. Wrong', journal: 'Wrong Review', year: '2019', firstAuthorLast: 'Wrong' };
+  const second = { title: 'Right paper', authors: 'R. Right', journal: 'Right Review', year: '2026', firstAuthorLast: 'Right' };
+  const readFilled = { paperTitle: 'Wrong paper', authors: 'A. Wrong', journal: 'Wrong Review', year: '2019', authorLast: 'Wrong' };
+  const current = { paperTitle: 'Wrong paper', authors: 'A. Wrong', journal: 'Wrong Review', year: '2019', authorLast: 'Chukhray' };
+  assert.deepEqual(fillFromPaper(second, current, { defaultYear: '2026', readFilled }),
+    { paperTitle: 'Right paper', authors: 'R. Right', journal: 'Right Review', year: '2026' }, 'the last name she changed stays');
+  assert.deepEqual(fillFromPaper(first, { ...current, paperTitle: 'Her own title' }, { defaultYear: '2026', readFilled }).paperTitle, undefined, 'a title she retyped stays');
+});
+
 test('fillFromPaper leaves blanks alone and never invents', () => {
   assert.deepEqual(fillFromPaper({ title: '', authors: '', journal: '', year: '', firstAuthorLast: '' }, { paperTitle: '', authors: '', journal: '', year: '', authorLast: '' }), {});
   assert.deepEqual(fillFromPaper(null, { paperTitle: '', authors: '', journal: '', year: '', authorLast: '' }), {});

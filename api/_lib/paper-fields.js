@@ -10,6 +10,20 @@
 /** How much of the paper the model is shown: the first pages hold everything asked for. */
 export const PAPER_TEXT_MAX = 12000;
 
+/** The shape the model is held to (output_config json_schema, like every other model call on the desk), so a fence or a preface can never break the parse. */
+export const PAPER_SCHEMA = {
+  type: 'object',
+  properties: {
+    title: { type: 'string' },
+    authors: { type: 'string' },
+    journal: { type: 'string' },
+    year: { type: 'string' },
+    firstAuthorLast: { type: 'string' },
+  },
+  required: ['title', 'authors', 'journal', 'year', 'firstAuthorLast'],
+  additionalProperties: false,
+};
+
 const cap = (value, max) => String(value ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
 
 export function buildPaperPrompt(text) {

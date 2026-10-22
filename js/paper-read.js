@@ -43,6 +43,9 @@ function loadPdfjs() {
   pdfjsLoading ??= import(/* webpackIgnore: true */ PDFJS_URL).then(lib => {
     lib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
     return lib;
+  }).catch(err => {
+    pdfjsLoading = undefined;   // a blip on the first try must not fail every PDF after it
+    throw err;
   });
   return pdfjsLoading;
 }
@@ -64,17 +67,20 @@ export async function paperText(file, { pdfjs = loadPdfjs } = {}) {
 const blank = value => !String(value ?? '').trim();
 
 /**
- * Which boxes the paper's answer may fill: the empty ones. The year box
- * starts with this year typed in, so the paper's year may replace that
- * default and nothing else she set.
+ * Which boxes the paper's answer may fill: the empty ones, and the ones the
+ * desk itself filled from an earlier PDF (readFilled: box to the value it
+ * wrote), so choosing the right paper after the wrong one refills them. The
+ * year box starts with this year typed in, so the paper's year may replace
+ * that default. Nothing she typed or changed is touched.
  */
-export function fillFromPaper(found, current, { defaultYear = '' } = {}) {
+export function fillFromPaper(found, current, { defaultYear = '', readFilled = {} } = {}) {
   const out = {};
   if (!found) return out;
-  if (found.title && blank(current.paperTitle)) out.paperTitle = found.title;
-  if (found.authors && blank(current.authors)) out.authors = found.authors;
-  if (found.journal && blank(current.journal)) out.journal = found.journal;
-  if (found.year && (blank(current.year) || String(current.year).trim() === String(defaultYear))) out.year = found.year;
-  if (found.firstAuthorLast && blank(current.authorLast)) out.authorLast = found.firstAuthorLast;
+  const open = key => blank(current[key]) || (readFilled[key] != null && String(current[key]).trim() === String(readFilled[key]).trim());
+  if (found.title && open('paperTitle')) out.paperTitle = found.title;
+  if (found.authors && open('authors')) out.authors = found.authors;
+  if (found.journal && open('journal')) out.journal = found.journal;
+  if (found.year && (open('year') || String(current.year).trim() === String(defaultYear))) out.year = found.year;
+  if (found.firstAuthorLast && open('authorLast')) out.authorLast = found.firstAuthorLast;
   return out;
 }

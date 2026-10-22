@@ -11,7 +11,7 @@ import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, crea
 import { fillFromPaper } from './paper-read.js';
 import { hubHead, HUB_LEDES } from './hub-head.js';
 import { isoToShort } from './queue-view.js';
-import { faIcon } from './icons.js';
+import { faIcon, busyWords } from './icons.js';
 import { el, button, busyLine, tryAgain, focusKeyIn, restoreFocus } from './ui-aids.js';
 
 const MAX_PAPER_MB = 3;
@@ -33,10 +33,11 @@ function stepper(steps, { small = false, subs = {} } = {}) {
   return list;
 }
 
-function field(labelText, control, hint) {
+/** A labelled control. The id comes from the label, so a form that can stand in the DOM beside another (the brief's page beside a hidden New brief) passes its own prefix. */
+function field(labelText, control, hint, prefix = 'nb') {
   const wrap = el('div', 'card-field');
   const label = el('label', 'card-field-label', labelText);
-  const id = `nb-${labelText.toLowerCase().replace(/[^a-z]+/g, '-')}`;
+  const id = `${prefix}-${labelText.toLowerCase().replace(/[^a-z]+/g, '-')}`;
   control.id = id;
   label.htmlFor = id;
   wrap.append(label, control);
@@ -64,7 +65,7 @@ function notesPicker(notes, problem) {
     reader.onerror = () => { problem.textContent = "Couldn't read that file."; };
     reader.readAsText(file);
   });
-  return field('Or your notes as a file', pick, 'A .md or .txt. It fills the box above.');
+  return field('Or your notes as a file', pick, 'A .md or .txt. It fills the box above.', 'bp');
 }
 
 /**
@@ -73,8 +74,8 @@ function notesPicker(notes, problem) {
  * never drops what she typed (the desk's rule: a redraw never drops what you
  * are typing). Cleared when the brief is made or the form is cancelled.
  */
-const draft = { file: null, notesFile: null, notes: '', values: {}, read: false };
-export function clearBriefDraft() { draft.file = null; draft.notesFile = null; draft.notes = ''; draft.values = {}; draft.read = false; }
+const draft = { file: null, notesFile: null, notes: '', values: {}, read: false, readFilled: {} };
+export function clearBriefDraft() { draft.file = null; draft.notesFile = null; draft.notes = ''; draft.values = {}; draft.read = false; draft.readFilled = {}; }
 
 /** A file input showing a chosen file again after a redraw (older browsers skip it; the draft still holds the file). */
 function showFile(control, file) {
@@ -166,23 +167,28 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, creating, error }) {
     if (!onReadPaper) { draft.read = true; sayLock(); return; }
     const turn = ++reading;
     sayLock();
-    readLine.replaceChildren(busyLine('Reading the paper'));
+    readLine.replaceChildren(busyWords('Reading the paper'));
+    // A read is stale once another PDF was chosen, or the form was cancelled or created (draft.file is no longer this file).
+    const stale = () => turn !== reading || draft.file !== file;
     try {
       const found = await onReadPaper(file);
-      if (turn !== reading) return;
-      const fill = fillFromPaper(found, { paperTitle: paperTitle.value, authors: authors.value, journal: journal.value, year: year.value, authorLast: last.value }, { defaultYear });
+      if (stale()) return;
+      const current = { paperTitle: paperTitle.value, authors: authors.value, journal: journal.value, year: year.value, authorLast: last.value };
+      const fill = fillFromPaper(found, current, { defaultYear, readFilled: draft.readFilled });
       const names = { paperTitle: 'title', authors: 'authors', journal: 'journal', year: 'year', authorLast: 'last name' };
       for (const [key, value] of Object.entries(fill)) {
         const control = key === 'authorLast' ? last : boxes[key];
         control.value = value;
         draft.values[key === 'authorLast' ? 'last' : key] = value;
+        draft.readFilled[key] = value;
       }
       sayFolder();
       const filled = Object.keys(fill).map(k => names[k]);
       readLine.textContent = filled.length ? `Read from the paper: ${filled.join(', ')}. Check them.` : 'Read the paper; the boxes already had their words.';
     } catch (err) {
-      if (turn !== reading) return;
-      readLine.textContent = `Couldn't read the paper (${String(err?.message ?? err)}). Type the title, authors, journal and year.`;
+      if (stale()) return;
+      const why = String(err?.message ?? err);
+      readLine.textContent = /Type the title/.test(why) ? `Couldn't read the paper: ${why}` : `Couldn't read the paper (${why}). Type the title, authors, journal and year.`;
     }
     draft.read = true;
     sayLock();

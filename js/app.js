@@ -552,6 +552,8 @@ async function signOutNow() {
   try { await signOutRequest(); } catch { /* the cookie lapses on its own within the day */ }
   state.auth = false;
   state.publishPreview = null;
+  state.newBriefOpen = false;
+  clearBriefDraft();
   setStatus('');
   render();
 }
@@ -604,6 +606,7 @@ function openBrief(id) {
 /** The paper read (Oct 22): pdf.js gives the first pages as text, the desk's model names the paper, the form fills its empty boxes. */
 async function readPaper(file) {
   const text = await paperText(file);
+  if (!text.trim()) throw new Error('There was nothing to read in that PDF, a scan with no text layer. Type the title, authors, journal and year.');
   const data = await postJson('/api/briefs', { action: 'read', text, name: file.name }, 'read the paper');
   return data.fields;
 }

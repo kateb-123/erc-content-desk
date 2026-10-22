@@ -22,17 +22,29 @@ import Anthropic from '@anthropic-ai/sdk';
 import { briefSlug, slugPart, NOTES_MAX } from '../js/briefs-view.js';
 import { REWRITE_MODEL } from './_lib/rewrite.js';
 import { parseModelJson } from './_lib/reply-json.js';
-import { buildPaperPrompt, normalizePaperFields, PAPER_TEXT_MAX } from './_lib/paper-fields.js';
+import { buildPaperPrompt, normalizePaperFields, PAPER_TEXT_MAX, PAPER_SCHEMA } from './_lib/paper-fields.js';
 
 export const config = { maxDuration: 60 };
 
 const MAX_TEXT = NOTES_MAX;
 
-/** The read action's one model call: the prompt in, the reply's text out. Built lazily so importing this file never needs the key. */
+/**
+ * The read action's one model call: the prompt in, the reply's text out.
+ * Held to PAPER_SCHEMA like the desk's other model calls, with room for the
+ * model's thinking inside max_tokens (on this model thinking counts against
+ * it) and a check that the reply was not cut. Built lazily so importing this
+ * file never needs the key.
+ */
 let client;
 async function liveReadModel(prompt) {
-  client ??= new Anthropic();
-  const response = await client.messages.create({ model: REWRITE_MODEL, max_tokens: 600, messages: [{ role: 'user', content: prompt }] });
+  client ??= new Anthropic({ timeout: 45_000, maxRetries: 1 });
+  const response = await client.messages.create({
+    model: REWRITE_MODEL,
+    max_tokens: 4000,
+    output_config: { effort: 'low', format: { type: 'json_schema', schema: PAPER_SCHEMA } },
+    messages: [{ role: 'user', content: prompt }],
+  });
+  if (response.stop_reason === 'max_tokens') throw new Error('the reply was cut short');
   return response.content.filter(part => part.type === 'text').map(part => part.text).join('');
 }
 const text = (value, max = MAX_TEXT) => String(value ?? '').trim().slice(0, max);

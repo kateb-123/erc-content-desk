@@ -5,7 +5,18 @@
 // only what comes back well formed.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildPaperPrompt, normalizePaperFields, PAPER_TEXT_MAX } from '../api/_lib/paper-fields.js';
+import { readFileSync } from 'node:fs';
+import { buildPaperPrompt, normalizePaperFields, PAPER_TEXT_MAX, PAPER_SCHEMA } from '../api/_lib/paper-fields.js';
+
+test('the model is held to a JSON schema with the five fields, and the live call uses it with room for thinking and a cut-off check (review, Oct 22)', () => {
+  assert.deepEqual(Object.keys(PAPER_SCHEMA.properties), ['title', 'authors', 'journal', 'year', 'firstAuthorLast']);
+  assert.deepEqual(PAPER_SCHEMA.required, ['title', 'authors', 'journal', 'year', 'firstAuthorLast']);
+  assert.equal(PAPER_SCHEMA.additionalProperties, false);
+  const src = readFileSync(new URL('../api/briefs.js', import.meta.url), 'utf8');
+  assert.match(src, /output_config: \{ effort: 'low', format: \{ type: 'json_schema', schema: PAPER_SCHEMA \} \}/);
+  assert.match(src, /max_tokens: 4000/);
+  assert.match(src, /stop_reason === 'max_tokens'/);
+});
 
 test('buildPaperPrompt asks for one JSON object, hands over the text, and never more than the cap', () => {
   const prompt = buildPaperPrompt('Screen or Barrier? Science of Reading Certification Exams\nAndrew Avitabile\nUniversity of Virginia');
