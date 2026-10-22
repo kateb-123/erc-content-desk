@@ -237,3 +237,25 @@ test('POST create ignores a notes original that is not a .docx (a .md original i
   assert.equal(res.code, 200);
   assert.deepEqual(saved.filter(s => s[0] === 'file').map(s => s[2]), ['nagro.pdf', 'notes.md']);
 });
+
+test('POST create: a Drive refusal is a plain 502, never a crash; an unknown action on the Sheet\'s script says the script is old (live, Oct 22: "Unknown action: briefFolder" came back as a 500)', async () => {
+  const { handler } = handlerWith({ rows: [] });
+  const bad = createBriefsHandler({
+    session: { refuse: async () => false }, briefs: () => ({ async get() { return null; }, async list() { return []; }, async create(b) { return b; }, async update() { return {}; } }),
+    drive: { briefFolder: async () => { throw new Error('Sheet API error: Unknown action: briefFolder'); }, saveFile: async () => ({}), listFiles: async () => [] }, mode: () => 'db',
+  });
+  const res = fakeRes();
+  await bad({ method: 'POST', query: {}, body: { action: 'create', authorLast: 'Holzman', year: '2026', topic: 'alignment', paperName: 'h.pdf', paperB64: Buffer.from('%PDF').toString('base64'), notes: 'n' } }, res);
+  assert.equal(res.code, 502);
+  assert.match(res.body.error, /Sheet's script does not know this action yet/);
+  assert.match(res.body.error, /Code\.gs/);
+  const other = createBriefsHandler({
+    session: { refuse: async () => false }, briefs: () => ({ async get() { return null; }, async list() { return []; }, async create(b) { return b; }, async update() { return {}; } }),
+    drive: { briefFolder: async () => { throw new Error('Sheet API error: You do not have permission to call DriveApp.getFolderById'); }, saveFile: async () => ({}), listFiles: async () => [] }, mode: () => 'db',
+  });
+  const res2 = fakeRes();
+  await other({ method: 'POST', query: {}, body: { action: 'create', authorLast: 'Holzman', year: '2026', topic: 'alignment', paperName: 'h.pdf', paperB64: Buffer.from('%PDF').toString('base64'), notes: 'n' } }, res2);
+  assert.equal(res2.code, 502);
+  assert.match(res2.body.error, /couldn't do that: Sheet API error/);
+  void handler;
+});

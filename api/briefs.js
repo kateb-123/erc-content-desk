@@ -119,7 +119,7 @@ export function createBriefsHandler({
         }
         return res.status(200).json({ ok: true, notes: notes.slice(0, MAX_TEXT) });
       }
-      if (action === 'create') return create(store, req.body, res);
+      if (action === 'create') return await create(store, req.body, res);   // awaited, so a Drive refusal lands in the catch below, not as a crash
       if (action === 'notes') {
         const id = text(req.body?.id, 120);
         const brief = id && await store.get(id);
@@ -132,6 +132,9 @@ export function createBriefsHandler({
     } catch (err) {
       if (isMissingTable(err)) return res.status(503).json({ ok: false, error: NO_TABLE });
       console.error('briefs failed', err);
+      if (/Unknown action/.test(String(err?.message))) {
+        return res.status(502).json({ ok: false, error: "The Sheet's script does not know this action yet. Paste the latest Code.gs into it and deploy a new version." });
+      }
       return res.status(502).json({ ok: false, error: `The desk couldn't do that: ${err.message}` });
     }
   };
