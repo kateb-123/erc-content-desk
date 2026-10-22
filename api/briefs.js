@@ -43,14 +43,17 @@ const MAX_TEXT = NOTES_MAX;
  * file never needs the key.
  */
 let client;
+const anthropic = () => (client ??= new Anthropic({ maxRetries: 0 }));
+/** Each call names its own time: the read is short, a draft step long; one client never lends the other its clock (review, Oct 22). */
+const READ_CALL = { timeout: 45_000, maxRetries: 1 };
+const DRAFT_CALL = { timeout: 250_000, maxRetries: 0 };   // under the function's 300 s with the Drive calls around it; a retry could never fit
 async function liveReadModel(prompt) {
-  client ??= new Anthropic({ timeout: 45_000, maxRetries: 1 });
-  const response = await client.messages.create({
+  const response = await anthropic().messages.create({
     model: REWRITE_MODEL,
     max_tokens: 4000,
     output_config: { effort: 'low', format: { type: 'json_schema', schema: PAPER_SCHEMA } },
     messages: [{ role: 'user', content: prompt }],
-  });
+  }, READ_CALL);
   if (response.stop_reason === 'max_tokens') throw new Error('the reply was cut short');
   return response.content.filter(part => part.type === 'text').map(part => part.text).join('');
 }
@@ -80,8 +83,7 @@ const CROP_NAME = /^figure-[a-z0-9-]{1,60}-p\d{1,3}\.png$/;
  * the key.
  */
 async function liveDraftModel({ system, prompt, pdfB64, schema, maxTokens = 8000, effort = 'high' }) {
-  client ??= new Anthropic({ timeout: 280_000, maxRetries: 1 });
-  const response = await client.messages.create({
+  const response = await anthropic().messages.create({
     model: REWRITE_MODEL,
     max_tokens: maxTokens,
     system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
@@ -93,7 +95,7 @@ async function liveDraftModel({ system, prompt, pdfB64, schema, maxTokens = 8000
         { type: 'text', text: prompt },
       ],
     }],
-  });
+  }, DRAFT_CALL);
   if (response.stop_reason === 'max_tokens') throw new Error('the reply was cut short');
   return response.content.filter(part => part.type === 'text').map(part => part.text).join('');
 }
@@ -222,12 +224,27 @@ export function createBriefsHandler({
     d.sections = { ...(d.sections ?? {}) };
     const named = text(body?.step, 40);
     if (named && !DRAFT_STEPS.includes(named)) return res.status(400).json({ ok: false, error: `No draft step named ${named}.` });
-    // A step named outright starts over from it (Write it again): what came after it is undone.
-    if (named) d.done = d.done.filter(s => DRAFT_STEPS.indexOf(s) < DRAFT_STEPS.indexOf(named));
+    // A step named outright starts over from it (Write it again): what came after it is undone,
+    // its sections too, so the new run is never steered by the draft it replaces (review, Oct 22).
+    if (named) {
+      const at = DRAFT_STEPS.indexOf(named);
+      d.done = d.done.filter(s => DRAFT_STEPS.indexOf(s) < at);
+      for (const key of Object.keys(d.sections)) if (DRAFT_STEPS.indexOf(key) >= at) delete d.sections[key];
+      if (at <= DRAFT_STEPS.indexOf('plan')) { delete d.plan; delete d.title; }
+      if (at <= DRAFT_STEPS.indexOf('check')) delete d.checkFlags;
+      delete d.result;
+      delete d.crops;
+    }
     const step = named || nextDraftStep(d.done);
     if (!step) return res.status(200).json({ ok: true, brief, step: null, next: null });
 
     const patch = { extra };
+    // Notes typed on the page ride the first call, so Write the draft never drops them (review, Oct 22).
+    if (typeof body?.notes === 'string' && text(body.notes) !== (brief.notes ?? '')) {
+      patch.notes = text(body.notes);
+      brief.notes = patch.notes;
+      if (brief.folderId) await drive.saveFile({ folderId: brief.folderId, ...notesFile(patch.notes) });
+    }
     if (brief.stage === 'paper' || (named && brief.stage !== 'draft')) { patch.stage = 'draft'; patch.stageAt = new Date(now()).toISOString(); }
     const sectionKeys = SECTION_DEFS.map(s => s.key);
     try {

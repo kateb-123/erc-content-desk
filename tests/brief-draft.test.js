@@ -169,3 +169,18 @@ test('draftFiles names the four files that land in the folder, markdown each', (
   assert.deepEqual(files.map(f => [f.name, f.contentType]), [['page-plan.md', 'text/markdown'], ['brief-draft.md', 'text/markdown'], ['brief-for-grammarly.md', 'text/markdown'], ['figures.md', 'text/markdown']]);
   assert.equal(files[1].text, '# Brief\n');
 });
+
+test('a crop name is never one the desk refuses: a long label is cut to 60 characters, an empty one falls back to its place (review, Oct 22)', () => {
+  const long = { ...extract, recommended_visuals: [
+    { kind: 'figure', source_label: 'Figure 3. Distribution of reclassification timing across cohorts by proficiency band', page: 9, why: 'w', suggested_caption: 'c' },
+    { kind: 'table', source_label: '---', page: 11, why: 'w', suggested_caption: 'c' },
+  ] };
+  const names = figuresInventory(long).items.map(i => i.crop);
+  for (const n of names) assert.match(n, /^figure-[a-z0-9-]{1,60}-p\d{1,3}\.png$/, n);
+  assert.equal(names[1], 'figure-visual-2-p11.png');
+});
+
+test('parsePlan takes the suggested title bare or in bold, the way a model writes a label', () => {
+  assert.equal(parsePlan('**Suggested brief title:** Majors That Lead Somewhere\n').title, 'Majors That Lead Somewhere');
+  assert.equal(parsePlan('- Suggested brief title: "Sorted and Tracked"').title, 'Sorted and Tracked');
+});

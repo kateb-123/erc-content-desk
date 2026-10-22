@@ -126,12 +126,34 @@ export function notesFile(name, text) {
  * the paper and notes, then it reads and fills out the byline"): the two
  * files come first, then the read has to finish. Empty once it may go.
  */
-export function createLock({ paper, notes, reading }) {
+export function createLock({ paper, notes, reading, bytes = 0 }) {
   if (!paper && !notes) return 'Choose the paper and your notes first.';
   if (!paper) return 'Choose the paper first.';
   if (!notes) return 'Choose your notes file, or paste them, first.';
+  if (bytes > UPLOAD_CAP_BYTES) return 'Together the paper and the Word file are too big for one upload. Shrink the paper, or paste the notes instead.';
   if (reading) return 'Reading the paper first.';
   return '';
+}
+
+/**
+ * What one Create can carry: the paper and a Word file go up together as
+ * base64 in one body, and the desk's host refuses a body over 4.5 MB
+ * (review, Oct 22). 3.1 MiB of files is 4.3 MB encoded, with room for the
+ * boxes and pasted notes.
+ */
+export const UPLOAD_CAP_BYTES = Math.floor(3.1 * 1024 * 1024);
+
+/** The brief as the page should show it the moment Write it again is pressed: the read as now, nothing done (review, Oct 22). */
+export function restartDraft(brief) {
+  const d = brief?.extra?.draft ?? {};
+  return { ...brief, stage: 'draft', extra: { ...(brief?.extra ?? {}), draft: { ...d, done: [], step: 'extract' } } };
+}
+
+/** The one wait the steps do not name: once every step is done the browser cuts the crops, and the box says so (review, Oct 22). */
+export function draftWait(brief, { running = false } = {}) {
+  if (!running) return '';
+  const done = new Set(brief?.extra?.draft?.done ?? []);
+  return DRAFT_STEPS.every(s => done.has(s)) ? 'Cutting the tables and figures out of the paper' : '';
 }
 
 /** Words in a notes file, the way the brief counts its own: a token with a letter or a digit in it, so "#" and "-" are not words. */

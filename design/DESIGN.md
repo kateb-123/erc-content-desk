@@ -594,8 +594,12 @@ brief past the paper stage says so on its page.
   where it stopped."; a failed step says so in red with Try the step again.
   Done, the stage is Your proof and the box is the Draft: the body-prose
   count with its band as a pill (review tint under the floor or over the
-  cap, grey in the band), the whole brief in a scrolling box, three
-  downloads and Write it again (starts over from the read), Tables and
+  cap, grey in the band), the three downloads and Write it again (starts
+  over from the read) on one row, then the brief itself as reading text,
+  her pick A of three (Oct 22: "easier to read like just on the webpage"):
+  `js/markdown-lite.js` draws the desk's own markdown, every character
+  escaped, at a 720px measure with the maize rule under each section title
+  and the cover lines folded into one quiet line; Tables and
   figures in the paper (the first two flagged Rework in the review tint,
   the rest Prose, "cut out, in the folder" once the browser has rendered
   the page with pdf.js and filed `figure-<label>-p<page>.png`), Numbers the
@@ -603,7 +607,19 @@ brief past the paper stage says so on its page.
   and what the draft used), What the check could not settle, and the next
   line to her proof. The hub's table says which step a drafting brief is on.
   New brief gained a Brief author box, Kate Barnes until changed, remembered
-  on that computer, named on the draft's cover.
+  on that computer, named on the draft's cover. The review's fixes (Oct 22):
+  each model call names its own clock (the read 45 s, a step 250 s, no
+  retry, under the function's 300 s); Write it again clears the old run's
+  sections, flags, result and crops, so the new draft is never told not to
+  repeat the one it replaces, and the running box shows the read as now the
+  moment it is pressed; the one draft running is the newest, a brief left
+  mid-step stops at its next step; Write the draft carries the notes typed
+  on the page and a redraw keeps them; a failed restart or crop says so on
+  the proof box and in the status line, a crop the desk refused reads "not
+  cut out" on its row, and a page too big as a picture is drawn smaller
+  until it fits; the crop's name is held to the door's rule; the form says
+  when the paper and a Word file would not fit one upload; a draft's end
+  refreshes the page without blanking it; the crops wait has busy words.
 
 
 - **The highlight's own Save**: once the picks change, Update the highlight

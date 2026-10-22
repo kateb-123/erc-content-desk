@@ -26,7 +26,7 @@ import { renderExchange } from './exchange-ui.js';
 import { renderListserv } from './listserv-ui.js';
 import { renderBriefs, renderBrief, clearBriefDraft } from './briefs-ui.js';
 import { paperText, pagePng } from './paper-read.js';
-import { briefTitle } from './briefs-view.js';
+import { briefTitle, restartDraft } from './briefs-view.js';
 
 
 const state = {
@@ -57,7 +57,7 @@ const state = {
   scraper: null,            // the scraper on GitHub: { configured, run, last } from /api/bulk?scraper=status, or null
   // The Research briefs hub (Kate, Oct 20), hers alone: the list once her sign-in has read it, the open brief and its folder.
   briefs: null, briefsError: false, briefId: '', brief: null, briefFiles: undefined, briefError: '',
-  newBriefOpen: false, creatingBrief: false, createError: '', savingNotes: false, notesSaved: '', draftRunning: false, draftError: '',
+  newBriefOpen: false, creatingBrief: false, createError: '', savingNotes: false, notesSaved: '', draftRunning: false, draftError: '', cropFailed: [],
   publishPreview: null,
   publishedCsv: '',       // the CSV from the last publish, for the receipt's re-download
   rewroteNote: null,
@@ -630,33 +630,46 @@ async function readNotesWord(file) {
  * figures out of the paper as pictures and files them. A failed step stays
  * on the page with Try the step again; a page left mid-way shows Continue.
  */
-async function writeDraft({ restart = false } = {}) {
+async function writeDraft({ restart = false, notes } = {}) {
   const id = state.briefId;
-  if (!id || state.draftRunning) return;
-  state.draftRunning = id; state.draftError = '';
+  if (!id || state.draftRunning === id) return;
+  // One draft runs at a time, the newest: a brief left mid-step stops at its next step and Continue picks it up (review, Oct 22).
+  state.draftRunning = id; state.draftError = ''; state.cropFailed = [];
+  if (restart) state.brief = restartDraft(state.brief);
   render();
   try {
     let next = restart ? 'extract' : undefined;
+    let first = true;
     for (;;) {
       const body = { action: 'draft', id, briefAuthor: state.brief?.extra?.briefAuthor ?? '' };
       if (next) body.step = next;
+      if (first && typeof notes === 'string') body.notes = notes;   // what she typed rides the first call, saved before the step
+      first = false;
       const data = await postJson('/api/briefs', body, 'write the draft');
-      state.briefs = (state.briefs ?? []).map(b => (b.id === id ? data.brief : b));
-      if (state.briefId !== id) return;   // she moved on; the row keeps where it got to, and Continue picks it up
+      if (Array.isArray(state.briefs)) state.briefs = state.briefs.map(b => (b.id === id ? data.brief : b));
+      if (state.briefId !== id || state.draftRunning !== id) return;   // she moved on; the row keeps where it got to
       state.brief = data.brief;
       render();
       if (!data.next) break;
       next = undefined;
     }
     await cropFigures(id);
-    if (state.briefId === id) { await loadBrief(id); setStatus(`Drafted: ${briefTitle(state.brief)}`, 'ok'); }
+    if (state.briefId === id) { await refreshBrief(id); setStatus(`Drafted: ${briefTitle(state.brief)}`, 'ok'); }
   } catch (err) {
     if (lockedOut(err)) state.auth = false;
-    else if (state.briefId === id) state.draftError = plainError(err);
+    else if (state.briefId === id) { state.draftError = plainError(err); setStatus(state.draftError, 'error'); }
   } finally {
     if (state.draftRunning === id) state.draftRunning = false;
     render();
   }
+}
+
+/** The brief's row and folder read again without blanking the page (the end of a draft; review, Oct 22). */
+async function refreshBrief(id) {
+  const data = await readReply(await fetch(`/api/briefs?id=${encodeURIComponent(id)}`), 'open the brief');
+  if (state.briefId !== id) return;
+  state.brief = data.brief;
+  state.briefFiles = data.files;
 }
 
 /** The chosen tables and figures, cut out of the paper's pages as pictures and filed beside the draft. */
@@ -672,7 +685,8 @@ async function cropFigures(id) {
       const data = await postJson('/api/briefs', { action: 'figure', id, name: f.crop, b64 }, 'file the crop');
       if (state.briefId === id) state.brief = data.brief;
     } catch (err) {
-      console.warn('crop failed', f.crop, err);   // a missing crop never stops the draft; the inventory still names the page
+      console.warn('crop failed', f.crop, err);   // a missing crop never stops the draft; the row says it was not cut out
+      state.cropFailed = [...(state.cropFailed ?? []), f.crop];
     }
   }
 }
@@ -808,7 +822,7 @@ function render() {
     renderBrief(screens.brief, {
       brief: state.brief, files: state.briefFiles, loading: state.briefFiles === undefined, error: state.briefError, today,
       onRefresh: () => loadBrief(state.briefId), onSaveNotes: saveBriefNotes, onReadNotes: readNotesWord, onWriteDraft: writeDraft,
-      savingNotes: state.savingNotes, notesSaved: state.notesSaved, draftRunning: state.draftRunning === state.briefId, draftError: state.draftError,
+      savingNotes: state.savingNotes, notesSaved: state.notesSaved, draftRunning: state.draftRunning === state.briefId, draftError: state.draftError, cropFailed: state.cropFailed,
     });
   } else if (state.screen === 'queue') {
     renderQueue(screens.queue, { ...common, loaded: state.loaded, loadFailed: state.loadFailed, onGoTo: goTo, onRefresh: reload, scraper: state.scraper, onRunScraper: runScraper });

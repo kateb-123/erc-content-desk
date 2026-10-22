@@ -379,3 +379,29 @@ test('POST create keeps the brief author on the row', async () => {
   assert.equal(res.code, 200, JSON.stringify(res.body));
   assert.equal(rows.get('nagro-2026-reading').extra.briefAuthor, 'Kate Barnes');
 });
+
+test('Write it again clears the old run: no sections, flags, result or crops ride into the new draft, and the first new section is told it is the first (review, Oct 22)', async () => {
+  const { handler, calls, rows } = draftWorld();
+  for (let i = 0; i < DRAFT_STEPS.length; i++) await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });
+  rows.get('holzman-2026-alignment').extra.draft.crops = ['figure-table-3-p12.png'];
+  const res = await post(handler, { action: 'draft', id: 'holzman-2026-alignment', step: 'extract' });
+  const d = res.body.brief.extra.draft;
+  assert.deepEqual(d.sections, {}, 'the old sections are gone');
+  assert.equal(d.result, undefined);
+  assert.deepEqual(d.checkFlags ?? [], []);
+  assert.deepEqual(d.crops ?? [], []);
+  await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });   // plan
+  await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });   // exec_summary
+  const exec = calls.at(-1).prompt;
+  assert.match(exec, /This is the first section drafted/);
+  assert.doesNotMatch(exec, /Sections drafted so far/);
+});
+
+test('POST draft with notes saves them on the row and as notes.md before the step runs, so Write the draft never drops what she typed (review, Oct 22)', async () => {
+  const { handler, files, rows, calls } = draftWorld();
+  await post(handler, { action: 'draft', id: 'holzman-2026-alignment', notes: 'Lead with the match premium. Keep Table 3.' });
+  assert.equal(rows.get('holzman-2026-alignment').notes, 'Lead with the match premium. Keep Table 3.');
+  assert.ok(files.some(([name]) => name === 'notes.md'), 'notes.md refiled');
+  await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });   // plan reads the notes
+  assert.match(calls.at(-1).prompt, /Keep Table 3/);
+});

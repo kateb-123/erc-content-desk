@@ -69,17 +69,26 @@ export async function paperText(file, { pdfjs = loadPdfjs } = {}) {
  * paper's tables and figures (round 2). Drawn at twice the page's size so the
  * Word doc's side-by-side stays sharp. Browser only.
  */
-export async function pagePng(bytes, pageNumber, { pdfjs = loadPdfjs, scale = 2 } = {}) {
+/** What the desk's figure door takes, as base64: 1.5 MB of PNG. A scanned page at 2x can pass it, so the crop is drawn smaller until it fits (review, Oct 22). */
+export const CROP_B64_MAX = 1.5 * 1024 * 1024 * 4 / 3;
+const CROP_SCALES = [2, 1.5, 1.2, 1];
+
+export async function pagePng(bytes, pageNumber, { pdfjs = loadPdfjs, scales = CROP_SCALES, maxB64 = CROP_B64_MAX } = {}) {
   const lib = await pdfjs();
   // pdf.js hands the buffer to its worker and leaves the caller's copy detached, so each page gets a copy of its own.
   const doc = await lib.getDocument({ data: bytes.slice() }).promise;
   const page = await doc.getPage(Math.min(Math.max(1, pageNumber), doc.numPages));
-  const viewport = page.getViewport({ scale });
-  const canvas = document.createElement('canvas');
-  canvas.width = Math.ceil(viewport.width);
-  canvas.height = Math.ceil(viewport.height);
-  await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-  return canvas.toDataURL('image/png').split(',')[1] ?? '';
+  let b64 = '';
+  for (const scale of scales) {
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+    b64 = canvas.toDataURL('image/png').split(',')[1] ?? '';
+    if (b64.length <= maxB64) break;
+  }
+  return b64;
 }
 
 const blank = value => !String(value ?? '').trim();

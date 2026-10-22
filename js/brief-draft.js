@@ -197,7 +197,7 @@ export function buildPlanPrompt(extract, notes) {
 
 /** What the plan says back: the suggested title, if the model wrote the line. */
 export function parsePlan(plan) {
-  const m = /^Suggested brief title:\s*(.+?)\s*$/m.exec(String(plan ?? ''));
+  const m = /^(?:[-*]\s+|\d+\.\s+)?\*{0,2}Suggested brief title:?\*{0,2}:?\s*(.+?)\s*$/m.exec(String(plan ?? ''));
   return { title: m ? m[1].replace(/^["“]|["”]$/g, '').trim() : '' };
 }
 
@@ -306,13 +306,17 @@ export function grammarlyCopy(md) {
 }
 
 const REWORK = ['Rework for the brief', 'Rework, maybe'];
-const cropName = (label, page) => `figure-${String(label).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-p${page}.png`;
+/** The crop's file name, held to what the desk's figure door takes: 1 to 60 slug characters, so a long or blank label never leaves a figure uncut (review, Oct 22). */
+const cropName = (label, page, n) => {
+  const slug = String(label ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60).replace(/-+$/g, '');
+  return `figure-${slug || `visual-${n}`}-p${page}.png`;
+};
 
 /** The paper's tables and figures that earn a place: the first two flagged for rework, the rest prose, each with its page and crop name. */
 export function figuresInventory(extract) {
   const items = (extract.recommended_visuals ?? []).map((v, i) => ({
     label: v.source_label, kind: v.kind, page: v.page, caption: v.suggested_caption, why: v.why,
-    rework: REWORK[i] ?? 'Prose', crop: cropName(v.source_label, v.page),
+    rework: REWORK[i] ?? 'Prose', crop: cropName(v.source_label, v.page, i + 1),
   }));
   const rows = items.map(i => `| ${i.label} | ${i.page} | ${i.caption} | ${i.rework} |`);
   const md = [

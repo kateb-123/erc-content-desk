@@ -7,7 +7,7 @@
  * beside it. Round 1 draws the first stage, Paper and notes; the later ones
  * say they come in the next round.
  */
-import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, notesKind, createLock, wordCount, draftProgress } from './briefs-view.js';
+import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, notesKind, createLock, wordCount, draftProgress, draftWait } from './briefs-view.js';
 import { fillFromPaper } from './paper-read.js';
 import { renderMarkdown } from './markdown-lite.js';
 import { hubHead, HUB_LEDES } from './hub-head.js';
@@ -194,7 +194,8 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
   const lockLine = el('p', 'new-brief-lock');
   let reading = 0;
   const sayLock = () => {
-    const why = createLock({ paper: Boolean(draft.file), notes: Boolean(draft.notes.trim()), reading: reading > 0 && !draft.read });
+    const bytes = (draft.file?.size ?? 0) + Math.ceil((draft.notesB64?.length ?? 0) * 3 / 4);
+    const why = createLock({ paper: Boolean(draft.file), notes: Boolean(draft.notes.trim()), reading: reading > 0 && !draft.read, bytes });
     create.disabled = Boolean(creating) || Boolean(why);
     lockLine.textContent = why;
     byline.hidden = !draft.file;
@@ -399,6 +400,8 @@ function draftRunningBox(brief, { running, error, onWriteDraft }) {
     list.append(item);
   }
   box.append(list);
+  const wait = draftWait(brief, { running });
+  if (wait) { const p = el('p', 'draft-wait'); p.append(busyWords(wait)); box.append(p); }
   if (error) {
     const problem = el('p', 'field-error');
     problem.setAttribute('role', 'alert');
@@ -428,10 +431,16 @@ function flagLines(md) {
 }
 
 /** The Draft box (round 2): the whole brief at once, the downloads, the figures to look at, the number flags, the check's notes. */
-function draftBox(brief, { onWriteDraft }) {
+function draftBox(brief, { onWriteDraft, error, cropFailed = [] }) {
   const d = brief.extra?.draft ?? {};
   const r = d.result;
   const box = el('div', 'hub-box brief-stage');
+  if (error) {
+    const problem = el('p', 'field-error');
+    problem.setAttribute('role', 'alert');
+    problem.textContent = error;
+    box.append(problem);
+  }
   const meta = el('div', 'draft-meta');
   const bandOk = r.band === 'In the band';
   meta.append(
@@ -463,6 +472,7 @@ function draftBox(brief, { onWriteDraft }) {
       const side = el('span', 'draft-figure-side');
       side.append(pill);
       if (crops.has(f.crop)) side.append(el('span', 'meta', ' · cut out, in the folder'));
+      else if (cropFailed.includes(f.crop)) side.append(el('span', 'meta draft-crop-miss', ' · not cut out; Write it again tries once more'));
       li.append(side);
       list.append(li);
     }
@@ -484,9 +494,12 @@ function draftBox(brief, { onWriteDraft }) {
 }
 
 /** The stage a brief is at, as the one box on its page. */
-function stageBox(brief, { onSaveNotes, onReadNotes, onWriteDraft, savingNotes, notesSaved, draftRunning, draftError }) {
+/** What she has typed in the brief page's notes box and not yet saved, kept across redraws (review, Oct 22). */
+let typedNotes = { id: '', text: null };
+
+function stageBox(brief, { onSaveNotes, onReadNotes, onWriteDraft, savingNotes, notesSaved, draftRunning, draftError, cropFailed }) {
   if (brief.stage === 'draft' || draftRunning) return draftRunningBox(brief, { running: draftRunning, error: draftError, onWriteDraft });
-  if (brief.stage === 'proof' && brief.extra?.draft?.result) return draftBox(brief, { onWriteDraft });
+  if (brief.stage === 'proof' && brief.extra?.draft?.result) return draftBox(brief, { onWriteDraft, error: draftError, cropFailed });
   const box = el('div', 'hub-box brief-stage');
   if (brief.stage !== 'paper') {
     box.append(el('p', 'brief-files-note', `${stageLabel(brief.stage)} comes in the next round. The folder holds everything so far.`));
@@ -497,7 +510,10 @@ function stageBox(brief, { onSaveNotes, onReadNotes, onWriteDraft, savingNotes, 
   const notes = el('textarea', 'brief-notes');
   notes.id = 'brief-notes';
   notes.rows = 6;
-  notes.value = brief.notes ?? '';
+  // A redraw (Saving…, a refresh) never drops what she is typing: the page keeps her words until the row holds them.
+  notes.value = typedNotes.id === brief.id && typedNotes.text != null ? typedNotes.text : (brief.notes ?? '');
+  if (typedNotes.id === brief.id && typedNotes.text === (brief.notes ?? '')) typedNotes = { id: '', text: null };
+  notes.addEventListener('input', () => { typedNotes = { id: brief.id, text: notes.value }; });
   const label = el('label', 'card-field-label', 'Your notes');
   label.htmlFor = notes.id;
   const problem = el('p', 'field-error');
@@ -508,7 +524,7 @@ function stageBox(brief, { onSaveNotes, onReadNotes, onWriteDraft, savingNotes, 
   actions.append(save, el('span', 'brief-saved', notesSaved || 'Saved to the row and as notes.md in the folder.'));
   const go = el('div', 'brief-actions brief-write');
   go.append(
-    button('Write the draft', 'primary', { focus: 'write-draft', icon: 'pen', onClick: () => onWriteDraft() }),
+    button('Write the draft', 'primary', { focus: 'write-draft', icon: 'pen', onClick: () => onWriteDraft({ notes: notes.value }) }),
     el('span', 'meta', 'A few minutes. Reads the whole paper, plans the pages, writes the brief.'),
   );
   if (draftError) { const p = el('p', 'field-error'); p.setAttribute('role', 'alert'); p.textContent = draftError; go.append(p); }
@@ -518,7 +534,7 @@ function stageBox(brief, { onSaveNotes, onReadNotes, onWriteDraft, savingNotes, 
 
 /** One brief: the stepper, the stage it is at, the folder. */
 export function renderBrief(container, props) {
-  const { brief, files, loading, error, today, onRefresh, onSaveNotes, onReadNotes, onWriteDraft, savingNotes, notesSaved, draftRunning, draftError } = props;
+  const { brief, files, loading, error, today, onRefresh, onSaveNotes, onReadNotes, onWriteDraft, savingNotes, notesSaved, draftRunning, draftError, cropFailed } = props;
   const focusKey = focusKeyIn(container);
   const page = el('div', 'hub-page brief-page');
   if (!brief) {

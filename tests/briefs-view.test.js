@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { STAGES, stepStates, waitsFor, briefSlug, hubRows, briefTitle, stageLabel, notesFile, notesKind, NOTES_MAX, createLock, wordCount, draftProgress } from '../js/briefs-view.js';
+import { STAGES, stepStates, waitsFor, briefSlug, hubRows, briefTitle, stageLabel, notesFile, notesKind, NOTES_MAX, createLock, wordCount, draftProgress, restartDraft, draftWait, UPLOAD_CAP_BYTES } from '../js/briefs-view.js';
 import { DRAFT_STEPS } from '../js/brief-draft.js';
 
 test('the seven stages, in her order, the last two round two', () => {
@@ -144,4 +144,27 @@ test('in the hub\'s table only the current step is named; the brief\'s page name
   const css = readFileSync(new URL('../css/styles.css', import.meta.url), 'utf8');
   assert.match(css, /\.steps-small \.step-words \{ display: none; \}/);
   assert.match(css, /\.steps-small \.step\.is-now \.step-words \{ display: block; \}/);
+});
+
+test('createLock: the paper and a Word file that together would not fit one upload say so (review, Oct 22: the create body has a 4.5 MB cap)', () => {
+  assert.equal(createLock({ paper: true, notes: true, reading: false, bytes: UPLOAD_CAP_BYTES }), '');
+  assert.equal(createLock({ paper: true, notes: true, reading: false, bytes: UPLOAD_CAP_BYTES + 1 }), 'Together the paper and the Word file are too big for one upload. Shrink the paper, or paste the notes instead.');
+  assert.equal(createLock({ paper: true, notes: false, reading: false, bytes: UPLOAD_CAP_BYTES + 1 }), 'Choose your notes file, or paste them, first.', 'the files come first');
+});
+
+test('restartDraft: Write it again shows the read as now, not every step as done, before the first call returns (review, Oct 22)', () => {
+  const brief = { stage: 'proof', extra: { draft: { done: [...DRAFT_STEPS], step: null, result: { words: 1 }, crops: ['a.png'] } } };
+  const again = restartDraft(brief);
+  const rows = draftProgress(again, { running: true });
+  assert.deepEqual(rows.map(r => r.state), ['now', ...DRAFT_STEPS.slice(1).map(() => 'later')]);
+  assert.equal(rows[0].words, 'Reading the paper');
+  assert.equal(brief.extra.draft.done.length, DRAFT_STEPS.length, 'the brief she holds is untouched');
+  assert.equal(again.stage, 'draft');
+});
+
+test('draftProgress: once every step is done and the browser is still at work, the wait is the crops (review, Oct 22: two waits with no busy words)', () => {
+  const brief = { stage: 'proof', extra: { draft: { done: [...DRAFT_STEPS], step: null } } };
+  assert.equal(draftWait(brief, { running: true }), 'Cutting the tables and figures out of the paper');
+  assert.equal(draftWait(brief, { running: false }), '');
+  assert.equal(draftWait({ stage: 'draft', extra: { draft: { done: ['extract'], step: 'plan' } } }, { running: true }), '');
 });
