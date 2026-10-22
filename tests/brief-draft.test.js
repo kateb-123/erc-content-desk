@@ -10,7 +10,7 @@ import {
   STYLE_SYSTEM_PROMPT, EXTRACT_PROMPT, EXTRACT_SCHEMA, normalizeExtract,
   buildPlanPrompt, parsePlan, buildSectionPrompt, buildCheckPrompt, CHECK_SCHEMA,
   assembleDraft, grammarlyCopy, figuresInventory, numberFlagsMd, bodyWordCount, wordBand, checkStyle, draftFiles,
-} from '../api/_lib/brief-draft.js';
+} from '../js/brief-draft.js';
 
 const extract = {
   title: 'Sorted and Tracked: English Learners, College-Level Course-Taking in High School, and Postsecondary Opportunity',

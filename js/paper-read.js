@@ -64,6 +64,24 @@ export async function paperText(file, { pdfjs = loadPdfjs } = {}) {
   return pages.join('\n\n').slice(0, PAPER_TEXT_CAP);
 }
 
+/**
+ * One page of a PDF as a PNG (a data URL's base64), for the crops of the
+ * paper's tables and figures (round 2). Drawn at twice the page's size so the
+ * Word doc's side-by-side stays sharp. Browser only.
+ */
+export async function pagePng(bytes, pageNumber, { pdfjs = loadPdfjs, scale = 2 } = {}) {
+  const lib = await pdfjs();
+  // pdf.js hands the buffer to its worker and leaves the caller's copy detached, so each page gets a copy of its own.
+  const doc = await lib.getDocument({ data: bytes.slice() }).promise;
+  const page = await doc.getPage(Math.min(Math.max(1, pageNumber), doc.numPages));
+  const viewport = page.getViewport({ scale });
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(viewport.width);
+  canvas.height = Math.ceil(viewport.height);
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+  return canvas.toDataURL('image/png').split(',')[1] ?? '';
+}
+
 const blank = value => !String(value ?? '').trim();
 
 /**

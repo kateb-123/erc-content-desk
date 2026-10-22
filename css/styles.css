@@ -1031,6 +1031,33 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .new-brief-lock { font: var(--meta-type); color: var(--muted); margin: 0; }
 .new-brief-lock:empty { display: none; }
 .new-brief .primary:disabled { color: var(--text-locked); }
+/* The draft stage (round 2, Oct 22): the running box's steps, then the Draft box: the whole brief, its downloads, the figures and the flags. */
+.draft-steps { list-style: none; padding: 0; margin: 0 0 var(--spacing-05); display: grid; gap: var(--spacing-03); font: var(--meta-type); color: var(--muted); }
+.draft-step { display: flex; align-items: center; gap: var(--spacing-04); }
+.draft-step.is-done { color: var(--text-primary); }
+.draft-step.is-done .fa-circle-check { color: var(--support-success); }
+.draft-step.is-now .fa-circle-notch { color: var(--support-info); animation: draft-turn 1s linear infinite; }
+.draft-step.is-later .fa-circle { color: var(--border-strong-01); }
+@keyframes draft-turn { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .draft-step.is-now .fa-circle-notch { animation: none; } }
+.brief-write { margin-top: var(--spacing-05); flex-wrap: wrap; }
+.brief-write .meta { font: var(--meta-type); color: var(--muted); }
+.draft-meta { display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; margin: 0 0 var(--spacing-04); }
+.draft-meta .meta { font: var(--meta-type); color: var(--muted); }
+.draft-pill { display: inline-block; padding: var(--spacing-01) var(--spacing-04); border-radius: var(--radius-pill); background: var(--tag-background-review); color: var(--tag-color-review); font: 600 12px/18px var(--font-body, inherit); white-space: nowrap; }
+.draft-pill.is-ok { background: var(--tag-background-gray); color: var(--tag-color-gray); }
+.draft-md { white-space: pre-wrap; font: var(--meta-type); font-size: 14px; line-height: 22px; background: var(--layer-01); border-radius: var(--radius); padding: var(--spacing-05) var(--spacing-06); max-height: 480px; overflow: auto; margin: 0 0 var(--spacing-05); }
+.draft-downloads { display: flex; gap: var(--spacing-04); align-items: center; flex-wrap: wrap; margin: 0 0 var(--spacing-06); }
+.brief-stage .hub-label + .draft-figures, .brief-stage .hub-label + .draft-flags, .brief-stage .hub-label + .draft-notes { margin-top: var(--spacing-04); }
+.draft-figures, .draft-notes { list-style: none; padding: 0; margin: 0 0 var(--spacing-06); }
+.draft-figures li { display: flex; justify-content: space-between; gap: var(--spacing-04); padding: var(--spacing-03) 0; border-bottom: 1px solid var(--line-in); }
+.draft-figures li:last-child { border-bottom: 0; }
+.draft-figure-side { display: flex; align-items: center; gap: var(--spacing-02); white-space: nowrap; }
+.draft-figure-side .meta { font: var(--meta-type); color: var(--muted); }
+.draft-notes li { padding: var(--spacing-02) 0; font: var(--meta-type); color: var(--text-primary); }
+.draft-flags { display: grid; gap: var(--spacing-03); margin: 0 0 var(--spacing-06); }
+.draft-flags p { margin: 0; }
+.draft-flags .fa-triangle-exclamation { color: var(--support-warning); }
 .new-brief-paste { width: 100%; box-sizing: border-box; min-height: 120px; }
 .new-brief .card-field[hidden], .new-brief .linkish[hidden] { display: none; }
 .new-brief .card-field .linkish { align-self: flex-start; margin-top: var(--spacing-02); }

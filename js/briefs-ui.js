@@ -7,7 +7,7 @@
  * beside it. Round 1 draws the first stage, Paper and notes; the later ones
  * say they come in the next round.
  */
-import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, notesKind, createLock, wordCount } from './briefs-view.js';
+import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, notesKind, createLock, wordCount, draftProgress } from './briefs-view.js';
 import { fillFromPaper } from './paper-read.js';
 import { hubHead, HUB_LEDES } from './hub-head.js';
 import { isoToShort } from './queue-view.js';
@@ -148,7 +148,13 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
   const authors = input(); authors.placeholder = 'as the paper lists them';
   const journal = input();
   const record = input(); record.placeholder = 'Dr. Lastname, the one the email goes to';
-  const boxes = { last, year, topic, paperTitle, authors, journal, record };
+  // The brief's own author line (her pick, Oct 22): whoever is signed in, from a box that remembers its last value.
+  const briefAuthor = input();
+  let remembered = '';
+  try { remembered = localStorage.getItem('desk.briefAuthor') ?? ''; } catch { /* no storage, no memory */ }
+  briefAuthor.value = remembered || 'Kate Barnes';
+  briefAuthor.addEventListener('input', () => { try { localStorage.setItem('desk.briefAuthor', briefAuthor.value); } catch { /* fine */ } });
+  const boxes = { last, year, topic, paperTitle, authors, journal, record, briefAuthor };
   for (const [key, control] of Object.entries(boxes)) {
     if (draft.values[key] != null) control.value = draft.values[key];
     control.addEventListener('input', () => { draft.values[key] = control.value; });
@@ -178,6 +184,7 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
     pair(field('Authors', authors), field('Journal', journal)),
     pair(field("Author's last name", last), field('Year', year)),
     pair(topicField, field('Author of record', record)),
+    pair(field('Brief author', briefAuthor, "Named on the draft's cover as the brief's author."), el('div')),
   );
 
   // Create: locked, and saying why, until both files are in and the read is done.
@@ -292,7 +299,7 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
     onCreate({
       authorLast: last.value.trim(), year: year.value.trim(), topic: topic.value.trim(), paperTitle: paperTitle.value.trim(), authors: authors.value.trim(),
       journal: journal.value.trim(), authorOfRecord: record.value.trim(), notes: draft.notes, paperName: file.name, paperB64,
-      notesName: draft.notesFile?.name ?? '', notesB64: draft.notesB64,
+      notesName: draft.notesFile?.name ?? '', notesB64: draft.notesB64, briefAuthor: briefAuthor.value.trim(),
     });
   });
   return box;
@@ -368,8 +375,114 @@ function filesBox(files) {
   return box;
 }
 
-/** The stage a brief is at, as the one box on its page. Round 1: Paper and notes. */
-function stageBox(brief, { onSaveNotes, onReadNotes, savingNotes, notesSaved }) {
+/** A file to save from words the page already holds: a Blob link named for the folder's file. */
+function downloadButton(name, text) {
+  const btn = button(name, 'btn-outline brief-download', { icon: 'download' });
+  btn.addEventListener('click', () => {
+    const url = URL.createObjectURL(new Blob([text], { type: 'text/markdown' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+  return btn;
+}
+
+/** The running box (round 2): every step with its state, the current one in busy words; Continue when nothing runs. */
+function draftRunningBox(brief, { running, error, onWriteDraft }) {
+  const box = el('div', 'hub-box brief-stage');
+  const list = el('ol', 'draft-steps');
+  for (const row of draftProgress(brief, { running })) {
+    const item = el('li', `draft-step is-${row.state}`);
+    item.append(faIcon(row.state === 'done' ? 'circle-check' : row.state === 'now' ? 'circle-notch' : 'circle'));
+    item.append(row.state === 'now' ? busyWords(row.words) : el('span', '', row.words));
+    list.append(item);
+  }
+  box.append(list);
+  if (error) {
+    const problem = el('p', 'field-error');
+    problem.setAttribute('role', 'alert');
+    problem.textContent = error;
+    box.append(problem);
+  }
+  if (!running) {
+    const actions = el('div', 'brief-actions');
+    actions.append(button(error ? 'Try the step again' : 'Continue the draft', 'primary', { focus: 'write-draft', icon: 'pen', onClick: () => onWriteDraft() }));
+    box.append(actions, el('p', 'brief-next', 'The draft stopped here. Continue picks up where it left off.'));
+  } else {
+    box.append(el('p', 'brief-next', 'Stay on the page while it writes. If you leave, Continue picks up where it stopped.'));
+  }
+  return box;
+}
+
+/** A line of markdown as the page shows it: a numbered item with its bold claim, or plain words. */
+function flagLines(md) {
+  const wrap = el('div', 'draft-flags');
+  for (const line of String(md ?? '').split('\n').filter(Boolean)) {
+    const p = el('p');
+    const m = /^(\d+)\. \*\*(.+?)\*\* (.*)$/.exec(line);
+    if (m) { p.append(faIcon('triangle-exclamation'), ' ', el('b', '', m[2]), ' ', m[3]); } else p.textContent = line;
+    wrap.append(p);
+  }
+  return wrap;
+}
+
+/** The Draft box (round 2): the whole brief at once, the downloads, the figures to look at, the number flags, the check's notes. */
+function draftBox(brief, { onWriteDraft }) {
+  const d = brief.extra?.draft ?? {};
+  const r = d.result;
+  const box = el('div', 'hub-box brief-stage');
+  const meta = el('div', 'draft-meta');
+  const bandOk = r.band === 'In the band';
+  meta.append(
+    el('span', 'meta', `${Number(r.words ?? 0).toLocaleString('en-US')} words of body prose · band 1,300 to 2,000`),
+    el('span', `draft-pill${bandOk ? ' is-ok' : ''}`, r.band),
+  );
+  const md = el('pre', 'draft-md');
+  md.textContent = r.draft ?? '';
+  const row = el('div', 'draft-downloads');
+  row.append(
+    downloadButton('brief-draft.md', r.draft ?? ''),
+    downloadButton('brief-for-grammarly.md', r.grammarly ?? ''),
+    downloadButton('page-plan.md', r.plan ?? ''),
+    button('Write it again', 'linkish', { focus: 'write-again', onClick: () => onWriteDraft({ restart: true }) }),
+  );
+  box.append(meta, md, row);
+
+  box.append(el('h3', 'section-label hub-label', 'Tables and figures in the paper'));
+  if (r.figures?.length) {
+    const list = el('ul', 'draft-figures');
+    const crops = new Set(d.crops ?? []);
+    for (const f of r.figures) {
+      const li = el('li');
+      li.append(el('span', '', `${f.label}, p. ${f.page}: ${f.caption}`));
+      const pill = el('span', `draft-pill${f.rework === 'Prose' ? ' is-ok' : ''}`, f.rework);
+      const side = el('span', 'draft-figure-side');
+      side.append(pill);
+      if (crops.has(f.crop)) side.append(el('span', 'meta', ' · cut out, in the folder'));
+      li.append(side);
+      list.append(li);
+    }
+    box.append(list);
+  } else {
+    box.append(el('p', 'brief-files-note', 'Nothing in the paper earned a place; the brief tells it in words.'));
+  }
+
+  box.append(el('h3', 'section-label hub-label', 'Numbers the paper disagrees with itself on'), flagLines(r.numberFlags));
+  const notes = [...(d.checkFlags ?? []).map(f => `${f.section.replace(/_/g, ' ')}: ${f.note}`), ...(r.styleFlags ?? []).map(f => `${f.section.replace(/_/g, ' ')}: ${f.note}`)];
+  if (notes.length) {
+    box.append(el('h3', 'section-label hub-label', "What the check could not settle"));
+    const list = el('ul', 'draft-notes');
+    for (const n of notes) list.append(el('li', '', n));
+    box.append(list);
+  }
+  box.append(el('p', 'brief-next', 'Next: your proof. Run brief-for-grammarly.md through Grammarly and bring the text back here, in the next round.'));
+  return box;
+}
+
+/** The stage a brief is at, as the one box on its page. */
+function stageBox(brief, { onSaveNotes, onReadNotes, onWriteDraft, savingNotes, notesSaved, draftRunning, draftError }) {
+  if (brief.stage === 'draft' || draftRunning) return draftRunningBox(brief, { running: draftRunning, error: draftError, onWriteDraft });
+  if (brief.stage === 'proof' && brief.extra?.draft?.result) return draftBox(brief, { onWriteDraft });
   const box = el('div', 'hub-box brief-stage');
   if (brief.stage !== 'paper') {
     box.append(el('p', 'brief-files-note', `${stageLabel(brief.stage)} comes in the next round. The folder holds everything so far.`));
@@ -389,13 +502,19 @@ function stageBox(brief, { onSaveNotes, onReadNotes, savingNotes, notesSaved }) 
   const save = button(savingNotes ? 'Saving…' : 'Save notes', 'btn-outline', { focus: 'save-notes', onClick: () => onSaveNotes(notes.value) });
   save.disabled = Boolean(savingNotes);
   actions.append(save, el('span', 'brief-saved', notesSaved || 'Saved to the row and as notes.md in the folder.'));
-  box.append(paperRow, label, notes, notesPicker(notes, problem, onReadNotes), problem, actions, el('p', 'brief-next', 'Next: the draft, in the next round.'));
+  const go = el('div', 'brief-actions brief-write');
+  go.append(
+    button('Write the draft', 'primary', { focus: 'write-draft', icon: 'pen', onClick: () => onWriteDraft() }),
+    el('span', 'meta', 'A few minutes. Reads the whole paper, plans the pages, writes the brief.'),
+  );
+  if (draftError) { const p = el('p', 'field-error'); p.setAttribute('role', 'alert'); p.textContent = draftError; go.append(p); }
+  box.append(paperRow, label, notes, notesPicker(notes, problem, onReadNotes), problem, actions, go);
   return box;
 }
 
 /** One brief: the stepper, the stage it is at, the folder. */
 export function renderBrief(container, props) {
-  const { brief, files, loading, error, today, onRefresh, onSaveNotes, onReadNotes, savingNotes, notesSaved } = props;
+  const { brief, files, loading, error, today, onRefresh, onSaveNotes, onReadNotes, onWriteDraft, savingNotes, notesSaved, draftRunning, draftError } = props;
   const focusKey = focusKeyIn(container);
   const page = el('div', 'hub-page brief-page');
   if (!brief) {
@@ -421,7 +540,7 @@ export function renderBrief(container, props) {
   for (const s of stepStates(brief.stage)) if (s.later && s.state === 'later') subs[s.key] = s.key === 'html' || s.key === 'live' ? 'round two' : subs[s.key];
   const split = el('div', 'qh-split brief-split');
   const main = el('div');
-  main.append(el('h3', 'section-label hub-label', stageLabel(brief.stage)), stageBox(brief, { onSaveNotes, onReadNotes, savingNotes, notesSaved }));
+  main.append(el('h3', 'section-label hub-label', stageLabel(brief.stage)), stageBox(brief, { onSaveNotes, onReadNotes, onWriteDraft, savingNotes, notesSaved, draftRunning, draftError }));
   const aside = el('aside', 'qh-side');
   aside.append(el('h3', 'section-label hub-label', 'In the folder'), filesBox(loading ? undefined : files));
   split.append(main, aside);

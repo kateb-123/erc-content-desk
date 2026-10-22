@@ -6,7 +6,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { STAGES, stepStates, waitsFor, briefSlug, hubRows, briefTitle, stageLabel, notesFile, notesKind, NOTES_MAX, createLock, wordCount } from '../js/briefs-view.js';
+import { STAGES, stepStates, waitsFor, briefSlug, hubRows, briefTitle, stageLabel, notesFile, notesKind, NOTES_MAX, createLock, wordCount, draftProgress } from '../js/briefs-view.js';
+import { DRAFT_STEPS } from '../js/brief-draft.js';
 
 test('the seven stages, in her order, the last two round two', () => {
   assert.deepEqual(STAGES.map(s => [s.key, s.label, Boolean(s.later)]), [
@@ -94,6 +95,29 @@ test('wordCount counts words the way the brief does', () => {
   assert.equal(wordCount('   '), 0);
   assert.equal(wordCount(''), 0);
   assert.equal(wordCount(null), 0);
+});
+
+test('draftProgress: the steps as the running box shows them, done, now and later, the current one in its busy words (round 2)', () => {
+  const brief = { stage: 'draft', extra: { draft: { done: ['extract', 'plan', 'exec_summary'], step: 'highlights' } } };
+  const rows = draftProgress(brief, { running: true });
+  assert.deepEqual(rows.map(r => [r.key, r.state]).slice(0, 5), [['extract', 'done'], ['plan', 'done'], ['exec_summary', 'done'], ['highlights', 'now'], ['introduction', 'later']]);
+  assert.equal(rows[3].words, 'Writing the brief, Report Highlights');
+  assert.equal(rows[0].words, 'Read the paper');
+  assert.equal(rows[1].words, 'Planned the pages');
+  assert.equal(rows[2].words, 'Wrote the Executive Summary');
+  assert.equal(rows.at(-1).words, 'Put the files together');
+  const paused = draftProgress(brief, { running: false });
+  assert.equal(paused[3].state, 'later', 'nothing is "now" while nothing runs');
+  assert.equal(draftProgress({ stage: 'paper', extra: {} }, { running: false }).every(r => r.state === 'later'), true);
+});
+
+test('waitsFor at the draft stage says which step the desk is on, or that it paused', () => {
+  const today = '2026-10-22';
+  const running = { stage: 'draft', stageAt: '2026-10-22T15:00:00Z', extra: { draft: { done: ['extract'], step: 'plan' } } };
+  assert.deepEqual(waitsFor(running, today), { title: 'Drafting', meta: 'Planning the pages, started Oct 22' });
+  const paused = { stage: 'draft', stageAt: '2026-10-22T15:00:00Z', extra: { draft: { done: DRAFT_STEPS.slice(0, 4), step: 'research_overview' } } };
+  assert.equal(waitsFor(paused, today).meta, 'Writing the brief, Research Overview, started Oct 22');
+  assert.deepEqual(waitsFor({ stage: 'draft', stageAt: '2026-10-20T15:00:00Z', extra: {} }, today), { title: 'Drafting', meta: 'started Oct 20' });
 });
 
 test('briefTitle: her title once there is one, the paper\'s until then', () => {

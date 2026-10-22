@@ -25,7 +25,7 @@ import { renderQueue } from './queue-ui.js';
 import { renderExchange } from './exchange-ui.js';
 import { renderListserv } from './listserv-ui.js';
 import { renderBriefs, renderBrief, clearBriefDraft } from './briefs-ui.js';
-import { paperText } from './paper-read.js';
+import { paperText, pagePng } from './paper-read.js';
 import { briefTitle } from './briefs-view.js';
 
 
@@ -57,7 +57,7 @@ const state = {
   scraper: null,            // the scraper on GitHub: { configured, run, last } from /api/bulk?scraper=status, or null
   // The Research briefs hub (Kate, Oct 20), hers alone: the list once her sign-in has read it, the open brief and its folder.
   briefs: null, briefsError: false, briefId: '', brief: null, briefFiles: undefined, briefError: '',
-  newBriefOpen: false, creatingBrief: false, createError: '', savingNotes: false, notesSaved: '',
+  newBriefOpen: false, creatingBrief: false, createError: '', savingNotes: false, notesSaved: '', draftRunning: false, draftError: '',
   publishPreview: null,
   publishedCsv: '',       // the CSV from the last publish, for the receipt's re-download
   rewroteNote: null,
@@ -623,6 +623,60 @@ async function readNotesWord(file) {
   return { notes: data.notes, b64 };
 }
 
+/**
+ * The draft (round 2, Kate's Go of Oct 22): the browser drives the desk's
+ * steps one call at a time, each a few seconds to a couple of minutes, and
+ * the brief's page shows which one runs; then it cuts the chosen tables and
+ * figures out of the paper as pictures and files them. A failed step stays
+ * on the page with Try the step again; a page left mid-way shows Continue.
+ */
+async function writeDraft({ restart = false } = {}) {
+  const id = state.briefId;
+  if (!id || state.draftRunning) return;
+  state.draftRunning = id; state.draftError = '';
+  render();
+  try {
+    let next = restart ? 'extract' : undefined;
+    for (;;) {
+      const body = { action: 'draft', id, briefAuthor: state.brief?.extra?.briefAuthor ?? '' };
+      if (next) body.step = next;
+      const data = await postJson('/api/briefs', body, 'write the draft');
+      state.briefs = (state.briefs ?? []).map(b => (b.id === id ? data.brief : b));
+      if (state.briefId !== id) return;   // she moved on; the row keeps where it got to, and Continue picks it up
+      state.brief = data.brief;
+      render();
+      if (!data.next) break;
+      next = undefined;
+    }
+    await cropFigures(id);
+    if (state.briefId === id) { await loadBrief(id); setStatus(`Drafted: ${briefTitle(state.brief)}`, 'ok'); }
+  } catch (err) {
+    if (lockedOut(err)) state.auth = false;
+    else if (state.briefId === id) state.draftError = plainError(err);
+  } finally {
+    if (state.draftRunning === id) state.draftRunning = false;
+    render();
+  }
+}
+
+/** The chosen tables and figures, cut out of the paper's pages as pictures and filed beside the draft. */
+async function cropFigures(id) {
+  const figures = state.brief?.extra?.draft?.result?.figures ?? [];
+  const todo = figures.filter(f => f.page > 0 && !(state.brief?.extra?.draft?.crops ?? []).includes(f.crop));
+  if (!todo.length) return;
+  const paper = await readReply(await fetch(`/api/briefs?id=${encodeURIComponent(id)}&paper=1`, { credentials: 'same-origin' }), 'fetch the paper');
+  const bytes = Uint8Array.from(atob(paper.b64), c => c.charCodeAt(0));
+  for (const f of todo) {
+    try {
+      const b64 = await pagePng(bytes, f.page);
+      const data = await postJson('/api/briefs', { action: 'figure', id, name: f.crop, b64 }, 'file the crop');
+      if (state.briefId === id) state.brief = data.brief;
+    } catch (err) {
+      console.warn('crop failed', f.crop, err);   // a missing crop never stops the draft; the inventory still names the page
+    }
+  }
+}
+
 async function createBrief(payload) {
   state.creatingBrief = true; state.createError = '';
   render();
@@ -753,7 +807,8 @@ function render() {
   } else if (state.screen === 'brief') {
     renderBrief(screens.brief, {
       brief: state.brief, files: state.briefFiles, loading: state.briefFiles === undefined, error: state.briefError, today,
-      onRefresh: () => loadBrief(state.briefId), onSaveNotes: saveBriefNotes, onReadNotes: readNotesWord, savingNotes: state.savingNotes, notesSaved: state.notesSaved,
+      onRefresh: () => loadBrief(state.briefId), onSaveNotes: saveBriefNotes, onReadNotes: readNotesWord, onWriteDraft: writeDraft,
+      savingNotes: state.savingNotes, notesSaved: state.notesSaved, draftRunning: state.draftRunning === state.briefId, draftError: state.draftError,
     });
   } else if (state.screen === 'queue') {
     renderQueue(screens.queue, { ...common, loaded: state.loaded, loadFailed: state.loadFailed, onGoTo: goTo, onRefresh: reload, scraper: state.scraper, onRunScraper: runScraper });

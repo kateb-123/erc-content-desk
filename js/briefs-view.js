@@ -11,6 +11,8 @@
  */
 import { isoToShort } from './queue-view.js';
 
+import { DRAFT_STEPS, SECTION_DEFS, nextDraftStep, stepWords } from './brief-draft.js';
+
 export const STAGES = [
   { key: 'paper', label: 'Paper and notes' },
   { key: 'draft', label: 'Draft' },
@@ -43,7 +45,10 @@ function daysBetween(fromIso, toIso) {
 export function waitsFor(brief, today) {
   const when = short(brief.stageAt, today);
   switch (brief.stage) {
-    case 'draft': return { title: 'Drafting', meta: `started ${when}` };
+    case 'draft': {
+      const step = brief.extra?.draft?.step || (brief.extra?.draft?.done?.length ? nextDraftStep(brief.extra.draft.done) : '');
+      return { title: 'Drafting', meta: `${step ? `${stepWords(step)}, ` : ''}started ${when}` };
+    }
     case 'proof': return { title: 'Your Grammarly pass', meta: `drafted ${when}${brief.words ? `, ${Number(brief.words).toLocaleString('en-US')} words` : ''}` };
     case 'author': {
       const days = daysBetween(dayOf(brief.stageAt), today);
@@ -55,6 +60,27 @@ export function waitsFor(brief, today) {
     case 'live': return { title: 'Live', meta: when };
     default: return { title: 'Write the draft', meta: `paper and notes in, ${when}` };
   }
+}
+
+/** A step's words in the running box: past once done, the busy words while it runs, plain before. */
+function stepRowWords(step, state) {
+  const section = SECTION_DEFS.find(s => s.key === step);
+  if (state === 'now') return stepWords(step);
+  if (section) return state === 'done' ? `Wrote the ${section.title}` : `Write the ${section.title}`;
+  const past = { extract: 'Read the paper', plan: 'Planned the pages', check: 'Checked the draft against the paper', assemble: 'Put the files together' };
+  const plain = { extract: 'Read the paper', plan: 'Plan the pages', check: 'Check the draft against the paper', assemble: 'Put the files together' };
+  return (state === 'done' ? past : plain)[step] ?? step;
+}
+
+/** The draft's steps as the running box shows them (round 2): done, now (only while the browser is driving them) and later. */
+export function draftProgress(brief, { running = false } = {}) {
+  const d = brief?.extra?.draft ?? {};
+  const done = new Set(d.done ?? []);
+  const current = running ? (d.step || nextDraftStep([...done])) : null;
+  return DRAFT_STEPS.map(key => {
+    const state = done.has(key) ? 'done' : key === current ? 'now' : 'later';
+    return { key, state, words: stepRowWords(key, state) };
+  });
 }
 
 /** Letters, digits and single dashes, nothing else: a folder or file name Drive and a terminal both like. */

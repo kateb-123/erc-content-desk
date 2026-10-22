@@ -27,7 +27,7 @@ import {
   DRAFT_STEPS, SECTION_DEFS, nextDraftStep, stepWords, STYLE_SYSTEM_PROMPT, EXTRACT_PROMPT, EXTRACT_SCHEMA, normalizeExtract,
   buildPlanPrompt, parsePlan, buildSectionPrompt, buildCheckPrompt, CHECK_SCHEMA,
   assembleDraft, grammarlyCopy, figuresInventory, numberFlagsMd, bodyWordCount, wordBand, checkStyle, draftFiles,
-} from './_lib/brief-draft.js';
+} from '../js/brief-draft.js';
 import { getFile } from './_lib/sheets.js';
 
 /** The draft's steps read the whole paper and write a section each; five minutes is the plan's ceiling, as for the rewrite. */
@@ -220,12 +220,15 @@ export function createBriefsHandler({
     const d = { ...(extra.draft ?? {}) };
     d.done = [...(d.done ?? [])];
     d.sections = { ...(d.sections ?? {}) };
-    const step = text(body?.step, 40) || nextDraftStep(d.done);
+    const named = text(body?.step, 40);
+    if (named && !DRAFT_STEPS.includes(named)) return res.status(400).json({ ok: false, error: `No draft step named ${named}.` });
+    // A step named outright starts over from it (Write it again): what came after it is undone.
+    if (named) d.done = d.done.filter(s => DRAFT_STEPS.indexOf(s) < DRAFT_STEPS.indexOf(named));
+    const step = named || nextDraftStep(d.done);
     if (!step) return res.status(200).json({ ok: true, brief, step: null, next: null });
-    if (!DRAFT_STEPS.includes(step)) return res.status(400).json({ ok: false, error: `No draft step named ${step}.` });
 
     const patch = { extra };
-    if (brief.stage === 'paper') { patch.stage = 'draft'; patch.stageAt = new Date(now()).toISOString(); }
+    if (brief.stage === 'paper' || (named && brief.stage !== 'draft')) { patch.stage = 'draft'; patch.stageAt = new Date(now()).toISOString(); }
     const sectionKeys = SECTION_DEFS.map(s => s.key);
     try {
       if (step === 'assemble') {
@@ -235,6 +238,7 @@ export function createBriefsHandler({
           await drive.saveFile({ folderId: brief.folderId, name: file.name, contentType: file.contentType, b64: Buffer.from(file.text, 'utf8').toString('base64') });
         }
         patch.words = result.words;
+        if (!text(brief.title) && d.title) patch.title = d.title;
         patch.stage = 'proof';
         patch.stageAt = new Date(now()).toISOString();
       } else {
@@ -313,6 +317,7 @@ export function createBriefsHandler({
     const brief = await store.create({
       id, title: text(body?.title, 300), paperTitle: text(body?.paperTitle, 500), authors: text(body?.authors, 500), journal: text(body?.journal, 200),
       year: Number(year), authorOfRecord: text(body?.authorOfRecord, 120), folderId: folder.id, folderUrl: folder.url ?? '', paperName: fileName, notes,
+      extra: text(body?.briefAuthor, 120) ? { briefAuthor: text(body?.briefAuthor, 120) } : {},
     });
     return res.status(200).json({ ok: true, brief });
   }

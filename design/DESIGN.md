@@ -576,6 +576,35 @@ brief past the paper stage says so on its page.
   them, first." The brief's page takes the same three kinds in its own file
   field.
 ## Her notes after the hubs (Oct 6)
+- **The draft stage, round 2** (Kate, Oct 22, her Go on the drawn stage; the
+  wireframe was three moments of the brief's page): at Paper and notes a
+  primary, Write the draft ("A few minutes. Reads the whole paper, plans the
+  pages, writes the brief."). The browser then drives the desk's steps one
+  call at a time (`/api/briefs` `draft`; `js/brief-draft.js` holds the steps,
+  the prompts from the July brief builder with STYLE-GUIDE and the voice, and
+  her notes steering every call): Read the paper (the deep read, as a document
+  so the model sees the tables; `extract.json`), Plan the pages (the Bowen
+  page plan with its measured capacities and a suggested title;
+  `page-plan.md`), the eight sections each with the ones before it, Check the
+  draft against the paper, Put the files together (`brief-draft.md` in the
+  Bowen shape, `brief-for-grammarly.md` as words alone, `figures.md`, the row's
+  words and title). The running box lists every step: a green check once
+  done, the busy words with a turning circle while it runs, a quiet circle
+  before; "Stay on the page while it writes. If you leave, Continue picks up
+  where it stopped."; a failed step says so in red with Try the step again.
+  Done, the stage is Your proof and the box is the Draft: the body-prose
+  count with its band as a pill (review tint under the floor or over the
+  cap, grey in the band), the whole brief in a scrolling box, three
+  downloads and Write it again (starts over from the read), Tables and
+  figures in the paper (the first two flagged Rework in the review tint,
+  the rest Prose, "cut out, in the folder" once the browser has rendered
+  the page with pdf.js and filed `figure-<label>-p<page>.png`), Numbers the
+  paper disagrees with itself on (each with the warning triangle, where it is
+  and what the draft used), What the check could not settle, and the next
+  line to her proof. The hub's table says which step a drafting brief is on.
+  New brief gained a Brief author box, Kate Barnes until changed, remembered
+  on that computer, named on the draft's cover.
+
 
 - **The highlight's own Save**: once the picks change, Update the highlight
   and Cancel changes sit right under the Now and After boxes, whatever waits

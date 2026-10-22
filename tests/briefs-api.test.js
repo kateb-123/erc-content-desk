@@ -261,7 +261,7 @@ test('POST create: a Drive refusal is a plain 502, never a crash; an unknown act
 });
 
 // ---- Round 2: the draft (Kate, Oct 22, her Go) ----
-import { DRAFT_STEPS, EXTRACT_PROMPT } from '../api/_lib/brief-draft.js';
+import { DRAFT_STEPS, EXTRACT_PROMPT } from '../js/brief-draft.js';
 
 /** A store that keeps state across steps, and a drive that records files and hands the paper back. */
 function draftWorld({ extra = {}, model } = {}) {
@@ -360,4 +360,22 @@ test('GET ?id&paper=1 hands the paper back for the crops; POST figure files a cr
   assert.deepEqual(ok.body.brief.extra.draft.crops, ['figure-table-3-p12.png']);
   const bad = await post(handler, { action: 'figure', id: 'holzman-2026-alignment', name: '../evil.png', b64: 'eA==' });
   assert.equal(bad.code, 400);
+});
+
+test('POST draft with a step named starts over from it (Write it again), and assemble gives the row the plan\'s title when it had none', async () => {
+  const { handler, rows } = draftWorld();
+  for (let i = 0; i < DRAFT_STEPS.length; i++) await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });
+  assert.equal(rows.get('holzman-2026-alignment').title, 'Majors That Lead Somewhere');
+  const res = await post(handler, { action: 'draft', id: 'holzman-2026-alignment', step: 'extract' });
+  assert.equal(res.code, 200, JSON.stringify(res.body));
+  assert.deepEqual(res.body.brief.extra.draft.done, ['extract'], 'everything after the named step is undone');
+  assert.equal(res.body.next, 'plan');
+  assert.equal(res.body.brief.stage, 'draft', 'back to drafting');
+});
+
+test('POST create keeps the brief author on the row', async () => {
+  const { handler, rows } = draftWorld();
+  const res = await post(handler, { action: 'create', authorLast: 'Nagro', year: '2026', topic: 'reading', paperName: 'n.pdf', paperB64: Buffer.from('%PDF').toString('base64'), notes: 'n', briefAuthor: 'Kate Barnes' });
+  assert.equal(res.code, 200, JSON.stringify(res.body));
+  assert.equal(rows.get('nagro-2026-reading').extra.briefAuthor, 'Kate Barnes');
 });
