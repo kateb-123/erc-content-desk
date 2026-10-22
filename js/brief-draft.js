@@ -23,6 +23,27 @@ export const SECTION_DEFS = [
 /** The steps in order: the deep read, the page plan, the brief's one visual, the eight sections, the check against the paper, the files. */
 export const DRAFT_STEPS = ['extract', 'plan', 'visual', ...SECTION_DEFS.map(s => s.key), 'check', 'assemble'];
 
+/**
+ * What each step may ask of the model. On this model the thinking counts
+ * against max tokens, and a step has the call's 250 s (under the function's
+ * 300 s) at the pace measured live on Oct 22: the paper read stopped at
+ * 12,000 tokens after about 143 s ("the reply was cut short"). So every
+ * budget fits 250 s at 80 tokens a second. The read thinks at medium with
+ * more room; the check re-verifies every number against the paper at high.
+ */
+export const TOKENS_PER_SECOND = 80;
+export const CALL_SECONDS = 250;
+export const STEP_BUDGET = {
+  extract: { maxTokens: 20000, effort: 'medium' },
+  plan: { maxTokens: 8000, effort: 'medium' },
+  visual: { maxTokens: 8000, effort: 'medium' },
+  section: { maxTokens: 10000, effort: 'medium' },
+  check: { maxTokens: 20000, effort: 'high' },
+};
+
+/** A step's budget; every section shares one. */
+export const budgetFor = step => STEP_BUDGET[step] ?? STEP_BUDGET.section;
+
 /** The first step not yet done, in order; null once every step is. */
 export function nextDraftStep(done) {
   const did = new Set(done ?? []);
@@ -82,7 +103,7 @@ Close-reading protocol:
 - Capture the authors' own limitations and hedging in their own terms.
 - Distinguish what the authors CLAIM from what their design supports.
 
-Extract the structured record requested by the output schema. For "design": choose "causal" only for randomized experiments or regression discontinuity/cutoff designs; otherwise choose observational, descriptive, or qualitative as appropriate. For "key_numbers": pull the exact statistics a policy brief would cite, each with enough context (and page number) to use verbatim. For "apa_citation": produce a correct APA 7 reference for this article.
+Extract the structured record requested by the output schema. For "design": choose "causal" only for randomized experiments or regression discontinuity/cutoff designs; otherwise choose observational, descriptive, or qualitative as appropriate. For "key_numbers": pull the exact statistics a policy brief would cite, at most 15, the ones the brief most needs, each with enough context (and page number) to use verbatim. For "apa_citation": produce a correct APA 7 reference for this article.
 
 For "recommended_visuals": identify at most 3 figures or tables from the paper that would EARN A PLACE in a short policy brief (clearer than prose could be; central to the findings). List them best first. For each, give its label in the paper (e.g. "Figure 2"), the PDF page it appears on (the page's position in the file, starting at 1, not the printed page number), why it earns a place, a plain-language caption a policymaker would understand, and its "box": where it sits on that page, as left, top, right and bottom fractions of the page's width and height measured from the top-left corner (0 to 1), wide enough to take in its title, every row, axis and label, and its notes, and nothing else on the page. If nothing earns a place, return an empty array; do not pad.
 

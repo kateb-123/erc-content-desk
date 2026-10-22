@@ -284,8 +284,8 @@ function draftWorld({ extra = {}, model } = {}) {
   };
   const extractJson = JSON.stringify({ title: 'Race, Nativity, and the Labor Market Returns to College Major-Occupation Alignment', authors: ['Brian Holzman', 'Jeehee Han'], journal: 'AERA Open', year: 2026, design: 'observational', research_questions: ['q'], sample: 's', methods_summary: 'm', key_numbers: [{ value: '1,366,603', context: 'workers, p. 8' }], findings: [{ title: 'Match pays', summary: 'Matched workers earn more.' }], policy_recommendations: ['r'], apa_citation: 'Holzman, B., & Han, J. (2026). Race, nativity. AERA Open.', recommended_visuals: [{ kind: 'table', source_label: 'Table 3', page: 12, why: 'the premium', suggested_caption: 'Earnings by match', box: { left: 0.1, top: 0.2, right: 0.9, bottom: 0.6 } }], number_flags: [] });
   const visualJson = JSON.stringify({ kind: 'table', source_label: 'Table 3', title: 'Matched workers earned more', kept: 'Kept: the two groups. Left out: the controls.', columns: ['Workers', 'Median earnings'], rows: [['Matched', '$52,000'], ['Not matched', '$44,000']], value_label: '', value_format: 'number', bars: [] });
-  const draftModel = model ?? (async ({ prompt, schema }) => {
-    calls.push({ prompt, schema: Boolean(schema) });
+  const draftModel = model ?? (async ({ prompt, schema, maxTokens, effort }) => {
+    calls.push({ prompt, schema: Boolean(schema), maxTokens, effort });
     if (prompt.startsWith('Do a deep, close reading')) return extractJson;
     if (/TASK: Build the brief's one visual/.test(prompt)) return visualJson;
     if (/TASK: Write the page plan/.test(prompt)) return '# Page Plan: Holzman (2026)\n\nSuggested brief title: Majors That Lead Somewhere\n\n## Plan\n| Page | Content |\n|---|---|\n| Cover | Exec |\n';
@@ -467,4 +467,12 @@ test('Write it again clears the proposal with the rest, so a new plan gets a new
   for (let i = 0; i < DRAFT_STEPS.length; i++) await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });
   const res = await post(handler, { action: 'draft', id: 'holzman-2026-alignment', step: 'extract' });
   assert.equal(res.body.brief.extra.draft.visual, undefined);
+});
+
+test('each step asks the model with its own budget from STEP_BUDGET (live, Oct 22: the read was cut short at 12,000)', async () => {
+  const { handler, calls } = draftWorld();
+  for (let i = 0; i < DRAFT_STEPS.length; i++) await post(handler, { action: 'draft', id: 'holzman-2026-alignment' });
+  assert.deepEqual([calls[0].maxTokens, calls[0].effort], [20000, 'medium'], 'the read');
+  const check = calls.find(c => /Below is a complete ERC research brief draft/.test(c.prompt));
+  assert.equal(check.effort, 'high');
 });

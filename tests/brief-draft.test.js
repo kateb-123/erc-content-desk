@@ -266,3 +266,22 @@ test('the findings mark where the proposal goes by its name, a chart as Figure 1
   assert.match(prompt, /THE BRIEF'S VISUAL: Figure 1, T/);
   assert.match(buildSectionPrompt(extract, 'plan', '', 'key_findings', []), /\[Table 1 here\]/, 'no proposal yet, the table as before');
 });
+
+import { STEP_BUDGET, budgetFor, TOKENS_PER_SECOND, CALL_SECONDS } from '../js/brief-draft.js';
+
+test('every step\'s reply fits its call: max tokens at the measured pace stays under the call\'s time (live, Oct 22: the read stopped at 12,000 tokens after about 143 s, "the reply was cut short")', () => {
+  assert.equal(TOKENS_PER_SECOND, 80, 'measured live: 12,000 tokens in about 143 s, rounded down');
+  assert.equal(CALL_SECONDS, 250);
+  for (const [step, b] of Object.entries(STEP_BUDGET)) {
+    assert.ok(b.maxTokens / TOKENS_PER_SECOND <= CALL_SECONDS, `${step}: ${b.maxTokens} tokens cannot be written in ${CALL_SECONDS} s`);
+    assert.ok(['low', 'medium', 'high'].includes(b.effort), step);
+  }
+});
+
+test('the paper read gets more room and thinks at medium, since the check re-verifies every number at high', () => {
+  assert.deepEqual(budgetFor('extract'), { maxTokens: 20000, effort: 'medium' });
+  assert.ok(budgetFor('extract').maxTokens > 12000, 'more room than the live failure had');
+  assert.equal(budgetFor('check').effort, 'high');
+  assert.deepEqual(budgetFor('key_findings'), budgetFor('exec_summary'), 'every section the same');
+  assert.match(EXTRACT_PROMPT, /at most 15/, 'the key numbers are bounded so the reply stays short');
+});

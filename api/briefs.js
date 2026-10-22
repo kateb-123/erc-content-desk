@@ -26,7 +26,7 @@ import { buildPaperPrompt, normalizePaperFields, PAPER_TEXT_MAX, PAPER_SCHEMA } 
 import {
   DRAFT_STEPS, SECTION_DEFS, nextDraftStep, stepWords, STYLE_SYSTEM_PROMPT, EXTRACT_PROMPT, EXTRACT_SCHEMA, normalizeExtract,
   buildPlanPrompt, parsePlan, buildSectionPrompt, buildCheckPrompt, CHECK_SCHEMA,
-  VISUAL_SCHEMA, buildVisualPrompt, normalizeVisual, visualMarkdown,
+  VISUAL_SCHEMA, buildVisualPrompt, normalizeVisual, visualMarkdown, budgetFor,
   assembleDraft, grammarlyCopy, figuresInventory, numberFlagsMd, bodyWordCount, wordBand, checkStyle, draftFiles,
 } from '../js/brief-draft.js';
 import { getFile } from './_lib/sheets.js';
@@ -88,6 +88,7 @@ const FIGURES = 'figures';
  * the key.
  */
 async function liveDraftModel({ system, prompt, pdfB64, schema, maxTokens = 8000, effort = 'high' }) {
+  const started = Date.now();
   const response = await anthropic().messages.create({
     model: REWRITE_MODEL,
     max_tokens: maxTokens,
@@ -101,6 +102,8 @@ async function liveDraftModel({ system, prompt, pdfB64, schema, maxTokens = 8000
       ],
     }],
   }, DRAFT_CALL);
+  // What each step cost and took, in the logs, so the budgets can be tuned from live runs.
+  console.log('draft call', JSON.stringify({ effort, maxTokens, ms: Date.now() - started, stop: response.stop_reason, usage: response.usage }));
   if (response.stop_reason === 'max_tokens') throw new Error('the reply was cut short');
   return response.content.filter(part => part.type === 'text').map(part => part.text).join('');
 }
@@ -275,29 +278,29 @@ export function createBriefsHandler({
         patch.stageAt = new Date(now()).toISOString();
       } else {
         const paper = await drive.getFile(brief.folderId, brief.paperName);
-        const ask = (prompt, schema, maxTokens, effort) => draftModel({ system: STYLE_SYSTEM_PROMPT, prompt, pdfB64: paper.b64, schema, maxTokens, effort });
+        const ask = (prompt, schema) => draftModel({ system: STYLE_SYSTEM_PROMPT, prompt, pdfB64: paper.b64, schema, ...budgetFor(step) });
         if (step === 'extract') {
-          d.extract = normalizeExtract(parseModelJson(await ask(EXTRACT_PROMPT, EXTRACT_SCHEMA, 12000, 'high'), 'the read of the paper'));
+          d.extract = normalizeExtract(parseModelJson(await ask(EXTRACT_PROMPT, EXTRACT_SCHEMA), 'the read of the paper'));
           // A .md, since the Sheet's script files only the names its rule allows, and .json is not one (Oct 22).
           const md = `# What the desk read from the paper\n\n\`\`\`json\n${JSON.stringify(d.extract, null, 2)}\n\`\`\`\n`;
           await drive.saveFile({ folderId: brief.folderId, name: 'extract.md', contentType: 'text/markdown', b64: Buffer.from(md, 'utf8').toString('base64') });
         } else if (step === 'plan') {
           if (!d.extract) throw new Error('the paper has not been read yet');
-          d.plan = String(await ask(buildPlanPrompt(d.extract, brief.notes), null, 6000, 'medium')).trim();
+          d.plan = String(await ask(buildPlanPrompt(d.extract, brief.notes), null)).trim();
           d.title = parsePlan(d.plan).title;
           await drive.saveFile({ folderId: brief.folderId, name: 'page-plan.md', contentType: 'text/markdown', b64: Buffer.from(`${d.plan}\n`, 'utf8').toString('base64') });
         } else if (step === 'visual') {
           if (!d.extract) throw new Error('the paper has not been read yet');
-          d.visual = normalizeVisual(parseModelJson(await ask(buildVisualPrompt(d.extract, d.plan ?? '', brief.notes), VISUAL_SCHEMA, 6000, 'medium'), 'the proposal'));
+          d.visual = normalizeVisual(parseModelJson(await ask(buildVisualPrompt(d.extract, d.plan ?? '', brief.notes), VISUAL_SCHEMA), 'the proposal'));
           await drive.saveFile({ folderId: brief.folderId, sub: FIGURES, name: `proposed-${d.visual.kind === 'chart' ? 'figure' : 'table'}-1.md`, contentType: 'text/markdown', b64: Buffer.from(visualMarkdown(d.visual), 'utf8').toString('base64') });
         } else if (sectionKeys.includes(step)) {
           if (!d.extract) throw new Error('the paper has not been read yet');
           const prior = sectionKeys.filter(k => d.sections[k] != null && k !== step).map(k => ({ key: k, content: d.sections[k] }));
-          d.sections[step] = String(await ask(buildSectionPrompt(d.extract, d.plan ?? '', brief.notes, step, prior, d.visual ?? null), null, 8000, 'medium')).trim();
+          d.sections[step] = String(await ask(buildSectionPrompt(d.extract, d.plan ?? '', brief.notes, step, prior, d.visual ?? null), null)).trim();
         } else if (step === 'check') {
           const sections = sectionKeys.filter(k => d.sections[k] != null).map(k => ({ key: k, content: d.sections[k] }));
           if (!sections.length) throw new Error('no sections to check yet');
-          const checked = parseModelJson(await ask(buildCheckPrompt(d.extract, sections), CHECK_SCHEMA, 16000, 'high'), 'the check');
+          const checked = parseModelJson(await ask(buildCheckPrompt(d.extract, sections), CHECK_SCHEMA), 'the check');
           for (const s of checked.sections ?? []) if (sectionKeys.includes(s.key) && typeof s.content === 'string' && s.content.trim()) d.sections[s.key] = s.content.trim();
           d.checkFlags = (checked.flags ?? []).map(f => ({ section: String(f.section ?? ''), note: String(f.note ?? '') })).filter(f => f.note);
         }
