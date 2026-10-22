@@ -7,7 +7,7 @@
  * beside it. Round 1 draws the first stage, Paper and notes; the later ones
  * say they come in the next round.
  */
-import { hubRows, stepStates, briefTitle, briefSlug, stageLabel } from './briefs-view.js';
+import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile } from './briefs-view.js';
 import { hubHead, HUB_LEDES } from './hub-head.js';
 import { isoToShort } from './queue-view.js';
 import { faIcon } from './icons.js';
@@ -44,6 +44,27 @@ function field(labelText, control, hint) {
 }
 
 const input = (type = 'text') => { const i = el('input'); i.type = type; return i; };
+
+/** Her notes as a file (Kate, Oct 22): a .md or .txt that fills the notes box; a refusal says why on the problem line. */
+function notesPicker(notes, problem) {
+  const pick = input('file');
+  pick.accept = '.md,.markdown,.txt,text/markdown,text/plain';
+  pick.addEventListener('change', () => {
+    const file = pick.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const got = notesFile(file.name, reader.result);
+      if (!got.ok) { problem.textContent = got.error; pick.value = ''; return; }
+      problem.textContent = '';
+      notes.value = got.notes;
+      notes.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    reader.onerror = () => { problem.textContent = "Couldn't read that file."; };
+    reader.readAsText(file);
+  });
+  return field('Or your notes as a file', pick, 'A .md or .txt. It fills the box above.');
+}
 
 /** The New brief form: the paper, who and what, her notes. */
 function newBriefForm({ onCreate, onCancel, creating, error }) {
@@ -89,6 +110,7 @@ function newBriefForm({ onCreate, onCancel, creating, error }) {
     field('Authors', authors),
     field('Journal', journal),
     field('Your notes', notes),
+    notesPicker(notes, problem),
     problem, actions,
   );
 
@@ -199,11 +221,13 @@ function stageBox(brief, { onSaveNotes, savingNotes, notesSaved }) {
   notes.value = brief.notes ?? '';
   const label = el('label', 'card-field-label', 'Your notes');
   label.htmlFor = notes.id;
+  const problem = el('p', 'field-error');
+  problem.setAttribute('role', 'alert');
   const actions = el('div', 'brief-actions');
   const save = button(savingNotes ? 'Saving…' : 'Save notes', 'btn-outline', { focus: 'save-notes', onClick: () => onSaveNotes(notes.value) });
   save.disabled = Boolean(savingNotes);
   actions.append(save, el('span', 'brief-saved', notesSaved || 'Saved to the row and as notes.md in the folder.'));
-  box.append(paperRow, label, notes, actions, el('p', 'brief-next', 'Next: the draft, in the next round.'));
+  box.append(paperRow, label, notes, notesPicker(notes, problem), problem, actions, el('p', 'brief-next', 'Next: the draft, in the next round.'));
   return box;
 }
 

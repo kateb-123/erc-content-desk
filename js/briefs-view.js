@@ -71,6 +71,22 @@ export function briefSlug({ authorLast, year, topic }) {
   return [a, y, slugPart(topic)].filter(Boolean).join('-');
 }
 
+/** What a brief's notes hold at most: the API's own cap (text() in api/briefs.js), so a file is never cut without a word. */
+export const NOTES_MAX = 20000;
+
+/**
+ * Her notes as a dropped file (Kate, Oct 22, 2026: "i just want to upload my
+ * md"): a .md, .markdown or .txt fills the notes box; anything else is
+ * refused with the reason. The text is trimmed, never otherwise changed.
+ */
+export function notesFile(name, text) {
+  if (!/\.(md|markdown|txt)$/i.test(String(name ?? ''))) return { ok: false, error: 'Notes come as a .md or .txt file. Save the Word file as text first.' };
+  const notes = String(text ?? '').trim();
+  if (!notes) return { ok: false, error: 'That file is empty.' };
+  if (notes.length > NOTES_MAX) return { ok: false, error: `That file is over ${NOTES_MAX.toLocaleString('en-US')} characters, more than a brief's notes hold. Trim it first.` };
+  return { ok: true, notes };
+}
+
 /** Her title once there is one, the paper's until then, the folder's name as a last resort. */
 export const briefTitle = brief => brief.title || brief.paperTitle || brief.id;
 

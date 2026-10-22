@@ -18,11 +18,11 @@ import { pickMode } from './_lib/store.js';
 import { liveQuery } from './_lib/db.js';
 import { createBriefs, isMissingTable, MAX_PAPER_BYTES, NEEDS_DB, NO_TABLE } from './_lib/briefs.js';
 import { briefFolder, saveFile, listFiles } from './_lib/sheets.js';
-import { briefSlug, slugPart } from '../js/briefs-view.js';
+import { briefSlug, slugPart, NOTES_MAX } from '../js/briefs-view.js';
 
 export const config = { maxDuration: 60 };
 
-const MAX_TEXT = 20000;
+const MAX_TEXT = NOTES_MAX;
 const text = (value, max = MAX_TEXT) => String(value ?? '').trim().slice(0, max);
 
 /** 'Yell leaders (final).PDF' as 'yell-leaders-final.pdf'. */

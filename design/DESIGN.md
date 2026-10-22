@@ -542,6 +542,14 @@ built the hub, New brief, the paper stage with Save notes, the card and the
 lock; the draft, her proof and the author round are the next rounds, and a
 brief past the paper stage says so on its page.
 
+- **Notes as a file** (Kate, Oct 22: "i just want to upload my md"): under
+  the notes box on New brief and on the brief's page, a file field, "Or your
+  notes as a file", takes a .md, .markdown or .txt and fills the box with its
+  text (`notesFile` in `js/briefs-view.js`: trimmed, never otherwise changed;
+  empty, another kind of file, or more than the API's 20,000 characters is
+  refused on the form's own error line). Save or Create then sends it the way
+  typed notes go, so notes.md in the folder is the same file either way.
+
 ## Her notes after the hubs (Oct 6)
 
 - **The highlight's own Save**: once the picks change, Update the highlight

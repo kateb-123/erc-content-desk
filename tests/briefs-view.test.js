@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { STAGES, stepStates, waitsFor, briefSlug, hubRows, briefTitle, stageLabel } from '../js/briefs-view.js';
+import { STAGES, stepStates, waitsFor, briefSlug, hubRows, briefTitle, stageLabel, notesFile, NOTES_MAX } from '../js/briefs-view.js';
 
 test('the seven stages, in her order, the last two round two', () => {
   assert.deepEqual(STAGES.map(s => [s.key, s.label, Boolean(s.later)]), [
@@ -53,6 +53,16 @@ test('briefSlug: the author\'s last name, the year and a topic word, as a folder
   assert.equal(briefSlug({ authorLast: "O'Brien", year: '2026', topic: '' }), 'obrien-2026', 'no topic, no trailing dash');
   assert.equal(briefSlug({ authorLast: '', year: '2026', topic: 'x' }), '', 'no author, no name');
   assert.equal(briefSlug({ authorLast: 'Svajda-Hardy', year: '26', topic: 'x' }), '', 'the year is four digits');
+});
+
+test('notesFile: her notes as a dropped .md or .txt fill the notes box; anything else is refused with a reason (Kate, Oct 22: "i just want to upload my md")', () => {
+  assert.deepEqual(notesFile('holzman-2026-alignment-notes.md', '# Race, Nativity\n\n- linkage\n'), { ok: true, notes: '# Race, Nativity\n\n- linkage' });
+  assert.deepEqual(notesFile('notes.TXT', '  plain words  '), { ok: true, notes: 'plain words' });
+  assert.deepEqual(notesFile('notes.markdown', 'x'), { ok: true, notes: 'x' });
+  assert.deepEqual(notesFile('notes.docx', 'x'), { ok: false, error: 'Notes come as a .md or .txt file. Save the Word file as text first.' });
+  assert.deepEqual(notesFile('notes.md', ''), { ok: false, error: 'That file is empty.' });
+  assert.deepEqual(notesFile('notes.md', 'a'.repeat(20001)), { ok: false, error: 'That file is over 20,000 characters, more than a brief\'s notes hold. Trim it first.' });
+  assert.equal(notesFile('notes.md', 'a'.repeat(20000)).ok, true, 'the limit is the API\'s own, MAX_TEXT');
 });
 
 test('briefTitle: her title once there is one, the paper\'s until then', () => {
