@@ -39,3 +39,13 @@ test('the hub says where the code, the handoff and the logins are, with how-to l
   assert.match(src, /'\/#publish'/, 'Publish opens from the hub');
   assert.match(src, /'https:\/\/erc-policy-exchange\.vercel\.app\/'/, 'the live link');
 });
+
+// The Exchange's own edit door (Kate, Oct 23: "also on the hub"): the one place
+// a live item is fixed, hidden or deleted. Its password is never on the page.
+test('the hub links the Exchange edit door, and never its password', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../js/exchange-ui.js', import.meta.url), 'utf8');
+  assert.match(src, /https:\/\/erc-policy-exchange\.vercel\.app\/2ujhtc8daz\//);
+  assert.match(src, /Edit live items/);
+  assert.doesNotMatch(src, /ADMIN_PASSWORD|password:/i);
+});

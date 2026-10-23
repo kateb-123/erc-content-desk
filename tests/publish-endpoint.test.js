@@ -197,3 +197,34 @@ test('a highlight-only write still asks for the password', async () => {
   await handlerOver(desk([]), fakeHub())(await signedReq('POST', { only: 'highlight', highlights: [] }), res);
   assert.equal(res.code, 400);
 });
+
+// The CSV goes to Drive, not to a download (Kate, Oct 22, 2026: "can it just
+// get saved to the google drive?"): after the write, the whole list is filed
+// in the team drive's Policy Exchange folder through the Sheet's script.
+test('a publish files the list in Drive and names the copy; a failed copy still publishes and says so', async () => {
+  const rows = [kept({ id: 'k1', headline: 'Howdy Policy Trivia Night', link: 'https://example.org/trivia', type: 'event', subtype: 'Off-Campus', source: 'Aggie Example Society', date: '2026-10-30' })];
+  const saves = [];
+  const drive = { saveFile: async args => { saves.push(args); return { url: 'https://drive.google.com/file/d/copy1', folderUrl: 'https://drive.google.com/drive/folders/f1' }; } };
+  const hub = fakeHub();
+  const handler = createPublishHandler({ ...desk(rows), hub, drive, copyFolder: 'folder-x', session: { secret: SECRET, now: () => NOW }, today: () => '2026-09-23', clock: () => '2026-09-23T20:05:00.000Z' });
+  const res = fakeRes();
+  await handler(await signedReq('POST', { password: SECRET }), res);
+  assert.equal(res.body.ok, true);
+  assert.equal(res.body.published, 1);
+  assert.equal(saves.length, 1);
+  assert.equal(saves[0].folderId, 'folder-x');
+  assert.equal(saves[0].name, 'erc-exchange-2026-09-23-1505.csv', 'named in Central time, not UTC');
+  assert.equal(saves[0].contentType, 'text/csv');
+  assert.match(Buffer.from(saves[0].b64, 'base64').toString('utf8'), /Howdy Policy Trivia Night/, 'the copy is the list after the write');
+  assert.deepEqual(res.body.copy, { name: 'erc-exchange-2026-09-23-1505.csv', url: 'https://drive.google.com/file/d/copy1', folderUrl: 'https://drive.google.com/drive/folders/f1' });
+  assert.ok(res.body.csv, 'the list still rides the reply, for a download if Drive fails');
+
+  const broken = { saveFile: async () => { throw new Error('Sheet API error: no folder'); } };
+  const handler2 = createPublishHandler({ ...desk([kept({ id: 'k2', headline: 'Gig Em Grant', link: 'https://example.org/grant', type: 'opportunity', subtype: 'Funding & Grants', source: 'Aggie Example Society', deadline: '2026-11-30' })]), hub: fakeHub(), drive: broken, copyFolder: 'folder-x', session: { secret: SECRET, now: () => NOW }, today: () => '2026-09-23', clock: () => '2026-09-23T20:05:00.000Z' });
+  const res2 = fakeRes();
+  await handler2(await signedReq('POST', { password: SECRET }), res2);
+  assert.equal(res2.body.ok, true);
+  assert.equal(res2.body.published, 1);
+  assert.equal(res2.body.copy, undefined);
+  assert.equal(res2.body.copyError, 'The copy did not reach Drive. Download it from the receipt.');
+});

@@ -52,7 +52,13 @@ export function renderExchange(container, { rows, today, loaded, preview, hubUpd
   const words = el('span', 'door-words');
   words.append(el('span', 'door-name', 'Publish'), el('span', 'door-note', s.waiting ? `${s.waiting} waiting` : ''));
   door.append(faIcon('paper-plane'), words, faIcon('arrow-right'));
-  side.append(door);
+  // The Exchange's own edit door (Kate, Oct 23): the one place a live item is
+  // fixed, hidden or deleted. Its password is the Exchange's own, given in person.
+  const edit = el('a', 'hub-link qh-edit', 'Edit live items');
+  edit.href = 'https://erc-policy-exchange.vercel.app/2ujhtc8daz/';
+  edit.target = '_blank'; edit.rel = 'noopener';
+  edit.append(' ', faIcon('arrow-up-right-from-square'), el('span', 'sr-only', ' (opens in a new tab)'));
+  side.append(door, edit, el('p', 'qh-side-note', 'Fix, hide or delete what is already live. It asks the Exchange\'s own password.'));
 
   split.append(main, side);
   page.append(hubHead('Policy Exchange', HUB_LEDES.exchange), split);
