@@ -39,6 +39,9 @@ body {
   color: var(--ink);
   background: var(--background);
 }
+/* A link with no class of its own (review, Oct 23): teal, never the browser's blue. */
+a { color: var(--link-primary); }
+a:hover { color: var(--link-primary-hover); }
 
 h2, h3 { font-family: var(--font-sans); letter-spacing: 0; }
 
@@ -146,10 +149,10 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .bulk-door summary { list-style: none; display: flex; align-items: center; gap: var(--spacing-03); min-height: 32px; cursor: pointer; color: var(--muted); }
 /* The opener: the queue fold's chevron, turned when open; no native marker. */
 .bulk-door summary::-webkit-details-marker { display: none; }
-.bulk-door summary .fa-chevron-down { width: 12px; text-align: center; font-size: 11px; color: var(--icon-secondary); transition: transform var(--duration-fast-02) var(--ease-standard); }
-.bulk-door[open] summary .fa-chevron-down { transform: rotate(180deg); }
+.bulk-door summary .fa-chevron-right { width: 12px; text-align: center; font-size: 11px; color: var(--icon-secondary); transition: transform var(--duration-fast-02) var(--ease-standard); }
+.bulk-door[open] summary .fa-chevron-right { transform: rotate(90deg); }
 .bulk-door summary:hover { color: var(--ink); }
-.bulk-door summary:hover .fa-chevron-down { color: var(--icon-primary); }
+.bulk-door summary:hover .fa-chevron-right { color: var(--icon-primary); }
 /* A file dragged over the intake card lights the door, whether it is open or shut. */
 .bulk-door.is-drag summary { color: var(--link-primary); }
 .bulk-drop { display: block; border: 1px dashed var(--border-strong-01); border-radius: var(--radius); padding: var(--spacing-06) var(--spacing-05); margin: var(--spacing-04) 0 var(--spacing-01); text-align: center; cursor: pointer; background: var(--field-02); color: var(--muted); }
@@ -679,8 +682,10 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .sort-card-pos { flex: none; font: var(--meta-type); color: var(--text-helper); }
 .sc-facts .badge { margin: 0; }
 /* The title is edited in place: borderless, a rule appears under it on hover. */
-.sort-card input.card-title { height: auto; padding: 0; font: var(--card-title); letter-spacing: -.2px; background: transparent; border: 1px solid transparent; margin: calc(-1 * var(--spacing-03)) 0; }
-.sort-card input.card-title:hover { border-bottom-color: var(--layer-line); }   /* the rule appears under the title on hover */
+.sort-card .card-title { height: auto; padding: 0; font: var(--card-title); letter-spacing: -.2px; background: transparent; border: 1px solid transparent; margin: calc(-1 * var(--spacing-03)) 0; }
+/* A textarea since Oct 23, one line that grows, so a long title wraps (review). */
+.sort-card textarea.card-title { display: block; width: 100%; min-height: 0; resize: none; overflow: hidden; field-sizing: content; }
+.sort-card .card-title:hover { border-bottom-color: var(--layer-line); }   /* the rule appears under the title on hover */
 .sc-meta { margin: calc(-1 * var(--spacing-03)) 0 0; font: var(--meta-type); color: var(--text-helper); }
 .sc-meta .source-link { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
 .sc-meta .fa-arrow-up-right-from-square, .card-note-box .fa-arrow-up-right-from-square { font-size: 11px; }
@@ -886,7 +891,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hl-title { font-size: 14px; line-height: 18px; font-weight: 600; }
 .hl-meta { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
 .hl-warn { color: var(--text-warning); font-weight: 600; }
-.hl-tools { flex: none; display: flex; align-items: center; gap: var(--spacing-02); }
+/* A pick's tools on their own line under its title (Kate, Oct 23, her pick B): beside it they crushed the title to a word a line. */
+.hl-tools { flex: none; flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02); padding-left: calc(20px + 48px + 2 * var(--spacing-04)); }
 .hl-tools .linkish { height: 24px; padding: 0 var(--spacing-02); margin: 0; font-size: 14px; }
 .hl-tools .img-upload { gap: var(--spacing-02); }
 .hl-tools .img-thumb { display: none; }   /* the row shows the picture itself */

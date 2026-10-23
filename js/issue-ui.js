@@ -212,6 +212,8 @@ export function renderIssue(container, props) {
         doneLine: () => `Added to the ${isoToShort(quickIssue, today)} issue.`,
       });
     }
+    // The button says where the item goes (review, Oct 23): this issue, not the team's queue.
+    panel.querySelector('.submit-btn').textContent = `Add to the ${isoToShort(quickIssue, today)} issue`;
     main.append(panel);
   }
   if (!count && !removed.length) main.append(el('p', 'nl-empty', 'Nothing in yet.'));

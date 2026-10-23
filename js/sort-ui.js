@@ -69,9 +69,10 @@ function applyDrafts(container, { id, drafts }) {
 
 /** A field that saves itself when you leave it (or press Enter in a line):
  *  the trimmed value, only when it changed. */
-function savingField(row, field, props, { multiline = false } = {}) {
-  const input = el(multiline ? 'textarea' : 'input');
+function savingField(row, field, props, { multiline = false, grow = false } = {}) {
+  const input = el(multiline || grow ? 'textarea' : 'input');
   if (multiline) input.rows = 5;
+  else if (grow) input.rows = 1;
   else input.type = dateField(field) ? 'date' : 'text';
   input.value = row[field] ?? '';
   input.dataset.saved = input.value;
@@ -86,6 +87,13 @@ function savingField(row, field, props, { multiline = false } = {}) {
   };
   input.addEventListener('blur', save);
   if (!multiline) input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } });
+  if (grow && !globalThis.CSS?.supports?.('field-sizing', 'content')) {
+    // One line that grows with its words, so a long title wraps instead of being cut off (review, Oct 23).
+    // The stylesheet's field-sizing does it where the browser has it; elsewhere, once laid out.
+    const fit = () => { input.style.height = 'auto'; input.style.height = `${input.scrollHeight}px`; };
+    input.addEventListener('input', fit);
+    setTimeout(fit, 0);
+  }
   return input;
 }
 
@@ -293,7 +301,7 @@ function sortCard(row, { props, rerender, ctx, reshare, position, total }) {
   kicker.append(facts, el('span', 'sort-card-pos', `${position} of ${total}`));
   left.append(kicker);
 
-  const head = savingField(row, 'headline', props);
+  const head = savingField(row, 'headline', props, { grow: true });
   head.classList.add('card-title');
   head.setAttribute('aria-label', 'Title');
   left.append(head, metaLine(row, props, rerender));
@@ -347,7 +355,7 @@ function sortCard(row, { props, rerender, ctx, reshare, position, total }) {
       if (missing) { askMissingId = row.id; rerender(); return; }
       doKeep();
     } });
-    const blocked = keepBlock(row);
+    const blocked = keepBlock(row, pendingType?.id === row.id ? pendingType.type : row.type);
     keep.title = blocked || 'Keep and next (K)';
     stack.append(keep);
     if (blocked) {

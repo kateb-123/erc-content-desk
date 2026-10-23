@@ -117,9 +117,9 @@ export function renderSubmitForm(container, {
       <div class="sf-link-hero"><label for="sf-link">Paste a link</label>
         <input id="sf-link" type="url" autocomplete="off" placeholder="https://" aria-describedby="sf-link-help">
         <p class="hint sf-help" id="sf-link-help">We fill in the title and description.</p></div>
-      <div><label for="sf-title">Title</label>
+      <div><label for="sf-title">Title (optional)</label>
         <input id="sf-title" type="text" autocomplete="off"></div>
-      <div><label for="sf-blurb">Description</label>
+      <div><label for="sf-blurb">Description (optional)</label>
         <textarea id="sf-blurb" rows="6"></textarea></div>
       <fieldset class="type-picker"></fieldset>
       <div class="sf-date" hidden><label for="sf-date">Date</label>
@@ -132,7 +132,7 @@ export function renderSubmitForm(container, {
       <p class="status" role="status" aria-live="polite"></p>
     </form>
     <details class="bulk-door">
-      <summary><i class="fa-solid fa-chevron-down" aria-hidden="true"></i><span>Add a doc or spreadsheet</span></summary>
+      <summary><i class="fa-solid fa-chevron-right" aria-hidden="true"></i><span>Add a doc or spreadsheet</span></summary>
       <label class="bulk-drop">
         <strong class="bulk-drop-word">Drop a file here</strong> or choose one
         <span class="hint">.docx, .md, .txt, .xlsx or .csv</span>

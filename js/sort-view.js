@@ -4,7 +4,7 @@
  * here writes anywhere.
  */
 import { isoToShort, bySubmitted } from './queue-view.js';
-import { TYPE_ORDER, isValidSubtype } from './schema.js';
+import { TYPE_ORDER, isValidSubtype, typeIsFlat } from './schema.js';
 import { duplicateFlags, linkNeedsCheck, missingFields } from './workflow.js';
 
 // What each field is called on the card.
@@ -171,8 +171,9 @@ export function missingLine(row) {
   return missing.length ? `Still missing: ${missing.map(f => FIELD_LABELS[f] ?? f).join(', ')}.` : '';
 }
 
-export function keepBlock(row) {
-  if (needsType(row)) return 'Set a type first';
+export function keepBlock(row, shownType = row.type) {
+  // A type picked on screen waits there for its subtype (review, Oct 23): say which is missing.
+  if (needsType(row)) return shownType && !typeIsFlat(shownType) ? 'Pick a subtype first' : 'Set a type first';
   if (linkNeedsCheck(row)) return 'Check the link first';
   return '';
 }
