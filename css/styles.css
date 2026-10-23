@@ -1165,3 +1165,14 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
 .howto-link .fa-book-open { color: var(--muted); }
 .home-guides { display: flex; gap: var(--spacing-06); flex-wrap: wrap; margin: calc(-1 * var(--spacing-04)) 0 var(--spacing-05); }
 .home-guides .howto-link { margin: 0; }
+
+/* The spring dates note (Kate, Oct 23, her pick B): the warning note under the
+   top bar on every desk page, from the day after Thanksgiving until the next
+   year's send dates are on the schedule tab. */
+#desk-banner:empty { display: none; }
+.spring-banner { display: flex; align-items: center; flex-wrap: wrap; gap: var(--spacing-04); margin: 0 0 var(--spacing-05); padding: var(--spacing-03) var(--spacing-05); border: 1px solid var(--warn-line); border-left: 4px solid var(--warn-mark); border-radius: var(--radius); background: var(--warn-bg); font: var(--body-type); color: var(--ink); }
+.spring-banner .spring-mark { color: var(--warn-mark); }
+.spring-banner .spring-words { margin: 0; flex: 1 1 auto; }
+.spring-banner .spring-open { height: 32px; gap: var(--spacing-02); }
+.spring-banner .spring-acts { display: flex; gap: var(--spacing-05); }
+.spring-banner .spring-acts .linkish { height: 32px; padding: 0 var(--spacing-03); }

@@ -15,6 +15,7 @@ import { renderPublish, downloadCsv, resetPublishAsk } from './publish-ui.js';
 import { renderHighlightPage, resetHighlightAsk } from './highlight-page.js';
 import { renderPast } from './past-ui.js';
 import { renderSchedule } from './schedule-ui.js';
+import { renderSpringBanner } from './spring-banner.js';
 import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToFinalize, canRewrite, nextStops } from './workflow.js';
 import { rewriteTargets, landRewrites } from './rewrite-client.js';
 import { unchangedNote, uncheckedRewrites, reapplyRewrites } from './finalize-view.js';
@@ -847,6 +848,7 @@ function render() {
   }
   const today = todayCentral();
   const common = { rows: state.rows, schedule: state.schedule, today };
+  renderSpringBanner(document.getElementById('desk-banner'), { schedule: state.schedule, today, loaded: state.loaded, onDone: reload });
   // A locked screen draws the sign-in until the session is known to hold.
   if (locked) {
     renderSignIn(screens[state.screen], {
