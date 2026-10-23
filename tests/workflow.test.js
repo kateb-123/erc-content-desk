@@ -298,3 +298,9 @@ test('nextStops and sendToNote say where a kept item goes next and why the box i
   assert.equal(sendToNote(blankRow({ type: 'event', subtype: 'A&M' })), 'Skips the Policy Exchange: another unit\'s campus event.');
   assert.equal(sendToNote(blankRow({ type: 'headline', newsletter_issue: '2026-11-03' })), 'Skips the Policy Exchange: it was added straight to an issue.');
 });
+
+test('nextStops: a row already in an issue skips Finalize and names its issue (review of the fixes, Oct 23)', async () => {
+  const { nextStops } = await import('../js/workflow.js');
+  const stamped = blankRow({ status: 'kept', type: 'event', subtype: 'Off-Campus', blurb: 'Bring a team.', send_to: 'newsletter', newsletter_issue: '2026-11-03' });
+  assert.deepEqual(nextStops(stamped), ['the 2026-11-03 issue']);
+});

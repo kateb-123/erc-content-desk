@@ -150,3 +150,17 @@ export function sendToChange(row, newsletterOnly) {
   if (sendTo(row).exchange === !newsletterOnly) return {};
   return { send_to: sendToValue({ newsletter: true, exchange: !newsletterOnly }) };
 }
+
+/** The rows Finalize still counts, plus rewrites still out for a row it lists
+ *  (review of the fixes, Oct 23): Next issue holds Add for these, and Publish
+ *  warns about them. A row that has left Finalize never counts. */
+export function uncheckedRewrites(rows, { verified = new Set(), rewriting = new Set() } = {}) {
+  const listed = readyToFinalize(rows);
+  return new Set(listed.filter(r => (canRewrite(r) && !verified.has(r.id)) || rewriting.has(r.id)).map(r => r.id));
+}
+
+/** A reload brings the stored rows, without the rewrites that landed in this
+ *  tab and are not checked yet; this puts them back (review of the fixes, Oct 23). */
+export function reapplyRewrites(rows, landed, review) {
+  return rows.map(r => (review.has(r.id) && landed.has(r.id) ? { ...r, blurb: landed.get(r.id) } : r));
+}

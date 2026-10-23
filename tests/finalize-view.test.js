@@ -175,3 +175,28 @@ test('sendToChange records the box only when it changes where the row goes', asy
   assert.deepEqual(sendToChange(campus, true), {}, 'already newsletter only: no change');
   assert.deepEqual(sendToChange(campus, false), { send_to: 'both' });
 });
+
+// Review of the fixes, Oct 23: the hold on Add must cover every row Finalize
+// still counts (a rewrite in flight, failed or never made), and drop a row
+// that has left Finalize (published, or put in an issue).
+test('uncheckedRewrites is the set Finalize counts, plus rewrites still out', async () => {
+  const { uncheckedRewrites } = await import('../js/finalize-view.js');
+  const rows = [
+    { id: 'e1', status: 'kept', type: 'event', subtype: 'Off-Campus', blurb: 'Words.' },
+    { id: 'e2', status: 'kept', type: 'event', subtype: 'Off-Campus', blurb: 'Words.', rewrite_checked: '2026-10-22' },
+    { id: 'e3', status: 'kept', type: 'event', subtype: 'Off-Campus', blurb: 'Words.', published_at: '2026-10-22' },
+    { id: 'h1', status: 'kept', type: 'headline', subtype: 'Texas', blurb: 'News.' },
+  ];
+  assert.deepEqual([...uncheckedRewrites(rows, { verified: new Set() })].sort(), ['e1']);
+  assert.deepEqual([...uncheckedRewrites(rows, { verified: new Set(['e1']) })], []);
+  assert.deepEqual([...uncheckedRewrites(rows, { verified: new Set(['e1']), rewriting: new Set(['e1', 'e3']) })], ['e1'], 'a row out for a rewrite counts while it is still on Finalize');
+});
+
+test('reapplyRewrites puts landed, unchecked rewrites back on the rows a reload brought', async () => {
+  const { reapplyRewrites } = await import('../js/finalize-view.js');
+  const rows = [{ id: 'a', blurb: 'Original.' }, { id: 'b', blurb: 'Other.' }];
+  const out = reapplyRewrites(rows, new Map([['a', 'Rewritten.']]), new Map([['a', 'Original.']]));
+  assert.equal(out[0].blurb, 'Rewritten.');
+  assert.equal(out[1], rows[1]);
+  assert.equal(reapplyRewrites(rows, new Map([['a', 'Rewritten.']]), new Map())[0].blurb, 'Original.', 'checked or undone: left alone');
+});

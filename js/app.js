@@ -17,7 +17,7 @@ import { renderPast } from './past-ui.js';
 import { renderSchedule } from './schedule-ui.js';
 import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToFinalize, canRewrite, nextStops } from './workflow.js';
 import { rewriteTargets, landRewrites } from './rewrite-client.js';
-import { unchangedNote } from './finalize-view.js';
+import { unchangedNote, uncheckedRewrites, reapplyRewrites } from './finalize-view.js';
 import { todayCentral } from './today.js';
 import { sessionStatus, signIn as signInRequest, signOut as signOutRequest } from './auth-client.js';
 import { isLocked, SIGN_IN_ON, authError, lockedOut, WRONG_PASSWORD } from './auth-view.js';
@@ -30,6 +30,7 @@ import { paperText, pagePng, svgPng } from './paper-read.js';
 import { chartSvg } from './brief-visual.js';
 import { briefTitle, restartDraft, cutsToMake } from './briefs-view.js';
 import { quickAddIssue } from './issue-view.js';
+import { isoToShort } from './queue-view.js';
 
 
 const state = {
@@ -49,6 +50,7 @@ const state = {
   sortedIds: new Set(),     // decided since this page opened — they stay listed, greyed (view state)
   decidedFrom: new Map(),   // id -> status before this session's decision: where Undo takes it back, and a row kept from Skipped greys under Skipped (view state)
   rewriteReview: new Map(), // id -> the pre-rewrite description, until she checks it (view state)
+  rewriteText: new Map(),   // id -> the rewrite that landed in this tab, so a reload keeps it (review, Oct 23)
   verifiedIds: new Set(),   // rewrites she has checked this visit (view state)
   reviewTotal: 0,           // size of the current check batch, for "2 of 4" (view state)
   rewriting: new Set(),     // ids out for the rewrite that starts at Keep (view state)
@@ -101,7 +103,8 @@ async function reload() {
   setStatus(state.screen === 'home' ? '' : 'Loading…');
   try {
     const { rows, schedule } = await fetchDesk();
-    state.rows = rows;
+    // Rewrites that landed here and are not checked yet ride over the reload (review, Oct 23).
+    state.rows = reapplyRewrites(rows, state.rewriteText, state.rewriteReview);
     state.schedule = schedule;
     state.loaded = true;
     state.loadFailed = false;
@@ -241,7 +244,7 @@ function decide(drawn, action) {
   // The decision in words, for everyone and for a screen reader.
   // Its way back sits on the same line (Sort's Undo last went with the old list head).
   // A Keep says where the item waits next (review, Oct 23).
-  const stops = action === 'keep' ? nextStops(next) : [];
+  const stops = action === 'keep' ? nextStops(next, d => isoToShort(d, todayCentral())) : [];
   const where = stops.length ? `. Next: ${stops.length > 1 ? `${stops.slice(0, -1).join(', ')} and ${stops.at(-1)}` : stops[0]}` : '';
   setStatus(`${DECIDED_WORDS[action] ?? 'Done'}: ${row.headline || row.link || 'this item'}${where}`, 'ok', { label: 'Undo', onClick: undoLast });
 }
@@ -372,7 +375,12 @@ async function undoLast() {
 function saveEdit(row, changes) {
   const preview = state.publishPreview;
   noteChange([{ ...current(row), ...changes }]);
-  if (!('link' in changes) && preview) { state.publishPreview = preview; render(); }
+  // The edit form also changes the type, the subtype and the box (Oct 23),
+  // which decide a row's fate on Publish: any of those, or the link, asks the
+  // Exchange again rather than keep a check that no longer holds (review).
+  const routing = ['link', 'type', 'subtype', 'send_to'].some(k => k in changes);
+  if (!routing && preview) { state.publishPreview = preview; render(); }
+  else if (routing && state.screen === 'publish') loadPublishPreview();
 }
 
 /** A Keep undone: its rewrite, landed or still out, no longer counts. */
@@ -399,6 +407,7 @@ async function rewriteQuietly(ids) {
     for (const { id, old } of landed) state.rewriteReview.set(id, old);
     state.reviewTotal = state.rewriteReview.size;
     state.rows = rows;
+    for (const { id } of landed) state.rewriteText.set(id, rows.find(r => r.id === id)?.blurb ?? '');
   } catch (err) {
     // Finalize's Rewrite button covers what did not come back.
     shutOut(err);
@@ -445,6 +454,7 @@ async function runRewrite() {
     }
     state.reviewTotal = state.rewriteReview.size;
     state.rows = state.rows.map(r => byId.has(r.id) ? { ...r, blurb: byId.get(r.id) } : r);
+    for (const [id, text] of byId) state.rewriteText.set(id, text);
     // One message, one place: a warning ("Nothing to rewrite") shows in
     // Finalize's lede beside the button, not the page header.
     // A rewrite that came back is carried by Finalize's progress line
@@ -884,7 +894,7 @@ function render() {
     renderIssue(screens.issue, {
       ...common, loaded: state.loaded, loadFailed: state.loadFailed, busy: state.busy, archive: state.archive,
       onGoTo: goTo,
-      unchecked: new Set(state.rewriteReview.keys()),   // rewrites waiting on Finalize (review, Oct 23)
+      unchecked: uncheckedRewrites(state.rows, { verified: state.verifiedIds, rewriting: state.rewriting }),   // what Finalize still counts (review, Oct 23)
       onAdd: sendToNewsletter,
       onQuickAdd: stampSubmitted,
       onRefresh: reload,
@@ -993,7 +1003,7 @@ function render() {
   } else if (state.screen === 'publish') {
     renderPublish(screens.publish, {
       ...common, preview: state.publishPreview, busy: state.busy,
-      unchecked: new Set(state.rewriteReview.keys()),
+      unchecked: uncheckedRewrites(state.rows, { verified: state.verifiedIds, rewriting: state.rewriting }),
       justPublished: state.justPublished, publishedCsv: state.publishedCsv, publishedCopy: state.publishedCopy, copyError: state.copyError, publishError: state.publishError,
       onPublish: publishNow, onGoTo: goTo, onEditRow: saveEdit,
       onRecheck: () => { state.publishPreview = null; loadPublishPreview(); },

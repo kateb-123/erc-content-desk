@@ -142,8 +142,11 @@ export function sendTo(row) {
 
 /** Where a kept item waits next, in order (review, Oct 23): Finalize when it
  *  gets a rewrite, then Next issue, then Publish unless it skips the Exchange. */
-export function nextStops(row) {
-  return [canRewrite(row) ? 'Finalize' : '', 'Next issue', sendTo(row).exchange ? 'Publish' : ''].filter(Boolean);
+export function nextStops(row, short = d => d) {
+  // A row already in an issue (Quick add, the builder) skips Finalize and Next
+  // issue, which never list it; it names its issue (review of the fixes, Oct 23).
+  if (row?.newsletter_issue && !row?.published_at) return [`the ${short(row.newsletter_issue)} issue`, sendTo(row).exchange ? 'Publish' : ''].filter(Boolean);
+  return [canRewrite(row) && !row?.published_at ? 'Finalize' : '', 'Next issue', sendTo(row).exchange ? 'Publish' : ''].filter(Boolean);
 }
 
 /** The line under Sort's ERC Newsletter only box: where the item goes, and
