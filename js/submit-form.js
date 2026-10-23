@@ -228,14 +228,14 @@ export function renderSubmitForm(container, {
         const q = el('a', '', 'the queue');
         q.href = '/#queue';
         line.replaceChildren(icon, 'Added to ', q, '.');
-      } else line.replaceChildren(icon, doneLine);
+      } else line.replaceChildren(icon, typeof doneLine === 'function' ? doneLine() : doneLine);
     };
     // The confirmation waits for what the caller does with the item (the
     // newsletter stamp on Quick add) and says so, in the panel, not at the
     // top of the page; a failure gets its words and a way to try again here.
     const wait = promise => {
       line.className = 'done-line is-busy';
-      line.replaceChildren(busyWords(pendingLine));
+      line.replaceChildren(busyWords(typeof pendingLine === 'function' ? pendingLine() : pendingLine));
       promise.then(settled, err => {
         line.className = 'done-line is-error';
         line.setAttribute('role', 'alert');

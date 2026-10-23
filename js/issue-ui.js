@@ -20,6 +20,7 @@ import { DESK_SHEET } from './schedule.js';
 // View state, for as long as the page is open: the issue picked (''= the
 // next one), the quick add form, rows taken out or deleted this visit (they
 // stay listed, greyed, with Undo), and a later event asking "Send early?".
+let quickIssue = '';   // the issue on screen, for Quick add
 let issuePick = '';
 
 /** The Schedule tab hands over a date: Next issue opens on it. */
@@ -172,6 +173,7 @@ export function renderIssue(container, props) {
     return;
   }
   const when = isoToShort(issue, today);
+  quickIssue = issue;   // what Quick add files to and says, read when it is used (review, Oct 23)
   const sections = issueSections(rows, issue);
   const inIds = new Set(sections.flatMap(s => s.rows.map(r => r.id)));
   const removed = [...justRemoved.values()].filter(r => !inIds.has(r.id));
@@ -192,24 +194,22 @@ export function renderIssue(container, props) {
   main.append(blockHead('In this issue', String(count), quick));
   let panel = null;
   if (quickOpen) {
-    // Mounted once per opening and kept across redraws, so typing survives;
-    // remounted when the issue on screen changes, so its words and its stamp
-    // name the issue she sees (review, Oct 23).
+    // Mounted once per opening and kept across redraws, so typing survives,
+    // even when the issue on screen changes; its words and its stamp read the
+    // issue on screen at the moment they are used (review, Oct 23).
     panel = container.querySelector('.quick-panel');
-    if (panel && panel.dataset.issue !== issue) panel = null;
     if (!panel) {
       panel = el('section', 'quick-panel');
       panel.id = 'issue-quick';
-      panel.dataset.issue = issue;
       const mount = el('div');
       panel.append(mount);
       renderSubmitForm(mount, {
         bulk: false,
         dateField: true,   // Kate, Oct 6: a Date for every type, the deadline for an opportunity
-        onSubmitted: data => onQuickAdd(data, issue),
+        onSubmitted: data => onQuickAdd(data, quickIssue),
         knownLinks,
-        pendingLine: `Adding it to the ${when} issue`,
-        doneLine: `Added to the ${when} issue.`,
+        pendingLine: () => `Adding it to the ${isoToShort(quickIssue, today)} issue`,
+        doneLine: () => `Added to the ${isoToShort(quickIssue, today)} issue.`,
       });
     }
     main.append(panel);
