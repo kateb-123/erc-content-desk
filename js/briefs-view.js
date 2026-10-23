@@ -158,7 +158,7 @@ export function createProblem({ paper, notes, authorLast, year, topic, briefAuth
 export const briefAuthorStart = remembered => String(remembered ?? '');
 
 /** The one ask before Redraft replaces the folder's draft and any edits in it (Kate, Oct 23, her words). */
-export const REDRAFT_ASK = { words: 'This replaces brief-draft.md, with your edits.', yes: 'Write it again', no: 'Cancel' };
+export const REDRAFT_ASK = { words: 'This replaces brief-draft.md and your edits in it.', yes: 'Write it again', no: 'Cancel' };
 
 /**
  * What one Create can carry: the paper and a Word file go up together as

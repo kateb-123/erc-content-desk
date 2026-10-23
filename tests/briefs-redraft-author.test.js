@@ -10,8 +10,8 @@ import { REDRAFT_ASK, briefAuthorStart, createProblem } from '../js/briefs-view.
 
 const ui = readFileSync(new URL('../js/briefs-ui.js', import.meta.url), 'utf8');
 
-test('Redraft asks first, in her words: "This replaces brief-draft.md, with your edits." then Write it again or Cancel', () => {
-  assert.deepEqual(REDRAFT_ASK, { words: 'This replaces brief-draft.md, with your edits.', yes: 'Write it again', no: 'Cancel' });
+test('Redraft asks first, in her words: "This replaces brief-draft.md and your edits in it." then Write it again or Cancel', () => {
+  assert.deepEqual(REDRAFT_ASK, { words: 'This replaces brief-draft.md and your edits in it.', yes: 'Write it again', no: 'Cancel' });
 });
 
 test('Redraft no longer starts the draft over in one press: its own click only opens the ask', () => {

@@ -598,8 +598,8 @@ brief past the paper stage says so on its page.
   Done, the stage is Your proof and the box is the Draft: the body-prose
   count with its band as a pill (review tint under the floor or over the
   cap, grey in the band), the three downloads and Redraft (starts
-  over from the read; since Oct 23 it asks first, "This replaces brief-draft.md,
-  with your edits." with Write it again and Cancel) on one row, then the brief itself as reading text,
+  over from the read; since Oct 23 it asks first, "This replaces brief-draft.md
+  and your edits in it." with Write it again and Cancel) on one row, then the brief itself as reading text,
   her pick A of three (Oct 22: "easier to read like just on the webpage"):
   `js/markdown-lite.js` draws the desk's own markdown, every character
   escaped, at a 720px measure with the maize rule under each section title
