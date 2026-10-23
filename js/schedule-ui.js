@@ -5,7 +5,7 @@
  * date opens its issue on Next issue.
  */
 import { scheduleRows } from './issue-view.js';
-import { scheduleEndingWords } from './schedule.js';
+import { scheduleEndingWords, DESK_SHEET } from './schedule.js';
 import { newsletterPageHead } from './page-head.js';
 import { isoToShort } from './queue-view.js';
 import { el, button } from './ui-aids.js';
@@ -16,7 +16,7 @@ export function renderSchedule(container, { rows, schedule, today, loaded, onGoT
   const list = el('div', 'nl-list sched-list');
   const entries = loaded ? scheduleRows(rows, schedule, today) : [];
   if (!loaded) list.append(el('p', 'nl-empty', 'Loading'));
-  else if (!entries.length) list.append(el('p', 'nl-empty', 'No send dates ahead. Add one on the Sheet\'s schedule tab.'));
+  else if (!entries.length) { const empty = el('p', 'nl-empty', 'No send dates ahead. Add one on '); empty.append(sheetLink(), '.'); list.append(empty); }
   for (const entry of entries) {
     const row = button('', 'sched-row', { focus: `sched:${entry.date}`, onClick: () => onPick(entry.date) });
     const when = el('span', 'sched-date', isoToShort(entry.date, today));
@@ -33,6 +33,17 @@ export function renderSchedule(container, { rows, schedule, today, loaded, onGoT
     warn.append(faIcon('triangle-exclamation'), ' ', ending);
     parts.push(warn);
   }
-  parts.push(list, el('p', 'nl-meta sched-note', 'Edit dates on the Sheet\'s schedule tab.'));
+  const note = el('p', 'nl-meta sched-note', 'Edit dates on ');
+  note.append(sheetLink(), '.');
+  parts.push(list, note);
   container.replaceChildren(...parts);
+}
+
+/** The Sheet's schedule tab, opening in a new tab (review, Oct 23). */
+function sheetLink() {
+  const a = el('a', '', 'the Sheet\'s schedule tab');
+  a.href = DESK_SHEET;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  return a;
 }

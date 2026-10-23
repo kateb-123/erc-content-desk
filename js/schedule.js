@@ -1,4 +1,9 @@
-/** Newsletter schedule helpers. The schedule tab is Kate's to edit by hand. */
+/** Newsletter schedule helpers. The schedule tab is edited by hand. */
+
+/** The desk's Sheet, where the schedule tab lives (review, Oct 23: the pages
+ *  named it and never linked it). Its own sharing guards it, as the sign-up
+ *  sheet's does. */
+export const DESK_SHEET = 'https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit';
 export function isIsoDate(value) {
   return /^\d{4}-\d{2}-\d{2}$/.test(String(value ?? '').trim());
 }

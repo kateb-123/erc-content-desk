@@ -15,6 +15,7 @@ import { renderSubmitForm } from './submit-form.js';
 import { newsletterPageHead } from './page-head.js';
 import { buildEditForm, holdIfDirty } from './edit-form.js';
 import { el, button, focusKeyIn, restoreFocus, tryAgain, inFlight, busyLine } from './ui-aids.js';
+import { DESK_SHEET } from './schedule.js';
 
 // View state, for as long as the page is open: the issue picked (''= the
 // next one), the quick add form, rows taken out or deleted this visit (they
@@ -156,7 +157,10 @@ export function renderIssue(container, props) {
   const upcoming = (schedule ?? []).filter(d => !today || d >= today);
   const issue = upcoming.includes(issuePick) ? issuePick : (upcoming[0] ?? '');
   if (!issue) {
-    const empty = el('p', 'nl-empty', 'No issue date yet. Add one on the Sheet\'s schedule tab. ');
+    const empty = el('p', 'nl-empty', 'No issue date yet. Add one on ');
+    const sheet = el('a', '', 'the Sheet\'s schedule tab');
+    sheet.href = DESK_SHEET; sheet.target = '_blank'; sheet.rel = 'noopener';
+    empty.append(sheet, '. ');
     const again = button('Refresh', '', { onClick: () => { again.disabled = true; onRefresh?.(); } });
     empty.append(again);
     container.replaceChildren(...parts, empty);
@@ -272,7 +276,11 @@ export function renderIssue(container, props) {
   // The how-to for whoever builds the issue (Kate, Sep 30), a quiet link under the door.
   const howTo = el('a', 'nl-howto', 'How to build an issue');
   howTo.href = '/how-to/newsletter/';
-  side.append(howTo);
+  // The builder takes what is here when it opens; later changes here stay out
+  // of a draft already open (review, Oct 23). And the email's read me.
+  const readMe = el('a', 'nl-howto', 'The email: read me');
+  readMe.href = '/newsletter/read-me/';
+  side.append(howTo, readMe, el('p', 'nl-meta nl-builder-note', 'Remove or edit items here before you open the builder. Later changes here stay out of a draft already open.'));
   const last = lastIssue(archive, rows);
   if (last) {
     const lastBox = el('section', 'nl-last');

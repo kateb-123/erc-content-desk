@@ -99,6 +99,14 @@ function drawScraper(box, s, onRunScraper) {
     }
   }
   kids.push(line);
+  // The haul waits in Drive until someone drops it in (review, Oct 23).
+  if (s.state !== 'off') {
+    const how = el('p', 'qh-scraper-line qh-scraper-how', 'Nothing goes in by itself. Drop the files you want on ');
+    const door = el('a', '', 'Add a doc or spreadsheet');
+    door.href = '/#team';
+    how.append(door, ', on Submit content.');
+    kids.push(how);
+  }
   box.replaceChildren(...kids);
 }
 

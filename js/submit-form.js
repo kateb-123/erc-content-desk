@@ -223,7 +223,12 @@ export function renderSubmitForm(container, {
       const icon = checkSvg();
       icon.classList.add('draw-check');
       line.className = 'done-line';
-      line.replaceChildren(icon, doneLine);
+      // The default line links the queue it names (review, Oct 23).
+      if (doneLine === 'Added to the queue.') {
+        const q = el('a', '', 'the queue');
+        q.href = '/#queue';
+        line.replaceChildren(icon, 'Added to ', q, '.');
+      } else line.replaceChildren(icon, doneLine);
     };
     // The confirmation waits for what the caller does with the item (the
     // newsletter stamp on Quick add) and says so, in the panel, not at the

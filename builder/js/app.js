@@ -464,7 +464,15 @@ function resetPull() {
 function drawPull() {
   if (!pullView) return;
   if (pullBusy) pullView.status.replaceChildren(busyWords(pullMessage));
-  else pullView.status.textContent = pullMessage;
+  else {
+    pullView.status.textContent = pullMessage;
+    // An empty issue says where items come from (review, Oct 23).
+    if (/^Nothing on the desk for/.test(pullMessage)) {
+      const a = el('a', '', 'Add items on Next issue');
+      a.href = '/#newsletter';
+      pullView.status.append(' ', a);
+    }
+  }
   pullView.note.replaceChildren(...(pullFailed ? [inlineNote('error', "Couldn't reach the desk.", pullIssue)] : []));
 }
 
