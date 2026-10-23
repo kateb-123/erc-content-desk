@@ -307,7 +307,7 @@ export function createBriefsHandler({
       }
     } catch (err) {
       console.error('draft step failed', step, err);
-      return res.status(502).json({ ok: false, error: `The desk couldn't write the draft at ${stepWords(step)}: ${err.message}. Try the step again.` });
+      return res.status(502).json({ ok: false, error: `The desk couldn't write the draft at ${stepWords(step)}: ${err.message}. Try again.` });
     }
     if (!d.done.includes(step)) d.done.push(step);
     d.step = nextDraftStep(d.done);

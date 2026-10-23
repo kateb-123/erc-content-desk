@@ -165,9 +165,9 @@ test('checkStyle: em dashes, "percent" after a number, bare jargon and a missing
   assert.match(flags[3].note, /journal-signal/);
 });
 
-test('draftFiles names the four files that land in the folder, markdown each', () => {
+test('draftFiles names the five files that land in the folder, markdown each (check-notes.md since Oct 22)', () => {
   const files = draftFiles({ plan: '# Plan', draft: '# Brief', grammarly: 'Brief', figures: '# Tables' });
-  assert.deepEqual(files.map(f => [f.name, f.contentType]), [['page-plan.md', 'text/markdown'], ['brief-draft.md', 'text/markdown'], ['brief-for-grammarly.md', 'text/markdown'], ['figures.md', 'text/markdown']]);
+  assert.deepEqual(files.map(f => [f.name, f.contentType]), [['page-plan.md', 'text/markdown'], ['brief-draft.md', 'text/markdown'], ['brief-for-grammarly.md', 'text/markdown'], ['figures.md', 'text/markdown'], ['check-notes.md', 'text/markdown']]);
   assert.equal(files[1].text, '# Brief\n');
 });
 
@@ -390,5 +390,52 @@ test('the proposal follows REPORTING.md: a table of estimates gets a "Statistica
 test('the check\'s notes and the number conflicts go to the folder as check-notes.md, not on the page (Kate, Oct 22: "i don\'t like the check things")', () => {
   const files = draftFiles({ plan: 'p', draft: 'd', grammarly: 'g', figuresMd: '# F\n', checkNotes: '# Check notes\n\n1. x\n' });
   assert.equal(files.find(f => f.name === 'check-notes.md').text, '# Check notes\n\n1. x\n');
-  assert.equal(draftFiles({ plan: 'p', draft: 'd', grammarly: 'g', figuresMd: '' }).some(f => f.name === 'check-notes.md'), false, 'none when there is nothing to say');
+  assert.equal(draftFiles({ plan: 'p', draft: 'd', grammarly: 'g', figuresMd: '' }).find(f => f.name === 'check-notes.md').text, '# Check notes\n\nNothing to flag.\n', 'always written, so a redraft never leaves the last run\'s notes behind (review, Oct 22)');
+});
+
+
+test('review of the house rules (Oct 22): the check step no longer undoes her rulings', () => {
+  const p = buildCheckPrompt(extract, [{ key: 'exec_summary', content: 'x' }]);
+  assert.doesNotMatch(p, /cutoff-based \(regression discontinuity\)/);
+  assert.match(p, /what the researchers did, then name/i);
+  assert.doesNotMatch(p, /Do NOT shorten sections/);
+  assert.match(p, /never cut interpretation/i);
+  assert.match(p, /imperative/i);
+  assert.match(p, /less stringent standard/i);
+  assert.match(p, /multiplied by 100/i);
+  assert.match(p, /never hide a negative/i);
+});
+
+test('review (Oct 22): the plan titles as ruled and allows a fourth highlight only if earned', () => {
+  const p = buildPlanPrompt(extract, '');
+  assert.doesNotMatch(p, /a plain main title, a colon/);
+  assert.match(p, /reader's question/);
+  assert.match(p, /3 Report Highlights \(a fourth only if/);
+});
+
+test('review (Oct 22): the summary has no effect sizes, the introduction no energy, a qualitative study no significance words', () => {
+  assert.match(SECTION_RULES.exec_summary, /no effect sizes/i);
+  assert.doesNotMatch(SECTION_RULES.introduction, /Urgency/);
+  const qual = buildSectionPrompt({ ...extract, design: 'qualitative' }, 'plan', '', 'key_findings', []);
+  assert.match(qual, /no statistical tests/i);
+  assert.doesNotMatch(qual, /Use associational language only/);
+});
+
+test('review (Oct 22): the style prompt carries the 10% caveat and the x100 rule, and no model sentence that hides a null estimate', () => {
+  assert.match(STYLE_SYSTEM_PROMPT, /less stringent standard of statistical significance/);
+  assert.match(STYLE_SYSTEM_PROMPT, /multiplied by 100/);
+  assert.doesNotMatch(STYLE_SYSTEM_PROMPT, /no evidence of this trade-off/);
+});
+
+test('review (Oct 22): the proposal follows the table rules in full, and its numbers reach every section so prose and visual agree', () => {
+  const p = buildVisualPrompt(extract, 'plan', '');
+  assert.match(p, /largest first with the caption saying so/);
+  assert.match(p, /no standard errors/i);
+  assert.match(p, /subgroups only when/i);
+  assert.doesNotMatch(p, /0\.1250/);
+  assert.match(p, /as the brief prints it/);
+  const visual = normalizeVisual({ kind: 'table', source_label: 'Table 3', page: 4, box: null, title: 'Effect of the email', kept: 'k', columns: ['Group', 'Change'], rows: [['First-generation', '35.6 percentage points higher']], value_label: '', value_format: 'number', bars: [] });
+  const sec = buildSectionPrompt(extract, 'plan', '', 'key_findings', [], visual);
+  assert.match(sec, /First-generation \| 35\.6 percentage points higher/);
+  assert.match(sec, /same number at the same precision/);
 });

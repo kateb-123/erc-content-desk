@@ -58,7 +58,7 @@ const state = {
   scraper: null,            // the scraper on GitHub: { configured, run, last } from /api/bulk?scraper=status, or null
   // The Research briefs hub (Kate, Oct 20), hers alone: the list once her sign-in has read it, the open brief and its folder.
   briefs: null, briefsError: false, briefId: '', brief: null, briefFiles: undefined, briefError: '',
-  newBriefOpen: false, creatingBrief: false, createError: '', savingNotes: false, notesSaved: '', draftRunning: false, draftError: '', cropFailed: [],
+  newBriefOpen: false, creatingBrief: false, createError: '', savingNotes: false, notesSaved: '', draftRunning: false, draftError: '', cropFailed: [], restartFailed: '',
   publishPreview: null,
   publishedCsv: '',       // the CSV from the last publish, for the receipt's re-download
   rewroteNote: null,
@@ -634,6 +634,9 @@ async function readNotesWord(file) {
 async function writeDraft({ restart = false, notes } = {}) {
   const id = state.briefId;
   if (!id || state.draftRunning === id) return;
+  // A Redraft that failed before its first step landed is still a Redraft: Try again starts it over, never brings back the old draft (review, Oct 22).
+  if (state.restartFailed === id) restart = true;
+  state.restartFailed = '';
   // One draft runs at a time, the newest: a brief left mid-step stops at its next step and Continue picks it up (review, Oct 22).
   state.draftRunning = id; state.draftError = ''; state.cropFailed = [];
   if (restart) state.brief = restartDraft(state.brief);
@@ -647,6 +650,7 @@ async function writeDraft({ restart = false, notes } = {}) {
       if (first && typeof notes === 'string') body.notes = notes;   // what she typed rides the first call, saved before the step
       first = false;
       const data = await postJson('/api/briefs', body, 'write the draft');
+      restart = false;   // the server has the restart now
       if (Array.isArray(state.briefs)) state.briefs = state.briefs.map(b => (b.id === id ? data.brief : b));
       if (state.briefId !== id || state.draftRunning !== id) return;   // she moved on; the row keeps where it got to
       state.brief = data.brief;
@@ -659,6 +663,7 @@ async function writeDraft({ restart = false, notes } = {}) {
   } catch (err) {
     if (lockedOut(err)) state.auth = false;
     else if (state.briefId === id) { state.draftError = plainError(err); setStatus(state.draftError, 'error'); }
+    if (restart) state.restartFailed = id;
   } finally {
     if (state.draftRunning === id) state.draftRunning = false;
     render();

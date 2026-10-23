@@ -517,7 +517,9 @@ function draftBox(brief, { onWriteDraft, error, cropFailed = [], files = [], cut
     pair.append(left, right);
     box.append(pair);
   }
-  const missing = cutsToMake(r, [...crops]);
+  // Only what the page shows: the pair's cut and the chart's picture (review, Oct 22: a lone button for cuts nobody sees).
+  const shown = visual ? pairFor(r.figures ?? [], visual).theirs : null;
+  const missing = shown?.page > 0 && !crops.has(shown.crop) ? [shown] : [];
   const chartMissing = visual?.kind === 'chart' && !crops.has(PROPOSED_CHART);
   if (cutting) {
     // The cuts run under the draft, so she keeps her place on the page (review, Oct 22).

@@ -1065,7 +1065,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .brief-read td { padding: var(--spacing-02) var(--spacing-03); border-bottom: 1px solid var(--line-in); vertical-align: top; }
 .brief-read a { color: var(--link-primary); }
 /* Theirs and the proposal, her pick A (Oct 22): the paper's cut beside the brief's own at equal width. */
+.brief-stage { container-type: inline-size; }
+.draft-proposal { overflow-x: auto; }
 .draft-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--spacing-06); align-items: start; margin: var(--spacing-04) 0 var(--spacing-07); }
+/* The pair stacks when the box is too narrow for two columns, as between 1024 and 1250 where the folder sits beside (review, Oct 22). */
+@container (max-width: 640px) { .draft-pair { grid-template-columns: minmax(0, 1fr); } }
 .draft-pair-side { display: grid; gap: var(--spacing-03); align-content: start; min-width: 0; }
 .draft-pair-head { margin: 0; font: var(--meta-type); font-weight: 700; color: var(--text-primary); }
 .draft-clip { display: block; border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer-02); overflow: hidden; }

@@ -72,10 +72,11 @@ THE ERC VOICE
 - NEVER use an em dash (—) anywhere. Use commas, periods, or parentheses; an aside with commas inside goes in parentheses.
 - Mostly medium sentences, often two clauses joined by "so" or "as" to show cause; short sentences for headlines and turns, never for drama.
 - The general caution appears once in the Research Overview and once in the policy lead, not at every finding. A caveat tied to one number stays beside that number.
-- Banned: leverage, unlock, game-changer, synergy, impactful, cutting-edge, "The majority of" (write Most), "Approximately" (write About), acronyms the reader has to carry, "treatment" and "control" (name the groups plainly).
+- Banned: leverage, unlock, game-changer, synergy, impactful, cutting-edge, "The majority of" (write Most), "Approximately" (write About), acronyms the reader has to carry, "treatment" and "control" (name the groups plainly), and method words a reader cannot use: intent-to-treat, heterogeneity, spillover, bandwidth, underpowered, operationalize, homogeneity (say what they mean instead). Use the group's full name every time ("students with disabilities", never an acronym).
 
 REPORTING RESULTS
-- No stars, no p-values, no test statistics anywhere. Significance in words: "statistically significant", "not statistically significant". A null difference is never "equal".
+- No stars, no p-values, no test statistics anywhere. Significance in words: "statistically significant", "not statistically significant". A result significant only at the 10% level says so in the prose: it "meets a less stringent standard of statistical significance". A null difference is never "equal".
+- A change in a share is in "percentage points", never "percent", even where the paper says percent. A coefficient on a yes/no outcome is multiplied by 100 to give percentage points (0.088 is 8.8 percentage points); that, and a coarser rounding that says "about", are the only changes to a paper's number.
 - Numbers to the precision the paper prints; a percentage-point effect takes one decimal with the trailing zero ("3.0 percentage points"). Units in full ("percentage points", "standard deviations"), never pp or SD; the % symbol, never "percent". Statistics and the sample size in digits, small counts of things in words. Use "to" for a range in prose ("9.7% to 13.9%").
 - Direction is a word in prose ("lower", "more likely"), never a minus sign. Never hide a negative: a negative estimate is printed as its size plus "lower", never replaced by words.
 - Give each effect one piece of context: a baseline, a concrete equivalent, or an outside benchmark.
@@ -89,7 +90,6 @@ REPORTING RESULTS
 Model sentences (imitate this register):
 - "Students with disabilities in initiative schools were 3.0 percentage points less likely to receive a disciplinary infraction during the school year (Table 1)."
 - "The estimates are noisy because these outcomes are rare, so the study cannot rule out modest effects."
-- "A common concern is that dedicating time to the arts reduces achievement in tested subjects. The study found no evidence of this trade-off."
 - "What they often lack is the guidance to get there."
 
 The brief's editor (the person who runs this desk) reads the paper first and leaves notes: what to lead with, what to keep, which table is the visual, which hedges matter. When her notes are given, follow them; where they are silent, follow the paper.
@@ -204,7 +204,9 @@ export const PAGE_CAPACITY = [
 
 const designNote = extract => (extract.design === 'causal'
   ? 'This study uses a causal design, so causal language is appropriate where the paper itself makes causal claims.'
-  : `This study is ${extract.design}, NOT causal. Use associational language only ("associated with", "related to"). Never write "causes" or "leads to".`);
+  : extract.design === 'qualitative'
+    ? 'This study is qualitative and runs no statistical tests. Report what the researchers found (themes, patterns, what participants said) in words; use no significance words and no "associated with", which imply a test. Never write "causes" or "leads to".'
+    : `This study is ${extract.design}, NOT causal. Use associational language only ("associated with", "related to"). Never write "causes" or "leads to".`);
 
 const notesBlock = notes => (str(notes) ? `THE EDITOR'S NOTES (follow them; where they are silent, follow the paper):\n${str(notes)}` : 'The editor left no notes; follow the paper.');
 
@@ -221,13 +223,13 @@ export function buildPlanPrompt(extract, notes) {
     'TASK: Write the page plan for a 5-page ERC research brief on this paper, as a markdown document, in this shape:',
     '1. The first line: "# Page Plan: <first author> (<year>)".',
     '2. A line "**Paper:**" with the APA citation, a line "**Design:**" naming the design and what language it allows.',
-    '3. A line exactly "Suggested brief title: <title>" with a brief title in the ERC pattern (a plain main title, a colon, what the study found or asked), 80 characters or fewer.',
+    '3. A line exactly "Suggested brief title: <title>" with a brief title in the ERC pattern: a short hook, or a reader\'s question about a practice, then a colon and a conventional subtitle in title case; never a research question; 80 characters or fewer.',
     '4. "## Capacity (measured from built briefs)", this table as given:',
     '| Page type | Words that fit | Measured from |',
     '|---|---|---|',
     ...PAGE_CAPACITY.map(([type, words, from]) => `| ${type} | ${words} | ${from} |`),
     'Counts include headings and table text, so prose budgets sit under the ceilings.',
-    '5. "## Plan (cover + 4 body pages)": a table with Page, Content, Prose budget, Visual; the cover carries the Executive Summary and 3 Report Highlights; findings get a page with the brief\'s one table; Policy Implications and Conclusions close; the last page holds Conclusions, References, the paper card and About ERC. Then "**Body prose total:**" against the band 1,300 to 2,000.',
+    '5. "## Plan (cover + 4 body pages)": a table with Page, Content, Prose budget, Visual; the cover carries the Executive Summary and 3 Report Highlights (a fourth only if the study has a fourth finding as strong as the others); findings get a page with the brief\'s one table; Policy Implications and Conclusions close; the last page holds Conclusions, References, the paper card and About ERC. Then "**Body prose total:**" against the band 1,300 to 2,000.',
     '6. "## The brief\'s visual (page N)": the brief\'s one visual, adapted from the paper\'s best table or figure (name it). Say whether it is Figure 1, a bar chart, or Table 1: a chart when its point is a trend over time or a comparison across 2 to 8 groups AND the paper prints the values; a table for results, several measures, or anything the paper does not print as numbers. Say what it keeps and which subgroup results stay in prose.',
     '7. "## Rule once authors approve": wording is frozen after author sign-off; layout may move content or change spacing; any wording cut goes back to the editor as a flag.',
     '8. "## Number flags (paper conflicts with itself)": a numbered list from the record\'s number_flags, each naming the value the brief uses; or "None found."',
@@ -284,8 +286,8 @@ export function buildVisualPrompt(extract, plan, notes) {
     '- page and box: where that table or figure sits, so the desk can cut it out for the comparison: the PDF page (its position in the file, starting at 1, not the printed page number) and its box on that page, left, top, right and bottom as fractions of the page\'s width and height from the top-left corner (0 to 1), wide enough for its title, every row, axis and label, and its notes.',
     '- title: for a chart, a finding sentence that claims only what the chart shows, in sentence case, no period. For a table, a plain label naming what it shows (e.g. "Effect of the email on course enrollment, by student group"), sentence case, no period; the finding goes in the brief\'s prose.',
     '- kept: one or two short sentences, "Kept: ... Left out: ...", naming what moved to prose.',
-    '- columns and rows: the visual as a data table a policymaker can read, every cell a string, rows and columns in plain words, never variable names; rows in the paper\'s order or largest first. Fill them for a chart too: they are the chart\'s data table. A table of estimates gets a last column "Statistically significant?" with "Yes" or "No" (a result significant only at the 10% level is still "Yes"); a result that is not significant still prints its estimate. Direction in words in the cell ("3.0 percentage points lower") or in the header, one way per table; never hide a negative. A percentage-point effect takes one decimal. No note line under the visual and no stars.',
-    '- For a chart: bars holds 2 to 8 bars, each a short group or time label, its value as a number, and "printed", the value exactly as the paper prints it ("0.1250", "45.0%"); value_label names what the bars measure ("Share who felt at home", "College-level courses taken"); value_format is "percent" when the values are percents, else "number". Bars start at zero, so use no negative values; if the values are not all zero or more, make it a table.',
+    '- columns and rows: the visual as a data table a policymaker can read, every cell a string, rows and columns in plain words, never variable names; rows in the paper\'s order or largest first with the caption saying so, never reordered only so the significant result leads; no standard errors, no confidence intervals, no N columns; subgroups only when the paper reports them as a main result. Fill them for a chart too: they are the chart\'s data table. A table of estimates gets a last column "Statistically significant?" with "Yes" or "No" (a result significant only at the 10% level is still "Yes"); a result that is not significant still prints its estimate. Direction in words in the cell ("3.0 percentage points lower") or in the header, one way per table; never hide a negative. A percentage-point effect takes one decimal. No note line under the visual and no stars.',
+    '- For a chart: bars holds 2 to 8 bars, each a short group or time label, its value as a number, and "printed", the value as the brief prints it, the same as in the prose (a proportion times 100 as percentage points, e.g. "12.5"; a share as "45.0%"); value_label names what the bars measure ("Share who felt at home", "College-level courses taken"); value_format is "percent" when the values are percents, else "number". Bars start at zero, so use no negative values; if the values are not all zero or more, make it a table.',
     '- For a table: bars is empty, value_label is empty and value_format is "number".',
     'Every number must be copied verbatim from the attached paper (a table\'s cells, or values the paper prints on or beside a figure). Never read a value off a bar\'s height. If the paper does not print the values a chart needs, make it a table of what it does print.',
   ].join('\n');
@@ -362,9 +364,9 @@ export function visualMarkdown(visual) {
 }
 
 export const SECTION_RULES = {
-  exec_summary: 'Write the Executive Summary as two short paragraphs: first the stakes, then the study and its headline result. The FIRST sentence of the second paragraph must name the journal and signal that this brief summarizes a larger study, in the pattern: "This brief summarizes a research study in {JOURNAL} that examines ...".',
+  exec_summary: 'Write the Executive Summary as two short paragraphs with no effect sizes: first the policy context, ending on the gap; then the study (the design and the sample in short separate sentences) and its results in words. The FIRST sentence of the second paragraph must name the journal and signal that this brief summarizes a larger study, in the pattern: "This brief summarizes a research study in {JOURNAL} that examines ...".',
   highlights: 'Write Report Highlights: three items, all this study\'s findings; a fourth only when the study has a fourth finding as strong as the others. Each item is a bold past-tense takeaway with no numbers in the pattern "**01. <takeaway>.**" on its own line, followed on the next line by one or two sentences that carry the numbers. A subgroup\'s hedge goes in its headline. Highlights may carry some energy, as plain declaratives, never past what the study found.',
-  introduction: 'Write the Introduction. Open on human stakes with a statistic: who is affected, why it matters for Texas and US education policy, what problem the study addresses. Urgency without alarm. Claims about the broader literature should be conservative and clearly framed; number any outside source with a superscript and list it in References.',
+  introduction: 'Write the Introduction. Open on who is affected, with a statistic and its source; then the access or preparation gap, then the evidence gap, then one sentence on what this brief does. Plain and even, no energy. Claims about the broader literature are conservative and clearly framed; number any outside source with a superscript and list it in References.',
   research_overview: 'Write the Research Overview. It MUST open with the house pattern: "This brief draws on [data source]..." Then research questions, sample, and methods in plain language; this is the most methodical and most hedged section. Describe what the researchers did, then name the design and say what it allows ("participation was determined by lottery. This randomized controlled trial design allows..."). End by stating the study\'s limitations plainly. Do not compress this section.',
   key_findings: 'Write Key Findings as 2 to 4 findings. Format each as "### Finding N" on its own line followed by a short bold finding title line, then a paragraph that leads with the number-bearing subject ("Students who received the email were 8.8 percentage points more likely to...") and then interprets, tying back to the larger issue. Where the page plan places the brief\'s visual, write "[{VISUAL} here]" on its own line at that spot. Verbatim numbers with context. This is the heart of the brief; do not compress it.',
   policy_implications: 'Write Policy Implications. Paper-first: lead with what the authors themselves recommend. Open with one or two sentences that say where the evidence gets its credibility, credit the authors, and carry the general caution. Then the items: three numbered items by default; when the paper speaks to both practice and policy, items under For Practice and For Policy, as many as the paper supports. Each item is a bold imperative heading on its own line ("1. **Include arts learning in plans for students with disabilities.**"; "**Do not expect a single nudge to change a major.**") over one to three sentences naming who acts and a concrete fact or cost where the paper gives one. A heading never says "may": the hedge goes in the body ("may consider", "can"). Use "should" only where the paper does. If the paper makes no recommendations at all, title the items as Considerations, back every claim with cited peer-reviewed literature, and flag any claim you cannot cite.',
@@ -387,7 +389,7 @@ export function buildSectionPrompt(extract, plan, notes, key, prior, visual = nu
     'THE PAGE PLAN (the budgets and the visual it names bind this section):',
     str(plan) || '(no plan)',
     '',
-    visual ? `THE BRIEF'S VISUAL: ${visual.name}, ${visual.title}. Refer to it as ${visual.name}.` : '',
+    visual ? [`THE BRIEF'S VISUAL: ${visual.name}, ${visual.title}. Refer to it as ${visual.name}. Its numbers, which the prose must print as the same number at the same precision:`, `| ${(visual.columns ?? []).join(' | ')} |`, ...(visual.rows ?? []).map(r => `| ${r.join(' | ')} |`)].join('\n') : '',
     notesBlock(notes),
     '',
     priorText,
@@ -395,7 +397,7 @@ export function buildSectionPrompt(extract, plan, notes, key, prior, visual = nu
     `TASK: ${SECTION_RULES[key].replace('{VISUAL}', visual?.name ?? 'Table 1')}`,
     designNote(extract),
     target,
-    `The journal is ${extract.journal}. Before writing, re-read the parts of the attached paper relevant to this section closely, including any tables, figure notes, and appendices they reference. Every number you cite must be located in the paper and copied verbatim; if you cannot find a number in the paper, do not use it. Output ONLY the section text itself: no section heading, no preamble, no commentary.`,
+    `The journal is ${extract.journal}. Before writing, re-read the parts of the attached paper relevant to this section closely, including any tables, figure notes, and appendices they reference. Every number you cite must be located in the paper at its printed precision, changed only by the times-100 rule for a yes/no outcome or a coarser rounding that says "about"; if you cannot find a number in the paper, do not use it. Output ONLY the section text itself: no section heading, no preamble, no commentary.`,
   ].join('\n');
 }
 
@@ -414,14 +416,14 @@ export function buildCheckPrompt(extract, sections) {
   return `Below is a complete ERC research brief draft, and the journal article it summarizes is attached as a PDF. Review the draft closely against BOTH the style rules in your instructions AND the paper itself, then return every section, corrected where needed.
 
 Checks to enforce mechanically:
-0. VERIFY EVERY STATISTIC against the attached paper: locate each number in the paper (body, tables, figure notes, appendices) and confirm the draft uses it verbatim and in the right context. Correct any number that is wrong; flag any number you cannot find. The draft must never claim more than the paper does.
+0. VERIFY EVERY STATISTIC against the attached paper: locate each number in the paper (body, tables, figure notes, appendices) and confirm the draft uses it at the paper's precision (or times 100 for a yes/no outcome, or rounded with "about") and in the right context. Correct any number that is wrong; flag any number you cannot find. The draft must never claim more than the paper does.
 1. Remove every em dash; restructure the sentence instead.
-2. Every number originally written as "N percent" becomes "N%". "percentage points" stays spelled out.
+2. A level or a share written as "N percent" becomes "N%"; a change in a share is "percentage points", spelled out, never "percent". A result significant only at the 10% level says it "meets a less stringent standard of statistical significance". Never hide a negative: a negative estimate keeps its size with "lower".
 3. The Executive Summary names the journal (${extract.journal}) and signals it summarizes a larger study.
 4. Causal vs associational language matches the design (${extract.design}).
-5. No raw academic term standing alone: any jargon (regression discontinuity, difference-in-differences, fixed effects, instrumental variables, and the like) must appear WITH its plain-language translation, plain term first ("a cutoff-based (regression discontinuity) design"). Fix in place.
-6. The Research Overview opens with "This brief draws on ...". Policy items are numbered bold action phrases. No exclamation points, no contractions, no first-person anywhere in body prose.
-7. Do NOT shorten sections. Never trim for brevity. Fix wording in place.
+5. No raw academic term standing alone: describe what the researchers did, then name the design ("participation was determined by lottery. This randomized controlled trial design allows..."). Replace method words a reader cannot use (intent-to-treat, bandwidth, heterogeneity, spillover, underpowered) with what they mean.
+6. The Research Overview opens with "This brief draws on ...". Policy items are bold imperative headings with the hedge in the body, numbered or under For Practice and For Policy as the draft has them. No exclamation points, no contractions, no first-person anywhere in body prose.
+7. Never cut interpretation. Cut restatements; otherwise fix wording in place. A number from the paper may be multiplied by 100 for a yes/no outcome or rounded with "about"; that is not an error.
 8. Anything you are unsure about (a claim you cannot verify, a judgment call), leave the text as-is and add a flag {section, note} instead of silently changing it.
 
 Return ALL ${sections.length} sections in the "sections" array, even ones you did not change.
@@ -530,7 +532,7 @@ export function checkStyle(sections, journal) {
     if (s.content.includes('—')) flags.push({ section: s.key, note: 'Contains an em dash; restructure the sentence.' });
     if (/\b\d+(\.\d+)?\s+percent\b(?!age)/i.test(s.content)) flags.push({ section: s.key, note: 'Uses the word "percent" after a number; use the % symbol.' });
     for (const j of JARGON) {
-      if (j.term.test(s.content) && !j.cue.test(s.content)) flags.push({ section: s.key, note: `"${j.label}" appears without a plain-language translation (e.g. "${j.plain}"). Plain term first, jargon in parentheses.` });
+      if (j.term.test(s.content) && !j.cue.test(s.content)) flags.push({ section: s.key, note: `"${j.label}" appears without a plain-language translation (e.g. "${j.plain}"). Describe what was done, then name the method.` });
     }
     if (s.key === 'exec_summary' && (!s.content.includes(journal) || !/summariz/i.test(s.content))) {
       flags.push({ section: 'exec_summary', note: `Missing the journal-signal line (must name ${journal} and say the brief summarizes a larger study).` });
@@ -550,6 +552,6 @@ export function draftFiles({ plan, draft, grammarly, figures, figuresMd, checkNo
     { name: 'brief-for-grammarly.md', contentType: 'text/markdown', text: md(grammarly) },
     { name: 'figures.md', contentType: 'text/markdown', text: md(inventory) },
     // The check's notes and the paper's number conflicts live in the folder, not on the page (Kate, Oct 22).
-    ...(String(checkNotes ?? '').trim() ? [{ name: 'check-notes.md', contentType: 'text/markdown', text: md(checkNotes) }] : []),
+    { name: 'check-notes.md', contentType: 'text/markdown', text: md(String(checkNotes ?? '').trim() ? checkNotes : '# Check notes\n\nNothing to flag.') },
   ];
 }
