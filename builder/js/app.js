@@ -468,7 +468,8 @@ function drawPull() {
     pullView.status.textContent = pullMessage;
     // An empty issue says where items come from (review, Oct 23).
     if (/^Nothing on the desk for/.test(pullMessage)) {
-      const a = el('a', '', 'Add items on Next issue');
+      // Next issue opens on the nearest issue: the link names this one (review, Oct 23).
+      const a = el('a', '', `Add items for ${state.issue?.date || 'this issue'} on Next issue`);
       a.href = '/#newsletter';
       pullView.status.append(' ', a);
     }
@@ -766,6 +767,9 @@ function renderTriage() {
 
     // Every live item in display order, so an arrow at a group's edge can carry it on (Oct 23).
     const sectionLive = buckets.flatMap((b) => b.items.filter((it) => !removed.has(it)));
+    // Each item's drawn bucket, and the unheaded one (review of the fixes, Oct 23).
+    const bucketOf = new Map(buckets.flatMap((b, i) => b.items.map((it) => [it, i])));
+    const headless = new Set(buckets.filter((b) => !b.label).flatMap((b) => b.items));
     for (const bucket of buckets) {
       if (bucket.label) {
         const gr = el('tr', 'outline-group');
@@ -785,7 +789,7 @@ function renderTriage() {
         // Item: its grip (Kate, Oct 7: drag it, or the arrow keys), then the title as its link with the meta line under it.
         const td1 = el('td', 'outline-item-cell');
         const cell = el('div', 'outline-cell');
-        cell.appendChild(removed.has(item) ? el('span', 'triage-drag-handle is-blank') : itemHandle(issue, reg.key, item, sectionLive, groupKeyOf));
+        cell.appendChild(removed.has(item) ? el('span', 'triage-drag-handle is-blank') : itemHandle(issue, reg.key, item, sectionLive, (it) => bucketOf.get(it), (it) => headless.has(it)));
         const words = el('div', 'outline-words');
         const href = normalizeLinkUrl(f.url || '');
         const link = href ? el('a', 'outline-title', title) : el('span', 'outline-title', title);
@@ -946,7 +950,7 @@ function sectionHandle(issue, reg, populated) {
  * its section, or press ArrowUp and ArrowDown to move it past its listed
  * neighbour. It takes the group it lands in; see moveItemNear.
  */
-function itemHandle(issue, sectionKey, item, sectionLive, groupKeyOf) {
+function itemHandle(issue, sectionKey, item, sectionLive, groupKeyOf, plain) {
   const title = item.fields?.title || '(untitled)';
   const handle = button('', 'triage-drag-handle', { icon: 'grip-vertical' });
   handle.setAttribute('aria-label', `Move "${title}": drag it, or press the up and down arrows`);
@@ -956,7 +960,7 @@ function itemHandle(issue, sectionKey, item, sectionLive, groupKeyOf) {
   handle.addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
     e.preventDefault();
-    const move = itemArrowMove(sectionLive, groupKeyOf, item, e.key);
+    const move = itemArrowMove(sectionLive, groupKeyOf, item, e.key, plain);
     if (!move) return;
     const { other, before } = move;
     if (!moveItemNear(issue, sectionKey, item.id, other.id, before)) return;

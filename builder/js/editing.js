@@ -22,12 +22,13 @@ export function arrowKeyTarget(key, idx, len) {
  *  moves past its neighbour; at an edge it lands at the near end of the next
  *  group: down before that group's first item, up after the group above's
  *  last. Null at the section's ends. */
-export function itemArrowMove(listed, groupOf, item, key) {
+export function itemArrowMove(listed, groupOf, item, key, plain = () => false) {
   const at = listed.indexOf(item);
   const step = key === 'ArrowUp' ? -1 : key === 'ArrowDown' ? 1 : 0;
   const other = step ? listed[at + step] : undefined;
   if (at < 0 || !other) return null;
-  const crossing = groupOf(other) !== groupOf(item);
+  // Into the unheaded bucket (items whose group has no heading) is a plain step.
+  const crossing = groupOf(other) !== groupOf(item) && !plain(other);
   return { other, before: crossing ? step > 0 : step < 0 };
 }
 

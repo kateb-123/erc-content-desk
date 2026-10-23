@@ -56,3 +56,12 @@ test('itemArrowMove: inside a group past the neighbour; at an edge into the next
   assert.equal(itemArrowMove(listed, group, a, 'ArrowUp'), null);
   assert.equal(itemArrowMove(listed, group, d, 'ArrowDown'), null);
 });
+
+test('itemArrowMove: a neighbour in the unheaded bucket is a plain step, so every press visibly moves (review of the fixes, Oct 23)', async () => {
+  const { itemArrowMove } = await import('../js/editing.js');
+  const a = { id: 'a', group: 'g1' }, x = { id: 'x', group: '' }, y = { id: 'y', group: '' };
+  const listed = [a, x, y];
+  const bucket = new Map([[a, 0], [x, 1], [y, 1]]);
+  const plain = it => bucket.get(it) === 1;
+  assert.deepEqual(itemArrowMove(listed, it => bucket.get(it), a, 'ArrowDown', plain), { other: x, before: false });
+});
