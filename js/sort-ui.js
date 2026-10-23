@@ -135,7 +135,7 @@ function linkNote(row, props, rerender) {
   head.append(faIcon('triangle-exclamation'), 'Check the link');
   box.append(head);
   const line = el('p', 'card-link-line');
-  line.append(row.link_checked === 'mismatch' ? 'This link may open a different item. ' : "The desk couldn't open this page. ");
+  line.append(row.link_checked === 'mismatch' ? 'May open a different item. ' : "Couldn't open the page. ");
   const after = el('span');
   if (href) {
     const a = el('a', 'source-link', 'Verify link');
@@ -256,7 +256,7 @@ function sendToBlock(row, props) {
     send_to: sendToValue({ newsletter: true, exchange: !input.checked }),
   }));
   const lines = el('span', 'check-lines');
-  lines.append(el('span', 'check-name', 'ERC Newsletter only'), el('span', 'check-sub', 'Skips the Policy Exchange'));
+  lines.append(el('span', 'check-name', 'ERC Newsletter only'));
   wrap.append(input, lines);
   line.append(wrap);
   box.append(line);
@@ -269,7 +269,7 @@ function cardTags(row, { props, ctx, reshare }) {
   if (ctx.groupTag?.has(row.id)) out.push(el('span', 'badge', ctx.groupTag.get(row.id)));
   if (row.status === 'circleback') out.push(el('span', 'badge', 'Skipped'));
   else if (isNewToday(row, props.today)) out.push(el('span', 'badge badge-new', 'New'));
-  if (row.submitter_email) out.push(el('span', 'badge', 'External submission'));
+  if (row.submitter_email) out.push(el('span', 'badge', 'From outside'));
   if (reshare.has(row.id)) out.push(el('span', 'badge', 'In a past issue'));
   else if (ctx.dupes.has(row.id)) {
     const prior = props.rows.find(r => r.id === ctx.dupes.get(row.id));
@@ -424,7 +424,7 @@ function doneRow(row, props) {
 }
 
 function emptyWords(props) {
-  if (readerQueue(props.rows).length) return 'New items are being read.';
+  if (readerQueue(props.rows).length) return 'Reading new items.';
   return props.sortedCount ? 'All sorted.' : 'Nothing to sort.';
 }
 

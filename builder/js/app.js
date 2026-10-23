@@ -697,7 +697,7 @@ function outlineMeta(sectionKey, f) {
  */
 function renderTriage() {
   const container = openStep('triage', 'Pick the issue and put it in order.',
-    'Pick the issue and what the desk added for it comes in; each time it opens again, anything new comes in too. Remove sends an item back to Ready to add on the desk. What goes out, in the order it goes out: drag a section or an item by its grip to move it in the email, or press the arrow keys on the grip. Move to… files an item under another group; the look is chosen on the next step, on the email itself.');
+    'New items from the desk come in each time the issue opens. Remove sends an item back to Ready to add. Drag a grip, or press the arrow keys on it, to reorder.');
   renderPullHead(container);
 
   const issue = state.issue;
@@ -733,14 +733,12 @@ function renderTriage() {
 
   const waiting = waitingRemovals();
   const removed = new Set(waiting.map((w) => w.item));
-  let inIssue = 0, listed = 0;
 
   for (const reg of populated) {
     const secData = issue.sections[reg.key];
     const items = secData.items;
     const rows = listedItems(issue, waiting, reg.key);
     const live = rows.filter((it) => !removed.has(it));
-    listed += rows.length; inIssue += live.length;
 
     // The section row: its drag handle (Kate, Oct 6), its name and count.
     const sr = el('tr', 'outline-section');
@@ -829,7 +827,6 @@ function renderTriage() {
           });
           delBtn.dataset.removeItem = item.id;
           delBtn.setAttribute('aria-label', `Remove "${title}" from the issue`);
-          delBtn.title = 'Removes this item from the issue';
           td3.append(mv, delBtn);
         }
 
@@ -851,7 +848,7 @@ function renderTriage() {
       const line = el('span');
       line.append(el('span', 'outline-callout-tag', 'Callout'), el('span', 'outline-title', c.title || '(untitled)'));
       const fixed = c.kind === 'share';
-      words.append(line, el('span', 'outline-meta', `${CALLOUT_KINDS[c.kind]?.label || 'Your own words'} · ${CALLOUT_CHOICES.find((s) => s.key === c.style)?.label || 'Maroon block'}. ${fixed ? 'Always at the end. ' : ''}Style it on Preview & Tweak.`));
+      words.append(line, el('span', 'outline-meta', `${CALLOUT_KINDS[c.kind]?.label || 'Your own words'} · ${CALLOUT_CHOICES.find((s) => s.key === c.style)?.label || 'Maroon block'}${fixed ? ' · always at the end' : ''}`));
       cell.appendChild(words);
       td1.appendChild(cell);
       const td3 = el('td', 'r outline-actions');
@@ -901,8 +898,7 @@ function renderTriage() {
     },
   });
   container.appendChild(table);
-  const foot = el('p', 'triage-missing', `${inIssue} of ${listed} ${listed === 1 ? 'item' : 'items'} in the issue.` + (missing.length ? ` Not in this issue: ${missing.join(', ')}.` : ''));
-  container.appendChild(foot);
+  if (missing.length) container.appendChild(el('p', 'triage-missing', `Not in this issue: ${missing.join(', ')}.`));
 }
 
 const sectionLabel = (key) => SECTION_REGISTRY.find((s) => s.key === key)?.label || key;
@@ -1101,7 +1097,7 @@ function firstField(card) {
 const PREVIEW_WIDTH = 640;
 
 /** What the preview note says after the scale: how the sheet is worked on. */
-const PREVIEW_TAIL = ' Click anything to edit it; drag an item or a section by its grip to move it.';
+const PREVIEW_TAIL = ' Click anything to edit it.';
 
 /** Cap the preview at 95% of true size; scales down on narrow windows so the
     edit column always fits and there's never a horizontal scrollbar. */
@@ -1148,7 +1144,7 @@ function fitLayout(layout) {
   if (scale <= 0) return;
   iframe.style.zoom = String(scale);
   const note = layout.closest('.wizard-step')?.querySelector('.preview-note');
-  if (note) note.textContent = `Preview at ${Math.round(scale * 100)} percent, as it lands in Outlook.${PREVIEW_TAIL}`;
+  if (note) note.textContent = `Preview at ${Math.round(scale * 100)}%.${PREVIEW_TAIL}`;
 }
 
 // Bound once: fitPreview finds the preview afresh on every call.
@@ -1881,12 +1877,12 @@ function wireframeRow(sectionKey, item, onPick) {
     const b = button('', 'wire' + (l.on ? ' is-on' : '') + (l.dim ? ' is-dim' : ''));
     b.setAttribute('role', 'radio');
     b.setAttribute('aria-checked', String(l.on));
-    if (l.dim) b.title = 'A placeholder until a photo is added, under Media';
+    if (l.dim) b.title = 'Needs a photo';
     b.append(wireframeEl(l.key, hasPic), el('span', 'wire-label', l.label));
     b.addEventListener('click', () => {
       l.apply();
       onPick();
-      if (l.dim) setWizardStatus('The email shows a placeholder until a photo is added, under Media.');
+      if (l.dim) setWizardStatus('Add a photo under Media.');
     });
     row.appendChild(b);
   }
@@ -1940,7 +1936,6 @@ function openItemEditor(refs, iframe) {
       input.addEventListener('input', () => { setFlyer(cardItem, input.value); scheduleSave(); debouncedPreview(); });
       group.append(sub, input);
       lookCol.appendChild(group);
-      lookCol.appendChild(el('p', 'triage-section-note drawer-note', 'The card shows the description and leaves the picture out.'));
     } else if (layout && (layout.key === 'stamp' || layout.key === 'headshot')) {
       // The picture's size, once a picture layout is on: a few widths, each
       // with the height a portrait photo stands at (Kate, Oct 5).
@@ -2214,7 +2209,6 @@ function openAddCalloutCard(iframe) {
   kinds.setAttribute('role', 'radiogroup');
   kinds.setAttribute('aria-label', 'Which callout');
   col.appendChild(kinds);
-  col.appendChild(el('p', 'triage-section-note drawer-note', `${CALLOUT_KINDS.share.label}: the desk's standing ask, for research, events and announcements. Your own words: a blank one.`));
 
   const afterLabel = el('label', 'edit-card-sublabel', 'After which section');
   const afterSelect = el('select', 'triage-field-input');
@@ -2222,7 +2216,7 @@ function openAddCalloutCard(iframe) {
   afterLabel.htmlFor = afterSelect.id;
   afterSelect.append(...SECTION_REGISTRY.map((reg) => option(reg.key, reg.label, reg.key === 'research')), option(CALLOUT_END, 'The end of the email', false));
   // The Share callout always sits at the end (Kate, Oct 7): no section to pick.
-  const fixedNote = el('p', 'triage-section-note drawer-note', 'The Share callout always sits at the end of the email.');
+  const fixedNote = el('p', 'triage-section-note drawer-note', 'Always at the end of the email.');
   const showAfter = () => { const own = kind !== 'share'; afterLabel.hidden = !own; afterSelect.hidden = !own; fixedNote.hidden = own; };
   kinds.addEventListener('click', showAfter);
   col.append(afterLabel, afterSelect, fixedNote);
@@ -2252,15 +2246,15 @@ function openAddCalloutCard(iframe) {
 function renderEdit() {
   closeDrawer();
   const container = openStep('edit', 'Check the issue and tweak anything in place.',
-    'Click anything on the email and its card opens beside it: how it is laid out, then its words. A callout opens the same way, its style first. Drag an item or a section by the grip at its left to move it. Add an item, Add a callout and the contents strip sit over the email.');
+    'Drag an item or a section by the grip at its left to move it.');
 
   if (!state.issue) {
-    emptyLine(container, 'No issue loaded. Pick the issue on the Outline step first.');
+    emptyLine(container, 'Pick the issue on Outline first.');
     return;
   }
 
   const iframe = el('iframe', 'edit-preview-iframe');
-  iframe.setAttribute('title', 'Newsletter preview: click an item to edit it, drag it by its grip to move it');
+  iframe.setAttribute('title', 'Newsletter preview');
   iframe.setAttribute('scrolling', 'no');
   iframe.addEventListener('load', () => {
     wireIframeEditing(iframe);
@@ -2281,7 +2275,7 @@ function renderEdit() {
   const toolbar = el('div', 'edit-toolbar');
   const previewNote = el('p', 'preview-note');
   previewNote.tabIndex = -1;   // where focus lands when the drawer closes
-  previewNote.textContent = `Preview at ${Math.round(PREVIEW_MAX_SCALE * 100)} percent, as it lands in Outlook.${PREVIEW_TAIL}`;
+  previewNote.textContent = `Preview at ${Math.round(PREVIEW_MAX_SCALE * 100)}%.${PREVIEW_TAIL}`;
   const doors = el('div', 'edit-doors');
   const drawDoors = () => {
     doors.replaceChildren(
@@ -2297,7 +2291,6 @@ function renderEdit() {
     doors.appendChild(strip);
     if (hasCustomOptions(state.issue)) {
       const reset = button(' Reset layout', 'ghost-btn ghost-btn--muted', { icon: 'rotate-left', onClick: () => { resetOptions(state.issue); scheduleSave(); refreshEditIframe(iframe); } });
-      reset.title = 'Every layout option back to its default';
       doors.appendChild(reset);
     }
   };
@@ -2427,11 +2420,11 @@ function downloadHtml(container) {
  */
 function renderExport() {
   const container = openStep('export', 'Copy the issue into Outlook, then archive it.',
-    'Copy the HTML for Outlook, save the issue to the archive, or download the file.');
+    'Fix things on Preview & Tweak, not in Outlook.');
 
   // Nothing to export yet: one plain sentence, no buttons.
   if (!state.issue || !countIssueItems(state.issue)) {
-    emptyLine(container, 'Nothing to export yet. Pick the issue on the Outline step first.');
+    emptyLine(container, 'Nothing in the issue yet. Pick the issue on Outline first.');
     return;
   }
 
@@ -2495,7 +2488,7 @@ function renderExport() {
 
   archiveBtn.addEventListener('click', async () => {
     const iso = displayDateToISO(state.issue?.date || '');
-    if (!iso) { showExportToast(container, 'Pick the issue on Review first.', 'error'); return; }
+    if (!iso) { showExportToast(container, 'Pick the issue on Outline first.', 'error'); return; }
     const entry = archivedEntry(await indexReady, iso) ?? (savedThisVisit?.date === iso ? savedThisVisit : null);
     if (!entry) { saveToArchive(iso); return; }
     // First click asks; the ask's Confirm does the work (the desk's Publish shape).
@@ -2610,7 +2603,7 @@ function showRestoreBanner(saved) {
       discarded = withEntry(discarded, reply.draft);
       focusDiscarded = fromKeyboard ? reply.draft.id : null;
       if (state.step === 'triage') renderTriage();   // unlocks the Issue select; the list leads with it
-      setWizardStatus('Discarded. Recently discarded keeps it for 90 days.');
+      setWizardStatus('Discarded.');
     } catch (err) {
       const retry = ghostButton('Try again');
       retry.addEventListener('click', (e) => discard(e.detail === 0));

@@ -20,7 +20,7 @@ export function renderPast(container, { archive, onGoTo, onRetry }) {
     line.append(retry);
     parts.push(line);
   } else if (!archive.length) {
-    parts.push(el('p', 'nl-empty', "Nothing archived yet. Save an issue from the builder's Save & Export step and it appears here."));
+    parts.push(el('p', 'nl-empty', 'Nothing archived yet. Save to the archive in the builder.'));
   } else {
     const list = el('div', 'nl-list past-list');
     const entries = [...archive].filter(e => e?.date).sort((a, b) => String(b.date).localeCompare(String(a.date)));

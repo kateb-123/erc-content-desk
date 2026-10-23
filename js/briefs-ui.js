@@ -62,10 +62,10 @@ function readNotesFile(file, onReadNotes) {
   const kind = notesKind(file.name);
   if (!kind) return Promise.reject(new Error('Notes come as a .md, .txt or Word .docx file, or pasted in.'));
   if (kind === 'word') {
-    if (!onReadNotes) return Promise.reject(new Error('A Word file cannot be read here. Save it as .txt and choose that.'));
+    if (!onReadNotes) return Promise.reject(new Error("Can't read Word files here. Save it as .txt."));
     return onReadNotes(file).then(({ notes, b64 }) => {
       const got = notesFile('notes.md', notes);
-      if (!got.ok) throw new Error(got.error === 'That file is empty.' ? 'That Word file has no words in it.' : got.error);
+      if (!got.ok) throw new Error(got.error === 'That file is empty.' ? 'That Word file is empty.' : got.error);
       return { notes: got.notes, b64 };
     });
   }
@@ -84,7 +84,7 @@ function readNotesFile(file, onReadNotes) {
 function notesPicker(notes, problem, onReadNotes) {
   const pick = input('file');
   pick.accept = NOTES_ACCEPT;
-  const wrap = field('Or your notes as a file', pick, 'A .md, .txt or Word .docx. It fills the box above.', 'bp');
+  const wrap = field('Or your notes as a file', pick, 'A .md, .txt or Word .docx.', 'bp');
   pick.addEventListener('change', async () => {
     const file = pick.files?.[0];
     if (!file) return;
@@ -99,7 +99,7 @@ function notesPicker(notes, problem, onReadNotes) {
       problem.textContent = String(err?.message ?? err);
       pick.value = '';
     }
-    hint.textContent = 'A .md, .txt or Word .docx. It fills the box above.';
+    hint.textContent = 'A .md, .txt or Word .docx.';
   });
   return wrap;
 }
@@ -138,7 +138,6 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
   // The notes box: opened by Paste instead, or shown filled once a file is read, so she sees what the desk got and can fix it.
   const pasteBox = el('textarea', 'new-brief-paste');
   pasteBox.rows = 6;
-  pasteBox.placeholder = 'What to lead with, what to keep, which table is the visual.';
   pasteBox.value = draft.notes;
   pasteBox.addEventListener('input', () => { draft.notes = pasteBox.value; sayNotes(); sayLock(); });
   const pasteWord = button('Paste instead', 'linkish', { focus: 'nb-paste', onClick: () => { draft.pasteOpen = true; showPaste(); pasteBox.focus(); } });
@@ -149,7 +148,7 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
   const paperTitle = input();
   const authors = input(); authors.placeholder = 'as the paper lists them';
   const journal = input();
-  const record = input(); record.placeholder = 'Dr. Lastname, the one the email goes to';
+  const record = input(); record.placeholder = 'Dr. Lastname, who gets the email';
   // The brief's own author line (her pick, Oct 22): whoever is signed in, from a box that remembers its last value.
   const briefAuthor = input();
   let remembered = '';
@@ -173,11 +172,11 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
   const readLine = el('p', 'field-hint new-brief-read');
   readLine.setAttribute('role', 'status');
   const folderLine = el('p', 'field-hint new-brief-folder');
-  const sayFolder = () => { const slug = briefSlug({ authorLast: last.value, year: year.value, topic: topic.value }); folderLine.textContent = slug ? `Folder: ${slug}` : 'Folder: the last name, the year and the topic word'; };
+  const sayFolder = () => { const slug = briefSlug({ authorLast: last.value, year: year.value, topic: topic.value }); folderLine.textContent = slug ? `Folder: ${slug}` : 'Folder: lastname-year-topic'; };
   for (const c of [last, year, topic]) c.addEventListener('input', sayFolder);
   sayFolder();
   const pair = (a, b) => { const g = el('div', 'card-grid'); g.append(a, b); return g; };
-  const topicField = field('Topic word', topic, 'Tells two papers by one author apart.');
+  const topicField = field('Topic word', topic);
   topicField.append(folderLine);
   byline.append(
     el('h3', 'section-label hub-label', 'The byline'),
@@ -186,7 +185,7 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
     pair(field('Authors', authors), field('Journal', journal)),
     pair(field("Author's last name", last), field('Year', year)),
     pair(topicField, field('Author of record', record)),
-    pair(field('Brief author', briefAuthor, "Named on the draft's cover as the brief's author."), el('div')),
+    pair(field('Brief author', briefAuthor, "Named on the draft's cover."), el('div')),
   );
 
   // Create: locked, and saying why, until both files are in and the read is done.
@@ -207,7 +206,7 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
     const words = wordCount(draft.notes);
     notesMeta.textContent = draft.notesFile ? `${words.toLocaleString('en-US')} words from ${draft.notesFile.name}` : (draft.notes.trim() ? `${words.toLocaleString('en-US')} words, pasted` : '');
   };
-  const pasteField = field('Your notes, as words', pasteBox, 'Fix anything the file got wrong, or paste them here.');
+  const pasteField = field('Your notes, as words', pasteBox);
   const showPaste = () => { pasteField.hidden = !(draft.pasteOpen || draft.notesFile); pasteWord.hidden = !pasteField.hidden; };
   sayPaper(); sayNotes(); showPaste();
 
@@ -240,11 +239,11 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
       }
       sayFolder();
       const filled = Object.keys(fill).map(k => names[k]);
-      readLine.textContent = filled.length ? `Read from the paper: ${filled.join(', ')}. Check them.` : 'Read the paper; the boxes already had their words.';
+      readLine.textContent = filled.length ? `Read from the paper: ${filled.join(', ')}. Check them.` : 'Paper read. Nothing to fill.';
     } catch (err) {
       if (stale()) return;
       const why = String(err?.message ?? err);
-      readLine.textContent = /Type the title/.test(why) ? `Couldn't read the paper: ${why}` : `Couldn't read the paper (${why}). Type the title, authors, journal and year.`;
+      readLine.textContent = /Type the title/.test(why) ? `Couldn't read the paper: ${why}` : `Couldn't read the paper (${why}). Type the byline in.`;
     }
     draft.read = true;
     sayLock();
@@ -271,7 +270,7 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
   });
 
   const files = el('div', 'card-grid new-brief-files');
-  const paperField = field('The paper, as a PDF', paper, `Up to ${MAX_PAPER_MB} MB. Bigger: Preview, File, Export, Reduce File Size.`);
+  const paperField = field('The paper, as a PDF', paper, `Up to ${MAX_PAPER_MB} MB.`);
   paperField.append(paperMeta);
   const notesField = field('Your notes, as a .md, .txt or Word .docx', notesPick, 'What to lead with, what to keep, which table is the visual.');
   notesField.append(notesMeta, pasteWord);
@@ -291,8 +290,8 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
     problem.textContent = '';
     const file = paper.files?.[0] ?? draft.file;
     if (!file) { problem.textContent = 'Choose the paper, a PDF.'; paper.focus(); return; }
-    if (!draft.notes.trim()) { problem.textContent = 'Choose your notes file, a .md, .txt or Word .docx, or paste them.'; notesPick.focus(); return; }
-    if (!briefSlug({ authorLast: last.value, year: year.value, topic: topic.value })) { problem.textContent = "The author's last name and a four-digit year name the folder."; last.focus(); return; }
+    if (!draft.notes.trim()) { problem.textContent = 'Choose your notes file, or paste them.'; notesPick.focus(); return; }
+    if (!briefSlug({ authorLast: last.value, year: year.value, topic: topic.value })) { problem.textContent = "Add the author's last name and a four-digit year."; last.focus(); return; }
     const paperB64 = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '');
@@ -324,7 +323,7 @@ export function renderBriefs(container, props) {
   if (!loaded) {
     page.append(error ? tryAgain(onRefresh) : busyLine('Loading the briefs'));
   } else if (!briefs.length) {
-    page.append(el('p', 'briefs-empty', 'No briefs yet. New brief starts one: the paper and your notes.'));
+    page.append(el('p', 'briefs-empty', 'No briefs yet.'));
   } else {
     const table = el('table', 'briefs-table');
     const thead = el('thead');
@@ -362,9 +361,9 @@ export function renderBriefs(container, props) {
 /** The folder's files, newest first, each a link into Drive. */
 function filesBox(files) {
   const box = el('div', 'hub-box brief-files');
-  if (files === null) { box.append(el('p', 'brief-files-note', 'Drive did not answer just now. The folder link above still opens it.')); return box; }
+  if (files === null) { box.append(el('p', 'brief-files-note', "Drive didn't answer. Use the folder link above.")); return box; }
   if (files === undefined) { box.append(busyLine('Reading the folder')); return box; }
-  if (!files.length) { box.append(el('p', 'brief-files-note', 'Nothing in the folder yet.')); return box; }
+  if (!files.length) { box.append(el('p', 'brief-files-note', 'Nothing yet.')); return box; }
   const list = el('ul', 'brief-file-list');
   for (const f of files) {
     const li = el('li');
@@ -545,7 +544,7 @@ function stageBox(brief, { onSaveNotes, onReadNotes, onWriteDraft, savingNotes, 
   if (proofReady) return draftBox(brief, { onWriteDraft, error: draftError, cropFailed, files, cutting: Boolean(draftRunning) });
   const box = el('div', 'hub-box brief-stage');
   if (brief.stage !== 'paper') {
-    box.append(el('p', 'brief-files-note', `${stageLabel(brief.stage)} comes in the next round. The folder holds everything so far.`));
+    box.append(el('p', 'brief-files-note', 'Not built yet. The files are in the folder.'));
     return box;
   }
   const paperRow = el('p', 'brief-paper');
@@ -564,11 +563,11 @@ function stageBox(brief, { onSaveNotes, onReadNotes, onWriteDraft, savingNotes, 
   const actions = el('div', 'brief-actions');
   const save = button(savingNotes ? 'Saving…' : 'Save notes', 'btn-outline', { focus: 'save-notes', onClick: () => onSaveNotes(notes.value) });
   save.disabled = Boolean(savingNotes);
-  actions.append(save, el('span', 'brief-saved', notesSaved || 'Saved to the row and as notes.md in the folder.'));
+  actions.append(save, el('span', 'brief-saved', notesSaved || 'Saves as notes.md in the folder.'));
   const go = el('div', 'brief-actions brief-write');
   go.append(
     button('Write the draft', 'primary', { focus: 'write-draft', icon: 'pen', onClick: () => onWriteDraft({ notes: notes.value }) }),
-    el('span', 'meta', 'A few minutes. Reads the whole paper, plans the pages, writes the brief.'),
+    el('span', 'meta', 'Takes a few minutes.'),
   );
   if (draftError) { const p = el('p', 'field-error'); p.setAttribute('role', 'alert'); p.textContent = draftError; go.append(p); }
   box.append(paperRow, label, notes, notesPicker(notes, problem, onReadNotes), problem, actions, go);

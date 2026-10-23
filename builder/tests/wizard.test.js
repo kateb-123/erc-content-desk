@@ -47,14 +47,14 @@ test('the restore banner names the saved issue and its item count (a10)', () => 
   saved.date = 'July 01, 2026';
   saved.sections.events.items.push({ id: 'a', group: 'tamu', fields: { title: 'A' } });
   saved.sections.headlines.items.push({ id: 'b', group: 'texas', fields: { title: 'B' } });
-  assert.equal(restoreBannerMessage(saved), 'Restore the in-progress newsletter for July 01, 2026 (2 items)?');
+  assert.equal(restoreBannerMessage(saved), 'Restore the draft for July 01, 2026 (2 items)?');
   saved.sections.headlines.items.pop();
-  assert.equal(restoreBannerMessage(saved), 'Restore the in-progress newsletter for July 01, 2026 (1 item)?');
+  assert.equal(restoreBannerMessage(saved), 'Restore the draft for July 01, 2026 (1 item)?');
 });
 
 test('the restore banner copes with a saved issue that has no date yet', () => {
   const saved = createEmptyIssue();
-  assert.equal(restoreBannerMessage(saved), 'Restore the in-progress newsletter (0 items)?');
+  assert.equal(restoreBannerMessage(saved), 'Restore the draft (0 items)?');
 });
 
 test('the Issue list offers two samples under its dates (Kate, Oct 7: the hand-off): October 6 as sent, and a practice issue', () => {
@@ -69,7 +69,7 @@ test('the Issue list offers two samples under its dates (Kate, Oct 7: the hand-o
   assert.equal(sampleOf('sample:nope'), null);
   assert.equal(sampleOf(''), null);
   assert.equal(sampleOf(undefined), null);
-  assert.equal(SAMPLE_ARCHIVE_MESSAGE, 'A sample never saves to the archive. Copy HTML and Download .html work as usual.');
+  assert.equal(SAMPLE_ARCHIVE_MESSAGE, 'A sample never saves to the archive.');
 });
 
 test('the restore banner says when the saved issue is a sample (Kate, Oct 7)', () => {

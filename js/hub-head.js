@@ -15,10 +15,10 @@ export function hubHead(title, lede) {
 
 /** What a hub page opens with until its body is drawn. */
 export const HUB_LEDES = {
-  queue: 'Everything submitted, and where it stands now.',
+  queue: 'Everything submitted.',
   listserv: 'Sign-ups for the ERC newsletter.',
-  exchange: 'The public site, and what waits to go on it.',
-  briefs: 'Where each brief stands, and what it waits for.',
+  exchange: 'The public site.',
+  briefs: 'Where each brief stands.',
 };
 
 /** A how-to link under a hub (the handoff, Oct 22, 2026: no dead ends; every "forthcoming" became a page). */

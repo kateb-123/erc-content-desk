@@ -110,9 +110,9 @@ export function detailBody(row, today) {
     main.append(el('h3', 'f-detail-label', row.type === 'research' ? 'Abstract' : 'Description'));   // h3 under the screen's h2, no skipped level
     main.append(el('p', 'f-blurb-text', row.blurb));
   } else if (canRewrite(row)) {
-    main.append(el('p', 'rewrite-note', 'No description yet. Rewrite drafts one from the original text.'));
+    main.append(el('p', 'rewrite-note', 'No description yet.'));
   } else if (needsDescription(row)) {
-    main.append(el('p', 'rewrite-note', 'Needs a description. Add one with Edit.'));
+    main.append(el('p', 'rewrite-note', 'Needs a description.'));
   }
   wrap.append(main);
   return wrap;
@@ -175,11 +175,11 @@ function checkCard(row, { old, nextId, onVerify, onRevert, onCheckEdit, onTrash,
     const before = el('div', 'f-diff-box');
     before.append(el('p', 'f-diff-label', 'Before'), diffPara(oldToks, 'f-old', 'diff-del'));
     const after = el('div', 'f-diff-box is-after');
-    after.append(el('p', 'f-diff-label', 'After · ERC voice'), diffPara(newToks, 'f-blurb-text', 'diff-add'));
+    after.append(el('p', 'f-diff-label', 'After'), diffPara(newToks, 'f-blurb-text', 'diff-add'));
     pair.append(before, after);
   } else {
     const after = el('div', 'f-diff-box is-after');
-    after.append(el('p', 'f-diff-label', 'New description, written from the original text'), el('p', 'f-blurb-text', row.blurb));
+    after.append(el('p', 'f-diff-label', 'New description'), el('p', 'f-blurb-text', row.blurb));
     pair.append(after);
   }
   card.append(pair);
@@ -258,7 +258,7 @@ export function renderFinalize(container, props) {
     lede.append(`Kept ${lastKeepAll.length} rewrite${lastKeepAll.length === 1 ? '' : 's'}. `);
     const undo = button('Undo', 'linkish', { focus: 'undo-keep-all', onClick: () => { undo.disabled = true; onUndoKeepAll(); } });
     lede.append(undo);
-  } else if (!keeps.length) lede.textContent = 'No unpublished keeps right now.';
+  } else if (!keeps.length) lede.textContent = 'Nothing to finalize.';
   else if (stage !== 'checking' && rewroteNote && !busy) lede.textContent = rewroteNote;   // an empty rewrite's answer, next to the button
   else lede.textContent = progress.text;
   // Rewrites started at Keep and still out (Kate, Sep 22): said on the same line, no waiting screen.

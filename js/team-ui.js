@@ -12,7 +12,7 @@ export function renderTeam(container, { onSubmitted, knownLinks }) {
   if (container.querySelector('.team-page')) return;
   const page = el('div', 'team-page');
   const head = el('div', 'page-head');
-  const lede = el('p', 'lede', 'It lands in the queue and the desk sorts it before it goes out. ');
+  const lede = el('p', 'lede');
   const howTo = el('a', 'team-howto', 'How to submit content');
   howTo.href = '/how-to/submit-content/';
   lede.append(howTo);

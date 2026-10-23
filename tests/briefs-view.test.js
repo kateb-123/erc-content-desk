@@ -39,7 +39,7 @@ const brief = over => ({
 
 test('waitsFor: what the hub\'s table says a brief waits for, stage by stage', () => {
   const today = '2026-10-20';
-  assert.deepEqual(waitsFor(brief({ stage: 'paper' }), today), { title: 'Write the draft', meta: 'paper and notes in, Oct 19' });
+  assert.deepEqual(waitsFor(brief({ stage: 'paper' }), today), { title: 'Write the draft', meta: 'since Oct 19' });
   assert.deepEqual(waitsFor(brief({ stage: 'draft', stageAt: '2026-10-20T15:00:00Z' }), today), { title: 'Drafting', meta: 'started Oct 20' });
   assert.deepEqual(waitsFor(brief({ stage: 'proof', stageAt: '2026-10-20T15:00:00Z', words: 1480 }), today), { title: 'Your Grammarly pass', meta: 'drafted Oct 20, 1,480 words' });
   assert.deepEqual(waitsFor(brief({ stage: 'author', stageAt: '2026-10-02T15:00:00Z' }), today), { title: "Dr. Reveille's edits", meta: 'sent Oct 2, 18 days' });
@@ -62,7 +62,7 @@ test('notesFile: her notes as a dropped .md or .txt fill the notes box; anything
   assert.deepEqual(notesFile('notes.markdown', 'x'), { ok: true, notes: 'x' });
   assert.deepEqual(notesFile('notes.rtf', 'x'), { ok: false, error: 'Notes come as a .md, .txt or Word .docx file, or pasted in.' });
   assert.deepEqual(notesFile('notes.md', ''), { ok: false, error: 'That file is empty.' });
-  assert.deepEqual(notesFile('notes.md', 'a'.repeat(20001)), { ok: false, error: 'That file is over 20,000 characters, more than a brief\'s notes hold. Trim it first.' });
+  assert.deepEqual(notesFile('notes.md', 'a'.repeat(20001)), { ok: false, error: 'That file is over 20,000 characters. Trim it first.' });
   assert.equal(notesFile('notes.md', 'a'.repeat(20000)).ok, true, 'the limit is the API\'s own, MAX_TEXT');
 });
 
@@ -148,7 +148,7 @@ test('in the hub\'s table only the current step is named; the brief\'s page name
 
 test('createLock: the paper and a Word file that together would not fit one upload say so (review, Oct 22: the create body has a 4.5 MB cap)', () => {
   assert.equal(createLock({ paper: true, notes: true, reading: false, bytes: UPLOAD_CAP_BYTES }), '');
-  assert.equal(createLock({ paper: true, notes: true, reading: false, bytes: UPLOAD_CAP_BYTES + 1 }), 'Together the paper and the Word file are too big for one upload. Shrink the paper, or paste the notes instead.');
+  assert.equal(createLock({ paper: true, notes: true, reading: false, bytes: UPLOAD_CAP_BYTES + 1 }), 'The paper and the Word file are too big together. Shrink the paper, or paste the notes.');
   assert.equal(createLock({ paper: true, notes: false, reading: false, bytes: UPLOAD_CAP_BYTES + 1 }), 'Choose your notes file, or paste them, first.', 'the files come first');
 });
 

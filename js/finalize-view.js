@@ -42,7 +42,7 @@ export function finalizeGroups(keeps, { pending, review, verified, rewriting = n
  *  than the title): they stay under Needs a rewrite, and the lede says why. */
 export function unchangedNote(n) {
   if (!n) return '';
-  return n === 1 ? '1 had nothing to add beyond its title. Edit it by hand.' : `${n} had nothing to add beyond their titles. Edit them by hand.`;
+  return n === 1 ? '1 had too little to rewrite. Edit it by hand.' : `${n} had too little to rewrite. Edit them by hand.`;
 }
 
 /** Rewrites started at Keep and not back yet: a quiet count in the lede. */
@@ -53,10 +53,10 @@ export function onTheWay(n) {
 
 /** The line under the title and the bar's share. */
 export function finalizeProgress(stage, { pending = 0, keeps = 0, total = 0, left = 0 } = {}) {
-  if (stage === 'before') return { text: `${pending} of ${keeps} kept items need an ERC-voice description`, pct: 0 };
+  if (stage === 'before') return { text: '', pct: 0 };
   if (stage === 'checking') {
     const done = Math.max(total - left, 0);
-    return { text: `${done} of ${total} rewrites checked`, pct: total ? Math.round(100 * done / total) : 0 };
+    return { text: `${done} of ${total} checked`, pct: total ? Math.round(100 * done / total) : 0 };
   }
   return { text: '', pct: 100 };
 }

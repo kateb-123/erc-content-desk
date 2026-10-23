@@ -27,7 +27,7 @@ test('publishRows skips ids the desk no longer holds, and a missing preview give
 test('the legend counts every fate except Already live, which carries no number (Kate, Sep 1)', () => {
   assert.deepEqual(legendItems(publishRows(preview, rows)).map(i => [i.key, i.text]), [
     ['adding', '2 adding'],
-    ['held', '1 held for the newsletter'],
+    ['held', '1 held for newsletter'],
     ['fix', '1 needs a fix'],
     ['live', 'Already live'],
   ]);

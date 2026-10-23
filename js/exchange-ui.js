@@ -42,7 +42,7 @@ export function renderExchange(container, { rows, today, loaded, preview, hubUpd
   );
   main.append(el('h3', 'section-label hub-label', 'Status'), box,
     howToLink('How to publish to the Exchange', '/how-to/sort/#exchange'), howToLink('How it all connects', '/how-to/pipeline/'),
-    el('p', 'qh-side-note', 'The code is at github.com/kateb-123/erc-policy-exchange-app. Who holds the logins: the handoff document, READ ME FIRST, in the shared drive.'));
+    el('p', 'qh-side-note', 'Code: github.com/kateb-123/erc-policy-exchange-app. Who holds the logins: READ ME FIRST, in the shared drive.'));
 
   const side = el('aside', 'qh-side');
   const door = el('a', 'sort-door qh-door');
@@ -52,7 +52,7 @@ export function renderExchange(container, { rows, today, loaded, preview, hubUpd
   const words = el('span', 'door-words');
   words.append(el('span', 'door-name', 'Publish'), el('span', 'door-note', s.waiting ? `${s.waiting} waiting` : ''));
   door.append(faIcon('paper-plane'), words, faIcon('arrow-right'));
-  side.append(door, el('p', 'qh-side-note', 'Confirm asks the desk password before anything reaches the site.'));
+  side.append(door);
 
   split.append(main, side);
   page.append(hubHead('Policy Exchange', HUB_LEDES.exchange), split);

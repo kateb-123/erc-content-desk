@@ -58,7 +58,7 @@ export function waitsFor(brief, today) {
     case 'approved': return { title: 'The HTML, round two', meta: `approved ${when}` };
     case 'html': return { title: 'The layout, round two', meta: `since ${when}` };
     case 'live': return { title: 'Live', meta: when };
-    default: return { title: 'Write the draft', meta: `paper and notes in, ${when}` };
+    default: return { title: 'Write the draft', meta: `since ${when}` };
   }
 }
 
@@ -122,7 +122,7 @@ export function notesFile(name, text) {
   if (!notesKind(name)) return { ok: false, error: 'Notes come as a .md, .txt or Word .docx file, or pasted in.' };
   const notes = String(text ?? '').trim();
   if (!notes) return { ok: false, error: 'That file is empty.' };
-  if (notes.length > NOTES_MAX) return { ok: false, error: `That file is over ${NOTES_MAX.toLocaleString('en-US')} characters, more than a brief's notes hold. Trim it first.` };
+  if (notes.length > NOTES_MAX) return { ok: false, error: `That file is over ${NOTES_MAX.toLocaleString('en-US')} characters. Trim it first.` };
   return { ok: true, notes };
 }
 
@@ -135,7 +135,7 @@ export function createLock({ paper, notes, reading, bytes = 0 }) {
   if (!paper && !notes) return 'Choose the paper and your notes first.';
   if (!paper) return 'Choose the paper first.';
   if (!notes) return 'Choose your notes file, or paste them, first.';
-  if (bytes > UPLOAD_CAP_BYTES) return 'Together the paper and the Word file are too big for one upload. Shrink the paper, or paste the notes instead.';
+  if (bytes > UPLOAD_CAP_BYTES) return 'The paper and the Word file are too big together. Shrink the paper, or paste the notes.';
   if (reading) return 'Reading the paper first.';
   return '';
 }

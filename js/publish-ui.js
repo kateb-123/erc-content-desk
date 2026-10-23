@@ -100,7 +100,7 @@ function itemRows({ row, fate }, { rerender, onGoTo, today, onEditRow }) {
   if (fate === 'fix') {
     const jump = button('Needs a fix', 'linkish p-fate-fix',
       { onClick: event => { event.stopPropagation(); onGoTo('sort'); } });
-    jump.title = "Opens Sort's Needs a fix";
+    jump.title = 'Opens Content Sort';
     fateTd.append(jump);
   } else {
     fateTd.textContent = FATE_LABEL[fate];
@@ -196,16 +196,15 @@ export function renderPublish(container, props) {
   const hlCtx = { adding, hub: preview?.hub ?? [] };
 
   const { head, lede } = screenHead('Publish', 'publish',
-    'Everything here was checked against the live Exchange on arrival. Publish sends the Adding rows to the site. Spotlight events stay held for the newsletter (webinars excepted); a row that needs a fix waits in Sort; anything already live is left out. Click a colour under the bar to see only those rows.');
+    'Publish adds the Adding rows to the Exchange. Click a colour under the bar to filter.');
   if (showReceipt) {
     // The receipt card below is the confirmation — the head stays bare.
   } else if (busy && !preview) {
-    lede.textContent = 'Checking the live Exchange…';
   } else if (!candidates.length) {
-    lede.textContent = 'Nothing waiting to publish.';
+    lede.textContent = 'Nothing to publish.';
   } else {
     // A failed check says so (the status bar carries the reason); Re-check stays.
-    lede.append(preview ? 'Checked against the live Exchange · ' : 'The check did not go through · ');
+    lede.append(preview ? 'Checked against the live Exchange · ' : 'The check failed · ');
     const again = button('Re-check', 'linkish', { focus: 'recheck', onClick: () => { again.disabled = true; onRecheck(); } });
     lede.append(again);
   }
@@ -397,7 +396,7 @@ export function renderPublish(container, props) {
     const going = new Set(adding.map(r => String(r.link ?? '').trim()));
     const waiting = (picks ?? []).filter(p => going.has(p.link)).length;
     const heldNote = waiting
-      ? el('p', 'hl-save-note', `${waiting} pick${waiting === 1 ? ' is' : 's are'} not on the Exchange yet and go${waiting === 1 ? 'es' : ''} up with the next publish.`)
+      ? el('p', 'hl-save-note', 'Picks not live yet go up with the next publish.')
       : null;
     if (!hlAsk) {
       const save = button('Update the highlight', 'primary hl-save-btn', { focus: 'hl-save', onClick: () => { hlAsk = true; confirming = false; rerender(); } });

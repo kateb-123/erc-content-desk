@@ -62,7 +62,7 @@ function build(container, onGoTo) {
   door.append(faIcon('lock'), doorWords, faIcon('arrow-right'));
   const scraperBox = el('div', 'qh-scraper');
   scraperBox.append(el('h3', 'section-label hub-label', 'Scraper'), el('div', 'qh-scraper-body'));
-  side.append(door, el('p', 'qh-side-note', 'Password protected. Sort and Finalize ask the desk password.'), scraperBox, howToLink('How to sort', '/how-to/sort/'), howToLink('How it all connects', '/how-to/pipeline/'));
+  side.append(door, el('p', 'qh-side-note', 'Password protected.'), scraperBox, howToLink('How to sort', '/how-to/sort/'), howToLink('How it all connects', '/how-to/pipeline/'));
 
   split.append(main, side);
   page.append(hubHead('Content queue', HUB_LEDES.queue), el('div', 'qh-tabs'), split);
@@ -137,8 +137,8 @@ export function renderQueue(container, props) {
   const shown = term.trim() ? contentQueue(rows, { today, since: shownSince, term }) : listed;
   count.textContent = term.trim()
     ? `${shown.length} of ${listed.length} item${listed.length === 1 ? '' : 's'}`
-    : `${listed.length} item${listed.length === 1 ? '' : 's'} · newest first`;
-  const empty = listed.length ? 'Nothing matches that search.'
+    : 'Newest first';
+  const empty = listed.length ? 'No matches.'
     : shownSince ? `Nothing new since the ${isoToShort(since, today)} issue.` : 'Nothing submitted yet.';
   list.replaceChildren(...(shown.length ? shown.map(queueRow) : [el('p', 'qh-empty', empty)]));
 }

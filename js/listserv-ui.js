@@ -70,7 +70,7 @@ export function renderListserv(container, { signups, today, onRetry }) {
     el('h3', 'section-label hub-label', 'Adding people'), addBox,
   );
   const side = el('aside', 'qh-side');
-  side.append(el('p', 'hub-aside', 'Names and email addresses never show here: the page is open. Sign-ups from before the desk kept a copy are in the sign-up sheet.'));
+  side.append(el('p', 'hub-aside', 'Names and addresses are in the sign-up sheet.'));
   const split = el('div', 'qh-split');
   split.append(main, side);
   const page = el('div', 'hub-page');

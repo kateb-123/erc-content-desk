@@ -104,9 +104,9 @@ async function uploadItemImage(file, onStatus) {
   });
   const res = await fetch('/api/newsletter-image', jsonInit({ name: file.name, type: ext, file: b64 }));
   // A server page instead of JSON (a 502, a timeout) becomes a sentence, not parser noise.
-  if (!res.ok) throw new Error(`The desk couldn't upload that file (server error ${res.status}). Try again.`);
+  if (!res.ok) throw new Error(`Upload failed (error ${res.status}). Try again.`);
   const data = await res.json().catch(() => ({}));
-  if (!data.ok) throw new Error(data.error || "The desk couldn't upload that file. Try again.");
+  if (!data.ok) throw new Error(data.error || "Upload failed. Try again.");
   return data.url;
 }
 

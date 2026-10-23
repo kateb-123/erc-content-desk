@@ -120,8 +120,8 @@ function centralTime(iso) {
 export function scraperStatus(data, today) {
   if (!data) return { state: 'checking', button: false, line: 'Checking the scraper', link: null, files: null };
   // A miss keeps the server's own words when it had any ("GitHub answered 404 for the runs."), so a wrong token reads as one.
-  if (data.error) return { state: 'error', button: false, line: data.message || "The desk couldn't ask GitHub just now.", link: null, files: null };
-  if (!data.configured) return { state: 'off', button: false, line: 'Not wired to the desk yet.', link: null, files: null };
+  if (data.error) return { state: 'error', button: false, line: data.message || "Couldn't reach GitHub.", link: null, files: null };
+  if (!data.configured) return { state: 'off', button: false, line: 'Not set up yet.', link: null, files: null };
   const run = data.run ?? { state: 'idle' };
   const last = data.last;
   // The issue's tab of Newsletter scrapes leads when the run has one; the run's folder otherwise, and beside it.
@@ -130,10 +130,10 @@ export function scraperStatus(data, today) {
   const files = last?.sheetUrl && folder ? { label: 'the files', href: folder.href } : null;
   if (run.state === 'running') return { state: 'running', button: false, line: `Scraping, started ${centralTime(run.startedAt)}`, link: null, files: null };
   if (run.state === 'failed') {
-    const kept = last ? ` The files from ${isoToShort(last.date, today)} are still in Drive.` : '';
+    const kept = last ? ` Last good run ${isoToShort(last.date, today)}.` : '';
     return { state: 'failed', button: true, line: `The last run failed on GitHub.${kept}`, link, files };
   }
-  if (!last) return { state: 'idle', button: true, line: 'No run yet. Every Monday at 7:00, and whenever this is pressed.', link: null, files: null };
+  if (!last) return { state: 'idle', button: true, line: 'No run yet. Runs Mondays at 7:00.', link: null, files: null };
   const failed = Number(last.failed ?? 0);
   const tail = failed ? ` ${failed} source${failed === 1 ? '' : 's'} did not answer.` : '';
   const issue = last.issue ? `, for the ${isoToShort(last.issue, today)} issue` : '';

@@ -68,7 +68,7 @@ test('a placeholder keeps Save & Export shut, and nothing else (Kate, Oct 5: "do
   assert.equal(n(), 1);
   for (const step of ['triage', 'edit']) assert.equal(canEnterStep(step, countIssueItems(issue), n()), true, `${step} stays open`);
   assert.equal(canEnterStep('export', countIssueItems(issue), n()), false, 'Save & Export waits for the photo');
-  assert.match(lockedMessage('export', countIssueItems(issue), n()), /^One item shows a placeholder where its photo would be\. Add the photo under Media/);
+  assert.match(lockedMessage('export', countIssueItems(issue), n()), /^One item needs a photo\. Add it under Media/);
   assert.match(lockedMessage('export', 3, 2), /^2 items show a placeholder/);
   assert.equal(lockedMessage('export', 0, 2), LOCKED_STEP_MESSAGE, 'no issue at all says so first');
   item.fields.image = PHOTO;

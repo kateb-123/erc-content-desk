@@ -33,7 +33,7 @@ export function legendItems(list) {
     const count = list.filter(r => r.fate === fate.key).length;
     if (!count) return null;
     const text = fate.key === 'adding' ? `${count} adding`
-      : fate.key === 'held' ? `${count} held for the newsletter`
+      : fate.key === 'held' ? `${count} held for newsletter`
       : fate.key === 'fix' ? `${count} ${count === 1 ? 'needs' : 'need'} a fix`
       : 'Already live';
     return { key: fate.key, text, count };

@@ -153,7 +153,7 @@ export function renderIssue(container, props) {
   const upcoming = (schedule ?? []).filter(d => !today || d >= today);
   const issue = upcoming.includes(issuePick) ? issuePick : (upcoming[0] ?? '');
   if (!issue) {
-    const empty = el('p', 'nl-empty', 'No issue date is scheduled yet. Add a date to the Schedule sheet, then refresh. ');
+    const empty = el('p', 'nl-empty', 'No issue date yet. Add one on the Sheet\'s schedule tab. ');
     const again = button('Refresh', '', { onClick: () => { again.disabled = true; onRefresh?.(); } });
     empty.append(again);
     container.replaceChildren(...parts, empty);
@@ -177,7 +177,7 @@ export function renderIssue(container, props) {
   quick.setAttribute('aria-expanded', String(quickOpen));
   quick.addEventListener('click', () => { quickOpen = !quickOpen; quickJustOpened = quickOpen; rerender(); });
   const count = sections.reduce((n, s) => n + s.rows.length, 0);
-  main.append(blockHead('In this issue', `${count} item${count === 1 ? '' : 's'}`, quick));
+  main.append(blockHead('In this issue', String(count), quick));
   let panel = null;
   if (quickOpen) {
     // Mounted once per opening and kept across redraws, so typing survives.
@@ -193,7 +193,7 @@ export function renderIssue(container, props) {
         onSubmitted: data => onQuickAdd(data),
         knownLinks,
         pendingLine: `Adding it to the ${when} issue`,
-        doneLine: `In the ${when} issue, and in the queue for Sort.`,
+        doneLine: `Added to the ${when} issue.`,
       });
     }
     main.append(panel);

@@ -35,15 +35,15 @@ test('scraperStatus: running shimmers with the start time in Central and hides t
   const failed = scraperStatus({ configured: true, run: { state: 'failed', startedAt: '2026-10-19T12:00:10Z', updatedAt: '', url: 'https://github.com/erc/erc-scraper/actions/runs/3' }, last: LAST }, '2026-10-19');
   assert.deepEqual(failed, {
     state: 'failed', button: true,
-    line: 'The last run failed on GitHub. The files from Oct 19 are still in Drive.',
+    line: 'The last run failed on GitHub. Last good run Oct 19.',
     link: { label: 'Open the sheet', href: 'https://docs.google.com/spreadsheets/d/s#gid=7' },
     files: { label: 'the files', href: 'https://drive.google.com/drive/folders/abc' },
   });
 });
 
 test('scraperStatus: no run yet, not wired up, still asking, and a desk that could not ask', () => {
-  assert.deepEqual(scraperStatus({ configured: true, run: { state: 'idle' }, last: null }, '2026-10-19'), { state: 'idle', button: true, line: 'No run yet. Every Monday at 7:00, and whenever this is pressed.', link: null, files: null });
-  assert.deepEqual(scraperStatus({ configured: false, run: null, last: null }, '2026-10-19'), { state: 'off', button: false, line: 'Not wired to the desk yet.', link: null, files: null });
+  assert.deepEqual(scraperStatus({ configured: true, run: { state: 'idle' }, last: null }, '2026-10-19'), { state: 'idle', button: true, line: 'No run yet. Runs Mondays at 7:00.', link: null, files: null });
+  assert.deepEqual(scraperStatus({ configured: false, run: null, last: null }, '2026-10-19'), { state: 'off', button: false, line: 'Not set up yet.', link: null, files: null });
   assert.deepEqual(scraperStatus(null, '2026-10-19'), { state: 'checking', button: false, line: 'Checking the scraper', link: null, files: null });
   assert.deepEqual(scraperStatus({ error: true }, '2026-10-19'), { state: 'error', button: false, line: "The desk couldn't ask GitHub just now.", link: null, files: null });
   assert.equal(scraperStatus({ error: true, message: 'GitHub answered 404 for the runs.' }, '2026-10-19').line, 'GitHub answered 404 for the runs.', 'the server\'s own words when it had any');

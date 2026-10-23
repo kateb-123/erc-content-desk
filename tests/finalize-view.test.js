@@ -35,8 +35,8 @@ test('empty groups drop out', () => {
 });
 
 test('finalizeProgress reads as the proposal wrote it, with the bar share', () => {
-  assert.deepEqual(finalizeProgress('before', { pending: 2, keeps: 5 }), { text: '2 of 5 kept items need an ERC-voice description', pct: 0 });
-  assert.deepEqual(finalizeProgress('checking', { total: 4, left: 1 }), { text: '3 of 4 rewrites checked', pct: 75 });
+  assert.deepEqual(finalizeProgress('before', { pending: 2, keeps: 5 }), { text: '', pct: 0 });
+  assert.deepEqual(finalizeProgress('checking', { total: 4, left: 1 }), { text: '3 of 4 checked', pct: 75 });
   assert.deepEqual(finalizeProgress('plain', { keeps: 5 }), { text: '', pct: 100 });
 });
 
@@ -151,6 +151,6 @@ test('onTheWay says how many rewrites are still coming back, or nothing', () => 
 test('unchangedNote: how many came back with nothing to add, and what to do', async () => {
   const { unchangedNote } = await import('../js/finalize-view.js');
   assert.equal(unchangedNote(0), '');
-  assert.equal(unchangedNote(1), '1 had nothing to add beyond its title. Edit it by hand.');
-  assert.equal(unchangedNote(3), '3 had nothing to add beyond their titles. Edit them by hand.');
+  assert.equal(unchangedNote(1), '1 had too little to rewrite. Edit it by hand.');
+  assert.equal(unchangedNote(3), '3 had too little to rewrite. Edit them by hand.');
 });

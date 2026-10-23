@@ -116,7 +116,7 @@ export function renderSubmitForm(container, {
     <form class="submit-form" novalidate>
       <div class="sf-link-hero"><label for="sf-link">Paste a link</label>
         <input id="sf-link" type="url" autocomplete="off" placeholder="https://" aria-describedby="sf-link-help">
-        <p class="hint sf-help" id="sf-link-help">We will pull the title and description if we can.</p></div>
+        <p class="hint sf-help" id="sf-link-help">We fill in the title and description.</p></div>
       <div><label for="sf-title">Title</label>
         <input id="sf-title" type="text" autocomplete="off"></div>
       <div><label for="sf-blurb">Description</label>
@@ -134,7 +134,7 @@ export function renderSubmitForm(container, {
     <details class="bulk-door">
       <summary><i class="fa-solid fa-chevron-down" aria-hidden="true"></i><span>Add a doc or spreadsheet</span></summary>
       <label class="bulk-drop">
-        <strong class="bulk-drop-word">Drop a file here</strong> or click to choose one
+        <strong class="bulk-drop-word">Drop a file here</strong> or choose one
         <span class="hint">.docx, .md, .txt, .xlsx or .csv</span>
         <input class="bulk-file sr-only" type="file" accept=".docx,.md,.txt,.xlsx,.csv">
       </label>
@@ -462,7 +462,7 @@ export function renderSubmitForm(container, {
     // One split at a time: a second file mid-split is ignored.
     if (!file || bulkFile.disabled) return;
     if (!/\.(docx|md|txt|xlsx|csv)$/i.test(file.name)) {
-      return show(bulkStatus, 'Not a supported file. Use .docx, .md, .txt, .xlsx or .csv.', 'error');
+      return show(bulkStatus, 'Use a .docx, .md, .txt, .xlsx or .csv file.', 'error');
     }
     // While one file is being read the zone says which, takes no other, and the chooser is off.
     bulkFile.disabled = true;
@@ -535,7 +535,7 @@ export function renderSubmitForm(container, {
     const overlay = openBusyOverlay({
       title: 'Adding to the queue',
       total: items.length,
-      note: 'Keep this tab open until it finishes.',
+      note: 'Keep this tab open.',
     });
     let results = [];
     try {
@@ -555,7 +555,7 @@ export function renderSubmitForm(container, {
     showBulkRows(failed);
     if (!failed.length) { bulkReview.hidden = true; bulkFile.value = ''; }
     show(bulkStatus, failed.length
-      ? `Added ${saved}. ${failed.length} did not go through; they are listed above. Retry, or remove them.`
+      ? `Added ${saved}. ${failed.length} did not go through. Retry or remove them.`
       : `Added all ${saved} to the queue`, failed.length ? 'error' : 'ok');
     if (!failed.length) bulkStatus.prepend(checkSvg());
     if (saved) onSubmitted?.();

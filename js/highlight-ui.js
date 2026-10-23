@@ -45,7 +45,6 @@ function photoSpot(photo) {
     return img;
   }
   const none = el('span', 'hl-nophoto');
-  none.title = 'No photo';
   none.append(faIcon('triangle-exclamation'));
   return none;
 }
@@ -153,7 +152,7 @@ export function renderHighlights(container, { now, cards = [], adding, hub, pick
   const change = (next, always = false) => { if (always || next !== picks) onChange(next); };
 
   const head = el('div', 'section-head hl-head');
-  head.append(el('h3', 'section-label', 'Highlight'), el('span', 'section-note', 'Up to 6 · each needs a photo'));
+  head.append(el('h3', 'section-label', 'Highlight'), el('span', 'section-note', 'Each needs a photo'));
   container.append(head);
 
   const cols = el('div', 'hl-cols');
@@ -199,7 +198,7 @@ export function renderHighlights(container, { now, cards = [], adding, hub, pick
     });
     afterBox.append(list);
   }
-  if (cards.length) afterBox.append(el('p', 'hl-empty', `Plus ${cards.length} card${cards.length === 1 ? '' : 's'} made on the Exchange, which stay${cards.length === 1 ? 's' : ''}.`));
+  if (cards.length) afterBox.append(el('p', 'hl-empty', `Plus ${cards.length} card${cards.length === 1 ? '' : 's'} made on the Exchange.`));
   cols.append(afterBox);
   container.append(cols);
   // The highlight's own Save sits right under the picks (Kate, Oct 6).
@@ -285,7 +284,7 @@ export function renderHighlights(container, { now, cards = [], adding, hub, pick
         tbody.append(tr);
       }
       const hidden = all.length - reach.length;
-      foot.textContent = !term && hidden > 0 ? `Newest ${LIVE_PER_SECTION} a section. Search for the ${hidden} older.` : '';
+      foot.textContent = !term && hidden > 0 ? `Search to find ${hidden} older.` : '';
     }
     redraw();
     return from;

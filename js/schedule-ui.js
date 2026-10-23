@@ -21,10 +21,10 @@ export function renderSchedule(container, { rows, schedule, today, loaded, onGoT
     const words = el('span', 'sched-words');
     words.append(el('span', 'sched-when', entry.when));
     if (entry.next) words.append(el('span', 'badge', 'Next'));
-    const count = el('span', 'sched-count', entry.count ? `${entry.count} in the issue` : 'Nothing in it yet');
+    const count = el('span', 'sched-count', entry.count ? `${entry.count} in the issue` : 'Nothing in yet');
     row.append(when, words, count);
     list.append(row);
   }
-  parts.push(list, el('p', 'nl-meta sched-note', 'Send dates are edited on the Sheet\'s schedule tab.'));
+  parts.push(list, el('p', 'nl-meta sched-note', 'Edit dates on the Sheet\'s schedule tab.'));
   container.replaceChildren(...parts);
 }
