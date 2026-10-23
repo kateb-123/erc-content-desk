@@ -23,6 +23,7 @@ const html = `<!DOCTYPE html>
     <p class="ht-lede">${esc(lede)}</p>
 ${body}
   </main>
+  <script type="module" src="/js/problem-mount.js?v=1"></script>
 </body>
 </html>
 `;

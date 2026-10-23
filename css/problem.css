@@ -1,0 +1,15 @@
+/* Report a problem (the handoff, Oct 22, 2026): the corner button and its panel on every desk page. */
+.problem-fab { position: fixed; right: var(--spacing-05); bottom: var(--spacing-05); z-index: 50; background: var(--layer-02); color: var(--link-primary); border: 1px solid var(--border-strong-01); border-radius: var(--radius); padding: var(--spacing-03) var(--spacing-05); font: 700 14px/20px Mulish, sans-serif; cursor: pointer; }
+.problem-fab:hover { background: var(--layer-01); }
+.problem-fab:focus-visible, .problem-panel :focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.problem-panel { position: fixed; right: var(--spacing-05); bottom: calc(var(--spacing-05) + var(--spacing-09)); z-index: 50; width: min(360px, calc(100vw - var(--spacing-07))); background: var(--layer-02); color: var(--text-primary); border: 1px solid var(--border-strong-01); border-radius: var(--radius); padding: var(--spacing-05); display: grid; gap: var(--spacing-03); font: 400 14px/20px Mulish, sans-serif; }
+.problem-panel[hidden] { display: none; }
+.problem-panel label { font: 700 14px/18px Mulish, sans-serif; letter-spacing: 1.25px; text-transform: uppercase; }
+.problem-panel textarea, .problem-panel input { font: 400 16px/24px Mulish, sans-serif; color: var(--text-primary); background: var(--field-01); border: 1px solid var(--border-strong-01); border-radius: var(--radius-input); padding: var(--spacing-03); }
+.problem-note, .problem-said { margin: 0; color: var(--text-secondary); }
+.problem-said a { color: var(--link-primary); }
+.problem-actions { display: flex; gap: var(--spacing-05); align-items: center; }
+.problem-send { background: var(--button-primary); color: var(--text-on-color); border: 0; border-radius: var(--radius); padding: var(--spacing-03) var(--spacing-05); font: 700 16px/24px Mulish, sans-serif; cursor: pointer; }
+.problem-send:hover { background: var(--button-primary-hover); }
+.problem-cancel { background: none; border: 0; padding: 0; color: var(--text-secondary); text-decoration: underline; font: 400 14px/20px Mulish, sans-serif; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .problem-fab, .problem-send { transition: none; } }

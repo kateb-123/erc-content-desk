@@ -9,7 +9,6 @@
  */
 import { DESK, crumbs, openedScreen } from './shell-view.js';
 import { el } from './ui-aids.js';
-import { problemHref } from './report-problem.js';
 
 function deskLink(label, href, onGo) {
   const a = el('a', null, label);
@@ -57,14 +56,6 @@ export function renderShell(header, { screen, onGo, signedIn = false, onSignOut,
   trail.replaceChildren(...parts);
   const end = header.querySelector('.topbar-lanes');
   end.replaceChildren();
-  const problem = typeof location === 'undefined' ? '' : problemHref(`${location.pathname}${location.hash}`);
-  if (problem) {
-    const a = el('a', 'topbar-problem', 'Report a problem');
-    a.href = problem;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    end.append(a);
-  }
   if (signedIn && onSignOut) {
     const out = el('button', 'topbar-signout', 'Sign out');
     out.type = 'button';

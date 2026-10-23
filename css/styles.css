@@ -1154,6 +1154,5 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .howto-link { margin: var(--spacing-04) 0 0; font: var(--meta-type); }
 .howto-link a { color: var(--link-primary); text-decoration: underline; font-weight: 600; }
 .howto-link .fa-book-open { color: var(--muted); }
-.topbar-problem { font: var(--meta-type); text-decoration: underline; margin-right: var(--spacing-05); }
 .home-guides { display: flex; gap: var(--spacing-06); flex-wrap: wrap; margin: calc(-1 * var(--spacing-04)) 0 var(--spacing-05); }
 .home-guides .howto-link { margin: 0; }
