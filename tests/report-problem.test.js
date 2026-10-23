@@ -25,3 +25,10 @@ test('the answers go in as the form takes them', () => {
   const body = problemBody({ what: 'The draft stopped', page: 'https://erc-content-desk.vercel.app/#briefs/x', who: 'Kathy' }, parsePrefill(LINK).fields);
   assert.equal(body.toString(), 'entry.111=The+draft+stopped&entry.222=https%3A%2F%2Ferc-content-desk.vercel.app%2F%23briefs%2Fx&entry.333=Kathy');
 });
+
+test('the desk\'s own form link is set and gives all three answer keys (Oct 23)', () => {
+  const form = parsePrefill(PROBLEM_FORM_URL);
+  assert.ok(form, 'the button shows');
+  assert.match(form.action, /^https:\/\/docs\.google\.com\/forms\/d\/e\/[\w-]+\/formResponse$/);
+  assert.ok(form.fields.what && form.fields.page && form.fields.who);
+});
