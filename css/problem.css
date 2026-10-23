@@ -1,23 +1,27 @@
 /* Report a problem (the handoff, Oct 22, 2026): the button and its panel on every desk page.
-   Since Oct 23 (Kate, her pick A, "I need help!") the button is a quiet word at the top bar's
-   right end, before Sign out, drawn like it; the corner button stays only for a page with no bar. */
+   Since Oct 23 the button is a row in the sidebar's foot, before Sign out, drawn like the rows
+   around it (css/shell.css), and its panel opens beside the sidebar. A how-to keeps it as a quiet
+   word at its top bar's right end; the corner button stays only for a page with neither. */
 .problem-top { margin-left: auto; height: auto; padding: 0; border: 0; background: none; font: inherit; font-weight: 400; color: var(--color-blue-200); white-space: nowrap; cursor: pointer; transition: color var(--duration-fast-01) var(--ease-productive); }
 .problem-top:hover:not(:disabled) { background: none; border: 0; color: var(--color-maize-400); }
 .problem-top:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
 .problem-top + .topbar-lanes { margin-left: var(--spacing-06); }
 .problem-top + .topbar-lanes:empty { display: none; }
-.problem-fab { position: fixed; right: var(--spacing-05); bottom: var(--spacing-05); z-index: 50; background: var(--layer-02); color: var(--link-primary); border: 1px solid var(--border-strong-01); border-radius: var(--radius); padding: var(--spacing-03) var(--spacing-05); font: 700 14px/20px Mulish, sans-serif; cursor: pointer; }
+.problem-fab { position: fixed; right: var(--spacing-05); bottom: var(--spacing-05); z-index: 50; background: var(--layer-02); color: var(--link-primary); border: 1px solid var(--border-strong-01); border-radius: var(--radius); padding: var(--spacing-03) var(--spacing-05); font: 600 14px/20px var(--font-sans); cursor: pointer; }
 .problem-fab:hover { background: var(--layer-01); }
 .problem-fab:focus-visible, .problem-panel :focus-visible { outline: none; box-shadow: var(--focus-ring); }
-.problem-panel { position: fixed; right: var(--spacing-05); bottom: calc(var(--spacing-05) + var(--spacing-09)); z-index: 50; width: min(360px, calc(100vw - var(--spacing-07))); background: var(--layer-02); color: var(--text-primary); border: 1px solid var(--border-strong-01); border-radius: var(--radius); padding: var(--spacing-05); display: grid; gap: var(--spacing-03); font: 400 14px/20px Mulish, sans-serif; }
+.problem-panel { position: fixed; right: var(--spacing-05); bottom: calc(var(--spacing-05) + var(--spacing-09)); z-index: 50; width: min(360px, calc(100vw - var(--spacing-07))); background: var(--layer-02); color: var(--text-primary); border: 1px solid var(--border-subtle-01); border-radius: var(--radius-card); box-shadow: var(--shadow-menu); padding: var(--spacing-05); display: grid; gap: var(--spacing-03); font: var(--body-sm-type); }
 .problem-panel.is-top { top: calc(56px + var(--spacing-03)); bottom: auto; right: var(--gap-56); }
+.problem-panel.is-side { left: calc(var(--sidebar-w) + var(--spacing-03)); right: auto; top: auto; bottom: var(--spacing-05); }
 .problem-panel[hidden] { display: none; }
-.problem-panel label { font: 700 14px/18px Mulish, sans-serif; letter-spacing: 1.25px; text-transform: uppercase; }
-.problem-panel textarea, .problem-panel input { font: 400 16px/24px Mulish, sans-serif; color: var(--text-primary); background: var(--field-01); border: 1px solid var(--border-strong-01); border-radius: var(--radius-input); padding: var(--spacing-03); }
+.problem-panel label { font: var(--label-type); }
+.problem-panel textarea, .problem-panel input { font: var(--body-type); color: var(--text-primary); background: var(--field-01); border: 1px solid var(--border-strong-01); border-radius: var(--radius-input); padding: var(--spacing-03); }
 .problem-note, .problem-said { margin: 0; color: var(--text-secondary); }
 .problem-said a { color: var(--link-primary); }
 .problem-actions { display: flex; gap: var(--spacing-05); align-items: center; }
-.problem-send { background: var(--button-primary); color: var(--text-on-color); border: 0; border-radius: var(--radius); padding: var(--spacing-03) var(--spacing-05); font: 700 16px/24px Mulish, sans-serif; cursor: pointer; }
-.problem-send:hover { background: var(--button-primary-hover); }
-.problem-cancel { background: none; border: 0; padding: 0; color: var(--text-secondary); text-decoration: underline; font: 400 14px/20px Mulish, sans-serif; cursor: pointer; }
+.problem-send { height: 32px; background: var(--button-primary); color: var(--text-on-color); border: 0; border-radius: var(--radius); padding: 0 var(--spacing-05); font: 600 14px/20px var(--font-sans); cursor: pointer; }
+.problem-send:hover:not(:disabled) { background: var(--button-primary-hover); border: 0; }
+.problem-cancel { height: auto; background: none; border: 0; padding: 0; color: var(--text-secondary); text-decoration: underline; font: var(--body-sm-type); cursor: pointer; }
+.problem-cancel:hover:not(:disabled) { background: none; border: 0; color: var(--text-primary); }
+@media (max-width: 760px) { .problem-panel.is-side { left: var(--spacing-05); } }
 @media (prefers-reduced-motion: reduce) { .problem-fab, .problem-send { transition: none; } }

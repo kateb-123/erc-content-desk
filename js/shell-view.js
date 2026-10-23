@@ -1,10 +1,10 @@
 /**
- * The shell's contents. Kate's drawn map (Oct 6, 2026): the desk is six hubs,
- * each a card on the front page and a page of its own, with Content Sort
+ * The shell's contents. Kate's drawn map (Oct 6, 2026): the desk is seven
+ * hubs, each a row on the front page and a page of its own, with Content Sort
  * under the Content queue, the builder under Newsletter and Publish under
- * Policy Exchange. The top bar carries the breadcrumb alone (her pick A):
- * the desk, the hub, the page. Pure data and small rules, so node --test can
- * hold them.
+ * Policy Exchange. Since her pick A of the looks (Oct 23) the shell is a
+ * sidebar: Home, then the hubs by step, each with what waits there. Pure data
+ * and small rules, so node --test can hold them.
  */
 export const DESK = { label: 'ERC Content Desk', href: '/' };
 
@@ -22,8 +22,7 @@ export const HUBS = [
 ];
 
 // Each screen: the hub it belongs to, its address, and the page it is under
-// that hub where it is not the hub's own page. A tab of a page (Finalize,
-// Schedule, Past issues) crumbs as the page it is a tab of.
+// that hub where it is not the hub's own page; the window's title reads them.
 const SCREENS = {
   home: { hub: null, hash: '' },
   team: { hub: 'team', hash: '#team' },
@@ -42,7 +41,7 @@ const SCREENS = {
   // The newsletter's HTML pages (Kate, Oct 8): the blank template, the sample and the read me, each a page of its own.
   emailpage: { hub: 'newsletter', hash: null, page: 'The email' },
   briefs: { hub: 'briefs', hash: '#briefs' },
-  // One brief's page: /#briefs/<id>, the id read from the address (openedId); the crumb carries its title.
+  // One brief's page: /#briefs/<id>, the id read from the address (openedId); the page carries its title.
   brief: { hub: 'briefs', hash: null, page: 'Brief' },
 };
 
@@ -52,19 +51,6 @@ const BRIEF_PREFIX = '#briefs/';
 const OLD_HASHES = { '#issue': 'issue', '#build': 'issue' };   // Send to Newsletter folded into Next issue (Sep 18)
 
 const hubOf = screen => HUBS.find(h => h.key === SCREENS[screen]?.hub) ?? null;
-
-/** The breadcrumb: the desk alone on the front page; the desk then the hub
- *  elsewhere; then the page under the hub where one stands. The last crumb
- *  is where you are, so it carries no link. */
-export function crumbs(screen, { page: pageLabel } = {}) {
-  const hub = hubOf(screen);
-  const page = pageLabel || SCREENS[screen]?.page;
-  const trail = [{ ...DESK }];
-  if (hub) trail.push({ label: hub.label, href: hub.href });
-  if (page) trail.push({ label: page });
-  if (trail.length > 1) delete trail[trail.length - 1].href;   // where you are; the brand always leads home
-  return trail;
-}
 
 /** The screen an address opens: a screen's own hash, an old one, or the
  *  front page for anything else. */
@@ -95,4 +81,48 @@ export function pageTitle(screen) {
   const s = SCREENS[screen];
   const name = s?.title ?? s?.page ?? hubOf(screen)?.label;
   return name ? `${name} · ${DESK.label}` : DESK.label;
+}
+
+/** The sidebar (Kate's pick A, Oct 23): Home, then the hubs by step under the
+ *  front page's own group names, Content Sort under Bring it in. Public links
+ *  has no page, so it stays on the front page. `lock`: behind the password;
+ *  `waits`: what the item's count or date means, read aloud. */
+export const NAV = [
+  { label: '', items: [{ key: 'home', label: 'Home', href: '/', icon: 'home' }] },
+  { label: 'Bring it in', items: [
+    { key: 'team', label: 'Submit content', href: '/#team', icon: 'submit' },
+    { key: 'queue', label: 'Content queue', href: '/#queue', icon: 'queue' },
+    { key: 'sort', label: 'Content Sort', href: '/#sort', icon: 'sort', lock: true, waits: '{n} waiting' },
+  ] },
+  { label: 'Send it out', items: [
+    { key: 'newsletter', label: 'Newsletter', href: '/#newsletter', icon: 'newsletter', waits: 'next issue {n}' },
+    { key: 'listserv', label: 'Listserv', href: '/#listserv', icon: 'listserv', waits: '{n} to be added' },
+    { key: 'exchange', label: 'Policy Exchange', href: '/#exchange', icon: 'exchange', waits: '{n} waiting to publish' },
+  ] },
+  { label: 'Research', items: [{ key: 'briefs', label: 'Research briefs', href: '/#briefs', icon: 'briefs', lock: true, waits: '{n} in progress' }] },
+];
+
+/** The sidebar item a screen marks: its own, or its hub's for a page under a
+ *  hub; Finalize, Sort's tab, marks Content Sort. */
+export function navCurrent(screen) {
+  if (screen === 'home') return 'home';
+  if (screen === 'sort' || screen === 'finalize') return 'sort';
+  return SCREENS[screen]?.hub ?? null;
+}
+
+/** What waits at each item, from the front page's rows (home-panel.js's
+ *  hubCards): Sort's count is the queue's, the newsletter shows its next send
+ *  date. '' while a count is not known. */
+export function navBadges(cards = []) {
+  const by = Object.fromEntries(cards.map(c => [c.key, c]));
+  const n = c => (Number.isFinite(c?.count) ? String(c.count) : '');
+  return { sort: n(by.queue), newsletter: by.newsletter?.next ?? '', listserv: n(by.listserv), exchange: n(by.exchange), briefs: n(by.briefs) };
+}
+
+/** What a sidebar item says to a screen reader: its name, its lock, and what waits there. */
+export function navLabel(item, badge = '') {
+  const said = [item.label];
+  if (item.lock) said.push('password protected');
+  if (badge && item.waits) said.push(item.waits.replace('{n}', badge));
+  return said.join(', ');
 }

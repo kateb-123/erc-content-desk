@@ -35,16 +35,20 @@ test('the desk\'s own form link is set and gives all three answer keys (Oct 23)'
 
 // Kate, Oct 23: the corner button covered working controls (Skip for now on Sort, a Pick from
 // row on Highlight, the builder's edit card). Her pick A: a quiet word in the top bar, before
-// Sign out, and her words for it.
-test('the help button reads "I need help!" and sits in the top bar, not over the page (Oct 23)', async () => {
+// Sign out, and her words for it. Since the sidebar (her pick A of the looks, Oct 23) it is a
+// row in the sidebar's foot, before Sign out; a page with the top bar keeps it there.
+test('the help button reads "I need help!" and sits in the sidebar or the top bar, not over the page (Oct 23)', async () => {
   const { HELP_LABEL } = await import('../js/report-problem.js');
   assert.equal(HELP_LABEL, 'I need help!');
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../js/report-problem.js', import.meta.url), 'utf8');
-  assert.match(src, /querySelector\('header\.topbar'\)/, 'mounts into the page\'s top bar');
+  assert.match(src, /querySelector\('nav\.sidebar'\)/, 'mounts into the sidebar where the page has one');
+  assert.match(src, /querySelector\('header\.topbar'\)/, 'else into the page\'s top bar');
   assert.match(src, /MutationObserver/, 'goes back in when the bar is rebuilt');
   const css = readFileSync(new URL('../css/problem.css', import.meta.url), 'utf8');
   const top = css.match(/\.problem-top \{[^}]*\}/)?.[0] ?? '';
   assert.ok(top, 'the top bar button has its own rule');
   assert.doesNotMatch(top, /position:\s*fixed/, 'it does not float over the page');
+  const side = css.match(/\.problem-panel\.is-side \{[^}]*\}/)?.[0] ?? '';
+  assert.match(side, /left:/, 'the panel opens beside the sidebar');
 });

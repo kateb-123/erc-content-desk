@@ -33,8 +33,8 @@ const declsOf = selector => [...uncomment(styles).matchAll(/([^{}]+)\{([^{}]*)\}
   .filter(m => m[1].split(',').map(s => s.trim()).includes(selector))
   .map(m => m[2]).join(';');
 
-test('a warning word on the warning tint is orange brown, 4.5:1 or better', () => {
-  assert.equal(tokens['--text-warning-on-tint'], '#8f3814');
+test('a warning word on the warning tint is a dark orange brown, 4.5:1 or better', () => {
+  assert.equal(tokens['--text-warning-on-tint'], '#7a3300');   // A (Oct 23); #8f3814 on maize 100 before
   const tint = resolve('--notification-warning-background');
   assert.ok(contrast(resolve('--text-warning-on-tint'), tint) >= 4.5, 'orange brown on maize 100');
   assert.ok(contrast(resolve('--tag-color-review'), resolve('--tag-background-review')) >= 4.5, 'the Possible duplicate tag');
@@ -46,7 +46,7 @@ test('a warning word on the warning tint is orange brown, 4.5:1 or better', () =
 });
 
 test('the locked Keep and next says its word at 4.5:1 or better, with the reason under it', () => {
-  assert.equal(tokens['--text-locked'], '#4f5d6b');
+  assert.equal(tokens['--text-locked'], '#48484a');   // A (Oct 23); #4f5d6b before
   assert.ok(contrast(resolve('--text-locked'), resolve('--button-disabled')) >= 4.5);
   assert.match(declsOf('.sort-card .sc-keep:disabled'), /color:\s*var\(--text-locked\)/);
   const why = declsOf('.sc-keep-why');
@@ -57,9 +57,9 @@ test('the locked Keep and next says its word at 4.5:1 or better, with the reason
   assert.match(why, /margin:\s*calc\(-1 \* var\(--spacing-03\)\) 0 0/);
 });
 
-test('where a list clips what is drawn outside a control, the ring is drawn inside, 2px teal', () => {
+test('where a list clips what is drawn outside a control, the ring is drawn inside, 2px in the focus colour', () => {
   for (const selector of ['.pill-row .type-word:focus-visible', '.sort-list .sort-row:focus-visible', '.f-list .f-list-row:focus-visible']) {
-    assert.match(declsOf(selector), /box-shadow:\s*inset 0 0 0 2px var\(--color-teal-400\)/, selector);
+    assert.match(declsOf(selector), /box-shadow:\s*inset 0 0 0 2px var\(--focus\)/, selector);
   }
   // The lists still clip, and every other control keeps the system's ring.
   assert.match(declsOf('.pill-row'), /overflow:\s*hidden/);
@@ -67,11 +67,11 @@ test('where a list clips what is drawn outside a control, the ring is drawn insi
   assert.match(declsOf('button:focus-visible'), /box-shadow:\s*var\(--focus-ring\)/);
 });
 
-test('the tab icon is a teal square with a white check, the same on both apps', () => {
+test('the tab icon is a blue square with a white check, the same on both apps (A, Oct 23; teal before)', () => {
   const icons = ['index.html', 'builder/index.html'].map(page => {
     const href = read(page).match(/<link rel="icon" href="([^"]+)"/)?.[1];
     assert.ok(href, `${page} has a tab icon`);
-    assert.match(href, /%3Crect width='32' height='32' rx='4' fill='%231d7491'\/%3E/, `${page}: the teal square`);
+    assert.match(href, /%3Crect width='32' height='32' rx='7' fill='%230b6bde'\/%3E/, `${page}: the blue square`);
     assert.match(href, /%3Cpath d='M9 16\.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3\.4'/, `${page}: the white check`);
     return href;
   });
@@ -85,9 +85,10 @@ test('the picked type shows focus as a white line inside its teal fill', () => {
 });
 
 // Kate, Sep 23: "i HATE yellow outline". No focus ring anywhere is maize: the
-// ring is teal, 2px, standing 2px off the control on a white gap.
+// ring is the accent, 2px, standing 2px off the control on a white gap (A, Oct 23: blue, teal before).
 test('no focus ring anywhere is yellow', () => {
-  assert.equal(tokens['--focus-ring'], '0 0 0 2px var(--background), 0 0 0 4px var(--color-teal-400)');
+  assert.equal(tokens['--focus-ring'], '0 0 0 2px var(--layer-02), 0 0 0 4px var(--focus)');
+  assert.equal(resolve('--focus'), '#0b6bde');
   assert.doesNotMatch(tokens['--focus-inset'] ?? '', /maize/);
 });
 

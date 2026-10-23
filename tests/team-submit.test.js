@@ -24,21 +24,21 @@ test('the page is a folder page Vercel serves, never ignored', () => {
   }
 });
 
-test('its tab reads Submit content, with the desk\'s teal-square icon', () => {
+test('its tab reads Submit content, with the desk\'s own icon', () => {
   assert.match(page, /<title>Submit content<\/title>/);
   const icon = html => html.match(/<link rel="icon" href="([^"]+)"/)?.[1];
   assert.ok(icon(desk), 'the desk has its icon');
   assert.equal(icon(page), icon(desk), 'the same icon as the desk');
 });
 
-test('it wears the desk\'s look: the same sheets at the same versions, Mulish alone', () => {
+test('it wears the desk\'s look: the same sheets at the same versions, the system font (A, Oct 23)', () => {
   for (const sheet of ['/css/tokens.css', '/css/styles.css', '/css/shell.css']) {
     assert.ok(href(page, sheet), `loads ${sheet}`);
     assert.equal(href(page, sheet), href(desk, sheet), `${sheet} at index.html's version: bump both together`);
   }
-  assert.equal(href(page, 'https://fonts.googleapis.com/css2'), href(desk, 'https://fonts.googleapis.com/css2'), 'the desk\'s font line');
-  assert.match(href(page, 'https://fonts.googleapis.com/css2'), /family=Mulish/);
-  assert.doesNotMatch(page, /Crimson|Archivo|Lora/, 'Mulish is the one face');
+  // The look of Oct 23 (Kate's pick A) draws in the computer's own face, so neither page fetches a web font.
+  for (const html of [page, desk]) assert.doesNotMatch(html, /fonts\.googleapis\.com/, 'no web font');
+  assert.doesNotMatch(page, /Mulish|Crimson|Archivo|Lora/, 'no named face');
   assert.equal(tag(page, 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/'), tag(desk, 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/'), 'Font Awesome as the desk loads it');
   assert.doesNotMatch(page, /<style/, 'no styles of its own: a colour lives in css/tokens.css');
   assert.doesNotMatch(page, /#[0-9a-f]{3,8}\b/i, 'no colour literal in the page');
@@ -49,7 +49,7 @@ test('no top bar, no breadcrumb, no desk links: the form alone, plus I need help
   assert.doesNotMatch(page, /<a\s/, 'nothing links into the desk from the page itself');
   assert.doesNotMatch(page, /app\.js|shell-ui\.js/, 'not the desk\'s app');
   assert.match(page, /<script type="module" src="\/js\/team-submit\.js\?v=\d+"><\/script>/);
-  assert.match(page, /<script type="module" src="\/js\/problem-mount\.js\?v=3"><\/script>/, 'I need help!, in its corner since there is no bar');
+  assert.match(page, /<script type="module" src="\/js\/problem-mount\.js\?v=4"><\/script>/, 'I need help!, in its corner since there is no bar');
   assert.match(page, /<main id="main"/);
   assert.doesNotMatch(page, /[–—]/, 'no dashes');
   assert.doesNotMatch(page, /https?:\/\/(?!fonts\.|cdnjs\.|www\.w3\.org\/2000\/svg)/, 'no address shown or linked');

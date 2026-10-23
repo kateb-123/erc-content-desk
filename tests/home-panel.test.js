@@ -53,6 +53,7 @@ test('hubCards: the seven hubs in her order, each with its status', () => {
     ['briefs', 'Research briefs', '/#briefs', 2, 'in progress · 1 with an author', 'Password protected'],
   ]);
   assert.equal(cards[6].lock, true, 'the lock on its line');
+  assert.equal(cards[2].next, 'Oct 20', 'the next send date, short, for the sidebar (A, Oct 23)');
   // Not signed in, the list is not known: the card says only that it is locked.
   const quiet = hubCards({ rows: hubRows, schedule: hubSchedule, today: '2026-10-07', loaded: true, preview: null, archive: [], hubUpdated: '', signups: null, briefs: null });
   assert.deepEqual([quiet[6].count, quiet[6].sub, quiet[6].foot], [null, '', 'Password protected']);
@@ -82,6 +83,7 @@ test('hubCards: the newsletter with no send date ahead says so; last sent is the
     archive: [{ date: '2026-10-20' }, { date: '2026-09-22' }], hubUpdated: null, signups: null });
   assert.equal(cards[2].count, null);
   assert.equal(cards[2].sub, 'No issue scheduled');
+  assert.equal(cards[2].next, '', 'no send date ahead: the sidebar shows none');
   assert.equal(cards[2].foot, 'Last sent Sep 22', 'an issue saved ahead of its day has not gone out');
   const today = hubCards({ rows: [], schedule: ['2026-10-20'], today: '2026-10-20', loaded: true, preview: null, archive: null, hubUpdated: null, signups: null });
   assert.equal(today[2].sub, 'in the Oct 20 issue · sends today');

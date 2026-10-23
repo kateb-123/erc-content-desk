@@ -1,67 +1,97 @@
 /**
- * The top bar (Kate's wireframes, Sep 17): the breadcrumb on the left (no
- * mark: the wireframe's placeholder square read as a checkbox, design
- * critique Sep 18). Since the six hubs (Kate, Oct 6, her pick A) the bar
- * carries the breadcrumb alone; its right end holds Sign out while a sign-in
- * holds. Built once into <header class="topbar">; the crumbs are redrawn on
- * each render. On the desk its links switch screens in place; on the
- * builder's pages they are plain links.
+ * The sidebar (Kate's pick A of the looks, Oct 23): the desk as a Mac app.
+ * The desk's name, Home, the hubs by step under the front page's group names,
+ * each with what waits there; at the foot All how-tos, I need help! (seated
+ * by report-problem.js) and Sign out while a sign-in holds. Built once into
+ * <nav class="sidebar">; each render marks where you are and what waits. On
+ * the desk its links switch screens in place; on the builder's and the
+ * email's pages they are plain links.
  */
-import { DESK, crumbs, openedScreen } from './shell-view.js';
+import { DESK, NAV, navCurrent, navLabel, openedScreen } from './shell-view.js';
 import { el } from './ui-aids.js';
+import { lineIcon } from './icons.js';
 
-function deskLink(label, href, onGo) {
-  const a = el('a', null, label);
+const signOuts = new WeakMap();   // each sidebar's Sign out, as the latest render passed it
+
+function deskLink(className, href, onGo) {
+  const a = el('a', className);
   a.href = href;
-  // A desk address switches in place where the desk is running.
-  if (onGo) a.addEventListener('click', event => { event.preventDefault(); onGo(openedScreen(new URL(a.href, location.href).hash)); });
+  // A desk address switches in place where the desk is running; a click
+  // meant for a new tab or window stays one.
+  if (onGo) a.addEventListener('click', event => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    onGo(openedScreen(new URL(a.href, location.href).hash));
+  });
   return a;
 }
 
-function build(header) {
-  header.replaceChildren();
-  const trail = el('nav', 'topbar-crumbs');
-  trail.setAttribute('aria-label', 'Breadcrumb');
-  const end = el('div', 'topbar-lanes');   // the bar's right end: Sign out, while a sign-in holds
-  header.append(trail, end);
-  header.dataset.built = '1';
+/** An item's icon and words. */
+const parts = (icon, label) => [lineIcon(icon), el('span', 'sidebar-label', label)];
+
+function build(nav, onGo) {
+  nav.replaceChildren();
+  const brand = el('div', 'sidebar-brand');
+  const mark = el('span', 'sidebar-mark');
+  mark.append(lineIcon('check'));
+  brand.append(mark, el('span', 'sidebar-name', DESK.label));
+  nav.append(brand);
+
+  NAV.forEach((group, i) => {
+    const list = el('ul', 'sidebar-list');
+    if (group.label) {
+      const head = el('div', 'sidebar-group', group.label);
+      head.id = `sidebar-group-${i}`;
+      list.setAttribute('aria-labelledby', head.id);
+      nav.append(head);
+    }
+    for (const entry of group.items) {
+      const a = deskLink('sidebar-item', entry.href, onGo);
+      a.dataset.key = entry.key;
+      const badge = el('span', 'sidebar-badge');
+      if (entry.lock) badge.append(lineIcon('lock'));
+      badge.append(el('span', 'sidebar-count'));
+      a.append(...parts(entry.icon, entry.label), badge);
+      const li = el('li');
+      li.append(a);
+      list.append(li);
+    }
+    nav.append(list);
+  });
+
+  const foot = el('div', 'sidebar-foot');
+  const guides = el('a', 'sidebar-item is-quiet');
+  guides.href = '/how-to/';
+  guides.append(...parts('book', 'All how-tos'));
+  const out = el('button', 'sidebar-item is-quiet sidebar-signout');
+  out.type = 'button';
+  out.hidden = true;
+  out.append(...parts('signout', 'Sign out'));
+  out.addEventListener('click', () => { out.disabled = true; signOuts.get(nav)?.(); });
+  foot.append(guides, out);
+  nav.append(foot);
+  nav.dataset.built = '1';
 }
 
 /** signedIn and onSignOut: the desk's own sign-in (Kate, Sep 23); while it
- *  holds, Sign out sits at the bar's right end. `bare` is a sign-in screen's
- *  bar: the brand alone, nothing to go to. The builder passes none of these. */
-export function renderShell(header, { screen, onGo, signedIn = false, onSignOut, bare = false, page } = {}) {
-  if (!header) return;
-  if (!header.dataset.built) build(header);
-  const trail = header.querySelector('.topbar-crumbs');
-  const parts = [];
-  if (bare) {
-    // The brand is always the way home, on a sign-in page too (review, Oct 23).
-    const brand = deskLink(DESK.label, DESK.href, onGo);
-    brand.classList.add('topbar-brand');
-    trail.replaceChildren(brand);
-    header.querySelector('.topbar-lanes').replaceChildren();
-    return;
+ *  holds, Sign out sits at the foot. badges: what waits at each item
+ *  (shell-view.js's navBadges). The builder and the email's pages pass the
+ *  screen alone. */
+export function renderSidebar(nav, { screen, onGo, signedIn = false, onSignOut, badges = {} } = {}) {
+  if (!nav) return;
+  if (!nav.dataset.built) build(nav, onGo);
+  const here = navCurrent(screen);
+  const entries = NAV.flatMap(g => g.items);
+  for (const a of nav.querySelectorAll('.sidebar-item[data-key]')) {
+    const entry = entries.find(e => e.key === a.dataset.key);
+    if (entry.key === here) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
+    const badge = badges[entry.key] ?? '';
+    a.querySelector('.sidebar-count').textContent = badge;
+    a.setAttribute('aria-label', navLabel(entry, badge));
   }
-  crumbs(screen, { page }).forEach((crumb, i) => {
-    if (i) parts.push(el('span', 'topbar-sep', '/'));
-    if (crumb.href) {
-      const a = deskLink(crumb.label, crumb.href, onGo);
-      if (i === 0) a.classList.add('topbar-brand');
-      parts.push(a);
-    } else {
-      const here = el('span', i === 0 ? 'topbar-brand topbar-here' : 'topbar-here', crumb.label);
-      here.setAttribute('aria-current', 'page');
-      parts.push(here);
-    }
-  });
-  trail.replaceChildren(...parts);
-  const end = header.querySelector('.topbar-lanes');
-  end.replaceChildren();
-  if (signedIn && onSignOut) {
-    const out = el('button', 'topbar-signout', 'Sign out');
-    out.type = 'button';
-    out.addEventListener('click', () => { out.disabled = true; onSignOut(); });
-    end.append(out);
-  }
+  signOuts.set(nav, onSignOut);
+  const out = nav.querySelector('.sidebar-signout');
+  const show = Boolean(signedIn && onSignOut);
+  if (out.hidden === show) { out.hidden = !show; out.disabled = false; }
 }

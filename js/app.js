@@ -5,8 +5,9 @@ import { readerQueue, undoWords, withoutRow } from './sort-view.js';
 import { busyWords } from './icons.js';
 import { renderHome } from './home-ui.js';
 import { renderTeam } from './team-ui.js';
-import { renderShell } from './shell-ui.js';
-import { openedScreen, openedId, briefHash, screenHash, pageTitle } from './shell-view.js';
+import { renderSidebar } from './shell-ui.js';
+import { openedScreen, openedId, briefHash, screenHash, pageTitle, navBadges } from './shell-view.js';
+import { hubCards } from './home-panel.js';
 import { renderIssue, resetIssueEntry, pickIssue } from './issue-ui.js';
 import { nextIssueDate } from './schedule.js';
 import { renderSort } from './sort-ui.js';
@@ -820,11 +821,17 @@ function focusHeading(section) {
 
 function render() {
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
-  // A sign-in screen's bar carries the brand alone (Kate's pick B, Sep 23).
   const locked = isLocked(state.screen) && state.auth !== true;
-  renderShell(document.querySelector('.topbar'), { screen: state.screen, onGo: goTo, signedIn: state.auth === true, onSignOut: signOutNow, bare: locked, page: state.screen === 'brief' ? briefTitle(state.brief ?? { id: state.briefId }) : undefined });
+  const today = todayCentral();
+  // The sidebar (Kate's pick A of the looks, Oct 23) stays on a sign-in screen
+  // too, so the other pages are always a click away; each item shows what waits
+  // there, counted as the front page counts it.
+  renderSidebar(document.querySelector('.sidebar'), {
+    screen: state.screen, onGo: goTo, signedIn: state.auth === true, onSignOut: signOutNow,
+    badges: navBadges(hubCards({ rows: state.rows, schedule: state.schedule, today, loaded: state.loaded, preview: state.publishPreview, archive: state.archive, hubUpdated: state.hubUpdated, signups: state.signups, briefs: state.briefs })),
+  });
   document.title = pageTitle(state.screen);
-  // The top bar's links switch screens in place. Every screen but the front
+  // The sidebar's links switch screens in place. Every screen but the front
   // page keeps an address, as a history entry, so Back and a reload land
   // where the reader was. The skip link moves focus without touching the
   // address.
@@ -846,7 +853,6 @@ function render() {
     }
     shownScreen = state.screen;
   }
-  const today = todayCentral();
   const common = { rows: state.rows, schedule: state.schedule, today };
   renderSpringBanner(document.getElementById('desk-banner'), { schedule: state.schedule, today, loaded: state.loaded, onDone: reload });
   // A locked screen draws the sign-in until the session is known to hold.

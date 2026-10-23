@@ -23,7 +23,9 @@ test('sr-only and the skip link live in the stylesheet every page loads', () => 
   assert.match(shell, /\.skip-to-main\s*\{/);
   for (const page of ['index.html', 'builder/index.html']) {
     assert.match(read(page), /css\/shell\.css/, `${page} loads the shell stylesheet`);
-    assert.match(read(page), /<header class="topbar">/, `${page} carries the top bar`);
+    // Kate's pick A (Oct 23): the sidebar, built by js/shell-ui.js, in the top bar's place.
+    assert.match(read(page), /<nav class="sidebar" aria-label="Desk"><\/nav>/, `${page} carries the sidebar`);
+    assert.doesNotMatch(read(page), /<header class="topbar">/, `${page} no longer carries the top bar`);
   }
 });
 

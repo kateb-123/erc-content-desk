@@ -10,6 +10,8 @@
  * in the three answers, "Get link", and paste that link below. Until then
  * the button does not show: no dead ends.
  */
+import { lineIcon } from './icons.js';
+
 export const PROBLEM_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScUL7E2SJzPA_6yeaRKnHEwQ-83Id5wHBF1jafzq8RpYqTtwg/viewform?usp=pp_url&entry.1596946882=WHAT&entry.1057870924=PAGE&entry.739829798=WHO';   // Kate's form, ERC Content Desk problems, in her personal Drive (Oct 23)
 
 /** The button's words (Kate, Oct 23: "I need help!"). */
@@ -40,33 +42,46 @@ export function problemBody({ what, page, who }, fields) {
   return body;
 }
 
-/** Puts the button in the top bar, before Sign out where there is one. */
-function seat(header, button) {
-  if (button.parentElement === header) return;
-  header.insertBefore(button, header.querySelector('.topbar-lanes'));
+/** Puts the button in its place: the sidebar's foot before Sign out, or the
+ *  top bar before Sign out. A sidebar not built yet waits for the observer. */
+function seat(host, button) {
+  const place = host.matches('nav.sidebar') ? host.querySelector('.sidebar-foot') : host;
+  if (!place || button.parentElement === place) return;
+  place.insertBefore(button, place.querySelector('.sidebar-signout, .topbar-lanes'));
 }
 
 /** Draws the button and its panel on a desk page; nothing while there is no form.
- *  Since Oct 23 (Kate, her pick A) the button is a word in the top bar: the
- *  corner one covered working controls. A page with no top bar keeps the corner. */
+ *  Since Oct 23 (Kate, her pick A) the button is no longer in the corner, where
+ *  it covered working controls: it is a row in the sidebar's foot (her pick A of
+ *  the looks, the same day), or a word in a how-to's top bar. A page with
+ *  neither keeps the corner. */
 export function mountProblemButton(doc = document, url = PROBLEM_FORM_URL) {
   const form = parsePrefill(url);
-  if (!form || doc.querySelector('.problem-fab, .problem-top')) return;
-  const header = doc.querySelector('header.topbar');
+  if (!form || doc.querySelector('.problem-fab, .problem-top, .problem-side')) return;
+  const sidebar = doc.querySelector('nav.sidebar');
+  const host = sidebar ?? doc.querySelector('header.topbar');
   if (!doc.querySelector('link[href^="/css/problem.css"]')) {
     const sheet = doc.createElement('link');
-    sheet.rel = 'stylesheet'; sheet.href = '/css/problem.css?v=3';
+    sheet.rel = 'stylesheet'; sheet.href = '/css/problem.css?v=4';
     doc.head.append(sheet);
   }
   const fab = doc.createElement('button');
   fab.type = 'button';
-  fab.className = header ? 'problem-top' : 'problem-fab';
-  fab.textContent = HELP_LABEL;
   fab.setAttribute('aria-expanded', 'false');
+  if (sidebar) {
+    fab.className = 'sidebar-item is-quiet problem-side';
+    const words = doc.createElement('span');
+    words.className = 'sidebar-label';
+    words.textContent = HELP_LABEL;
+    fab.append(lineIcon('help'), words);
+  } else {
+    fab.className = host ? 'problem-top' : 'problem-fab';
+    fab.textContent = HELP_LABEL;
+  }
   const panel = doc.createElement('form');
   panel.className = 'problem-panel';
   panel.hidden = true;
-  if (header) panel.classList.add('is-top');
+  if (host) panel.classList.add(sidebar ? 'is-side' : 'is-top');
   panel.innerHTML = `<label for="problem-what">What went wrong?</label>
     <textarea id="problem-what" rows="4" required></textarea>
     <label for="problem-who">Your name</label>
@@ -97,9 +112,9 @@ export function mountProblemButton(doc = document, url = PROBLEM_FORM_URL) {
       said.append("Couldn't send from here. ", a);
     }
   });
-  if (!header) { doc.body.append(panel, fab); return; }
+  if (!host) { doc.body.append(panel, fab); return; }
   doc.body.append(panel);
-  seat(header, fab);
-  // The desk and the builder build their bar after this runs; put the button back in.
-  new MutationObserver(() => seat(header, fab)).observe(header, { childList: true });
+  seat(host, fab);
+  // The desk and the builder build their sidebar after this runs; put the button in once it is there.
+  new MutationObserver(() => seat(host, fab)).observe(host, { childList: true });
 }

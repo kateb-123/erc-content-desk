@@ -1,13 +1,11 @@
-/* The desk in the U-M Library Design System (Kate's mockup, Sep 23, 2026; her
-   pick: the look only, the palette as designed). Flat white pages, a navy top
-   bar, hairline neutral boxes, teal for everything interactive and maize for
-   the brand rules. Every value below is a token from /css/tokens.css; the
-   desk's own names are aliases so the rules read in the desk's vocabulary.
-   The builder loads the same ramp: the two apps no longer differ by accent. */
+/* The desk in Kate's pick A of the looks (Oct 23, 2026): a Mac app, for the
+   web. A grey page beside a grey sidebar, white lists and cards on it, one
+   blue for everything interactive. Every value below is a token from
+   /css/tokens.css; the desk's own names are aliases so the rules read in the
+   desk's vocabulary. The builder loads the same tokens. */
 :root {
-  /* The accent: teal, the system's interactive colour. It fills the primary
-     button, draws the links and marks the chosen row; maize draws the rule
-     over a section label and the focus ring, and carries no text. */
+  /* The accent: the blue. It fills the primary button, draws the links and
+     the focus ring, and marks the chosen row. */
   --text-on-accent: var(--accent-label); --text-in-outline: var(--accent-outline-text);   /* the label on a fill, the label inside an outline */
   --button-tertiary: var(--accent-line);
   --layer: var(--layer-02);            /* a card, a list, a table: a white box with a hairline */
@@ -17,11 +15,11 @@
   --line: var(--border-subtle-00);     /* hairlines on the page */
   --line-in: var(--border-subtle-01);  /* hairlines inside a layer */
   --accent: var(--button-primary);
-  --tint: var(--wash);                 /* held rows: the quiet blue-100 surface */
-  --selected: var(--wash-row);         /* the chosen row: teal 100, under its 4px teal bar */
+  --tint: var(--wash);                 /* held rows: the quiet grey surface */
+  --selected: var(--wash-row);         /* the chosen row: the pale blue, under its 4px blue bar */
   --hover: var(--background-hover);
   --row-hover: var(--wash-hover);
-  --accent-deep: var(--color-blue-400);/* the chosen row's title is navy at 600 */
+  --accent-deep: var(--blue-700);      /* the chosen row's title, deep blue at 600 */
   --ok: var(--text-success);           /* success as text */
   --ok-mark: var(--support-success);   /* success as an icon */
   --ok-bg: var(--notification-success-background);
@@ -35,11 +33,11 @@
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  font: var(--body-type);   /* 16/24 Mulish (Sep 23) */
+  font: var(--body-type);   /* 15/22 in the computer's own face (A, Oct 23) */
   color: var(--ink);
   background: var(--background);
 }
-/* A link with no class of its own (review, Oct 23): teal, never the browser's blue. */
+/* A link with no class of its own (review, Oct 23): the desk's blue, never the browser's. */
 a { color: var(--link-primary); }
 a:hover { color: var(--link-primary-hover); }
 
@@ -55,16 +53,16 @@ h2, h3 { font-family: var(--font-sans); letter-spacing: 0; }
 
 .lede { font: var(--lede-type); color: var(--muted); margin: 0 0 var(--spacing-06); }
 
-/* The micro-label (Sep 22): uppercase 12/16 with .7px tracking, helper grey, over the field. */
+/* The micro-label over a field: 13px semibold, helper grey, in sentence case since the look of Oct 23 (caps before). */
 label, .type-picker legend, .subtype-label, .card-field-label, .card-type legend, .card-send legend, .f-edit-grid label, .f-edit-media {
-  display: block; font: var(--label-type); font-weight: 500; text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--text-helper);
+  display: block; font: var(--label-type); font-weight: 500; letter-spacing: var(--label-tracking); color: var(--text-helper);
 }
 label { margin: var(--spacing-05) 0 var(--spacing-03); }
 /* A checkbox's label is a sentence beside its box, not a micro-label. */
 label.check { font: var(--body-type); text-transform: none; letter-spacing: 0; color: var(--ink); }
-/* A section header: the eyebrow label over the system's 2px maize rule. */
-.section-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 9px; border-bottom: 2px solid var(--border-interactive); }
-.section-label { font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); margin: 0; }
+/* A section header: the label over a hairline (a 2px maize rule until Oct 23). */
+.section-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: var(--spacing-03); border-bottom: 1px solid var(--line); }
+.section-label { font: var(--label-type); letter-spacing: var(--label-tracking); color: var(--ink); margin: 0; }
 .section-note { font: var(--meta-type); color: var(--text-helper); }
 
 /* Fields: the system's boxed input, white with a 1px neutral rule all round
@@ -208,7 +206,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .nl-side { display: flex; flex-direction: column; gap: var(--spacing-05); }
 .nl-issue { background: var(--layer); border: 1px solid var(--layer-line); padding: var(--spacing-06); display: flex; flex-direction: column; gap: var(--spacing-02); }
 .nl-issue .block-label { margin: 0 0 var(--spacing-03); }
-.nl-date { margin: 0; font: var(--numeral); font-size: 32px; line-height: 40px; }   /* the issue date as a big Mulish numeral */
+.nl-date { margin: 0; font: var(--numeral); font-size: 32px; line-height: 40px; }   /* the issue date as a big numeral */
 .nl-sends { margin: 0; font-size: 14px; color: var(--muted); }
 .nl-others { margin: var(--spacing-03) 0 0; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
 .nl-others .linkish { height: 24px; padding: 0 var(--spacing-01); font-size: 12px; letter-spacing: 0; }
@@ -232,6 +230,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .bulk-door .bulk-status { min-height: 0; margin: 0; }   /* takes no room until it has words */
 
 .status { min-height: 20px; margin: 0; font-size: 14px; position: sticky; top: 0; z-index: 2; background: var(--background); }   /* stays in view down a long list (design audit b3) */
+.submit-form .status { background: var(--layer); }   /* the form sits on a white card, not on the grey page */
 .status-ok { color: var(--ok); }
 .status-error { color: var(--err); }
 .status-busy { color: var(--muted); }
@@ -259,7 +258,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .door .fa-arrow-right { font-size: .85em; }
 
 .screen-head { display: flex; align-items: baseline; gap: var(--spacing-05); flex-wrap: wrap; margin: var(--spacing-05) 0 var(--spacing-05); }
-.screen-head h2 { font: var(--page-title); letter-spacing: -.2px; margin: 0; }   /* the page title: 32px Mulish bold */
+.screen-head h2 { font: var(--page-title); letter-spacing: -.6px; margin: 0; }   /* the page title: 34px bold */
 .title-row { display: flex; align-items: baseline; gap: var(--spacing-04); flex-wrap: wrap; }
 .info-toggle { border: none; background: none; padding: 0; height: auto; min-height: 24px; white-space: nowrap; font: inherit; letter-spacing: 0; color: var(--link-primary); cursor: pointer; }   /* a 24px target that never wraps (audit round two, f2) */
 .info-toggle:hover:not(:disabled) { border: none; background: none; color: var(--link-primary-hover); text-decoration: underline; }
@@ -445,7 +444,7 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .p-fate-box { margin: var(--spacing-02) 0 var(--spacing-05); }
 .p-fate-bar { display: flex; gap: 2px; height: 8px; border-radius: 0; overflow: hidden; background: var(--layer-accent-01); }
 .p-seg { display: block; min-width: 6px; }
-.p-seg-adding { background: var(--interactive); }   /* teal draws the bars and the fills alike */
+.p-seg-adding { background: var(--interactive); }   /* the blue draws the bars and the fills alike */
 .p-seg-held { background: var(--accent-30); }
 .p-seg-fix { background: var(--tag-background-review); }
 .p-seg-live { background: var(--border-strong-01); }
@@ -465,16 +464,16 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .table-scroll { overflow-x: auto; }
 
 /* The front page (Kate, Oct 23, 2026, her pick E): the hubs as one list per
-   step under a label over the maize rule, Bring it in, Send it out and
+   step under a label over a rule, Bring it in, Send it out and
    Research, with Public links as a 304px menu at the right. */
-.home-title { font: var(--page-title); letter-spacing: -.2px; margin: 0; }   /* the page title: 32px Mulish bold */
+.home-title { font: var(--page-title); letter-spacing: -.6px; margin: 0; }   /* the page title: 34px bold */
 .home-page .lede { margin: var(--spacing-02) 0 0; }
 .home-hubs { display: grid; grid-template-columns: minmax(0, 1fr) 304px; gap: var(--spacing-08); align-items: start; margin-top: var(--spacing-06); }
 .home-groups { display: flex; flex-direction: column; gap: var(--spacing-06); }
 .home-hubs .hub-label { margin-bottom: var(--spacing-03); }
 .desk-list, .home-links-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); overflow: hidden; }
 /* A row a hub: its name with the arrow, the count, what it counts with its
-   status lines, and its own links; the teal wash and bar on hover. The name
+   status lines, and its own links; the accent's wash and bar on hover. The name
    is the row's link, stretched over the whole row, so the row's own links sit
    above it and never nest. */
 .desk-card {
@@ -536,7 +535,7 @@ a.desk-card-go:focus-visible { outline: none; box-shadow: none; }   /* the row c
 
 .queue-head { display: flex; align-items: baseline; justify-content: flex-end; gap: var(--spacing-05); flex-wrap: wrap; margin: 0 0 var(--spacing-04); }
 .queue-table { width: 100%; border-collapse: collapse; background: var(--layer); border: 1px solid var(--layer-line); }
-.queue-table th { text-align: left; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 2px solid var(--mark); white-space: nowrap; }
+.queue-table th { text-align: left; font: var(--label-type); letter-spacing: var(--label-tracking); color: var(--ink); background: var(--layer-01); padding: var(--spacing-03) var(--spacing-05); border-bottom: 1px solid var(--line-in); white-space: nowrap; }
 .queue-table th .sort-btn { display: inline-flex; align-items: center; gap: var(--spacing-02); border: none; background: none; padding: 0 var(--spacing-02); margin: 0 calc(-1 * var(--spacing-02)); height: 24px; font: inherit; font-weight: 600; color: var(--ink); cursor: pointer; white-space: nowrap; }
 .queue-table th .sort-btn .fa-solid { font-size: 11px; color: var(--icon-secondary); }
 .queue-table th[aria-sort] .sort-btn .fa-solid { color: var(--icon-primary); }
@@ -566,18 +565,18 @@ button { transition: border-color var(--duration-fast-01) var(--ease-productive)
 .submit-form .pill-row.is-invalid .type-word:not(.is-picked) { border-color: var(--err); }
 .submit-form input.is-invalid:focus { border-color: var(--err); }
 
-/* Focus: the system's ring, 2px maize inside 3px neutral, drawn as a shadow
-   so it never moves the page (Sep 23). */
+/* Focus: a 2px blue ring off the control, drawn as a shadow so it never
+   moves the page. */
 input:not([type]):focus, input[type="text"]:focus, input[type="url"]:focus, input[type="search"]:focus, input[type="email"]:focus, input[type="date"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
   outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring);
 }
 button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
 /* The type picker and the Sort and Finalize lists clip what is drawn outside a
-   control, so there the ring is drawn inside it, 2px teal and no maize
+   control, so there the ring is drawn inside it, 2px in the focus colour
    (usability audit, Kate's pick, Sep 23). The transparent outline, the ring
    under forced colours, moves inside with it. */
-.pill-row .type-word:focus-visible, .sort-list .sort-row:focus-visible, .f-list .f-list-row:focus-visible { outline-offset: -2px; box-shadow: inset 0 0 0 2px var(--color-teal-400); }
-/* The picked type is filled teal, where a teal ring vanishes: there it is a white line inside (Kate, Sep 23). */
+.pill-row .type-word:focus-visible, .sort-list .sort-row:focus-visible, .f-list .f-list-row:focus-visible { outline-offset: -2px; box-shadow: inset 0 0 0 2px var(--focus); }
+/* The picked type is filled with the accent, where the ring would vanish: there it is a white line inside (Kate, Sep 23). */
 .pill-row .type-word.is-picked:focus-visible { box-shadow: inset 0 0 0 2px var(--text-on-color); }
 /* A screen title takes focus on a switch so assistive tech hears it; no ring on a heading or the busy card. */
 [tabindex="-1"]:focus, .busy-card:focus { outline: none; box-shadow: none; }
@@ -639,7 +638,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 /* A page's head (Kate's wireframes, Sep 17): the title, then its tabs under a
    hairline, a count on each; a fact about the page may sit at the row's right. */
 .page-head { margin: 0 0 var(--spacing-05); }
-.page-title { font: var(--page-title); letter-spacing: -.2px; margin: 0 0 var(--spacing-05); }
+.page-title { font: var(--page-title); letter-spacing: -.6px; margin: 0 0 var(--spacing-05); }
 .page-tabs { display: flex; align-items: center; gap: var(--spacing-05); border-bottom: 1px solid var(--line); }
 .tabs { display: flex; }
 .tab {
@@ -696,7 +695,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .sc-spacer { flex: 1 1 auto; }
 .sc-kicker { display: flex; align-items: baseline; justify-content: space-between; gap: var(--spacing-04); }
 .sc-facts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-03); min-width: 0; }
-.sc-source { font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); }
+.sc-source { font: var(--label-type); letter-spacing: var(--label-tracking); color: var(--ink); }
 .sort-card-pos { flex: none; font: var(--meta-type); color: var(--text-helper); }
 .sc-facts .badge { margin: 0; }
 /* The title is edited in place: borderless, a rule appears under it on hover. */
@@ -731,7 +730,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .card-field > label, .card-field-label, .card-type legend, .card-send legend { margin: 0 0 var(--spacing-03); padding: 0; }
 .card-type, .card-send { border: 0; padding: 0; margin: 0; min-width: 0; }
 .card-type.is-alert legend { color: var(--warn); }
-/* The type as a stack, the subtypes as chips; the picked one fills navy. */
+/* The type as a stack, the subtypes as chips; the picked one fills with the accent. */
 .type-stack { display: flex; flex-direction: column; gap: 6px; }
 .type-opt, .type-chip {
   display: inline-flex; align-items: center; justify-content: flex-start; text-align: left;
@@ -836,7 +835,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .sort-door:hover { background: var(--button-primary-hover); color: var(--text-on-color); }
 .sort-door .door-words { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 .sort-door .door-name { font: var(--body-type); font-weight: 700; }
-.sort-door .door-note { font: var(--meta-type); color: var(--color-teal-100); }
+.sort-door .door-note { font: var(--meta-type); color: var(--accent-10); }
 .sort-door .door-note:empty { display: none; }
 .sort-door .fa-arrow-right { font-size: 14px; }
 /* A section that folds: the chevron and the label are one target, and the
@@ -899,7 +898,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
    a change reads across the row. It keeps the name hl-cols for the how-to's shots. */
 .hl-cols { margin-top: var(--spacing-05); }
 .hl-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--spacing-05); }
-.hl-box h4 { margin: 0 0 var(--spacing-03); font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); }
+.hl-box h4 { margin: 0 0 var(--spacing-03); font: var(--label-type); letter-spacing: var(--label-tracking); color: var(--ink); }
 .hl-box h4 .hl-note { font: var(--meta-type); text-transform: none; letter-spacing: 0; color: var(--text-helper); margin-left: var(--spacing-03); }
 .hl-slot { display: grid; grid-template-columns: 24px minmax(0, 5fr) minmax(0, 7fr); column-gap: var(--spacing-05); align-items: start; padding: var(--spacing-04) 0; border-top: 1px solid var(--line-in); }
 .hl-slot-head { align-items: baseline; padding: 0 0 var(--spacing-03); border-top: 0; }
@@ -943,7 +942,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hl-card.is-missing .fa-solid { color: var(--warn-mark); margin-right: var(--spacing-02); }
 .hl-card .linkish { height: auto; margin: 0; padding: 0; font-size: 14px; vertical-align: baseline; }
 .hl-card-edit { display: grid; gap: var(--spacing-03); }
-.hl-card-edit label { display: grid; gap: var(--spacing-01); font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); }
+.hl-card-edit label { display: grid; gap: var(--spacing-01); font: var(--label-type); letter-spacing: var(--label-tracking); color: var(--ink); }
 .hl-card-edit input, .hl-card-edit textarea { font: var(--body-type); text-transform: none; letter-spacing: 0; }
 .hl-card-edit textarea { min-height: 64px; }
 .hl-card-tools { display: flex; align-items: center; gap: var(--spacing-02); }
@@ -952,7 +951,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hl-count.is-over { color: var(--text-warning); font-weight: 600; }
 .hl-thumb--card { background: var(--layer-01); }
 .hl-from { margin-top: var(--spacing-08); }
-.hl-from-label { margin: 0 0 var(--spacing-03); font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); }
+.hl-from-label { margin: 0 0 var(--spacing-03); font: var(--label-type); letter-spacing: var(--label-tracking); color: var(--ink); }
 .hl-table td { color: var(--ink); }
 .hl-table .item-title { font-size: 14px; line-height: 18px; }
 .hl-table th.hl-act, .hl-table td.hl-act { width: 8rem; text-align: right; }
@@ -1004,7 +1003,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .qh-door-second { margin-top: var(--spacing-04); }
 .qh-edit { display: inline-block; margin-top: var(--spacing-05); }
 .p-highlight-line { margin: var(--spacing-05) 0 0; font: var(--meta-type); color: var(--text-helper); }
-/* Until as plain words beside its field, not the uppercase micro-label every label wears. */
+/* Until as plain words beside its field, not the micro-label every label wears. */
 .hl-until { display: inline-flex; align-items: center; gap: var(--spacing-02); margin: 0; font: var(--meta-type); text-transform: none; letter-spacing: 0; color: var(--text-helper); }
 .hl-until input { width: 136px; height: 32px; padding: 0 var(--spacing-03); border: 1px solid var(--border-strong-01); border-radius: var(--radius-input); background: var(--field-01); color: var(--ink); font: var(--meta-type); }
 .hl-until input:focus-visible { outline: none; box-shadow: var(--focus-ring); }
@@ -1023,8 +1022,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .briefs-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-06); }
 .briefs-head .hub-head { margin-bottom: var(--spacing-06); }
 .briefs-head button.primary { flex: none; margin-top: var(--spacing-02); }
-.briefs-table { width: 100%; border-collapse: collapse; font: var(--meta-type); }
-.briefs-table th { text-align: left; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); padding: var(--spacing-04) var(--spacing-05); border-bottom: 2px solid var(--mark); background: var(--layer-01); }
+.briefs-table { width: 100%; border-collapse: collapse; font: var(--meta-type); background: var(--layer); border: 1px solid var(--layer-line); }
+.briefs-table th { text-align: left; font: var(--label-type); letter-spacing: var(--label-tracking); color: var(--ink); padding: var(--spacing-04) var(--spacing-05); border-bottom: 1px solid var(--line-in); background: var(--layer-01); }
 .briefs-table td { padding: var(--spacing-05); border-bottom: 1px solid var(--line-in); vertical-align: top; }
 .briefs-row:hover td { background: var(--row-hover); cursor: pointer; }
 .briefs-table .col-brief { width: 30%; }
@@ -1100,17 +1099,17 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
 .draft-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-03) var(--spacing-05); padding: 0 0 var(--spacing-05); margin: 0 0 var(--spacing-06); border-bottom: 1px solid var(--line-in); }
 .draft-tools .meta { font: var(--meta-type); color: var(--muted); }
 .brief-download.linkish { display: inline-flex; align-items: center; gap: var(--spacing-02); font-weight: 700; }
-/* The brief as reading text (her pick A, Oct 22): the desk's type at reading width, a maize rule under each section. */
+/* The brief as reading text (her pick A, Oct 22): the desk's type at reading width, a hairline under each section. */
 .brief-read { max-width: 720px; font: var(--body-type, 400 16px/26px inherit); line-height: 26px; color: var(--text-primary); margin: 0 0 var(--spacing-07); }
 .brief-read h1 { font: 700 28px/36px inherit; margin: 0 0 var(--spacing-03); }
 .brief-read .brief-cover { color: var(--muted); font: var(--meta-type); margin: 0 0 var(--spacing-06); }
-.brief-read h2 { font: 600 20px/28px inherit; margin: var(--spacing-07) 0 var(--spacing-03); padding-bottom: var(--spacing-02); border-bottom: 2px solid var(--border-interactive); }
+.brief-read h2 { font: 600 20px/28px inherit; margin: var(--spacing-07) 0 var(--spacing-03); padding-bottom: var(--spacing-02); border-bottom: 1px solid var(--line); }
 .brief-read h3 { font: 700 16px/24px inherit; margin: var(--spacing-05) 0 var(--spacing-02); }
 .brief-read p { margin: 0 0 var(--spacing-04); }
 .brief-read ol, .brief-read ul { padding-left: 22px; margin: 0 0 var(--spacing-04); }
 .brief-read li { margin: 0 0 var(--spacing-03); }
 .brief-read table { border-collapse: collapse; width: 100%; margin: var(--spacing-04) 0 var(--spacing-05); font: var(--meta-type); }
-.brief-read th { text-align: left; padding: var(--spacing-02) var(--spacing-03); border-bottom: 2px solid var(--border-interactive); font: var(--label-type, 700 12px/18px inherit); letter-spacing: 1px; text-transform: uppercase; }
+.brief-read th { text-align: left; padding: var(--spacing-02) var(--spacing-03); border-bottom: 1px solid var(--line); font: var(--label-type, 700 12px/18px inherit); }
 .brief-read td { padding: var(--spacing-02) var(--spacing-03); border-bottom: 1px solid var(--line-in); vertical-align: top; }
 .brief-read a { color: var(--link-primary); }
 /* Theirs and the proposal, her pick A (Oct 22): the paper's cut beside the brief's own at equal width. */
@@ -1129,7 +1128,7 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
 .draft-proposal { display: grid; gap: var(--spacing-04); }
 .draft-proposal-table { border-collapse: collapse; width: 100%; font: var(--meta-type); }
 .draft-proposal-table caption { text-align: left; font: var(--body-type, 400 16px/24px inherit); font-weight: 700; padding-bottom: var(--spacing-03); }
-.draft-proposal-table th { text-align: left; font: var(--label-type); letter-spacing: 1.25px; text-transform: uppercase; padding: var(--spacing-03); border-bottom: 2px solid var(--border-interactive); }
+.draft-proposal-table th { text-align: left; font: var(--label-type); padding: var(--spacing-03); border-bottom: 1px solid var(--line); }
 .draft-proposal-table td { padding: var(--spacing-03); border-bottom: 1px solid var(--line-in); vertical-align: top; }
 .new-brief-paste { width: 100%; box-sizing: border-box; min-height: 120px; }
 .new-brief .card-field[hidden], .new-brief .linkish[hidden] { display: none; }
@@ -1143,8 +1142,9 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
 .new-brief-actions { display: flex; gap: var(--spacing-04); align-items: center; }
 .new-brief .field-error:empty { display: none; }
 
-/* A hub's status box (the Policy Exchange, the Listserv): label, value. */
-.hub-label { margin: 0 0 var(--spacing-04); padding-bottom: var(--spacing-02); border-bottom: 2px solid var(--mark); display: inline-block; }
+/* A hub's status box (the Policy Exchange, the Listserv): label, value. The label over a
+   box is a quiet grey word, as a Mac app heads a group (A, Oct 23; over a maize rule before). */
+.hub-label { margin: 0 0 var(--spacing-03) var(--spacing-02); color: var(--text-secondary); }
 .hub-label ~ .hub-label { margin-top: var(--spacing-07); }
 .hub-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--spacing-02) var(--spacing-06); }
 .hub-stat { display: flex; align-items: baseline; gap: var(--spacing-05); padding: var(--spacing-04) 0; border-top: 1px solid var(--line-in); }

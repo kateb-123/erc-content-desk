@@ -31,9 +31,10 @@ const lower = text => (text ? text[0].toLowerCase() + text.slice(1) : '');
 /**
  * Kate's drawn map (Oct 6, 2026): six hub cards in her order, each with its
  * status. A card is { key, label, href, count, sub, foot }, plus `links`
- * (lines that are links of their own), `copies` (Public links' rows) and
- * `lock` (Sort is behind the password). Counts are null until the rows are
- * in; a line about something not known yet is ''.
+ * (lines that are links of their own), `copies` (Public links' rows),
+ * `lock` (Sort is behind the password) and the newsletter's `next` send date,
+ * short, which the sidebar shows (Kate's pick A, Oct 23). Counts are null
+ * until the rows are in; a line about something not known yet is ''.
  *   preview    the Exchange check, or null until it lands
  *   archive    the builder's archive index, or null/false
  *   hubUpdated the live site's last change, YYYY-MM-DD; '' when it did not answer, null while asked
@@ -62,7 +63,7 @@ export function hubCards({ rows = [], schedule = [], today = '', loaded = false,
     card('team', { sub: "The team's form", links: [{ label: 'How to submit content', href: '/how-to/submit-content/' }] }),
     card('queue', { count: loaded ? waiting.length : null, sub: `waiting for Sort${outside ? ` · ${outside} from outside` : ''}`, foot: 'Sort, password protected', lock: true }),
     // The newsletter's HTML (Kate, Oct 8): three pages linked at the card's foot, never downloads.
-    card('newsletter', { ...(next
+    card('newsletter', { next: next ? isoToShort(next, today) : '', ...(next
       ? { count: loaded ? issueRows(rows, next).length : null, sub: `in the ${isoToShort(next, today)} issue · ${lower(sendsIn(next, today))}` }
       : { sub: 'No issue scheduled' }), foot: sent ? `Last sent ${isoToShort(sent, today)}` : '', warn: loaded ? scheduleEndingWords(schedule, today, d => isoToShort(d, today)) : '', links: EMAIL_PAGES.map(p => ({ label: p.label, href: p.href, blank: true })) }),
     // The sign-up sheet rides the card too (Kate, Oct 8), opening in a new tab.

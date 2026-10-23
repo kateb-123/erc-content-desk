@@ -1,10 +1,24 @@
-# ERC Content Desk — wireframes
+# ERC Content Desk: mockups
+
+## Pick A, the look (Oct 23, 2026)
+
+Kate's pick of four looks, with her line rules for rows. Each is a standalone
+HTML page (sample words, no scripts) and its 1280 by 970 render.
+
+| File | Screen |
+|---|---|
+| `a-front-page.html` / `.png` | The front page: the sidebar, then the hubs as grouped lists |
+| `a-sort.html` / `.png` | Content Sort: the list, the card, the decision column |
+
+`design/DESIGN.md` (The look, at its top) says what they set.
+
+## The wireframes (Sep 17, 2026)
 
 Greyscale wireframes exported as plain, standalone HTML. No build step, no
 dependencies, no framework. Open `index.html` in a browser and the links
 between pages work.
 
-## The files
+### The files
 
 | File | Screen |
 |---|---|
@@ -17,7 +31,7 @@ between pages work.
 `builder.html` carries about fifteen lines of vanilla JavaScript to move
 between Pull, Arrange, Edit and Export. Everything else is static markup.
 
-## What this is and is not
+### What this is and is not
 
 Greyscale on purpose. The palette is settled separately, so grey stands in
 for the accent wherever something is selected or interactive. Dropping the
@@ -30,7 +44,7 @@ Type is IBM Plex Sans, pulled from Google Fonts, and spacing follows Carbon's
 scale. Corners are square and there are no shadows, in line with the house
 rules.
 
-## Turning these into the real thing
+### Turning these into the real thing
 
 The markup is close to what ships but not production code. Fields are real
 `<input>` and `<label>` pairs and the buttons are real `<button>` elements,

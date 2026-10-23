@@ -6,11 +6,11 @@
  * data-issue on its sheet.
  */
 import { renderNewsletter } from '/builder/js/template.js';
-import { renderShell } from '/js/shell-ui.js';
+import { renderSidebar } from '/js/shell-ui.js';
 import { el } from '/js/ui-aids.js';
 import { busyWords } from '/js/icons.js';
 
-renderShell(document.querySelector('.topbar'), { screen: 'emailpage' });
+renderSidebar(document.querySelector('.sidebar'), { screen: 'emailpage' });
 
 const sheet = document.querySelector('.email-sheet');
 const status = document.querySelector('.email-status');
