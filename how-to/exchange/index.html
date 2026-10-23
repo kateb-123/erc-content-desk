@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>How to change the Policy Exchange · ERC Content Desk</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%231d7491'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" />
+  <link rel="stylesheet" href="/css/tokens.css?v=11" />
+  <link rel="stylesheet" href="/how-to/howto.css?v=1" />
+</head>
+<body style="margin:0;background:var(--background)">
+  <main class="ht-page">
+    <p class="ht-crumb"><a href="/">ERC Content Desk</a> / <a href="/how-to/">How-tos</a></p>
+    <h1>How to change the Policy Exchange</h1>
+    <p class="ht-lede">Add, fix, remove, highlight, and the look.</p>
+<h2>What the site is</h2>
+<p>Two public files in its GitHub repo: <code>data/news.csv</code>, one line per item, and <code>data/featured.json</code>, what the New &amp; Upcoming card shows and what is hidden.</p>
+<p>The desk's <strong>Publish</strong> adds lines to the first and sets the card's pins in the second. The site's edit door changes both.</p>
+
+<h2>Add items</h2>
+<ol>
+<li>On Content Sort, leave <strong>ERC Newsletter only</strong> unticked. Ticked, the item never reaches the site; an A&amp;M event comes ticked. Press <strong>Keep and next</strong>.</li>
+<li>Open <strong>Policy Exchange</strong>, then <strong>Publish</strong>.</li>
+<li>Press <strong>Publish N to the Exchange</strong>, type the desk password, press <strong>Confirm</strong>.</li>
+</ol>
+
+<h2>Fix a live item</h2>
+<p>Publish only adds lines, so a desk edit to a live item stays on the desk. Fix it on the edit door, on a laptop:</p>
+<ol>
+<li>On the <strong>Policy Exchange</strong> hub, open <strong>Edit live items</strong>. Sign in with the Exchange's own password, not the desk's.</li>
+<li>Press <strong>Edit</strong> on the item, fix it, press <strong>Save</strong>.</li>
+</ol>
+
+<h2>Remove a live item</h2>
+<p>The desk's Delete never touches the site. On the edit door, press <strong>Edit</strong>, then:</p>
+<ul>
+<li><strong>Hide from the site</strong>: off the pages, still in the public <code>news.csv</code>. <strong>Show again</strong> is under <strong>Hidden items</strong> in the top strip.</li>
+<li><strong>Delete…</strong>, then <strong>Delete it</strong>: the line goes. <strong>Undo</strong> lasts only while its note shows.</li>
+</ul>
+<p>Past events, closed opportunities and headlines over 60 days old leave by themselves.</p>
+
+<h2>Change the highlight</h2>
+<p>A pick shows until an event's date, an opportunity's deadline, or 14 days.</p>
+<p>On Publish, <strong>Highlight</strong> sits under the table, even with nothing to publish.</p>
+<ol>
+<li>In <strong>Pick from</strong>, press <strong>Highlight</strong> on a row.</li>
+<li>Press <strong>Update the highlight</strong>, type the desk password, press <strong>Confirm</strong>.</li>
+</ol>
+<p>Save first: a reload, <strong>Re-check</strong> or any desk change drops unsaved picks. Each publish sends your list as all the pins; past six, the last in the list go.</p>
+<p>The desk's card words, and a photo added to a live pick, never reach the site: the card shows the item's own title, summary and picture. For those, or a longer day, use the door's <strong>Edit</strong>: <strong>Title</strong>, <strong>Picture link</strong>, <strong>Pin it</strong>, <strong>Until</strong>, <strong>Card summary</strong>, <strong>Save</strong>. The desk keeps that day and summary.</p>
+<p>On the card, a Drive picture link never shows; use one ending .jpg, .png or .webp.</p>
+<p>An announcement card is <strong>Add to New &amp; Upcoming</strong>, in the door's top strip.</p>
+
+<h2>Change a logo or the look</h2>
+<p>It is code in <a href="https://github.com/kateb-123/erc-policy-exchange-app">the Exchange's GitHub repo</a>: open it in Claude Code and say what to change. A push to <code>main</code> is live in a minute.</p>
+<table>
+<tr><th>To change</th><th>File</th></tr>
+<tr><td>Top bar mark</td><td><code>assets/logo/erc-icon-simple.svg</code>, drawn white</td></tr>
+<tr><td>Footer logo</td><td><code>assets/ERC_Horizontal_MaroonText-519.png</code>, in four pages</td></tr>
+<tr><td>Welcome line</td><td><code>index.html</code></td></tr>
+<tr><td>About page</td><td><code>about/index.html</code></td></tr>
+<tr><td>Section names</td><td><code>NEWS_TABS</code> in <code>js/app.js</code>, and the top bar of <code>about/</code>, <code>newsletter/</code> and <code>share/</code></td></tr>
+<tr><td>Quick search order</td><td><code>SUBTYPE_ORDER</code> in <code>js/app.js</code></td></tr>
+</table>
+<p>The edit door is <strong>Edit live items</strong> on the Policy Exchange hub. Its password is on no page. Who holds it: READ ME FIRST - ERC handoff, in the shared drive.</p>
+  </main>
+  <script type="module" src="/js/problem-mount.js?v=1"></script>
+</body>
+</html>
