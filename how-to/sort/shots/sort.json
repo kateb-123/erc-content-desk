@@ -1,0 +1,31 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 0,
+  "cy": 0,
+  "cw": 2560,
+  "ch": 1800,
+  "alt": "Content Sort: the waiting items down the left, newest first, with a working paper chosen; its card on the right shows New research, the Working Paper subtype, Keep and next, Skip for now and Delete.",
+  "pins": [
+    {
+      "x": 19.5,
+      "y": 57.3,
+      "label": "The item the card shows. Pick a row, or move with the up and down arrows"
+    },
+    {
+      "x": 76.9,
+      "y": 5.6,
+      "label": "Type: what the item is. Pick one, then its subtype"
+    },
+    {
+      "x": 85.1,
+      "y": 67.4,
+      "label": "Keep and next: keeps it and opens the next item. K does the same"
+    },
+    {
+      "x": 78.4,
+      "y": 81.8,
+      "label": "Delete: takes it out of the queue. D does the same"
+    }
+  ]
+}

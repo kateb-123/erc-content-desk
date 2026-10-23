@@ -1,0 +1,21 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 1728,
+  "cy": 384,
+  "cw": 784,
+  "ch": 536,
+  "alt": "The Policy Exchange page's right column: Publish, Highlight with 2 on the home page, then Edit live items and its note.",
+  "pins": [
+    {
+      "x": 19.3,
+      "y": 71.6,
+      "label": "Edit live items: the site's own editor, in a new tab, with its own password"
+    },
+    {
+      "x": 50,
+      "y": 48.5,
+      "label": "Highlight: the home page's big card, with Add photo for each pick"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 48,
+  "cy": 184,
+  "cw": 2464,
+  "ch": 1406,
+  "alt": "A brief's page at Paper and notes: the title, its folder link, the seven stages, the notes box with Save notes, Write the draft, and In the folder listing the paper and notes.md.",
+  "pins": [
+    {
+      "x": 45.7,
+      "y": 10.2,
+      "label": "Opens the brief's folder on the team drive"
+    },
+    {
+      "x": 33.8,
+      "y": 58.2,
+      "label": "Your notes: they steer the draft"
+    },
+    {
+      "x": 11.2,
+      "y": 94.2,
+      "label": "Write the draft: reads the paper, plans the pages, writes the brief"
+    },
+    {
+      "x": 84.1,
+      "y": 43.3,
+      "label": "In the folder: each file opens in Drive"
+    }
+  ]
+}

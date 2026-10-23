@@ -1,0 +1,31 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 48,
+  "cy": 184,
+  "cw": 2464,
+  "ch": 954,
+  "alt": "Content Sort's Finalize tab: Rewrite 1 description at the top right, an ERC workshop under Needs a rewrite on the left, and its card with the Original text, Edit and Delete.",
+  "pins": [
+    {
+      "x": 17.3,
+      "y": 40.9,
+      "label": "Needs a rewrite: kept items still waiting for their description"
+    },
+    {
+      "x": 90.6,
+      "y": 31,
+      "label": "Rewrite 1 description: writes the ones still waiting"
+    },
+    {
+      "x": 66.8,
+      "y": 64.2,
+      "label": "Original: the text it came with"
+    },
+    {
+      "x": 38.1,
+      "y": 89.3,
+      "label": "Edit: write or fix the description by hand"
+    }
+  ]
+}

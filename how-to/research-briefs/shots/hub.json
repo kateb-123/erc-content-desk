@@ -1,0 +1,31 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 48,
+  "cy": 184,
+  "cw": 2464,
+  "ch": 1240,
+  "alt": "Research briefs: New brief at the head, then a table of four briefs, each with its title, a row of seven stage dots with the current one named, and what it waits for.",
+  "pins": [
+    {
+      "x": 92.4,
+      "y": 6.5,
+      "label": "New brief: starts one from the paper and your notes"
+    },
+    {
+      "x": 34.7,
+      "y": 31.2,
+      "label": "Where it is: the seven stages, with the current one named"
+    },
+    {
+      "x": 84,
+      "y": 32.7,
+      "label": "Waits for: the next thing to do, and since when"
+    },
+    {
+      "x": 13.3,
+      "y": 31,
+      "label": "The title opens the brief's own page"
+    }
+  ]
+}

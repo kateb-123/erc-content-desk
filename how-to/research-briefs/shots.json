@@ -1,0 +1,154 @@
+[
+  {
+    "name": "hub",
+    "url": "/?fresh=hub#briefs",
+    "alt": "Research briefs: New brief at the head, then a table of four briefs, each with its title, a row of seven stage dots with the current one named, and what it waits for.",
+    "before": [
+      {
+        "waitFor": ".briefs-table"
+      }
+    ],
+    "crop": ".briefs-page",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": ".briefs-head button:has-text(\"New brief\")",
+        "label": "New brief: starts one from the paper and your notes",
+        "nth": 0
+      },
+      {
+        "selector": ".briefs-row .step.is-now",
+        "label": "Where it is: the seven stages, with the current one named",
+        "nth": 0
+      },
+      {
+        "selector": ".briefs-row .col-waits",
+        "label": "Waits for: the next thing to do, and since when",
+        "nth": 0
+      },
+      {
+        "selector": ".briefs-row .briefs-link",
+        "label": "The title opens the brief's own page",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "new-brief",
+    "url": "/?fresh=newbrief#briefs",
+    "alt": "New brief open above the table: a file field for the paper as a PDF and one for your notes, Paste instead under the notes, and Create the brief greyed with Choose the paper and your notes first under it.",
+    "before": [
+      {
+        "waitFor": ".briefs-table"
+      },
+      {
+        "click": ".briefs-head button:has-text(\"New brief\")"
+      },
+      {
+        "waitFor": ".new-brief"
+      }
+    ],
+    "crop": null,
+    "pad": 16,
+    "pins": [
+      {
+        "selector": "#nb-the-paper-as-a-pdf",
+        "label": "The paper, as a PDF: the desk reads it and fills in the byline",
+        "nth": 0
+      },
+      {
+        "selector": "#nb-your-notes-as-a-md-txt-or-word-docx",
+        "label": "Your notes, as a file: they steer the draft",
+        "nth": 0
+      },
+      {
+        "selector": ".new-brief button:has-text(\"Paste instead\")",
+        "label": "Paste instead: opens a box to paste or type the notes",
+        "nth": 0
+      },
+      {
+        "selector": ".new-brief button:has-text(\"Create the brief\")",
+        "label": "Create the brief: opens once both files are in and the paper is read",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "byline",
+    "url": "/?fresh=byline#briefs",
+    "alt": "The byline under New brief, filled from the paper: title, authors, journal, last name and year, then an empty Topic word with the folder's name under it, Author of record, and Brief author.",
+    "before": [
+      {
+        "waitFor": ".briefs-table"
+      },
+      {
+        "click": ".briefs-head button:has-text(\"New brief\")"
+      },
+      {
+        "waitFor": ".new-brief"
+      },
+      {
+        "eval": "(async () => { const set = (s, v) => { const i = document.querySelector(s); i.value = v; i.dispatchEvent(new Event('input', { bubbles: true })); }; set('#nb-brief-author', 'Ima Aggie'); const r = await fetch('/api/briefs?id=aggie-2026-greeting&paper=1').then(x => x.json()); const bytes = Uint8Array.from(atob(r.b64), c => c.charCodeAt(0)); const put = (s, f) => { const i = document.querySelector(s); const dt = new DataTransfer(); dt.items.add(f); i.files = dt.files; i.dispatchEvent(new Event('change', { bubbles: true })); }; put('#nb-your-notes-as-a-md-txt-or-word-docx', new File(['Lead with belonging. Table 2 is the visual.'], 'howdy-notes.md', { type: 'text/markdown' })); put('#nb-the-paper-as-a-pdf', new File([bytes], 'aggie-2026-greeting-norms.pdf', { type: 'application/pdf' })); })()"
+      },
+      {
+        "waitFor": ".new-brief-read:has-text(\"Read from the paper\")"
+      },
+      {
+        "wait": 600
+      }
+    ],
+    "crop": ".new-brief-byline",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": "#nb-author-s-last-name",
+        "label": "Author's last name: starts the folder's name",
+        "nth": 0
+      },
+      {
+        "selector": "#nb-topic-word",
+        "label": "Topic word: ends the folder's name",
+        "nth": 0
+      },
+      {
+        "selector": "#nb-brief-author",
+        "label": "Brief author: named on the draft's cover",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "brief",
+    "url": "/?fresh=brief#briefs/aggie-2026-greeting",
+    "alt": "A brief's page at Paper and notes: the title, its folder link, the seven stages, the notes box with Save notes, Write the draft, and In the folder listing the paper and notes.md.",
+    "before": [
+      {
+        "waitFor": ".brief-files .brief-file-list"
+      }
+    ],
+    "crop": ".brief-page",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": ".brief-page .lede .hub-link",
+        "label": "Opens the brief's folder on the team drive",
+        "nth": 0
+      },
+      {
+        "selector": "#brief-notes",
+        "label": "Your notes: they steer the draft",
+        "nth": 0
+      },
+      {
+        "selector": ".brief-page button:has-text(\"Write the draft\")",
+        "label": "Write the draft: reads the paper, plans the pages, writes the brief",
+        "nth": 0
+      },
+      {
+        "selector": ".brief-files",
+        "label": "In the folder: each file opens in Drive",
+        "nth": 0
+      }
+    ]
+  }
+]

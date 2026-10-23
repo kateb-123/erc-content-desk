@@ -996,22 +996,22 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .briefs-meta { font: var(--meta-type); color: var(--text-helper); margin-top: var(--spacing-01); }
 .briefs-empty { font: var(--body-type); color: var(--text-helper); padding: var(--spacing-06) 0; }
 /* The stepper: the builder's progress indicator idiom, done, now, later. */
-.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-style: none; }
-.step { flex: 1 1 0; position: relative; padding: 0 var(--spacing-03) 0 0; font: var(--meta-type); color: var(--text-helper); }
-.step::before { content: ''; display: block; height: 2px; background: var(--layer-accent-01); margin: 9px 0 var(--spacing-03); }
-.step.is-done::before, .step.is-now::before { background: var(--accent); }
+ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-style: none; }
+.steps > .step { flex: 1 1 0; position: relative; padding: 0 var(--spacing-03) 0 0; font: var(--meta-type); color: var(--text-helper); }
+.steps > .step::before { content: ''; display: block; height: 2px; background: var(--layer-accent-01); margin: 9px 0 var(--spacing-03); }
+.steps > .step.is-done::before, .steps > .step.is-now::before { background: var(--accent); }
 .step-dot { position: absolute; top: 0; left: 0; width: 20px; height: 20px; border-radius: 50%; box-sizing: border-box; border: 2px solid var(--border-strong-01); background: var(--layer); display: flex; align-items: center; justify-content: center; color: var(--text-on-color); font-size: 10px; }
-.step.is-done .step-dot, .step.is-now .step-dot { background: var(--accent); border-color: var(--accent); }
-.step.is-now .step-dot { box-shadow: 0 0 0 3px var(--accent-10); }
-.step.is-now { color: var(--ink); font-weight: 700; }
-.step.is-later.is-round-two .step-dot { border-style: dashed; }
+.steps > .step.is-done .step-dot, .steps > .step.is-now .step-dot { background: var(--accent); border-color: var(--accent); }
+.steps > .step.is-now .step-dot { box-shadow: 0 0 0 3px var(--accent-10); }
+.steps > .step.is-now { color: var(--ink); font-weight: 700; }
+.steps > .step.is-later.is-round-two .step-dot { border-style: dashed; }
 .step-words { display: block; }
 .step-sub { display: block; font: var(--meta-type); font-size: 12px; line-height: 16px; color: var(--text-helper); font-weight: 400; margin-top: var(--spacing-01); }
-.steps-small .step { font-size: 12px; line-height: 16px; }
+.steps-small > .step { font-size: 12px; line-height: 16px; }
 .steps-small .step-sub { display: none; }
 /* In the hub's table only the current step is named (Kate, Oct 21: the full row was "a bit busy"; her pick A). */
 .steps-small .step-words { display: none; }
-.steps-small .step.is-now .step-words { display: block; }
+.steps-small > .step.is-now .step-words { display: block; }
 .brief-page .steps { margin: 0 0 var(--spacing-08); }
 .brief-split { margin-top: 0; }
 /* Two columns from 1024 up, as the desk's other pages; narrower (the app's side pane) the folder goes under the brief, so the brief keeps its width. */

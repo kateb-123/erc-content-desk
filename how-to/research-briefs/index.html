@@ -5,97 +5,715 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex" />
   <title>How to make a research brief · ERC Content Desk</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%231d7491'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%231d7491'/%3E%3Cpath d='M9 16.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="/css/tokens.css?v=11" />
-  <link rel="stylesheet" href="/how-to/howto.css?v=1" />
+  <link rel="stylesheet" href="/css/styles.css?v=180" />
+  <link rel="stylesheet" href="/css/shell.css?v=7" />
+  <script>document.documentElement.classList.add('js');</script>
+  <!-- Built by how-to/make-deck.mjs from research-briefs/deck.json; the styles and script are the newsletter how-to's. -->
+  <style>
+    /* The newsletter builder's how-to (Oct 7, 2026) in one box: the
+       walkthrough as slides, or Styles, the email's looks. Every slide has two
+       columns: its words on the left, about a third, and its picture on the
+       right; Back, the dots and Next sit at the foot of the words. Numbered
+       pins on the screenshots name the controls in the builder's words and
+       show while the pointer is on the picture. Styles, the last chip, swaps
+       the slides for a menu of groups on the left and one look at a time on
+       the right, in the same columns. Without script every slide and look
+       shows, one after another. Read on a desktop. Nothing here writes to
+       the desk. */
+    :root {
+      --fh: clamp(340px, calc(100vh - 340px), 470px);   /* the picture's height at most; the frame is this plus its padding */
+      --pad: var(--spacing-05);
+      --cols: minmax(272px, 1fr) minmax(0, 2fr);
+      --colgap: var(--spacing-07);
+      --title-h: calc(28px + var(--spacing-04));   /* a pane title: the 28px line of --card-title and the space under it */
+    }
+    body { margin: 0; background: var(--background); color: var(--ink); font: var(--body-type); }
+    img { max-width: 100%; }
+    a { color: var(--link-primary); }
+    a:hover { color: var(--link-primary-hover); }
+    a:focus-visible, button:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
+
+    /* The band: the bar's navy, the page's name on it. */
+    .band { background: var(--color-blue-400); color: var(--text-inverse); padding: var(--spacing-06) var(--gap-56); }
+    .band .in { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-06); flex-wrap: wrap; }
+    .eyebrow { display: inline-block; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--color-maize-400); padding-bottom: 6px; border-bottom: 2px solid var(--color-maize-400); margin: 0 0 var(--spacing-03); }
+    .band h1 { font: var(--card-title); font-size: 24px; line-height: 32px; margin: 0 0 var(--spacing-01); }
+    .band .lede { font: var(--meta-type); color: var(--color-blue-100); margin: 0; }
+    .open { display: inline-flex; align-items: center; height: 40px; padding: 0 var(--spacing-05); border-radius: var(--radius); background: var(--text-inverse); color: var(--color-blue-400); font-weight: 700; text-decoration: none; }
+    .open:hover { background: var(--color-blue-100); color: var(--color-blue-400); }
+    .open:focus-visible { box-shadow: 0 0 0 2px var(--color-blue-400), 0 0 0 4px var(--text-inverse); }
+    .open .fa-solid { margin-left: var(--spacing-05); font-size: 14px; }
+
+    .page { max-width: 1200px; margin: 0 auto; padding: var(--spacing-05) var(--gap-56) var(--gap-72); }
+
+    /* The chapter chips: the parts in order, then Styles; the one on screen filled. */
+    .chips { display: flex; flex-wrap: wrap; gap: var(--spacing-03); margin: 0 0 var(--spacing-04); }
+    .chips a { display: inline-flex; align-items: center; gap: var(--spacing-03); height: 36px; padding: 0 var(--spacing-05); border: 1px solid var(--accent-line); border-radius: var(--radius-pill); background: var(--background); color: var(--ink); font: var(--meta-type); font-weight: 600; text-decoration: none; white-space: nowrap; }
+    .chips a:hover { background: var(--hover); border-color: var(--text-secondary); color: var(--ink); }
+    .chips a[aria-current] { background: var(--accent); border-color: var(--accent); color: var(--text-on-color); }
+    .chips .step { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-left: calc(-1 * var(--spacing-02)); border: 1px solid currentColor; border-radius: var(--radius-round); font-size: 12px; line-height: 1; font-weight: 700; }
+
+    /* The deck: a white box with a hairline, a thin bar for how far along.
+       It holds the slides or Styles, never both. */
+    .deck { position: relative; background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); overflow: hidden; }
+    .progress { height: 3px; background: var(--layer-accent-01); }
+    .progress span { display: block; height: 100%; width: 0; background: var(--accent); }
+    html:not(.js) .progress, html:not(.js) .controls, html:not(.js) .foot { display: none; }
+    .js .chapter:not(.is-on), .js .slide:not(.is-on), .js .sg-group:not(.is-on), .js .sg-look:not(.is-on) { display: none; }
+    .js .deck[data-mode="styles"] .chapter, .js .deck:not([data-mode="styles"]) .styles { display: none; }
+    .chapter, .styles, .from { scroll-margin-top: 100vh; }   /* a link to a part opens the page at its top, the band and chips in view */
+    html:not(.js) .slide + .slide, html:not(.js) .chapter + .chapter, html:not(.js) .styles { border-top: 1px solid var(--layer-line); }
+
+    /* A pane, the slides' or Styles': its title and words in the left column,
+       the picture in the right, top-aligned. The picture's frame is the same
+       height on every slide and look, so Back and Next, at the foot of the left
+       column, stay where they are. */
+    .chapter, .styles { padding: var(--spacing-06); }
+    .pane-title { display: flex; align-items: center; gap: var(--spacing-03); margin: 0 0 var(--spacing-04); font: var(--card-title); color: var(--ink); }
+    .pane-title .step { display: inline-grid; place-items: center; flex: none; width: 24px; height: 24px; border: 1px solid currentColor; border-radius: var(--radius-round); font: 700 12px/1 var(--font-sans); }   /* the chips' step circle, so it never reads as a pin */
+
+    /* A slide: the words, then the picture. With script the chapter's title and
+       the slide share one grid, so the frame lines up with the title. The words
+       end where the frame's usual height ends and never stretch with a taller
+       picture, so Back and Next stay put. */
+    .slide { display: grid; grid-template-columns: var(--cols); column-gap: var(--colgap); padding: var(--spacing-05) 0; }
+    .js .chapter.is-on { display: grid; grid-template-columns: var(--cols); grid-template-rows: auto 1fr; column-gap: var(--colgap); }
+    .js .chapter > .pane-title { grid-area: 1 / 1; }
+    .js .slide.is-on { grid-area: 1 / 1 / 3 / 3; grid-template-columns: subgrid; grid-template-rows: subgrid; padding: 0; }
+    .js .slide > .side { grid-area: 2 / 1; align-self: start; min-height: calc(var(--fh) + 2 * var(--pad) - var(--title-h)); }
+    .js .slide > .frame { grid-area: 1 / 2 / 3 / 3; }
+    .side { display: flex; flex-direction: column; gap: var(--spacing-05); min-width: 0; }
+    .cap { margin: 0; font: var(--sub-title); font-weight: 400; color: var(--ink); }
+    .foot { margin-top: auto; padding-top: var(--spacing-03); }
+    .frame { container-type: inline-size; min-width: 0; min-height: calc(var(--fh) + 2 * var(--pad)); padding: var(--pad); display: flex; align-items: flex-start; justify-content: center; background: var(--layer-01); border-radius: var(--radius); }
+
+    /* Where items come from: the desk's path to the builder, a few lines on the first Outline slide. */
+    .from { padding-top: var(--spacing-04); border-top: 1px solid var(--layer-line); }
+    .from h3 { margin: 0 0 var(--spacing-03); font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--muted); }
+    .from ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-02); font: var(--meta-type); color: var(--ink); }
+    .from li { position: relative; padding-left: var(--spacing-05); }
+    .from li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: var(--radius-round); background: var(--accent); }
+    .from li:not(:last-child)::after { content: ''; position: absolute; left: 2px; top: 17px; bottom: calc(-1 * var(--spacing-02) - 3px); width: 2px; background: var(--color-teal-200); }
+    .from b { font-weight: 700; }
+
+    /* A still: a window on the picture (the crop). Every number is the
+       picture's own pixels, so the crop holds at any width. */
+    .shot { position: relative; container-type: inline-size; flex: 0 1 auto; min-width: 0; width: min(100%, calc(var(--fh) * var(--cw) / var(--ch))); aspect-ratio: var(--cw) / var(--ch); }
+    .crop { position: absolute; inset: 0; overflow: hidden; border-radius: var(--radius); background: var(--background); box-shadow: 0 0 0 1px var(--layer-line); }
+    .zoom { position: absolute; left: calc(var(--cx) / var(--cw) * -100%); top: calc(var(--cy) / var(--ch) * -100%); width: calc(var(--iw) / var(--cw) * 100%); }
+    .zoom img { display: block; width: 100%; max-width: 100%; height: auto; }
+
+    /* The pins: teal numbered circles over the controls, x and y in percent
+       of the still's window. Each is a button named by its label; the label
+       shows as a bubble that slides along with the pin, so it never leaves
+       the still: a pin at the left edge opens its bubble rightward, one at
+       the right edge leftward. */
+    .pin, .pin:hover:not(:disabled) { position: absolute; z-index: 1; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); display: grid; place-items: center; width: 32px; height: 32px; margin: -16px 0 0 -16px; padding: 0; border: 0; border-radius: var(--radius-round); background: none; color: var(--text-on-color); font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .pin .num { display: grid; place-items: center; width: 24px; height: 24px; border-radius: var(--radius-round); background: var(--accent); color: var(--text-on-color); font: 700 12px/1 var(--font-sans); box-shadow: 0 0 0 2px var(--background); }
+    .pin .tip { position: absolute; left: 50%; top: calc(100% + 2px); transform: translateX(calc(var(--x) * -1%)); width: max-content; max-width: min(20rem, 100cqw); padding: var(--spacing-02) var(--spacing-03); border-radius: var(--radius); background: var(--background-inverse); color: var(--text-inverse); font: 600 13px/18px var(--font-sans); text-align: left; white-space: normal; visibility: hidden; opacity: 0; pointer-events: none; }
+    .pin.up .tip { top: auto; bottom: calc(100% + 2px); }
+    .pin:focus-visible, .pin.is-open { z-index: 3; }
+    .pin:focus-visible .tip, .pin.is-open .tip { visibility: visible; opacity: 1; }
+    @media (hover: hover) {
+      .pin:hover { z-index: 3; }
+      .pin:hover .tip { visibility: visible; opacity: 1; }
+    }
+
+    /* Hidden until the pointer is on the still or focus is in it; a tap shows them on a touch screen. */
+    .pin { opacity: 0; pointer-events: none; }
+    .shot:focus-within .pin, .shot.is-shown .pin { opacity: 1; pointer-events: auto; }
+    @media (hover: hover) { .shot:hover .pin { opacity: 1; pointer-events: auto; } }
+
+    /* The numbered circle of a note. */
+    .n { display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: var(--radius-round); background: var(--accent); color: var(--text-on-color); font: 700 12px/1 var(--font-sans); font-style: normal; }
+
+    /* A note in the words: a rule, or the button that comes next. */
+    .note { display: flex; align-items: center; gap: var(--spacing-04); margin: 0; font: var(--meta-type); color: var(--ink); }
+    .note b { font-weight: 700; }
+    .note .n.go { background: var(--background); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+    .note.warn .n { background: var(--color-maize-100); color: var(--text-warning-on-tint); box-shadow: inset 0 0 0 1px var(--notification-warning-border); }
+    .note.warn b { color: var(--text-warning-on-tint); }
+
+    /* The controls: Back, the dots of this part, Next. They move to the foot
+       of the left column of whatever is on screen. */
+    .controls { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-02); }
+    .controls .go { justify-content: center; gap: var(--spacing-03); min-width: 0; padding: 0 var(--spacing-04); }
+    .controls .next { background: var(--accent); border-color: var(--accent); color: var(--text-on-color); }
+    .controls .next:hover:not(:disabled) { background: var(--button-primary-hover); border-color: var(--button-primary-hover); color: var(--text-on-color); }
+    .controls .next:disabled { background: var(--button-disabled); border-color: var(--button-disabled); color: var(--text-on-color-disabled); }
+    .dots { display: flex; align-items: center; }
+    .dots button { width: auto; min-width: 22px; height: 32px; padding: 0 3px; border: 0; background: none; display: inline-grid; place-items: center; }
+    .dots button:hover:not(:disabled) { background: none; }
+    .dots button::before { content: ''; display: block; width: 8px; height: 8px; border-radius: var(--radius-round); background: var(--border-strong-01); }
+    .dots button:hover::before { background: var(--muted); }
+    .dots button[aria-current]::before { width: 22px; background: var(--accent); }
+
+    /* A slide in words only (Send): the steps sit where a still would,
+       numbered like pins, in a measure that reads. */
+    .js .slide > .text { grid-area: 1 / 2 / 3 / 3; }
+    .text { min-width: 0; max-width: 62ch; display: grid; align-content: start; gap: var(--spacing-07); }
+    .steps { display: grid; gap: var(--spacing-04); }
+    .steps h3 { margin: 0; font: var(--sub-title); font-weight: 700; color: var(--ink); }
+    .steps ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-04); counter-reset: step; font: var(--body-type); color: var(--ink); }
+    .steps li { position: relative; padding-left: 36px; counter-increment: step; }
+    .steps li::before { content: counter(step); position: absolute; left: 0; top: 1px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: var(--radius-round); background: var(--accent); color: var(--text-on-color); font: 700 12px/1 var(--font-sans); }
+    .addin-ic { display: inline-block; width: 20px; height: 20px; margin: 0 4px -4px 0; border-radius: 5px; }
+    .links { display: flex; flex-wrap: wrap; gap: var(--spacing-02) var(--spacing-06); margin: 0; font: var(--meta-type); }
+    .links .fa-solid { margin-left: 6px; font-size: 11px; }
+
+    /* Styles: the email's looks, one at a time. The left column is the menu
+       of groups, the line on where the group lives in the builder, and the
+       controls; the right column is the look: the real email (2x renders,
+       never wider than the email's own 640) in the same frame as a slide's
+       picture, its name and one line under it, and the builder control that
+       makes it, cropped from a still at the builder's own size. Every number
+       in a crop or a ring is the picture's own pixels. Its classes start with
+       sg-, so the slides' .crop, .zoom, .slide and .cap never reach it.
+       The left column is as tall as the frame's usual height and never
+       stretches with a taller look, so Back and Next stay put. */
+    .styles { display: grid; grid-template-columns: var(--cols); column-gap: var(--colgap); align-items: start; }
+    .styles .sg-side { display: flex; flex-direction: column; min-width: 0; min-height: calc(var(--fh) + 2 * var(--pad)); }
+    .styles .sg-menu, .styles .sg-where { min-width: 0; }
+    .styles .sg-foot { margin-top: auto; padding-top: var(--spacing-03); }
+    .styles .sg-view { container: sg-gallery / inline-size; min-width: 0; color: var(--ink); }
+
+    /* The menu: the groups in order, the one on screen filled like its chip. */
+    .styles .sg-menu ol { position: relative; list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-01); }
+    .styles .sg-menu a { display: flex; align-items: center; min-height: 32px; padding: var(--spacing-02) var(--spacing-04); border-radius: var(--radius); color: var(--ink); font: var(--meta-type); font-weight: 600; text-decoration: none; }
+    .styles .sg-menu a:hover { background: var(--accent-alpha); color: var(--ink); }
+    .styles .sg-menu a[aria-current] { background: var(--accent); color: var(--text-on-color); }
+    /* A short screen: a tighter menu, so the left column still ends with the frame. */
+    @media (width >= 900px) and (height < 800px) {
+      .styles .sg-menu a { min-height: 28px; padding-top: var(--spacing-01); padding-bottom: var(--spacing-01); }
+    }
+
+    /* Where the group lives in the builder: a line, sometimes the control. */
+    .styles .sg-where:not(:empty) { margin-top: var(--spacing-04); padding: var(--spacing-01) 0 var(--spacing-01) var(--spacing-04); border-left: 2px solid var(--accent); }
+    .styles .sg-head { display: grid; justify-items: start; gap: var(--spacing-03); }
+    .styles .sg-head p { margin: 0; font: var(--meta-type); color: var(--muted); }
+    .styles .sg-head b, .styles .sg-txt b { color: var(--ink); font-weight: 700; }
+    .styles .sg-gname { margin: 0 0 var(--spacing-05); font: var(--card-title); color: var(--ink); }
+    .js .styles .sg-gname { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }   /* the menu says it */
+    html:not(.js) .styles .sg-group + .sg-group { margin-top: var(--spacing-07); }
+    html:not(.js) .styles .sg-head { margin-bottom: var(--spacing-05); }
+    .styles .sg-looks { display: grid; gap: var(--spacing-05); }
+
+    /* A look: the frame of a slide's picture; the email at its top, like a slide's picture, and its words under it. */
+    .styles .sg-look { display: flex; flex-direction: column; gap: var(--spacing-05); min-width: 0; min-height: calc(var(--fh) + 2 * var(--pad)); margin: 0; padding: var(--pad); background: var(--layer-01); border-radius: var(--radius); }
+    .styles .sg-stage { display: grid; place-items: center; min-width: 0; }
+    .styles .sg-pic { position: relative; width: min(100%, 640px); }
+    .styles .sg-pic img { display: block; width: 100%; max-width: 100%; height: auto; background: var(--background); box-shadow: 0 0 0 1px var(--layer-line); }
+    .styles .sg-pic img.sg-trim { aspect-ratio: var(--iw) / var(--ih); object-fit: cover; object-position: 50% 100%; }
+    .styles .sg-ring { position: absolute; left: calc(var(--x) / var(--iw) * 100%); top: calc(var(--y) / var(--ih) * 100%); width: calc(var(--w) / var(--iw) * 100%); height: calc(var(--h) / var(--ih) * 100%); border: 2px solid var(--accent); border-radius: var(--radius); pointer-events: none; }
+    .styles .sg-ring.sg-gap { box-shadow: 0 0 0 2px var(--background); }
+    .styles .sg-cap { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--spacing-04) var(--spacing-05); margin: 0; }
+    .styles .sg-txt { flex: 1 1 200px; min-width: 0; }
+    .styles .sg-name { margin: 0; font: var(--body-type); font-weight: 700; color: var(--ink); }
+    .styles .sg-txt p { margin: var(--spacing-01) 0 0; font: var(--meta-type); color: var(--muted); }
+
+    /* A crop of a builder still: a window on the picture at the builder's own size. */
+    .styles .sg-crop { position: relative; display: block; flex: none; width: var(--dw); max-width: 100%; aspect-ratio: var(--cw) / var(--ch); overflow: hidden; border-radius: var(--radius); background: var(--background); box-shadow: 0 0 0 1px var(--layer-line); }
+    .styles .sg-crop > span { position: absolute; left: calc(var(--cx) / var(--cw) * -100%); top: calc(var(--cy) / var(--ch) * -100%); width: calc(var(--iw) / var(--cw) * 100%); }
+    .styles .sg-crop img { display: block; width: 100%; max-width: 100%; height: auto; }
+
+    /* Bold, italic and links: the toolbar's letter, the words as the email sets them, the rule. */
+    .styles .sg-keys { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-05); flex: 1 1 300px; }
+    .styles .sg-keys li { display: grid; grid-template-columns: 32px minmax(0, 1fr); column-gap: var(--spacing-04); align-items: center; }
+    .styles .sg-btn { grid-row: span 2; display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--radius-input); background: var(--layer-accent-01); color: var(--ink); font: 700 16px/1 var(--font-sans); }
+    .styles .sg-btn.sg-i { font-style: italic; font-weight: 400; }
+    .styles .sg-btn .fa-solid { font-size: 14px; }
+    .styles .sg-spec { font: 400 16px/22px 'Trebuchet MS', 'Segoe UI', Tahoma, sans-serif; color: var(--mail-body); }
+    .styles .sg-spec b { font-weight: 700; color: var(--mail-body); }
+    .styles .sg-spec .sg-link { font-weight: 700; color: var(--mail-maroon); text-decoration: underline; }
+    .styles .sg-rule { font: var(--meta-type); color: var(--muted); }
+
+    /* Photos: the sizes at true size, the defaults tagged. */
+    .styles .sg-sizes { flex: 1 1 auto; display: flex; flex-direction: column; gap: var(--spacing-05); margin: 0; }
+    .styles .sg-ruler { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: var(--spacing-06); }
+    .styles .sg-ruler li { display: grid; justify-items: center; align-content: end; gap: var(--spacing-03); min-width: 0; max-width: 100%; }
+    .styles .sg-ruler li > img { display: block; max-width: 100%; height: auto; box-shadow: 0 0 0 1px var(--layer-line); }
+    .styles .sg-ruler .sg-rule { display: inline-flex; align-items: center; height: 28px; white-space: nowrap; }   /* not a chip: the builder has no square size */
+    .styles .sg-pill { display: inline-flex; align-items: center; height: 28px; padding: 0 var(--spacing-04); border: 1px solid var(--border-strong-01); border-radius: var(--radius-pill); background: var(--background); color: var(--ink); font: var(--meta-type); white-space: nowrap; }
+    .styles .sg-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--spacing-02); min-height: 20px; }
+    .styles .sg-tag { display: inline-flex; align-items: center; height: 20px; padding: 0 var(--spacing-03); border-radius: var(--radius-pill); background: var(--tag-background-blue); color: var(--tag-color-blue); font: 700 12px/16px var(--font-sans); }
+    .styles .sg-sizes figcaption { font: var(--meta-type); color: var(--muted); }
+
+    /* The three photo notes: a picture of the rule, then its words. */
+    .styles .sg-note .sg-stage { place-items: start; }   /* small pictures line up with their words */
+    .styles .sg-note .sg-txt p { display: flex; gap: var(--spacing-03); align-items: baseline; margin-top: var(--spacing-03); }
+    .styles .sg-note p .fa-solid, .styles .sg-pair figcaption .fa-solid { flex: none; font-size: 14px; }
+    .styles .sg-yes .fa-solid { color: var(--support-success); }
+    .styles .sg-no .fa-solid { color: var(--support-error); }
+    .styles .sg-mini { list-style: none; margin: var(--spacing-02) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--spacing-06); }
+    .styles .sg-mini li { position: relative; }
+    .styles .sg-mini li > .fa-solid { position: absolute; right: -7px; top: -7px; font-size: 18px; border-radius: var(--radius-round); background: var(--background); box-shadow: 0 0 0 2px var(--background); }
+    .styles .sg-fmts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--spacing-03); }
+    .styles .sg-fmts li { height: 32px; padding: 0 var(--spacing-04); border-radius: var(--radius-pill); background: var(--tag-background-gray); color: var(--tag-color-gray); font: 700 14px/32px var(--font-sans); white-space: nowrap; }
+    .styles .sg-pair { display: flex; flex-wrap: wrap; gap: var(--spacing-08); }
+    .styles .sg-pair figure { margin: 0; display: grid; justify-items: start; gap: var(--spacing-03); }
+    .styles .sg-pair img { display: block; max-width: 100%; height: auto; box-shadow: 0 0 0 1px var(--layer-line); }
+    .styles .sg-pair figcaption { display: flex; align-items: baseline; gap: var(--spacing-03); font: var(--meta-type); color: var(--ink); font-weight: 600; }
+
+    /* A flyer, drawn: a maroon band, a big title, a wall of lines. */
+    .styles .sg-flyer { display: grid; align-content: start; gap: 5px; width: 96px; height: 120px; padding: var(--spacing-03); background: var(--background); box-shadow: 0 0 0 1px var(--layer-line); }
+    .styles .sg-flyer i { display: block; height: 4px; border-radius: 2px; background: var(--mail-gray-300); }
+    .styles .sg-flyer i:first-child { height: 16px; margin: calc(-1 * var(--spacing-03)) calc(-1 * var(--spacing-03)) 2px; border-radius: 0; background: var(--mail-maroon); }
+    .styles .sg-flyer i:nth-child(2), .styles .sg-flyer i:nth-child(3) { height: 8px; background: var(--mail-ink); }
+    .styles .sg-flyer i:nth-child(3) { width: 70%; }
+    .styles .sg-flyer i:nth-child(odd):not(:first-child):not(:nth-child(3)) { width: 85%; }
+
+    /* Motion, only for those who have not asked for less. */
+    @media (prefers-reduced-motion: no-preference) {
+      .chips a, .styles .sg-menu a { transition: background-color var(--duration-fast-02) var(--ease-productive), color var(--duration-fast-02) var(--ease-productive), border-color var(--duration-fast-02) var(--ease-productive); }
+      .progress span { transition: width var(--duration-moderate-02) var(--ease-productive); }
+      .dots button::before { transition: width var(--duration-moderate-02) var(--ease-productive), background-color var(--duration-moderate-02) var(--ease-productive); }
+      /* The words and the picture move; the controls hold still. */
+      .slide.in-next > .frame, .slide.in-next > .side > :not(.foot), .styles .sg-look.in-next { animation: in-next var(--duration-moderate-02) var(--ease-productive); }
+      .slide.in-back > .frame, .slide.in-back > .side > :not(.foot), .styles .sg-look.in-back { animation: in-back var(--duration-moderate-02) var(--ease-productive); }
+      @keyframes in-next { from { opacity: 0; transform: translateX(20px); } }
+      @keyframes in-back { from { opacity: 0; transform: translateX(-20px); } }
+      .pin { transition: opacity var(--duration-moderate-02) var(--ease-productive); }
+      .pin .tip { transition: opacity var(--duration-fast-02) var(--ease-productive), visibility var(--duration-fast-02) var(--ease-productive); }
+    }
+  </style>
 </head>
-<body style="margin:0;background:var(--background)">
-  <main class="ht-page">
-    <p class="ht-crumb"><a href="/">ERC Content Desk</a> / <a href="/how-to/">How-tos</a></p>
-    <h1>How to make a research brief</h1>
-    <p class="ht-lede">From the paper to the author, in the desk's seven stages.</p>
-<h2>What you need</h2>
-<ul>
-<li>The desk password. The handoff document says who holds it.</li>
-<li>Google Drive for desktop, with the shared drive in Finder. Each brief gets a folder in <code>ERC Content Desk/ERC Research Briefs/</code>.</li>
-<li>Claude Code, opened on that <code>ERC Research Briefs</code> folder. In each prompt below, put your brief's folder in place of holzman-2026.</li>
-<li>Node.js, Grammarly, Word, Outlook and Chrome.</li>
-</ul>
-<p>The house rules, such as <code>VOICE.md</code> and <code>REPORTING.md</code>, sit beside the brief folders in <code>erc-research-briefs/</code>. A brief already with its author picks up at step 5.</p>
+<body>
+  <header class="topbar"><nav class="topbar-crumbs" aria-label="Breadcrumb"><a class="topbar-brand" href="/">ERC Content Desk</a><span class="topbar-sep">/</span><a href="/how-to/">How-tos</a></nav></header>
 
-<h2>1. Paper and notes</h2>
-<ol>
-<li>Open <a href="/#briefs">Research briefs</a>, sign in with the desk password and press <strong>New brief</strong>.</li>
-<li>The desk fills <strong>Author's last name</strong> from the first author. Change it to the Texas A&amp;M author when that is someone else.</li>
-<li>Always add a <strong>Topic word</strong>. Authors repeat, and the desk cannot rename the folder later.</li>
-<li>Put your own name in <strong>Brief author</strong>. This browser remembers it.</li>
-</ol>
-<p>If a step fails with a Drive or script message, see <a href="/how-to/google-scripts/">Bring back the Google scripts</a>.</p>
+  <div class="band"><div class="in">
+    <div>
+      <div class="eyebrow">How to</div>
+      <h1>Make a research brief</h1>
+      <p class="lede">From the paper to a live brief, in the desk's seven stages.</p>
+    </div>
+    <a class="open" href="/#briefs" target="_blank" rel="noopener">Open Research briefs<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+  </div></div>
 
-<h2>2. Draft</h2>
-<ol>
-<li>Press <strong>Write the draft</strong>. If a step still fails after <strong>Try again</strong>, write to the desk's owner. The handoff document has the address.</li>
-<li>If the word pill says short, add interpretation to a thin section, never a restatement.</li>
-</ol>
-<div class="ht-note"><p>From here the folder's <code>brief-draft.md</code> is the brief, not the page. Every edit goes in the file. <strong>Redraft</strong> writes over it, so use it before you edit, never after.</p></div>
+  <main class="page">
+    <nav class="chips" aria-label="Parts">
+      <a href="#paper"><span class="step" aria-hidden="true">1</span>Paper and notes</a>
+      <a href="#draft"><span class="step" aria-hidden="true">2</span>Draft</a>
+      <a href="#proof"><span class="step" aria-hidden="true">3</span>Your proof</a>
+      <a href="#author">After the author</a>
+    </nav>
 
-<h2>3. Your proof</h2>
-<p>The first time, make the Grammarly voice from <code>grammarly-voice-setup.md</code> in <code>erc-research-briefs/</code>.</p>
-<ol>
-<li>Open <code>brief-for-grammarly.md</code> in the folder and paste all of it into Grammarly. Choose ERC Research Brief Voice and run the Humanizer. The setup file lists which changes to refuse.</li>
-<li>Settle each flag in <code>check-notes.md</code>. Keep a number as the paper prints it on the page named. Any you cannot settle become questions for the author.</li>
-<li>Check the <strong>Brief</strong> table or chart against the <strong>Paper</strong> one beside it. Every number must match at the paper's precision. <code>REPORTING.md</code> has the rest. Table fixes go in <code>proposed-visual.md</code>, in the folder or its <code>figures/</code>.</li>
-<li>Paste your proofed text into Claude Code after this prompt:
-<p><code>Put my proofed text below into holzman-2026/brief-draft.md word for word. Keep its byline, headings, bold, its [Table 1 here] or [Figure 1 here] line and references. List every change to a number, a hedge or a causal verb.</code></p></li>
-<li>Check each listed change against the paper.</li>
-</ol>
+    <div class="deck" role="region" aria-roledescription="carousel" aria-label="Make a research brief">
+      <div class="progress" aria-hidden="true"><span></span></div>
+      <p class="sr-only" aria-live="polite" data-said></p>
 
-<h2>4. With author</h2>
-<p>The desk stops at <strong>Your proof</strong>. From here the folder is the record.</p>
-<ol>
-<li>Ask Claude Code: <code>Run build-author-docx.js from erc-research-briefs on the holzman-2026 folder.</code> If it says docx is missing, ask it to run <code>npm install docx@9.7.1</code>.</li>
-<li>It writes <code>&lt;folder&gt;-author-review.docx</code> into the brief's folder. Any gap shows in red as "Fix before sending: ..." on the page and in the terminal. Never send a copy with a red line.</li>
-<li>Email the Word copy to the author of record with a reply date. Add any number questions from step 3.</li>
-</ol>
+      <!-- ===== Paper and notes ===== -->
+      <section class="chapter" id="paper" data-name="Paper and notes" aria-labelledby="h-paper">
+        <h2 class="pane-title" id="h-paper"><span class="step" aria-hidden="true">1</span><span class="sr-only">Step 1: </span>Paper and notes</h2>
 
-<h2>5. Approved</h2>
-<ol>
-<li>Save the author's reply in the brief's folder under a new name, like <code>holzman-2026-author-edits.docx</code>. Under the old name, a rebuild would overwrite it. Never edit their file.</li>
-<li>Ask Claude Code:
-<p><code>Number every tracked change and comment in holzman-2026/holzman-2026-author-edits.docx. Mark each Accept or Push back, with the rule from erc-research-briefs/VOICE.md or REPORTING.md. Change no file yet.</code></p></li>
-<li>Decide each one yourself. Accept facts, corrected numbers, added hedges and plainer wording. Push back on claims firmer than the paper, jargon, "we" and a dropped null result.</li>
-<li>Tell Claude which numbered changes to apply. Then reread <code>brief-draft.md</code> for broken sentences.</li>
-<li>Reply to the author with a one-line reason for each change you did not make.</li>
-<li>Send a second round only if a finding, a number or the table moved. Rebuild the Word copy as in step 4.</li>
-<li>Approved means the author's yes in writing. Save that email in the folder as <code>approved.pdf</code>. In Outlook, choose File, Print, then PDF, Save as PDF. From then on the words are frozen.</li>
-</ol>
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Sign in with the desk password, then press <b>New brief</b>.</p>
+            
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:48;--cy:184;--cw:2464;--ch:1240">
+              <div class="crop"><div class="zoom"><img src="shots/hub.png" width="2560" height="1800" loading="lazy" alt="Research briefs: New brief at the head, then a table of four briefs, each with its title, a row of seven stage dots with the current one named, and what it waits for." /></div></div>
+              <button type="button" class="pin" style="--x:92.4;--y:6.5" aria-label="New brief: starts one from the paper and your notes"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">New brief: starts one from the paper and your notes</span></button>
+              <button type="button" class="pin" style="--x:34.7;--y:31.2" aria-label="Where it is: the seven stages, with the current one named"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Where it is: the seven stages, with the current one named</span></button>
+              <button type="button" class="pin" style="--x:84;--y:32.7" aria-label="Waits for: the next thing to do, and since when"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Waits for: the next thing to do, and since when</span></button>
+              <button type="button" class="pin" style="--x:13.3;--y:31" aria-label="The title opens the brief's own page"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">The title opens the brief's own page</span></button>
+            </div>
+          </div>
+        </div>
 
-<h2>6. HTML</h2>
-<p>Start only after the approval. Page breaks depend on the final words.</p>
-<ol>
-<li>Ask Claude Code:
-<p><code>Build holzman-2026/brief.html from a copy of erc-research-briefs/_template/brief-template.html. Never edit the template. Follow STANDARDIZATION.md and REPORTING.md in erc-research-briefs, with erc-research-briefs/bowen-2026/brief.html as the example. The visual is proposed-visual.md. Never cut or reword brief-draft.md to fit: give me options. Build a page at a time and say how far each runs over.</code></p></li>
-<li>Open <code>brief.html</code> in Chrome and press Cmd+P. Choose Save as PDF. Under More settings, choose Letter and Margins None, tick Background graphics and untick Headers and footers. Print while online so the fonts load.</li>
-<li>Send Claude one problem per message, then print again.</li>
-</ol>
-<ul>
-<li>A page cut off at the bottom, or white space under it: ask for the options. Words move between pages and are never cut.</li>
-<li>Em dashes: press Cmd+F and type Option+Shift+hyphen. Search for "[" too, for unfilled placeholders.</li>
-<li>A broken logo: its path should start <code>../erc-research-briefs/assets/</code>.</li>
-</ul>
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Once you choose the paper, the desk reads it and fills in the byline below.</p>
+            
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:0;--cy:0;--cw:2560;--ch:1800">
+              <div class="crop"><div class="zoom"><img src="shots/new-brief.png" width="2560" height="1800" loading="lazy" alt="New brief open above the table: a file field for the paper as a PDF and one for your notes, Paste instead under the notes, and Create the brief greyed with Choose the paper and your notes first under it." /></div></div>
+              <button type="button" class="pin" style="--x:16.3;--y:31.6" aria-label="The paper, as a PDF: the desk reads it and fills in the byline"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The paper, as a PDF: the desk reads it and fills in the byline</span></button>
+              <button type="button" class="pin" style="--x:62.1;--y:31.6" aria-label="Your notes, as a file: they steer the draft"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Your notes, as a file: they steer the draft</span></button>
+              <button type="button" class="pin" style="--x:55;--y:37.7" aria-label="Paste instead: opens a box to paste or type the notes"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Paste instead: opens a box to paste or type the notes</span></button>
+              <button type="button" class="pin" style="--x:12.9;--y:43.4" aria-label="Create the brief: opens once both files are in and the paper is read"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">Create the brief: opens once both files are in and the paper is read</span></button>
+            </div>
+          </div>
+        </div>
 
-<h2>7. Live</h2>
-<ol>
-<li>Save the PDF in the brief's folder, named like <code>Economics-of-Encouragement-ERC-RB-26.pdf</code>.</li>
-<li>Open Drive in Chrome and share the PDF as Anyone with the link, Viewer. Copy the link.</li>
-<li>Add a row to <code>ERC-Research-Briefs-Library-Metadata.xlsx</code> in <code>erc-research-briefs/</code>, copying the rows above. Ask at the ERC who at the library takes it.</li>
-<li>On <a href="/#team">Submit content</a>, paste the link and pick <strong>New research</strong>, then <strong>ERC Research</strong>. Type the brief's title in <strong>Title</strong> and the Executive Summary's first paragraph in <strong>Description</strong>. Press <strong>Add to the queue</strong>.</li>
-<li>On <a href="/#sort">Content Sort</a>, fill any blank <strong>Date</strong>, <strong>Authors</strong>, <strong>Source</strong> or <strong>Topic</strong>. Leave <strong>ERC Newsletter only</strong> unticked and press <strong>Keep and next</strong>. <a href="/how-to/sort/">How to sort</a> covers Finalize and Publish.</li>
-<li>On <a href="/#newsletter">Newsletter</a>'s <strong>Next issue</strong>, find the brief under <strong>Ready to add</strong> and press <strong>Add</strong>.</li>
-<li>Email the author of record the public link, with thanks.</li>
-</ol>
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Finish the byline, then press <b>Create the brief</b>. It makes the brief's folder on the team drive and opens its page.</p>
+            <p class="note"><span class="n">1</span><span><b>Author's last name</b> is the first author's. Change it to the Texas A&amp;M author when that is someone else.</span></p>
+            <p class="note"><span class="n">2</span><span>Always add a <b>Topic word</b>. Authors repeat, and the desk can't rename the folder later.</span></p>
+            <p class="note"><span class="n">3</span><span>Put your own name in <b>Brief author</b>. This browser remembers it.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:98;--cy:124;--cw:2364;--ch:1100">
+              <div class="crop"><div class="zoom"><img src="shots/byline.png" width="2560" height="1800" loading="lazy" alt="The byline under New brief, filled from the paper: title, authors, journal, last name and year, then an empty Topic word with the folder's name under it, Author of record, and Brief author." /></div></div>
+              <button type="button" class="pin" style="--x:25.2;--y:55.6" aria-label="Author's last name: starts the folder's name"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Author's last name: starts the folder's name</span></button>
+              <button type="button" class="pin up" style="--x:25.2;--y:70.5" aria-label="Topic word: ends the folder's name"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Topic word: ends the folder's name</span></button>
+              <button type="button" class="pin up" style="--x:25.2;--y:89.1" aria-label="Brief author: named on the draft's cover"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Brief author: named on the draft's cover</span></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Draft ===== -->
+      <section class="chapter" id="draft" data-name="Draft" aria-labelledby="h-draft">
+        <h2 class="pane-title" id="h-draft"><span class="step" aria-hidden="true">2</span><span class="sr-only">Step 2: </span>Draft</h2>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Press <b>Write the draft</b>. Notes typed in the box go with it, saved or not.</p>
+            <p class="note"><span class="n">3</span><span>If you leave the page, <b>Continue</b> picks up where it stopped.</span></p>
+            <p class="note warn"><span class="n">!</span><span>If a step fails with a Drive or script message, see <a href="/how-to/google-scripts/">Bring back the Google scripts</a>.</span></p>
+            <p class="note warn"><span class="n">!</span><span>If it fails again after <b>Try again</b> for any other reason, write to the desk's owner. READ ME FIRST - ERC handoff has the address.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:48;--cy:184;--cw:2464;--ch:1406">
+              <div class="crop"><div class="zoom"><img src="shots/brief.png" width="2560" height="1800" loading="lazy" alt="A brief's page at Paper and notes: the title, its folder link, the seven stages, the notes box with Save notes, Write the draft, and In the folder listing the paper and notes.md." /></div></div>
+              <button type="button" class="pin" style="--x:45.7;--y:10.2" aria-label="Opens the brief's folder on the team drive"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Opens the brief's folder on the team drive</span></button>
+              <button type="button" class="pin" style="--x:33.8;--y:58.2" aria-label="Your notes: they steer the draft"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Your notes: they steer the draft</span></button>
+              <button type="button" class="pin up" style="--x:11.2;--y:94.2" aria-label="Write the draft: reads the paper, plans the pages, writes the brief"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Write the draft: reads the paper, plans the pages, writes the brief</span></button>
+              <button type="button" class="pin" style="--x:84.1;--y:43.3" aria-label="In the folder: each file opens in Drive"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">In the folder: each file opens in Drive</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide words" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">When it is done, the stage is Your proof and the page shows the brief, its word count and its table or chart.</p>
+            <p class="note warn"><span class="n">!</span><span><b>Redraft</b> writes the draft again from the paper, over <code>brief-draft.md</code>. Use it before you edit, never after.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="text">
+            <section class="steps" aria-labelledby="h-draft-1-0">
+              <h3 id="h-draft-1-0">Before you edit</h3>
+              <ol>
+                <li>The pill beside the word count measures against 1,300 to 2,000 words. If it says short, add interpretation to a thin section, never a restatement.</li>
+                <li>From here <code>brief-draft.md</code> in the folder is the brief, not the page. Every edit goes in the file.</li>
+              </ol>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Your proof ===== -->
+      <section class="chapter" id="proof" data-name="Your proof" aria-labelledby="h-proof">
+        <h2 class="pane-title" id="h-proof"><span class="step" aria-hidden="true">3</span><span class="sr-only">Step 3: </span>Your proof</h2>
+
+        <div class="slide words" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Proof the draft in the folder's files. The first time, make the Grammarly voice from <code>grammarly-voice-setup.md</code> in <code>erc-research-briefs/</code>.</p>
+            
+            <div class="foot"></div>
+          </div>
+          <div class="text">
+            <section class="steps" aria-labelledby="h-proof-0-0">
+              <h3 id="h-proof-0-0">Proof it</h3>
+              <ol>
+                <li>Paste all of <code>brief-for-grammarly.md</code> into Grammarly. Choose ERC Research Brief Voice and run the Humanizer. The setup file lists what to check in each change.</li>
+                <li>Settle each flag in <code>check-notes.md</code>. Keep a number as the paper prints it on the page named. Any you can't settle become questions for the author.</li>
+                <li>On the brief's page, check the <b>Brief</b> table or chart against the <b>Paper</b> one beside it. Every number must match at the paper's precision. Fixes go in <code>proposed-visual.md</code>, in the folder's <code>figures/</code> or the folder. <code>REPORTING.md</code> has the rest.</li>
+              </ol>
+            </section>
+          </div>
+        </div>
+
+        <div class="slide words" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Put your proofed text back in the draft with Claude Code, opened on the <code>ERC Research Briefs</code> folder. In each prompt, put your brief's folder in place of holzman-2026.</p>
+            
+            <div class="foot"></div>
+          </div>
+          <div class="text">
+            <section class="steps" aria-labelledby="h-proof-1-0">
+              <h3 id="h-proof-1-0">Back into the draft</h3>
+              <ol>
+                <li>Paste your text into Claude Code after this prompt: <code>Put my text below into holzman-2026/brief-draft.md word for word. Keep its byline, headings, bold, [Table 1 here] or [Figure 1 here] line and references. List every change to a number, a hedge or a causal verb.</code></li>
+                <li>Check each listed change against the paper.</li>
+              </ol>
+            </section>
+          </div>
+        </div>
+
+        <div class="slide words" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">The desk stops at Your proof. From here the brief's folder is the record.</p>
+            
+            <div class="foot"></div>
+          </div>
+          <div class="text">
+            <section class="steps" aria-labelledby="h-proof-2-0">
+              <h3 id="h-proof-2-0">With author</h3>
+              <ol>
+                <li>Ask Claude Code: <code>Run build-author-docx.js from erc-research-briefs on the holzman-2026 folder.</code> If it says docx is missing, ask it to run <code>npm install docx@9.7.1</code>.</li>
+                <li>It writes <code>holzman-2026-author-review.docx</code> into the folder. A gap shows in red as "Fix before sending". Never send a copy with a red line.</li>
+                <li>Email the Word copy to the author of record with a reply date. Add any number questions from your proof.</li>
+              </ol>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== After the author ===== -->
+      <section class="chapter" id="author" data-name="After the author" aria-labelledby="h-author">
+        <h2 class="pane-title" id="h-author">After the author</h2>
+
+        <div class="slide words" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Approved means the author's yes in writing. From then on the words are frozen.</p>
+            
+            <div class="foot"></div>
+          </div>
+          <div class="text">
+            <section class="steps" aria-labelledby="h-author-0-0">
+              <h3 id="h-author-0-0">Approved</h3>
+              <ol>
+                <li>Save their reply in the folder under a new name, like <code>holzman-2026-author-edits.docx</code>, so a rebuild can't overwrite it. Never edit their file.</li>
+                <li>Ask Claude Code: <code>Number every tracked change and comment in holzman-2026/holzman-2026-author-edits.docx. Mark each Accept or Push back, with its rule from erc-research-briefs/VOICE.md or REPORTING.md. Change no file yet.</code></li>
+                <li>Decide each one yourself. Accept facts, corrected numbers, added hedges and plainer wording. Push back on claims firmer than the paper, jargon, "we" and a dropped null result.</li>
+                <li>Tell Claude which numbered changes to apply, then reread <code>brief-draft.md</code>. Reply to the author with a one-line reason for each change you didn't make.</li>
+                <li>Send a second round only if a finding, a number or the table moved. Build the Word copy again for it.</li>
+                <li>Save their yes in the folder as <code>approved.pdf</code>. In Outlook, choose File, Print, then PDF, Save as PDF.</li>
+              </ol>
+            </section>
+          </div>
+        </div>
+
+        <div class="slide words" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Start only after the approval. Page breaks depend on the final words, and words move between pages, never cut.</p>
+            
+            <div class="foot"></div>
+          </div>
+          <div class="text">
+            <section class="steps" aria-labelledby="h-author-1-0">
+              <h3 id="h-author-1-0">HTML</h3>
+              <ol>
+                <li>Ask Claude Code: <code>Build holzman-2026/brief.html from a copy of erc-research-briefs/_template/brief-template.html, like erc-research-briefs/bowen-2026/brief.html. Follow STANDARDIZATION.md and REPORTING.md in erc-research-briefs. The visual is proposed-visual.md. Never cut or reword brief-draft.md to fit: give me options.</code></li>
+                <li>Open <code>brief.html</code> in Chrome, press Cmd+P and choose Save as PDF: Letter, Margins None, Background graphics on, Headers and footers off. Print while online so the fonts load.</li>
+                <li>Send Claude one problem per message, then print again.</li>
+              </ol>
+            </section>
+            <section class="steps" aria-labelledby="h-author-1-1">
+              <h3 id="h-author-1-1">If it looks wrong</h3>
+              <ol>
+                <li>A page cut off, or white space under it: ask Claude for the options.</li>
+                <li>Em dashes: press Cmd+F and type Option+Shift+hyphen. Search for "[" too, for unfilled placeholders.</li>
+                <li>A broken logo: its path should start <code>../erc-research-briefs/assets/</code>.</li>
+              </ol>
+            </section>
+          </div>
+        </div>
+
+        <div class="slide words" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Put the PDF online, then send it through the desk like any other item.</p>
+            
+            <div class="foot"></div>
+          </div>
+          <div class="text">
+            <section class="steps" aria-labelledby="h-author-2-0">
+              <h3 id="h-author-2-0">Live</h3>
+              <ol>
+                <li>Save the PDF in the folder, named like <code>Economics-of-Encouragement-ERC-RB-26.pdf</code>. In Drive, share it as Anyone with the link, Viewer, and copy the link.</li>
+                <li>Add a row to <code>ERC-Research-Briefs-Library-Metadata.xlsx</code> in <code>erc-research-briefs/</code>, copying the rows above. Ask at the ERC who at the library takes it.</li>
+                <li>On <a href="/#team">Submit content</a>, paste the link and pick <b>New research</b>, then <b>ERC Research</b>. The brief's title is the <b>Title</b>, the Executive Summary's first paragraph the <b>Description</b>. Press <b>Add to the queue</b>.</li>
+                <li>On <a href="/#sort">Content Sort</a>, fill any blank <b>Date</b>, <b>Authors</b>, <b>Source</b> or <b>Topic</b>. Leave <b>ERC Newsletter only</b> unticked and press <b>Keep and next</b>.</li>
+                <li>On <a href="/#newsletter">Newsletter</a>'s <b>Next issue</b>, press <b>Add</b> on it under <b>Ready to add</b>.</li>
+                <li>Email the author of record the public link, with thanks.</li>
+              </ol>
+              <p class="links"><a href="/how-to/sort/">How to sort, for Finalize and Publish</a></p>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="styles" hidden aria-hidden="true"><div class="sg-where"></div></section>
+
+      <div class="controls" role="group" aria-label="Slides">
+        <button type="button" class="go back"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>Back</button>
+        <div class="dots"></div>
+        <button type="button" class="go next">Next<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+      </div>
+    </div>
+    <section class="need" aria-labelledby="h-need"><h2 id="h-need">What you need</h2><ul><li>The desk password. READ ME FIRST - ERC handoff, in the shared drive, says who has it.</li><li>Google Drive for desktop, with the shared drive in Finder. Each brief gets a folder in <code>ERC Content Desk/ERC Research Briefs/</code>.</li><li>Claude Code, opened on that <code>ERC Research Briefs</code> folder. The house rules, like <code>VOICE.md</code> and <code>REPORTING.md</code>, sit beside the brief folders in <code>erc-research-briefs/</code>.</li><li>Node.js, Grammarly, Word, Outlook and Chrome.</li></ul></section>
   </main>
+
+  <script>
+    // ---- The pins: one clicked keeps its label open; on a touch screen a tap on the still shows them ----
+    (() => {
+      let touch = false;   // the last press was a finger or a pen, not a mouse
+      addEventListener('pointerdown', (e) => { touch = e.pointerType !== 'mouse'; }, true);
+      const states = ['is-open', 'is-shown'];
+      const shut = (root) => root.querySelectorAll(states.map((c) => '.' + c).join(',')).forEach((n) => n.classList.remove(...states));
+
+      document.querySelectorAll('.shot').forEach((shot) => {
+        shot.addEventListener('click', (e) => {
+          const pin = e.target.closest('.pin');
+          if (pin) {
+            const open = !pin.classList.contains('is-open');
+            shot.querySelectorAll('.pin.is-open').forEach((p) => p.classList.remove('is-open'));
+            pin.classList.toggle('is-open', open);
+            if (touch) shot.classList.add('is-shown');
+          } else if (touch) {
+            const on = !shot.classList.contains('is-shown');
+            shut(shot);
+            shot.classList.toggle('is-shown', on);
+          }
+        });
+      });
+      document.addEventListener('click', (e) => { if (!e.target.closest('.shot')) shut(document); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') shut(document); });
+    })();
+
+    // ---- The deck: the slides or the Styles looks, one at a time; the hash names the part ----
+    (() => {
+      const deck = document.querySelector('.deck');
+      const chips = [...document.querySelectorAll('.chips a')];
+      const controls = deck.querySelector('.controls');
+      const back = controls.querySelector('.back');
+      const next = controls.querySelector('.next');
+      const dots = controls.querySelector('.dots');
+      const bar = deck.querySelector('.progress span');
+      const said = deck.querySelector('[data-said]');
+      const gallery = deck.querySelector('.styles');
+      const where = gallery.querySelector('.sg-where');
+      const menu = [...gallery.querySelectorAll('.sg-menu a')];
+      const still = matchMedia('(prefers-reduced-motion: reduce)');
+
+      // Two runs share the controls: the slides, chapter by chapter, and the looks, group by group.
+      const runs = {
+        walk: { items: [...deck.querySelectorAll('.slide')], parts: [...deck.querySelectorAll('.chapter')], home: (s) => s.querySelector('.foot'), at: -1 },
+        styles: { items: [...gallery.querySelectorAll('.sg-look')], parts: [...gallery.querySelectorAll('.sg-group')], home: () => gallery.querySelector('.sg-foot'), at: -1 },
+      };
+      // A group's line on where it lives in the builder sits under the menu while the group is on screen.
+      const heads = new Map(runs.styles.parts.map((g) => [g, g.querySelector('.sg-head')]));
+      let mode = '';
+      let ready = false;
+
+      const partOf = (s) => s.closest('.chapter, .sg-group');
+      const firstOf = (m, p) => runs[m].items.indexOf(p.querySelector(m === 'walk' ? '.slide' : '.sg-look'));
+      const mark = (links, hash) => links.forEach((a) => { if (a.hash === hash) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
+
+      function show(m, i, focusDot) {
+        const run = runs[m];
+        i = Math.max(0, Math.min(run.items.length - 1, i));
+        const turning = m === mode;   // a turn inside the run, not a swap between the slides and Styles
+        if (turning && i === run.at) return;
+        const was = turning ? run.at : -1;
+        // The controls move to the new foot; the key they held comes with them.
+        const held = controls.contains(document.activeElement) ? document.activeElement : null;
+        const onDot = held?.parentNode === dots;
+        mode = m;
+        run.at = i;
+        deck.dataset.mode = m;
+        const s = run.items[i];
+        const p = partOf(s);
+        const own = [...p.querySelectorAll(m === 'walk' ? '.slide' : '.sg-look')];
+        deck.querySelectorAll('.is-open, .is-shown').forEach((n) => n.classList.remove('is-open', 'is-shown'));
+        run.parts.forEach((x) => x.classList.toggle('is-on', x === p));
+        run.items.forEach((x) => { x.classList.toggle('is-on', x === s); x.classList.remove('in-next', 'in-back'); });
+        own.forEach((x, n) => x.setAttribute('aria-label', `${n + 1} of ${own.length}`));
+        if (was >= 0 && !still.matches) { void s.offsetWidth; s.classList.add(i > was ? 'in-next' : 'in-back'); }
+        run.home(s).append(controls);
+        controls.setAttribute('aria-label', m === 'walk' ? 'Slides' : 'Looks');
+
+        const hash = m === 'walk' ? '#' + p.id : '#options';
+        mark(chips, hash);
+        if (m === 'styles') {
+          where.replaceChildren(...(heads.get(p) ? [heads.get(p)] : []));
+          mark(menu, '#' + p.id);
+        }
+        dots.replaceChildren(...own.map((x, n) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.setAttribute('aria-label', `${p.dataset.name}, ${n + 1} of ${own.length}`);
+          if (x === s) b.setAttribute('aria-current', 'step');
+          b.addEventListener('click', () => show(m, run.items.indexOf(x), true));
+          return b;
+        }));
+        back.disabled = i === 0;
+        next.disabled = i === run.items.length - 1;
+        if (focusDot || onDot) dots.querySelector('[aria-current]').focus({ preventScroll: true });
+        else if (held === back) (back.disabled ? next : back).focus({ preventScroll: true });
+        else if (held === next) (next.disabled ? back : next).focus({ preventScroll: true });
+
+        bar.style.width = `${((i + 1) / run.items.length) * 100}%`;
+        if (location.hash !== hash) history.replaceState(null, '', hash);
+        if (ready) {
+          const words = s.querySelector('.cap, .sg-name');
+          said.textContent = `${p.dataset.name}, ${own.indexOf(s) + 1} of ${own.length}.${words ? ' ' + words.textContent.trim() : ''}`;
+        }
+        // The neighbours' pictures load now, so the next click shows them at once.
+        [i - 1, i + 1].forEach((n) => run.items[n]?.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; }));
+      }
+
+      // What a hash opens: a chapter's first slide (#items is on the first Outline slide), or Styles,
+      // where it was left, or at a group's first look.
+      function target(hash) {
+        let el = null;
+        try { el = hash.length > 1 ? document.getElementById(decodeURIComponent(hash.slice(1))) : null; } catch (e) { return null; }
+        if (!el || !deck.contains(el)) return null;
+        if (gallery.contains(el)) {
+          const g = el.closest('.sg-group');
+          return ['styles', g ? firstOf('styles', g) : Math.max(0, runs.styles.at)];
+        }
+        const s = el.closest('.slide') || el.closest('.chapter')?.querySelector('.slide');
+        return s ? ['walk', runs.walk.items.indexOf(s)] : null;
+      }
+
+      back.addEventListener('click', () => show(mode, runs[mode].at - 1));
+      next.addEventListener('click', () => show(mode, runs[mode].at + 1));
+      // A part's chip opens its first slide; the Styles chip swaps the slides for the looks.
+      chips.forEach((a) => a.addEventListener('click', (e) => {
+        const t = target(a.hash);
+        if (!t) return;
+        e.preventDefault();
+        show(...t);
+      }));
+      // A group in the menu opens its first look.
+      menu.forEach((a) => a.addEventListener('click', (e) => {
+        const t = target(a.hash);
+        if (!t) return;
+        e.preventDefault();
+        show(...t);
+      }));
+      // A hash typed or followed opens its part at the top of the page.
+      addEventListener('hashchange', () => { const t = target(location.hash); if (t) { show(...t); scrollTo(0, 0); } });
+      // The arrows turn slides or looks only while the deck is on screen.
+      const onScreen = () => { const r = deck.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; };
+      document.addEventListener('keydown', (e) => {
+        if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+        if (!onScreen() || e.target.closest?.('input, textarea, select, [contenteditable]')) return;
+        if (e.key === 'ArrowRight') { e.preventDefault(); show(mode, runs[mode].at + 1); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); show(mode, runs[mode].at - 1); }
+      });
+
+      // A swipe on a touch screen moves one slide or look; one along the group menu is left to it.
+      let x0 = null, y0 = null;
+      deck.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.sg-menu')) { x0 = null; return; }
+        x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+      }, { passive: true });
+      deck.addEventListener('touchend', (e) => {
+        if (x0 === null) return;
+        const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+        if (Math.abs(dx) > 60 && Math.abs(dy) < 40) show(mode, runs[mode].at + (dx < 0 ? 1 : -1));
+        x0 = null;
+      }, { passive: true });
+
+      // Opened on a part, its first slide; on #options, Styles; otherwise the first slide.
+      show(...(target(location.hash) || ['walk', 0]));
+      ready = true;
+    })();
+  </script>
   <script type="module" src="/js/problem-mount.js?v=2"></script>
 </body>
 </html>

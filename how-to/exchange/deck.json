@@ -1,0 +1,185 @@
+{
+  "title": "How to change the Policy Exchange",
+  "h1": "Change the Policy Exchange",
+  "lede": "Publish new items, set the home page's big card, fix or remove what is live, and change the look.",
+  "open": {
+    "label": "Open Policy Exchange",
+    "href": "https://erc-content-desk.vercel.app/#exchange"
+  },
+  "chapters": [
+    {
+      "id": "publish",
+      "name": "Publish",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Open <b>Policy Exchange</b> from the desk's front page.",
+          "notes": [
+            {
+              "n": "1",
+              "html": "An item reaches the site only if <b>ERC Newsletter only</b> stays unticked. An A&amp;M campus event comes ticked.",
+              "warn": false,
+              "go": false
+            }
+          ],
+          "shot": "hub"
+        },
+        {
+          "cap": "Only the <b>Adding</b> rows go to the site.",
+          "notes": [
+            {
+              "n": "3",
+              "html": "A row that needs a fix names what is missing. Click those words to fix it in place.",
+              "warn": false,
+              "go": false
+            }
+          ],
+          "shot": "publish"
+        },
+        {
+          "cap": "Press <b>Publish N to the Exchange</b>, type the desk password, and press <b>Confirm</b>.",
+          "notes": [
+            {
+              "n": "1",
+              "html": "Who has the password: READ ME FIRST - ERC handoff, in the shared drive.",
+              "warn": false,
+              "go": false
+            },
+            {
+              "n": "→",
+              "html": "Each publish files a copy of the site's list in the shared drive, in ERC Content Desk, Policy Exchange.",
+              "warn": false,
+              "go": true
+            }
+          ],
+          "shot": "publish-ask"
+        }
+      ]
+    },
+    {
+      "id": "highlight",
+      "name": "Highlight",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Open <b>Highlight</b> on the Policy Exchange page. It works any day, and publishing never changes the card.",
+          "notes": [
+            {
+              "n": "1",
+              "html": "Cards made on the edit door with <b>Add to New &amp; Upcoming</b> show here too, after the picks.",
+              "warn": false,
+              "go": false
+            },
+            {
+              "n": "2",
+              "html": "A Drive picture link never shows on the card. If the item has one, press <b>Replace photo</b> and choose a file.",
+              "warn": false,
+              "go": false
+            },
+            {
+              "n": "4",
+              "html": "An event or opportunity pick gets card words. The card shows them, and the photo, in place of the item's own.",
+              "warn": false,
+              "go": false
+            }
+          ],
+          "shot": "highlight"
+        },
+        {
+          "cap": "In <b>Pick from</b>, press <b>Highlight</b> on a row, then give it a photo above. A blank <b>Until</b> becomes the event's date or the deadline, else two weeks.",
+          "notes": [],
+          "shot": "highlight-pick"
+        },
+        {
+          "cap": "Press <b>Update the highlight</b>, type the desk password, and press <b>Confirm</b>.",
+          "notes": [],
+          "shot": "highlight-save"
+        }
+      ]
+    },
+    {
+      "id": "fix",
+      "name": "Fix or remove a live item",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Publish only adds lines, so a desk edit to a live item stays on the desk. Fix the site on its own edit door, on a laptop.",
+          "notes": [
+            {
+              "n": "!",
+              "html": "<b>Who holds the Exchange's password: READ ME FIRST - ERC handoff, in the shared drive.</b>",
+              "warn": true,
+              "go": false
+            }
+          ],
+          "steps": [
+            {
+              "title": "Fix a live item",
+              "items": [
+                "On the Policy Exchange page, open <b>Edit live items</b>. The site's sign-in opens in a new tab.",
+                "Type the Exchange's password, not the desk's, and press <b>Sign in</b>.",
+                "Press <b>Edit</b> on the item, fix it, and press <b>Save</b>."
+              ],
+              "links": null
+            }
+          ]
+        },
+        {
+          "cap": "The desk's Delete never touches the site. On the edit door, press <b>Edit</b> on the item, then hide it or delete it.",
+          "notes": [
+            {
+              "n": "→",
+              "html": "Past events, closed opportunities and headlines over 60 days old leave by themselves.",
+              "warn": false,
+              "go": true
+            }
+          ],
+          "steps": [
+            {
+              "title": "Hide it",
+              "items": [
+                "<b>Hide from the site</b> takes it off the pages. It stays in the public news.csv.",
+                "<b>Hidden items</b>, in the top strip, lists it with <b>Show again</b>."
+              ],
+              "links": null
+            },
+            {
+              "title": "Delete it",
+              "items": [
+                "Press <b>Delete…</b>, then <b>Delete it</b>.",
+                "<b>Undo</b> works only while its note shows."
+              ],
+              "links": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "look",
+      "name": "Change the look",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Logos, words and section names are code in the Exchange's GitHub repo. Open it in Claude Code and say what to change. A push to main is live in a minute.",
+          "notes": [],
+          "steps": [
+            {
+              "title": "Where each part lives",
+              "items": [
+                "Top bar mark: <code>assets/logo/erc-icon-simple.svg</code>, drawn white",
+                "Footer logo: <code>assets/ERC_Horizontal_MaroonText-519.png</code>, in four pages",
+                "Welcome line: <code>index.html</code>",
+                "About page: <code>about/index.html</code>",
+                "Section names: <code>NEWS_TABS</code> in <code>js/app.js</code>, and the top bar of <code>about/</code>, <code>newsletter/</code> and <code>share/</code>",
+                "Quick search order: <code>SUBTYPE_ORDER</code> in <code>js/app.js</code>"
+              ],
+              "links": "<a href=\"https://github.com/kateb-123/erc-policy-exchange-app\" target=\"_blank\" rel=\"noopener\">The Exchange's GitHub repo<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a>"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "below": null
+}

@@ -1,0 +1,26 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 48,
+  "cy": 184,
+  "cw": 2464,
+  "ch": 1594,
+  "alt": "The Listserv page: Status reads Live, taking sign-ups; under To be added the count is 3, with Rows on Sheet 1, counted as this page opened; then Adding people.",
+  "pins": [
+    {
+      "x": 4.1,
+      "y": 52.2,
+      "label": "To be added: a number means the sign-up script answered"
+    },
+    {
+      "x": 33.8,
+      "y": 56,
+      "label": "If the script is down this reads: Sheet 1 couldn't be counted just now."
+    },
+    {
+      "x": 25.7,
+      "y": 23.2,
+      "label": "Status: Live means the desk has the script's address, not that it works"
+    }
+  ]
+}

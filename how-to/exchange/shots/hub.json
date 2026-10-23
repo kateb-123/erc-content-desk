@@ -1,0 +1,31 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 48,
+  "cy": 184,
+  "cw": 2464,
+  "ch": 904,
+  "alt": "The Policy Exchange page: the site's status with Waiting to publish, and on the right the Publish and Highlight doors and Edit live items.",
+  "pins": [
+    {
+      "x": 33.8,
+      "y": 62.5,
+      "label": "Waiting to publish: what Publish would add now"
+    },
+    {
+      "x": 84.1,
+      "y": 33.2,
+      "label": "Publish: the page that sends the waiting items to the site"
+    },
+    {
+      "x": 84.1,
+      "y": 50.9,
+      "label": "Highlight: the big card on the site's home page"
+    },
+    {
+      "x": 74.3,
+      "y": 64.6,
+      "label": "Edit live items: the site's own door to fix, hide or delete a live item"
+    }
+  ]
+}

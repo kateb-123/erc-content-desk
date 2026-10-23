@@ -1,0 +1,21 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 1728,
+  "cy": 520,
+  "cw": 784,
+  "ch": 856,
+  "alt": "The Content queue's right column: the Content Sort door, then Scraper with Run the scraper and the last run's line, Open the sheet and the files.",
+  "pins": [
+    {
+      "x": 23.8,
+      "y": 47.7,
+      "label": "Run the scraper: starts a run now"
+    },
+    {
+      "x": 50,
+      "y": 62.1,
+      "label": "The last run: what it found. Open the sheet goes to Newsletter scrapes"
+    }
+  ]
+}

@@ -1,0 +1,175 @@
+[
+  {
+    "name": "sort",
+    "url": "/?fresh=cap#sort",
+    "alt": "Content Sort: the waiting items down the left, newest first, with a working paper chosen; its card on the right shows New research, the Working Paper subtype, Keep and next, Skip for now and Delete.",
+    "before": [
+      {
+        "click": "#screen-sort button.sort-row:has-text('Call for Reviewers')"
+      },
+      {
+        "wait": 700
+      },
+      {
+        "click": "#screen-sort button.sort-row:has-text('School Finance Reform')"
+      },
+      {
+        "wait": 700
+      }
+    ],
+    "crop": null,
+    "pad": 16,
+    "pins": [
+      {
+        "selector": "#screen-sort .sort-row.is-selected",
+        "label": "The item the card shows. Pick a row, or move with the up and down arrows",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-sort .card-type > legend",
+        "label": "Type: what the item is. Pick one, then its subtype",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-sort .sc-keep",
+        "label": "Keep and next: keeps it and opens the next item. K does the same",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-sort .sc-tools .trash-link",
+        "label": "Delete: takes it out of the queue. D does the same",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "send",
+    "url": "/?fresh=cap#sort",
+    "alt": "The right side of a campus event's card: Event picked, the A&M subtype picked, and ERC Newsletter only ticked, with the line Skips the Policy Exchange: another unit's campus event.",
+    "before": [
+      {
+        "click": "#screen-sort button.sort-row:has-text('Elena Vasquez')"
+      },
+      {
+        "wait": 700
+      }
+    ],
+    "crop": "#screen-sort .sort-card .sc-right",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": "#screen-sort .type-opt:has-text('ERC event')",
+        "label": "ERC event: anything the ERC hosts or co-hosts",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-sort .type-chip.is-picked",
+        "label": "A&M: an event on campus, another unit's",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-sort .card-send .check-name",
+        "label": "ERC Newsletter only: ticked, the item never reaches Publish",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "questions",
+    "url": "/?fresh=cap#sort",
+    "alt": "A card with questions: the Check the link note with Verify link, the Type label in orange with no type picked, and Keep and next greyed with Set a type first under it.",
+    "before": [
+      {
+        "click": "#screen-sort button.sort-row:has-text('FWISD')"
+      },
+      {
+        "wait": 700
+      }
+    ],
+    "crop": "#screen-sort .sort-card",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": "#screen-sort .card-note-box a.source-link",
+        "label": "Verify link: opens the page in a new tab",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-sort .card-type > legend",
+        "label": "Type: its label stays orange until one is picked",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-sort #sc-keep-why",
+        "label": "Keep and next waits, and says what it needs",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "groups",
+    "url": "/?fresh=cap#sort",
+    "alt": "The lower half of Sort's list: a skipped item with its Skipped tag, then the Past group with Dismiss all and five dated items, then the Already live group with Dismiss all.",
+    "before": [
+      {
+        "click": "#screen-sort .sort-group-head .sort-list-count:has-text('Already live')"
+      },
+      {
+        "wait": 700
+      }
+    ],
+    "crop": "#screen-sort .sort-list",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": "#screen-sort .sort-row-tag:has-text('Skipped')",
+        "label": "Skipped: an item you parked. It waits under the new ones",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-sort .sort-group-head:has-text('Past')",
+        "label": "Past: events and opportunities whose date or deadline has gone",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-sort .sort-group-head:has-text('Already live')",
+        "label": "Already live: links the Policy Exchange already has",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "finalize",
+    "url": "/?fresh=cap#finalize",
+    "alt": "Content Sort's Finalize tab: Rewrite 1 description at the top right, an ERC workshop under Needs a rewrite on the left, and its card with the Original text, Edit and Delete.",
+    "before": [
+      {
+        "waitFor": "#screen-finalize .f-card"
+      }
+    ],
+    "crop": "#screen-finalize",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": "#screen-finalize p.f-group-head",
+        "label": "Needs a rewrite: kept items still waiting for their description",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-finalize .finalize-head button.primary",
+        "label": "Rewrite 1 description: writes the ones still waiting",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-finalize .f-original .f-diff-label",
+        "label": "Original: the text it came with",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-finalize .f-verify-actions .edit-link",
+        "label": "Edit: write or fix the description by hand",
+        "nth": 0
+      }
+    ]
+  }
+]

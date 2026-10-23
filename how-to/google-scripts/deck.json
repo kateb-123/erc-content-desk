@@ -1,0 +1,140 @@
+{
+  "title": "Bring back the Google scripts",
+  "h1": "Bring back the Google scripts",
+  "lede": "Two scripts, 15 minutes.",
+  "open": null,
+  "chapters": [
+    {
+      "id": "sheets",
+      "name": "Which Sheets",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Each Sheet runs a Google script as the login that deployed it. When that login closes the script stops, and nothing that failed in the gap is sent again.",
+          "steps": [
+            {
+              "title": "In ERC Content Desk on the shared drive",
+              "items": [
+                "<b>erc-content-desk</b>, in Content queue. Without it the queue's Sheet copy, new send dates, the scraper's files, Publish's copy in Drive and Research briefs stop.",
+                "<b>subscribe to listserve</b>, in Listserv. Without it sign-ups and the Listserv page's count stop."
+              ],
+              "links": "<a href=\"https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit\" target=\"_blank\" rel=\"noopener\">erc-content-desk<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a> <a href=\"https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit\" target=\"_blank\" rel=\"noopener\">subscribe to listserve<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "redeploy",
+      "name": "Redeploy",
+      "step": 1,
+      "slides": [
+        {
+          "cap": "Do this in each Sheet. Each gets a new address, and the desk uses it once its owner sets it.",
+          "notes": [
+            {
+              "n": "!",
+              "html": "<b>In erc-content-desk, leave Script properties alone: the desk's token and folder ids live there.</b>",
+              "warn": true,
+              "go": false
+            }
+          ],
+          "steps": [
+            {
+              "title": "For each Sheet",
+              "items": [
+                "Open it, then <b>Extensions</b>, <b>Apps Script</b>.",
+                "<b>Deploy</b>, <b>New deployment</b>. Pick <b>Web app</b> from the gear.",
+                "<b>Execute as</b>: Me. <b>Who has access</b>: Anyone. Then <b>Deploy</b>.",
+                "Allow the permissions. If Google says unverified, choose <b>Advanced</b>, then <b>Go to</b> the project.",
+                "Copy the <b>Web app URL</b>, ending in <code>/exec</code>. Email it to the desk's owner, named in READ ME FIRST - ERC handoff in the shared drive, and say which Sheet."
+              ],
+              "links": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "check",
+      "name": "Check it",
+      "step": 2,
+      "slides": [
+        {
+          "cap": "Once the owner says the new addresses are in, check each script.",
+          "steps": [
+            {
+              "title": "erc-content-desk",
+              "items": [
+                "On <a href=\"/#team\">Submit content</a>, send a test item with <b>Add to the queue</b>.",
+                "Within a minute it is the last row on the Sheet's first tab.",
+                "<b>Delete</b> it on <a href=\"/#sort\">Content Sort</a>."
+              ],
+              "links": null
+            }
+          ]
+        },
+        {
+          "cap": "For <b>subscribe to listserve</b>, open <a href=\"/#listserv\">Listserv</a>.",
+          "notes": [
+            {
+              "n": "1",
+              "html": "A number here means the script answered.",
+              "warn": false,
+              "go": false
+            },
+            {
+              "n": "2",
+              "html": "If it did not, the number is blank and this line reads <b>Sheet 1 couldn't be counted just now.</b> with <b>Try again</b>.",
+              "warn": false,
+              "go": false
+            },
+            {
+              "n": "3",
+              "html": "<b>Live, taking sign-ups</b> only means the desk has an address for the script. It is not the check.",
+              "warn": false,
+              "go": false
+            }
+          ],
+          "shot": "listserv"
+        }
+      ]
+    },
+    {
+      "id": "wrong",
+      "name": "If it goes wrong",
+      "step": null,
+      "slides": [
+        {
+          "cap": "If a check fails, a message names the Sheet's script, or a menu is missing.",
+          "steps": [
+            {
+              "title": "A check fails, or \"Sheet API returned HTTP\"",
+              "items": [
+                "In <b>Deploy</b>, <b>Manage deployments</b>, check <b>Who has access</b> reads Anyone.",
+                "Send the newest <b>Web app URL</b> to the desk's owner again."
+              ],
+              "links": null
+            },
+            {
+              "title": "\"Unknown action\" or \"does not know this action yet\"",
+              "items": [
+                "Paste <code>apps-script/Code.gs</code> from the desk's code over the script in <b>erc-content-desk</b>, then save.",
+                "<b>Deploy</b>, <b>Manage deployments</b>, the pencil, <b>Version</b>: New version, then <b>Deploy</b>. The address stays the same."
+              ],
+              "links": "<a href=\"https://github.com/kateb-123/erc-content-desk/blob/main/apps-script/Code.gs\" target=\"_blank\" rel=\"noopener\">Code.gs on GitHub<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a>"
+            },
+            {
+              "title": "No Extensions menu",
+              "items": [
+                "You need edit access to the Sheet. Ask for it, then start again."
+              ],
+              "links": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "below": null
+}

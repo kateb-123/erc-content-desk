@@ -1,0 +1,26 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 48,
+  "cy": 216,
+  "cw": 2464,
+  "ch": 244,
+  "alt": "The ask that replaces the Publish button: Publish 2 to the live Exchange?, a Password field, Confirm and Cancel.",
+  "pins": [
+    {
+      "x": 78.6,
+      "y": 63.1,
+      "label": "Password: the desk password, the one Content Sort asks for"
+    },
+    {
+      "x": 89,
+      "y": 63.1,
+      "label": "Confirm: adds the rows to the live site"
+    },
+    {
+      "x": 95.2,
+      "y": 63.1,
+      "label": "Cancel: nothing is sent"
+    }
+  ]
+}

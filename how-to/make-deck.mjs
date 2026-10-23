@@ -84,7 +84,7 @@ const html = `<!DOCTYPE html>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="/css/tokens.css?v=11" />
-  <link rel="stylesheet" href="/css/styles.css?v=179" />
+  <link rel="stylesheet" href="/css/styles.css?v=180" />
   <link rel="stylesheet" href="/css/shell.css?v=7" />
   <script>document.documentElement.classList.add('js');</script>
   <!-- Built by how-to/make-deck.mjs from ${slug}/deck.json; the styles and script are the newsletter how-to's. -->

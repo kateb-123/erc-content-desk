@@ -1,0 +1,32 @@
+[
+  {
+    "name": "listserv",
+    "url": "/?fresh=cap#listserv",
+    "alt": "The Listserv page: Status reads Live, taking sign-ups; under To be added the count is 3, with Rows on Sheet 1, counted as this page opened; then Adding people.",
+    "before": [
+      {
+        "waitFor": ".hub-count .hub-count-note"
+      }
+    ],
+    "crop": ".hub-page",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": ".hub-count .hub-numeral",
+        "label": "To be added: a number means the sign-up script answered",
+        "nth": 0,
+        "at": "left"
+      },
+      {
+        "selector": ".hub-count .hub-count-note",
+        "label": "If the script is down this reads: Sheet 1 couldn't be counted just now.",
+        "nth": 0
+      },
+      {
+        "selector": ".hub-stat .hub-ok",
+        "label": "Status: Live means the desk has the script's address, not that it works",
+        "nth": 0
+      }
+    ]
+  }
+]

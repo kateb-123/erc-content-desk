@@ -1,0 +1,97 @@
+{
+  "title": "Design for the ERC",
+  "h1": "Design for the ERC",
+  "lede": "Web pages in Claude Design, flyers and posts in Canva, and what changes for print.",
+  "open": null,
+  "chapters": [
+    {
+      "id": "claude-design",
+      "name": "Claude Design",
+      "step": null,
+      "slides": [
+        {
+          "cap": "The Aggie Web Template is Texas A&amp;M's web design system, for web pages. For flyers and posts, use Canva.",
+          "steps": [
+            {
+              "title": "Start a web page",
+              "items": [
+                "The first time, open the <b>Aggie Web Template</b> link in the email.",
+                "In Claude Design, say \"use the Aggie Web Template design system\"."
+              ],
+              "links": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "canva",
+      "name": "Canva",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Aggie Maroon carries most of a design.",
+          "steps": [
+            {
+              "title": "First time only: the Brand Kit",
+              "items": [
+                "In Canva, open <b>Brand</b>, then <b>Brand Kit</b>.",
+                "Add each color in <a href=\"#colors\">the table under these slides</a> by its HEX."
+              ],
+              "links": null
+            }
+          ]
+        },
+        {
+          "cap": "Fonts: Oswald for big titles in capitals, Work Sans for headings, Open Sans for body.",
+          "notes": [
+            {
+              "n": "!",
+              "html": "<b>Never redraw, recolor or stretch a logo.</b>",
+              "warn": true,
+              "go": false
+            },
+            {
+              "n": "!",
+              "html": "<b>Put a logo only on white or maroon.</b>",
+              "warn": true,
+              "go": false
+            }
+          ],
+          "steps": [
+            {
+              "title": "Logos",
+              "items": [
+                "Download the ERC logo pack for screens and unzip it.",
+                "Upload the logos in it to Canva."
+              ],
+              "links": "<a href=\"https://mysehd.tamu.edu/wp-content/uploads/2024/09/ERC-logo-pack-RGB-for-web.zip\">ERC logo pack for screens<i class=\"fa-solid fa-download\" aria-hidden=\"true\"></i></a>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "print",
+      "name": "Print",
+      "step": null,
+      "slides": [
+        {
+          "cap": "In print, Aggie Maroon is CMYK 15 100 39 69, Pantone 7421.",
+          "steps": [
+            {
+              "title": "Before it goes to the printer",
+              "items": [
+                "Use the ERC logo pack for print.",
+                "Set body text at 11 point or larger.",
+                "From Canva, download as <b>PDF Print</b>, with bleed if the printer asks."
+              ],
+              "links": "<a href=\"https://mysehd.tamu.edu/wp-content/uploads/2024/09/ERC-logo-pack-CMYK-for-print.zip\">ERC logo pack for print<i class=\"fa-solid fa-download\" aria-hidden=\"true\"></i></a>"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "below": "<section id=\"colors\" aria-labelledby=\"h-colors\" style=\"margin-top: var(--spacing-07)\">\n      <h2 class=\"pane-title\" id=\"h-colors\">Texas A&amp;M's colors</h2>\n      <div class=\"brief-read\">\n        <table>\n          <thead><tr><th scope=\"col\">Color</th><th scope=\"col\">HEX</th><th scope=\"col\">Use</th></tr></thead>\n          <tbody>\n            <tr><td>Aggie Maroon</td><td>#500000</td><td>Most of it</td></tr>\n            <tr><td>White</td><td>#FFFFFF</td><td>Ground</td></tr>\n            <tr><td>Black</td><td>#202020</td><td>Body text</td></tr>\n            <tr><td>Dark Gray</td><td>#3E3E3E</td><td>Second text</td></tr>\n            <tr><td>Gray</td><td>#707070</td><td>Captions, rules</td></tr>\n            <tr><td>Light Gray</td><td>#D1D1D1</td><td>Boxes</td></tr>\n            <tr><td>Light Maroon</td><td>#732F2F</td><td>Rare accent</td></tr>\n          </tbody>\n        </table>\n      </div>\n    </section>"
+}

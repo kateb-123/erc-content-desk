@@ -143,7 +143,8 @@ test('hubRows: in progress first by stage then by when it moved, live last, each
 test('in the hub\'s table only the current step is named; the brief\'s page names them all (Kate, Oct 21, her pick A)', () => {
   const css = readFileSync(new URL('../css/styles.css', import.meta.url), 'utf8');
   assert.match(css, /\.steps-small \.step-words \{ display: none; \}/);
-  assert.match(css, /\.steps-small \.step\.is-now \.step-words \{ display: block; \}/);
+  // Scoped to the stepper's own list since Oct 23, so the how-tos' step circles keep their look.
+  assert.match(css, /\.steps-small > \.step\.is-now \.step-words \{ display: block; \}/);
 });
 
 test('createLock: the paper and a Word file that together would not fit one upload say so (review, Oct 22: the create body has a 4.5 MB cap)', () => {

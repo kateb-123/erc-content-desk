@@ -1,0 +1,194 @@
+{
+  "title": "How to sort",
+  "h1": "Sort the queue",
+  "lede": "What to keep, where it goes, and checking the rewrites.",
+  "open": {
+    "label": "Open Content Sort",
+    "href": "https://erc-content-desk.vercel.app/#sort"
+  },
+  "chapters": [
+    {
+      "id": "keep",
+      "name": "Keep or delete",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Keep what helps someone make or study education policy. Delete the rest, and keep each thing once.",
+          "notes": [
+            {
+              "n": "3",
+              "html": "The line at the top then says where it waits next.",
+              "warn": false,
+              "go": false
+            },
+            {
+              "n": "4",
+              "html": "<b>Undo</b> is on the line at the top, and on the greyed row at the bottom of the list.",
+              "warn": false,
+              "go": false
+            }
+          ],
+          "shot": "sort"
+        },
+        {
+          "cap": "About two in five papers, events and opportunities are kept, and one headline in five. An issue wants 3 to 5 outside research items or reports and 3 to 5 headlines.",
+          "steps": [
+            {
+              "title": "Keep when",
+              "items": [
+                "The research tests a policy, such as teacher pay, attendance or pre-K.",
+                "A headline reports a decision, a number or a finding, usually from a state or the federal government.",
+                "A local story shows a wider trend: “Oklahoma School Closures Part of Statewide Picture of Enrollment Decline”.",
+                "A policy webinar comes from a think tank or research group.",
+                "It is an ERC event or an A&amp;M research talk.",
+                "It offers education researchers money, a fellowship or a call for proposals, with the deadline ahead.",
+                "A person added it: their initials or name follow <b>added by</b> (<b>bulk upload</b> means none were given). Keep it unless it repeats."
+              ],
+              "links": "<a href=\"/how-to/submit-content/#types\">Which type and subtype to pick</a>"
+            }
+          ]
+        },
+        {
+          "cap": "Delete it when any of these is true.",
+          "steps": [
+            {
+              "title": "Delete when",
+              "items": [
+                "It is not about education.",
+                "It is one bill or one rule notice.",
+                "It is campus news, a scandal or a celebrity. College news that is state policy stays.",
+                "It is one district's news with no wider point: “Austin ISD faces deeper budget cuts as enrollment declines”.",
+                "It is opinion, an interview, a podcast, a guide or a roundup.",
+                "A webinar teaches classroom practice or sells something.",
+                "It is a job, an award or a conference listing. Grants with no deadline or for another field go too.",
+                "The research has no policy in it: a method, a theory or a program description.",
+                "It is a repeat. Keep the best copy."
+              ],
+              "links": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sources",
+      "name": "Sources",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Some sources have a clear rule, from how often they were kept.",
+          "steps": [
+            {
+              "title": "A clear rule",
+              "items": [
+                "<b>ECS State Policy Tracker</b>, 0 of 54 kept: delete. Each is one state bill.",
+                "<b>Austin American-Statesman</b>, 0 of 24: delete. Austin ISD and UT campus news.",
+                "<b>Urban Institute</b>, 6 of 41: delete unless it is about schools.",
+                "<b>NBER</b>, 3 of 18: delete unless it is about schooling.",
+                "<b>K-12 Dive</b>, 6 of 17: keep findings and state counts. Delete Week In Review.",
+                "<b>EdWorkingPapers</b>, 32 of 58: keep most. Delete methods papers."
+              ],
+              "links": null
+            },
+            {
+              "title": "Nearly every time",
+              "items": [
+                "<b>Kept:</b> CALDER, Texas Tribune, the Texas Higher Education Coordinating Board, the Tennessee Education Research Alliance, and ERC and A&amp;M events.",
+                "<b>Deleted:</b> Texas Public Radio, KUT, PBS NewsHour, the Department of Education newsroom, the Federal Register, WestEd and AIR."
+              ],
+              "links": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "card",
+      "name": "Card and list",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Leave <b>ERC Newsletter only</b> unticked for most items. Tick it to keep one off the Policy Exchange.",
+          "notes": [
+            {
+              "n": "1",
+              "html": "Give ERC events the <b>ERC event</b> type. They go everywhere.",
+              "warn": false,
+              "go": false
+            },
+            {
+              "n": "2",
+              "html": "The desk ticks the box for any <b>Event</b> with the <b>A&amp;M</b> subtype.",
+              "warn": false,
+              "go": false
+            },
+            {
+              "n": "3",
+              "html": "Tick it for a notice meant for a small campus audience. Untick it for an A&amp;M talk by an education policy researcher.",
+              "warn": false,
+              "go": false
+            }
+          ],
+          "shot": "send"
+        },
+        {
+          "cap": "A triangle in the list means the card has a question. <b>Keep and next</b> waits until the type and the link are settled.",
+          "notes": [
+            {
+              "n": "1",
+              "html": "After <b>Verify link</b>, press <b>Confirm</b> if the page is right, or <b>Change</b> to paste the right link.",
+              "warn": false,
+              "go": false
+            },
+            {
+              "n": "!",
+              "html": "<b>Possible duplicate</b> names the earlier item. Not every repeat shows it.",
+              "warn": true,
+              "go": false
+            }
+          ],
+          "shot": "questions"
+        },
+        {
+          "cap": "Not sure? Press <b>Skip for now</b>. Clear <b>Past</b> and <b>Already live</b> with <b>Dismiss all</b>; one <b>Undo</b> brings a group back.",
+          "notes": [],
+          "shot": "groups"
+        }
+      ]
+    },
+    {
+      "id": "finalize",
+      "name": "Finalize",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Kept events, ERC events, opportunities, reports and research with no abstract get a description in the ERC's voice. Check each one here before it goes out.",
+          "notes": [
+            {
+              "n": "2",
+              "html": "The rewrite starts when you keep, so most arrive on their own.",
+              "warn": false,
+              "go": false
+            }
+          ],
+          "shot": "finalize"
+        },
+        {
+          "cap": "A rewrite that is back waits under <b>To check</b>, its changed words marked.",
+          "steps": [
+            {
+              "title": "Check each rewrite",
+              "items": [
+                "Press <b>Keep</b> to use it, or <b>Use original</b> for the text it came with.",
+                "Fix a word with <b>Edit</b>. Saving the edit counts as checked.",
+                "<b>Keep the rest (N)</b> keeps every rewrite still to check."
+              ],
+              "links": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "below": "<p>Next: <a href=\"/how-to/exchange/\">publish to the Policy Exchange</a>.</p>"
+}

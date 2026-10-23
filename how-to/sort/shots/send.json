@@ -1,0 +1,26 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 1846,
+  "cy": 2,
+  "cw": 664,
+  "ch": 1506,
+  "alt": "The right side of a campus event's card: Event picked, the A&M subtype picked, and ERC Newsletter only ticked, with the line Skips the Policy Exchange: another unit's campus event.",
+  "pins": [
+    {
+      "x": 50.2,
+      "y": 11.3,
+      "label": "ERC event: anything the ERC hosts or co-hosts"
+    },
+    {
+      "x": 21,
+      "y": 44.4,
+      "label": "A&M: an event on campus, another unit's"
+    },
+    {
+      "x": 54.4,
+      "y": 59.5,
+      "label": "ERC Newsletter only: ticked, the item never reaches Publish"
+    }
+  ]
+}

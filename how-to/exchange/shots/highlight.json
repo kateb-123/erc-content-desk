@@ -1,0 +1,31 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 48,
+  "cy": 408,
+  "cw": 2464,
+  "ch": 1074,
+  "alt": "The Highlight page: On the site now lists what the big card shows, with a card made on the Exchange last; Your picks has each pick with Replace photo or Add photo, its Until day, arrows and Remove, and No card words yet with Write the card.",
+  "pins": [
+    {
+      "x": 25.2,
+      "y": 15.8,
+      "label": "On the site now: what the big card shows this minute"
+    },
+    {
+      "x": 66.8,
+      "y": 32,
+      "label": "Add photo or Replace photo: a picture file from your computer"
+    },
+    {
+      "x": 81.5,
+      "y": 32.8,
+      "label": "Until: the last day the pick stays on the card"
+    },
+    {
+      "x": 76.3,
+      "y": 86.8,
+      "label": "Write the card: the card's own words for an event or opportunity"
+    }
+  ]
+}

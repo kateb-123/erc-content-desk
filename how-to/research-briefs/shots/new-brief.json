@@ -1,0 +1,31 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 0,
+  "cy": 0,
+  "cw": 2560,
+  "ch": 1800,
+  "alt": "New brief open above the table: a file field for the paper as a PDF and one for your notes, Paste instead under the notes, and Create the brief greyed with Choose the paper and your notes first under it.",
+  "pins": [
+    {
+      "x": 16.3,
+      "y": 31.6,
+      "label": "The paper, as a PDF: the desk reads it and fills in the byline"
+    },
+    {
+      "x": 62.1,
+      "y": 31.6,
+      "label": "Your notes, as a file: they steer the draft"
+    },
+    {
+      "x": 55,
+      "y": 37.7,
+      "label": "Paste instead: opens a box to paste or type the notes"
+    },
+    {
+      "x": 12.9,
+      "y": 43.4,
+      "label": "Create the brief: opens once both files are in and the paper is read"
+    }
+  ]
+}

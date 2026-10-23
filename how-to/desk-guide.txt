@@ -159,109 +159,141 @@ These pages are live and public. Copy link copies the address. Never send the de
 # How to sort
 https://erc-content-desk.vercel.app/how-to/sort/
 
-ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-content-desk.vercel.app/how-to/)
+## Keep or delete
 
-## How to sort
+Keep what helps someone make or study education policy. Delete the rest, and keep each thing once.
+ 
+3The line at the top then says where it waits next.
+ 
+4Undo is on the line at the top, and on the greyed row at the bottom of the list.
 
-What to keep, where it goes, and publishing.
+ 1The item the card shows. Pick a row, or move with the up and down arrows
+ 2Type: what the item is. Pick one, then its subtype
+ 3Keep and next: keeps it and opens the next item. K does the same
+ 4Delete: takes it out of the queue. D does the same
 
-## The rule of thumb
-
-Keep what helps someone make or study education policy. Delete the rest. Keep each thing once. About two in five papers, events and opportunities are kept, and one headline in five.
-
-An issue wants 3 to 5 research items or reports from outside and 3 to 5 headlines, all policy relevant.
+About two in five papers, events and opportunities are kept, and one headline in five. An issue wants 3 to 5 outside research items or reports and 3 to 5 headlines.
 
 ## Keep when
 
 - The research tests a policy, such as teacher pay, attendance or pre-K.
-
+ 
 - A headline reports a decision, a number or a finding, usually from a state or the federal government.
-
-- A local story shows a wider trend. "Oklahoma School Closures Part of Statewide Picture of Enrollment Decline"
-
+ 
+- A local story shows a wider trend: “Oklahoma School Closures Part of Statewide Picture of Enrollment Decline”.
+ 
 - A policy webinar comes from a think tank or research group.
-
+ 
 - It is an ERC event or an A&M research talk.
-
+ 
 - It offers education researchers money, a fellowship or a call for proposals, with the deadline ahead.
+ 
+- A person added it: their initials or name follow added by (bulk upload means none were given). Keep it unless it repeats.
 
-- A person added it. The card shows their initials after added by. Keep it unless it repeats. Bulk uploads show bulk upload there only if Your initials was blank.
+Which type and subtype to pick (https://erc-content-desk.vercel.app/how-to/submit-content/#types)
 
-Then pick the type and subtype. Item types (https://erc-content-desk.vercel.app/how-to/submit-content/#types) says which.
+Delete it when any of these is true.
 
 ## Delete when
 
 - It is not about education.
-
+ 
 - It is one bill or one rule notice.
-
+ 
 - It is campus news, a scandal or a celebrity. College news that is state policy stays.
-
-- It is one district's news with no wider point. "Austin ISD faces deeper budget cuts as enrollment declines"
-
+ 
+- It is one district's news with no wider point: “Austin ISD faces deeper budget cuts as enrollment declines”.
+ 
 - It is opinion, an interview, a podcast, a guide or a roundup.
-
+ 
 - A webinar teaches classroom practice or sells something.
-
+ 
 - It is a job, an award or a conference listing. Grants with no deadline or for another field go too.
+ 
+- The research has no policy in it: a method, a theory or a program description.
+ 
+- It is a repeat. Keep the best copy.
 
-- The research has no policy in it. A method, a theory or a program description goes.
+## Sources
 
-- It is a repeat. Keep the best copy. Not every repeat shows Possible duplicate.
+Some sources have a clear rule, from how often they were kept.
 
-## Sources with a clear rule
+## A clear rule
 
-Source | Kept | What to do | 
+- ECS State Policy Tracker, 0 of 54 kept: delete. Each is one state bill.
+ 
+- Austin American-Statesman, 0 of 24: delete. Austin ISD and UT campus news.
+ 
+- Urban Institute, 6 of 41: delete unless it is about schools.
+ 
+- NBER, 3 of 18: delete unless it is about schooling.
+ 
+- K-12 Dive, 6 of 17: keep findings and state counts. Delete Week In Review.
+ 
+- EdWorkingPapers, 32 of 58: keep most. Delete methods papers.
 
-ECS State Policy Tracker | 0 of 54 | Delete. Each is one state bill. | 
+## Nearly every time
 
-Austin American-Statesman | 0 of 24 | Delete. Austin ISD and UT campus news. | 
+- Kept: CALDER, Texas Tribune, the Texas Higher Education Coordinating Board, the Tennessee Education Research Alliance, and ERC and A&M events.
+ 
+- Deleted: Texas Public Radio, KUT, PBS NewsHour, the Department of Education newsroom, the Federal Register, WestEd and AIR.
 
-Urban Institute | 6 of 41 | Delete unless it is about schools. | 
+## Card and list
 
-NBER | 3 of 18 | Delete unless it is about schooling. | 
+Leave ERC Newsletter only unticked for most items. Tick it to keep one off the Policy Exchange.
+ 
+1Give ERC events the ERC event type. They go everywhere.
+ 
+2The desk ticks the box for any Event with the A&M subtype.
+ 
+3Tick it for a notice meant for a small campus audience. Untick it for an A&M talk by an education policy researcher.
 
-K-12 Dive | 6 of 17 | Keep findings and state counts. Delete Week In Review. | 
+ 1ERC event: anything the ERC hosts or co-hosts
+ 2A&M: an event on campus, another unit's
+ 3ERC Newsletter only: ticked, the item never reaches Publish
 
-EdWorkingPapers | 32 of 58 | Keep most. Delete methods papers. | 
+A triangle in the list means the card has a question. Keep and next waits until the type and the link are settled.
+ 
+1After Verify link, press Confirm if the page is right, or Change to paste the right link.
+ 
+!Possible duplicate names the earlier item. Not every repeat shows it.
 
-Kept nearly every time: CALDER, Texas Tribune, the Texas Higher Education Coordinating Board, the Tennessee Education Research Alliance, and ERC and A&M events.
+ 1Verify link: opens the page in a new tab
+ 2Type: its label stays orange until one is picked
+ 3Keep and next waits, and says what it needs
 
-Deleted nearly every time: Texas Public Radio, KUT, PBS NewsHour, the Department of Education newsroom, the Federal Register, WestEd and AIR.
+Not sure? Press Skip for now. Clear Past and Already live with Dismiss all; one Undo brings a group back.
 
-## ERC Newsletter only
+ 1Skipped: an item you parked. It waits under the new ones
+ 2Past: events and opportunities whose date or deadline has gone
+ 3Already live: links the Policy Exchange already has
 
-A kept item goes to the newsletter and the Policy Exchange. Tick ERC Newsletter only to keep it off the Exchange.
+## Finalize
 
-- Campus events from other units stay ticked. The desk ticks any Event with the A&M subtype.
+Kept events, ERC events, opportunities, reports and research with no abstract get a description in the ERC's voice. Check each one here before it goes out.
+ 
+2The rewrite starts when you keep, so most arrive on their own.
 
-- Tick it for a notice meant for a small campus audience.
+ 1Needs a rewrite: kept items still waiting for their description
+ 2Rewrite 1 description: writes the ones still waiting
+ 3Original: the text it came with
+ 4Edit: write or fix the description by hand
 
-- Untick it for an A&M talk by an education policy researcher.
+A rewrite that is back waits under To check, its changed words marked.
 
-- Give ERC events the ERC event type. Then they go everywhere.
+## Check each rewrite
 
-## Not sure
+- Press Keep to use it, or Use original for the text it came with.
+ 
+- Fix a word with Edit. Saving the edit counts as checked.
+ 
+- Keep the rest (N) keeps every rewrite still to check.
 
-Press Skip for now. The item drops below the waiting items with a Skipped tag until you decide.
+ Back
 
-## Past and Already live
+ Next
 
-Past holds events and opportunities whose date or deadline has passed. Already live holds links the Exchange already has. Press Dismiss all on each group.
-
-## Publish to the Exchange
-
-Check the rewrites first. Events, ERC events, opportunities, reports and research with no abstract get a description in the ERC's voice. On the Finalize tab, press Keep or Use original on each.
-
-- Open Publish from the Policy Exchange page.
-
-- Press Publish N to the Exchange. Type the desk password, the one Content Sort asks for. Press Confirm.
-
-No password? Ask the desk's owner. The handoff document has their contact.
-
-Each publish files the site's whole list in Drive, under ERC Content Desk, Policy Exchange. Publishing only adds rows. An edit after an item is live never reaches the site.
-
-Highlight, under the table, sets the items on the Exchange's home page.
+Next: publish to the Policy Exchange (https://erc-content-desk.vercel.app/how-to/exchange/).
 
 
 # How to build the newsletter
@@ -524,311 +556,409 @@ The row of section names under the masthead, each a link into the email. On or o
 # How to change the Policy Exchange
 https://erc-content-desk.vercel.app/how-to/exchange/
 
-ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-content-desk.vercel.app/how-to/)
+## Publish
 
-## How to change the Policy Exchange
+Open Policy Exchange from the desk's front page.
+ 
+1An item reaches the site only if ERC Newsletter only stays unticked. An A&M campus event comes ticked.
 
-Add, fix, remove, highlight, and the look.
+ 1Waiting to publish: what Publish would add now
+ 2Publish: the page that sends the waiting items to the site
+ 3Highlight: the big card on the site's home page
+ 4Edit live items: the site's own door to fix, hide or delete a live item
 
-## What the site is
+Only the Adding rows go to the site.
+ 
+3A row that needs a fix names what is missing. Click those words to fix it in place.
 
-Two public files in its GitHub repo: data/news.csv, one line per item, and data/featured.json, what the New & Upcoming card shows and what is hidden.
+ 1Check them on Finalize: read each rewrite before it goes out
+ 2A colour: click it to show only those rows
+ 3Fate: Adding, Held for newsletter, Needs a fix or Already live
+ 4Publish N to the Exchange: asks for the password next
 
-The desk's Publish adds lines to the first and sets the card's pins in the second. The site's edit door changes both.
+Press Publish N to the Exchange, type the desk password, and press Confirm.
+ 
+1Who has the password: READ ME FIRST - ERC handoff, in the shared drive.
+ 
+→Each publish files a copy of the site's list in the shared drive, in ERC Content Desk, Policy Exchange.
 
-## Add items
+ 1Password: the desk password, the one Content Sort asks for
+ 2Confirm: adds the rows to the live site
+ 3Cancel: nothing is sent
 
-- On Content Sort, leave ERC Newsletter only unticked. Ticked, the item never reaches the site; an A&M event comes ticked. Press Keep and next.
+## Highlight
 
-- Open Policy Exchange, then Publish.
+Open Highlight on the Policy Exchange page. It works any day, and publishing never changes the card.
+ 
+1Cards made on the edit door with Add to New & Upcoming show here too, after the picks.
+ 
+2A Drive picture link never shows on the card. If the item has one, press Replace photo and choose a file.
+ 
+4An event or opportunity pick gets card words. The card shows them, and the photo, in place of the item's own.
 
-- Press Publish N to the Exchange, type the desk password, press Confirm.
+ 1On the site now: what the big card shows this minute
+ 2Add photo or Replace photo: a picture file from your computer
+ 3Until: the last day the pick stays on the card
+ 4Write the card: the card's own words for an event or opportunity
+
+In Pick from, press Highlight on a row, then give it a photo above. A blank Until becomes the event's date or the deadline, else two weeks.
+
+ 1Search: by title or source, every live item
+ 2A section: show only its items
+ 3Highlight: adds it to Your picks
+ 4In, 2nd: already picked, and its place on the card
+
+Press Update the highlight, type the desk password, and press Confirm.
+
+ 1Update the highlight: asks for the password, then Confirm
+ 2Cancel changes: back to what the site shows now
+
+## Fix or remove a live item
+
+Publish only adds lines, so a desk edit to a live item stays on the desk. Fix the site on its own edit door, on a laptop.
+ 
+!Who holds the Exchange's password: READ ME FIRST - ERC handoff, in the shared drive.
 
 ## Fix a live item
 
-Publish only adds lines, so a desk edit to a live item stays on the desk. Fix it on the edit door, on a laptop:
+- On the Policy Exchange page, open Edit live items. The site's sign-in opens in a new tab.
+ 
+- Type the Exchange's password, not the desk's, and press Sign in.
+ 
+- Press Edit on the item, fix it, and press Save.
 
-- On the Policy Exchange hub, open Edit live items. Sign in with the Exchange's own password, not the desk's.
+The desk's Delete never touches the site. On the edit door, press Edit on the item, then hide it or delete it.
+ 
+→Past events, closed opportunities and headlines over 60 days old leave by themselves.
 
-- Press Edit on the item, fix it, press Save.
+## Hide it
 
-## Remove a live item
+- Hide from the site takes it off the pages. It stays in the public news.csv.
+ 
+- Hidden items, in the top strip, lists it with Show again.
 
-The desk's Delete never touches the site. On the edit door, press Edit, then:
+## Delete it
 
-- Hide from the site: off the pages, still in the public news.csv. Show again is under Hidden items in the top strip.
+- Press Delete…, then Delete it.
+ 
+- Undo works only while its note shows.
 
-- Delete…, then Delete it: the line goes. Undo lasts only while its note shows.
+## Change the look
 
-Past events, closed opportunities and headlines over 60 days old leave by themselves.
+Logos, words and section names are code in the Exchange's GitHub repo. Open it in Claude Code and say what to change. A push to main is live in a minute.
 
-## Change the highlight
+## Where each part lives
 
-The big card on the home page has its own page: Policy Exchange, then Highlight. It works any day, with or without anything to publish.
+- Top bar mark: assets/logo/erc-icon-simple.svg, drawn white
+ 
+- Footer logo: assets/ERC_Horizontal_MaroonText-519.png, in four pages
+ 
+- Welcome line: index.html
+ 
+- About page: about/index.html
+ 
+- Section names: NEWS_TABS in js/app.js, and the top bar of about/, newsletter/ and share/
+ 
+- Quick search order: SUBTYPE_ORDER in js/app.js
 
-- In Pick from, press Highlight on a row. Set its photo and its Until day.
+The Exchange's GitHub repo (https://github.com/kateb-123/erc-policy-exchange-app)
 
-- Press Update the highlight, type the desk password, press Confirm.
+ Back
 
-Publishing never changes the card. An event or opportunity pick gets card words; the card shows them, and the photo, in place of the item's own.
-
-A Drive picture link never shows on the card; use one ending .jpg, .png or .webp.
-
-An announcement card is Add to New & Upcoming, in the edit door's top strip.
-
-## Change a logo or the look
-
-It is code in the Exchange's GitHub repo (https://github.com/kateb-123/erc-policy-exchange-app): open it in Claude Code and say what to change. A push to main is live in a minute.
-
-To change | File | 
-
-Top bar mark | assets/logo/erc-icon-simple.svg, drawn white | 
-
-Footer logo | assets/ERC_Horizontal_MaroonText-519.png, in four pages | 
-
-Welcome line | index.html | 
-
-About page | about/index.html | 
-
-Section names | NEWS_TABS in js/app.js, and the top bar of about/, newsletter/ and share/ | 
-
-Quick search order | SUBTYPE_ORDER in js/app.js | 
-
-The edit door is Edit live items on the Policy Exchange hub. Its password is on no page. Who holds it: READ ME FIRST - ERC handoff, in the shared drive.
+ Next
 
 
 # How to change the desk
 https://erc-content-desk.vercel.app/how-to/change-the-desk/
 
-ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-content-desk.vercel.app/how-to/)
+## An item
 
-## How to change the desk
+Fix an item where it is now. Content Sort asks for the desk password.
+ 
+!Delete is final once you reload or close the desk. To bring an item back, add its link again on Submit content.
+ 
+!Never fix an item in the Sheet's first tab. It is a copy: the desk never reads it and writes over it.
 
-What you can change from the screens, and what needs code.
+## Where it is now
 
-## From the screens
-
-Content Sort and Research briefs ask for the desk password. Publish and Highlight ask for it at Confirm.
-
-An item
-
-Fix it where it is now.
-
-- On Content Sort: type over the title, or press Edit under the description; each saves when you click away. For the link, press Change, then Save. Pick a type for its other fields.
-
-- Kept: Edit on Finalize, then Save. Finalize drops it once it is in an issue or live.
-
-- On Next issue: Edit on its row. Already in the builder? Fix it on Preview & Tweak too.
-
+- On Content Sort: type over the title, or press Edit under the description; each saves when you click away. For the link, press Change, then Save.
+ 
+- Kept, and not yet in an issue or live: Edit on Finalize, then Save.
+ 
+- On Next issue: Edit on its row.
+ 
 - Waiting on Publish: click the row, then Edit.
 
-That Edit also changes the type, the subtype and ERC Newsletter only.
+Edit on Next issue, Finalize and Publish opens this form.
+ 
+1Fix an item kept under the wrong type here, without deleting it.
+ 
+3Keep a GIF under 2.5 MB.
 
-Add media adds a picture or PDF flyer. Keep a GIF under 2.5 MB.
+ 1Type and Subtype: what the item is, open to change even after Keep
+ 2ERC Newsletter only: ticked, it skips the Policy Exchange
+ 3Add media: a picture or a PDF flyer
+ 4Save: keeps the changes. Cancel drops them
 
-Delete is final once you leave the page. To bring an item back, add its link again on Submit content.
+## Issues and send dates
 
-Never fix an item in the Sheet's first tab. It is a copy: the desk never reads it and writes over it.
+Next issue holds the items. The builder holds the draft.
 
-An issue
+## An issue
 
 - To fill a later issue, press its date beside Later under This issue.
-
+ 
 - Build each issue on one computer: the draft lives in that browser.
-
+ 
 - Edits on Preview & Tweak (https://erc-content-desk.vercel.app/how-to/newsletter/#tweak) change the email, not the desk.
-
+ 
 - To fix an archived issue, fix it in the builder on the same computer and press Save to the archive again. This works only until you press Start the next issue.
 
-Send dates
+A change on the Sheet reaches the desk within ten minutes; reload to see it. If it never does, see Bring back the Google scripts (https://erc-content-desk.vercel.app/how-to/google-scripts/).
+ 
+3Type each date in column A, from row 2, as 2026-11-10.
+ 
+!A date shown as 11/10/2026 is skipped.
 
-- On Newsletter's Schedule tab, open the Sheet from its link, then its schedule tab.
+ 1Shows a week before the last send date: time to add the next ones
+ 2A send date: press it to open that issue on Next issue
+ 3The Sheet's schedule tab: opens it in a new tab
 
-- Type each date in column A, from row 2, as 2026-11-10. A date shown as 11/10/2026 is skipped.
+## The Exchange
 
-The desk shows it within ten minutes. If not, see Bring back the Google scripts (https://erc-content-desk.vercel.app/how-to/google-scripts/).
+Once an item is live, no Edit on the desk reaches the site. Only Highlight's card words and photo do, in the home page's big card.
+ 
+!The desk's Delete never touches the site.
 
-The Exchange
+ 1Already live: the item is on the site. Click its row to open it
+ 2Edit: changes the desk's copy, never the site
 
-A desk edit never reaches a live item. To fix one:
+Fix a live item on the site itself. Use a laptop: the site's Edit buttons do not show on a phone.
+ 
+1Find the item on the site, press Edit, fix it, press Save. Hide from the site, in the same Edit, takes it down.
+ 
+2The big card never shows a Drive picture. Use Add photo on Highlight, or a picture link ending .jpg, .png or .webp.
+ 
+iPublish and Highlight ask for the desk password at Confirm.
 
-- On Policy Exchange, open Edit live items on a laptop. It does not load on a phone.
+ 1Edit live items: the site's own editor, in a new tab, with its own password
+ 2Highlight: the home page's big card, with Add photo for each pick
 
-- Find the item on the site, press Edit, fix it, press Save.
+## The listserv and the scraper
 
-In the same Edit, Hide from the site takes it down; the desk's Delete never touches the site.
+To see Sheet 1 as it is now, reload the browser page.
 
-The highlight (https://erc-content-desk.vercel.app/how-to/exchange/#highlight) card never shows a Drive picture. Use Add photo on Highlight, or a link ending .jpg, .png or .webp.
+ 1To be added: the rows on Sheet 1 when the desk was loaded
+ 2Open the sign-up sheet: names and addresses, in a new tab
 
-The listserv
+Rows you delete on the Newsletter scrapes tabs stay deleted.
+ 
+!The scraper does not read the Scraper sources Sheet. Changing its sources needs code.
 
-The count is Sheet 1 as it was when the desk loaded. Reload the browser page to update it.
+ 1Run the scraper: starts a run now
+ 2The last run: what it found. Open the sheet goes to Newsletter scrapes
 
-The scraper
+ Back
 
-Rows you delete on the Newsletter scrapes tabs stay deleted. The scraper does not read the Scraper sources Sheet; changing its sources needs code.
+ Next
 
 ## Needs code
 
-Ask the desk's owner, named in READ ME FIRST in the shared drive. With access to the repo, Claude Code can make the change.
+Ask the desk's owner, named in READ ME FIRST - ERC handoff, in the shared drive. With access to the repo, Claude Code can make the change.
 
 What | Where it lives | 
 
 Either password, or which pages ask for the desk's | Each site's Vercel settings; js/auth-view.js | 
-
+ 
 The scraper's sources or its Monday time | sources.yaml and .github/workflows/scrape.yml in the erc-scraper repo | 
-
+ 
 Item types and subtypes | js/schema.js, builder/js/model.js, public-pages/submit/ and the Exchange's js/app.js | 
-
+ 
 A screen's words or button names | That screen's file in js/ or builder/js/ | 
-
+ 
 The front page's cards and public links | js/home-panel.js, js/public-links.js | 
-
+ 
 How rewrites read | api/_lib/voice.js | 
-
+ 
 The desk's look, or the email's and its blank template | css/tokens.css, builder/js/template.js, builder/fixtures/blank-issue.json | 
-
+ 
 Taking an issue out of Past issues | builder/newsletters/ | 
-
+ 
 A how-to, or where Report a problem sends | how-to/, js/report-problem.js |
 
 
 # How to make a research brief
 https://erc-content-desk.vercel.app/how-to/research-briefs/
 
-ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-content-desk.vercel.app/how-to/)
+## 1Step 1: Paper and notes
 
-## How to make a research brief
+Sign in with the desk password, then press New brief.
 
-From the paper to the author, in the desk's seven stages.
+ 1New brief: starts one from the paper and your notes
+ 2Where it is: the seven stages, with the current one named
+ 3Waits for: the next thing to do, and since when
+ 4The title opens the brief's own page
+
+Once you choose the paper, the desk reads it and fills in the byline below.
+
+ 1The paper, as a PDF: the desk reads it and fills in the byline
+ 2Your notes, as a file: they steer the draft
+ 3Paste instead: opens a box to paste or type the notes
+ 4Create the brief: opens once both files are in and the paper is read
+
+Finish the byline, then press Create the brief. It makes the brief's folder on the team drive and opens its page.
+ 
+1Author's last name is the first author's. Change it to the Texas A&M author when that is someone else.
+ 
+2Always add a Topic word. Authors repeat, and the desk can't rename the folder later.
+ 
+3Put your own name in Brief author. This browser remembers it.
+
+ 1Author's last name: starts the folder's name
+ 2Topic word: ends the folder's name
+ 3Brief author: named on the draft's cover
+
+## 2Step 2: Draft
+
+Press Write the draft. Notes typed in the box go with it, saved or not.
+ 
+3If you leave the page, Continue picks up where it stopped.
+ 
+!If a step fails with a Drive or script message, see Bring back the Google scripts (https://erc-content-desk.vercel.app/how-to/google-scripts/).
+ 
+!If it fails again after Try again for any other reason, write to the desk's owner. READ ME FIRST - ERC handoff has the address.
+
+ 1Opens the brief's folder on the team drive
+ 2Your notes: they steer the draft
+ 3Write the draft: reads the paper, plans the pages, writes the brief
+ 4In the folder: each file opens in Drive
+
+When it is done, the stage is Your proof and the page shows the brief, its word count and its table or chart.
+ 
+!Redraft writes the draft again from the paper, over brief-draft.md. Use it before you edit, never after.
+
+## Before you edit
+
+- The pill beside the word count measures against 1,300 to 2,000 words. If it says short, add interpretation to a thin section, never a restatement.
+ 
+- From here brief-draft.md in the folder is the brief, not the page. Every edit goes in the file.
+
+## 3Step 3: Your proof
+
+Proof the draft in the folder's files. The first time, make the Grammarly voice from grammarly-voice-setup.md in erc-research-briefs/.
+
+## Proof it
+
+- Paste all of brief-for-grammarly.md into Grammarly. Choose ERC Research Brief Voice and run the Humanizer. The setup file lists what to check in each change.
+ 
+- Settle each flag in check-notes.md. Keep a number as the paper prints it on the page named. Any you can't settle become questions for the author.
+ 
+- On the brief's page, check the Brief table or chart against the Paper one beside it. Every number must match at the paper's precision. Fixes go in proposed-visual.md, in the folder's figures/ or the folder. REPORTING.md has the rest.
+
+Put your proofed text back in the draft with Claude Code, opened on the ERC Research Briefs folder. In each prompt, put your brief's folder in place of holzman-2026.
+
+## Back into the draft
+
+- Paste your text into Claude Code after this prompt: Put my text below into holzman-2026/brief-draft.md word for word. Keep its byline, headings, bold, [Table 1 here] or [Figure 1 here] line and references. List every change to a number, a hedge or a causal verb.
+ 
+- Check each listed change against the paper.
+
+The desk stops at Your proof. From here the brief's folder is the record.
+
+## With author
+
+- Ask Claude Code: Run build-author-docx.js from erc-research-briefs on the holzman-2026 folder. If it says docx is missing, ask it to run npm install docx@9.7.1.
+ 
+- It writes holzman-2026-author-review.docx into the folder. A gap shows in red as "Fix before sending". Never send a copy with a red line.
+ 
+- Email the Word copy to the author of record with a reply date. Add any number questions from your proof.
+
+## After the author
+
+Approved means the author's yes in writing. From then on the words are frozen.
+
+## Approved
+
+- Save their reply in the folder under a new name, like holzman-2026-author-edits.docx, so a rebuild can't overwrite it. Never edit their file.
+ 
+- Ask Claude Code: Number every tracked change and comment in holzman-2026/holzman-2026-author-edits.docx. Mark each Accept or Push back, with its rule from erc-research-briefs/VOICE.md or REPORTING.md. Change no file yet.
+ 
+- Decide each one yourself. Accept facts, corrected numbers, added hedges and plainer wording. Push back on claims firmer than the paper, jargon, "we" and a dropped null result.
+ 
+- Tell Claude which numbered changes to apply, then reread brief-draft.md. Reply to the author with a one-line reason for each change you didn't make.
+ 
+- Send a second round only if a finding, a number or the table moved. Build the Word copy again for it.
+ 
+- Save their yes in the folder as approved.pdf. In Outlook, choose File, Print, then PDF, Save as PDF.
+
+Start only after the approval. Page breaks depend on the final words, and words move between pages, never cut.
+
+## HTML
+
+- Ask Claude Code: Build holzman-2026/brief.html from a copy of erc-research-briefs/_template/brief-template.html, like erc-research-briefs/bowen-2026/brief.html. Follow STANDARDIZATION.md and REPORTING.md in erc-research-briefs. The visual is proposed-visual.md. Never cut or reword brief-draft.md to fit: give me options.
+ 
+- Open brief.html in Chrome, press Cmd+P and choose Save as PDF: Letter, Margins None, Background graphics on, Headers and footers off. Print while online so the fonts load.
+ 
+- Send Claude one problem per message, then print again.
+
+## If it looks wrong
+
+- A page cut off, or white space under it: ask Claude for the options.
+ 
+- Em dashes: press Cmd+F and type Option+Shift+hyphen. Search for "[" too, for unfilled placeholders.
+ 
+- A broken logo: its path should start ../erc-research-briefs/assets/.
+
+Put the PDF online, then send it through the desk like any other item.
+
+## Live
+
+- Save the PDF in the folder, named like Economics-of-Encouragement-ERC-RB-26.pdf. In Drive, share it as Anyone with the link, Viewer, and copy the link.
+ 
+- Add a row to ERC-Research-Briefs-Library-Metadata.xlsx in erc-research-briefs/, copying the rows above. Ask at the ERC who at the library takes it.
+ 
+- On Submit content (https://erc-content-desk.vercel.app/#team), paste the link and pick New research, then ERC Research. The brief's title is the Title, the Executive Summary's first paragraph the Description. Press Add to the queue.
+ 
+- On Content Sort (https://erc-content-desk.vercel.app/#sort), fill any blank Date, Authors, Source or Topic. Leave ERC Newsletter only unticked and press Keep and next.
+ 
+- On Newsletter (https://erc-content-desk.vercel.app/#newsletter)'s Next issue, press Add on it under Ready to add.
+ 
+- Email the author of record the public link, with thanks.
+
+How to sort, for Finalize and Publish (https://erc-content-desk.vercel.app/how-to/sort/)
+
+ Back
+
+ Next
 
 ## What you need
 
-- The desk password. The handoff document says who holds it.
-
+- The desk password. READ ME FIRST - ERC handoff, in the shared drive, says who has it.
 - Google Drive for desktop, with the shared drive in Finder. Each brief gets a folder in ERC Content Desk/ERC Research Briefs/.
-
-- Claude Code, opened on that ERC Research Briefs folder. In each prompt below, put your brief's folder in place of holzman-2026.
-
+- Claude Code, opened on that ERC Research Briefs folder. The house rules, like VOICE.md and REPORTING.md, sit beside the brief folders in erc-research-briefs/.
 - Node.js, Grammarly, Word, Outlook and Chrome.
-
-The house rules, such as VOICE.md and REPORTING.md, sit beside the brief folders in erc-research-briefs/. A brief already with its author picks up at step 5.
-
-## 1. Paper and notes
-
-- Open Research briefs (https://erc-content-desk.vercel.app/#briefs), sign in with the desk password and press New brief.
-
-- The desk fills Author's last name from the first author. Change it to the Texas A&M author when that is someone else.
-
-- Always add a Topic word. Authors repeat, and the desk cannot rename the folder later.
-
-- Put your own name in Brief author. This browser remembers it.
-
-If a step fails with a Drive or script message, see Bring back the Google scripts (https://erc-content-desk.vercel.app/how-to/google-scripts/).
-
-## 2. Draft
-
-- Press Write the draft. If a step still fails after Try again, write to the desk's owner. The handoff document has the address.
-
-- If the word pill says short, add interpretation to a thin section, never a restatement.
-
-From here the folder's brief-draft.md is the brief, not the page. Every edit goes in the file. Redraft writes over it, so use it before you edit, never after.
-
-## 3. Your proof
-
-The first time, make the Grammarly voice from grammarly-voice-setup.md in erc-research-briefs/.
-
-- Open brief-for-grammarly.md in the folder and paste all of it into Grammarly. Choose ERC Research Brief Voice and run the Humanizer. The setup file lists which changes to refuse.
-
-- Settle each flag in check-notes.md. Keep a number as the paper prints it on the page named. Any you cannot settle become questions for the author.
-
-- Check the Brief table or chart against the Paper one beside it. Every number must match at the paper's precision. REPORTING.md has the rest. Table fixes go in proposed-visual.md, in the folder or its figures/.
-
-- Paste your proofed text into Claude Code after this prompt:
-
-Put my proofed text below into holzman-2026/brief-draft.md word for word. Keep its byline, headings, bold, its [Table 1 here] or [Figure 1 here] line and references. List every change to a number, a hedge or a causal verb.
-
-- Check each listed change against the paper.
-
-## 4. With author
-
-The desk stops at Your proof. From here the folder is the record.
-
-- Ask Claude Code: Run build-author-docx.js from erc-research-briefs on the holzman-2026 folder. If it says docx is missing, ask it to run npm install docx@9.7.1.
-
-- It writes <folder>-author-review.docx into the brief's folder. Any gap shows in red as "Fix before sending: ..." on the page and in the terminal. Never send a copy with a red line.
-
-- Email the Word copy to the author of record with a reply date. Add any number questions from step 3.
-
-## 5. Approved
-
-- Save the author's reply in the brief's folder under a new name, like holzman-2026-author-edits.docx. Under the old name, a rebuild would overwrite it. Never edit their file.
-
-- Ask Claude Code:
-
-Number every tracked change and comment in holzman-2026/holzman-2026-author-edits.docx. Mark each Accept or Push back, with the rule from erc-research-briefs/VOICE.md or REPORTING.md. Change no file yet.
-
-- Decide each one yourself. Accept facts, corrected numbers, added hedges and plainer wording. Push back on claims firmer than the paper, jargon, "we" and a dropped null result.
-
-- Tell Claude which numbered changes to apply. Then reread brief-draft.md for broken sentences.
-
-- Reply to the author with a one-line reason for each change you did not make.
-
-- Send a second round only if a finding, a number or the table moved. Rebuild the Word copy as in step 4.
-
-- Approved means the author's yes in writing. Save that email in the folder as approved.pdf. In Outlook, choose File, Print, then PDF, Save as PDF. From then on the words are frozen.
-
-## 6. HTML
-
-Start only after the approval. Page breaks depend on the final words.
-
-- Ask Claude Code:
-
-Build holzman-2026/brief.html from a copy of erc-research-briefs/_template/brief-template.html. Never edit the template. Follow STANDARDIZATION.md and REPORTING.md in erc-research-briefs, with erc-research-briefs/bowen-2026/brief.html as the example. The visual is proposed-visual.md. Never cut or reword brief-draft.md to fit: give me options. Build a page at a time and say how far each runs over.
-
-- Open brief.html in Chrome and press Cmd+P. Choose Save as PDF. Under More settings, choose Letter and Margins None, tick Background graphics and untick Headers and footers. Print while online so the fonts load.
-
-- Send Claude one problem per message, then print again.
-
-- A page cut off at the bottom, or white space under it: ask for the options. Words move between pages and are never cut.
-
-- Em dashes: press Cmd+F and type Option+Shift+hyphen. Search for "[" too, for unfilled placeholders.
-
-- A broken logo: its path should start ../erc-research-briefs/assets/.
-
-## 7. Live
-
-- Save the PDF in the brief's folder, named like Economics-of-Encouragement-ERC-RB-26.pdf.
-
-- Open Drive in Chrome and share the PDF as Anyone with the link, Viewer. Copy the link.
-
-- Add a row to ERC-Research-Briefs-Library-Metadata.xlsx in erc-research-briefs/, copying the rows above. Ask at the ERC who at the library takes it.
-
-- On Submit content (https://erc-content-desk.vercel.app/#team), paste the link and pick New research, then ERC Research. Type the brief's title in Title and the Executive Summary's first paragraph in Description. Press Add to the queue.
-
-- On Content Sort (https://erc-content-desk.vercel.app/#sort), fill any blank Date, Authors, Source or Topic. Leave ERC Newsletter only unticked and press Keep and next. How to sort (https://erc-content-desk.vercel.app/how-to/sort/) covers Finalize and Publish.
-
-- On Newsletter (https://erc-content-desk.vercel.app/#newsletter)'s Next issue, find the brief under Ready to add and press Add.
-
-- Email the author of record the public link, with thanks.
 
 
 # Bring back the Google scripts
 https://erc-content-desk.vercel.app/how-to/google-scripts/
 
-ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-content-desk.vercel.app/how-to/)
+## Which Sheets
 
-## Bring back the Google scripts
+Each Sheet runs a Google script as the login that deployed it. When that login closes the script stops, and nothing that failed in the gap is sent again.
 
-Two scripts, 15 minutes, any time.
+## In ERC Content Desk on the shared drive
+
+- erc-content-desk, in Content queue. Without it the queue's Sheet copy, new send dates, the scraper's files, Publish's copy in Drive and Research briefs stop.
  
-Two Google scripts run inside two Sheets in the shared drive, under the login that set them up. When that account closes they stop until someone redeploys them. Nothing is lost.
+- subscribe to listserve, in Listserv. Without it sign-ups and the Listserv page's count stop.
 
-Sheet | Where | What stops | 
+erc-content-desk (https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit) subscribe to listserve (https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit)
 
-erc-content-desk | ERC Content Desk, Content queue | The queue's Sheet copy, the scraper's files, the briefs' folders | 
+## 1Step 1: Redeploy
+
+Do this in each Sheet. Each gets a new address, and the desk uses it once its owner sets it.
  
-subscribe to listserve | ERC Content Desk, Listserv | Listserv sign-ups | 
+!In erc-content-desk, leave Script properties alone: the desk's token and folder ids live there.
 
 ## For each Sheet
 
@@ -836,47 +966,119 @@ subscribe to listserve | ERC Content Desk, Listserv | Listserv sign-ups |
  
 - Deploy, New deployment. Pick Web app from the gear.
  
-- Execute as: Me. Who has access: Anyone. Deploy.
+- Execute as: Me. Who has access: Anyone. Then Deploy.
  
 - Allow the permissions. If Google says unverified, choose Advanced, then Go to the project.
  
-- Copy the Web app URL, ending in /exec, and email it to the desk's owner (the handoff document has the address). Say which Sheet.
+- Copy the Web app URL, ending in /exec. Email it to the desk's owner, named in READ ME FIRST - ERC handoff in the shared drive, and say which Sheet.
 
-## Check it
+## 2Step 2: Check it
 
-- Queue: a test item on the team form shows up in the Sheet within a minute. Delete it on Content Sort.
+Once the owner says the new addresses are in, check each script.
+
+## erc-content-desk
+
+- On Submit content (https://erc-content-desk.vercel.app/#team), send a test item with Add to the queue.
  
-- Listserv: the Listserv page shows a number, not a warning.
+- Within a minute it is the last row on the Sheet's first tab.
+ 
+- Delete it on Content Sort (https://erc-content-desk.vercel.app/#sort).
+
+For subscribe to listserve, open Listserv (https://erc-content-desk.vercel.app/#listserv).
+ 
+1A number here means the script answered.
+ 
+2If it did not, the number is blank and this line reads Sheet 1 couldn't be counted just now. with Try again.
+ 
+3Live, taking sign-ups only means the desk has an address for the script. It is not the check.
+
+ 1To be added: a number means the sign-up script answered
+ 2If the script is down this reads: Sheet 1 couldn't be counted just now.
+ 3Status: Live means the desk has the script's address, not that it works
 
 ## If it goes wrong
 
-- "Unknown action" or a 500: send the newest Web app URL again.
+If a check fails, a message names the Sheet's script, or a menu is missing.
+
+## A check fails, or "Sheet API returned HTTP"
+
+- In Deploy, Manage deployments, check Who has access reads Anyone.
  
-- No Extensions menu: you need edit access to the Sheet.
+- Send the newest Web app URL to the desk's owner again.
+
+## "Unknown action" or "does not know this action yet"
+
+- Paste apps-script/Code.gs from the desk's code over the script in erc-content-desk, then save.
  
-- Leave the script's settings (Script properties) alone.
+- Deploy, Manage deployments, the pencil, Version: New version, then Deploy. The address stays the same.
+
+Code.gs on GitHub (https://github.com/kateb-123/erc-content-desk/blob/main/apps-script/Code.gs)
+
+## No Extensions menu
+
+- You need edit access to the Sheet. Ask for it, then start again.
+
+ Back
+
+ Next
 
 
 # Design for the ERC
 https://erc-content-desk.vercel.app/how-to/design/
 
-ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-content-desk.vercel.app/how-to/)
-
-## Design for the ERC
-
-Claude Design, Canva and print.
-
 ## Claude Design
 
-- Open the Aggie Web Template link from the email once. It is Texas A&M's web design system.
+The Aggie Web Template is Texas A&M's web design system, for web pages. For flyers and posts, use Canva.
+
+## Start a web page
+
+- The first time, open the Aggie Web Template link in the email.
  
 - In Claude Design, say "use the Aggie Web Template design system".
- 
-- It is for web pages. For flyers and posts, use Canva and the values below.
 
 ## Canva
 
-Put these in a Brand Kit once (Brand, then Brand Kit).
+Aggie Maroon carries most of a design.
+
+## First time only: the Brand Kit
+
+- In Canva, open Brand, then Brand Kit.
+ 
+- Add each color in the table under these slides by its HEX.
+
+Fonts: Oswald for big titles in capitals, Work Sans for headings, Open Sans for body.
+ 
+!Never redraw, recolor or stretch a logo.
+ 
+!Put a logo only on white or maroon.
+
+## Logos
+
+- Download the ERC logo pack for screens and unzip it.
+ 
+- Upload the logos in it to Canva.
+
+ERC logo pack for screens (https://mysehd.tamu.edu/wp-content/uploads/2024/09/ERC-logo-pack-RGB-for-web.zip)
+
+## Print
+
+In print, Aggie Maroon is CMYK 15 100 39 69, Pantone 7421.
+
+## Before it goes to the printer
+
+- Use the ERC logo pack for print.
+ 
+- Set body text at 11 point or larger.
+ 
+- From Canva, download as PDF Print, with bleed if the printer asks.
+
+ERC logo pack for print (https://mysehd.tamu.edu/wp-content/uploads/2024/09/ERC-logo-pack-CMYK-for-print.zip)
+
+ Back
+
+ Next
+
+## Texas A&M's colors
 
 Color | HEX | Use | 
 
@@ -892,21 +1094,7 @@ Gray | #707070 | Captions, rules |
  
 Light Gray | #D1D1D1 | Boxes | 
  
-Light Maroon | #732F2F | Rare accent | 
-
-Fonts: Oswald for big titles in capitals, Work Sans for headings, Open Sans for body.
- 
-Logos: upload the ERC logo pack for screens (https://mysehd.tamu.edu/wp-content/uploads/2024/09/ERC-logo-pack-RGB-for-web.zip). Never redraw, recolor or stretch one. Only on white or maroon.
-
-## Print
-
-- Use the ERC logo pack for print (https://mysehd.tamu.edu/wp-content/uploads/2024/09/ERC-logo-pack-CMYK-for-print.zip).
- 
-- Maroon in CMYK is 15 100 39 69, Pantone 7421.
- 
-- Body text 11 point or larger.
- 
-- From Canva, download as PDF Print, with bleed if the printer asks.
+Light Maroon | #732F2F | Rare accent |
 
 
 # Item types

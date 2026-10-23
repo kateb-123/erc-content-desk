@@ -1,0 +1,26 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 48,
+  "cy": 0,
+  "cw": 904,
+  "ch": 1800,
+  "alt": "The lower half of Sort's list: a skipped item with its Skipped tag, then the Past group with Dismiss all and five dated items, then the Already live group with Dismiss all.",
+  "pins": [
+    {
+      "x": 84.9,
+      "y": 21.3,
+      "label": "Skipped: an item you parked. It waits under the new ones"
+    },
+    {
+      "x": 50,
+      "y": 31.3,
+      "label": "Past: events and opportunities whose date or deadline has gone"
+    },
+    {
+      "x": 50,
+      "y": 87.2,
+      "label": "Already live: links the Policy Exchange already has"
+    }
+  ]
+}

@@ -1,0 +1,203 @@
+[
+  {
+    "name": "hub",
+    "url": "/?fresh=cap#exchange",
+    "alt": "The Policy Exchange page: the site's status with Waiting to publish, and on the right the Publish and Highlight doors and Edit live items.",
+    "before": [
+      {
+        "waitFor": "#screen-exchange a.qh-edit"
+      }
+    ],
+    "crop": "#screen-exchange .hub-page",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": "#screen-exchange .hub-stat:has-text(\"Waiting to publish\")",
+        "label": "Waiting to publish: what Publish would add now",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-exchange a.sort-door[href=\"/#publish\"]",
+        "label": "Publish: the page that sends the waiting items to the site",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-exchange a.sort-door[href=\"/#highlight\"]",
+        "label": "Highlight: the big card on the site's home page",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-exchange a.qh-edit",
+        "label": "Edit live items: the site's own door to fix, hide or delete a live item",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "publish",
+    "url": "/?fresh=cap#publish",
+    "alt": "Publish: Checked against the live Exchange, a note that a rewrite is not checked yet, the coloured bar with 2 adding, 1 held for newsletter and Already live, the table with each row's Fate, and Publish 2 to the Exchange at the top right.",
+    "before": [
+      {
+        "waitFor": "#screen-publish .publish-table"
+      }
+    ],
+    "crop": "#screen-publish",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": "#screen-publish .p-unchecked button",
+        "label": "Check them on Finalize: read each rewrite before it goes out",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-publish .p-legend-item",
+        "label": "A colour: click it to show only those rows",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-publish td.p-fate",
+        "label": "Fate: Adding, Held for newsletter, Needs a fix or Already live",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-publish .screen-head button.primary",
+        "label": "Publish N to the Exchange: asks for the password next",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "publish-ask",
+    "url": "/?fresh=cap#publish",
+    "alt": "The ask that replaces the Publish button: Publish 2 to the live Exchange?, a Password field, Confirm and Cancel.",
+    "before": [
+      {
+        "waitFor": "#screen-publish .screen-head button.primary"
+      },
+      {
+        "click": "#screen-publish .screen-head button.primary"
+      },
+      {
+        "waitFor": "#publish-password"
+      }
+    ],
+    "crop": "#screen-publish .screen-head",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": "#publish-password",
+        "label": "Password: the desk password, the one Content Sort asks for",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-publish .p-ask button:has-text(\"Confirm\")",
+        "label": "Confirm: adds the rows to the live site",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-publish .p-ask .nl-cancel",
+        "label": "Cancel: nothing is sent",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "highlight",
+    "url": "/?fresh=cap#highlight",
+    "alt": "The Highlight page: On the site now lists what the big card shows, with a card made on the Exchange last; Your picks has each pick with Replace photo or Add photo, its Until day, arrows and Remove, and No card words yet with Write the card.",
+    "before": [
+      {
+        "waitFor": "#screen-highlight .hl-cols"
+      }
+    ],
+    "crop": "#screen-highlight .hl-cols",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": "#screen-highlight .hl-box .hl-row",
+        "label": "On the site now: what the big card shows this minute",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-highlight .hl-tools .media-add",
+        "label": "Add photo or Replace photo: a picture file from your computer",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-highlight .hl-until input",
+        "label": "Until: the last day the pick stays on the card",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-highlight .hl-card.is-missing button",
+        "label": "Write the card: the card's own words for an event or opportunity",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "highlight-pick",
+    "url": "/?fresh=cap#highlight",
+    "alt": "Pick from: a Search box, the section filters All, Research, Events, Opportunities and Headlines with counts, and the table of live items, each with Highlight, or In and its place once picked.",
+    "before": [
+      {
+        "waitFor": "#screen-highlight .hl-table"
+      }
+    ],
+    "crop": "#screen-highlight .hl-from",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": "#hl-search",
+        "label": "Search: by title or source, every live item",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-highlight .hl-filters button",
+        "label": "A section: show only its items",
+        "nth": 2
+      },
+      {
+        "selector": "#screen-highlight .hl-table button:has-text(\"Highlight\")",
+        "label": "Highlight: adds it to Your picks",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-highlight .hl-in",
+        "label": "In, 2nd: already picked, and its place on the card",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "highlight-save",
+    "url": "/?fresh=cap#highlight",
+    "alt": "Under Your picks once a pick changed: Update the highlight and Cancel changes.",
+    "before": [
+      {
+        "waitFor": "#screen-highlight .hl-table"
+      },
+      {
+        "click": "#screen-highlight .hl-table tr:has-text(\"New research\") button:has-text(\"Highlight\")"
+      },
+      {
+        "waitFor": "#screen-highlight .hl-save"
+      }
+    ],
+    "crop": "#screen-highlight .hl-save",
+    "pad": 24,
+    "pins": [
+      {
+        "selector": "#screen-highlight .hl-save-btn",
+        "label": "Update the highlight: asks for the password, then Confirm",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-highlight .hl-save button:has-text(\"Cancel changes\")",
+        "label": "Cancel changes: back to what the site shows now",
+        "nth": 0
+      }
+    ]
+  }
+]

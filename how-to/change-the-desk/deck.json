@@ -1,0 +1,174 @@
+{
+  "title": "How to change the desk",
+  "h1": "Change the desk",
+  "lede": "What you can change from the screens, and what needs code.",
+  "open": {
+    "label": "Open the desk",
+    "href": "https://erc-content-desk.vercel.app/"
+  },
+  "chapters": [
+    {
+      "id": "item",
+      "name": "An item",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Fix an item where it is now. Content Sort asks for the desk password.",
+          "notes": [
+            {
+              "n": "!",
+              "html": "<b>Delete is final once you reload or close the desk.</b> To bring an item back, add its link again on Submit content.",
+              "warn": true,
+              "go": false
+            },
+            {
+              "n": "!",
+              "html": "<b>Never fix an item in the Sheet's first tab.</b> It is a copy: the desk never reads it and writes over it.",
+              "warn": true,
+              "go": false
+            }
+          ],
+          "steps": [
+            {
+              "title": "Where it is now",
+              "items": [
+                "On <b>Content Sort</b>: type over the title, or press <b>Edit</b> under the description; each saves when you click away. For the link, press <b>Change</b>, then <b>Save</b>.",
+                "Kept, and not yet in an issue or live: <b>Edit</b> on Finalize, then <b>Save</b>.",
+                "On <b>Next issue</b>: <b>Edit</b> on its row.",
+                "Waiting on <b>Publish</b>: click the row, then <b>Edit</b>."
+              ],
+              "links": null
+            }
+          ]
+        },
+        {
+          "cap": "<b>Edit</b> on Next issue, Finalize and Publish opens this form.",
+          "notes": [
+            {
+              "n": "1",
+              "html": "Fix an item kept under the wrong type here, without deleting it.",
+              "warn": false,
+              "go": false
+            },
+            {
+              "n": "3",
+              "html": "Keep a GIF under 2.5 MB.",
+              "warn": false,
+              "go": false
+            }
+          ],
+          "shot": "issue-edit"
+        }
+      ]
+    },
+    {
+      "id": "issue",
+      "name": "Issues and send dates",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Next issue holds the items. The builder holds the draft.",
+          "notes": [],
+          "steps": [
+            {
+              "title": "An issue",
+              "items": [
+                "To fill a later issue, press its date beside Later under This issue.",
+                "Build each issue on one computer: the draft lives in that browser.",
+                "Edits on <a href=\"/how-to/newsletter/#tweak\">Preview &amp; Tweak</a> change the email, not the desk.",
+                "To fix an archived issue, fix it in the builder on the same computer and press <b>Save to the archive</b> again. This works only until you press <b>Start the next issue</b>."
+              ],
+              "links": null
+            }
+          ]
+        },
+        {
+          "cap": "A change on the Sheet reaches the desk within ten minutes; reload to see it. If it never does, see <a href=\"/how-to/google-scripts/\">Bring back the Google scripts</a>.",
+          "notes": [
+            {
+              "n": "3",
+              "html": "Type each date in column A, from row 2, as <b>2026-11-10</b>.",
+              "warn": false,
+              "go": false
+            },
+            {
+              "n": "!",
+              "html": "<b>A date shown as 11/10/2026 is skipped.</b>",
+              "warn": true,
+              "go": false
+            }
+          ],
+          "shot": "schedule"
+        }
+      ]
+    },
+    {
+      "id": "exchange",
+      "name": "The Exchange",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Once an item is live, no <b>Edit</b> on the desk reaches the site. Only Highlight's card words and photo do, in the home page's big card.",
+          "notes": [
+            {
+              "n": "!",
+              "html": "<b>The desk's Delete never touches the site.</b>",
+              "warn": true,
+              "go": false
+            }
+          ],
+          "shot": "publish-live"
+        },
+        {
+          "cap": "Fix a live item on the site itself. Use a laptop: the site's <b>Edit</b> buttons do not show on a phone.",
+          "notes": [
+            {
+              "n": "1",
+              "html": "Find the item on the site, press <b>Edit</b>, fix it, press <b>Save</b>. <b>Hide from the site</b>, in the same Edit, takes it down.",
+              "warn": false,
+              "go": false
+            },
+            {
+              "n": "2",
+              "html": "The big card never shows a Drive picture. Use <b>Add photo</b> on Highlight, or a picture link ending .jpg, .png or .webp.",
+              "warn": false,
+              "go": false
+            },
+            {
+              "n": "i",
+              "html": "Publish and Highlight ask for the desk password at <b>Confirm</b>.",
+              "warn": false,
+              "go": true
+            }
+          ],
+          "shot": "exchange-hub"
+        }
+      ]
+    },
+    {
+      "id": "more",
+      "name": "The listserv and the scraper",
+      "step": null,
+      "slides": [
+        {
+          "cap": "To see Sheet 1 as it is now, reload the browser page.",
+          "notes": [],
+          "shot": "listserv"
+        },
+        {
+          "cap": "Rows you delete on the Newsletter scrapes tabs stay deleted.",
+          "notes": [
+            {
+              "n": "!",
+              "html": "<b>The scraper does not read the Scraper sources Sheet.</b> Changing its sources needs code.",
+              "warn": true,
+              "go": false
+            }
+          ],
+          "shot": "scraper"
+        }
+      ]
+    }
+  ],
+  "below": "<section class=\"code-table\" aria-labelledby=\"h-code\" style=\"margin-top: var(--spacing-08)\">\n      <h2 class=\"section-label hub-label\" id=\"h-code\">Needs code</h2>\n      <p>Ask the desk's owner, named in READ ME FIRST - ERC handoff, in the shared drive. With access to the repo, Claude Code can make the change.</p>\n      <table class=\"queue-table\" style=\"overflow-wrap: anywhere\">\n        <thead><tr><th scope=\"col\">What</th><th scope=\"col\" style=\"width: 50%\">Where it lives</th></tr></thead>\n        <tbody>\n          <tr><td>Either password, or which pages ask for the desk's</td><td>Each site's Vercel settings; js/auth-view.js</td></tr>\n          <tr><td>The scraper's sources or its Monday time</td><td>sources.yaml and .github/workflows/scrape.yml in the erc-scraper repo</td></tr>\n          <tr><td>Item types and subtypes</td><td>js/schema.js, builder/js/model.js, public-pages/submit/ and the Exchange's js/app.js</td></tr>\n          <tr><td>A screen's words or button names</td><td>That screen's file in js/ or builder/js/</td></tr>\n          <tr><td>The front page's cards and public links</td><td>js/home-panel.js, js/public-links.js</td></tr>\n          <tr><td>How rewrites read</td><td>api/_lib/voice.js</td></tr>\n          <tr><td>The desk's look, or the email's and its blank template</td><td>css/tokens.css, builder/js/template.js, builder/fixtures/blank-issue.json</td></tr>\n          <tr><td>Taking an issue out of Past issues</td><td>builder/newsletters/</td></tr>\n          <tr><td>A how-to, or where Report a problem sends</td><td>how-to/, js/report-problem.js</td></tr>\n        </tbody>\n      </table>\n    </section>"
+}

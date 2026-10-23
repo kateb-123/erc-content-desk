@@ -1,0 +1,95 @@
+{
+  "title": "Ask Claude about the desk",
+  "h1": "Ask Claude about the desk",
+  "lede": "Give Claude the desk guide, then ask in plain words.",
+  "open": {
+    "label": "Open Claude",
+    "href": "https://claude.ai/"
+  },
+  "chapters": [
+    {
+      "id": "setup",
+      "name": "Set it up once",
+      "step": null,
+      "slides": [
+        {
+          "cap": "A Claude project holds the desk guide, every how-to in one file.",
+          "steps": [
+            {
+              "title": "Make the project",
+              "items": [
+                "On claude.ai, open <b>Projects</b>, then <b>Create project</b>. Name it \"ERC Content Desk help\".",
+                "Download <a href=\"/how-to/desk-guide.txt\" download>the desk guide</a>. In the project, add it under <b>Project knowledge</b>.",
+                "In the project's instructions, paste: <em>Answer questions about the ERC Content Desk from the guide in this project. Name the page and the button. If the guide does not say, say so.</em>"
+              ],
+              "links": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ask",
+      "name": "Ask",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Every chat inside the project reads the guide.",
+          "notes": [
+            {
+              "n": "!",
+              "html": "<b>Never paste a password into Claude.</b>",
+              "warn": true,
+              "go": false
+            }
+          ],
+          "steps": [
+            {
+              "title": "In the project",
+              "items": [
+                "Start a chat inside the project.",
+                "Ask in plain words, for example \"How do I take an item out of the next issue?\" or \"Why didn't my item reach the Policy Exchange?\""
+              ],
+              "links": null
+            },
+            {
+              "title": "No project?",
+              "items": [
+                "Start any chat, attach <a href=\"/how-to/desk-guide.txt\" download>the desk guide</a>, and ask."
+              ],
+              "links": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "current",
+      "name": "Keep it current",
+      "step": null,
+      "slides": [
+        {
+          "cap": "The project keeps the copy you added. It never updates itself.",
+          "steps": [
+            {
+              "title": "When a how-to changes",
+              "items": [
+                "Download <a href=\"/how-to/desk-guide.txt\" download>the desk guide</a> again.",
+                "In the project, replace the old file under <b>Project knowledge</b> with it."
+              ],
+              "links": null
+            },
+            {
+              "title": "When Claude cannot answer",
+              "items": [
+                "Press <b>Report a problem</b>, in the bottom right corner of every desk page."
+              ],
+              "links": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "below": null
+}
