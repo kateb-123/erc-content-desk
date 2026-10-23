@@ -106,11 +106,28 @@ export function whenLine(item, today = '') {
   return item.type === 'opportunity' ? (d ? `closes ${d}` : '') : d;
 }
 
+/** One pick against another: the same item with the same photo, day and card words. */
+export function samePick(p, q) {
+  return p.link === q.link && (p.image || '') === (q.image || '')
+    && (p.until || '') === (q.until || '')
+    && (p.title || '') === (q.title || '') && (p.summary || '') === (q.summary || '');
+}
+
 /** True when nothing about the picks changed: the same links, order, photos, days and card words. */
 export function samePicks(a, b) {
-  return a.length === b.length && a.every((p, i) => p.link === b[i].link && (p.image || '') === (b[i].image || '')
-    && (p.until || '') === (b[i].until || '')
-    && (p.title || '') === (b[i].title || '') && (p.summary || '') === (b[i].summary || ''));
+  return a.length === b.length && a.every((p, i) => samePick(p, b[i]));
+}
+
+/** The page slot by slot (Kate, Oct 23, her pick C): the site's pin and her
+ *  pick at each place on the card, as many rows as the longer side. A slot
+ *  is changed when Update the highlight would change it: another item, an
+ *  emptied place, or the same item with a new photo, day or card words. */
+export function slotRows(site, picks) {
+  return Array.from({ length: Math.max(site.length, picks.length) }, (_, i) => {
+    const pin = site[i] ?? null;
+    const pick = picks[i] ?? null;
+    return { n: i + 1, site: pin, pick, changed: !(pin && pick && samePick(pickOf(pin), pickOf(pick))) };
+  });
 }
 
 /** The day a pick drops off the card (Kate, Oct 23: the Highlight's own page

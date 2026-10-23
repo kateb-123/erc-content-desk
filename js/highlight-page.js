@@ -13,7 +13,7 @@
  * dropped; Save waits while card words are still being written; a typed day
  * changes the picks without a redraw, so the date field keeps its caret.
  */
-import { renderHighlights } from './highlight-ui.js';
+import { renderHighlights, placeSaveBar } from './highlight-ui.js';
 import { pickOf, followPicks, samePicks, withoutPhoto, setCardWords, setUntil, wantingWords } from './highlight-view.js';
 import { howToLink } from './hub-head.js';
 import { screenHead } from './screen-info.js';
@@ -100,15 +100,12 @@ function draw() {
   restoreFocus(container, focusKey, null);
 }
 
-/** Put the Save bar right for the picks as they are, without redrawing the page. */
+/** Put the Save bar right for the picks as they are, without redrawing the
+ *  page: the last row of the slots box, under her picks (Kate, Oct 23, her pick C). */
 function refreshSaveBar(container, hlCtx) {
   const { publishError = '', busy } = latest.props;
   const changed = !samePicks(picks ?? [], pinsSeen ?? []);
-  const old = container.querySelector('.hl-save');
-  const bar = changed ? saveBar(hlCtx, publishError, busy) : null;
-  if (old && bar) old.replaceWith(bar);
-  else if (old) old.remove();
-  else if (bar) container.querySelector('.hl-cols')?.after(bar);
+  placeSaveBar(container, changed ? saveBar(hlCtx, publishError, busy) : null);
 }
 
 /** Update the highlight, then the password: the one write of this page. */

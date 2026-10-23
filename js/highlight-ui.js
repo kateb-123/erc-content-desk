@@ -3,14 +3,18 @@
  * Exchange's home page shows now on the left, what it will show once this
  * publish lands on the right, with the order and the photos set there, and
  * under the two a table of everything that could go in. The picks belong to
- * publish-ui.js; this draws them and hands changes back through onChange.
+ * highlight-page.js; this draws them and hands changes back through onChange.
+ *
+ * Slot by slot since Oct 23 (Kate, Oct 23, her pick C): the two sides share
+ * one box, a row a place on the card, the site's pin on the left and her pick
+ * on the right, so a change reads across the row and wears a Changed tag.
  */
 import { faIcon, busyWords } from './icons.js';
 import { buildImageControl } from './item-image.js';
 import { typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { SUMMARY_MAX, TITLE_MAX, wantsCardWords } from './card-words.js';
-import { MAX_PICKS, LIVE_PER_SECTION, bandAfter, addPick, removePick, movePick, setPhoto, setCardWords, setUntil, candidates, whenLine, sectionFilters, filterCandidates, trimLive, searchCandidates } from './highlight-view.js';
+import { MAX_PICKS, LIVE_PER_SECTION, bandAfter, addPick, removePick, movePick, setPhoto, setCardWords, setUntil, candidates, whenLine, sectionFilters, filterCandidates, trimLive, searchCandidates, slotRows } from './highlight-view.js';
 import { el, button } from './ui-aids.js';
 
 // The Pick from table's filter and search (Kate, Sep 23: "so we can find
@@ -49,9 +53,11 @@ function photoSpot(photo) {
   return none;
 }
 
-function row(item, n, today, from) {
-  const li = el('li', 'hl-row');
-  li.append(el('span', 'hl-num', String(n)), photoSpot(item.photo));
+/** An item on either side of a slot: the picture, the title over its meta
+ *  line, and the card's words under them. The slot carries the number. */
+function row(item, today, from) {
+  const line = el('div', 'hl-row');
+  line.append(photoSpot(item.photo));
   const words = el('div', 'hl-words');
   // The card shows the pick's own title where it has one (trimmed to fit).
   const title = el('span', 'hl-title');
@@ -63,25 +69,24 @@ function row(item, n, today, from) {
   if (item.until) add(`until ${isoToShort(item.until, today)}`);
   if (!item.photo) meta.append(document.createTextNode(meta.textContent ? ' · ' : ''), el('span', 'hl-warn', 'No photo'));
   words.append(meta);
-  li.append(words);
+  line.append(words);
   // The card's words (Kate, Sep 30), where the pick has them: a line of
-  // their own under the row, the card's width.
+  // their own under the title.
   if (wantsCardWords(item.type) && item.summary) {
-    const line = el('p', 'hl-card');
-    line.append(markStars(item.summary));
-    li.append(line);
+    const card = el('p', 'hl-card');
+    card.append(markStars(item.summary));
+    line.append(card);
   }
-  return li;
+  return line;
 }
 
-/** The card's words on a pick in the After box: the wait while they are
+/** The card's words on a pick in Your picks: the wait while they are
  *  written, the words with Edit once they land, the ask when they did not
  *  come, and the small form while she edits them. */
-function cardWordsOn(li, item, { busy, failed, change, ask, current }) {
-  const words = li.querySelector('.hl-words');
-  const line = li.querySelector('.hl-card');
+function cardWordsOn(line, item, { busy, failed, change, ask, current }) {
+  const shown = line.querySelector('.hl-card');
   if (editingCard === item.link) {
-    line?.remove();
+    shown?.remove();
     const form = el('form', 'hl-card-edit');
     form.noValidate = true;
     const tLabel = el('label', '', 'Card title');
@@ -110,14 +115,14 @@ function cardWordsOn(li, item, { busy, failed, change, ask, current }) {
       change(setCardWords(current(), item.link, { title: tField.value, summary: sField.value }), true);
     });
     form.append(tLabel, sLabel, tools);
-    li.append(form);
+    line.append(form);
     queueMicrotask(() => sField.focus({ preventScroll: true }));
     return;
   }
   if (busy) {
     const wait = el('p', 'hl-card');
     wait.append(busyWords('Writing the card'));
-    li.append(wait);
+    line.append(wait);
     return;
   }
   if (item.summary) return;
@@ -126,15 +131,37 @@ function cardWordsOn(li, item, { busy, failed, change, ask, current }) {
   const none = el('p', 'hl-card is-missing');
   none.append(faIcon('triangle-exclamation'), failed ? 'The card words did not come. ' : 'No card words yet. ');
   none.append(button(failed ? 'Try again' : 'Write the card', 'linkish', { focus: `hl-write:${item.link}`, onClick: () => ask([item.link]) }));
-  li.append(none);
+  line.append(none);
 }
 
-function box(title, note) {
-  const wrap = el('div', 'hl-box');
-  const head = el('h4', '', title);
-  if (note) head.append(el('span', 'hl-note', note));
-  wrap.append(head);
-  return wrap;
+/** A place on the card that Update the highlight would change (Kate, Oct 23,
+ *  her pick C): the tag sits after the pick's title, or after Empty. */
+function setChanged(host, on) {
+  const tag = host.querySelector(':scope > .hl-changed');
+  if (on && !tag) host.append(el('span', 'badge badge-new hl-changed', 'Changed'));
+  if (!on) tag?.remove();
+}
+
+/** A row of the slots box: the number, the site's side, her side. */
+function slotRow(n, site, pick, kind = '') {
+  const line = el('div', `hl-slot${kind ? ` ${kind}` : ''}`);
+  const left = el('div', 'hl-site');
+  const right = el('div', 'hl-pick');
+  if (site) left.append(site);
+  if (pick) right.append(pick);
+  line.append(el('span', 'hl-slot-n', n ? String(n) : ''), left, right);
+  return line;
+}
+
+/** The highlight's own Save (Kate, Oct 6) as the last row of the slots box,
+ *  under her picks; null takes it away. highlight-page.js puts it right
+ *  without a redraw when a typed day changes the picks. */
+export function placeSaveBar(container, bar) {
+  const old = container.querySelector('.hl-slot-save');
+  if (!bar) { old?.remove(); return; }
+  const line = slotRow(0, null, bar, 'hl-slot-save');
+  if (old) old.replaceWith(line);
+  else container.querySelector('.hl-cols')?.append(line);
 }
 
 /**
@@ -157,65 +184,79 @@ export function renderHighlights(container, { now, cards = [], adding, hub, pick
   const after = bandAfter(picks, ctx);
   const change = (next, always = false) => { if (always || next !== current()) onChange(next); };
 
-  const cols = el('div', 'hl-cols');
+  // One box, slot by slot (Kate, Oct 23, her pick C): a row a place on the
+  // card, what the home page shows this minute on the left, her picks in her
+  // order on the right until she saves them. It keeps the name hl-cols, which
+  // the how-to's screenshots look for.
+  const cols = el('div', 'hl-box hl-cols');
+  const pickHead = el('h4', '', 'Your picks');
+  pickHead.append(el('span', 'hl-note', `${after.length} of ${MAX_PICKS}`));
+  cols.append(slotRow(0, el('h4', '', 'On the site now'), pickHead, 'hl-slot-head'));
 
-  // Left: what the home page shows this minute.
-  const nowBox = box('On the site now');
-  if (!now.length && !cards.length) nowBox.append(el('p', 'hl-empty', 'No picks: the site shows its own feed.'));
-  else {
-    const list = el('ol', 'hl-list');
-    now.forEach((item, i) => list.append(row(item, i + 1, today)));
-    // The one-off cards made on the Exchange's own door sit after the pins.
-    cards.forEach((card, i) => list.append(row({ headline: card.headline, until: card.until, photo: 'card', cardWords: false }, now.length + i + 1, today, `${card.label} card, made on the Exchange`)));
-    nowBox.append(list);
-  }
-  cols.append(nowBox);
-
-  // Right: her picks, in her order, until she saves them.
-  const afterBox = box('Your picks', `${after.length} of ${MAX_PICKS}`);
-  if (!after.length) afterBox.append(el('p', 'hl-empty', 'Nothing picked.'));
-  else {
-    const list = el('ol', 'hl-list');
-    after.forEach((item, i) => {
-      const li = row(item, i + 1, today, item.from === 'missing' ? 'no longer on the site' : '');
-      if (item.cardWords) cardWordsOn(li, item, { busy: cardBusy.has(item.link), failed: cardFailed.has(item.link), change, ask: onCardWords, current });
-      const tools = el('div', 'hl-tools');
-      if (item.cardWords && item.summary && editingCard !== item.link && !cardBusy.has(item.link)) {
-        tools.append(button(' Edit', 'linkish edit-link', { focus: `hl-edit:${item.link}`, icon: 'pen', onClick: () => { editingCard = item.link; change(current(), true); } }));
-      }
-      // Her photo for this pick; the row's own shows when she has none.
-      const control = buildImageControl(item.image, value => change(setPhoto(current(), item.link, value)),
-        { words: { ...PHOTO_WORDS, add: item.photo ? 'Replace photo' : 'Add photo' } });
-      tools.append(control.el);
-      // The day it drops off the card (Kate, Oct 23): shown and set here.
-      const dayLabel = el('label', 'hl-until');
-      dayLabel.append(el('span', '', 'Until'));
-      const day = el('input');
-      day.type = 'date';
-      day.value = item.until;
-      day.min = today;
-      day.dataset.focus = `hl-until:${item.link}`;
-      day.addEventListener('change', () => (onUntil ? onUntil(item.link, day.value) : change(setUntil(current(), item.link, day.value))));
-      dayLabel.append(day);
-      tools.append(dayLabel);
-      const up = button('', 'hl-arrow', { focus: `hl-up:${item.link}`, icon: 'chevron-up', onClick: () => change(movePick(current(), item.link, -1)) });
-      up.setAttribute('aria-label', 'Move up');
-      up.disabled = i === 0;
-      const down = button('', 'hl-arrow', { focus: `hl-down:${item.link}`, icon: 'chevron-down', onClick: () => change(movePick(current(), item.link, 1)) });
-      down.setAttribute('aria-label', 'Move down');
-      down.disabled = i === after.length - 1;
-      tools.append(up, down, button('Remove', 'linkish skip-link', { focus: `hl-out:${item.link}`, onClick: () => change(removePick(current(), item.link)) }));
-      // The tools sit beside the words; the card line, when there is one, runs under both.
-      li.querySelector('.hl-words').after(tools);
-      list.append(li);
+  const slots = slotRows(now, after);
+  slots.forEach(({ n, site, pick: item, changed }, i) => {
+    // An empty place on the site; with no pins at all the site shows its own feed.
+    const siteSide = site ? row(site, today)
+      : el('p', 'hl-slot-empty', i === 0 && !now.length && !cards.length ? 'No picks: the site shows its own feed.' : 'Empty');
+    if (!item) {
+      const none = el('p', 'hl-slot-empty', 'Empty');
+      setChanged(none, changed);
+      cols.append(slotRow(n, siteSide, none));
+      return;
+    }
+    const line = row(item, today, item.from === 'missing' ? 'no longer on the site' : '');
+    if (item.cardWords) cardWordsOn(line, item, { busy: cardBusy.has(item.link), failed: cardFailed.has(item.link), change, ask: onCardWords, current });
+    const title = line.querySelector('.hl-title');
+    setChanged(title, changed);
+    const tools = el('div', 'hl-tools');
+    if (item.cardWords && item.summary && editingCard !== item.link && !cardBusy.has(item.link)) {
+      tools.append(button(' Edit', 'linkish edit-link', { focus: `hl-edit:${item.link}`, icon: 'pen', onClick: () => { editingCard = item.link; change(current(), true); } }));
+    }
+    // Her photo for this pick; the row's own shows when she has none.
+    const control = buildImageControl(item.image, value => change(setPhoto(current(), item.link, value)),
+      { words: { ...PHOTO_WORDS, add: item.photo ? 'Replace photo' : 'Add photo' } });
+    tools.append(control.el);
+    // The day it drops off the card (Kate, Oct 23): shown and set here. A typed
+    // day redraws nothing, so its slot's tag is put right here.
+    const dayLabel = el('label', 'hl-until');
+    dayLabel.append(el('span', '', 'Until'));
+    const day = el('input');
+    day.type = 'date';
+    day.value = item.until;
+    day.min = today;
+    day.dataset.focus = `hl-until:${item.link}`;
+    day.addEventListener('change', () => {
+      if (!onUntil) { change(setUntil(current(), item.link, day.value)); return; }
+      onUntil(item.link, day.value);
+      setChanged(title, slotRows(now, current())[i]?.changed ?? true);
     });
-    afterBox.append(list);
-  }
-  if (cards.length) afterBox.append(el('p', 'hl-empty', `Plus ${cards.length} card${cards.length === 1 ? '' : 's'} made on the Exchange.`));
-  cols.append(afterBox);
+    dayLabel.append(day);
+    tools.append(dayLabel);
+    const up = button('', 'hl-arrow', { focus: `hl-up:${item.link}`, icon: 'chevron-up', onClick: () => change(movePick(current(), item.link, -1)) });
+    up.setAttribute('aria-label', 'Move up');
+    up.disabled = i === 0;
+    const down = button('', 'hl-arrow', { focus: `hl-down:${item.link}`, icon: 'chevron-down', onClick: () => change(movePick(current(), item.link, 1)) });
+    down.setAttribute('aria-label', 'Move down');
+    down.disabled = i === after.length - 1;
+    // The order and Remove travel as one group at the line's right end, so a
+    // narrow line wraps them together.
+    const end = el('span', 'hl-tools-end');
+    end.append(up, down, button('Remove', 'linkish skip-link', { focus: `hl-out:${item.link}`, onClick: () => change(removePick(current(), item.link)) }));
+    tools.append(end);
+    // The tools on their own line, last, under the title and the card's words.
+    line.append(tools);
+    cols.append(slotRow(n, siteSide, line));
+  });
+  if (!slots.length) cols.append(slotRow(0, el('p', 'hl-slot-empty', cards.length ? 'No picks.' : 'No picks: the site shows its own feed.'), el('p', 'hl-slot-empty', 'Nothing picked.')));
+  // The one-off cards made on the Exchange's own door sit after the pins, and
+  // stay whatever she picks.
+  cards.forEach((card, i) => cols.append(slotRow(0,
+    row({ headline: card.headline, until: card.until, photo: 'card', cardWords: false }, today, `${card.label} card, made on the Exchange`),
+    i === 0 ? el('p', 'hl-empty', `Plus ${cards.length} card${cards.length === 1 ? '' : 's'} made on the Exchange.`) : null,
+    'hl-slot-card')));
   container.append(cols);
   // The highlight's own Save sits right under the picks (Kate, Oct 6).
-  if (saveBar) container.append(saveBar);
+  if (saveBar) placeSaveBar(container, saveBar);
 
   container.append(pickFrom());
 

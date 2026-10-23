@@ -876,14 +876,26 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 
 /* ── The highlight step on Publish (Kate, Sep 23; her pick A): now and after ── */
 .hl-head { margin-top: var(--spacing-07); }
-.hl-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-06); margin-top: var(--spacing-05); align-items: start; }
+/* Slot by slot (Kate, Oct 23, her pick C): one box, a row a place on the card,
+   the site's pin on the left and her pick on the right across a hairline, so
+   a change reads across the row. It keeps the name hl-cols for the how-to's shots. */
+.hl-cols { margin-top: var(--spacing-05); }
 .hl-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--spacing-05); }
 .hl-box h4 { margin: 0 0 var(--spacing-03); font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); }
 .hl-box h4 .hl-note { font: var(--meta-type); text-transform: none; letter-spacing: 0; color: var(--text-helper); margin-left: var(--spacing-03); }
-.hl-list { list-style: none; margin: 0; padding: 0; }
-.hl-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-04); padding: var(--spacing-03) 0; border-top: 1px solid var(--line-in); }
-.hl-row:first-child { border-top: 0; }
-.hl-num { flex: none; width: 20px; font-size: 12px; line-height: 16px; color: var(--text-helper); font-variant-numeric: tabular-nums; }
+.hl-slot { display: grid; grid-template-columns: 24px minmax(0, 5fr) minmax(0, 7fr); column-gap: var(--spacing-05); align-items: start; padding: var(--spacing-04) 0; border-top: 1px solid var(--line-in); }
+.hl-slot-head { align-items: baseline; padding: 0 0 var(--spacing-03); border-top: 0; }
+.hl-slot-head h4 { margin: 0; }
+.hl-slot-n { font-size: 14px; line-height: 32px; font-weight: 700; color: var(--text-helper); font-variant-numeric: tabular-nums; }
+.hl-slot-head .hl-slot-n { line-height: 18px; }
+.hl-site { min-width: 0; }
+.hl-pick { min-width: 0; align-self: stretch; padding-left: var(--spacing-06); border-left: 1px solid var(--line-in); }
+.hl-slot-empty { margin: 0; font: var(--meta-type); line-height: 32px; color: var(--text-helper); }
+.hl-slot-card .hl-empty { line-height: 32px; }
+/* The desk's blue tag, sized to sit in the title's line: Update the highlight would change this place. */
+.hl-changed { height: 20px; margin: 0 0 0 var(--spacing-03); font-size: 12px; line-height: 16px; font-weight: 600; vertical-align: 1px; }
+/* An item on either side: the picture and the words, then the card's words and the tools, each a line of its own under the title. */
+.hl-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--spacing-04); }
 .hl-thumb { flex: none; width: 48px; height: 32px; object-fit: cover; border: 1px solid var(--line-in); background: var(--layer-01); }
 /* Where a photo is still missing: the triangle, needs doing, in the picture's spot. */
 .hl-nophoto { flex: none; width: 48px; height: 32px; border: 1px dashed var(--border-strong-01); display: grid; place-items: center; color: var(--warn-mark); font-size: 12px; }
@@ -892,7 +904,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hl-meta { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
 .hl-warn { color: var(--text-warning); font-weight: 600; }
 /* A pick's tools on their own line under its title (Kate, Oct 23, her pick B): beside it they crushed the title to a word a line. */
-.hl-tools { flex: none; flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02); padding-left: calc(20px + 48px + 2 * var(--spacing-04)); }
+/* Under the title, past the picture; a linkish word's own 4px pad lines its text up with the title's. */
+.hl-tools { flex: none; flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02) var(--spacing-03); margin-top: var(--spacing-03); padding-left: calc(48px + var(--spacing-04) - var(--spacing-02)); }
+.hl-tools-end { display: inline-flex; align-items: center; gap: var(--spacing-02); margin-left: auto; }
 .hl-tools .linkish { height: 24px; padding: 0 var(--spacing-02); margin: 0; font-size: 14px; }
 .hl-tools .img-upload { gap: var(--spacing-02); }
 .hl-tools .img-thumb { display: none; }   /* the row shows the picture itself */
@@ -905,7 +919,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hl-empty { margin: 0; color: var(--muted); font: var(--meta-type); }
 /* The card's words on a pick (Kate, Sep 30): the summary as the card shows it, with its wait, its ask and its edit form. */
 /* One row of the flex box on its own, aligned under the title: past the number (20), the picture (48) and the two gaps. */
-.hl-card, .hl-card-edit { flex: 1 1 100%; margin: 0 0 0 calc(20px + 48px + 2 * var(--spacing-05)); }
+.hl-card, .hl-card-edit { flex: 1 1 100%; margin: var(--spacing-03) 0 0 calc(48px + var(--spacing-04)); }
 .hl-card { font-size: 14px; line-height: 20px; letter-spacing: 0; color: var(--ink); }
 .hl-card.is-missing { color: var(--text-helper); }
 .hl-card.is-missing .fa-solid { color: var(--warn-mark); margin-right: var(--spacing-02); }
@@ -919,7 +933,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hl-count { margin-left: auto; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); font-variant-numeric: tabular-nums; }
 .hl-count.is-over { color: var(--text-warning); font-weight: 600; }
 .hl-thumb--card { background: var(--layer-01); }
-.hl-from { margin-top: var(--spacing-06); }
+.hl-from { margin-top: var(--spacing-08); }
 .hl-from-label { margin: 0 0 var(--spacing-03); font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--ink); }
 .hl-table td { color: var(--ink); }
 .hl-table .item-title { font-size: 14px; line-height: 18px; }
@@ -936,7 +950,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 /* Pick from's head: the label, the search at its right; the note under the table says what is out of reach. */
 .hl-from-head { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-05); margin-bottom: var(--spacing-03); }
 .hl-from-head .hl-from-label { margin: 0; }
-.hl-search { width: 240px; height: 32px; }
+/* Two classes, so the general field rule (input[type="search"], width 100%) does not stretch it. */
+.hl-from-head .hl-search { width: 320px; height: 32px; }
 .hl-from-note { margin: var(--spacing-03) 0 0; font: var(--meta-type); color: var(--text-helper); }
 .hl-from-note:empty { display: none; }
 
@@ -971,8 +986,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .qh-door-second { margin-top: var(--spacing-04); }
 .qh-edit { display: inline-block; margin-top: var(--spacing-05); }
 .p-highlight-line { margin: var(--spacing-05) 0 0; font: var(--meta-type); color: var(--text-helper); }
-.hl-until { display: inline-flex; align-items: center; gap: var(--spacing-02); font: var(--meta-type); color: var(--text-helper); }
-.hl-until input { height: 32px; padding: 0 var(--spacing-03); border: 1px solid var(--border-strong-01); border-radius: var(--radius-input); background: var(--field-01); color: var(--ink); font: var(--meta-type); }
+/* Until as plain words beside its field, not the uppercase micro-label every label wears. */
+.hl-until { display: inline-flex; align-items: center; gap: var(--spacing-02); margin: 0; font: var(--meta-type); text-transform: none; letter-spacing: 0; color: var(--text-helper); }
+.hl-until input { width: 136px; height: 32px; padding: 0 var(--spacing-03); border: 1px solid var(--border-strong-01); border-radius: var(--radius-input); background: var(--field-01); color: var(--ink); font: var(--meta-type); }
 .hl-until input:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 /* Run the scraper (Kate, Oct 19): the hubs' label, the outline button, one line, the Drive link. */
 .qh-scraper { margin-top: var(--spacing-07); }
@@ -1138,7 +1154,7 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
 .hub-stat-v .ql-copy { vertical-align: baseline; }
 
 /* The highlight's own Save, right under the picks (Kate, Oct 6). */
-.hl-save { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-05); margin: var(--spacing-05) 0 var(--spacing-07); }
+.hl-save { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-05); margin: 0; }
 .hl-save .hl-ask { flex: 1 1 100%; }
 .hl-save-note { flex: 1 1 100%; margin: 0; font: var(--meta-type); color: var(--text-helper); }
 
