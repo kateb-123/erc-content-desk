@@ -36,7 +36,9 @@ export function renderShell(header, { screen, onGo, signedIn = false, onSignOut,
   const trail = header.querySelector('.topbar-crumbs');
   const parts = [];
   if (bare) {
-    const brand = el('span', 'topbar-brand topbar-here', DESK.label);
+    // The brand is always the way home, on a sign-in page too (review, Oct 23).
+    const brand = deskLink(DESK.label, DESK.href, onGo);
+    brand.classList.add('topbar-brand');
     trail.replaceChildren(brand);
     header.querySelector('.topbar-lanes').replaceChildren();
     return;

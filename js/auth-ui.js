@@ -72,6 +72,8 @@ export function renderSignIn(container, { screen, checking, busy, error, onSignI
   a.addEventListener('click', event => { event.preventDefault(); onGoTo('queue'); });
   team.append(a);
   middle.append(team);
+  // Where the password lives (review, Oct 23); never the password itself.
+  middle.append(el('p', 'signin-team', 'Who has the password: READ ME FIRST, in the shared drive.'));
   container.append(page);
   // The field takes the keyboard on a fresh draw, and keeps it across a redraw.
   if (!restoreFocus(container, focusKey, null) && !busy) field.focus({ preventScroll: true });
