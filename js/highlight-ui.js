@@ -77,7 +77,7 @@ function row(item, n, today, from) {
 /** The card's words on a pick in the After box: the wait while they are
  *  written, the words with Edit once they land, the ask when they did not
  *  come, and the small form while she edits them. */
-function cardWordsOn(li, item, { busy, failed, change, ask, picks }) {
+function cardWordsOn(li, item, { busy, failed, change, ask, current }) {
   const words = li.querySelector('.hl-words');
   const line = li.querySelector('.hl-card');
   if (editingCard === item.link) {
@@ -103,11 +103,11 @@ function cardWordsOn(li, item, { busy, failed, change, ask, picks }) {
     const tools = el('div', 'hl-card-tools');
     const save = button('Save', 'linkish', { focus: `hl-card-save:${item.link}` });
     save.type = 'submit';
-    tools.append(save, ' \u00b7 ', button('Cancel', 'linkish skip-link', { focus: `hl-edit:${item.link}`, onClick: () => { editingCard = ''; change(picks); } }), count);
+    tools.append(save, ' \u00b7 ', button('Cancel', 'linkish skip-link', { focus: `hl-edit:${item.link}`, onClick: () => { editingCard = ''; change(current(), true); } }), count);
     form.addEventListener('submit', event => {
       event.preventDefault();
       editingCard = '';
-      change(setCardWords(picks, item.link, { title: tField.value, summary: sField.value }), true);
+      change(setCardWords(current(), item.link, { title: tField.value, summary: sField.value }), true);
     });
     form.append(tLabel, sLabel, tools);
     li.append(form);
@@ -146,12 +146,16 @@ function box(title, note) {
  *   onCardWords(links): ask for the card's words again
  *   saveBar: the highlight's own Save, drawn under the picks when they changed
  */
-export function renderHighlights(container, { now, cards = [], adding, hub, picks, today, cardBusy = new Set(), cardFailed = new Set(), onChange, onCardWords, saveBar = null }) {
+export function renderHighlights(container, { now, cards = [], adding, hub, picks: drawn, getPicks = null, today, cardBusy = new Set(), cardFailed = new Set(), onChange, onUntil = null, onCardWords, saveBar = null }) {
+  // Handlers read the picks as they are when pressed (getPicks), never as they
+  // were when drawn: a day typed in a pick's field changes them without a redraw.
+  const current = () => (getPicks ? getPicks() : drawn);
+  const picks = drawn;
   // Since Oct 23 the Highlight is a page of its own (js/highlight-page.js): the
   // page's title says what it is, so no section head; live picks need no label.
   const ctx = { adding, hub };
   const after = bandAfter(picks, ctx);
-  const change = (next, always = false) => { if (always || next !== picks) onChange(next); };
+  const change = (next, always = false) => { if (always || next !== current()) onChange(next); };
 
   const cols = el('div', 'hl-cols');
 
@@ -174,13 +178,13 @@ export function renderHighlights(container, { now, cards = [], adding, hub, pick
     const list = el('ol', 'hl-list');
     after.forEach((item, i) => {
       const li = row(item, i + 1, today, item.from === 'missing' ? 'no longer on the site' : '');
-      if (item.cardWords) cardWordsOn(li, item, { busy: cardBusy.has(item.link), failed: cardFailed.has(item.link), change, ask: onCardWords, picks });
+      if (item.cardWords) cardWordsOn(li, item, { busy: cardBusy.has(item.link), failed: cardFailed.has(item.link), change, ask: onCardWords, current });
       const tools = el('div', 'hl-tools');
       if (item.cardWords && item.summary && editingCard !== item.link && !cardBusy.has(item.link)) {
-        tools.append(button(' Edit', 'linkish edit-link', { focus: `hl-edit:${item.link}`, icon: 'pen', onClick: () => { editingCard = item.link; change(picks, true); } }));
+        tools.append(button(' Edit', 'linkish edit-link', { focus: `hl-edit:${item.link}`, icon: 'pen', onClick: () => { editingCard = item.link; change(current(), true); } }));
       }
       // Her photo for this pick; the row's own shows when she has none.
-      const control = buildImageControl(item.image, value => change(setPhoto(picks, item.link, value)),
+      const control = buildImageControl(item.image, value => change(setPhoto(current(), item.link, value)),
         { words: { ...PHOTO_WORDS, add: item.photo ? 'Replace photo' : 'Add photo' } });
       tools.append(control.el);
       // The day it drops off the card (Kate, Oct 23): shown and set here.
@@ -191,16 +195,16 @@ export function renderHighlights(container, { now, cards = [], adding, hub, pick
       day.value = item.until;
       day.min = today;
       day.dataset.focus = `hl-until:${item.link}`;
-      day.addEventListener('change', () => change(setUntil(picks, item.link, day.value)));
+      day.addEventListener('change', () => (onUntil ? onUntil(item.link, day.value) : change(setUntil(current(), item.link, day.value))));
       dayLabel.append(day);
       tools.append(dayLabel);
-      const up = button('', 'hl-arrow', { focus: `hl-up:${item.link}`, icon: 'chevron-up', onClick: () => change(movePick(picks, item.link, -1)) });
+      const up = button('', 'hl-arrow', { focus: `hl-up:${item.link}`, icon: 'chevron-up', onClick: () => change(movePick(current(), item.link, -1)) });
       up.setAttribute('aria-label', 'Move up');
       up.disabled = i === 0;
-      const down = button('', 'hl-arrow', { focus: `hl-down:${item.link}`, icon: 'chevron-down', onClick: () => change(movePick(picks, item.link, 1)) });
+      const down = button('', 'hl-arrow', { focus: `hl-down:${item.link}`, icon: 'chevron-down', onClick: () => change(movePick(current(), item.link, 1)) });
       down.setAttribute('aria-label', 'Move down');
       down.disabled = i === after.length - 1;
-      tools.append(up, down, button('Remove', 'linkish skip-link', { focus: `hl-out:${item.link}`, onClick: () => change(removePick(picks, item.link)) }));
+      tools.append(up, down, button('Remove', 'linkish skip-link', { focus: `hl-out:${item.link}`, onClick: () => change(removePick(current(), item.link)) }));
       // The tools sit beside the words; the card line, when there is one, runs under both.
       li.querySelector('.hl-words').after(tools);
       list.append(li);
@@ -278,7 +282,7 @@ export function renderHighlights(container, { now, cards = [], adding, hub, pick
         const act = el('td', 'hl-act');
         if (at.has(item.link)) act.append(el('span', 'hl-in', `In, ${ORDINAL[at.get(item.link)]}`));
         else {
-          const add = button('Highlight', 'linkish', { focus: `hl-in:${item.link}`, onClick: () => change(addPick(picks, item.link)) });
+          const add = button('Highlight', 'linkish', { focus: `hl-in:${item.link}`, onClick: () => change(addPick(current(), item.link)) });
           if (picks.length >= MAX_PICKS) { add.disabled = true; add.title = 'Six is the most'; }
           act.append(add);
         }

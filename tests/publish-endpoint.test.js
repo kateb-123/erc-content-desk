@@ -144,7 +144,7 @@ test('the write appends the rows, then commits her picks with their photos, and 
   assert.deepEqual(JSON.parse(hub.puts[1].text), { pins: [
     { key: 'https://x.org/new', until: '2026-10-07', image: 'https://img/mine.jpg' },
     { key: 'https://x.org/naep', until: '2026-10-20' },
-    { key: 'https://x.org/erc', until: '2026-09-30', title: 'ERC workshop', summary: 'Bring your questions about the data room.' },
+    { key: 'https://x.org/erc', until: '2026-09-30', summary: 'Bring your questions about the data room.' },   // the title only repeated the item's own: not written (Oct 23)
   ], cards: [], hidden: [], heroes: [] });
   // published_at on both rows, and the photo on the one that had none.
   const a = store.updates.find(r => r.id === 'a');

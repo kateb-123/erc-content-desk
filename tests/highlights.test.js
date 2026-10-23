@@ -115,7 +115,7 @@ test('cleanPicks keeps only what the Exchange can show: rows going out now or al
   assert.deepEqual(items.slice(0, 3), [
     { link: 'https://x.org/new', image: 'https://img/new.jpg', until: '2026-10-07', title: '', summary: '' },   // research: no card words, two weeks
     { link: 'https://x.org/naep', image: '', until: '2026-10-08', title: '', summary: '' },                    // her day stands
-    { link: 'https://x.org/rural', image: '', until: '2026-10-30', title: 'Rural Schools Symposium', summary: 'Rural superintendents meet in Rudder Tower.' },   // the event's date
+    { link: 'https://x.org/rural', image: '', until: '2026-10-30', title: '', summary: 'Rural superintendents meet in Rudder Tower.' },   // the event's date; a title that only repeats the item's own is not written (Oct 23)
   ]);
   assert.equal(items[3].until, '2026-11-01');   // the deadline
   assert.equal(items[3].summary.length, 180);   // fitted
@@ -184,4 +184,16 @@ test('cleanPicks keeps a pick\'s own day from today on; a past or junk day takes
   assert.equal(past.items[0].until, '2026-11-06', 'a research pin with a past day: two weeks from today');
   const junk = cleanPicks([{ link: 'https://x.org/sdp', until: 'next week' }], { hub, today: '2026-10-23' });
   assert.equal(junk.items[0].until, '2026-11-01', 'an opportunity with no real day: its deadline');
+});
+
+// A card title that only repeats the item's own (review, Oct 23) is not
+// written: the Exchange's card would freeze that copy, and a later fix to the
+// item's title on the edit door would never reach the card.
+test('cleanPicks writes a card title only when it differs from the item\'s own', () => {
+  const hub = hubRows(CSV);
+  const same = cleanPicks([{ link: 'https://x.org/rural', title: 'Rural Schools Symposium', summary: 'Come along.' }], { hub, today: '2026-10-23' });
+  assert.equal(same.items[0].title, '');
+  assert.equal(same.items[0].summary, 'Come along.', 'the summary still rides');
+  const own = cleanPicks([{ link: 'https://x.org/rural', title: 'Rural Symposium', summary: '' }], { hub, today: '2026-10-23' });
+  assert.equal(own.items[0].title, 'Rural Symposium');
 });

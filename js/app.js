@@ -52,7 +52,6 @@ const state = {
   reviewTotal: 0,           // size of the current check batch, for "2 of 4" (view state)
   rewriting: new Set(),     // ids out for the rewrite that starts at Keep (view state)
   justPublished: 0,         // count from the last publish, until she leaves the screen (view state)
-  justHighlighted: null,    // how many the highlight holds after the last write, for the receipt (view state)
   archive: null,            // the builder's archive index for Past issues and Last issue: null loading, false unreadable
   hubUpdated: null,         // the live Exchange's last change, YYYY-MM-DD: null while asked, '' when it did not answer
   signups: null,            // the listserv's count, never names: { live, waiting, last }, or null
@@ -330,7 +329,6 @@ function goTo(key) {
     // The check is read-only and CACHED: it runs on first arrival and again
     // only after something changed (persist clears it) or via Re-check.
     state.justPublished = 0;
-    state.justHighlighted = null;
     state.publishedCsv = '';
     state.publishedCopy = null;
     state.copyError = '';
@@ -344,7 +342,9 @@ function goTo(key) {
     state.publishError = '';
     resetHighlightAsk();
     state.screen = key;
-    if (!state.publishPreview && may) { loadPublishPreview(); return; }
+    // The page exists to show what is on the site now, and a save replaces
+    // every pin: it asks the site again on arrival (review, Oct 23).
+    if (may && !state.busy) { state.publishPreview = null; loadPublishPreview(); return; }
   }
   state.screen = key;
   render();
@@ -502,28 +502,35 @@ async function publishNow({ password, highlights, only }) {
   try {
     const data = await postJson('/api/publish', { password, highlights, ...(only ? { only } : {}) }, 'publish');
     state.publishPreview = null;
+    if (only === 'highlight') {
+      // The Highlight's own page (Oct 23): busy holds until the fresh check
+      // lands, so the page never reads as a failed check in between.
+      await reload();
+      await loadPublishPreview();
+      const n = data.highlighted ?? 0;
+      setStatus(`Highlight updated: ${n} item${n === 1 ? '' : 's'}.`, 'ok');
+      return true;
+    }
     state.justPublished = data.published;
-    state.justHighlighted = data.highlighted ?? null;
     state.publishedCsv = data.csv ?? '';
     state.publishedCopy = data.copy ?? null;
     state.copyError = data.copyError ?? '';
     state.busy = false;
     if (!data.published) {
-      // Only the highlight changed: no receipt; the page checks again and says so.
+      // Nothing was added: those rows were already live by the time it ran.
       await reload();
       await loadPublishPreview();
-      const held = data.held?.length ? ` ${data.held.length} more go${data.held.length === 1 ? 'es' : ''} up with the next publish.` : '';
-      setStatus(`Highlight updated: ${data.highlighted} item${data.highlighted === 1 ? '' : 's'}.${held}`, 'ok');
-      return;
+      setStatus('Nothing new to add: those rows are already live.', 'ok');
+      return true;
     }
     // The copy is filed in Drive by the publish itself (Oct 22); the receipt names it.
     // reload() writes its own 'Loading…'/'' status; the confirmation message
     // has to be set after it finishes, or reload() overwrites it.
     await reload();
     setStatus(data.warning ? data.warning : '', data.warning ? 'note' : 'ok');   // the receipt card is the confirmation
-    return;
+    return true;
   } catch (err) {
-    if (shutOut(err)) return;
+    if (shutOut(err)) return false;
     // The wrong password is the ask's own refusal: it says so on the ask and
     // stays; the status line has nothing to add.
     if (err.message === WRONG_PASSWORD || /password/i.test(err.message)) { state.publishError = err.message; setStatus(''); }
@@ -531,6 +538,7 @@ async function publishNow({ password, highlights, only }) {
   }
   state.busy = false;
   render();
+  return false;
 }
 
 /* ---- The desk's sign-in (Kate, Sep 23) ----------------------------------
@@ -979,15 +987,13 @@ function render() {
   } else if (state.screen === 'publish') {
     renderPublish(screens.publish, {
       ...common, preview: state.publishPreview, busy: state.busy,
-      justPublished: state.justPublished, justHighlighted: state.justHighlighted, publishedCsv: state.publishedCsv, publishedCopy: state.publishedCopy, copyError: state.copyError, publishError: state.publishError,
+      justPublished: state.justPublished, publishedCsv: state.publishedCsv, publishedCopy: state.publishedCopy, copyError: state.copyError, publishError: state.publishError,
       onPublish: publishNow, onGoTo: goTo, onEditRow: saveEdit,
       onRecheck: () => { state.publishPreview = null; loadPublishPreview(); },
-      // The card's words for a highlight pick (Kate, Sep 30): the same call
-      // as Finalize's rewrite, asked by link.
     });
   } else if (state.screen === 'highlight') {
     renderHighlightPage(screens.highlight, {
-      preview: state.publishPreview, today: common.today, busy: state.busy, publishError: state.publishError,
+      preview: state.publishPreview, today: common.today, busy: state.busy, loaded: state.loaded, publishError: state.publishError,
       onSave: ({ password, highlights }) => publishNow({ password, highlights, only: 'highlight' }),
       onRecheck: () => { state.publishPreview = null; loadPublishPreview(); },
       // The card's words for a pick (Kate, Sep 30): the same call as Finalize's rewrite, asked by link.

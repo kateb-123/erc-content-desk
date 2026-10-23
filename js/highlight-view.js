@@ -168,13 +168,3 @@ export function searchCandidates(list, term) {
   return list.filter(c => `${c.headline} ${c.source}`.toLowerCase().includes(q));
 }
 
-/** After the highlight's own Save (Kate, Oct 6): her picks in her order, each
- *  saved one as the Exchange now holds it, each held one (going out with the
- *  next publish, in `going`) as she left it; anything else drops. */
-export function carryPicks(mine, saved, going) {
-  const held = new Map((saved ?? []).map(entry => { const p = pickOf(entry); return [p?.link, p]; }));
-  return (mine ?? []).flatMap(p => {
-    if (held.has(p.link)) return [held.get(p.link)];
-    return going.has(p.link) ? [p] : [];
-  });
-}

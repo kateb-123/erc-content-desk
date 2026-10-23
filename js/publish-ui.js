@@ -150,7 +150,7 @@ function fateBar(container, list, rerender) {
 }
 
 export function renderPublish(container, props) {
-  const { rows, today, preview, busy, justPublished, justHighlighted, onPublish, onGoTo, onRecheck, publishedCsv, publishedCopy = null, copyError = '', onEditRow, publishError = '' } = props;
+  const { rows, today, preview, busy, justPublished, onPublish, onGoTo, onRecheck, publishedCsv, publishedCopy = null, copyError = '', onEditRow, publishError = '' } = props;
   const rerender = () => renderPublish(container, props);
   // An open, edited form holds any way out (the same rule as Finalize).
   const held = () => holdIfDirty(openForm, container.querySelector('.f-detail-row'));
