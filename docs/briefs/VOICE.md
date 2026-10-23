@@ -1,6 +1,6 @@
 # VOICE.md: the ERC research brief voice
 
-DRAFT for Kate's rulings, Oct 22, 2026. Read from the eight published briefs, each beside its paper and, where one exists, its first draft.
+Approved by Kate, Oct 22, 2026, section by section, with her rulings. Read from the eight published briefs, each beside its paper and, where one exists, its first draft.
 
 The models are the four briefs Kate likes: **Bowen** (Making Room for the Arts), **Meer** (The Economics of Encouragement), **Cortes** (Distance to Degrees) and **Holzman** (EMERGE). **Nagro** (More Than Coursework) is the counter-example, quoted only for what not to do (Kate, Oct 22: "nagros was shit"). Kwok, Svajda-Hardy and Williams are not weighted. A rule that only Bowen of the four follows is marked **(Bowen's direction)**. Bowen's prose was fixed on Sep 17 and went out Oct 19.
 
@@ -14,7 +14,7 @@ An ERC brief reads like a neutral report for a policymaker's staff, not an argum
 
 *Approved by Kate, Oct 22, with her rulings on the policy layout, caveats and the close.*
 
-**Title and cover.** A short hook title over a conventional subtitle in title case, and no question. When torn, take the conventional subtitle (for Bowen, Kate picked the plainest of seven). The cover lists the study authors and their affiliations; the brief author goes on the back page.
+**Title and cover.** A short hook title, or a reader's question about a practice (Meer, Holzman; Kate's ruling, Oct 22), over a conventional subtitle in title case. When torn, take the conventional subtitle (for Bowen, Kate picked the plainest of seven). The cover lists the study authors and their affiliations; the brief author goes on the back page.
 - "Making Room for the Arts" / "The Impact of Arts Learning on Students With Disabilities"
 - "Distance to Degrees" / "How Proximity Shapes Opportunity in Texas" (Cortes)
 
@@ -22,7 +22,7 @@ An ERC brief reads like a neutral report for a policymaker's staff, not an argum
 - "Community colleges are a key pathway to higher education, but many students live too far to attend." (Cortes)
 - "Schools were selected for the Houston Arts Access Initiative by lottery. The study followed 1,971 students with disabilities in 42 elementary and middle schools." (Bowen)
 
-**Report highlights.** Three, numbered 01 to 03. Each headline is a bold past-tense sentence with no numbers; one or two sentences under it carry the numbers. All three are this study's findings. A headline may carry some punch (Cortes, Holzman) as long as it says only what the study found. A subgroup's hedge goes in its headline **(Bowen's direction)**.
+**Report highlights.** Three, numbered 01 to 03; a fourth only when the study has a fourth finding as strong as the others (Cortes; Kate's ruling, Oct 22). Each headline is a bold past-tense sentence with no numbers; one or two sentences under it carry the numbers. All three are this study's findings. A headline may carry some punch (Cortes, Holzman) as long as it says only what the study found. A subgroup's hedge goes in its headline **(Bowen's direction)**.
 - "Certain student groups appeared to benefit more." (Bowen)
 - "These gaps are not explained by academic preparation." (Cortes)
 - "EMERGE changed students' college trajectories without changing their test scores." (Holzman)
@@ -54,7 +54,7 @@ An ERC brief reads like a neutral report for a policymaker's staff, not an argum
 *Approved by Kate, Oct 22.*
 
 **Numbers**
-- Statistics and the sample size in digits, units in full: "percentage points", "standard deviations", never pp or SD; the % sign, never "percent". Small counts of things in words ("about five ... nearly ten", Bowen) **(Bowen's direction)**.
+- Statistics and the sample size in digits, units in full: "percentage points", "standard deviations", never pp or SD; the % sign, never "percent". Small counts of things in words ("about five ... nearly ten", Bowen) **(Kate's ruling, Oct 22)**.
 - Report numbers to the precision of the paper's table ("3.0 percentage points", not "3"). If the paper contradicts itself, use the table value and flag the conflict to Kate.
 - Give each effect one piece of context: a baseline ("Previously, 9.7% to 13.9% of these students had received an infraction."), a concrete equivalent ("equivalent to about one additional day per school year"), or an outside benchmark ("a review of 357 studies of writing programs").
 - Composition in parentheses ("learning disability (33%)"); a small share with its count ("only 13% (4 of 31)", Svajda-Hardy).
@@ -71,7 +71,7 @@ An ERC brief reads like a neutral report for a policymaker's staff, not an argum
 - Mostly medium sentences, often two clauses joined by "so" or "as" to show cause: "Principals volunteered and were committed to the initiative's goals, so results may not generalize to schools without supportive leadership." Short sentences for headlines and turns, never for drama.
 - No em dashes (Bowen and Meer have none; Cortes has four and Holzman two, which a draft does not copy). An aside with commas inside goes in parentheses.
 
-**Words we use.** the group's full name every time, never an acronym ("students with disabilities"); plain names for the study groups ("initiative schools" and "comparison schools", Bowen); the study, the authors, researchers, this brief; plain verbs for what researchers did (paired, randomly selected, interviewed, reviewed, coded).
+**Words we use.** plain everyday words where they are exact ("rose", "set aside", "before it began"; Meer, Holzman; Kate's ruling, Oct 22, over Bowen's lifted "increased", "allocated", "prior to its launch"); the group's full name every time, never an acronym ("students with disabilities"); plain names for the study groups ("initiative schools" and "comparison schools", Bowen); the study, the authors, researchers, this brief; plain verbs for what researchers did (paired, randomly selected, interviewed, reviewed, coded).
 
 **Words we avoid.** we; acronyms the reader has to carry (SWDs, ITT, PSTs, URM, CBM); treatment and control; intent-to-treat, heterogeneity, spillover, bandwidth, underpowered, operationalize, homogeneity; praise words (substantial, sizable, striking, powerful, critical); "The majority of" (write Most); "Approximately" (write About); "typically developing" (write "students without disabilities"); figures of speech in body prose ("come at the expense of", "a sound investment", "open a door"); lead-ins ("The findings suggest that", "The authors argue that", "The following points are based on the data.").
 
@@ -109,7 +109,7 @@ Kate's own edits, which a drafting tool should make before she has to. Authors' 
 6. **Keep three highlights, and cut what the study cannot carry.** Meer, Kwok and Svajda-Hardy each went from four highlights to three. Bowen's fourth implication ("Look to sustained programs, such as teaching-artist residencies, as a promising model.") rested on something the study could not isolate, so it went. Holzman went from six implications to four.
 7. **Write headlines as full sentences.** "EMERGE changed students' college trajectories without changing their test scores." (Holzman); "Writing scores rose." (Bowen)
 8. **Cut method backstory down to the concrete limits, but keep the data-collection mode.** Svajda-Hardy's four limitation sentences became one: "Note that this study focuses on what state laws require on paper, not whether training is actually implemented or whether it improves outcomes."
-9. **Titles: hook plus conventional subtitle, no question.** "Who Prepares Teachers to Manage a Classroom?" / "Managing Without Mandate"; "How Do New Teachers Bring Fairness Into the Classroom?" / "How New Teachers Bring Fairness Into the Classroom"; "What Expanded Arts Learning Did for Students With Disabilities" / "The Impact of Arts Learning on Students With Disabilities".
+9. **Titles: a hook or a reader's question, over a conventional subtitle.** A question that only restates the paper's topic became a statement: "Who Prepares Teachers to Manage a Classroom?" / "Managing Without Mandate"; "How Do New Teachers Bring Fairness Into the Classroom?" / "How New Teachers Bring Fairness Into the Classroom"; "What Expanded Arts Learning Did for Students With Disabilities" / "The Impact of Arts Learning on Students With Disabilities".
 10. **End plain.** Draft: "the evidence suggests that making room for the arts is a sound investment in engagement, behavior, and learning." / Published: "the evidence indicates that investing in arts education supports engagement, behavior, and learning." (Bowen; Kwok's aspirational closing line was cut by the author.)
 11. **Keep the builder's voice out of the brief.** "My recommendation:", "This brief earns **two tables**", "(verify during build)" and "Optional figure (probably skip)" never belong in brief text.
 12. **Reread after every cut.** Trims left "serve students a broader range" and "Researchers identified those that" (Kwok, the author's trims) and "Developing and implementing the Individualized Education Program (IEP) concerns the legal document..." (Nagro).
@@ -117,6 +117,8 @@ Kate's own edits, which a drafting tool should make before she has to. Authors' 
 **Edits that made it into print but are not to copy:** Svajda-Hardy's Highlight 03 "frequently contradict" where its Finding 3 says "in some cases"; Holzman's last-pass cut of "likely" ("gains came from advising, not academic preparation"); Kwok's "demonstrates"; Williams's "Most were near the Texas-Mexico border", "None were in central Texas" and "most lacked counselors" (the paper: most lacked a full-time nurse, social worker or psychologist, and many lacked a counselor); Meer's "did not cluster near the cutoff"; Holzman's "Target schools where the college-going culture is weakest." which dropped the paper's caution about a result found after the fact.
 
 ## 6. The models, and what each gives
+
+*Approved by Kate, Oct 22.*
 
 - **Bowen:** the neutral body; every number with its context; the design named as the licence; the hedge set by the paper.
 - **Meer:** the flat, even highlights, the null stated as plainly as the positives; the reader's picture of the intervention ("They knew only their own letter grade."); imperatives with a "Do not expect".
@@ -127,26 +129,28 @@ Kate's own edits, which a drafting tool should make before she has to. Authors' 
 
 **Nagro, the counter-example:** one caveat said four times; sentences as long as the paper's; a 2020 survey called "a recent review" with its source dropped; "twelve" next to "12".
 
-## 7. For Kate to rule on
+## 7. Kate's rulings
 
 **Against STYLE-GUIDE.md**
-1. **Anchors.** The guide's exemplars are Cortes (one of the four models) and the Clinical Teaching / Kwok brief (De La Cruz, Kwok & Kwok, 2024), written in "we" with PSTs. Proposal: the four models as anchors, new Grammarly samples from Bowen and Meer.
+1. **Anchors.** Settled (Kate, Oct 22): the four models replace Cortes and the Clinical Teaching brief as the guide's examples; the Grammarly samples are retaken from Bowen and Meer.
 2. **Closing note.** Settled (Kate, Oct 22): the close may carry some energy, as the guide says, in a plain declarative line.
-3. **"We".** The guide says Use "We found that…". No published brief uses "we" for its findings. Proposal: "The study found".
-4. **Highlight count.** The guide allows 3 to 4; every brief since June has three.
+3. **"We".** Settled (Kate, Oct 22): no "we"; "The study found", "The authors note".
+4. **Highlight count.** Settled (Kate, Oct 22): three; a fourth only when the study has a fourth finding as strong as the others (Cortes).
 5. **Energy.** Settled (Kate, Oct 22): the highlights and the close may carry some, the body none.
-6. **Length.** The guide defaults to the fuller treatment, cuts with her sign-off. Proposal: keep the full interpretation, no restatements, no lists a table already shows.
-7. **Design names.** The guide glosses "a cutoff-based research design"; Kate's Meer edit wrote "This regression discontinuity design"; Bowen describes, then names. One rule is needed.
-8. **"Significant."** Kate's Bowen pass added "Engagement is a significant challenge" and "made a significant difference", while Bowen's writing result meets only a looser threshold. Proposal: the word only for statistics.
-9. **Numbers in words.** The guide: spell out "where it aids readability". Proposal: section 3's rule.
-10. **Title formula.** The guide wants a punchy title plus a research question; Kate turned the questions into statements.
-11. **grammarly-voice-setup.md.** It models "about 40 percent", against the % rule; its Scholar (Formal) preset may be what lifts "rose" to "increased"; Sample 1 carries Cortes's "85 school districts and 406 campuses"; Sample 3 uses PSTs.
+6. **Length.** Settled (Kate, Oct 22): lean first. Keep every interpretation, but no restatements and no lists a table already shows; she adds back rather than cuts.
+7. **Design names.** Settled (Kate, Oct 22): say what was done, then name it (Bowen: "...participation was determined by lottery. This randomized controlled trial design allows...").
+8. **"Significant."** Settled (Kate, Oct 22): either sense is fine. The everyday sense never sits on a result that did not reach statistical significance.
+9. **Numbers in words.** Settled (Kate, Oct 22): statistics and the sample size in digits, small counts of things in words, one way per quantity through the brief.
+10. **Title formula.** Settled (Kate, Oct 22): a hook or a reader's question about a practice, over a conventional subtitle; not a research question.
+11. **grammarly-voice-setup.md.** Settled (Kate, Oct 22): rewrite it with samples from Bowen and Meer, the % rule, plain words, and no numbers the papers lack.
 
 **Open between the newest briefs**
-12. **Register.** Bowen's pass lifted everyday words ("rose" to "increased", "set aside" to "allocated", "Before it began" to "Prior to its launch"), possibly Grammarly's Scholar preset, yet Bowen kept "Writing scores rose." and Holzman and Meer stay plain. Which way?
-13. **Question titles.** Meer and Holzman, two of the four models, ask a reader's question ("Can a Single Email Shape What Students Study?"); section 2 says no question, from your edits to Kwok and Svajda-Hardy. Allow a reader's question?
 
 **Settled with Kate (Oct 22)**
+- The models are Bowen, Meer, Cortes and Holzman; Nagro is the counter-example.
+- Energy in the highlights and the close, none in the body.
+- A reader's question may be the title.
+- Plain everyday words over lifted report words.
 - Policy layout by the paper: three numbered by default, For Practice and For Policy when the paper speaks to both.
 - The general caution once in the overview and once in the policy lead.
 - Conclusions in one paragraph or two.
