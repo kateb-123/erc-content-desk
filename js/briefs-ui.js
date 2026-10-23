@@ -7,7 +7,7 @@
  * beside it. Round 1 draws the first stage, Paper and notes; the later ones
  * say they come in the next round.
  */
-import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, notesKind, createLock, wordCount, draftProgress, draftWait, pairFor, cutsToMake } from './briefs-view.js';
+import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, notesKind, createLock, wordCount, draftProgress, draftWait, pairFor, cutsToMake, bandPill } from './briefs-view.js';
 import { fillFromPaper } from './paper-read.js';
 import { renderMarkdown } from './markdown-lite.js';
 import { chartSvg, chartAlt } from './brief-visual.js';
@@ -379,8 +379,9 @@ function filesBox(files) {
 }
 
 /** A file to save from words the page already holds: a Blob link named for the folder's file. */
-function downloadButton(name, text) {
-  const btn = button(name, 'btn-outline brief-download', { icon: 'download' });
+function downloadButton(label, name, text) {
+  const btn = button(label, 'linkish brief-download', { icon: 'download' });
+  btn.title = name;
   btn.addEventListener('click', () => {
     const url = URL.createObjectURL(new Blob([text], { type: 'text/markdown' }));
     const a = document.createElement('a');
@@ -390,7 +391,7 @@ function downloadButton(name, text) {
   return btn;
 }
 
-/** The running box (round 2): every step with its state, the current one in busy words; Continue when nothing runs. */
+/** The running box (round 2): every step by name, the icon saying done, now or later; Continue when nothing runs. Kate's copy edit (Oct 22). */
 function draftRunningBox(brief, { running, error, onWriteDraft }) {
   const box = el('div', 'hub-box brief-stage');
   const list = el('ol', 'draft-steps');
@@ -411,35 +412,22 @@ function draftRunningBox(brief, { running, error, onWriteDraft }) {
   }
   if (!running) {
     const actions = el('div', 'brief-actions');
-    actions.append(button(error ? 'Try the step again' : 'Continue the draft', 'primary', { focus: 'write-draft', icon: 'pen', onClick: () => onWriteDraft() }));
-    box.append(actions, el('p', 'brief-next', 'The draft stopped here. Continue picks up where it left off.'));
+    actions.append(button(error ? 'Try again' : 'Continue', 'primary', { focus: 'write-draft', icon: 'pen', onClick: () => onWriteDraft() }));
+    box.append(actions);
   } else {
-    box.append(el('p', 'brief-next', 'Stay on the page while it writes. If you leave, Continue picks up where it stopped.'));
+    box.append(el('p', 'brief-next', 'Keep this page open.'));
   }
   return box;
 }
 
-/** A line of markdown as the page shows it: a numbered item with its bold claim, or plain words. */
-function flagLines(md) {
-  const wrap = el('div', 'draft-flags');
-  for (const line of String(md ?? '').split('\n').filter(Boolean)) {
-    const p = el('p');
-    const m = /^(\d+)\. \*\*(.+?)\*\* (.*)$/.exec(line);
-    if (m) { p.append(faIcon('triangle-exclamation'), ' ', el('b', '', m[2]), ' ', m[3]); } else p.textContent = line;
-    wrap.append(p);
-  }
-  return wrap;
-}
-
-/** The Draft box (round 2): the whole brief at once, the downloads, the figures to look at, the number flags, the check's notes. */
 /** The proposed chart's picture in the figures folder, for the author round's Word doc. */
 const PROPOSED_CHART = 'proposed-figure-1.png';
 
-/** A cut of the paper's table or figure as the page shows it: the picture from the figures folder, or why there is none. */
+/** The paper's own table or figure, cut out: the picture from the figures folder, or a short word on why there is none. */
 function clipOf(f, { brief, crops, cropFailed, files }) {
   if (!crops.has(f.crop)) {
-    const why = cropFailed.includes(f.crop) ? 'Not cut out. Try the cuts again below.' : 'Not cut out yet.';
-    return el('p', `meta draft-clip-none${cropFailed.includes(f.crop) ? ' draft-crop-miss' : ''}`, why);
+    const failed = cropFailed.includes(f.crop);
+    return el('p', `meta draft-clip-none${failed ? ' draft-crop-miss' : ''}`, failed ? 'Cut failed' : 'Not cut yet');
   }
   // The figures folder's copy first: an older cut can sit beside the draft from before the folder (review, Oct 22).
   const file = (files ?? []).find(x => x.name === `figures/${f.crop}`) ?? (files ?? []).find(x => x.name === f.crop);
@@ -451,13 +439,12 @@ function clipOf(f, { brief, crops, cropFailed, files }) {
   const img = el('img');
   img.src = src;
   img.alt = `${f.label} as the paper prints it`;
-  img.loading = 'lazy';
-  img.addEventListener('error', () => link.replaceWith(el('p', 'meta draft-crop-miss', 'The picture did not load. It is in the figures folder.')));
+  img.addEventListener('error', () => link.replaceWith(el('p', 'meta draft-crop-miss', "Didn't load. It's in the folder.")));
   link.append(img);
   return link;
 }
 
-/** The proposal as it would sit in the brief: the table, or the chart drawn in the brief's colours with its numbers under it. */
+/** The proposal as it would sit in the brief: the chart in the brief's colours, or the table under its label. */
 function proposalOf(visual) {
   const wrap = el('div', 'draft-proposal');
   if (visual.kind === 'chart') {
@@ -465,9 +452,10 @@ function proposalOf(visual) {
     chart.innerHTML = chartSvg(visual);   // drawn by the desk; every word from the model escaped
     chart.firstElementChild?.setAttribute('aria-label', chartAlt(visual));
     wrap.append(chart);
+    return wrap;
   }
   const table = el('table', 'draft-proposal-table');
-  table.append(el('caption', '', visual.kind === 'chart' ? "The chart's numbers" : `${visual.name}. ${visual.title}`));
+  table.append(el('caption', '', `${visual.name}. ${visual.title}`));
   const head = el('tr');
   for (const c of visual.columns) head.append(el('th', '', c));
   const thead = el('thead');
@@ -483,6 +471,13 @@ function proposalOf(visual) {
   return wrap;
 }
 
+/**
+ * The Draft box, her pick A of a leaner box (Oct 22, after "too wordy and
+ * too much"): the word count and the downloads in one row, the brief as
+ * reading text, then the paper's table or figure beside the proposed one.
+ * Nothing else: the check's notes and the number conflicts are a file in
+ * the folder (check-notes.md), the other cuts are in the figures folder.
+ */
 function draftBox(brief, { onWriteDraft, error, cropFailed = [], files = [], cutting = false }) {
   const d = brief.extra?.draft ?? {};
   const r = d.result;
@@ -493,89 +488,48 @@ function draftBox(brief, { onWriteDraft, error, cropFailed = [], files = [], cut
     problem.textContent = error;
     box.append(problem);
   }
-  const meta = el('div', 'draft-meta');
-  const bandOk = r.band === 'In the band';
-  meta.append(
-    el('span', 'meta', `${Number(r.words ?? 0).toLocaleString('en-US')} words of body prose · band 1,300 to 2,000`),
-    el('span', `draft-pill${bandOk ? ' is-ok' : ''}`, r.band),
-  );
-  // Her pick A (Oct 22): the brief as reading text at reading width, the tools in one row above it.
-  const row = el('div', 'draft-downloads');
-  row.append(
-    downloadButton('brief-draft.md', r.draft ?? ''),
-    downloadButton('brief-for-grammarly.md', r.grammarly ?? ''),
-    downloadButton('page-plan.md', r.plan ?? ''),
-  );
-  if (!cutting) row.append(button('Write it again', 'linkish', { focus: 'write-again', onClick: () => onWriteDraft({ restart: true }) }));
+  const pill = bandPill(r.words);
   const tools = el('div', 'draft-tools');
-  tools.append(meta, row);
+  tools.append(
+    el('span', 'meta', `${Number(r.words ?? 0).toLocaleString('en-US')} words`),
+    el('span', `draft-pill${pill === 'In range' ? ' is-ok' : ''}`, pill),
+    downloadButton('Draft', 'brief-draft.md', r.draft ?? ''),
+    downloadButton('Grammarly copy', 'brief-for-grammarly.md', r.grammarly ?? ''),
+    downloadButton('Page plan', 'page-plan.md', r.plan ?? ''),
+  );
+  if (!cutting) tools.append(button('Redraft', 'linkish', { focus: 'write-again', onClick: () => onWriteDraft({ restart: true }) }));
   const article = el('article', 'brief-read');
   article.innerHTML = renderMarkdown(r.draft ?? '');   // every character escaped by the renderer; only its own tags
   box.append(tools, article);
 
   const crops = new Set(d.crops ?? []);
-  const figures = r.figures ?? [];
   const visual = r.visual ?? null;
-  const { theirs, others } = pairFor(figures, visual);
-  const cut = { brief, crops, cropFailed, files, onWriteDraft };
-
-  // Her pick A (Oct 22: "i want to see their figure and the proposed new one before it goes off to the author"):
-  // the paper's own, cut out by the read's box, beside the proposal, at equal width.
   if (visual) {
-    box.append(el('h3', 'section-label hub-label', `${visual.name}, theirs and the proposal`));
+    const { theirs } = pairFor(r.figures ?? [], visual);
+    const cut = { brief, crops, cropFailed, files };
+    box.append(el('h3', 'section-label hub-label', visual.name));
     const pair = el('div', 'draft-pair');
     const left = el('div', 'draft-pair-side');
-    left.append(el('p', 'draft-pair-head', theirs ? `In the paper: ${theirs.label}, p. ${theirs.page}` : `In the paper: ${visual.source_label || 'not named'}`));
-    left.append(theirs ? clipOf(theirs, cut) : el('p', 'meta', 'The read did not mark this one on a page.'));
+    left.append(el('p', 'draft-pair-head', theirs?.page ? `Paper, p. ${theirs.page}` : 'Paper'));
+    left.append(theirs ? clipOf(theirs, cut) : el('p', 'meta draft-clip-none', 'Not found in the paper'));
     const right = el('div', 'draft-pair-side');
-    right.append(el('p', 'draft-pair-head', `Proposed for the brief: ${visual.name}`), proposalOf(visual));
-    if (visual.kept) right.append(el('p', 'meta', visual.kept));
+    right.append(el('p', 'draft-pair-head', 'Brief'), proposalOf(visual));
     pair.append(left, right);
     box.append(pair);
-  }
-
-  box.append(el('h3', 'section-label hub-label', visual ? 'Other tables and figures' : 'Tables and figures in the paper'));
-  if (others.length) {
-    const list = el('ul', 'draft-figures');
-    for (const f of others) {
-      const li = el('li', 'draft-figure');
-      const words = el('div', 'draft-figure-words');
-      words.append(el('p', 'draft-pair-head', `${f.label}, p. ${f.page}`), el('p', '', f.caption));
-      const pill = el('span', `draft-pill${f.rework === 'Prose' ? ' is-ok' : ''}`, f.rework);
-      const pills = el('p');
-      pills.append(pill);
-      words.append(pills);
-      li.append(clipOf(f, cut), words);
-      list.append(li);
-    }
-    box.append(list);
-  } else {
-    box.append(el('p', 'brief-files-note', visual ? 'No other table or figure earned a place.' : 'Nothing in the paper earned a place; the brief tells it in words.'));
   }
   const missing = cutsToMake(r, [...crops]);
   const chartMissing = visual?.kind === 'chart' && !crops.has(PROPOSED_CHART);
   if (cutting) {
     // The cuts run under the draft, so she keeps her place on the page (review, Oct 22).
     const line = el('p', 'draft-wait');
-    line.append(busyWords('Cutting the tables and figures out of the paper'));
+    line.append(busyWords('Cutting figures'));
     box.append(line);
   } else if (missing.length || chartMissing) {
     const failed = [...missing.map(c => c.crop), ...(chartMissing ? [PROPOSED_CHART] : [])].some(n => cropFailed.includes(n));
     const again = el('div', 'brief-actions');
-    again.append(button(failed ? 'Try the cuts again' : 'Cut them out', 'linkish', { focus: 'cut-again', onClick: () => onWriteDraft() }));
-    if (chartMissing && cropFailed.includes(PROPOSED_CHART)) again.append(el('span', 'meta draft-crop-miss', "The chart's picture for the folder did not save."));
+    again.append(button(failed ? 'Try again' : 'Cut figures', 'linkish', { focus: 'cut-again', onClick: () => onWriteDraft() }));
     box.append(again);
   }
-
-  box.append(el('h3', 'section-label hub-label', 'Numbers the paper disagrees with itself on'), flagLines(r.numberFlags));
-  const notes = [...(d.checkFlags ?? []).map(f => `${f.section.replace(/_/g, ' ')}: ${f.note}`), ...(r.styleFlags ?? []).map(f => `${f.section.replace(/_/g, ' ')}: ${f.note}`)];
-  if (notes.length) {
-    box.append(el('h3', 'section-label hub-label', "What the check could not settle"));
-    const list = el('ul', 'draft-notes');
-    for (const n of notes) list.append(el('li', '', n));
-    box.append(list);
-  }
-  box.append(el('p', 'brief-next', 'Next: your proof. Run brief-for-grammarly.md through Grammarly and bring the text back here, in the next round.'));
   return box;
 }
 

@@ -62,14 +62,19 @@ export function waitsFor(brief, today) {
   }
 }
 
-/** A step's words in the running box: past once done, the busy words while it runs, plain before. */
-function stepRowWords(step, state) {
+/** A step's name in the running box, the same whatever its state; the icon says done, now or later (Kate's copy edit, Oct 22). */
+function stepRowWords(step) {
   const section = SECTION_DEFS.find(s => s.key === step);
-  if (state === 'now') return stepWords(step);
-  if (section) return state === 'done' ? `Wrote the ${section.title}` : `Write the ${section.title}`;
-  const past = { extract: 'Read the paper', plan: 'Planned the pages', visual: 'Proposed the table or chart', check: 'Checked the draft against the paper', assemble: 'Put the files together' };
-  const plain = { extract: 'Read the paper', plan: 'Plan the pages', visual: 'Propose the table or chart', check: 'Check the draft against the paper', assemble: 'Put the files together' };
-  return (state === 'done' ? past : plain)[step] ?? step;
+  if (section) return section.title;
+  return { extract: 'Read the paper', plan: 'Plan the pages', visual: 'Table or chart', check: 'Check against the paper', assemble: 'Put the files together' }[step] ?? step;
+}
+
+/** The word count as the Draft box's pill: against 1,300 to 2,000, in two words (Kate's copy edit, Oct 22). */
+export function bandPill(words) {
+  const n = Number(words) || 0;
+  if (n < 1300) return `${(1300 - n).toLocaleString('en-US')} short`;
+  if (n > 2000) return `${(n - 2000).toLocaleString('en-US')} over`;
+  return 'In range';
 }
 
 /** The draft's steps as the running box shows them (round 2): done, now (only while the browser is driving them) and later. */
@@ -79,7 +84,7 @@ export function draftProgress(brief, { running = false } = {}) {
   const current = running ? (d.step || nextDraftStep([...done])) : null;
   return DRAFT_STEPS.map(key => {
     const state = done.has(key) ? 'done' : key === current ? 'now' : 'later';
-    return { key, state, words: stepRowWords(key, state) };
+    return { key, state, words: stepRowWords(key) };
   });
 }
 
@@ -153,7 +158,7 @@ export function restartDraft(brief) {
 export function draftWait(brief, { running = false } = {}) {
   if (!running) return '';
   const done = new Set(brief?.extra?.draft?.done ?? []);
-  return DRAFT_STEPS.every(s => done.has(s)) ? 'Cutting the tables and figures out of the paper' : '';
+  return DRAFT_STEPS.every(s => done.has(s)) ? 'Cutting figures' : '';
 }
 
 /** Words in a notes file, the way the brief counts its own: a token with a letter or a digit in it, so "#" and "-" are not words. */

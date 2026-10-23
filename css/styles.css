@@ -1005,6 +1005,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .steps-small .step.is-now .step-words { display: block; }
 .brief-page .steps { margin: 0 0 var(--spacing-08); }
 .brief-split { margin-top: 0; }
+/* Two columns from 1024 up, as the desk's other pages; narrower (the app's side pane) the folder goes under the brief, so the brief keeps its width. */
+@media (max-width: 1023px) { .brief-split { grid-template-columns: minmax(0, 1fr); } }
 .brief-stage { padding: var(--spacing-05) var(--spacing-06); }
 .brief-paper { margin: 0 0 var(--spacing-05); font: var(--body-type); color: var(--ink); }
 .brief-paper .fa-solid { color: var(--icon-secondary); margin-right: var(--spacing-02); }
@@ -1042,15 +1044,13 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 @media (prefers-reduced-motion: reduce) { .draft-step.is-now .fa-circle-notch { animation: none; } }
 .brief-write { margin-top: var(--spacing-05); flex-wrap: wrap; }
 .brief-write .meta { font: var(--meta-type); color: var(--muted); }
-.draft-meta { display: flex; align-items: center; gap: var(--spacing-04); flex-wrap: wrap; margin: 0 0 var(--spacing-04); }
-.draft-meta .meta { font: var(--meta-type); color: var(--muted); }
 .draft-pill { display: inline-block; padding: var(--spacing-01) var(--spacing-04); border-radius: var(--radius-pill); background: var(--tag-background-review); color: var(--tag-color-review); font: var(--meta-type); font-weight: 600; white-space: nowrap; }
 .draft-pill.is-ok { background: var(--tag-background-gray); color: var(--tag-color-gray); }
 .draft-wait { margin: var(--spacing-03) 0 0; }
 .draft-crop-miss { color: var(--text-warning); }
-.draft-tools { display: flex; flex-direction: column; gap: var(--spacing-04); padding: 0 0 var(--spacing-05); margin: 0 0 var(--spacing-06); border-bottom: 1px solid var(--line-in); }
-.draft-tools .draft-meta { margin: 0; }
-.draft-downloads { display: flex; gap: var(--spacing-04); align-items: center; flex-wrap: wrap; margin: 0; }
+.draft-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-03) var(--spacing-05); padding: 0 0 var(--spacing-05); margin: 0 0 var(--spacing-06); border-bottom: 1px solid var(--line-in); }
+.draft-tools .meta { font: var(--meta-type); color: var(--muted); }
+.brief-download.linkish { display: inline-flex; align-items: center; gap: var(--spacing-02); font-weight: 700; }
 /* The brief as reading text (her pick A, Oct 22): the desk's type at reading width, a maize rule under each section. */
 .brief-read { max-width: 720px; font: var(--body-type, 400 16px/26px inherit); line-height: 26px; color: var(--text-primary); margin: 0 0 var(--spacing-07); }
 .brief-read h1 { font: 700 28px/36px inherit; margin: 0 0 var(--spacing-03); }
@@ -1064,8 +1064,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .brief-read th { text-align: left; padding: var(--spacing-02) var(--spacing-03); border-bottom: 2px solid var(--border-interactive); font: var(--label-type, 700 12px/18px inherit); letter-spacing: 1px; text-transform: uppercase; }
 .brief-read td { padding: var(--spacing-02) var(--spacing-03); border-bottom: 1px solid var(--line-in); vertical-align: top; }
 .brief-read a { color: var(--link-primary); }
-.brief-stage .hub-label + .draft-figures, .brief-stage .hub-label + .draft-flags, .brief-stage .hub-label + .draft-notes { margin-top: var(--spacing-04); }
-.draft-figures, .draft-notes { list-style: none; padding: 0; margin: 0 0 var(--spacing-06); }
 /* Theirs and the proposal, her pick A (Oct 22): the paper's cut beside the brief's own at equal width. */
 .draft-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--spacing-06); align-items: start; margin: var(--spacing-04) 0 var(--spacing-07); }
 .draft-pair-side { display: grid; gap: var(--spacing-03); align-content: start; min-width: 0; }
@@ -1080,13 +1078,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .draft-proposal-table caption { text-align: left; font: var(--body-type, 400 16px/24px inherit); font-weight: 700; padding-bottom: var(--spacing-03); }
 .draft-proposal-table th { text-align: left; font: var(--label-type); letter-spacing: 1.25px; text-transform: uppercase; padding: var(--spacing-03); border-bottom: 2px solid var(--border-interactive); }
 .draft-proposal-table td { padding: var(--spacing-03); border-bottom: 1px solid var(--line-in); vertical-align: top; }
-.draft-figure { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: var(--spacing-06); align-items: start; padding: var(--spacing-05) 0; border-top: 1px solid var(--line-in); }
-.draft-figure-words { display: grid; gap: var(--spacing-02); }
-.draft-figure-words p { margin: 0; }
-.draft-notes li { padding: var(--spacing-02) 0; font: var(--meta-type); color: var(--text-primary); }
-.draft-flags { display: grid; gap: var(--spacing-03); margin: 0 0 var(--spacing-06); }
-.draft-flags p { margin: 0; }
-.draft-flags .fa-triangle-exclamation { color: var(--support-warning); }
 .new-brief-paste { width: 100%; box-sizing: border-box; min-height: 120px; }
 .new-brief .card-field[hidden], .new-brief .linkish[hidden] { display: none; }
 .new-brief .card-field .linkish { align-self: flex-start; margin-top: var(--spacing-02); }

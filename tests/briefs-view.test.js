@@ -101,10 +101,10 @@ test('draftProgress: the steps as the running box shows them, done, now and late
   const brief = { stage: 'draft', extra: { draft: { done: ['extract', 'plan', 'visual', 'exec_summary'], step: 'highlights' } } };
   const rows = draftProgress(brief, { running: true });
   assert.deepEqual(rows.map(r => [r.key, r.state]).slice(0, 6), [['extract', 'done'], ['plan', 'done'], ['visual', 'done'], ['exec_summary', 'done'], ['highlights', 'now'], ['introduction', 'later']]);
-  assert.equal(rows[4].words, 'Writing the brief, Report Highlights');
+  assert.equal(rows[4].words, 'Report Highlights');
   assert.equal(rows[0].words, 'Read the paper');
-  assert.equal(rows[1].words, 'Planned the pages');
-  assert.equal(rows[3].words, 'Wrote the Executive Summary');
+  assert.equal(rows[1].words, 'Plan the pages');
+  assert.equal(rows[3].words, 'Executive Summary');
   assert.equal(rows.at(-1).words, 'Put the files together');
   const paused = draftProgress(brief, { running: false });
   assert.equal(paused[4].state, 'later', 'nothing is "now" while nothing runs');
@@ -157,14 +157,14 @@ test('restartDraft: Write it again shows the read as now, not every step as done
   const again = restartDraft(brief);
   const rows = draftProgress(again, { running: true });
   assert.deepEqual(rows.map(r => r.state), ['now', ...DRAFT_STEPS.slice(1).map(() => 'later')]);
-  assert.equal(rows[0].words, 'Reading the paper');
+  assert.equal(rows[0].words, 'Read the paper');
   assert.equal(brief.extra.draft.done.length, DRAFT_STEPS.length, 'the brief she holds is untouched');
   assert.equal(again.stage, 'draft');
 });
 
 test('draftProgress: once every step is done and the browser is still at work, the wait is the crops (review, Oct 22: two waits with no busy words)', () => {
   const brief = { stage: 'proof', extra: { draft: { done: [...DRAFT_STEPS], step: null } } };
-  assert.equal(draftWait(brief, { running: true }), 'Cutting the tables and figures out of the paper');
+  assert.equal(draftWait(brief, { running: true }), 'Cutting figures');
   assert.equal(draftWait(brief, { running: false }), '');
   assert.equal(draftWait({ stage: 'draft', extra: { draft: { done: ['extract'], step: 'plan' } } }, { running: true }), '');
 });
@@ -172,10 +172,10 @@ test('draftProgress: once every step is done and the browser is still at work, t
 test('draftProgress names the proposal step in the running box', () => {
   const rows = draftProgress({ stage: 'draft', extra: { draft: { done: ['extract', 'plan'], step: 'visual' } } }, { running: true });
   assert.equal(rows[2].key, 'visual');
-  assert.equal(rows[2].words, "Proposing the brief's table or chart");
+  assert.equal(rows[2].words, 'Table or chart');
   const done = draftProgress({ stage: 'draft', extra: { draft: { done: ['extract', 'plan', 'visual'] } } });
-  assert.equal(done[2].words, 'Proposed the table or chart');
-  assert.equal(draftProgress({ stage: 'paper', extra: {} })[2].words, 'Propose the table or chart');
+  assert.equal(done[2].words, 'Table or chart');
+  assert.equal(draftProgress({ stage: 'paper', extra: {} })[2].words, 'Table or chart');
 });
 
 import { pairFor, cutsToMake } from '../js/briefs-view.js';
@@ -203,4 +203,22 @@ test('cutsToMake: every listed table or figure with a page, and the proposal\'s 
   assert.deepEqual(cutsToMake({ figures, visual }, []).find(c => c.crop === 'figure-table-3-p12.png').box, visual.box, 'the proposal\'s own box wins');
   assert.deepEqual(cutsToMake({ figures, visual }, ['figure-figure-1-p4.png']).map(c => c.crop), ['figure-table-3-p12.png']);
   assert.deepEqual(cutsToMake({ figures: [], visual: { source_label: 'Table 2', page: 5, crop: 'figure-table-2-p5.png', box: null } }, []).map(c => c.crop), ['figure-table-2-p5.png']);
+});
+
+import { bandPill } from '../js/briefs-view.js';
+
+test('bandPill: the word count against 1,300 to 2,000, in two words (Kate\'s copy edit, Oct 22)', () => {
+  assert.equal(bandPill(512), '788 short');
+  assert.equal(bandPill(1300), 'In range');
+  assert.equal(bandPill(2000), 'In range');
+  assert.equal(bandPill(2212), '212 over');
+  assert.equal(bandPill(0), '1,300 short');
+});
+
+test('the running steps read as plain names whatever their state (Kate\'s copy edit, Oct 22)', () => {
+  const rows = draftProgress({ stage: 'draft', extra: { draft: { done: ['extract', 'plan'], step: 'visual' } } }, { running: true });
+  assert.deepEqual(rows.slice(0, 4).map(r => r.words), ['Read the paper', 'Plan the pages', 'Table or chart', 'Executive Summary']);
+  assert.equal(rows.at(-2).words, 'Check against the paper');
+  assert.equal(rows.at(-1).words, 'Put the files together');
+  assert.equal(draftWait({ stage: 'proof', extra: { draft: { done: [...DRAFT_STEPS] } } }, { running: true }), 'Cutting figures');
 });

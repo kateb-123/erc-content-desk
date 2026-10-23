@@ -336,7 +336,8 @@ test('POST draft walks every step to the end: plan with its title and page-plan.
   assert.match(brief.extra.draft.result.grammarly, /^Majors That Lead Somewhere\n\nExecutive Summary\n/);
   assert.equal(brief.extra.draft.result.figures[0].crop, 'figure-table-3-p12.png');
   assert.equal(brief.extra.draft.result.band, 'Under the floor of 1,300');
-  assert.deepEqual(files.map(f => f[0]), ['extract.md', 'page-plan.md', 'proposed-visual.md', 'page-plan.md', 'brief-draft.md', 'brief-for-grammarly.md', 'figures.md']);
+  assert.deepEqual(files.map(f => f[0]), ['extract.md', 'page-plan.md', 'proposed-visual.md', 'page-plan.md', 'brief-draft.md', 'brief-for-grammarly.md', 'figures.md', 'check-notes.md']);
+  assert.match(files.find(f => f[0] === 'check-notes.md')[2], /^# Check notes/, 'what the check could not settle goes to the folder (Kate, Oct 22)');
   assert.equal(files.find(f => f[0] === 'proposed-visual.md')[3], 'figures', 'the proposal sits in the figures folder, one name whatever its kind, so a rerun replaces it');
   assert.match(files.find(f => f[0] === 'figures.md')[2], /^# Tables and figures in the paper/, 'figures.md is the inventory (review, Oct 22)');
   assert.equal(brief.extra.draft.visual.name, 'Table 1');

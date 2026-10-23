@@ -323,7 +323,14 @@ export function createBriefsHandler({
     const inventory = figuresInventory(extract);
     const sections = SECTION_DEFS.filter(s => d.sections[s.key] != null).map(s => ({ key: s.key, content: d.sections[s.key] }));
     const words = bodyWordCount(d.sections);
+    // What the check could not settle and the paper's number conflicts: a file in the folder, not the page (Kate, Oct 22).
+    const conflicts = (extract.number_flags ?? []).length ? numberFlagsMd(extract.number_flags) : '';
+    const unsettled = [...(d.checkFlags ?? []), ...checkStyle(sections, extract.journal ?? '')].map(f => `- ${String(f.section).replace(/_/g, ' ')}: ${f.note}`);
+    const checkNotes = conflicts || unsettled.length
+      ? ['# Check notes', '', ...(conflicts ? ['## Numbers the paper disagrees with itself on', '', conflicts, ''] : []), ...(unsettled.length ? ['## What the check could not settle', '', ...unsettled, ''] : [])].join('\n')
+      : '';
     return {
+      checkNotes,
       plan: d.plan ?? '', draft: draftMd, grammarly: grammarlyCopy(draftMd), figures: inventory.items, figuresMd: inventory.md,
       numberFlags: numberFlagsMd(extract.number_flags), styleFlags: checkStyle(sections, extract.journal ?? ''), words, band: wordBand(words),
       visual: d.visual ?? null,

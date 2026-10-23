@@ -335,3 +335,60 @@ test('review, Oct 22: figures.md is the inventory table, not "[object Object]"',
   const files = draftFiles({ plan: 'p', draft: 'd', grammarly: 'g', figures: [{ label: 'Table 2' }], figuresMd: '# Tables and figures in the paper\n' });
   assert.equal(files.find(f => f.name === 'figures.md').text, '# Tables and figures in the paper\n');
 });
+
+import { SECTION_RULES } from '../js/brief-draft.js';
+
+test('the style prompt carries VOICE.md (Kate, Oct 22): her four models, no "we", plain words, describe then name the design, energy only in highlights and the close, lean first', () => {
+  const p = STYLE_SYSTEM_PROMPT;
+  assert.match(p, /Bowen, Meer, Cortes and Holzman/);
+  assert.match(p, /never "we"/i);
+  assert.match(p, /plain everyday words/i);
+  assert.match(p, /say what the researchers did, then name/i);
+  assert.match(p, /highlights and the closing line may carry/i);
+  assert.match(p, /never firmer than the paper/i);
+  assert.match(p, /no restatements/i);
+  assert.doesNotMatch(p, /are robust, while/, 'Meer\'s "robust" is on the refuse list, not a model');
+  assert.doesNotMatch(p, /cutoff-based \(regression discontinuity\)/);
+  assert.doesNotMatch(p, /The real question is whether/);
+  assert.doesNotMatch(p, /never commands/);
+  assert.doesNotMatch(p, /—[^)]/, 'no em dash in the prompt\'s own words except where it names the banned mark');
+});
+
+test('the style prompt carries REPORTING.md (Kate, Oct 22): significance in words, one decimal, never hide a negative, the estimate\'s own N, prose and visual agree', () => {
+  const p = STYLE_SYSTEM_PROMPT;
+  assert.match(p, /no stars, no p-values/i);
+  assert.match(p, /one decimal/i);
+  assert.match(p, /never hide a negative/i);
+  assert.match(p, /own sample/i);
+  assert.match(p, /same number at the same precision/i);
+  assert.match(p, /"to" for a range/i);
+});
+
+test('section rules follow her rulings: three highlights (a fourth only if earned), imperative policy headings with the hedge in the body, the layout by the paper, a close of one or two paragraphs', () => {
+  assert.match(SECTION_RULES.highlights, /fourth only when/);
+  assert.doesNotMatch(SECTION_RULES.highlights, /exactly 3/);
+  assert.match(SECTION_RULES.policy_implications, /imperative/i);
+  assert.match(SECTION_RULES.policy_implications, /hedge goes in the body/i);
+  assert.match(SECTION_RULES.policy_implications, /"should" only where the paper/i);
+  assert.match(SECTION_RULES.policy_implications, /For Practice and For Policy/);
+  assert.match(SECTION_RULES.conclusions, /one or two paragraphs/i);
+  assert.doesNotMatch(SECTION_RULES.conclusions, /The real question/);
+  assert.doesNotMatch(SECTION_RULES.research_overview, /cutoff-based \(regression discontinuity\)/);
+});
+
+test('the proposal follows REPORTING.md: a table of estimates gets a "Statistically significant?" Yes/No column, direction in words, one decimal, a plain label with no period, no note; a chart gets a finding title', () => {
+  const p = buildVisualPrompt(extract, 'plan', '');
+  assert.match(p, /"Statistically significant\?"/);
+  assert.match(p, /Yes.*No/);
+  assert.match(p, /one decimal/i);
+  assert.match(p, /plain label/i);
+  assert.match(p, /no note/i);
+  assert.match(p, /finding sentence/i);
+  assert.match(p, /never hide a negative/i);
+});
+
+test('the check\'s notes and the number conflicts go to the folder as check-notes.md, not on the page (Kate, Oct 22: "i don\'t like the check things")', () => {
+  const files = draftFiles({ plan: 'p', draft: 'd', grammarly: 'g', figuresMd: '# F\n', checkNotes: '# Check notes\n\n1. x\n' });
+  assert.equal(files.find(f => f.name === 'check-notes.md').text, '# Check notes\n\n1. x\n');
+  assert.equal(draftFiles({ plan: 'p', draft: 'd', grammarly: 'g', figuresMd: '' }).some(f => f.name === 'check-notes.md'), false, 'none when there is nothing to say');
+});
