@@ -15,7 +15,7 @@ import { renderPublish, downloadCsv, resetPublishAsk } from './publish-ui.js';
 import { renderHighlightPage, resetHighlightAsk } from './highlight-page.js';
 import { renderPast } from './past-ui.js';
 import { renderSchedule } from './schedule-ui.js';
-import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToFinalize, canRewrite } from './workflow.js';
+import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToFinalize, canRewrite, nextStops } from './workflow.js';
 import { rewriteTargets, landRewrites } from './rewrite-client.js';
 import { unchangedNote } from './finalize-view.js';
 import { todayCentral } from './today.js';
@@ -240,7 +240,10 @@ function decide(drawn, action) {
   if (action === 'keep') rewriteQuietly([row.id]);   // the rewrite starts now, Finalize shows it when it lands
   // The decision in words, for everyone and for a screen reader.
   // Its way back sits on the same line (Sort's Undo last went with the old list head).
-  setStatus(`${DECIDED_WORDS[action] ?? 'Done'}: ${row.headline || row.link || 'this item'}`, 'ok', { label: 'Undo', onClick: undoLast });
+  // A Keep says where the item waits next (review, Oct 23).
+  const stops = action === 'keep' ? nextStops(next) : [];
+  const where = stops.length ? `. Next: ${stops.length > 1 ? `${stops.slice(0, -1).join(', ')} and ${stops.at(-1)}` : stops[0]}` : '';
+  setStatus(`${DECIDED_WORDS[action] ?? 'Done'}: ${row.headline || row.link || 'this item'}${where}`, 'ok', { label: 'Undo', onClick: undoLast });
 }
 
 /** Dismiss all on one of Sort's groups (Past, Already live; Kate, Sep 22):

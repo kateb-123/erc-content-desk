@@ -284,3 +284,17 @@ test('trash clears the newsletter stamp, so a deleted item never rides into an i
   const r = { id: 'x', status: 'new', newsletter_issue: '2026-09-22' };
   assert.deepEqual(trash(r), { id: 'x', status: 'trashed', newsletter_issue: '' });
 });
+
+// Where a kept item goes, said at the moment it moves (review, Oct 23: Keep
+// said only "Kept: title"; the box under it said nothing).
+test('nextStops and sendToNote say where a kept item goes next and why the box is ticked', async () => {
+  const { nextStops, sendToNote } = await import('../js/workflow.js');
+  const event = blankRow({ status: 'kept', type: 'event', subtype: 'Off-Campus', blurb: 'Bring a team.', send_to: 'both' });
+  assert.deepEqual(nextStops(event), ['Finalize', 'Next issue', 'Publish']);
+  const headline = blankRow({ status: 'kept', type: 'headline', subtype: 'Texas', blurb: 'News.', send_to: 'newsletter' });
+  assert.deepEqual(nextStops(headline), ['Next issue']);
+  assert.equal(sendToNote(blankRow({ type: 'headline', send_to: 'both' })), 'Goes to the newsletter and the Policy Exchange.');
+  assert.equal(sendToNote(blankRow({ type: 'headline', send_to: 'newsletter' })), 'Skips the Policy Exchange.');
+  assert.equal(sendToNote(blankRow({ type: 'event', subtype: 'A&M' })), 'Skips the Policy Exchange: another unit\'s campus event.');
+  assert.equal(sendToNote(blankRow({ type: 'headline', newsletter_issue: '2026-11-03' })), 'Skips the Policy Exchange: it was added straight to an issue.');
+});

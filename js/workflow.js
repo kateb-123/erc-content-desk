@@ -140,6 +140,23 @@ export function sendTo(row) {
   return { newsletter: true, exchange: !newsletterOnlyHold };
 }
 
+/** Where a kept item waits next, in order (review, Oct 23): Finalize when it
+ *  gets a rewrite, then Next issue, then Publish unless it skips the Exchange. */
+export function nextStops(row) {
+  return [canRewrite(row) ? 'Finalize' : '', 'Next issue', sendTo(row).exchange ? 'Publish' : ''].filter(Boolean);
+}
+
+/** The line under Sort's ERC Newsletter only box: where the item goes, and
+ *  why the box came ticked when it did (review, Oct 23). */
+export function sendToNote(row) {
+  if (sendTo(row).exchange) return 'Goes to the newsletter and the Policy Exchange.';
+  if (!String(row?.send_to ?? '')) {
+    if (newsletterOnly(row)) return 'Skips the Policy Exchange: another unit\'s campus event.';
+    if (row?.newsletter_issue) return 'Skips the Policy Exchange: it was added straight to an issue.';
+  }
+  return 'Skips the Policy Exchange.';
+}
+
 /** The ticks as the one word the row stores. */
 export function sendToValue({ newsletter, exchange }) {
   if (newsletter && exchange) return 'both';

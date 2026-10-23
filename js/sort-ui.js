@@ -8,7 +8,7 @@
  * source shows unless it is the ERC. Rows kept or deleted this
  * visit grey at the bottom of the list with Undo.
  */
-import { linkNeedsCheck, missingFields, reshareFlags, sendTo, sendToValue } from './workflow.js';
+import { linkNeedsCheck, missingFields, reshareFlags, sendTo, sendToValue, sendToNote } from './workflow.js';
 import { TYPE_ORDER, typeDisplay, subtypesFor, typeIsFlat } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { safeHref, withScheme } from './links.js';
@@ -256,7 +256,7 @@ function sendToBlock(row, props) {
     send_to: sendToValue({ newsletter: true, exchange: !input.checked }),
   }));
   const lines = el('span', 'check-lines');
-  lines.append(el('span', 'check-name', 'ERC Newsletter only'));
+  lines.append(el('span', 'check-name', 'ERC Newsletter only'), el('span', 'check-sub', sendToNote(row)));
   wrap.append(input, lines);
   line.append(wrap);
   box.append(line);
