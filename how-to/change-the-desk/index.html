@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>How to change the desk · ERC Content Desk</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%231d7491'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" />
+  <link rel="stylesheet" href="/css/tokens.css?v=11" />
+  <link rel="stylesheet" href="/how-to/howto.css?v=1" />
+</head>
+<body style="margin:0;background:var(--background)">
+  <main class="ht-page">
+    <p class="ht-crumb"><a href="/">ERC Content Desk</a> / <a href="/how-to/">How-tos</a></p>
+    <h1>How to change the desk</h1>
+    <p class="ht-lede">What you can change from the screens, and what needs code.</p>
+<h2>From the screens</h2>
+<p>Content Sort and Research briefs ask for the desk password. Publish and Highlight ask for it at <strong>Confirm</strong>.</p>
+
+<p><strong>An item</strong></p>
+<p>Fix it where it is now.</p>
+<ul>
+<li>On Content Sort: type over the title, or press <strong>Edit</strong> under the description; each saves when you click away. For the link, press <strong>Change</strong>, then <strong>Save</strong>. Pick a type for its other fields.</li>
+<li>Kept: <strong>Edit</strong> on Finalize, then <strong>Save</strong>. Finalize drops it once it is in an issue or live.</li>
+<li>On Next issue: <strong>Edit</strong> on its row. Already in the builder? Fix it on Preview &amp; Tweak too.</li>
+<li>Waiting on Publish: click the row, then <strong>Edit</strong>.</li>
+</ul>
+<p>That <strong>Edit</strong> also changes the type, the subtype and <strong>ERC Newsletter only</strong>.</p>
+<p><strong>Add media</strong> adds a picture or PDF flyer. Keep a GIF under 2.5 MB.</p>
+<p><strong>Delete</strong> is final once you leave the page. To bring an item back, add its link again on Submit content.</p>
+<p>Never fix an item in the Sheet's first tab. It is a copy: the desk never reads it and writes over it.</p>
+
+<p><strong>An issue</strong></p>
+<ul>
+<li>To fill a later issue, press its date beside Later under This issue.</li>
+<li>Build each issue on one computer: the draft lives in that browser.</li>
+<li>Edits on <a href="/how-to/newsletter/#tweak">Preview &amp; Tweak</a> change the email, not the desk.</li>
+<li>To fix an archived issue, fix it in the builder on the same computer and press <strong>Save to the archive</strong> again. This works only until you press <strong>Start the next issue</strong>.</li>
+</ul>
+
+<p><strong>Send dates</strong></p>
+<ol>
+<li>On Newsletter's Schedule tab, open the Sheet from its link, then its schedule tab.</li>
+<li>Type each date in column A, from row 2, as 2026-11-10. A date shown as 11/10/2026 is skipped.</li>
+</ol>
+<p>The desk shows it within ten minutes. If not, see <a href="/how-to/google-scripts/">Bring back the Google scripts</a>.</p>
+
+<p><strong>The Exchange</strong></p>
+<p>A desk edit never reaches a live item. To fix one:</p>
+<ol>
+<li>On Policy Exchange, open <strong>Edit live items</strong> on a laptop. It does not load on a phone.</li>
+<li>Find the item on the site, press <strong>Edit</strong>, fix it, press <strong>Save</strong>.</li>
+</ol>
+<p>In the same Edit, <strong>Hide from the site</strong> takes it down; the desk's <strong>Delete</strong> never touches the site.</p>
+<p>The <a href="/how-to/exchange/#highlight">highlight</a> card never shows a Drive picture. Use <strong>Add photo</strong> on Highlight, or a link ending .jpg, .png or .webp.</p>
+
+<p><strong>The listserv</strong></p>
+<p>The count is Sheet 1 as it was when the desk loaded. Reload the browser page to update it.</p>
+
+<p><strong>The scraper</strong></p>
+<p>Rows you delete on the Newsletter scrapes tabs stay deleted. The scraper does not read the Scraper sources Sheet; changing its sources needs code.</p>
+
+<h2>Needs code</h2>
+<p>Ask the desk's owner, named in READ ME FIRST in the shared drive. With access to the repo, Claude Code can make the change.</p>
+<table>
+<tr><th>What</th><th>Where it lives</th></tr>
+<tr><td>Either password, or which pages ask for the desk's</td><td>Each site's Vercel settings; js/auth-view.js</td></tr>
+<tr><td>The scraper's sources or its Monday time</td><td>sources.yaml and .github/workflows/scrape.yml in the erc-scraper repo</td></tr>
+<tr><td>Item types and subtypes</td><td>js/schema.js, builder/js/model.js, public-pages/submit/ and the Exchange's js/app.js</td></tr>
+<tr><td>A screen's words or button names</td><td>That screen's file in js/ or builder/js/</td></tr>
+<tr><td>The front page's cards and public links</td><td>js/home-panel.js, js/public-links.js</td></tr>
+<tr><td>How rewrites read</td><td>api/_lib/voice.js</td></tr>
+<tr><td>The desk's look, or the email's and its blank template</td><td>css/tokens.css, builder/js/template.js, builder/fixtures/blank-issue.json</td></tr>
+<tr><td>Taking an issue out of Past issues</td><td>builder/newsletters/</td></tr>
+<tr><td>A how-to, or where Report a problem sends</td><td>how-to/, js/report-problem.js</td></tr>
+</table>
+  </main>
+  <script type="module" src="/js/problem-mount.js?v=2"></script>
+</body>
+</html>

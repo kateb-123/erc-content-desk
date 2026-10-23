@@ -597,6 +597,102 @@ Quick search order | SUBTYPE_ORDER in js/app.js |
 The edit door is Edit live items on the Policy Exchange hub. Its password is on no page. Who holds it: READ ME FIRST - ERC handoff, in the shared drive.
 
 
+# How to change the desk
+https://erc-content-desk.vercel.app/how-to/change-the-desk/
+
+ERC Content Desk / How-tos
+
+## How to change the desk
+
+What you can change from the screens, and what needs code.
+
+## From the screens
+
+Content Sort and Research briefs ask for the desk password. Publish and Highlight ask for it at Confirm.
+
+An item
+
+Fix it where it is now.
+
+- On Content Sort: type over the title, or press Edit under the description; each saves when you click away. For the link, press Change, then Save. Pick a type for its other fields.
+
+- Kept: Edit on Finalize, then Save. Finalize drops it once it is in an issue or live.
+
+- On Next issue: Edit on its row. Already in the builder? Fix it on Preview & Tweak too.
+
+- Waiting on Publish: click the row, then Edit.
+
+That Edit also changes the type, the subtype and ERC Newsletter only.
+
+Add media adds a picture or PDF flyer. Keep a GIF under 2.5 MB.
+
+Delete is final once you leave the page. To bring an item back, add its link again on Submit content.
+
+Never fix an item in the Sheet's first tab. It is a copy: the desk never reads it and writes over it.
+
+An issue
+
+- To fill a later issue, press its date beside Later under This issue.
+
+- Build each issue on one computer: the draft lives in that browser.
+
+- Edits on Preview & Tweak change the email, not the desk.
+
+- To fix an archived issue, fix it in the builder on the same computer and press Save to the archive again. This works only until you press Start the next issue.
+
+Send dates
+
+- On Newsletter's Schedule tab, open the Sheet from its link, then its schedule tab.
+
+- Type each date in column A, from row 2, as 2026-11-10. A date shown as 11/10/2026 is skipped.
+
+The desk shows it within ten minutes. If not, see Bring back the Google scripts.
+
+The Exchange
+
+A desk edit never reaches a live item. To fix one:
+
+- On Policy Exchange, open Edit live items on a laptop. It does not load on a phone.
+
+- Find the item on the site, press Edit, fix it, press Save.
+
+In the same Edit, Hide from the site takes it down; the desk's Delete never touches the site.
+
+The highlight card never shows a Drive picture. Use Add photo on Highlight, or a link ending .jpg, .png or .webp.
+
+The listserv
+
+The count is Sheet 1 as it was when the desk loaded. Reload the browser page to update it.
+
+The scraper
+
+Rows you delete on the Newsletter scrapes tabs stay deleted. The scraper does not read the Scraper sources Sheet; changing its sources needs code.
+
+## Needs code
+
+Ask the desk's owner, named in READ ME FIRST in the shared drive. With access to the repo, Claude Code can make the change.
+
+What | Where it lives | 
+
+Either password, or which pages ask for the desk's | Each site's Vercel settings; js/auth-view.js | 
+
+The scraper's sources or its Monday time | sources.yaml and .github/workflows/scrape.yml in the erc-scraper repo | 
+
+Item types and subtypes | js/schema.js, builder/js/model.js, public-pages/submit/ and the Exchange's js/app.js | 
+
+A screen's words or button names | That screen's file in js/ or builder/js/ | 
+
+The front page's cards and public links | js/home-panel.js, js/public-links.js | 
+
+How rewrites read | api/_lib/voice.js | 
+
+The desk's look, or the email's and its blank template | css/tokens.css, builder/js/template.js, builder/fixtures/blank-issue.json | 
+
+Taking an issue out of Past issues | builder/newsletters/ | 
+
+A how-to, or where Report a problem sends | how-to/, js/report-problem.js |
+
+
 # How to make a research brief
 https://erc-content-desk.vercel.app/how-to/research-briefs/
 
