@@ -617,13 +617,13 @@ Press Update the highlight, type the desk password, and press Confirm.
 
 Publish only adds lines, so a desk edit to a live item stays on the desk. Fix the site on its own edit door, on a laptop.
  
-!Who holds the Exchange's password: READ ME FIRST - ERC handoff, in the shared drive.
+!It asks the team password, the same as the desk's. It is in READ ME FIRST - ERC handoff, in the shared drive.
 
 ## Fix a live item
 
 - On the Policy Exchange page, open Edit live items. The site's sign-in opens in a new tab.
  
-- Type the Exchange's password, not the desk's, and press Sign in.
+- Type the team password and press Sign in.
  
 - Press Edit on the item, fix it, and press Save.
 
@@ -741,7 +741,7 @@ Fix a live item on the site itself. Use a laptop: the site's Edit buttons do not
  
 iPublish and Highlight ask for the desk password at Confirm.
 
- 1Edit live items: the site's own editor, in a new tab, with its own password
+ 1Edit live items: the site's own editor, in a new tab, with the team password
  2Highlight: the home page's big card, with Add photo for each pick
 
 ## The listserv and the scraper

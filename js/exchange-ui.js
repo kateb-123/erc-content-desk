@@ -62,12 +62,12 @@ export function renderExchange(container, { rows, today, loaded, preview, hubUpd
   hlWords.append(el('span', 'door-name', 'Highlight'), el('span', 'door-note', pins == null ? '' : `${pins} on the home page`));
   hl.append(faIcon('star'), hlWords, faIcon('arrow-right'));
   // The Exchange's own edit door (Kate, Oct 23): the one place a live item is
-  // fixed, hidden or deleted. Its password is the Exchange's own, given in person.
+  // fixed, hidden or deleted. It asks the team password, the desk's (Oct 23).
   const edit = el('a', 'hub-link qh-edit', 'Edit live items');
   edit.href = 'https://erc-policy-exchange.vercel.app/2ujhtc8daz/';
   edit.target = '_blank'; edit.rel = 'noopener';
   edit.append(' ', faIcon('arrow-up-right-from-square'), el('span', 'sr-only', ' (opens in a new tab)'));
-  side.append(door, hl, edit, el('p', 'qh-side-note', 'Fix, hide or delete what is already live. It asks the Exchange\'s own password.'));
+  side.append(door, hl, edit, el('p', 'qh-side-note', 'Fix, hide or delete what is already live. It asks the team password.'));
 
   split.append(main, side);
   page.append(hubHead('Policy Exchange', HUB_LEDES.exchange), split);

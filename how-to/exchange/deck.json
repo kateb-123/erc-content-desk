@@ -107,7 +107,7 @@
           "notes": [
             {
               "n": "!",
-              "html": "<b>Who holds the Exchange's password: READ ME FIRST - ERC handoff, in the shared drive.</b>",
+              "html": "<b>It asks the team password, the same as the desk's. It is in READ ME FIRST - ERC handoff, in the shared drive.</b>",
               "warn": true,
               "go": false
             }
@@ -117,7 +117,7 @@
               "title": "Fix a live item",
               "items": [
                 "On the Policy Exchange page, open <b>Edit live items</b>. The site's sign-in opens in a new tab.",
-                "Type the Exchange's password, not the desk's, and press <b>Sign in</b>.",
+                "Type the team password and press <b>Sign in</b>.",
                 "Press <b>Edit</b> on the item, fix it, and press <b>Save</b>."
               ],
               "links": null

@@ -48,6 +48,23 @@ test('the hub links the Exchange edit door, and never its password', async () =>
   assert.match(src, /https:\/\/erc-policy-exchange\.vercel\.app\/2ujhtc8daz\//);
   assert.match(src, /Edit live items/);
   assert.doesNotMatch(src, /ADMIN_PASSWORD|password:/i);
+  // One team password for the desk and the door since Oct 23 (Kate).
+  assert.match(src, /It asks the team password\./);
+  assert.doesNotMatch(src, /Exchange\\'s own password/);
+});
+
+// The team password's value is in the handoff doc alone: the desk, its
+// how-tos and this repo are open to anyone (Kate, Oct 23).
+test('no page or how-to names the Exchange edit door\'s password as its own, or writes the value', async () => {
+  const { readFileSync, readdirSync } = await import('node:fs');
+  const dir = new URL('../how-to/', import.meta.url);
+  const files = ['../js/exchange-ui.js', ...readdirSync(dir, { recursive: true })
+    .filter(f => /\.(html|json|txt)$/.test(f)).map(f => `../how-to/${f}`)];
+  for (const f of files) {
+    const text = readFileSync(new URL(f, import.meta.url), 'utf8');
+    assert.doesNotMatch(text, /Exchange's password|its own password|Exchange\\'s own password/, f);
+    assert.doesNotMatch(text, /erc-123/, f);
+  }
 });
 
 // Publish no longer carries the highlight (Kate, Oct 23): the picks have their
