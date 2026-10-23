@@ -29,6 +29,7 @@ import { renderBriefs, renderBrief, clearBriefDraft } from './briefs-ui.js';
 import { paperText, pagePng, svgPng } from './paper-read.js';
 import { chartSvg } from './brief-visual.js';
 import { briefTitle, restartDraft, cutsToMake } from './briefs-view.js';
+import { quickAddIssue } from './issue-view.js';
 
 
 const state = {
@@ -285,9 +286,10 @@ async function readBeforeSort() {
  *  new item in the queue; read it, then stamp it for the next issue, so it
  *  sits in the issue and in Sort at once ("everything is talking to each
  *  other"). The table marks it Not sorted yet until Sort has had it. */
-async function stampSubmitted(data) {
+async function stampSubmitted(data, picked = '') {
   const today = todayCentral();
-  const issue = nextIssueDate(state.schedule, today);
+  // The issue on screen when Quick add was used (review, Oct 23), else the next one.
+  const issue = quickAddIssue(picked, state.schedule, today);
   const id = data?.id;
   if (!id) { await reload(); return; }   // nothing came back to stamp; the reload shows what landed
   if (!issue) { await reload(); throw new Error('No issue date is scheduled, so it is in the queue only.'); }

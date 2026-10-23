@@ -80,3 +80,10 @@ export function scheduleRows(rows, schedule, today) {
   const upcoming = [...new Set((schedule ?? []).filter(d => isIso(d) && d >= today))].sort();
   return upcoming.map((date, i) => ({ date, when: sendsIn(date, today), count: issueRows(rows, date).length, next: i === 0 }));
 }
+
+/** The issue a Quick add lands in (review, Oct 23): the one picked on screen,
+ *  if it is on the schedule from today on; else the next one, as before. */
+export function quickAddIssue(picked, schedule, today) {
+  const ahead = (schedule ?? []).filter(d => !today || d >= today).sort();
+  return ahead.includes(picked) ? picked : (ahead[0] ?? '');
+}

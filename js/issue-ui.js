@@ -180,17 +180,21 @@ export function renderIssue(container, props) {
   main.append(blockHead('In this issue', String(count), quick));
   let panel = null;
   if (quickOpen) {
-    // Mounted once per opening and kept across redraws, so typing survives.
+    // Mounted once per opening and kept across redraws, so typing survives;
+    // remounted when the issue on screen changes, so its words and its stamp
+    // name the issue she sees (review, Oct 23).
     panel = container.querySelector('.quick-panel');
+    if (panel && panel.dataset.issue !== issue) panel = null;
     if (!panel) {
       panel = el('section', 'quick-panel');
       panel.id = 'issue-quick';
+      panel.dataset.issue = issue;
       const mount = el('div');
       panel.append(mount);
       renderSubmitForm(mount, {
         bulk: false,
         dateField: true,   // Kate, Oct 6: a Date for every type, the deadline for an opportunity
-        onSubmitted: data => onQuickAdd(data),
+        onSubmitted: data => onQuickAdd(data, issue),
         knownLinks,
         pendingLine: `Adding it to the ${when} issue`,
         doneLine: `Added to the ${when} issue.`,

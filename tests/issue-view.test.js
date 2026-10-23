@@ -92,3 +92,16 @@ test('scheduleRows: the upcoming send dates in order, each with its count and it
   ]);
   assert.deepEqual(scheduleRows(rows, [], '2026-09-18'), []);
 });
+
+// Quick add with a later issue picked (review, Oct 23: it said "Added to the
+// Nov 3 issue" and stamped the next one): the item goes in the issue on screen.
+test('quickAddIssue: the issue picked on screen, if it is on the schedule from today on; else the next one', async () => {
+  const { quickAddIssue } = await import('../js/issue-view.js');
+  const schedule = ['2026-10-20', '2026-11-03', '2026-11-17'];
+  assert.equal(quickAddIssue('2026-11-17', schedule, '2026-10-23'), '2026-11-17');
+  assert.equal(quickAddIssue('2026-11-03', schedule, '2026-10-23'), '2026-11-03');
+  assert.equal(quickAddIssue('', schedule, '2026-10-23'), '2026-11-03', 'nothing picked: the next issue');
+  assert.equal(quickAddIssue('2026-10-20', schedule, '2026-10-23'), '2026-11-03', 'a past issue is never stamped');
+  assert.equal(quickAddIssue('2026-12-01', schedule, '2026-10-23'), '2026-11-03', 'a day not on the schedule is not an issue');
+  assert.equal(quickAddIssue('2026-11-03', [], '2026-10-23'), '');
+});
