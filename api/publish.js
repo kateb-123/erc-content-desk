@@ -34,10 +34,13 @@ import { saveFile } from './_lib/sheets.js';
  *  guards it, as the sign-up sheet's does. */
 export const EXCHANGE_FOLDER_ID = process.env.EXCHANGE_FOLDER_ID || '1eSRrsHYDMnQZLoH-rOMilx40V7c8nsd_';
 
-/** erc-exchange-2026-09-23-2005.csv: the day and the minute, Central, so two publishes a day keep both copies. */
+/** erc-exchange-2026-09-23-1505.csv: the day and the minute in College Station's
+ *  time, so two publishes a day keep both copies and the name matches the clock on the wall. */
 export function copyName(clockIso) {
-  const t = String(clockIso ?? '');
-  return `erc-exchange-${t.slice(0, 10)}-${t.slice(11, 13)}${t.slice(14, 16)}.csv`;
+  const t = new Date(clockIso);
+  if (Number.isNaN(t.getTime())) return 'erc-exchange.csv';
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(t).map(p => [p.type, p.value]));
+  return `erc-exchange-${parts.year}-${parts.month}-${parts.day}-${parts.hour}${parts.minute}.csv`;
 }
 
 export const config = { maxDuration: 300 };
