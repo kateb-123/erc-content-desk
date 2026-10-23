@@ -14,39 +14,34 @@
   <main class="ht-page">
     <p class="ht-crumb"><a href="/">ERC Content Desk</a> / <a href="/how-to/">How-tos</a></p>
     <h1>Bring back the Google scripts</h1>
-    <p class="ht-lede">For Kathy, or whoever she passes it to. Two scripts, about 15 minutes, any time.</p>
-    <div class="ht-note"><p><strong>When to do this:</strong> once, after Kate's TAMU account closes, or any time sign-ups or the queue's Sheet copy stop updating. It takes about 15 minutes. If you would rather hand it off, send this page to anyone at the ERC with edit access to the ERC Content Desk shared drive folder.</p></div>
-    <h2>Why</h2>
-    <p>Two small Google scripts run inside two Sheets in the shared drive. They were set up under Kate's TAMU login, so they stop when her account closes. Redeploying them under your own login brings them back. Nothing else changes, and nothing is lost: the desk keeps its own copy of everything.</p>
+    <p class="ht-lede">Two scripts, 15 minutes, any time.</p>
+    <p>Two Google scripts run inside two Sheets in the shared drive, under the login that set them up. When that account closes they stop until someone redeploys them. Nothing is lost.</p>
     <table>
-      <thead><tr><th>Script</th><th>Where it lives</th><th>What stops without it</th></tr></thead>
+      <thead><tr><th>Sheet</th><th>Where</th><th>What stops</th></tr></thead>
       <tbody>
-        <tr><td>The queue script</td><td>ERC Content Desk, Content queue, the Sheet <strong>erc-content-desk</strong></td><td>The Sheet copy of the queue, the scraper's files in Drive, the research briefs' folders</td></tr>
-        <tr><td>The listserv script</td><td>ERC Content Desk, Listserv, the Sheet <strong>subscribe to listserve</strong></td><td>The Join listserv form stops recording sign-ups</td></tr>
+        <tr><td><strong>erc-content-desk</strong></td><td>ERC Content Desk, Content queue</td><td>The queue's Sheet copy, the scraper's files, the briefs' folders</td></tr>
+        <tr><td><strong>subscribe to listserve</strong></td><td>ERC Content Desk, Listserv</td><td>Listserv sign-ups</td></tr>
       </tbody>
     </table>
-    <h2>Steps, for each of the two Sheets</h2>
+    <h2>For each Sheet</h2>
     <ol>
-      <li>Open the Sheet in Google Drive. In its menu, choose <strong>Extensions</strong>, then <strong>Apps Script</strong>. The script opens in a new tab.</li>
-      <li>At the top right, click <strong>Deploy</strong>, then <strong>New deployment</strong>.</li>
-      <li>Next to "Select type", click the gear and choose <strong>Web app</strong>.</li>
-      <li>Set <strong>Execute as</strong> to <strong>Me</strong> (your own address) and <strong>Who has access</strong> to <strong>Anyone</strong>. Click <strong>Deploy</strong>.</li>
-      <li>Google asks you to authorize. Choose your account; if it warns that the app is unverified, click <strong>Advanced</strong>, then <strong>Go to</strong> the project, then <strong>Allow</strong>. This is our own script.</li>
-      <li>Copy the <strong>Web app URL</strong>, the long address that ends in <code>/exec</code>.</li>
-      <li>Email it to Kate at the address in the handoff document, and say which Sheet it came from (the queue or the listserv). She pastes it into the desk's settings; you do not need a Vercel login.</li>
+      <li>Open it, then <strong>Extensions</strong>, <strong>Apps Script</strong>.</li>
+      <li><strong>Deploy</strong>, <strong>New deployment</strong>. Pick <strong>Web app</strong> from the gear.</li>
+      <li><strong>Execute as</strong>: Me. <strong>Who has access</strong>: Anyone. <strong>Deploy</strong>.</li>
+      <li>Allow the permissions. If Google says unverified, choose <strong>Advanced</strong>, then <strong>Go to</strong> the project.</li>
+      <li>Copy the <strong>Web app URL</strong>, ending in <code>/exec</code>, and email it to the desk's owner (the handoff document has the address). Say which Sheet.</li>
     </ol>
-    <h2>How to tell it worked</h2>
+    <h2>Check it</h2>
     <ul>
-      <li><strong>The queue script:</strong> submit a test item on the team's form, then open the queue Sheet. A new row appears within a minute. Delete the test item on Content Sort afterwards.</li>
-      <li><strong>The listserv script:</strong> open the Listserv page on the desk. "Waiting to be added" shows a number, not a warning.</li>
+      <li><strong>Queue:</strong> a test item on the team form shows up in the Sheet within a minute. Delete it on Content Sort.</li>
+      <li><strong>Listserv:</strong> the Listserv page shows a number, not a warning.</li>
     </ul>
-    <h2>If something goes wrong</h2>
+    <h2>If it goes wrong</h2>
     <ul>
-      <li><strong>"Unknown action" or a 500 error on the desk:</strong> the address pasted into the desk is from an old deployment. Send Kate the newest Web app URL again.</li>
-      <li><strong>The script asks for a "token" or a folder:</strong> do nothing; those settings stay with the script (Project settings, Script properties). Do not delete them.</li>
-      <li><strong>You do not see Extensions, Apps Script:</strong> you need edit access to the Sheet. Ask whoever manages the shared drive.</li>
+      <li><strong>"Unknown action" or a 500:</strong> send the newest Web app URL again.</li>
+      <li><strong>No Extensions menu:</strong> you need edit access to the Sheet.</li>
+      <li>Leave the script's settings (Script properties) alone.</li>
     </ul>
-
   </main>
   <script type="module" src="/js/problem-mount.js?v=1"></script>
 </body>
