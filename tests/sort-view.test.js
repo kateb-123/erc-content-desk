@@ -76,7 +76,7 @@ test('a duplicate badge names the earlier item and what happened to it (F8)', ()
   assert.equal(dupeBadgeText({ headline: 'Short', status: 'kept', submitted_at: '2026-08-20T10:00:00Z' }, '2026-09-15'), 'Same link as "Short", kept Aug 20');
   // A duplicate from another year says so.
   assert.equal(dupeBadgeText({ headline: 'Old', status: 'kept', submitted_at: '2025-08-20T10:00:00Z' }, '2026-09-15'), 'Same link as "Old", kept Aug 20, 2025');
-  assert.equal(dupeBadgeText({ headline: 'Parked one', status: 'circleback', submitted_at: '' }), 'Same link as "Parked one", parked');
+  assert.equal(dupeBadgeText({ headline: 'Parked one', status: 'circleback', submitted_at: '' }), 'Same link as "Parked one", skipped');   // Sort's own word since Oct 23
   assert.equal(dupeBadgeText({ headline: 'Waiting', status: 'new', submitted_at: '2026-09-10T00:00:00Z' }, '2026-09-15'), 'Same link as "Waiting", in the queue Sep 10');
 });
 

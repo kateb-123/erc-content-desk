@@ -93,7 +93,7 @@ export function dupeReason(row, ctx) {
   return prior && !String(prior.published_at ?? '').trim() ? dupeBadgeText(prior, ctx?.today) : '';
 }
 
-const PRIOR_WORDS = { trashed: 'deleted', kept: 'kept', circleback: 'parked', new: 'in the queue' };
+const PRIOR_WORDS = { trashed: 'deleted', kept: 'kept', circleback: 'skipped', new: 'in the queue' };   // skipped, the word Sort shows (review, Oct 23)
 
 /** The duplicate badge names the earlier item and what happened to it, so the
  * flag can be acted on without a search. */
