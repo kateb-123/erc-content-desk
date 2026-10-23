@@ -3,6 +3,10 @@
 // kathys end to ask questions"). Run after any how-to changes:
 //   node how-to/make-guide.mjs
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { TYPES, TYPE_ORDER, typeDisplay } from '../js/schema.js';
+import { PUBLIC_LINKS } from '../js/public-links.js';
+
+const SITE = 'https://erc-content-desk.vercel.app';
 
 const PAGES = [
   ['How it all connects', 'pipeline'],
@@ -19,6 +23,8 @@ const PAGES = [
 const text = html => html
   .replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, '')
   .replace(/<header[\s\S]*?<\/header>/gi, '').replace(/<nav[\s\S]*?<\/nav>/gi, '')
+  // A link keeps its address (review, Oct 23): the text, then the address.
+  .replace(/<a\b[^>]*href="([^"#][^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, (_, href, words) => `${words} (${href.startsWith('/') ? SITE + href : href})`)
   .replace(/<(h[1-4])[^>]*>/gi, '\n\n## ').replace(/<\/h[1-4]>/gi, '\n')
   .replace(/<li[^>]*>/gi, '\n- ').replace(/<(p|tr|div|br)[^>]*>/gi, '\n').replace(/<\/t[dh]>/gi, ' | ')
   .replace(/<[^>]+>/g, '')
@@ -36,5 +42,10 @@ for (const [title, slug] of PAGES) {
   const main = body.match(/<main[\s\S]*?<\/main>/i)?.[0] ?? body;
   parts.push(`\n\n# ${title}\nhttps://erc-content-desk.vercel.app/how-to/${slug}/\n\n${text(main)}`);
 }
+// What the pages draw at load, written out (review, Oct 23): the item types and the public links.
+parts.push('\n\n# Item types\nThe types an item can have on the desk, each with its subtypes.\n\n'
+  + TYPE_ORDER.map(t => `- ${typeDisplay(t)}${TYPES[t].subtypes.length ? `: ${TYPES[t].subtypes.join(', ')}` : ' (no subtypes)'}`).join('\n'));
+parts.push('\n\n# Public links\nThe pages anyone can open, each with Copy link on the front page.\n\n'
+  + PUBLIC_LINKS.map(l => `- ${l.label}: ${l.href}`).join('\n'));
 writeFileSync(new URL('./desk-guide.txt', import.meta.url), `${parts.join('\n')}\n`);
 console.log('wrote how-to/desk-guide.txt');

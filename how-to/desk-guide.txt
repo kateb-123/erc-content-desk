@@ -5,7 +5,7 @@ Every how-to for the ERC Content Desk (https://erc-content-desk.vercel.app) in o
 # How it all connects
 https://erc-content-desk.vercel.app/how-to/pipeline/
 
-ERC Content Desk / How-tos
+ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-content-desk.vercel.app/how-to/)
 
 ## How it all connects
 
@@ -24,7 +24,7 @@ A link, or a spreadsheet of them. Everything lands in the Content queue.
  
 - The public form's items arrive tagged From outside.
 
-How to submit content
+How to submit content (https://erc-content-desk.vercel.app/how-to/submit-content/)
 
 →
 
@@ -43,7 +43,7 @@ Keep, skip or delete. Then check the rewrites on Finalize.
  
 - Open Finalize, the tab beside Sort. Events, opportunities and reports get a rewrite. Press Keep or Use original before you add or publish them.
 
-How to sort
+How to sort (https://erc-content-desk.vercel.app/how-to/sort/)
 
 →
 
@@ -62,7 +62,7 @@ Every kept item can go in.
  
 - Press Save to the archive.
 
-How to build the newsletter
+How to build the newsletter (https://erc-content-desk.vercel.app/how-to/newsletter/)
 
  3 Out
 
@@ -77,7 +77,7 @@ Publish. Skips anything ticked ERC Newsletter only.
  
 - Highlight picks up to 6 items for the home page. Each needs a photo.
 
-How to publish
+How to publish (https://erc-content-desk.vercel.app/how-to/sort/#exchange)
 
 ## Beside the pipeline
 
@@ -85,7 +85,7 @@ How to publish
 
 A paper becomes a brief: New brief, Write the draft, your proof, then the author.
  
-How to make a research brief
+How to make a research brief (https://erc-content-desk.vercel.app/how-to/research-briefs/)
 
 ## Listserv
 
@@ -131,7 +131,7 @@ Claude reads the link and fills in what you left blank. The more you fill in, th
 
 For a list from a scraper, a newsletter or your notes. Use the spreadsheet: it maps straight into the desk.
 
-- Download the spreadsheet template (or the Word one).
+- Download the spreadsheet template (https://erc-content-desk.vercel.app/templates/erc-upload-template.xlsx) (or the Word one (https://erc-content-desk.vercel.app/templates/erc-upload-template.docx)).
  
 - One item per row. Every item needs a link. An AI can fill it from your list.
  
@@ -159,7 +159,7 @@ These pages are live and public. Copy link copies the address. Never send the de
 # How to sort
 https://erc-content-desk.vercel.app/how-to/sort/
 
-ERC Content Desk / How-tos
+ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-content-desk.vercel.app/how-to/)
 
 ## How to sort
 
@@ -187,7 +187,7 @@ An issue wants 3 to 5 research items or reports from outside and 3 to 5 headline
 
 - A person added it. The card shows their initials after added by. Keep it unless it repeats. Bulk uploads show bulk upload there only if Your initials was blank.
 
-Then pick the type and subtype. Item types says which.
+Then pick the type and subtype. Item types (https://erc-content-desk.vercel.app/how-to/submit-content/#types) says which.
 
 ## Delete when
 
@@ -338,8 +338,8 @@ The ERC mailbox can't install add-ins, and HTML pasted into a message as text ne
  
 - Search Designmodo and add Insert HTML by Designmodo.
 
- The add-in on AppSource
- Microsoft: how to use add-ins in Outlook
+ The add-in on AppSource (https://appsource.microsoft.com/en-us/product/office/wa200002918)
+ Microsoft: how to use add-ins in Outlook (https://support.microsoft.com/en-us/outlook/getstarted/use-add-ins-in-outlook)
 
 Every issue: a new message in your personal account, and the add-in puts the newsletter in it.
  
@@ -524,7 +524,7 @@ The row of section names under the masthead, each a link into the email. On or o
 # How to change the Policy Exchange
 https://erc-content-desk.vercel.app/how-to/exchange/
 
-ERC Content Desk / How-tos
+ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-content-desk.vercel.app/how-to/)
 
 ## How to change the Policy Exchange
 
@@ -578,7 +578,7 @@ An announcement card is Add to New & Upcoming, in the edit door's top strip.
 
 ## Change a logo or the look
 
-It is code in the Exchange's GitHub repo: open it in Claude Code and say what to change. A push to main is live in a minute.
+It is code in the Exchange's GitHub repo (https://github.com/kateb-123/erc-policy-exchange-app): open it in Claude Code and say what to change. A push to main is live in a minute.
 
 To change | File | 
 
@@ -600,7 +600,7 @@ The edit door is Edit live items on the Policy Exchange hub. Its password is on 
 # How to change the desk
 https://erc-content-desk.vercel.app/how-to/change-the-desk/
 
-ERC Content Desk / How-tos
+ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-content-desk.vercel.app/how-to/)
 
 ## How to change the desk
 
@@ -636,7 +636,7 @@ An issue
 
 - Build each issue on one computer: the draft lives in that browser.
 
-- Edits on Preview & Tweak change the email, not the desk.
+- Edits on Preview & Tweak (https://erc-content-desk.vercel.app/how-to/newsletter/#tweak) change the email, not the desk.
 
 - To fix an archived issue, fix it in the builder on the same computer and press Save to the archive again. This works only until you press Start the next issue.
 
@@ -646,7 +646,7 @@ Send dates
 
 - Type each date in column A, from row 2, as 2026-11-10. A date shown as 11/10/2026 is skipped.
 
-The desk shows it within ten minutes. If not, see Bring back the Google scripts.
+The desk shows it within ten minutes. If not, see Bring back the Google scripts (https://erc-content-desk.vercel.app/how-to/google-scripts/).
 
 The Exchange
 
@@ -658,7 +658,7 @@ A desk edit never reaches a live item. To fix one:
 
 In the same Edit, Hide from the site takes it down; the desk's Delete never touches the site.
 
-The highlight card never shows a Drive picture. Use Add photo on Highlight, or a link ending .jpg, .png or .webp.
+The highlight (https://erc-content-desk.vercel.app/how-to/exchange/#highlight) card never shows a Drive picture. Use Add photo on Highlight, or a link ending .jpg, .png or .webp.
 
 The listserv
 
@@ -696,7 +696,7 @@ A how-to, or where Report a problem sends | how-to/, js/report-problem.js |
 # How to make a research brief
 https://erc-content-desk.vercel.app/how-to/research-briefs/
 
-ERC Content Desk / How-tos
+ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-content-desk.vercel.app/how-to/)
 
 ## How to make a research brief
 
@@ -716,7 +716,7 @@ The house rules, such as VOICE.md and REPORTING.md, sit beside the brief folders
 
 ## 1. Paper and notes
 
-- Open Research briefs, sign in with the desk password and press New brief.
+- Open Research briefs (https://erc-content-desk.vercel.app/#briefs), sign in with the desk password and press New brief.
 
 - The desk fills Author's last name from the first author. Change it to the Texas A&M author when that is someone else.
 
@@ -724,7 +724,7 @@ The house rules, such as VOICE.md and REPORTING.md, sit beside the brief folders
 
 - Put your own name in Brief author. This browser remembers it.
 
-If a step fails with a Drive or script message, see Bring back the Google scripts.
+If a step fails with a Drive or script message, see Bring back the Google scripts (https://erc-content-desk.vercel.app/how-to/google-scripts/).
 
 ## 2. Draft
 
@@ -804,11 +804,11 @@ Build holzman-2026/brief.html from a copy of erc-research-briefs/_template/brief
 
 - Add a row to ERC-Research-Briefs-Library-Metadata.xlsx in erc-research-briefs/, copying the rows above. Ask at the ERC who at the library takes it.
 
-- On Submit content, paste the link and pick New research, then ERC Research. Type the brief's title in Title and the Executive Summary's first paragraph in Description. Press Add to the queue.
+- On Submit content (https://erc-content-desk.vercel.app/#team), paste the link and pick New research, then ERC Research. Type the brief's title in Title and the Executive Summary's first paragraph in Description. Press Add to the queue.
 
-- On Content Sort, fill any blank Date, Authors, Source or Topic. Leave ERC Newsletter only unticked and press Keep and next. How to sort covers Finalize and Publish.
+- On Content Sort (https://erc-content-desk.vercel.app/#sort), fill any blank Date, Authors, Source or Topic. Leave ERC Newsletter only unticked and press Keep and next. How to sort (https://erc-content-desk.vercel.app/how-to/sort/) covers Finalize and Publish.
 
-- On Newsletter's Next issue, find the brief under Ready to add and press Add.
+- On Newsletter (https://erc-content-desk.vercel.app/#newsletter)'s Next issue, find the brief under Ready to add and press Add.
 
 - Email the author of record the public link, with thanks.
 
@@ -816,7 +816,7 @@ Build holzman-2026/brief.html from a copy of erc-research-briefs/_template/brief
 # Bring back the Google scripts
 https://erc-content-desk.vercel.app/how-to/google-scripts/
 
-ERC Content Desk / How-tos
+ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-content-desk.vercel.app/how-to/)
 
 ## Bring back the Google scripts
 
@@ -860,7 +860,7 @@ subscribe to listserve | ERC Content Desk, Listserv | Listserv sign-ups |
 # Design for the ERC
 https://erc-content-desk.vercel.app/how-to/design/
 
-ERC Content Desk / How-tos
+ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-content-desk.vercel.app/how-to/)
 
 ## Design for the ERC
 
@@ -896,14 +896,32 @@ Light Maroon | #732F2F | Rare accent |
 
 Fonts: Oswald for big titles in capitals, Work Sans for headings, Open Sans for body.
  
-Logos: upload the ERC logo pack for screens. Never redraw, recolor or stretch one. Only on white or maroon.
+Logos: upload the ERC logo pack for screens (https://mysehd.tamu.edu/wp-content/uploads/2024/09/ERC-logo-pack-RGB-for-web.zip). Never redraw, recolor or stretch one. Only on white or maroon.
 
 ## Print
 
-- Use the ERC logo pack for print.
+- Use the ERC logo pack for print (https://mysehd.tamu.edu/wp-content/uploads/2024/09/ERC-logo-pack-CMYK-for-print.zip).
  
 - Maroon in CMYK is 15 100 39 69, Pantone 7421.
  
 - Body text 11 point or larger.
  
 - From Canva, download as PDF Print, with bleed if the printer asks.
+
+
+# Item types
+The types an item can have on the desk, each with its subtypes.
+
+- ERC event (no subtypes)
+- New research: Working Paper, Peer-Reviewed, Report, ERC Research
+- Event: A&M, Off-Campus, Webinar-Online
+- Opportunity: Funding & Grants, Fellowships & Programs, Call for Proposals, Other
+- Headline: National, Texas
+
+
+# Public links
+The pages anyone can open, each with Copy link on the front page.
+
+- ERC Policy Exchange: https://erc-policy-exchange.vercel.app/
+- Submit content: https://erc-share.vercel.app/submit/
+- Join listserv: https://erc-share.vercel.app/listserv/
