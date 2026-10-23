@@ -287,7 +287,7 @@ export function renderIssue(container, props) {
   // of a draft already open (review, Oct 23). And the email's read me.
   const readMe = el('a', 'nl-howto', 'The email: read me');
   readMe.href = '/newsletter/read-me/';
-  side.append(howTo, readMe, el('p', 'nl-meta nl-builder-note', 'New Adds come into the builder each time it opens. Removes and edits made here after that stay out of its draft: make them in the builder.'));
+  side.append(howTo, readMe, el('p', 'nl-meta nl-builder-note', 'The builder takes in Adds and Removes each time it opens. Make edits there.'));
   const last = lastIssue(archive, rows);
   if (last) {
     const lastBox = el('section', 'nl-last');

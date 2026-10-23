@@ -4,10 +4,11 @@
  * the desk"). Picking a date pulls, and so does each opening of that issue,
  * adding only what is new; a different date over an open draft asks first.
  * Remove sends an item back to Ready to add on the desk (her pick), so a later
- * pull never brings it back, and its Undo stamps it again. No DOM here.
+ * pull never brings it back, and its Undo stamps it again. A Remove on the
+ * desk reaches the draft at the next pull (Kate, Oct 23). No DOM here.
  */
 
-import { partitionPulled, mergeIssues, countIssueItems } from './model.js';
+import { partitionPulled, mergeIssues, countIssueItems, deleteItem } from './model.js';
 import { draftIsOpen } from './discarded.js';
 import { displayDateToISO, isoToDisplayDate } from './wizard.js';
 import { clearNewsletterIssue, markNewsletterIssue } from '../../js/workflow.js';
@@ -28,20 +29,45 @@ export function shouldPull(issue) {
 }
 
 /**
- * Merge a pull's reply into the issue, adding only what it does not hold yet
- * (by link and by desk id) and nothing removed here while the pull was out,
- * and say what happened. An empty date points at the next issue that has items.
+ * Take out what the desk took out (Kate, Oct 23): every item that came from
+ * the desk (a pulled id, desk_<row id>) whose row is no longer stamped for
+ * this issue there, removed on Next issue, deleted, or moved to another
+ * issue. An item added here by hand stays, whatever its deskId, and so does
+ * one Undo put back here. What stays is never replaced, so its edits here
+ * stand. A reply without the issue in it takes nothing out.
+ * @param {object} issue - mutated
+ * @param {object|undefined} deskIssue - the reply's issue: everything stamped for it on the desk
+ * @param {Set<string>} keep - item ids Undo put back here
+ * @returns {number} how many were taken out
+ */
+function dropUnstamped(issue, deskIssue, keep) {
+  if (!issue?.sections || !deskIssue?.sections) return 0;
+  const stamped = new Set(Object.values(deskIssue.sections).flatMap((sec) => (sec.items ?? []).map((item) => item.id)));
+  const gone = Object.values(issue.sections).flatMap((sec) => (sec.items ?? [])
+    .filter((item) => String(item?.id ?? '').startsWith('desk_') && !stamped.has(item.id) && !keep.has(item.id)));
+  for (const item of gone) deleteItem(issue, item.id);   // an emptied section turns off, as Remove leaves it
+  return gone.length;
+}
+
+/**
+ * Merge a pull's reply into the issue: take out what left the issue on the
+ * desk, add only what it does not hold yet (by link and by desk id) and
+ * nothing removed here while the pull was out, and say what happened. An
+ * empty date points at the next issue that has items.
  * @param {object} issue - mutated
  * @param {{ issue: object, staged?: object }} reply - GET /api/newsletter-pull?issue=
  * @param {string} iso - the issue pulled
- * @param {{ skip?: Set<string>, today?: string }} [o] - item ids removed here; College Station's today
- * @returns {{ fresh: number, message: string, pulled: object|null }} pulled: what was added
+ * @param {{ skip?: Set<string>, keep?: Set<string>, today?: string }} [o] - item ids removed here; item ids Undo put back here; College Station's today
+ * @returns {{ fresh: number, dropped: number, message: string, pulled: object|null }} pulled: what was added; dropped: how many were taken out
  */
-export function applyPull(issue, reply, iso, { skip = new Set(), today = '' } = {}) {
+export function applyPull(issue, reply, iso, { skip = new Set(), keep = new Set(), today = '' } = {}) {
+  const dropped = dropUnstamped(issue, reply?.issue, keep);
+  const gone = dropped ? `Took out ${dropped} removed on the desk.` : '';
   if (!countIssueItems(reply?.issue)) {
     const [next] = Object.entries(reply?.staged ?? {}).filter(([d]) => d !== iso && d >= today).sort(([a], [b]) => a.localeCompare(b));
     const none = `Nothing on the desk for ${isoToDisplayDate(iso)} yet.`;
-    return { fresh: 0, message: next ? `${none} ${isoToDisplayDate(next[0])} has ${next[1]}.` : none, pulled: null };
+    const message = next ? `${none} ${isoToDisplayDate(next[0])} has ${next[1]}.` : none;
+    return { fresh: 0, dropped, message: gone ? `${gone} ${message}` : message, pulled: null };
   }
   const { pulled, already } = partitionPulled(reply.issue, issue);
   for (const sec of Object.values(pulled.sections ?? {})) {
@@ -49,10 +75,11 @@ export function applyPull(issue, reply, iso, { skip = new Set(), today = '' } = 
     sec.enabled = sec.items.length > 0;
   }
   const fresh = countIssueItems(pulled);
-  if (!fresh) return { fresh, message: 'Nothing new from the desk.', pulled: null };
+  if (!fresh) return { fresh, dropped, message: gone || 'Nothing new from the desk.', pulled: null };
   pulled.date = '';   // never the ISO date the pull carries
   mergeIssues(issue, structuredClone(pulled));
-  return { fresh, message: already ? `Pulled ${fresh} new from the desk.` : `Pulled ${fresh} from the desk.`, pulled };
+  const came = already ? `Pulled ${fresh} new from the desk.` : `Pulled ${fresh} from the desk.`;
+  return { fresh, dropped, message: gone ? `${came} ${gone}` : came, pulled };
 }
 
 /** Remove and Undo reach the desk only for a real issue still to go out: a

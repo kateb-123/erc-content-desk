@@ -125,3 +125,15 @@ test('Save & Export is the one step a placeholder locks; the step row says why (
   assert.equal(stepState('export', { current: 'edit', reached: 2, itemCount: 5, placeholders: 0 }), 'open');
   assert.equal(stepState('export', { current: 'edit', reached: 2, itemCount: 5 }), 'open', 'no count given means no placeholders');
 });
+
+// Kate, Oct 23: Next is the filled button and Back the outline, on every step
+// that has them, at the top and at the foot (Save & Export shows Back alone).
+test('Next is the teal primary and Back the outline, at the top and the foot', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const tags = (attr) => [...page.matchAll(new RegExp(`<button[^>]*${attr}[^>]*>`, 'g'))].map((m) => m[0]);
+  assert.equal(tags('data-wizard-back').length, 2);
+  assert.equal(tags('data-wizard-next').length, 2);
+  for (const tag of tags('data-wizard-back')) assert.match(tag, /class="btn btn-tertiary"/);
+  for (const tag of tags('data-wizard-next')) assert.match(tag, /class="btn btn-primary"/);
+});

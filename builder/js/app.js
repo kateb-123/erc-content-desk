@@ -467,7 +467,7 @@ function drawPull() {
   else {
     pullView.status.textContent = pullMessage;
     // An empty issue says where items come from (review, Oct 23).
-    if (/^Nothing on the desk for/.test(pullMessage)) {
+    if (/Nothing on the desk for/.test(pullMessage)) {   // a removal's words can lead (Oct 23)
       // Next issue opens on the nearest issue: the link names this one (review, Oct 23).
       const a = el('a', '', `Add items for ${state.issue?.date || 'this issue'} on Next issue`);
       a.href = '/#newsletter';
@@ -482,7 +482,8 @@ function drawPull() {
  * Oct 7: no Pull button): when a date is picked and each time a draft opens.
  * Only what the issue does not hold yet is added (by link and by the stable
  * desk id), so a removed item, which Remove sent back to Ready to add, stays
- * out. Never while the restore banner asks, and never for a sample.
+ * out. What left the issue on the desk leaves the draft too (Kate, Oct 23).
+ * Never while the restore banner asks, and never for a sample.
  */
 async function pullIssue() {
   const issue = state.issue;
@@ -499,13 +500,15 @@ async function pullIssue() {
     if (run !== pullRun) return;   // a later pull speaks
     pullBusy = false;
     if (state.issue !== issue) { pullMessage = ''; drawPull(); return; }   // the issue changed under it
-    const { fresh, message, pulled } = applyPull(issue, data, iso, { skip: removedIds(), today: todayCentral() });
+    const { fresh, dropped, message, pulled } = applyPull(issue, data, iso, { skip: removedIds(), keep: putBackIds(), today: todayCentral() });
     pullMessage = message;
-    if (fresh) {
+    if (fresh || dropped) {
       // Use original puts back the text as pulled: the new items join it, and
       // any edit made while the pull was out stays an edit.
-      if (state.baseline) mergeIssues(state.baseline, structuredClone(pulled));
-      else state.baseline = structuredClone(issue);
+      if (fresh) {
+        if (state.baseline) mergeIssues(state.baseline, structuredClone(pulled));
+        else state.baseline = structuredClone(issue);
+      }
       scheduleSave();
       if (state.step === 'triage') renderTriage();
       else {
@@ -550,6 +553,14 @@ function removedIds() {
   return removedHere.ids;
 }
 
+/** What Undo put back in this issue since it opened: a pull that was already
+ *  out when its Remove reached the desk never takes it out again (Oct 23). */
+let putBackHere = { issue: null, ids: new Set() };
+function putBackIds() {
+  if (putBackHere.issue !== state.issue) putBackHere = { issue: state.issue, ids: new Set() };
+  return putBackHere.ids;
+}
+
 /**
  * Take one item out of the issue: the Outline row's Remove and the Preview &
  * Edit card's Remove. `rerender` redraws the step on screen, with the item
@@ -574,6 +585,7 @@ function undoRemove(itemId, rerender, fromKeyboard = false) {
   const item = putBack(state.issue, waitingRemovals(), itemId);
   if (!item) return;
   removedIds().delete(item.id);
+  putBackIds().add(item.id);
   tellDesk(item, false);
   scheduleSave();
   rerender();

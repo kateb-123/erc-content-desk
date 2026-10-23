@@ -151,7 +151,7 @@ test('Remove and Undo reach the desk only for a real issue still to go out', () 
 
 test('the pull waits for queued desk writes, skips what was removed, and a pull off the Outline says what came', () => {
   assert.match(app, /async function pullIssue\(\) \{[\s\S]*?await deskWrites;[\s\S]*?fetch\(`\/api\/newsletter-pull/, 'a Remove queued before the pull lands on the desk first');
-  assert.match(app, /applyPull\(issue, data, iso, \{ skip: removedIds\(\), today: todayCentral\(\) \}\)/);
+  assert.match(app, /applyPull\(issue, data, iso, \{ skip: removedIds\(\), keep: putBackIds\(\), today: todayCentral\(\) \}\)/);
   assert.match(app, /function deleteItemWithUndo[\s\S]*?removedIds\(\)\.add\(entry\.item\.id\)/);
   assert.match(app, /function undoRemove[\s\S]*?removedIds\(\)\.delete\(item\.id\)/);
   assert.match(app, /mergeIssues\(state\.baseline, structuredClone\(pulled\)\)/, 'edits made meanwhile never become the original');
@@ -170,4 +170,83 @@ test('an item added by hand is sent through the same queue, so its Remove can ne
   assert.match(app, /const sent = deskWrites\.then\(\(\) => sendItemToDesk\(/);
   assert.match(app, /deskWrites = sent\.catch\(\(\) => \{\}\);/);
   assert.match(app, /function tellDesk\(item, removed\) \{\s*if \(!tellsDesk\(state\.issue, todayCentral\(\)\)\) return;/);
+});
+
+// A Remove on the desk reaches an open draft (Kate, Oct 23): each pull takes
+// out what came from the desk and is no longer stamped for this issue there,
+// removed on Next issue, deleted, or moved to another issue. What was added
+// here by hand stays, and so does every edit made here: nothing is replaced.
+
+const ids = (issue) => Object.values(issue.sections).flatMap((sec) => sec.items.map((item) => item.id));
+
+test('a pull takes out what the desk removed, deleted or moved, and says so', () => {
+  const issue = draft('October 6, 2026', ['Kept', 'Removed', 'Moved', 'Deleted', 'Gone']);
+  const rows = [
+    row('r0', '2026-10-06', { link: 'https://x.org/0' }),
+    row('r1', ''),                                  // Remove on Next issue: back to Ready to add
+    row('r2', '2026-10-20'),                        // moved to a later issue
+    row('r3', '', { status: 'trashed' }),           // Delete clears the stamp
+    row('r9', '2026-10-06'),                        // added on the desk since; r4 is gone from the desk
+  ];
+  const reply = { issue: issueForPull(rows, '2026-10-06'), staged: { '2026-10-06': 2, '2026-10-20': 1 } };
+  const out = applyPull(issue, reply, '2026-10-06');
+  assert.deepEqual(ids(issue), ['desk_r0', 'desk_r9']);
+  assert.equal(out.dropped, 4);
+  assert.equal(out.message, 'Pulled 1 new from the desk. Took out 4 removed on the desk.');
+  assert.deepEqual(said(applyPull(issue, reply, '2026-10-06')), { fresh: 0, message: 'Nothing new from the desk.' }, 'the next opening takes out nothing twice');
+});
+
+test('a pull that only takes out says that alone', () => {
+  const issue = draft('October 6, 2026', ['Kept', 'Removed']);
+  const reply = { issue: issueForPull([row('r0', '2026-10-06', { link: 'https://x.org/0' }), row('r1', '')], '2026-10-06'), staged: {} };
+  const out = applyPull(issue, reply, '2026-10-06');
+  assert.deepEqual({ ...said(out), dropped: out.dropped }, { fresh: 0, message: 'Took out 1 removed on the desk.', dropped: 1 });
+  assert.deepEqual(ids(issue), ['desk_r0']);
+});
+
+test('an item added here by hand stays, whatever the desk did with its row', () => {
+  const issue = draft('October 6, 2026', ['From the desk']);
+  issue.sections.research.items.push(
+    { id: 'misc_k1_1', deskId: 'r7', group: 'brief', fields: { title: 'Sent to the desk, removed there', url: 'https://x.org/r7' } },
+    { id: 'misc_k1_2', group: 'brief', fields: { title: 'Never sent: no link' } },
+  );
+  issue.sections.research.enabled = true;
+  const reply = { issue: issueForPull([row('r0', ''), row('r7', '')], '2026-10-06'), staged: { '2026-10-20': 1 } };
+  const out = applyPull(issue, reply, '2026-10-06', { today: '2026-10-01' });
+  assert.deepEqual(ids(issue), ['misc_k1_1', 'misc_k1_2']);
+  assert.equal(out.dropped, 1);
+  assert.equal(out.message, 'Took out 1 removed on the desk. Nothing on the desk for October 6, 2026 yet. October 20, 2026 has 1.', 'the empty issue still points at the one that has items');
+  assert.equal(issue.sections.headlines.enabled, false, 'an emptied section turns off, as Remove leaves it');
+  assert.equal(issue.sections.research.enabled, true);
+});
+
+test('an item still stamped keeps the edits made here, and the desk\'s later edits stay out', () => {
+  const issue = draft('October 6, 2026', ['As pulled']);
+  issue.sections.headlines.items[0].fields.title = 'Edited here';
+  const reply = { issue: issueForPull([row('r0', '2026-10-06', { link: 'https://x.org/0', headline: 'Edited on the desk' })], '2026-10-06'), staged: {} };
+  const out = applyPull(issue, reply, '2026-10-06');
+  assert.equal(out.dropped, 0);
+  assert.equal(out.message, 'Nothing new from the desk.');
+  assert.equal(issue.sections.headlines.items[0].fields.title, 'Edited here');
+});
+
+test('a reply without the issue in it takes nothing out', () => {
+  const issue = draft('October 6, 2026', ['A']);
+  assert.equal(applyPull(issue, { staged: {} }, '2026-10-06').dropped, 0);
+  assert.deepEqual(ids(issue), ['desk_r0']);
+});
+
+test('a pull already out when Undo put an item back never takes it out again', () => {
+  const issue = draft('October 6, 2026', ['Put back']);
+  const reply = { issue: issueForPull([row('r0', '')], '2026-10-06'), staged: {} };
+  assert.equal(applyPull(issue, reply, '2026-10-06', { keep: new Set(['desk_r0']) }).dropped, 0);
+  assert.deepEqual(ids(issue), ['desk_r0']);
+});
+
+test('the builder hands the pull what Undo put back, and a pull that only took out redraws and saves', () => {
+  assert.match(app, /function undoRemove[\s\S]*?putBackIds\(\)\.add\(item\.id\)/);
+  assert.match(app, /const \{ fresh, dropped, message, pulled \} = applyPull\(/);
+  assert.match(app, /if \(fresh \|\| dropped\) \{/);
+  // The empty issue's link to Next issue follows its words wherever they sit.
+  assert.match(app, /if \(\/Nothing on the desk for\/\.test\(pullMessage\)\)/);
 });

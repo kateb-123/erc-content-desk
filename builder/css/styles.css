@@ -235,8 +235,8 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 
 /* --- Buttons ---------------------------------------------- */
 /* Carbon's buttons: 40px, square, the label left and an icon in the right
-   slot. Primary is the accent fill; secondary is the dark grey fill (Back
-   beside Next, Carbon's classic pair). */
+   slot. Primary is the accent fill (Next since Kate, Oct 23); secondary is
+   the navy fill (Download and Save to the archive). */
 .btn {
   display: inline-flex; align-items: center; justify-content: space-between; gap: var(--spacing-06);
   font: inherit; letter-spacing: 0;
@@ -272,7 +272,8 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 .btn-secondary:not(:disabled):active { background: var(--button-secondary-active); }
 
 /* Carbon's tertiary, the desk's door: the accent's outline, filled on
-   hover, the arrow in its right slot. Next, and Start the next issue. */
+   hover, the arrow in its right slot. Back (Kate, Oct 23), and Start the
+   next issue. */
 .btn-tertiary {
   background: transparent;
   color: var(--text-in-outline);
@@ -411,13 +412,13 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 
 /* The box (Kate, Oct 5): a card that hovers over the sheet's right side,
    pushed outward so it covers the margin more than the words, level with the
-   item. Wide enough for the look beside the words, so it is not tall. */
+   item. Wide enough for the look beside the words, so it is not tall. No
+   shadow (Kate, Oct 23): the 1px hairline every box has sets it off. */
 .edit-drawer {
   position: absolute; z-index: 30; width: 560px; max-width: calc(100vw - 32px);
   display: none; flex-direction: column;
   max-height: min(70vh, 640px);
   background: var(--layer-02); border: 1px solid var(--border-subtle-01);
-  box-shadow: var(--mail-menu-shadow);
 }
 .edit-drawer.is-open { display: flex; }
 .edit-drawer-inner { display: flex; flex-direction: column; min-height: 0; }

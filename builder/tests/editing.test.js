@@ -65,3 +65,14 @@ test('itemArrowMove: a neighbour in the unheaded bucket is a plain step, so ever
   const plain = it => bucket.get(it) === 1;
   assert.deepEqual(itemArrowMove(listed, it => bucket.get(it), a, 'ArrowDown', plain), { other: x, before: false });
 });
+
+// Kate, Oct 23: no shadows anywhere. The edit card keeps floating where it
+// is (her Oct 5 pick) and wears the 1px hairline every box has instead.
+test('the edit card floats with the hairline every box has, and no shadow', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../css/styles.css', import.meta.url), 'utf8');
+  const rule = css.match(/\.edit-drawer \{([^}]*)\}/)[1];
+  assert.doesNotMatch(rule, /box-shadow/);
+  assert.match(rule, /border: 1px solid var\(--border-subtle-01\)/);
+  assert.match(rule, /position: absolute; z-index: 30;/, 'still floating where it was');
+});
