@@ -22,7 +22,7 @@ import { computePreviewScale } from './preview.js';
 import { takeOut, putBack, listedItems, listedSections } from './removals.js';
 import { renderShell } from '../../js/shell-ui.js';
 import { STEPS, canEnterStep, lockedMessage, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices, SAMPLES, sampleValue, sampleOf, SAMPLE_ARCHIVE_MESSAGE } from './wizard.js';
-import { normalizeLinkUrl } from './editing.js';
+import { normalizeLinkUrl, itemArrowMove } from './editing.js';
 // The per-issue layout options the Outline sets (Claude Design handoff, Oct 2026).
 import { CALLOUT_CHOICES, PICTURE_SIZES, addCallout, removeCallout, restoreCallout, moveCallout, setCalloutStyle, setNav, itemLayouts, pictureWidthOf, setPictureWidth, placeholderItems, resetOptions, hasCustomOptions, setZoom, setFlyer, RESEARCH_KINDS, setResearchKind, moveSection, calloutSection } from './options.js';
 import { layoutOf, calloutsOf, calloutAfter, sectionOrder } from './template.js';
@@ -764,6 +764,8 @@ function renderTriage() {
     const buckets = bucketSectionItems(reg, rows.map((it) => (reg.key === 'events' && it.featured ? { ...it, group: 'featured', __item: it } : it)))
       .map((b) => ({ ...b, items: b.items.map((it) => it.__item || it) }));
 
+    // Every live item in display order, so an arrow at a group's edge can carry it on (Oct 23).
+    const sectionLive = buckets.flatMap((b) => b.items.filter((it) => !removed.has(it)));
     for (const bucket of buckets) {
       if (bucket.label) {
         const gr = el('tr', 'outline-group');
@@ -773,7 +775,6 @@ function renderTriage() {
         gr.appendChild(gtd);
         tbody.appendChild(gr);
       }
-      const bucketLive = bucket.items.filter((it) => !removed.has(it));
       for (const item of bucket.items) {
         const f = item.fields || {};
         const title = f.title || '(untitled)';
@@ -784,7 +785,7 @@ function renderTriage() {
         // Item: its grip (Kate, Oct 7: drag it, or the arrow keys), then the title as its link with the meta line under it.
         const td1 = el('td', 'outline-item-cell');
         const cell = el('div', 'outline-cell');
-        cell.appendChild(removed.has(item) ? el('span', 'triage-drag-handle is-blank') : itemHandle(issue, reg.key, item, bucketLive));
+        cell.appendChild(removed.has(item) ? el('span', 'triage-drag-handle is-blank') : itemHandle(issue, reg.key, item, sectionLive, groupKeyOf));
         const words = el('div', 'outline-words');
         const href = normalizeLinkUrl(f.url || '');
         const link = href ? el('a', 'outline-title', title) : el('span', 'outline-title', title);
@@ -945,7 +946,7 @@ function sectionHandle(issue, reg, populated) {
  * its section, or press ArrowUp and ArrowDown to move it past its listed
  * neighbour. It takes the group it lands in; see moveItemNear.
  */
-function itemHandle(issue, sectionKey, item, bucketLive) {
+function itemHandle(issue, sectionKey, item, sectionLive, groupKeyOf) {
   const title = item.fields?.title || '(untitled)';
   const handle = button('', 'triage-drag-handle', { icon: 'grip-vertical' });
   handle.setAttribute('aria-label', `Move "${title}": drag it, or press the up and down arrows`);
@@ -955,9 +956,9 @@ function itemHandle(issue, sectionKey, item, bucketLive) {
   handle.addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
     e.preventDefault();
-    const other = bucketLive[bucketLive.indexOf(item) + (e.key === 'ArrowUp' ? -1 : 1)];
-    if (!other) return;
-    const before = e.key === 'ArrowUp';
+    const move = itemArrowMove(sectionLive, groupKeyOf, item, e.key);
+    if (!move) return;
+    const { other, before } = move;
     if (!moveItemNear(issue, sectionKey, item.id, other.id, before)) return;
     scheduleSave();
     renderTriage();
@@ -1284,7 +1285,8 @@ function buildAddItemPanel(iframe) {
     if (!title) { status.textContent = 'Give it a title first.'; return; }
     if (!state.issue) state.issue = createEmptyIssue();
     const fields = { title };
-    if (linkInput.value.trim()) fields.url = linkInput.value.trim();
+    // With a scheme, as every link field stores it (an old bug: a bare example.org broke in the email).
+    if (linkInput.value.trim()) fields.url = normalizeLinkUrl(linkInput.value);
     if (summaryInput.value.trim()) fields.summary = summaryInput.value.trim();
     if (!eventFields[0].hidden) {
       if (dateInput.value.trim()) fields.date = dateInput.value.trim();

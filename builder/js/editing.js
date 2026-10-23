@@ -16,6 +16,21 @@ export function arrowKeyTarget(key, idx, len) {
   return null;
 }
 
+/** Where an arrow press moves an Outline item (an old bug, fixed Oct 23: the
+ *  arrows stopped at a group's edge). `listed` is the section's live items in
+ *  display order, `groupOf` the group each is drawn under. Inside a group it
+ *  moves past its neighbour; at an edge it lands at the near end of the next
+ *  group: down before that group's first item, up after the group above's
+ *  last. Null at the section's ends. */
+export function itemArrowMove(listed, groupOf, item, key) {
+  const at = listed.indexOf(item);
+  const step = key === 'ArrowUp' ? -1 : key === 'ArrowDown' ? 1 : 0;
+  const other = step ? listed[at + step] : undefined;
+  if (at < 0 || !other) return null;
+  const crossing = groupOf(other) !== groupOf(item);
+  return { other, before: crossing ? step > 0 : step < 0 };
+}
+
 /**
  * A link typed into the editor: trimmed, and given https:// when it names no
  * scheme. An empty field or a bare scheme is no link at all.

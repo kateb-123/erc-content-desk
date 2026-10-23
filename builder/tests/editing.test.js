@@ -29,3 +29,30 @@ test('a reorder row is named with its place, and a move is announced (e34)', () 
   assert.equal(movedAnnouncement('Fall Kickoff Mixer', 2, 5), 'Moved Fall Kickoff Mixer to 3 of 5');
   assert.equal(movedAnnouncement('', 0, 2), 'Moved (untitled) to 1 of 2');
 });
+
+// An old bug (noted Sep 23, fixed Oct 23): a link typed without https:// in
+// Add an item went into the email as typed and broke. The form now stores it
+// the way every other link field does.
+test('Add an item stores its link with a scheme', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(src, /fields\.url = linkInput\.value\.trim\(\)/);
+  assert.match(src, /fields\.url = normalizeLinkUrl\(linkInput\.value\)/);
+});
+
+// An old bug (noted Sep 23, fixed Oct 23): on the Outline the arrows moved an
+// item only inside its group, so at a group's edge they did nothing. Now an
+// edge press carries it into the next group: down lands at the top of the
+// group below, up at the bottom of the group above.
+test('itemArrowMove: inside a group past the neighbour; at an edge into the next group', async () => {
+  const { itemArrowMove } = await import('../js/editing.js');
+  const a = { id: 'a', group: 'g1' }, b = { id: 'b', group: 'g1' }, c = { id: 'c', group: 'g2' }, d = { id: 'd', group: 'g2' };
+  const listed = [a, b, c, d];
+  const group = it => it.group;
+  assert.deepEqual(itemArrowMove(listed, group, a, 'ArrowDown'), { other: b, before: false });
+  assert.deepEqual(itemArrowMove(listed, group, b, 'ArrowDown'), { other: c, before: true }, 'the edge: to the top of the next group');
+  assert.deepEqual(itemArrowMove(listed, group, c, 'ArrowUp'), { other: b, before: false }, 'the edge: to the bottom of the group above');
+  assert.deepEqual(itemArrowMove(listed, group, d, 'ArrowUp'), { other: c, before: true });
+  assert.equal(itemArrowMove(listed, group, a, 'ArrowUp'), null);
+  assert.equal(itemArrowMove(listed, group, d, 'ArrowDown'), null);
+});
