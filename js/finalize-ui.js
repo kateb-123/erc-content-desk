@@ -278,11 +278,17 @@ export function renderFinalize(container, props) {
     });
     head.append(all);
   } else if (!busy && stage === 'plain' && keeps.length) {
+    // Both roads out (review, Oct 23): the newsletter takes every kept item,
+    // the Policy Exchange page leads to Publish.
+    const toIssue = el('button', 'door', 'Go to Next issue');
+    toIssue.dataset.focus = 'door-issue';
+    toIssue.append(faIcon('arrow-right'));
+    toIssue.addEventListener('click', () => { if (!held()) onGoTo('issue'); });
     const btn = el('button', 'door', 'Go to Policy Exchange');
     btn.dataset.focus = 'door';
     btn.append(faIcon('arrow-right'));
-    btn.addEventListener('click', () => { if (!held()) onGoTo('publish'); });
-    head.append(btn);
+    btn.addEventListener('click', () => { if (!held()) onGoTo('exchange'); });
+    head.append(toIssue, btn);
   }
   container.append(head);
   if (busy) {
@@ -369,9 +375,10 @@ export function renderFinalize(container, props) {
   } else if (!row) {
     const empty = el('div', 'f-pane-empty');
     empty.append(verified.size ? 'Every rewrite is checked. ' : 'Nothing needs a rewrite. ');
-    const go = button('Go to Policy Exchange', 'linkish', { focus: 'door-empty', onClick: () => onGoTo('publish') });
+    const toIssue = button('Go to Next issue', 'linkish', { focus: 'door-empty-issue', onClick: () => onGoTo('issue') });
+    const go = button('Go to Policy Exchange', 'linkish', { focus: 'door-empty', onClick: () => onGoTo('exchange') });
     go.append(' ', faIcon('arrow-right'));
-    empty.append(go);
+    empty.append(toIssue, ' · ', go);
     split.append(empty);
   } else if (group.key === 'check') {
     const at = toCheck.indexOf(row);

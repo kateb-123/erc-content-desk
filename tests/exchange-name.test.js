@@ -33,3 +33,15 @@ test("Finalize's doors to the Exchange say Policy Exchange", async () => {
   assert.doesNotMatch(src, /Go to Publish/);
   assert.match(src, /'Go to Policy Exchange'/);
 });
+
+// Review, Oct 23: the door named Policy Exchange opened Publish, and nothing
+// pointed to the newsletter. It now opens the Policy Exchange page it names,
+// and Go to Next issue sits beside it.
+test("Finalize's doors: Go to Next issue and Go to Policy Exchange, each to the page it names", async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../js/finalize-ui.js', import.meta.url), 'utf8');
+  assert.match(src, /'Go to Next issue'/);
+  assert.doesNotMatch(src, /onGoTo\('publish'\)/);
+  assert.match(src, /onGoTo\('exchange'\)/);
+  assert.match(src, /onGoTo\('issue'\)/);
+});
