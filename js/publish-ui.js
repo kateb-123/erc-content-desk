@@ -7,7 +7,7 @@
  */
 import { readyToPublish } from './workflow.js';
 import { PUBLISH_PAUSED } from './flags.js';
-import { hubCsvFilename, hubCsvText } from './hub-csv.js';
+import { hubCsvFilename } from './hub-csv.js';
 import { typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { detailBody } from './finalize-ui.js';
@@ -46,7 +46,6 @@ let celebrated = ''; // which publish already played its confirmation — revisi
 let trialPosting = false; // showing the "posting…" shadow alert
 let trialDone = 0;        // count on the mocked receipt (0 = not yet)
 let confirming = false;   // the one ask before the append-only write
-let csvFor = '';          // the Adding rows (their ids) the CSV was downloaded for; Publish waits on it (Kate, Sep 22)
 let typedPassword = '';   // what the ask's field holds, kept across a redraw; Confirm sends it and clears it
 let picks = null;         // her highlight picks (Kate, Sep 23), from the check's own until she changes them
 let picksFor = null;      // the preview the picks were taken from
@@ -159,7 +158,7 @@ function fateBar(container, list, rerender) {
 }
 
 export function renderPublish(container, props) {
-  const { rows, today, preview, busy, justPublished, justHighlighted, onPublish, onGoTo, onRecheck, publishedCsv, onEditRow, publishError = '' } = props;
+  const { rows, today, preview, busy, justPublished, justHighlighted, onPublish, onGoTo, onRecheck, publishedCsv, publishedCopy = null, copyError = '', onEditRow, publishError = '' } = props;
   const rerender = () => renderPublish(container, props);
   // A fresh check brings the picks as the Exchange holds them; hers stand
   // until the check changes under them.
@@ -214,23 +213,14 @@ export function renderPublish(container, props) {
   } else if (!candidates.length && !busy) {
     head.append(newsletterDoor(onGoTo));
   } else if (preview && !busy && !trialPosting && adding.length) {
-    // The CSV comes first (Kate, Sep 22): the copy of the Adding rows downloads,
-    // then Publish takes its place. A changed Adding list asks for a fresh copy.
-    const csvKey = adding.map(r => r.id).join(',');
-    const saveCopy = () => downloadCsv(hubCsvText(adding));
-    if (csvFor !== csvKey) {
-      const get = button(' Download the CSV', 'primary', { focus: 'csv', icon: 'download', onClick: () => { saveCopy(); csvFor = csvKey; rerender(); } });
-      head.append(get);
-    } else {
-      // The button only asks (the Send early shape); the ask below replaces it
-      // and its Confirm does the work. It disappears while publishing, and the
-      // status loader takes over.
-      const again = button('Download the CSV again', 'linkish p-csv-again', { focus: 'csv', onClick: saveCopy });
-      const btn = el('button', 'primary', `Publish ${adding.length} to the Exchange`);
-      btn.dataset.focus = 'publish';
-      btn.addEventListener('click', () => { confirming = true; hlAsk = false; rerender(); });
-      head.append(again, btn);
-    }
+    // The button only asks (the Send early shape); the ask below replaces it
+    // and its Confirm does the work. It disappears while publishing, and the
+    // status loader takes over. The CSV step went on Oct 22 (Kate): the copy
+    // is filed in Drive by the publish itself.
+    const btn = el('button', 'primary', `Publish ${adding.length} to the Exchange`);
+    btn.dataset.focus = 'publish';
+    btn.addEventListener('click', () => { confirming = true; hlAsk = false; rerender(); });
+    head.append(btn);
   } else if (preview && !busy && !trialPosting) {
     // Nothing to add: the only move left is the newsletter door.
     head.append(newsletterDoor(onGoTo));
@@ -329,10 +319,18 @@ export function renderPublish(container, props) {
     door.append(faIcon('arrow-right'));
     door.addEventListener('click', () => { trialDone = 0; onGoTo('issue'); });
     receipt.append(door);
-    // The saved copy downloads itself on publish; this is here to get it again
-    // without republishing (a second click of a download is harmless).
-    if (publishedCsv) {
-      receipt.append(button('Download the CSV again', 'linkish receipt-download', { onClick: () => downloadCsv(publishedCsv) }));
+    // The copy is in Drive (Kate, Oct 22); only when that failed is the
+    // download offered, so the list is never out of reach.
+    if (!isTrial && publishedCopy?.url) {
+      const line = el('p', 'receipt-copy', 'Copy saved in Drive: ');
+      const a = el('a', '', publishedCopy.name);
+      a.href = publishedCopy.url; a.target = '_blank'; a.rel = 'noopener';
+      line.append(a);
+      receipt.append(line);
+    } else if (!isTrial && publishedCsv) {
+      const line = el('p', 'receipt-copy', `${copyError || 'The copy did not reach Drive.'} `);
+      line.append(button('Download the CSV', 'linkish receipt-download', { onClick: () => downloadCsv(publishedCsv) }));
+      receipt.append(line);
     }
     container.append(receipt);
     return;

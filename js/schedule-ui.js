@@ -5,9 +5,11 @@
  * date opens its issue on Next issue.
  */
 import { scheduleRows } from './issue-view.js';
+import { scheduleEndingWords } from './schedule.js';
 import { newsletterPageHead } from './page-head.js';
 import { isoToShort } from './queue-view.js';
 import { el, button } from './ui-aids.js';
+import { faIcon } from './icons.js';
 
 export function renderSchedule(container, { rows, schedule, today, loaded, onGoTo, onPick }) {
   const parts = [newsletterPageHead({ active: 'schedule', onGoTo })];
@@ -24,6 +26,12 @@ export function renderSchedule(container, { rows, schedule, today, loaded, onGoT
     const count = el('span', 'sched-count', entry.count ? `${entry.count} in the issue` : 'Nothing in yet');
     row.append(when, words, count);
     list.append(row);
+  }
+  const ending = loaded ? scheduleEndingWords(schedule, today, d => isoToShort(d, today)) : '';
+  if (ending) {
+    const warn = el('p', 'note warning sched-warn');
+    warn.append(faIcon('triangle-exclamation'), ' ', ending);
+    parts.push(warn);
   }
   parts.push(list, el('p', 'nl-meta sched-note', 'Edit dates on the Sheet\'s schedule tab.'));
   container.replaceChildren(...parts);

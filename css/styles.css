@@ -838,6 +838,10 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .sched-words .badge { margin: 0; }
 .sched-count { font: var(--meta-type); color: var(--text-helper); }
 .sched-note { margin: var(--spacing-04) 0 0; }
+.sched-warn { margin: 0 0 var(--spacing-05); padding: var(--spacing-04) var(--spacing-05); border: 1px solid var(--warn-line); border-left: 4px solid var(--warn-mark); border-radius: var(--radius); background: var(--warn-bg); font: var(--body-type); color: var(--ink); }
+.sched-warn .fa-solid { color: var(--warn-mark); }
+.desk-card-warn { color: var(--text-warning); }
+.desk-card-warn .fa-solid { color: var(--warn-mark); }
 
 /* ── The sign-in (Kate, Sep 23; her pick B): a bare page, one box in the middle ── */
 /* The window's height less the bar and the page's paddings, so the box sits

@@ -26,6 +26,19 @@ import { refuseUnlessPassword } from './_lib/session.js';
 import { todayCentral } from '../js/today.js';
 import { PUBLISH_PAUSED } from '../js/flags.js';
 import hubUpdated from './_lib/hub-updated.js';
+import { saveFile } from './_lib/sheets.js';
+
+/** The team drive folder ERC Content Desk / Policy Exchange, where every
+ *  publish files the list as it stands after the write (Kate, Oct 22, 2026:
+ *  "can it just get saved to the google drive?"). The folder's own sharing
+ *  guards it, as the sign-up sheet's does. */
+export const EXCHANGE_FOLDER_ID = process.env.EXCHANGE_FOLDER_ID || '1eSRrsHYDMnQZLoH-rOMilx40V7c8nsd_';
+
+/** erc-exchange-2026-09-23-2005.csv: the day and the minute, Central, so two publishes a day keep both copies. */
+export function copyName(clockIso) {
+  const t = String(clockIso ?? '');
+  return `erc-exchange-${t.slice(0, 10)}-${t.slice(11, 13)}${t.slice(14, 16)}.csv`;
+}
 
 export const config = { maxDuration: 300 };
 
@@ -36,6 +49,8 @@ const CSV_PATH = () => process.env.HUB_CSV_PATH || 'data/news.csv';
 export function createPublishHandler({
   readAllRows: readRows, updateRows: writeRows,
   hub = { fetchFile: fetchHubFile, putFile: putHubFile },
+  drive = { saveFile },
+  copyFolder = EXCHANGE_FOLDER_ID,
   session = {}, today = () => todayCentral(), clock = () => new Date().toISOString(),
 }) {
   return async function handler(req, res) {
@@ -143,6 +158,19 @@ export function createPublishHandler({
       // photo lands on the desk's own row here as well.
       const reply = { ok: true, published: published.length, skipped: skipped.length };
       if (published.length || skipped.length) reply.csv = finalCsv;
+      // The copy goes to Drive, not to a download (Kate, Oct 22): the list after
+      // the write, filed in the team drive. A failed copy never fails the
+      // publish; the receipt offers the download instead.
+      if (published.length) {
+        const name = copyName(now);
+        try {
+          const saved = await drive.saveFile({ folderId: copyFolder, name, contentType: 'text/csv', b64: Buffer.from(finalCsv, 'utf8').toString('base64') });
+          reply.copy = { name, url: saved.url, folderUrl: saved.folderUrl };
+        } catch (err) {
+          console.error('exchange copy failed', err);
+          reply.copyError = 'The copy did not reach Drive. Download it from the receipt.';
+        }
+      }
       if (picksGiven) reply.highlighted = picks.items.length;
       // The picks it could not pin yet because they go out with the next publish.
       if (onlyHighlight) reply.held = picks.dropped.filter(link => publishable.some(r => String(r.link ?? '').trim() === link));

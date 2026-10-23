@@ -60,7 +60,9 @@ const state = {
   briefs: null, briefsError: false, briefId: '', brief: null, briefFiles: undefined, briefError: '',
   newBriefOpen: false, creatingBrief: false, createError: '', savingNotes: false, notesSaved: '', draftRunning: false, draftError: '', cropFailed: [], restartFailed: '',
   publishPreview: null,
-  publishedCsv: '',       // the CSV from the last publish, for the receipt's re-download
+  publishedCsv: '',       // the CSV from the last publish, the receipt's download when the Drive copy failed
+  publishedCopy: null,    // { name, url } of the copy the publish filed in Drive (Oct 22)
+  copyError: '',
   rewroteNote: null,
   lastKeepAll: null,        // [{ id, old }] from the last Keep all remaining, until undone or left
 };
@@ -329,6 +331,8 @@ function goTo(key) {
     state.justPublished = 0;
     state.justHighlighted = null;
     state.publishedCsv = '';
+    state.publishedCopy = null;
+    state.copyError = '';
     state.publishError = '';
     resetPublishAsk();
     state.screen = key;
@@ -493,6 +497,8 @@ async function publishNow({ password, highlights, only }) {
     state.justPublished = data.published;
     state.justHighlighted = data.highlighted ?? null;
     state.publishedCsv = data.csv ?? '';
+    state.publishedCopy = data.copy ?? null;
+    state.copyError = data.copyError ?? '';
     state.busy = false;
     if (!data.published) {
       // Only the highlight changed: no receipt; the page checks again and says so.
@@ -502,9 +508,7 @@ async function publishNow({ password, highlights, only }) {
       setStatus(`Highlight updated: ${data.highlighted} item${data.highlighted === 1 ? '' : 's'}.${held}`, 'ok');
       return;
     }
-    // The spare copy saves itself on publish: her browser drops it straight
-    // into Drive, so there is no Drive API and nothing to redeploy.
-    if (state.publishedCsv) downloadCsv(state.publishedCsv);
+    // The copy is filed in Drive by the publish itself (Oct 22); the receipt names it.
     // reload() writes its own 'Loading…'/'' status; the confirmation message
     // has to be set after it finishes, or reload() overwrites it.
     await reload();
@@ -967,7 +971,7 @@ function render() {
   } else if (state.screen === 'publish') {
     renderPublish(screens.publish, {
       ...common, preview: state.publishPreview, busy: state.busy,
-      justPublished: state.justPublished, justHighlighted: state.justHighlighted, publishedCsv: state.publishedCsv, publishError: state.publishError,
+      justPublished: state.justPublished, justHighlighted: state.justHighlighted, publishedCsv: state.publishedCsv, publishedCopy: state.publishedCopy, copyError: state.copyError, publishError: state.publishError,
       onPublish: publishNow, onGoTo: goTo, onEditRow: saveEdit,
       onRecheck: () => { state.publishPreview = null; loadPublishPreview(); },
       // The card's words for a highlight pick (Kate, Sep 30): the same call

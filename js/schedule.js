@@ -34,3 +34,20 @@ export function deadlineState(issueIso, deadlineIso) {
   if (!isIsoDate(deadlineIso) || !isIsoDate(issueIso)) return '';
   return deadlineIso < issueIso ? 'passed' : 'open';
 }
+
+/** The last send date on the schedule once it is `days` or fewer away (Kate,
+ *  Oct 22, 2026: "warn a week before the last newsletter"), else ''. Past it,
+ *  the pages already say to add one. */
+export function scheduleEnding(schedule, todayIso, days = 7) {
+  if (!isIsoDate(todayIso)) return '';
+  const last = (schedule ?? []).filter(isIsoDate).sort().pop() ?? '';
+  if (!last || last < todayIso) return '';
+  const gap = Math.round((Date.UTC(+last.slice(0, 4), +last.slice(5, 7) - 1, +last.slice(8, 10)) - Date.UTC(+todayIso.slice(0, 4), +todayIso.slice(5, 7) - 1, +todayIso.slice(8, 10))) / 86400000);
+  return gap <= days ? last : '';
+}
+
+/** The warning's words, shared by the Newsletter card and the Schedule tab. */
+export function scheduleEndingWords(schedule, todayIso, short) {
+  const last = scheduleEnding(schedule, todayIso);
+  return last ? `Send dates end ${short(last)}. Add the next ones on the Sheet's schedule tab.` : '';
+}

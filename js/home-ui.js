@@ -50,6 +50,11 @@ function card(item, onGoTo) {
     if (link.blank) { a.target = '_blank'; a.rel = 'noopener'; a.append(el('span', 'sr-only', ' (opens in a new tab)')); }
     foot.append(a);
   }
+  if (item.warn) {
+    const line = el('span', 'desk-card-sub desk-card-warn');
+    line.append(faIcon('triangle-exclamation'), ' ', item.warn);
+    foot.append(line);
+  }
   if (item.foot) {
     const line = el('span', 'desk-card-sub');
     if (item.lock) line.append(faIcon('lock'), ' ');

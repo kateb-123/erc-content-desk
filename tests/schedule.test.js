@@ -43,3 +43,17 @@ test('deadlineState: open until the deadline, passed after', () => {
   assert.equal(deadlineState('2026-09-08', '2026-09-01'), 'passed');
   assert.equal(deadlineState('2026-09-08', ''), '');
 });
+
+// A week before the last send date (Kate, Oct 22, 2026: "warn a week before
+// the last newsletter"): the schedule says it is running out.
+test('scheduleEnding: the last send date, once it is a week or less away, else nothing', async () => {
+  const { scheduleEnding } = await import('../js/schedule.js');
+  const schedule = ['2026-10-20', '2026-11-03', '2026-11-17'];
+  assert.equal(scheduleEnding(schedule, '2026-10-21'), '', 'three weeks out: quiet');
+  assert.equal(scheduleEnding(schedule, '2026-11-09'), '', 'eight days out: still quiet');
+  assert.equal(scheduleEnding(schedule, '2026-11-10'), '2026-11-17', 'seven days out: says the last date');
+  assert.equal(scheduleEnding(schedule, '2026-11-17'), '2026-11-17', 'the day itself');
+  assert.equal(scheduleEnding(schedule, '2026-11-18'), '', 'past the last date the pages already say to add one');
+  assert.equal(scheduleEnding([], '2026-11-10'), '');
+  assert.equal(scheduleEnding(['2026-11-03', 'junk', '2026-11-17'], '2026-11-12'), '2026-11-17', 'a bad row is ignored');
+});

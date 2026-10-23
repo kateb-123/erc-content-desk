@@ -95,3 +95,11 @@ test('hubCards: a listserv not set up says so, and one with no sign-ups yet says
   assert.equal(quiet[3].foot, 'Live');
   assert.equal(quiet[3].count, 0);
 });
+
+test('the Newsletter card warns a week before the last send date (Kate, Oct 22)', () => {
+  const schedule = ['2026-10-20', '2026-11-03'];
+  const far = hubCards({ rows: [], schedule, today: '2026-10-21', loaded: true }).find(c => c.key === 'newsletter');
+  assert.equal(far.warn, '');
+  const near = hubCards({ rows: [], schedule, today: '2026-10-28', loaded: true }).find(c => c.key === 'newsletter');
+  assert.equal(near.warn, 'Send dates end Nov 3. Add the next ones on the Sheet\'s schedule tab.');
+});

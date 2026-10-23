@@ -8,6 +8,7 @@ import { PUBLIC_LINKS } from './public-links.js';
 import { EMAIL_PAGES } from './email-pages.js';
 import { SIGNUP_SHEET } from './listserv-view.js';
 import { briefsCard } from './briefs-view.js';
+import { scheduleEndingWords } from './schedule.js';
 
 /** Recently added: the newest rows first, deleted ones left out. */
 export function recentlyAdded(rows, count = 4) {
@@ -55,7 +56,7 @@ export function hubCards({ rows = [], schedule = [], today = '', loaded = false,
     // The newsletter's HTML (Kate, Oct 8): three pages linked at the card's foot, never downloads.
     card('newsletter', { ...(next
       ? { count: loaded ? issueRows(rows, next).length : null, sub: `in the ${isoToShort(next, today)} issue · ${lower(sendsIn(next, today))}` }
-      : { sub: 'No issue scheduled' }), foot: sent ? `Last sent ${isoToShort(sent, today)}` : '', links: EMAIL_PAGES.map(p => ({ label: p.label, href: p.href, blank: true })) }),
+      : { sub: 'No issue scheduled' }), foot: sent ? `Last sent ${isoToShort(sent, today)}` : '', warn: loaded ? scheduleEndingWords(schedule, today, d => isoToShort(d, today)) : '', links: EMAIL_PAGES.map(p => ({ label: p.label, href: p.href, blank: true })) }),
     // The sign-up sheet rides the card too (Kate, Oct 8), opening in a new tab.
     card('listserv', { count: signups?.sheet && Number.isFinite(signups.waiting) ? signups.waiting : null, sub: 'to be added', foot: signupFoot, links: [{ label: SIGNUP_SHEET.label, href: SIGNUP_SHEET.href, blank: true }] }),
     card('links', { copies: PUBLIC_LINKS }),
