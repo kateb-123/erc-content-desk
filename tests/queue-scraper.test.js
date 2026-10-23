@@ -45,7 +45,7 @@ test('scraperStatus: no run yet, not wired up, still asking, and a desk that cou
   assert.deepEqual(scraperStatus({ configured: true, run: { state: 'idle' }, last: null }, '2026-10-19'), { state: 'idle', button: true, line: 'No run yet. Runs Mondays at 7:00.', link: null, files: null });
   assert.deepEqual(scraperStatus({ configured: false, run: null, last: null }, '2026-10-19'), { state: 'off', button: false, line: 'Not set up yet.', link: null, files: null });
   assert.deepEqual(scraperStatus(null, '2026-10-19'), { state: 'checking', button: false, line: 'Checking the scraper', link: null, files: null });
-  assert.deepEqual(scraperStatus({ error: true }, '2026-10-19'), { state: 'error', button: false, line: "The desk couldn't ask GitHub just now.", link: null, files: null });
+  assert.deepEqual(scraperStatus({ error: true }, '2026-10-19'), { state: 'error', button: false, line: "Couldn't reach GitHub.", link: null, files: null });
   assert.equal(scraperStatus({ error: true, message: 'GitHub answered 404 for the runs.' }, '2026-10-19').line, 'GitHub answered 404 for the runs.', 'the server\'s own words when it had any');
 });
 

@@ -67,7 +67,7 @@ export function lockedMessage(step, itemCount, placeholders = 0) {
   if (!(Number(itemCount) > 0)) return LOCKED_STEP_MESSAGE;
   if (step === 'export' && Number(placeholders) > 0) {
     const n = Number(placeholders);
-    return `${n === 1 ? 'One item needs' : `${n} items need`} a photo. Add it under Media on Preview & Tweak, or pick Title and details.`;
+    return `${n === 1 ? 'One item needs a photo. Add it' : `${n} items need photos. Add them`} under Media on Preview & Tweak, or pick Title and details.`;
   }
   return LOCKED_STEP_MESSAGE;
 }
