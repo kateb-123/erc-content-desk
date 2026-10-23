@@ -150,7 +150,7 @@ function fateBar(container, list, rerender) {
 }
 
 export function renderPublish(container, props) {
-  const { rows, today, preview, busy, justPublished, onPublish, onGoTo, onRecheck, publishedCsv, publishedCopy = null, copyError = '', onEditRow, publishError = '' } = props;
+  const { rows, today, preview, busy, justPublished, unchecked = new Set(), onPublish, onGoTo, onRecheck, publishedCsv, publishedCopy = null, copyError = '', onEditRow, publishError = '' } = props;
   const rerender = () => renderPublish(container, props);
   // An open, edited form holds any way out (the same rule as Finalize).
   const held = () => holdIfDirty(openForm, container.querySelector('.f-detail-row'));
@@ -325,6 +325,14 @@ export function renderPublish(container, props) {
   const list = publishRows(preview, rows);
   if (!list.length) return;
   if (fateFilter && !list.some(r => r.fate === fateFilter)) fateFilter = null;
+  // Rewrites not checked yet (review, Oct 23): Publish would send their original words.
+  const notChecked = adding.filter(r => unchecked.has(r.id)).length;
+  if (notChecked) {
+    const warn = el('p', 'note warning p-unchecked');
+    warn.append(faIcon('triangle-exclamation'), ` ${notChecked} rewrite${notChecked === 1 ? '' : 's'} not checked yet; Publish would send the original words. `);
+    warn.append(button('Check them on Finalize', 'linkish', { focus: 'to-finalize', onClick: () => onGoTo('finalize') }));
+    container.append(warn);
+  }
   fateBar(container, list, rerender);
 
   const table = el('table', 'queue-table finalize-table publish-table');

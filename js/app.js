@@ -868,7 +868,7 @@ function render() {
       savingNotes: state.savingNotes, notesSaved: state.notesSaved, draftRunning: state.draftRunning === state.briefId, draftError: state.draftError, cropFailed: state.cropFailed,
     });
   } else if (state.screen === 'queue') {
-    renderQueue(screens.queue, { ...common, loaded: state.loaded, loadFailed: state.loadFailed, onGoTo: goTo, onRefresh: reload, scraper: state.scraper, onRunScraper: runScraper });
+    renderQueue(screens.queue, { ...common, verified: state.verifiedIds, loaded: state.loaded, loadFailed: state.loadFailed, onGoTo: goTo, onRefresh: reload, scraper: state.scraper, onRunScraper: runScraper });
   } else if (state.screen === 'exchange') {
     // What waits to publish comes from the live Exchange check: the quiet one the front page asks for.
     if (state.loaded && !state.publishPreview && !laneCheck.inFlight && laneCheck.failedAt !== state.rows) quietPublishCheck();
@@ -881,6 +881,7 @@ function render() {
     renderIssue(screens.issue, {
       ...common, loaded: state.loaded, loadFailed: state.loadFailed, busy: state.busy, archive: state.archive,
       onGoTo: goTo,
+      unchecked: new Set(state.rewriteReview.keys()),   // rewrites waiting on Finalize (review, Oct 23)
       onAdd: sendToNewsletter,
       onQuickAdd: stampSubmitted,
       onRefresh: reload,
@@ -989,6 +990,7 @@ function render() {
   } else if (state.screen === 'publish') {
     renderPublish(screens.publish, {
       ...common, preview: state.publishPreview, busy: state.busy,
+      unchecked: new Set(state.rewriteReview.keys()),
       justPublished: state.justPublished, publishedCsv: state.publishedCsv, publishedCopy: state.publishedCopy, copyError: state.copyError, publishError: state.publishError,
       onPublish: publishNow, onGoTo: goTo, onEditRow: saveEdit,
       onRecheck: () => { state.publishPreview = null; loadPublishPreview(); },

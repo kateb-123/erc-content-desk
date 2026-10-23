@@ -16,6 +16,7 @@
 import { contentQueue, lastIssueSent, isoToShort, scraperStatus } from './queue-view.js';
 import { tabBar } from './page-head.js';
 import { sortList } from './sort-view.js';
+import { finalizeWaiting } from './finalize-view.js';
 import { hubHead, HUB_LEDES, howToLink } from './hub-head.js';
 import { faIcon } from './icons.js';
 import { el, button, busyLine, tryAgain } from './ui-aids.js';
@@ -121,7 +122,9 @@ export function renderQueue(container, props) {
     return;
   }
   const waiting = sortList(rows).live.length;
-  note.textContent = waiting ? `${waiting} waiting` : 'Nothing waiting';
+  // Finalize waits behind the same door (review, Oct 23): its count rides the note.
+  const finalizing = finalizeWaiting(rows, props.verified ?? new Set());
+  note.textContent = [waiting ? `${waiting} waiting` : 'Nothing waiting', finalizing ? `${finalizing} to finalize` : ''].filter(Boolean).join(' · ');
   // The last issue that went out sets the first tab's cutoff; with none yet, both tabs hold everything.
   const since = lastIssueSent(schedule, today);
   const all = contentQueue(rows, { today });

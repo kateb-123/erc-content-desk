@@ -112,7 +112,7 @@ function goneRow(row, word, onUndo, key) {
 
 /** One item ready to add: the title, what it is and anything timely, Add. An
  *  event that belongs to a later issue asks "Send early?" first. */
-function readyRow({ row, laterIssue }, { issue, busy, reshare, today, onAdd, onEditRow, rerender }) {
+function readyRow({ row, laterIssue }, { issue, busy, reshare, today, onAdd, onEditRow, rerender, unchecked = new Set(), onGoTo }) {
   if (editingId === row.id) return editingRow(row, 0, { onEditRow, rerender });
   const item = el('div', `nl-row${laterIssue ? ' is-later' : ''}`);
   const text = el('span', 'nl-text');
@@ -130,6 +130,9 @@ function readyRow({ row, laterIssue }, { issue, busy, reshare, today, onAdd, onE
     ask.append(button('Confirm', 'linkish alert-word', { focus: `add:${row.id}`, onClick: () => { askId = null; onAdd([row], issue); } }), ' · ',
       button('Cancel', 'linkish alert-word', { focus: `add:${row.id}`, onClick: () => { askId = null; rerender(); } }));
     text.append(ask);
+  } else if (unchecked.has(row.id)) {
+    // Its rewrite waits on Finalize (review, Oct 23): Add would save words no one checked.
+    item.append(editWord(row, rerender), button('Check its rewrite first', 'linkish', { focus: `add:${row.id}`, onClick: () => onGoTo?.('finalize') }));
   } else {
     const add = button('Add', 'mini-btn', { focus: `add:${row.id}`, onClick: () => {
       if (laterIssue) { askId = row.id; rerender(); return; }
@@ -143,7 +146,7 @@ function readyRow({ row, laterIssue }, { issue, busy, reshare, today, onAdd, onE
 }
 
 export function renderIssue(container, props) {
-  const { rows, schedule, today, loaded, loadFailed, busy, archive, onGoTo, onAdd, onRemove, onRestore, onTrash, onRestoreTrashed, onQuickAdd, onRefresh, knownLinks, onEditRow } = props;
+  const { rows, schedule, today, loaded, loadFailed, busy, archive, onGoTo, onAdd, onRemove, onRestore, onTrash, onRestoreTrashed, onQuickAdd, onRefresh, knownLinks, onEditRow, unchecked = new Set() } = props;
   const rerender = () => renderIssue(container, props);
   // An open, edited form holds any way out (the same rule as Finalize).
   const held = () => holdIfDirty(openForm, container.querySelector('.nl-row.is-editing'));
@@ -221,7 +224,7 @@ export function renderIssue(container, props) {
   if (!ready.length) main.append(el('p', 'nl-empty', 'Nothing waiting.'));
   else {
     const box = el('div', 'nl-list is-ready');
-    for (const entry of ready) box.append(readyRow(entry, { issue, busy, reshare, today, onAdd, onEditRow, rerender }));
+    for (const entry of ready) box.append(readyRow(entry, { issue, busy, reshare, today, onAdd, onEditRow, rerender, unchecked, onGoTo }));
     main.append(box);
   }
   // What the issue has outrun: not addable; the move left is Delete.
