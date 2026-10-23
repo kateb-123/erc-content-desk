@@ -62,10 +62,10 @@ role; the value is in the file.
 | `--border-strong-01` | neutral 200 `#8a96a1` | a field's rule, dashed drop zones, tag outlines |
 | `--border-interactive` / `--mark` | maize 400 `#ffcb05` | the brand rule: 2px under a section label and a table head, the builder's reached step line. It never carries text |
 | `--button-primary` / `-hover` / `-active` | teal `#1d7491` / `#106684` / `#0c5570` | the filled buttons (`--accent`), both apps: the two no longer differ by accent. Teal 400 is 5.1:1 on white, so it fills, lines, links and marks alike. The active step is the system's missing press state |
-| `--button-secondary` / `-hover` | blue 400 `#00274c` / blue 500 `#001324` | the builder's Back, Save to the archive, Download: the navy fill beside a teal primary |
+| `--button-secondary` / `-hover` | blue 400 `#00274c` / blue 500 `#001324` | the builder's Save to the archive and Download: the navy fill beside a teal primary (Back was navy until Oct 23) |
 | `--button-disabled` / `--text-on-color-disabled` | neutral 100 `#e5e9ed` / neutral 200 `#8a96a1` | a locked Keep: full opacity, grey fill |
 | `--link-primary` / `-hover` | teal 400 / teal 500 | links and the quiet action words, underlined |
-| `--focus` / `--focus-inset` / `--focus-ring` | neutral 400 / maize 400 / the two as one shadow | the system's ring: 2px maize inside 3px neutral, drawn as a box-shadow so it never moves the page. Programmatic focus (`[tabindex="-1"]`) draws none |
+| `--focus` / `--focus-inset` / `--focus-ring` | teal 400 / teal 400 / the ring as one shadow | a 2px teal ring standing 2px off the control on a white gap (Kate, Sep 23: never yellow), drawn as a box-shadow so it never moves the page. Programmatic focus (`[tabindex="-1"]`) draws none |
 | `--support-error` / `--button-danger-secondary` | pink 500 `#bf3232` | crimson: destructive words (`--err`) and the error note's bar |
 | `--support-success` / `--text-success` | green 400 `#20a848` / green 500 `#198539` | success as an icon (`--ok-mark`) and the toggle when on / as text (`--ok`), which needs the 500 step for 4.5:1 |
 | `--support-warning` / `--text-warning` | orange 400 `#f25f1f` / orange 500 `#c74e1a` | needs doing as an icon, the triangle (`--warn-mark`), and as text (`--warn`); the warning tab. It was UT's Globe blue from Sep 17 to 23 |
@@ -112,8 +112,9 @@ template and the public Exchange site.
   the teal fill, the same on both apps, with its icon in a 64px right slot (48px
   on the small size); with no icon the slot goes. Everything beside a primary is
   the outline: white with a neutral 200 rule, lifting to blue 100 with a darker
-  rule on hover (Cancel, the doors, Quick add, the builder's Next and Start the
-  next issue). The builder's Back and archive buttons are the navy fill. A Save inside an open card whose
+  rule on hover (Cancel, the doors, Quick add, the builder's Back and Start the
+  next issue). Since Oct 23 (her pick A) the builder's Next is the teal primary
+  and Back the outline; Save to the archive and Download stay the navy fill. A Save inside an open card whose
   edits are already live is a ghost word (audit round two, Sep 17).
   Quiet words (Edit, Delete, Skip, Undo, Cancel in a panel) are ghost buttons:
   32px, a `--background-hover` fill on hover. No press scale. On the desk,
@@ -215,7 +216,8 @@ look, everywhere it appears.
 | **Copy saved in Drive** (the receipt's line) | none | a line on the receipt with the file's name as a link; **Download the CSV** as a ghost word only when the copy failed | since Oct 22 (Kate: "can it just get saved to the google drive?") the publish itself files the whole list after the write in the team drive, ERC Content Desk / Policy Exchange, named erc-exchange-<date>-<time>.csv, through the Sheet's script; no download step before Publish any more. From Sep 22 to Oct 22 the CSV came first: Download the CSV as the primary, Publish only once it had been downloaded, and the receipt's Download the CSV again |
 | **Publish N to the Exchange → Confirm / Cancel** | `fa-triangle-exclamation` on the ask | the primary, then one warning note in its place | the one ask before the append-only write to the public site (design audit b6, Sep 17), at body-01 with the count and "live" in 600; Keep the rest on Finalize gets "Kept N rewrites. Undo" instead of an ask |
 
-The front page is Kate's drawn map (Oct 6; her six hubs, see "The six hubs"
+SUPERSEDED Oct 23 by her pick E, a grouped list with a Public links menu
+(see "The design review (Oct 23)" at the end). The front page was Kate's drawn map (Oct 6; her six hubs, see "The six hubs"
 below): the title Content Desk, the lede "What waits in each hub.", then six
 white cards, three to a row on a laptop, in her order: Submit content,
 Content queue, Newsletter, Listserv, Public links, Policy Exchange. A card is
@@ -402,7 +404,8 @@ a tabs?", her pick B of three: no jump row and no scrolling sections, but
 THREE TABS under the band in the desk's own tab idiom, Where items come
 from, Build the issue and Send and archive, and inside Build the issue a
 second, smaller row with a tab per builder step named as the builder names
-it, Review, Outline and Preview & Edit. One slide behind each tab, five in
+it, Review, Outline and Preview & Edit (since Oct 7 the builder has three
+steps: Outline, Preview & Tweak, Save & Export). One slide behind each tab, five in
 all, the steps in the left third and a recording of the real desk in the
 sandbox in the right two thirds (`next-issue.webm`, `review.webm`,
 `outline.webm`, `edit.webm`, `export.webm`, muted, looping, playing only
@@ -594,8 +597,9 @@ brief past the paper stage says so on its page.
   where it stopped."; a failed step says so in red with Try the step again.
   Done, the stage is Your proof and the box is the Draft: the body-prose
   count with its band as a pill (review tint under the floor or over the
-  cap, grey in the band), the three downloads and Write it again (starts
-  over from the read) on one row, then the brief itself as reading text,
+  cap, grey in the band), the three downloads and Redraft (starts
+  over from the read; since Oct 23 it asks first, "This replaces brief-draft.md,
+  with your edits." with Write it again and Cancel) on one row, then the brief itself as reading text,
   her pick A of three (Oct 22: "easier to read like just on the webpage"):
   `js/markdown-lite.js` draws the desk's own markdown, every character
   escaped, at a 720px measure with the maize rule under each section title
@@ -606,8 +610,9 @@ brief past the paper stage says so on its page.
   paper disagrees with itself on (each with the warning triangle, where it is
   and what the draft used), What the check could not settle, and the next
   line to her proof. The hub's table says which step a drafting brief is on.
-  New brief gained a Brief author box, Kate Barnes until changed, remembered
-  on that computer, named on the draft's cover. The review's fixes (Oct 22):
+  New brief gained a Brief author box, remembered on that computer and named
+  on the draft's cover (Kate Barnes by default until Oct 23; since then it starts
+  empty and Create asks for it). The review's fixes (Oct 22):
   each model call names its own clock (the read 45 s, a step 250 s, no
   retry, under the function's 300 s); Write it again clears the old run's
   sections, flags, result and crops, so the new draft is never told not to
@@ -691,7 +696,7 @@ Kate's answers to the usability audit, each one decided by her:
 - **Focus** where a list clips what is drawn outside a control (the type
   picker, the Sort and Finalize list rows) is drawn inside instead: 2px teal,
   and on the picked, teal-filled type a 2px white line. Everywhere else the
-  maize ring stands.
+  teal ring stands.
 - **Warning words on the maize tint** are orange brown `#8f3814`
   (`--text-warning-on-tint`, 7.3:1); orange 500 stays for warning words on white.
 - **A locked Keep and next** says why on a line tight under it ("Set a type
@@ -801,3 +806,54 @@ below describe the lock as built on Sep 23.
   get none: the card shows them as they are. Every pin carries the day it
   shows until ("until Oct 8" in the meta): hers from the Exchange, else an
   event's date, an opportunity's deadline, else two weeks.
+
+## The design review (Oct 23)
+
+Kate's last day. Three reviews ran on the whole desk, the builder and the
+how-tos: impeccable (visual and technical craft), Intent's evaluate (every
+job walked end to end, a newcomer working from the how-tos alone) and
+Intent's articulate (every instruction against her writing rule). Her
+calls, one question at a time; the desk goes to the team after today.
+
+- **Computer only, the how-tos too** ("you wont ever do things on a phone").
+  The public pages still have to work on phones.
+- **I need help!** (her words; pick A of three): Report a problem is a quiet
+  word at the top bar's right end, before Sign out, drawn like it; the panel
+  opens under the bar. The corner button covered Skip for now, a Pick from row
+  and the builder's edit card. It still posts to her Google Form; it is not
+  Claude.
+- **Highlight, slot by slot** (her pick C of four): one box, the site's pin
+  on the left and her pick on the right at each slot, a Changed tag where
+  Update the highlight would change that place; a pick reads title, card
+  words, then its tools (photo, Until, arrows, Remove) on a line of their own;
+  Save under the picks; Until is plain words. This replaces pick A's Now and
+  After boxes.
+- **The front page, grouped** (her pick E: "E is perfect"): one list per
+  step under plain group heads, Bring it in (Submit content, Content queue),
+  Send it out (Newsletter, Listserv, Policy Exchange) and Research (Research
+  briefs: everyone sees it, the password is asked on entering); Public links
+  leaves the list for a vertical menu at the right, its three public rows with
+  Copy link, then a Team submit page row with a pin. The Team submit page
+  (/team-submit/) is the team's form alone, no desk menus, to open in its own
+  tab and pin. The card grid of Oct 6 to 23 is gone.
+- **The builder**: Next the teal primary, Back the outline; the edit card's
+  shadow went for the hairline (no shadows); a draft drops what the desk
+  removed, deleted or moved to another issue each time the builder opens, so a
+  Remove on Next issue no longer ships (edits on the desk still do not reach a
+  draft; make them in the builder).
+- **Small fixes**: Title and Description say (optional) on the team's form
+  and Quick add; Quick add's button names its issue ("Add to the Oct 27
+  issue"); Keep says "Pick a subtype first" when only the subtype is missing;
+  a long title wraps on the Sort card; the bulk fold's chevron points right;
+  a link with no class is teal; Crimson Text no longer loads; the sign-in and
+  the how-tos say the password is in READ ME FIRST - ERC handoff (the password
+  itself never appears).
+- **How-tos**: every step listed beside its picture, pins at rest; Submit
+  content re-recorded on today's page.
+- **Said plainly instead of rebuilt** (her picks, for today): the builder's
+  draft is saved in one browser only; Finalize's unkept rewrites live in the open
+  tab. Her name is no default anywhere after today (Brief author starts empty).
+- **Left as they are, by her word**: the brief's later stages, the restore
+  ask, Undo lasting one visit, her personal help form, the brief as reading
+  text, no date on the team's form.
+
