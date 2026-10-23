@@ -6,7 +6,9 @@
  * edited, and it knows when it holds unsaved typing, so any way out of it
  * can hold instead of throwing the typing away.
  */
-import { editFields, editBase, editChanges, dateField } from './finalize-view.js';
+import { editFields, editBase, editChanges, dateField, sendToChange } from './finalize-view.js';
+import { TYPES, typeDisplay, subtypesFor } from './schema.js';
+import { sendTo } from './workflow.js';
 import { buildImageControl } from './item-image.js';
 import { withScheme } from './links.js';
 import { el, button } from './ui-aids.js';
@@ -37,6 +39,38 @@ export function buildEditForm(row, { onSave, onCancel }) {
     label.append(input);
     grid.append(label);
   }
+  // Where it sits and where it goes (review, Oct 23): after a Keep, the type,
+  // the subtype and the Send it to box were reachable nowhere, so a mistake
+  // could only be deleted. A changed type keeps the fields drawn; Save stores it.
+  const typeLabel = el('label', '', 'Type');
+  const typeSel = el('select');
+  typeSel.dataset.focus = 'edit-type';
+  for (const key of ['', ...Object.keys(TYPES)]) {
+    const o = el('option', '', key ? typeDisplay(key) : 'Pick one');
+    o.value = key;
+    if (key === (row.type ?? '')) o.selected = true;
+    typeSel.append(o);
+  }
+  typeLabel.append(typeSel);
+  const subLabel = el('label', '', 'Subtype');
+  const subSel = el('select');
+  subSel.dataset.focus = 'edit-subtype';
+  const fillSubtypes = () => {
+    const list = subtypesFor(typeSel.value);
+    subSel.replaceChildren(...['', ...list].map(v => { const o = el('option', '', v || (list.length ? 'Pick one' : 'None')); o.value = v; return o; }));
+    subSel.value = list.includes(row.subtype) && typeSel.value === row.type ? row.subtype : '';
+    subSel.disabled = !list.length;
+  };
+  fillSubtypes();
+  typeSel.addEventListener('change', () => { fillSubtypes(); dirty = true; });
+  subLabel.append(subSel);
+  const onlyLabel = el('label', 'check f-edit-wide');
+  const onlyBox = el('input');
+  onlyBox.type = 'checkbox';
+  onlyBox.checked = !sendTo(row).exchange;
+  onlyBox.dataset.focus = 'edit-newsletter-only';
+  onlyLabel.append(onlyBox, ' ERC Newsletter only');
+  grid.append(typeLabel, subLabel, onlyLabel);
   // Any item can carry a picture or a flyer. A div, not a
   // label: a label would forward stray clicks to the upload button.
   const media = el('div', 'f-edit-media f-edit-wide', 'Media');
@@ -50,7 +84,8 @@ export function buildEditForm(row, { onSave, onCancel }) {
     const values = Object.fromEntries(fields.map(field => [field, inputs[field].value]));
     if ('link' in values) values.link = withScheme(values.link);
     dirty = false;
-    onSave(editChanges(row, { ...values, infographic: imgCtl.get() }, base));
+    const where = editChanges(row, { type: typeSel.value, subtype: subSel.value });
+    onSave({ ...editChanges(row, { ...values, infographic: imgCtl.get() }, base), ...where, ...sendToChange(row, onlyBox.checked) });
   };
   const doCancel = () => { dirty = false; onCancel(); };
   const actions = el('div', 'f-edit-actions');

@@ -3,8 +3,9 @@
  * stage the screen is in, how the kept rows group down the left, the progress
  * line and bar, and which row the card on the right shows.
  */
-import { readyToFinalize, canRewrite } from './workflow.js';
-import { hasLocation } from './schema.js';
+import { readyToFinalize, canRewrite, sendTo, sendToValue } from './workflow.js';
+import { hasLocation, isValidType, isValidSubtype } from './schema.js';
+import { isSafeLink } from './links.js';
 import { isoToShort } from './queue-view.js';
 
 /** The Finalize tab's count: kept items whose rewrite is still to do or to
@@ -132,4 +133,20 @@ export function factsFor(row, today) {
 /** Dates and deadlines are date inputs, so a typed "Oct 3" cannot vanish from every meta line. */
 export function dateField(field) {
   return field === 'date' || field === 'deadline';
+}
+
+/** What keeps a row off the Exchange, in words (review, Oct 23): the same
+ *  three checks /api/publish makes. '' when nothing does. */
+export function fixReason(row) {
+  if (!isValidType(row?.type)) return 'Type missing';
+  if (!isValidSubtype(row.type, row.subtype)) return 'Subtype missing';
+  if (!isSafeLink(String(row.link ?? ''))) return 'Link missing or not a web address';
+  return '';
+}
+
+/** The edit form's ERC Newsletter only box as a change: only when it changes
+ *  where the row goes (review, Oct 23). */
+export function sendToChange(row, newsletterOnly) {
+  if (sendTo(row).exchange === !newsletterOnly) return {};
+  return { send_to: sendToValue({ newsletter: true, exchange: !newsletterOnly }) };
 }

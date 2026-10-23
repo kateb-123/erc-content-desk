@@ -228,3 +228,18 @@ test('a publish files the list in Drive and names the copy; a failed copy still 
   assert.equal(res2.body.copy, undefined);
   assert.equal(res2.body.copyError, 'The copy did not reach Drive. Download it from the receipt.');
 });
+
+// Review, Oct 23: items ticked ERC Newsletter only dropped off Publish with
+// no word. The check names them again, so Publish lists them as Held for
+// newsletter; a newsletter-only item from a sent issue is done and not listed.
+test('the check lists the kept items held for the newsletter, until their issue has gone', async () => {
+  const rows = [
+    kept({ id: 'h1', link: 'https://example.org/campus', headline: 'Howdy Campus Mixer', type: 'event', subtype: 'A&M', send_to: '' }),
+    kept({ id: 'h2', link: 'https://example.org/later', headline: 'Gig Em Brief', type: 'headline', subtype: 'Texas', send_to: 'newsletter', newsletter_issue: '2026-10-06' }),
+    kept({ id: 'h3', link: 'https://example.org/next', headline: 'Reveille Roundup', type: 'headline', subtype: 'Texas', send_to: 'newsletter', newsletter_issue: '2026-10-06' }),
+  ];
+  rows[2].newsletter_issue = '2026-09-22';   // sent before today: done
+  const res = fakeRes();
+  await handlerOver(desk(rows), fakeHub())(await signedReq('GET'), res);
+  assert.deepEqual(res.body.newsletterOnly.map(r => r.id), ['h1', 'h2']);
+});

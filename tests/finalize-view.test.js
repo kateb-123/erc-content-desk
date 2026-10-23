@@ -154,3 +154,24 @@ test('unchangedNote: how many came back with nothing to add, and what to do', as
   assert.equal(unchangedNote(1), '1 had too little to rewrite. Edit it by hand.');
   assert.equal(unchangedNote(3), '3 had too little to rewrite. Edit them by hand.');
 });
+
+// Review, Oct 23: Publish's Needs a fix sent her to Sort, which shows a kept
+// row only when its type is missing. Now the row says what is wrong, and the
+// shared edit form carries the type, the subtype and the Send it to box.
+test('fixReason says what keeps a row off the Exchange', async () => {
+  const { fixReason } = await import('../js/finalize-view.js');
+  assert.equal(fixReason({ type: '', subtype: '', link: 'https://example.org/a' }), 'Type missing');
+  assert.equal(fixReason({ type: 'event', subtype: '', link: 'https://example.org/a' }), 'Subtype missing');
+  assert.equal(fixReason({ type: 'event', subtype: 'Off-Campus', link: 'javascript:alert(1)' }), 'Link missing or not a web address');
+  assert.equal(fixReason({ type: 'erc_event', subtype: '', link: 'https://example.org/a' }), '');
+});
+
+test('sendToChange records the box only when it changes where the row goes', async () => {
+  const { sendToChange } = await import('../js/finalize-view.js');
+  const both = { type: 'headline', send_to: 'both' };
+  assert.deepEqual(sendToChange(both, false), {});
+  assert.deepEqual(sendToChange(both, true), { send_to: 'newsletter' });
+  const campus = { type: 'event', subtype: 'A&M', send_to: '' };   // the campus rule ticks it
+  assert.deepEqual(sendToChange(campus, true), {}, 'already newsletter only: no change');
+  assert.deepEqual(sendToChange(campus, false), { send_to: 'both' });
+});

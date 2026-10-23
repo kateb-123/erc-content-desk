@@ -12,6 +12,7 @@ import { typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { detailBody } from './finalize-ui.js';
 import { buildEditForm, holdIfDirty } from './edit-form.js';
+import { fixReason } from './finalize-view.js';
 import { checkSvg, faIcon } from './icons.js';
 import { screenHead } from './screen-info.js';
 import { FATES, publishRows, legendItems, filterByFate, fateShares } from './publish-view.js';
@@ -89,9 +90,11 @@ function itemRows({ row, fate }, { rerender, onGoTo, today, onEditRow }) {
   // The fate, in words. A row that needs a fix is the way to its fix.
   const fateTd = el('td', 'p-fate');
   if (fate === 'fix') {
-    const jump = button('Needs a fix', 'linkish p-fate-fix',
-      { onClick: event => { event.stopPropagation(); onGoTo('sort'); } });
-    jump.title = 'Opens Content Sort';
+    // What is wrong, and the fix in place (review, Oct 23): the row opens its
+    // own Edit, which carries the type, the subtype and the link.
+    const jump = button(fixReason(row) || 'Needs a fix', 'linkish p-fate-fix',
+      { onClick: event => { event.stopPropagation(); expanded.add(row.id); editingId = row.id; rerender(); } });
+    jump.title = 'Opens its Edit';
     fateTd.append(jump);
   } else {
     fateTd.textContent = FATE_LABEL[fate];
@@ -119,6 +122,8 @@ function itemRows({ row, fate }, { rerender, onGoTo, today, onEditRow }) {
     td.append(detailBody(row, today));
     const tools = el('div', 'f-detail-tools');
     tools.append(button(' Edit', 'linkish edit-link', { focus: `edit:${row.id}`, icon: 'pen', onClick: () => { editingId = row.id; rerender(); } }));
+    // A live row's edit stays on the desk (review, Oct 23): the site keeps its own.
+    if (fate === 'live') tools.append(el('span', 'item-source p-live-note', 'An edit here changes the desk, not the site. Fix the site with Edit live items, on the Policy Exchange page.'));
     td.append(tools);
   }
   detailTr.append(td);

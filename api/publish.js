@@ -17,7 +17,7 @@
  * and the write asks for the password once more, in the body.
  */
 import { readAllRows, updateRows } from './_lib/store.js';
-import { readyToPublish, markPublished } from '../js/workflow.js';
+import { readyToPublish, markPublished, sendTo } from '../js/workflow.js';
 import { isValidType, isValidSubtype } from '../js/schema.js';
 import { isSafeLink } from '../js/links.js';
 import { fetchHubFile, putHubFile, diffAgainstHub, appendRowsToCsv, parseCsv, csvLinks } from './_lib/hub.js';
@@ -95,6 +95,10 @@ export function createPublishHandler({
           adding: newRows.map(label),
           skipped: skipped.map(label),
           notReady: notReady.map(label),
+          // Kept, not published, ticked for the newsletter alone, and not in an
+          // issue already sent: Publish lists them as Held for newsletter (review, Oct 23).
+          newsletterOnly: all.filter(r => r.status === 'kept' && !r.published_at && !sendTo(r).exchange
+            && (!r.newsletter_issue || r.newsletter_issue >= today())).map(label),
           hubCount: Math.max(parseCsv(text).length - 1, 0),
           liveLinks: [...csvLinks(text)],   // Sort's Already live group reads these (Kate, Sep 22)
           hub: pickable(live, today()),      // what the Exchange still shows, for the highlight step
