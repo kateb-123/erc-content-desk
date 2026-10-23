@@ -200,3 +200,32 @@ test('reapplyRewrites puts landed, unchecked rewrites back on the rows a reload 
   assert.equal(out[1], rows[1]);
   assert.equal(reapplyRewrites(rows, new Map([['a', 'Rewritten.']]), new Map())[0].blurb, 'Original.', 'checked or undone: left alone');
 });
+
+// Review, Oct 23 (INT-5): an item with no description of its own (its words
+// came only from the reader, original_text) lost every trace of them once its
+// rewrite landed. Its card now shows the reader's words as Before, unmarked,
+// and offers Use original only when the item had its own text to go back to.
+test('checkSides: own words are marked and can be gone back to; the reader\'s words show as Before, unmarked, with no Use original', async () => {
+  const { checkSides } = await import('../js/finalize-view.js');
+  const own = { id: 'a', blurb: 'Rewritten.', original_text: 'Pasted.' };
+  assert.deepEqual(checkSides(own, 'Its own words.'), { before: 'Its own words.', marked: true, revert: true });
+  const readerOnly = { id: 'b', blurb: 'Rewritten.', original_text: 'The reader\'s words.' };
+  assert.deepEqual(checkSides(readerOnly, ''), { before: 'The reader\'s words.', marked: false, revert: false });
+  assert.deepEqual(checkSides(readerOnly, '   '), { before: 'The reader\'s words.', marked: false, revert: false }, 'blank space is no description');
+  assert.deepEqual(checkSides(readerOnly, undefined), { before: 'The reader\'s words.', marked: false, revert: false });
+  assert.deepEqual(checkSides({ id: 'c', blurb: 'Rewritten.' }, ''), { before: '', marked: false, revert: false }, 'nothing at all: no Before');
+});
+
+// Review, Oct 23 (INT-4, "say so plainly"): a rewrite that landed lives only
+// in the open tab until it is checked; a reload or a closed tab loses it, and
+// nothing asks for it again on its own (the Rewrite button does, when pressed).
+test('unsavedNote: one quiet line while rewrites wait to be checked, nothing otherwise', async () => {
+  const { unsavedNote } = await import('../js/finalize-view.js');
+  assert.equal(unsavedNote(0), '');
+  const line = unsavedNote(2);
+  assert.equal(line, 'Check each rewrite before you close or reload this tab.');
+  assert.equal(unsavedNote(1), line);
+  assert.ok(line.split(/\s+/).length < 12, 'under 12 words');
+  assert.doesNotMatch(line, /—|–/, 'no dashes');
+  assert.doesNotMatch(line, /next time|again/i, 'claims no re-ask the code does not make');
+});

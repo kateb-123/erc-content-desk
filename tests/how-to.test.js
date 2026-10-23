@@ -242,3 +242,74 @@ test('every how-to loads the help button at the desk\'s own version', () => {
     assert.equal(v[1], desk, `${f} loads it at the desk's v=${desk}`);
   }
 });
+
+// Every link into a how-to's part lands on it (Kate, Oct 23): the Exchange
+// hub's "How to publish to the Exchange" opened How to sort, which has no
+// #exchange. A link's anchor must be an id on that page.
+test('every link to a part of a how-to lands on an id on that page', () => {
+  const root = new URL('../', import.meta.url);
+  const files = [
+    ...readdirSync(new URL('js/', root)).filter((f) => f.endsWith('.js')).map((f) => `js/${f}`),
+    ...readdirSync(new URL('builder/js/', root)).filter((f) => f.endsWith('.js')).map((f) => `builder/js/${f}`),
+    ...readdirSync(howToDir, { recursive: true }).filter((f) => /\.(html|json)$/.test(f)).map((f) => `how-to/${f}`),
+  ];
+  const ids = new Map();
+  const idsOf = (slug) => {
+    if (!ids.has(slug)) {
+      const file = new URL(`${slug}/index.html`, howToDir);
+      ids.set(slug, existsSync(file) ? new Set([...readFileSync(file, 'utf8').matchAll(/\bid="([^"]+)"/g)].map((m) => m[1])) : null);
+    }
+    return ids.get(slug);
+  };
+  let seen = 0;
+  for (const f of files) {
+    for (const [, slug, anchor] of readFileSync(new URL(f, root), 'utf8').matchAll(/\/how-to\/([a-z0-9-]+)\/#([A-Za-z0-9_-]+)/g)) {
+      seen += 1;
+      const on = idsOf(slug);
+      assert.ok(on, `${f}: /how-to/${slug}/ has no page`);
+      assert.ok(on.has(anchor), `${f}: /how-to/${slug}/#${anchor} lands on no id`);
+    }
+  }
+  assert.ok(seen >= 5, `links to a part of a how-to (${seen})`);
+});
+
+test('the research brief how-to sends Publish readers to the Exchange guide\'s Publish part', () => {
+  const page = deckPage('research-briefs');
+  assert.ok(page.includes('<a href="/how-to/exchange/#publish">How to publish to the Exchange</a>'), 'the Publish link');
+  assert.doesNotMatch(page, /How to sort, for Finalize and Publish/, 'How to sort has no Publish');
+});
+
+// I need help! (Kate, Oct 23): a quiet word in the top bar that sends a note
+// to the desk's owner through a form. Ask Claude says so, in the button's words.
+test('Ask Claude names the help button as the screen does, where it sits and where it sends', async () => {
+  const { HELP_LABEL } = await import('../js/report-problem.js');
+  const page = deckPage('ask-claude');
+  assert.ok(page.includes(`Press <b>${HELP_LABEL}</b> in the top bar. It sends a note to the desk's owner.`), 'the help line');
+  assert.doesNotMatch(page, /Report a problem|bottom right corner/, 'the corner button is gone');
+});
+
+// The brief folders (Kate, Oct 23): each path written in full once, and the
+// prompts name the reader's own folder, never a real brief's.
+test('the research brief how-to writes each folder in full once and names no real brief in its prompts', () => {
+  const deck = readFileSync(new URL('research-briefs/deck.json', howToDir), 'utf8');
+  const page = deckPage('research-briefs');
+  for (const words of [deck, page]) {
+    assert.doesNotMatch(words, /holzman/i, 'no real brief in a prompt');
+    for (const path of ['ERC Content Desk / ERC Research Briefs / your brief\'s folder', 'ERC Content Desk / ERC Research Briefs / erc-research-briefs']) {
+      assert.equal(words.split(path).length - 1, 1, `${path}, once`);
+    }
+  }
+  for (const prompt of ['Put my text below into &lt;your brief\'s folder&gt;/brief-draft.md word for word.', 'on &lt;your brief\'s folder&gt;.</code>', '<code>&lt;your brief\'s folder&gt;-author-review.docx</code>', '<code>&lt;your brief\'s folder&gt;-author-edits.docx</code>', 'Build &lt;your brief\'s folder&gt;/brief.html']) {
+    assert.ok(page.includes(prompt), prompt);
+  }
+});
+
+// The newsletter draft lives in one browser (Kate, Oct 23: "say so plainly").
+// The newsletter how-to says it on the first Outline slide, where an issue starts.
+test('the newsletter how-to says the draft is saved in one browser, on the first Outline slide', () => {
+  const line = 'The draft is saved only in the browser you build it in. Finish the issue there.';
+  const outline = nl.slice(nl.indexOf('<section class="chapter" id="outline"'), nl.indexOf('<section class="chapter" id="tweak"'));
+  const first = outline.split('<div class="slide" role="group"')[1];
+  assert.ok(first.includes(line), 'on the first Outline slide');
+  assert.ok(readFileSync(new URL('desk-guide.txt', howToDir), 'utf8').includes(line), 'and in the desk guide');
+});

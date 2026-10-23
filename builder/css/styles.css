@@ -23,6 +23,9 @@ body {
   min-height: 100vh;
   display: flex; flex-direction: column;
 }
+/* A link with no class of its own (review, Oct 23): teal, never the browser's blue. */
+a { color: var(--link-primary); }
+a:hover { color: var(--link-primary-hover); }
 
 /* --- Shell and page head ---------------------------------- */
 /* The desk's top bar across the top (css/shell.css), the title on the page
@@ -301,6 +304,9 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   font-weight: 400;
   color: var(--text-secondary);
 }
+/* The Issue list with one quiet line under it: where the draft is kept (Kate, Oct 23). */
+.triage-field { display: flex; flex-direction: column; gap: var(--spacing-03); }
+.wizard-step .triage-field-help { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
 
 /* Fields: the system's boxed input, white with a 1px neutral rule all round
    and 2px corners (Sep 23). One rule for the Outline step's fields and the
@@ -368,11 +374,11 @@ tr.is-drop-after td { box-shadow: inset 0 -2px 0 var(--button-primary); }
 .outline-title { color: var(--text-primary); text-decoration: none; }
 a.outline-title:hover { text-decoration: underline; text-decoration-color: var(--link-primary); }
 .outline-meta { display: block; font-size: 12px; line-height: 16px; color: var(--text-secondary); }
-/* Move to… and Remove sit on every row in gray and take their colour when
-   the row is hovered (Kate, Oct 7: "quiet, always there"). */
-.outline-move, .outline-remove { color: var(--text-secondary); }
+/* Move to… sits on every row in gray and takes the link colour when the row
+   is hovered (Kate, Oct 7: "quiet, always there"). Remove is the red ghost
+   word at rest, as on the desk's Next issue (Kate, Oct 23). */
+.outline-move { color: var(--text-secondary); }
 .outline-item:hover .outline-move, .outline-move.is-open, .outline-move:focus-visible { color: var(--link-primary); }
-.outline-item:hover .outline-remove, .outline-remove:focus-visible { color: var(--button-danger-secondary); }
 .outline-featured { display: inline-flex; align-items: center; gap: var(--spacing-03); font-size: 13px; color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
 .outline-featured input { accent-color: var(--button-primary); margin: 0; width: 16px; height: 16px; }
 .outline-featured.is-on { color: var(--text-primary); font-weight: 600; }

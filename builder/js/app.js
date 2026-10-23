@@ -32,7 +32,7 @@ import { readAllWaiting } from '../../js/reader-client.js';
 import { discardToDesk, draftIsOpen, replaceAskMessage, discardedTitle, discardedDetail, withEntry, withoutEntry, restoreOver } from './discarded.js';
 import { deskSubmission, sendItemToDesk } from './send-to-desk.js';
 // No Pull button (Kate, Oct 7): a date picked and a draft opened pull on their own.
-import { pickNeedsAsk, shouldPull, applyPull, syncRemoval, tellsDesk } from './auto-pull.js';
+import { pickNeedsAsk, shouldPull, applyPull, syncRemoval, tellsDesk, doorIssueOf, doorPick } from './auto-pull.js';
 
 // ---------------------------------------------------------------------------
 // State
@@ -51,6 +51,10 @@ const state = {
 
 /** True while the restore banner is asking; nothing writes storage or the issue until it is answered. */
 let restorePending = false;
+/** The issue Next issue's door named (Kate, Oct 23), opened once the restore banner is answered. */
+let doorIssue = '';
+/** The door's issue over a draft for another issue: the replace ask stays up, through redraws, until answered. */
+let doorAsk = '';
 
 // ---------------------------------------------------------------------------
 // Autosave helpers
@@ -306,6 +310,7 @@ function renderPullHead(container) {
   // different date over an open draft asks first, then starts fresh.
   dateSelect.addEventListener('change', () => {
     scheduleNote.replaceChildren();   // a new pick answers any ask still up
+    doorAsk = '';   // and the door's ask with it, so it never comes back (review, Oct 23)
     const sample = sampleOf(dateSelect.value);
     if (sample) { openSample(sample); return; }
     const iso = dateSelect.value;
@@ -320,10 +325,16 @@ function renderPullHead(container) {
     pullIssue();
   });
   dateLabel.appendChild(dateSelect);
+  // The draft lives in this browser alone, said where work starts (Kate, Oct 23: "say so plainly").
+  const savedLine = el('p', 'triage-field-help', 'This draft is saved in this browser only.');
+  savedLine.id = 'issue-saved-help';
+  dateSelect.setAttribute('aria-describedby', savedLine.id);
+  const field = el('div', 'triage-field');
+  field.append(dateLabel, savedLine);
   // Where a failed schedule load speaks: an error note under the field, with
   // Retry. A sample's ask and its errors speak there too.
   const scheduleNote = el('div', 'note-slot');
-  metaSection.append(dateLabel, scheduleNote);
+  metaSection.append(field, scheduleNote);
   container.appendChild(metaSection);
 
   /**
@@ -333,6 +344,7 @@ function renderPullHead(container) {
    * Cancel puts the list back.
    */
   function openSample(def) {
+    doorAsk = '';
     const back = () => { scheduleNote.replaceChildren(); dateSelect.disabled = false; dateSelect.value = was; };
     const load = async () => {
       const wait = el('span', 'pull-status');
@@ -373,7 +385,7 @@ function renderPullHead(container) {
    * discarded, then the date opens empty and pulls; Cancel puts the list back.
    */
   function askNewIssue(iso) {
-    const back = () => { scheduleNote.replaceChildren(); dateSelect.disabled = false; dateSelect.value = was; };
+    const back = () => { doorAsk = ''; scheduleNote.replaceChildren(); dateSelect.disabled = false; dateSelect.value = was; };
     const start = async () => {
       resetPull();   // no pull lands on the draft while it is being kept
       const wait = el('span', 'pull-status');
@@ -383,6 +395,7 @@ function renderPullHead(container) {
       try {
         const reply = await discardToDesk(state.issue, { send: (body) => postJson('/api/drafts', body, 'keep the open draft'), clear: clearState });
         discarded = withEntry(discarded, reply.draft);
+        doorAsk = '';
         openDraft(emptyIssueFor(iso));
       } catch (err) {
         back();
@@ -409,7 +422,7 @@ function renderPullHead(container) {
     if (!currentIso) placeholder.textContent = 'Loading issues…';
     try {
       const data = await readReply(await fetch('/api/newsletter-pull'), 'load the issues');
-      const isos = issueDateChoices([...(data.schedule ?? []), ...Object.keys(data.staged ?? {})], todayCentral(), currentIso);
+      const isos = issueDateChoices([...(data.schedule ?? []), ...Object.keys(data.staged ?? {}), ...(doorAsk ? [doorAsk] : [])], todayCentral(), currentIso);
       if (!isos.length) { placeholder.textContent = 'No upcoming issues on the desk'; return; }
       dateSelect.replaceChildren(
         ...(currentIso || sampleKey ? [] : [option('', 'Pick an issue…')]),
@@ -417,6 +430,7 @@ function renderPullHead(container) {
         samplesGroup(),
       );
       was = dateSelect.value;
+      if (doorAsk) dateSelect.value = doorAsk;   // the ask's date stays shown; Cancel goes back to was
     } catch {
       // The select keeps a real first option; the error speaks beside it, with a way to try again.
       if (!currentIso) placeholder.textContent = 'Pick an issue…';
@@ -424,6 +438,13 @@ function renderPullHead(container) {
     }
   }
   loadSchedule();
+  // The door's issue over a draft for another (Kate, Oct 23): the list shows
+  // it and the replace ask waits under it, as a pick from the list would.
+  if (doorAsk) {
+    if (![...dateSelect.options].some((o) => o.value === doorAsk)) dateSelect.insertBefore(option(doorAsk, isoToDisplayDate(doorAsk)), dateSelect.lastChild);
+    dateSelect.value = doorAsk;
+    askNewIssue(doorAsk);
+  }
 
   // What the last pull said, on one row under the field; a failed one is an
   // error note under it, with Retry. pullIssue draws into them.
@@ -2572,6 +2593,27 @@ function openDraft(issue) {
   if (shouldPull(issue)) pullIssue();
 }
 
+/**
+ * Open the issue Next issue's door named (Kate, Oct 23), once the restore
+ * banner, if any, is answered: the way a pick from the Issue list opens it,
+ * so a draft for another issue asks first. True when the step redrew.
+ */
+function takeDoorIssue() {
+  const iso = doorIssue;
+  doorIssue = '';
+  const pick = doorPick(state.issue, iso);
+  if (pick === 'fresh') { openDraft(emptyIssueFor(iso)); return true; }
+  if (pick === 'redate') {
+    state.issue.date = isoToDisplayDate(iso);
+    saveState(state.issue);
+    goTo('triage');
+    pullIssue();
+    return true;
+  }
+  if (pick === 'ask') { doorAsk = iso; goTo('triage'); return true; }
+  return false;
+}
+
 /** A failure's own words, without the "try again" a Try again or Retry button beside them already says. */
 function reasonOf(err) {
   return plainError(err).replace(/\s*Try again in a (minute|moment)\.$/, '');
@@ -2609,6 +2651,7 @@ function showRestoreBanner(saved) {
   const restoreBtn = button('Restore', 'btn btn-primary restore-banner__btn', { onClick: () => {
     settle();
     openDraft(saved);
+    takeDoorIssue();   // the door's issue, over the draft just opened
   } });
 
   // Discard sends the draft to the desk, which keeps it 90 days, and only then
@@ -2628,7 +2671,8 @@ function showRestoreBanner(saved) {
       settle();
       discarded = withEntry(discarded, reply.draft);
       focusDiscarded = fromKeyboard ? reply.draft.id : null;
-      if (state.step === 'triage') renderTriage();   // unlocks the Issue select; the list leads with it
+      // The door's issue opens now, or the Issue select unlocks; the list leads with the draft.
+      if (!takeDoorIssue() && state.step === 'triage') renderTriage();
       setWizardStatus('Discarded.');
     } catch (err) {
       const retry = ghostButton('Try again');
@@ -2789,5 +2833,14 @@ renderShell(document.querySelector('.topbar'), { screen: 'builder' });
 // A saved issue locks the Outline's Issue before it is drawn, so the first render already knows.
 const savedIssue = loadState();
 restorePending = Boolean(savedIssue);
+// Next issue's door names its issue (Kate, Oct 23): read once, then taken off
+// the address, so a reload never asks about it again.
+doorIssue = doorIssueOf(location.search, todayCentral());
+if (new URLSearchParams(location.search).has('issue')) {
+  const url = new URL(location.href);
+  url.searchParams.delete('issue');
+  history.replaceState(null, '', url);
+}
 goTo('triage');
 if (savedIssue) showRestoreBanner(savedIssue);
+else takeDoorIssue();

@@ -41,7 +41,7 @@ export function renderExchange(container, { rows, today, loaded, preview, hubUpd
     stat('Waiting to publish', s.waiting == null ? '' : String(s.waiting)),
   );
   main.append(el('h3', 'section-label hub-label', 'Status'), box,
-    howToLink('How to publish to the Exchange', '/how-to/sort/#exchange'), howToLink('How to change the Policy Exchange', '/how-to/exchange/'), howToLink('How it all connects', '/how-to/pipeline/'),
+    howToLink('How to publish to the Exchange', '/how-to/exchange/#publish'), howToLink('How to change the Policy Exchange', '/how-to/exchange/'), howToLink('How it all connects', '/how-to/pipeline/'),
     el('p', 'qh-side-note', 'Code: github.com/kateb-123/erc-policy-exchange-app. Who holds the logins: READ ME FIRST, in the shared drive.'));
 
   const side = el('aside', 'qh-side');

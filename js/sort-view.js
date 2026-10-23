@@ -180,11 +180,14 @@ export function keepBlock(row, shownType = row.type) {
 
 /** The row the card shows: the chosen one while it is live; otherwise the
  *  row now standing where it stood (so a decision moves you to the next);
- *  otherwise none. */
-export function nextSelected(liveIds, selectedId, lastIndex = 0) {
-  if (selectedId && liveIds.includes(selectedId)) return selectedId;
-  if (!liveIds.length) return null;
-  return liveIds[Math.min(Math.max(lastIndex, 0), liveIds.length - 1)];
+ *  otherwise none. A skipped row stays live, sunk to the skipped, so Skip
+ *  names it as leaving and the card moves on as it does after Keep and
+ *  Delete (Kate, Oct 23); with nothing else to show, it stays. */
+export function nextSelected(liveIds, selectedId, lastIndex = 0, leavingId = null) {
+  if (selectedId && selectedId !== leavingId && liveIds.includes(selectedId)) return selectedId;
+  const rest = leavingId ? liveIds.filter(id => id !== leavingId) : liveIds;
+  if (!rest.length) return liveIds[0] ?? null;
+  return rest[Math.min(Math.max(lastIndex, 0), rest.length - 1)];
 }
 
 const UNDO_VERBS = { keep: 'kept', circleback: 'skipped', trash: 'deleted' };

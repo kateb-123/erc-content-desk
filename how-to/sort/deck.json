@@ -179,7 +179,7 @@
             {
               "title": "Check each rewrite",
               "items": [
-                "Press <b>Keep</b> to use it, or <b>Use original</b> for the text it came with.",
+                "Press <b>Keep</b>, or <b>Use original</b> for the item's own description.",
                 "Fix a word with <b>Edit</b>. Saving the edit counts as checked.",
                 "<b>Keep the rest (N)</b> keeps every rewrite still to check."
               ],

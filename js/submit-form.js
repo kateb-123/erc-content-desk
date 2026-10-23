@@ -38,6 +38,18 @@ export function bulkConfirmLabel(count, retrying) {
   return retrying ? `Retry ${count}` : `Add ${count} to the queue`;
 }
 
+/** Who a bulk run is added by: the review's own initials box (Kate, Oct 23),
+ *  trimmed; left blank, the rows say "bulk upload" as before. */
+export function bulkSubmitter(value) {
+  return String(value ?? '').trim() || 'bulk upload';
+}
+
+/** The review's initials box as it opens: the form's initials, until the
+ *  box has been typed in; then what was typed stays (Kate, Oct 23). */
+export function bulkInitialsPrefill({ current, formValue, touched }) {
+  return touched ? current : formValue;
+}
+
 /**
  * The type pills: every type as a pill, the picked one marked; the picked
  * type's subtypes as a second row; ERC Event is flat and gets the hint that
@@ -141,6 +153,8 @@ export function renderSubmitForm(container, {
       <p class="bulk-templates">Templates: <a href="/templates/erc-upload-template.docx" download>Word</a>, <a href="/templates/erc-upload-template.xlsx" download>Spreadsheet</a></p>
       <div class="bulk-review" hidden>
         <div class="bulk-items"></div>
+        <div class="bulk-initials"><label for="sf-bulk-submitter">Your initials</label>
+          <input id="sf-bulk-submitter" type="text" autocomplete="off"></div>
         <button type="button" class="primary bulk-confirm-btn" data-focus="retry">Add all to the queue</button>
         <button type="button" class="bulk-cancel-btn">Cancel</button>
       </div>
@@ -377,6 +391,10 @@ export function renderSubmitForm(container, {
   const bulkItemsBox = container.querySelector('.bulk-items');
   const bulkConfirm = container.querySelector('.bulk-confirm-btn');
   const bulkCancel = container.querySelector('.bulk-cancel-btn');
+  // The review's own initials (Kate, Oct 23): the form's are out of view once the door is open.
+  const bulkInitials = container.querySelector('#sf-bulk-submitter');
+  let bulkInitialsTouched = false;
+  bulkInitials.addEventListener('input', () => { bulkInitialsTouched = true; });
   let bulkItems = [];
   const bulkOpen = new Set(); // rows peeked open (index into bulkItems)
 
@@ -481,6 +499,11 @@ export function renderSubmitForm(container, {
         text: isText ? await file.text() : '',
         file: isText ? '' : await fileToBase64(file),
       }, 'split that file');
+      bulkInitials.value = bulkInitialsPrefill({
+        current: bulkInitials.value,
+        formValue: form.querySelector('#sf-submitter').value,
+        touched: bulkInitialsTouched,
+      });
       showBulkRows(data.items, true);
       bulkReview.hidden = false;
       show(bulkStatus, (data.warnings ?? []).join(' '), 'note');
@@ -533,7 +556,7 @@ export function renderSubmitForm(container, {
   bulkConfirm.addEventListener('click', async event => {
     event.target.disabled = true;
     event.target.hidden = true;   // gone while adding — no double-clicks
-    const submitter = form.querySelector('#sf-submitter').value.trim() || 'bulk upload';
+    const submitter = bulkSubmitter(bulkInitials.value);
     const items = bulkItems;
     // The popup is what actually stops a double-submit: the button being gone
     // only guards this one control, and people were clicking elsewhere.

@@ -82,7 +82,7 @@
           "notes": [
             {
               "n": "!",
-              "html": "<b>Redraft</b> writes the draft again from the paper, over <code>brief-draft.md</code>. Use it before you edit, never after.",
+              "html": "<b>Redraft</b> writes the draft again from the paper, over <code>brief-draft.md</code>. It asks first. Use it before you edit.",
               "warn": true,
               "go": false
             }
@@ -121,13 +121,13 @@
           ]
         },
         {
-          "cap": "Put your proofed text back in the draft with Claude Code, opened on the <code>ERC Research Briefs</code> folder. In each prompt, put your brief's folder in place of holzman-2026.",
+          "cap": "Put your proofed text back in the draft with Claude Code, opened on the <code>ERC Research Briefs</code> folder. In each prompt, swap in your folder's name.",
           "notes": [],
           "steps": [
             {
               "title": "Back into the draft",
               "items": [
-                "Paste your text into Claude Code after this prompt: <code>Put my text below into holzman-2026/brief-draft.md word for word. Keep its byline, headings, bold, [Table 1 here] or [Figure 1 here] line and references. List every change to a number, a hedge or a causal verb.</code>",
+                "Paste your text into Claude Code after this prompt: <code>Put my text below into &lt;your brief's folder&gt;/brief-draft.md word for word. Keep its byline, headings, bold, [Table 1 here] or [Figure 1 here] line and references. List every change to a number, a hedge or a causal verb.</code>",
                 "Check each listed change against the paper."
               ],
               "links": null
@@ -141,8 +141,8 @@
             {
               "title": "With author",
               "items": [
-                "Ask Claude Code: <code>Run build-author-docx.js from erc-research-briefs on the holzman-2026 folder.</code> If it says docx is missing, ask it to run <code>npm install docx@9.7.1</code>.",
-                "It writes <code>holzman-2026-author-review.docx</code> into the folder. A gap shows in red as \"Fix before sending\". Never send a copy with a red line.",
+                "Ask Claude Code: <code>Run build-author-docx.js from erc-research-briefs on &lt;your brief's folder&gt;.</code> If it says docx is missing, ask it to run <code>npm install docx@9.7.1</code>.",
+                "It writes <code>&lt;your brief's folder&gt;-author-review.docx</code> into the folder. A gap shows in red as \"Fix before sending\". Never send a copy with a red line.",
                 "Email the Word copy to the author of record with a reply date. Add any number questions from your proof."
               ],
               "links": null
@@ -163,8 +163,8 @@
             {
               "title": "Approved",
               "items": [
-                "Save their reply in the folder under a new name, like <code>holzman-2026-author-edits.docx</code>, so a rebuild can't overwrite it. Never edit their file.",
-                "Ask Claude Code: <code>Number every tracked change and comment in holzman-2026/holzman-2026-author-edits.docx. Mark each Accept or Push back, with its rule from erc-research-briefs/VOICE.md or REPORTING.md. Change no file yet.</code>",
+                "Save their reply in the folder under a new name, like <code>&lt;your brief's folder&gt;-author-edits.docx</code>, so a rebuild can't overwrite it. Never edit their file.",
+                "Ask Claude Code: <code>Number every tracked change and comment in &lt;your brief's folder&gt;/&lt;your brief's folder&gt;-author-edits.docx. Mark each Accept or Push back, with its rule from erc-research-briefs/VOICE.md or REPORTING.md. Change no file yet.</code>",
                 "Decide each one yourself. Accept facts, corrected numbers, added hedges and plainer wording. Push back on claims firmer than the paper, jargon, \"we\" and a dropped null result.",
                 "Tell Claude which numbered changes to apply, then reread <code>brief-draft.md</code>. Reply to the author with a one-line reason for each change you didn't make.",
                 "Send a second round only if a finding, a number or the table moved. Build the Word copy again for it.",
@@ -181,7 +181,7 @@
             {
               "title": "HTML",
               "items": [
-                "Ask Claude Code: <code>Build holzman-2026/brief.html from a copy of erc-research-briefs/_template/brief-template.html, like erc-research-briefs/bowen-2026/brief.html. Follow STANDARDIZATION.md and REPORTING.md in erc-research-briefs. The visual is proposed-visual.md. Never cut or reword brief-draft.md to fit: give me options.</code>",
+                "Ask Claude Code: <code>Build &lt;your brief's folder&gt;/brief.html from a copy of erc-research-briefs/_template/brief-template.html, like erc-research-briefs/bowen-2026/brief.html. Follow STANDARDIZATION.md and REPORTING.md in erc-research-briefs. The visual is proposed-visual.md. Never cut or reword brief-draft.md to fit: give me options.</code>",
                 "Open <code>brief.html</code> in Chrome, press Cmd+P and choose Save as PDF: Letter, Margins None, Background graphics on, Headers and footers off. Print while online so the fonts load.",
                 "Send Claude one problem per message, then print again."
               ],
@@ -212,12 +212,12 @@
                 "On <a href=\"/#newsletter\">Newsletter</a>'s <b>Next issue</b>, press <b>Add</b> on it under <b>Ready to add</b>.",
                 "Email the author of record the public link, with thanks."
               ],
-              "links": "<a href=\"/how-to/sort/\">How to sort, for Finalize and Publish</a>"
+              "links": "<a href=\"/how-to/sort/#finalize\">How to sort, for Finalize</a> <a href=\"/how-to/exchange/#publish\">How to publish to the Exchange</a>"
             }
           ]
         }
       ]
     }
   ],
-  "below": "<section class=\"need\" aria-labelledby=\"h-need\"><h2 id=\"h-need\">What you need</h2><ul><li>The desk password. It is in READ ME FIRST - ERC handoff, in the shared drive.</li><li>Google Drive for desktop, with the shared drive in Finder. Each brief gets a folder in <code>ERC Content Desk/ERC Research Briefs/</code>.</li><li>Claude Code, opened on that <code>ERC Research Briefs</code> folder. The house rules, like <code>VOICE.md</code> and <code>REPORTING.md</code>, sit beside the brief folders in <code>erc-research-briefs/</code>.</li><li>Node.js, Grammarly, Word, Outlook and Chrome.</li></ul></section>"
+  "below": "<section class=\"need\" aria-labelledby=\"h-need\"><h2 id=\"h-need\">What you need</h2><ul><li>The desk password. It is in READ ME FIRST - ERC handoff, in the shared drive.</li><li>Google Drive for desktop, with the shared drive in Finder. Each brief lives in <code>ERC Content Desk / ERC Research Briefs / your brief's folder</code>.</li><li>Claude Code, opened on <code>ERC Content Desk / ERC Research Briefs</code>. The house rules, template and scripts are in <code>ERC Content Desk / ERC Research Briefs / erc-research-briefs</code>.</li><li>Node.js, Grammarly, Word, Outlook and Chrome.</li></ul></section>"
 }

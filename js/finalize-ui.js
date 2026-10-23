@@ -13,7 +13,7 @@ import { isErc, sortList } from './sort-view.js';
 import { TYPE_ORDER, typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { busyWords, faIcon } from './icons.js';
-import { finalizeStage, finalizeGroups, finalizeProgress, onTheWay, pickSelection, finalizeWaiting, factsFor } from './finalize-view.js';
+import { finalizeStage, finalizeGroups, finalizeProgress, onTheWay, pickSelection, finalizeWaiting, factsFor, checkSides, unsavedNote } from './finalize-view.js';
 import { buildEditForm, holdIfDirty } from './edit-form.js';
 import { sortPageHead } from './page-head.js';
 import { el, button, focusKeyIn, restoreFocus, revealTop } from './ui-aids.js';
@@ -162,20 +162,28 @@ function editCard(row, { onSave, rerender }) {
 }
 
 /** A rewrite to check: Before and After side by side, the changed words marked.
+ *  An item with no description of its own shows the reader's words as Before,
+ *  unmarked, and no Use original (Kate, Oct 23).
  *  Saving an edit here counts as the decision (onCheckEdit stamps the row). */
-function checkCard(row, { old, nextId, onVerify, onRevert, onCheckEdit, onTrash, rerender }) {
+function checkCard(row, { old, nextId, note, onVerify, onRevert, onCheckEdit, onTrash, rerender }) {
   if (editingId === row.id) {
     return editCard(row, { onSave: (r, changes) => { selectedId = nextId; onCheckEdit(r, changes); }, rerender });
   }
   const card = el('div', 'card f-card');
   cardHead(card, row);
   const pair = el('div', 'f-diff-pair');
-  if (old) {
-    const { oldToks, newToks } = diffWords(old, row.blurb);
+  const sides = checkSides(row, old);
+  if (sides.before) {
     const before = el('div', 'f-diff-box');
-    before.append(el('p', 'f-diff-label', 'Before'), diffPara(oldToks, 'f-old', 'diff-del'));
     const after = el('div', 'f-diff-box is-after');
-    after.append(el('p', 'f-diff-label', 'After'), diffPara(newToks, 'f-blurb-text', 'diff-add'));
+    if (sides.marked) {
+      const { oldToks, newToks } = diffWords(sides.before, row.blurb);
+      before.append(el('p', 'f-diff-label', 'Before'), diffPara(oldToks, 'f-old', 'diff-del'));
+      after.append(el('p', 'f-diff-label', 'After'), diffPara(newToks, 'f-blurb-text', 'diff-add'));
+    } else {
+      before.append(el('p', 'f-diff-label', 'Before'), el('p', 'f-old', sides.before));
+      after.append(el('p', 'f-diff-label', 'After'), el('p', 'f-blurb-text', row.blurb));
+    }
     pair.append(before, after);
   } else {
     const after = el('div', 'f-diff-box is-after');
@@ -183,11 +191,13 @@ function checkCard(row, { old, nextId, onVerify, onRevert, onCheckEdit, onTrash,
     pair.append(after);
   }
   card.append(pair);
+  // The rewrite lives in this tab until it is checked (Kate, Oct 23: "say so plainly").
+  if (note) card.append(el('p', 'card-quiet f-unsaved', note));
 
   const actions = el('div', 'f-verify-actions');
   const lock = lockButtons(card);
   toolLinks(actions, row, { rerender, onTrash, lock });
-  if (old) {
+  if (sides.revert) {
     actions.append(button(' Use original', 'linkish quiet-link',
       { focus: 'revert', icon: 'rotate-left', onClick: () => { lock(); selectedId = nextId; onRevert(row); } }));
   }
@@ -383,7 +393,7 @@ export function renderFinalize(container, props) {
   } else if (group.key === 'check') {
     const at = toCheck.indexOf(row);
     const nextId = toCheck[at + 1]?.id ?? toCheck[at - 1]?.id ?? null;
-    split.append(checkCard(row, { old: review.get(row.id), nextId, onVerify: onVerifyRewrite, onRevert: onRevertRewrite, onCheckEdit, onTrash, rerender }));
+    split.append(checkCard(row, { old: review.get(row.id), nextId, note: unsavedNote(checks), onVerify: onVerifyRewrite, onRevert: onRevertRewrite, onCheckEdit, onTrash, rerender }));
   } else if (group.key === 'rewrite') {
     split.append(simpleCard(row, originalBox(row), { rerender, onEditRow, onTrash }));
   } else {

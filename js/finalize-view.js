@@ -164,3 +164,19 @@ export function uncheckedRewrites(rows, { verified = new Set(), rewriting = new 
 export function reapplyRewrites(rows, landed, review) {
   return rows.map(r => (review.has(r.id) && landed.has(r.id) ? { ...r, blurb: landed.get(r.id) } : r));
 }
+
+/** What a rewrite's check card sets beside the new words (Kate, Oct 23): the
+ *  item's own description, its changed words marked; with none of its own,
+ *  the reader's words (original_text) as they came, unmarked. Use original
+ *  puts the own description back, so it shows only when there is one. */
+export function checkSides(row, old) {
+  if (String(old ?? '').trim()) return { before: old, marked: true, revert: true };
+  return { before: String(row?.original_text ?? '').trim(), marked: false, revert: false };
+}
+
+/** A rewrite that landed lives in this tab until it is checked (Kate, Oct 23:
+ *  "say so plainly"). A reload loses it, and nothing asks for it again on
+ *  its own, so the line claims no more than that. */
+export function unsavedNote(checks) {
+  return checks ? 'Check each rewrite before you close or reload this tab.' : '';
+}

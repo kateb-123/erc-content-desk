@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { pickType, typeChoices, bulkSubmissionBody, typeRowFor, bulkRowProblem, bulkConfirmLabel, dateFieldFor } from '../js/submit-form.js';
+import { pickType, typeChoices, bulkSubmissionBody, typeRowFor, bulkRowProblem, bulkConfirmLabel, dateFieldFor, bulkSubmitter, bulkInitialsPrefill } from '../js/submit-form.js';
 import { TYPE_ORDER, subtypesFor } from '../js/schema.js';
 
 test('pickType clears the subtype when the type changes', () => {
@@ -94,4 +94,54 @@ test('Quick add on Next issue asks for the Date field; the team page does not', 
   const { readFileSync } = await import('node:fs');
   assert.match(readFileSync(new URL('../js/issue-ui.js', import.meta.url), 'utf8'), /renderSubmitForm\(mount, \{[\s\S]*?dateField: true/);
   assert.doesNotMatch(readFileSync(new URL('../js/team-ui.js', import.meta.url), 'utf8'), /dateField/);
+});
+
+// ── The bulk review's own initials box (Kate, Oct 23, INT-11) ──
+// The door used to read Your initials from the form above it, out of view
+// once the door is open; the review now carries its own box right above
+// Add N to the queue, prefilled from the form's.
+
+const submitSource = async () => {
+  const { readFileSync } = await import('node:fs');
+  return readFileSync(new URL('../js/submit-form.js', import.meta.url), 'utf8');
+};
+
+test('bulkSubmitter: the bulk box\'s initials, trimmed; blank still says bulk upload', () => {
+  assert.equal(bulkSubmitter('  RV '), 'RV');
+  assert.equal(bulkSubmitter(''), 'bulk upload');
+  assert.equal(bulkSubmitter('   '), 'bulk upload');
+  assert.equal(bulkSubmitter(undefined), 'bulk upload');
+});
+
+test('bulkInitialsPrefill: the form\'s initials fill the box until the box is typed in', () => {
+  assert.equal(bulkInitialsPrefill({ current: '', formValue: 'RV', touched: false }), 'RV');
+  assert.equal(bulkInitialsPrefill({ current: 'RV', formValue: 'TX', touched: false }), 'TX');
+  assert.equal(bulkInitialsPrefill({ current: 'MB', formValue: 'RV', touched: true }), 'MB');
+  assert.equal(bulkInitialsPrefill({ current: '', formValue: '', touched: false }), '');
+});
+
+test('the bulk review draws a Your initials box right above the Add button', async () => {
+  const src = await submitSource();
+  assert.match(src, /<div class="bulk-review" hidden>\s*<div class="bulk-items"><\/div>\s*<div class="bulk-initials"><label for="sf-bulk-submitter">Your initials<\/label>\s*<input id="sf-bulk-submitter" type="text" autocomplete="off"><\/div>\s*<button type="button" class="primary bulk-confirm-btn"/);
+});
+
+test('the form keeps its own Your initials field in its foot', async () => {
+  const src = await submitSource();
+  assert.match(src, /<div class="sf-initials"><label for="sf-submitter">Your initials<\/label>\s*<input id="sf-submitter" type="text" autocomplete="off"><\/div>/);
+});
+
+test('Add N to the queue takes the submitter from the bulk box, not the form above', async () => {
+  const src = await submitSource();
+  const handler = src.match(/bulkConfirm\.addEventListener\('click'[\s\S]*?\n {2}\}\);/)?.[0] ?? '';
+  assert.ok(handler, 'the Add handler is found');
+  assert.doesNotMatch(handler, /#sf-submitter/);
+  assert.match(handler, /bulkSubmitter\(bulkInitials\.value\)/);
+});
+
+test('a split prefills the bulk box from the form\'s initials as the review opens', async () => {
+  const src = await submitSource();
+  const split = src.match(/async function splitFile\(file\)[\s\S]*?\n {2}\}\n/)?.[0] ?? '';
+  assert.ok(split, 'splitFile is found');
+  assert.match(split, /bulkInitialsPrefill\(/);
+  assert.match(split, /#sf-submitter/);
 });

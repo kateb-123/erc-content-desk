@@ -7,7 +7,7 @@
  * beside it. Round 1 draws the first stage, Paper and notes; the later ones
  * say they come in the next round.
  */
-import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, notesKind, createLock, wordCount, draftProgress, draftWait, pairFor, cutsToMake, bandPill } from './briefs-view.js';
+import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, notesKind, createLock, createProblem, briefAuthorStart, REDRAFT_ASK, wordCount, draftProgress, draftWait, pairFor, cutsToMake, bandPill } from './briefs-view.js';
 import { fillFromPaper } from './paper-read.js';
 import { renderMarkdown } from './markdown-lite.js';
 import { chartSvg, chartAlt } from './brief-visual.js';
@@ -150,10 +150,11 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
   const journal = input();
   const record = input(); record.placeholder = 'Dr. Lastname, who gets the email';
   // The brief's own author line (her pick, Oct 22): whoever is signed in, from a box that remembers its last value.
+  // It starts empty on a computer that has typed no name, never with a name of the desk's own (Kate, Oct 23).
   const briefAuthor = input();
   let remembered = '';
   try { remembered = localStorage.getItem('desk.briefAuthor') ?? ''; } catch { /* no storage, no memory */ }
-  briefAuthor.value = remembered || 'Kate Barnes';
+  briefAuthor.value = briefAuthorStart(remembered);
   briefAuthor.addEventListener('input', () => { try { localStorage.setItem('desk.briefAuthor', briefAuthor.value); } catch { /* fine */ } });
   const boxes = { last, year, topic, paperTitle, authors, journal, record, briefAuthor };
   for (const [key, control] of Object.entries(boxes)) {
@@ -289,9 +290,9 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
     event.preventDefault();
     problem.textContent = '';
     const file = paper.files?.[0] ?? draft.file;
-    if (!file) { problem.textContent = 'Choose the paper, a PDF.'; paper.focus(); return; }
-    if (!draft.notes.trim()) { problem.textContent = 'Choose your notes file, or paste them.'; notesPick.focus(); return; }
-    if (!briefSlug({ authorLast: last.value, year: year.value, topic: topic.value })) { problem.textContent = "Add the author's last name and a four-digit year."; last.focus(); return; }
+    // An empty Brief author is refused like the folder name, and never filled in for her (Kate, Oct 23).
+    const wrong = createProblem({ paper: Boolean(file), notes: draft.notes, authorLast: last.value, year: year.value, topic: topic.value, briefAuthor: briefAuthor.value });
+    if (wrong) { problem.textContent = wrong.why; ({ paper, notes: notesPick, last, briefAuthor })[wrong.focus].focus(); return; }
     const paperB64 = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '');
@@ -311,6 +312,7 @@ function newBriefForm({ onCreate, onCancel, onReadPaper, onReadNotes, creating, 
 export function renderBriefs(container, props) {
   const { briefs, loaded, error, today, onOpen, onRefresh, newOpen, onToggleNew, onCreate, onReadPaper, onReadNotes, creating, createError } = props;
   const focusKey = focusKeyIn(container);
+  redraftAsk = '';   // leaving a brief for the hub closes its Redraft ask
   const page = el('div', 'hub-page briefs-page');
   const head = el('div', 'briefs-head');
   head.append(hubHead('Research briefs', HUB_LEDES.briefs), howToLink('How to make a research brief', '/how-to/research-briefs/'));
@@ -471,6 +473,44 @@ function proposalOf(visual) {
 }
 
 /**
+ * Redraft and the one ask before it (Kate, Oct 23): once she proofs it,
+ * brief-draft.md in the folder is the brief, so Redraft only asks. The
+ * warning note stands in its place, the way Send early? and Publish's ask
+ * do; Write it again starts over from the read, Cancel puts Redraft back.
+ * The open ask outlives a redraw (the folder loading, a refresh).
+ */
+let redraftAsk = '';   // the brief whose ask is open
+
+function redraftWord(brief, onWriteDraft) {
+  const word = button('Redraft', 'linkish', { focus: 'write-again' });
+  word.addEventListener('click', () => {
+    redraftAsk = brief.id;
+    const note = redraftNote(brief, onWriteDraft);
+    word.replaceWith(note);
+    note.querySelector('[data-focus="write-again"]')?.focus();
+  });
+  return word;
+}
+
+function redraftNote(brief, onWriteDraft) {
+  const note = el('p', 'nl-ask draft-ask');
+  const words = el('span', 'draft-ask-words');
+  words.id = 'redraft-ask-words';
+  words.append(faIcon('triangle-exclamation'), ` ${REDRAFT_ASK.words} `);
+  const yes = button(REDRAFT_ASK.yes, 'linkish alert-word', { focus: 'write-again-yes', onClick: () => { redraftAsk = ''; onWriteDraft({ restart: true }); } });
+  // Cancel holds Redraft's focus key, so a redraw while the ask is open keeps the keyboard on the safe word.
+  const no = button(REDRAFT_ASK.no, 'linkish alert-word', { focus: 'write-again', onClick: () => {
+    redraftAsk = '';
+    const word = redraftWord(brief, onWriteDraft);
+    note.replaceWith(word);
+    word.focus();
+  } });
+  for (const b of [yes, no]) b.setAttribute('aria-describedby', words.id);
+  note.append(words, yes, ' · ', no);
+  return note;
+}
+
+/**
  * The Draft box, her pick A of a leaner box (Oct 22, after "too wordy and
  * too much"): the word count and the downloads in one row, the brief as
  * reading text, then the paper's table or figure beside the proposed one.
@@ -496,7 +536,7 @@ function draftBox(brief, { onWriteDraft, error, cropFailed = [], files = [], cut
     downloadButton('Grammarly copy', 'brief-for-grammarly.md', r.grammarly ?? ''),
     downloadButton('Page plan', 'page-plan.md', r.plan ?? ''),
   );
-  if (!cutting) tools.append(button('Redraft', 'linkish', { focus: 'write-again', onClick: () => onWriteDraft({ restart: true }) }));
+  if (!cutting) tools.append(redraftAsk === brief.id ? redraftNote(brief, onWriteDraft) : redraftWord(brief, onWriteDraft));
   const article = el('article', 'brief-read');
   article.innerHTML = renderMarkdown(r.draft ?? '');   // every character escaped by the renderer; only its own tags
   box.append(tools, article);
@@ -585,6 +625,7 @@ export function renderBrief(container, props) {
     container.replaceChildren(page);
     return;
   }
+  if (redraftAsk !== brief.id) redraftAsk = '';   // another brief's ask never carries over
   const lede = el('p', 'lede');
   const who = [brief.authors, brief.journal ? el('i', '', brief.journal) : '', brief.year ? String(brief.year) : ''].filter(Boolean);
   who.forEach((part, i) => { if (i) lede.append(' · '); lede.append(part); });

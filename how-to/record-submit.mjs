@@ -92,7 +92,7 @@ async function fillIn() {
   await page.getByRole('button', { name: 'A&M', exact: true }).click();
   await page.waitForTimeout(400);
   await toFoot(page);   // the subtypes pushed the form's foot down
-  await page.getByLabel('Your initials').pressSequentially('RV', { delay: 140 });
+  await page.locator('#sf-submitter').pressSequentially('RV', { delay: 140 });
   await page.waitForTimeout(900);
   await page.screenshot({ path: here('1-form.png') });   // the poster: the form filled in
   await page.getByRole('button', { name: 'Add to the queue' }).click();

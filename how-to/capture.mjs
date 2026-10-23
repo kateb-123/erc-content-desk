@@ -47,7 +47,7 @@ for (const s of shots) {
       else await page.waitForTimeout(300);
     }
     await page.mouse.move(0, 0);
-    // The corner Report a problem button is not part of any step.
+    // The I need help! button is not part of any step.
     await page.addStyleTag({ content: '.problem-fab, .problem-panel { display: none !important; }' });
     await page.waitForTimeout(300);
     // The crop: an element and a margin, or the whole window.

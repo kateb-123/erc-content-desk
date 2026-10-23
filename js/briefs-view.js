@@ -141,6 +141,26 @@ export function createLock({ paper, notes, reading, bytes = 0 }) {
 }
 
 /**
+ * Why Create the brief refuses on submit, in the form's order: the paper,
+ * the notes, the folder name, then the brief author, who goes on the cover
+ * and is never filled in for her (Kate, Oct 23). Null once it may go; the
+ * focus names the box to put the cursor in.
+ */
+export function createProblem({ paper, notes, authorLast, year, topic, briefAuthor }) {
+  if (!paper) return { why: 'Choose the paper, a PDF.', focus: 'paper' };
+  if (!String(notes ?? '').trim()) return { why: 'Choose your notes file, or paste them.', focus: 'notes' };
+  if (!briefSlug({ authorLast, year, topic })) return { why: "Add the author's last name and a four-digit year.", focus: 'last' };
+  if (!String(briefAuthor ?? '').trim()) return { why: "Add the brief author's name.", focus: 'briefAuthor' };
+  return null;
+}
+
+/** Brief author as New brief opens: the name this computer typed last, else empty, never a name of the desk's own (Kate, Oct 23). */
+export const briefAuthorStart = remembered => String(remembered ?? '');
+
+/** The one ask before Redraft replaces the folder's draft and any edits in it (Kate, Oct 23, her words). */
+export const REDRAFT_ASK = { words: 'This replaces brief-draft.md, with your edits.', yes: 'Write it again', no: 'Cancel' };
+
+/**
  * What one Create can carry: the paper and a Word file go up together as
  * base64 in one body, and the desk's host refuses a body over 4.5 MB
  * (review, Oct 22). 3.1 MiB of files is 4.3 MB encoded, with room for the

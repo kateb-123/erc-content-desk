@@ -277,7 +277,7 @@ export function renderIssue(container, props) {
   }
   side.append(box);
   const door = el('a', 'nl-door', 'Open the builder');
-  door.href = '/builder/';
+  door.href = `/builder/?issue=${issue}`;   // the builder opens on this issue (Kate, Oct 23)
   door.append(faIcon('arrow-right'));
   side.append(door);
   // The how-to for whoever builds the issue (Kate, Sep 30), a quiet link under the door.

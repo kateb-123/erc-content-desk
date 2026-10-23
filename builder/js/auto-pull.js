@@ -23,6 +23,35 @@ export function pickNeedsAsk(issue, nextIso) {
   return Boolean(current) && current !== nextIso && draftIsOpen(issue);
 }
 
+/**
+ * The issue Next issue's door names (Kate, Oct 23: Open the builder lands on
+ * the issue on screen), from `?issue=2026-10-27`: a real day, today or later,
+ * or '' for none.
+ * @param {string} search - location.search
+ * @param {string} today - College Station's today, ISO
+ */
+export function doorIssueOf(search, today) {
+  const iso = new URLSearchParams(search ?? '').get('issue') ?? '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso) || iso < today) return '';
+  const [y, m, d] = iso.split('-').map(Number);
+  const day = new Date(Date.UTC(y, m - 1, d));
+  return day.getUTCMonth() === m - 1 && day.getUTCDate() === d ? iso : '';
+}
+
+/**
+ * What the door's issue does to the draft open here, the way the Issue list
+ * would pick it (Kate, Oct 23): 'stay' when it is already open, 'ask' over a
+ * draft that holds something under another date, 'fresh' when nothing or a
+ * sample is open, 'redate' for an empty draft, which takes the date; 'none'
+ * with no door issue.
+ */
+export function doorPick(open, iso) {
+  if (!iso) return 'none';
+  if (open && !open.sample && isoOf(open) === iso) return 'stay';
+  if (pickNeedsAsk(open, iso)) return 'ask';
+  return !open || open.sample ? 'fresh' : 'redate';
+}
+
 /** An issue pulls once it has a date; a sample never takes the desk's items. */
 export function shouldPull(issue) {
   return Boolean(issue && !issue.sample && isoOf(issue));

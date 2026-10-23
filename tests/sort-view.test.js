@@ -139,6 +139,51 @@ test('nextSelected keeps the chosen row while it is live, else takes the row now
   assert.equal(nextSelected(['a', 'b'], null, 0), 'a');
 });
 
+// Skip for now moves on like Keep and Delete (Kate, Oct 23): the skipped row
+// stays live, sunk to the skipped, so the card must let go of it or the next
+// K or D acts on the item just put off.
+test('nextSelected lets go of a row that is leaving and takes the row now in its place', () => {
+  assert.equal(nextSelected(['a', 'c', 'b'], 'b', 1, 'b'), 'c');
+  assert.equal(nextSelected(['a', 'b', 'c'], 'c', 2, 'c'), 'b');   // the last one: the row before it
+  assert.equal(nextSelected(['b'], 'b', 0, 'b'), 'b');             // nothing else to show: it stays
+  assert.equal(nextSelected(['a', 'b', 'c'], 'b', 1, null), 'b');  // no leaving id: kept as before
+});
+
+test('after Skip on Sort the card opens the row that stood under the skipped one, and the skipped one sits with the skipped', () => {
+  const rows = [
+    at('a', 'new', '2026-09-12T10:00:00Z'),
+    at('b', 'new', '2026-09-11T10:00:00Z'),
+    at('c', 'new', '2026-09-10T10:00:00Z'),
+    at('s', 'circleback', '2026-09-09T10:00:00Z'),
+  ];
+  const before = sortList(rows).live.map(r => r.id);
+  assert.deepEqual(before, ['a', 'b', 'c', 's']);
+  const after = sortList(rows.map(r => (r.id === 'b' ? { ...r, status: 'circleback' } : r)), new Set(['b'])).live.map(r => r.id);
+  assert.deepEqual(after, ['a', 'c', 'b', 's']);
+  assert.equal(nextSelected(after, 'b', before.indexOf('b'), 'b'), 'c');
+  // A row skipped from a group (Past) keeps its place there; the card still moves on.
+  const past = [
+    at('n', 'new', '2026-09-12T10:00:00Z'),
+    { ...at('p1', 'new', '2026-09-11T10:00:00Z'), type: 'event', date: '2026-09-01' },
+    { ...at('p2', 'new', '2026-09-10T10:00:00Z'), type: 'event', date: '2026-09-02' },
+  ];
+  const opts = { today: '2026-09-22' };
+  const shown = list => { const o = sortList(list, new Set(), opts); return [...o.live, ...o.past, ...o.onHub].map(r => r.id); };
+  const was = shown(past);
+  const now = shown(past.map(r => (r.id === 'p1' ? { ...r, status: 'circleback' } : r)));
+  assert.deepEqual(now, ['n', 'p1', 'p2']);
+  assert.equal(nextSelected(now, 'p1', was.indexOf('p1'), 'p1'), 'p2');
+});
+
+test('Sort hands the skipped row to nextSelected as leaving, from the Skip button (the S key presses it), once', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../js/sort-ui.js', import.meta.url), 'utf8');
+  assert.match(src, /leavingId = row\.id;[^\n]*props\.onDecide\(row, 'circleback'\)/, 'Skip names the row that is leaving');
+  assert.match(src, /nextSelected\(liveOrder, selectedId, lastIndex, leavingId\)/, 'the render lets go of it');
+  assert.match(src, /leavingId = null;/, 'and forgets it after that render');
+  assert.match(src, /k === 's'\) press\('skip'\)/, 'S presses the Skip button');
+});
+
 // Audit round two, e3: Undo last says what it undid, and a row's own Undo takes
 // that row out of the stack so Undo last can never re-apply its decision.
 test('undoWords: names what an undo restored', () => {

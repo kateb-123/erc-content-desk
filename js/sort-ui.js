@@ -31,6 +31,7 @@ let landOnTitle = false;  // a decision was made: the next card's title takes fo
 let askMissingId = null;  // the row whose Keep is waiting on the missing-fields ask
 let editDesc = null;      // the row whose description is a field, not prose (the handoff, Sep 22)
 let liveOrder = [];       // the live row ids in list order, for the arrow keys
+let leavingId = null;     // the row just skipped: still live, so the next draw must let go of it (Kate, Oct 23)
 
 const title = row => row.headline || row.link || '(untitled)';
 
@@ -368,7 +369,7 @@ function sortCard(row, { props, rerender, ctx, reshare, position, total }) {
     }
   }
   if (row.status !== 'circleback') {
-    const skip = button('Skip for now', 'linkish quiet-link sc-skip', { focus: 'skip', onClick: () => { lock(); landOnTitle = true; props.onDecide(row, 'circleback'); } });
+    const skip = button('Skip for now', 'linkish quiet-link sc-skip', { focus: 'skip', onClick: () => { lock(); landOnTitle = true; leavingId = row.id; props.onDecide(row, 'circleback'); } });
     skip.title = 'Skip for now (S)';
     stack.append(skip);
   }
@@ -446,7 +447,8 @@ export function renderSort(container, props) {
   const listed = [...live, ...past, ...onHub];   // the card and the keys reach the groups too
   liveOrder = listed.map(r => r.id);
   const before = selectedId;
-  selectedId = nextSelected(liveOrder, selectedId, lastIndex);
+  selectedId = nextSelected(liveOrder, selectedId, lastIndex, leavingId);
+  leavingId = null;   // one draw: the decision's own
   if (selectedId !== before) { pendingType = null; linkOpen = false; }
   if (selectedId) lastIndex = liveOrder.indexOf(selectedId);
 
