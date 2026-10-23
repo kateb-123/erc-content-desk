@@ -326,6 +326,11 @@ export function renderPublish(container, props) {
       const a = el('a', '', publishedCopy.name);
       a.href = publishedCopy.url; a.target = '_blank'; a.rel = 'noopener';
       line.append(a);
+      if (publishedCopy.folderUrl) {
+        const folder = el('a', '', 'Open the folder');
+        folder.href = publishedCopy.folderUrl; folder.target = '_blank'; folder.rel = 'noopener';
+        line.append(' · ', folder);
+      }
       receipt.append(line);
     } else if (!isTrial && publishedCsv) {
       const line = el('p', 'receipt-copy', `${copyError || 'The copy did not reach Drive.'} `);
