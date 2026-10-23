@@ -11,7 +11,7 @@ import { hubRows, stepStates, briefTitle, briefSlug, stageLabel, notesFile, note
 import { fillFromPaper } from './paper-read.js';
 import { renderMarkdown } from './markdown-lite.js';
 import { chartSvg, chartAlt } from './brief-visual.js';
-import { hubHead, HUB_LEDES } from './hub-head.js';
+import { hubHead, HUB_LEDES, howToLink } from './hub-head.js';
 import { isoToShort } from './queue-view.js';
 import { faIcon, busyWords } from './icons.js';
 import { el, button, busyLine, tryAgain, focusKeyIn, restoreFocus } from './ui-aids.js';
@@ -314,7 +314,7 @@ export function renderBriefs(container, props) {
   const focusKey = focusKeyIn(container);
   const page = el('div', 'hub-page briefs-page');
   const head = el('div', 'briefs-head');
-  head.append(hubHead('Research briefs', HUB_LEDES.briefs));
+  head.append(hubHead('Research briefs', HUB_LEDES.briefs), howToLink('How to make a research brief', '/how-to/research-briefs/'));
   if (!newOpen) {
     head.append(button('New brief', 'primary', { focus: 'new-brief', icon: 'file-arrow-up', onClick: onToggleNew }));
   }

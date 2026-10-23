@@ -7,7 +7,7 @@
  * logins themselves never go on a page (the repo is public).
  */
 import { exchangeStatus } from './exchange-view.js';
-import { hubHead, HUB_LEDES, forthcoming } from './hub-head.js';
+import { hubHead, HUB_LEDES, howToLink } from './hub-head.js';
 import { faIcon } from './icons.js';
 import { el, focusKeyIn, restoreFocus } from './ui-aids.js';
 
@@ -41,7 +41,8 @@ export function renderExchange(container, { rows, today, loaded, preview, hubUpd
     stat('Waiting to publish', s.waiting == null ? '' : String(s.waiting)),
   );
   main.append(el('h3', 'section-label hub-label', 'Status'), box,
-    forthcoming('The code'), forthcoming('The handoff'), forthcoming('Where the logins are kept'));
+    howToLink('How to publish to the Exchange', '/how-to/sort/#exchange'), howToLink('How it all connects', '/how-to/pipeline/'),
+    el('p', 'qh-side-note', 'The code is at github.com/kateb-123/erc-policy-exchange-app. Who holds the logins: the handoff document, READ ME FIRST, in the shared drive.'));
 
   const side = el('aside', 'qh-side');
   const door = el('a', 'sort-door qh-door');

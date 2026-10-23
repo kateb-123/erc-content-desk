@@ -16,7 +16,7 @@
 import { contentQueue, lastIssueSent, isoToShort, scraperStatus } from './queue-view.js';
 import { tabBar } from './page-head.js';
 import { sortList } from './sort-view.js';
-import { hubHead, HUB_LEDES, forthcoming } from './hub-head.js';
+import { hubHead, HUB_LEDES, howToLink } from './hub-head.js';
 import { faIcon } from './icons.js';
 import { el, button, busyLine, tryAgain } from './ui-aids.js';
 
@@ -62,7 +62,7 @@ function build(container, onGoTo) {
   door.append(faIcon('lock'), doorWords, faIcon('arrow-right'));
   const scraperBox = el('div', 'qh-scraper');
   scraperBox.append(el('h3', 'section-label hub-label', 'Scraper'), el('div', 'qh-scraper-body'));
-  side.append(door, el('p', 'qh-side-note', 'Password protected. Sort and Finalize ask the desk password.'), scraperBox, forthcoming('How to sort'));
+  side.append(door, el('p', 'qh-side-note', 'Password protected. Sort and Finalize ask the desk password.'), scraperBox, howToLink('How to sort', '/how-to/sort/'), howToLink('How it all connects', '/how-to/pipeline/'));
 
   split.append(main, side);
   page.append(hubHead('Content queue', HUB_LEDES.queue), el('div', 'qh-tabs'), split);

@@ -1149,3 +1149,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .email-readme code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; background: var(--layer-01); padding: 1px 4px; border-radius: 2px; }
 .email-readme a { color: var(--link-primary); }
 @media (max-width: 760px) { .email-page { padding: var(--spacing-05) var(--spacing-05) var(--spacing-08); } .email-head { flex-direction: column; } .email-sheet { height: 70vh; min-height: 480px; } }
+
+/* The handoff (Oct 22, 2026): how-to links under the hubs, and Report a problem in the bar. */
+.howto-link { margin: var(--spacing-04) 0 0; font: var(--meta-type); }
+.howto-link a { color: var(--link-primary); text-decoration: underline; font-weight: 600; }
+.howto-link .fa-book-open { color: var(--muted); }
+.topbar-problem { font: var(--meta-type); text-decoration: underline; margin-right: var(--spacing-05); }
+.home-guides { display: flex; gap: var(--spacing-06); flex-wrap: wrap; margin: calc(-1 * var(--spacing-04)) 0 var(--spacing-05); }
+.home-guides .howto-link { margin: 0; }

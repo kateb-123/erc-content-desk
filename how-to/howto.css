@@ -1,0 +1,22 @@
+/* The plain how-to pages (Oct 22, 2026, the handoff): one reading column, the desk's tokens. */
+.ht-page { max-width: 760px; margin: 0 auto; padding: var(--spacing-06) var(--spacing-05) var(--spacing-10); color: var(--text-primary); font: 16px/26px Mulish, sans-serif; }
+.ht-crumb { font: var(--meta-type); color: var(--muted); margin: 0 0 var(--spacing-05); }
+.ht-crumb a { color: var(--link-primary); }
+.ht-page h1 { font: 700 32px/40px Mulish, sans-serif; margin: 0 0 var(--spacing-03); }
+.ht-lede { color: var(--muted); margin: 0 0 var(--spacing-07); }
+.ht-page h2 { font: 600 20px/28px Mulish, sans-serif; margin: var(--spacing-08) 0 var(--spacing-03); padding-bottom: var(--spacing-02); border-bottom: 2px solid var(--border-interactive); }
+.ht-page h3 { font: 700 16px/24px Mulish, sans-serif; margin: var(--spacing-06) 0 var(--spacing-02); }
+.ht-page p { margin: 0 0 var(--spacing-04); }
+.ht-page ol, .ht-page ul { padding-left: 24px; margin: 0 0 var(--spacing-05); }
+.ht-page li { margin: 0 0 var(--spacing-03); }
+.ht-page a { color: var(--link-primary); }
+.ht-page code, .ht-page pre { font: 14px/20px ui-monospace, Menlo, monospace; background: var(--layer-01); border-radius: var(--radius); }
+.ht-page code { padding: 1px 4px; }
+.ht-page pre { padding: var(--spacing-04); overflow-x: auto; white-space: pre-wrap; }
+.ht-page table { border-collapse: collapse; width: 100%; margin: 0 0 var(--spacing-05); font: var(--meta-type); }
+.ht-page th { text-align: left; font: var(--label-type); letter-spacing: 1.25px; text-transform: uppercase; padding: var(--spacing-03); border-bottom: 2px solid var(--border-interactive); }
+.ht-page td { padding: var(--spacing-03); border-bottom: 1px solid var(--line-in); vertical-align: top; }
+.ht-note { background: var(--notification-info-background); border: 1px solid var(--notification-info-border); border-left: 4px solid var(--support-info); border-radius: var(--radius); padding: var(--spacing-04); margin: 0 0 var(--spacing-05); }
+.ht-list { list-style: none; padding: 0; }
+.ht-list li { padding: var(--spacing-04) 0; border-bottom: 1px solid var(--line-in); margin: 0; }
+.ht-list li a { font-weight: 700; }

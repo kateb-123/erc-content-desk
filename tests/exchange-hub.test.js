@@ -28,10 +28,14 @@ test('exchangeStatus: while asked it says so; a site that did not answer is neve
   assert.deepEqual(exchangeStatus({ rows: [], today: '2026-10-07', loaded: true, preview: null, hubUpdated: '' }), { site: "Didn't answer just now", updated: '', waiting: 0 });
 });
 
-test('the hub names its forthcoming items, and never the logins themselves', async () => {
+test('the hub says where the code, the handoff and the logins are, with how-to links in place of the forthcoming lines (the handoff, Oct 22: no dead ends), and never the logins themselves', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../js/exchange-ui.js', import.meta.url), 'utf8');
-  for (const words of ['The code', 'The handoff', 'Where the logins are kept']) assert.match(src, new RegExp(`forthcoming\\('${words}'\\)`));
+  assert.doesNotMatch(src, /forthcoming\(/);
+  assert.match(src, /github\.com\/kateb-123\/erc-policy-exchange-app/);
+  assert.match(src, /READ ME FIRST/);
+  assert.match(src, /howToLink\('How to publish to the Exchange', '\/how-to\/sort\/#exchange'\)/);
+  assert.doesNotMatch(src, /DESK_PASSWORD|password\s*[:=]/i, 'no login on the page');
   assert.match(src, /'\/#publish'/, 'Publish opens from the hub');
   assert.match(src, /'https:\/\/erc-policy-exchange\.vercel\.app\/'/, 'the live link');
 });

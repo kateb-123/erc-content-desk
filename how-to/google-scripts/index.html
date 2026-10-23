@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Bring back the Google scripts · ERC Content Desk</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%231d7491'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" />
+  <link rel="stylesheet" href="/css/tokens.css?v=11" />
+  <link rel="stylesheet" href="/how-to/howto.css?v=1" />
+</head>
+<body style="margin:0;background:var(--background)">
+  <main class="ht-page">
+    <p class="ht-crumb"><a href="/">ERC Content Desk</a> / <a href="/how-to/">How-tos</a></p>
+    <h1>Bring back the Google scripts</h1>
+    <p class="ht-lede">For Kathy, or whoever she passes it to. Two scripts, about 15 minutes, any time.</p>
+    <div class="ht-note"><p><strong>When to do this:</strong> once, after Kate's TAMU account closes, or any time sign-ups or the queue's Sheet copy stop updating. It takes about 15 minutes. If you would rather hand it off, send this page to anyone at the ERC with edit access to the ERC Content Desk shared drive folder.</p></div>
+    <h2>Why</h2>
+    <p>Two small Google scripts run inside two Sheets in the shared drive. They were set up under Kate's TAMU login, so they stop when her account closes. Redeploying them under your own login brings them back. Nothing else changes, and nothing is lost: the desk keeps its own copy of everything.</p>
+    <table>
+      <thead><tr><th>Script</th><th>Where it lives</th><th>What stops without it</th></tr></thead>
+      <tbody>
+        <tr><td>The queue script</td><td>ERC Content Desk, Content queue, the Sheet <strong>erc-content-desk</strong></td><td>The Sheet copy of the queue, the scraper's files in Drive, the research briefs' folders</td></tr>
+        <tr><td>The listserv script</td><td>ERC Content Desk, Listserv, the Sheet <strong>subscribe to listserve</strong></td><td>The Join listserv form stops recording sign-ups</td></tr>
+      </tbody>
+    </table>
+    <h2>Steps, for each of the two Sheets</h2>
+    <ol>
+      <li>Open the Sheet in Google Drive. In its menu, choose <strong>Extensions</strong>, then <strong>Apps Script</strong>. The script opens in a new tab.</li>
+      <li>At the top right, click <strong>Deploy</strong>, then <strong>New deployment</strong>.</li>
+      <li>Next to "Select type", click the gear and choose <strong>Web app</strong>.</li>
+      <li>Set <strong>Execute as</strong> to <strong>Me</strong> (your own address) and <strong>Who has access</strong> to <strong>Anyone</strong>. Click <strong>Deploy</strong>.</li>
+      <li>Google asks you to authorize. Choose your account; if it warns that the app is unverified, click <strong>Advanced</strong>, then <strong>Go to</strong> the project, then <strong>Allow</strong>. This is our own script.</li>
+      <li>Copy the <strong>Web app URL</strong>, the long address that ends in <code>/exec</code>.</li>
+      <li>Email it to Kate at the address in the handoff document, and say which Sheet it came from (the queue or the listserv). She pastes it into the desk's settings; you do not need a Vercel login.</li>
+    </ol>
+    <h2>How to tell it worked</h2>
+    <ul>
+      <li><strong>The queue script:</strong> submit a test item on the team's form, then open the queue Sheet. A new row appears within a minute. Delete the test item on Content Sort afterwards.</li>
+      <li><strong>The listserv script:</strong> open the Listserv page on the desk. "Waiting to be added" shows a number, not a warning.</li>
+    </ul>
+    <h2>If something goes wrong</h2>
+    <ul>
+      <li><strong>"Unknown action" or a 500 error on the desk:</strong> the address pasted into the desk is from an old deployment. Send Kate the newest Web app URL again.</li>
+      <li><strong>The script asks for a "token" or a folder:</strong> do nothing; those settings stay with the script (Project settings, Script properties). Do not delete them.</li>
+      <li><strong>You do not see Extensions, Apps Script:</strong> you need edit access to the Sheet. Ask whoever manages the shared drive.</li>
+    </ul>
+
+  </main>
+</body>
+</html>

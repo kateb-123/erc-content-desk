@@ -21,6 +21,15 @@ export const HUB_LEDES = {
   briefs: 'Where each brief stands, and what it waits for.',
 };
 
+/** A how-to link under a hub (the handoff, Oct 22, 2026: no dead ends; every "forthcoming" became a page). */
+export function howToLink(words, href) {
+  const line = el('p', 'howto-link');
+  const a = el('a', '', words);
+  a.href = href;
+  line.append(faIcon('book-open'), ' ', a);
+  return line;
+}
+
 /** A line saying something is coming, in the quiet grey (her red Forthcoming). */
 export function forthcoming(words) {
   const line = el('p', 'forthcoming');

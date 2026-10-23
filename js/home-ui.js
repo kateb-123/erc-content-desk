@@ -8,6 +8,7 @@
  */
 import { faIcon } from './icons.js';
 import { hubCards } from './home-panel.js';
+import { howToLink } from './hub-head.js';
 import { copyLinkButton } from './public-links.js';
 import { openedScreen } from './shell-view.js';
 import { el, tryAgain } from './ui-aids.js';
@@ -66,7 +67,10 @@ export function renderHome(container, props) {
     page = el('div', 'home-page');
     const head = el('div', 'page-head');
     head.append(el('h2', 'home-title', 'Content Desk'), el('p', 'lede', 'What waits in each hub.'));
-    page.append(head, el('div', 'desk-cards'), el('div', 'home-note'));
+    // The handoff (Oct 22, 2026): the whole pipeline in one picture, and every how-to in one place.
+    const guides = el('div', 'home-guides');
+    guides.append(howToLink('How it all connects', '/how-to/pipeline/'), howToLink('All how-tos', '/how-to/'));
+    page.append(head, guides, el('div', 'desk-cards'), el('div', 'home-note'));
     container.replaceChildren(page);
   }
   const grid = page.querySelector('.desk-cards');
