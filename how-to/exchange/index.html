@@ -123,11 +123,6 @@
       .pin:hover .tip { visibility: visible; opacity: 1; }
     }
 
-    /* Hidden until the pointer is on the still or focus is in it; a tap shows them on a touch screen. */
-    .pin { opacity: 0; pointer-events: none; }
-    .shot:focus-within .pin, .shot.is-shown .pin { opacity: 1; pointer-events: auto; }
-    @media (hover: hover) { .shot:hover .pin { opacity: 1; pointer-events: auto; } }
-
     /* The numbered circle of a note. */
     .n { display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: var(--radius-round); background: var(--accent); color: var(--text-on-color); font: 700 12px/1 var(--font-sans); font-style: normal; }
 
@@ -312,7 +307,10 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Open <b>Policy Exchange</b> from the desk's front page.</p>
-            <p class="note"><span class="n">1</span><span>An item reaches the site only if <b>ERC Newsletter only</b> stays unticked. An A&amp;M campus event comes ticked.</span></p>
+            <p class="note"><span class="n">1</span><span>Waiting to publish: what Publish would add now. An item reaches the site only if <b>ERC Newsletter only</b> stays unticked. An A&amp;M campus event comes ticked.</span></p>
+            <p class="note"><span class="n">2</span><span>Publish: the page that sends the waiting items to the site.</span></p>
+            <p class="note"><span class="n">3</span><span>Highlight: the big card on the site's home page.</span></p>
+            <p class="note"><span class="n">4</span><span>Edit live items: the site's own door to fix, hide or delete a live item.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -329,7 +327,10 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Only the <b>Adding</b> rows go to the site.</p>
-            <p class="note"><span class="n">3</span><span>A row that needs a fix names what is missing. Click those words to fix it in place.</span></p>
+            <p class="note"><span class="n">1</span><span>Check them on Finalize: read each rewrite before it goes out.</span></p>
+            <p class="note"><span class="n">2</span><span>A colour: click it to show only those rows.</span></p>
+            <p class="note"><span class="n">3</span><span>Fate: Adding, Held for newsletter, Needs a fix or Already live. A row that needs a fix names what is missing. Click those words to fix it in place.</span></p>
+            <p class="note"><span class="n">4</span><span>Publish N to the Exchange: asks for the password next.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -346,7 +347,9 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Press <b>Publish N to the Exchange</b>, type the desk password, and press <b>Confirm</b>.</p>
-            <p class="note"><span class="n">1</span><span>Who has the password: READ ME FIRST - ERC handoff, in the shared drive.</span></p>
+            <p class="note"><span class="n">1</span><span>Password: the desk password, the one Content Sort asks for. It is in READ ME FIRST - ERC handoff, in the shared drive.</span></p>
+            <p class="note"><span class="n">2</span><span>Confirm: adds the rows to the live site.</span></p>
+            <p class="note"><span class="n">3</span><span>Cancel: nothing is sent.</span></p>
             <p class="note"><span class="n go">→</span><span>Each publish files a copy of the site's list in the shared drive, in ERC Content Desk, Policy Exchange.</span></p>
             <div class="foot"></div>
           </div>
@@ -368,9 +371,10 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Open <b>Highlight</b> on the Policy Exchange page. It works any day, and publishing never changes the card.</p>
-            <p class="note"><span class="n">1</span><span>Cards made on the edit door with <b>Add to New &amp; Upcoming</b> show here too, after the picks.</span></p>
-            <p class="note"><span class="n">2</span><span>A Drive picture link never shows on the card. If the item has one, press <b>Replace photo</b> and choose a file.</span></p>
-            <p class="note"><span class="n">4</span><span>An event or opportunity pick gets card words. The card shows them, and the photo, in place of the item's own.</span></p>
+            <p class="note"><span class="n">1</span><span>On the site now: what the big card shows this minute. Cards made on the edit door with <b>Add to New &amp; Upcoming</b> show here too, after the picks.</span></p>
+            <p class="note"><span class="n">2</span><span>Add photo or Replace photo: a picture file from your computer. A Drive picture link never shows on the card. If the item has one, press <b>Replace photo</b> and choose a file.</span></p>
+            <p class="note"><span class="n">3</span><span>Until: the last day the pick stays on the card.</span></p>
+            <p class="note"><span class="n">4</span><span>Write the card: the card's own words for an event or opportunity. An event or opportunity pick gets card words. The card shows them, and the photo, in place of the item's own.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -387,7 +391,10 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">In <b>Pick from</b>, press <b>Highlight</b> on a row, then give it a photo above. A blank <b>Until</b> becomes the event's date or the deadline, else two weeks.</p>
-            
+            <p class="note"><span class="n">1</span><span>Search: by title or source, every live item.</span></p>
+            <p class="note"><span class="n">2</span><span>A section: show only its items.</span></p>
+            <p class="note"><span class="n">3</span><span>Highlight: adds it to Your picks.</span></p>
+            <p class="note"><span class="n">4</span><span>In, 2nd: already picked, and its place on the card.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -404,7 +411,8 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Press <b>Update the highlight</b>, type the desk password, and press <b>Confirm</b>.</p>
-            
+            <p class="note"><span class="n">1</span><span>Update the highlight: asks for the password, then Confirm.</span></p>
+            <p class="note"><span class="n">2</span><span>Cancel changes: back to what the site shows now.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -669,6 +677,6 @@
       ready = true;
     })();
   </script>
-  <script type="module" src="/js/problem-mount.js?v=2"></script>
+  <script type="module" src="/js/problem-mount.js?v=3"></script>
 </body>
 </html>

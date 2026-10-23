@@ -123,11 +123,6 @@
       .pin:hover .tip { visibility: visible; opacity: 1; }
     }
 
-    /* Hidden until the pointer is on the still or focus is in it; a tap shows them on a touch screen. */
-    .pin { opacity: 0; pointer-events: none; }
-    .shot:focus-within .pin, .shot.is-shown .pin { opacity: 1; pointer-events: auto; }
-    @media (hover: hover) { .shot:hover .pin { opacity: 1; pointer-events: auto; } }
-
     /* The numbered circle of a note. */
     .n { display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: var(--radius-round); background: var(--accent); color: var(--text-on-color); font: 700 12px/1 var(--font-sans); font-style: normal; }
 
@@ -312,7 +307,10 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Sign in with the desk password, then press <b>New brief</b>.</p>
-            
+            <p class="note"><span class="n">1</span><span>New brief: starts one from the paper and your notes.</span></p>
+            <p class="note"><span class="n">2</span><span>Where it is: the seven stages, with the current one named.</span></p>
+            <p class="note"><span class="n">3</span><span>Waits for: the next thing to do, and since when.</span></p>
+            <p class="note"><span class="n">4</span><span>The title opens the brief's own page.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -329,7 +327,10 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Once you choose the paper, the desk reads it and fills in the byline below.</p>
-            
+            <p class="note"><span class="n">1</span><span>The paper, as a PDF: the desk reads it and fills in the byline.</span></p>
+            <p class="note"><span class="n">2</span><span>Your notes, as a file: they steer the draft.</span></p>
+            <p class="note"><span class="n">3</span><span>Paste instead: opens a box to paste or type the notes.</span></p>
+            <p class="note"><span class="n">4</span><span>Create the brief: opens once both files are in and the paper is read.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -369,7 +370,10 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Press <b>Write the draft</b>. Notes typed in the box go with it, saved or not.</p>
-            <p class="note"><span class="n">3</span><span>If you leave the page, <b>Continue</b> picks up where it stopped.</span></p>
+            <p class="note"><span class="n">1</span><span>Opens the brief's folder on the team drive.</span></p>
+            <p class="note"><span class="n">2</span><span>Your notes: they steer the draft.</span></p>
+            <p class="note"><span class="n">3</span><span>Write the draft: reads the paper, plans the pages, writes the brief. If you leave the page, <b>Continue</b> picks up where it stopped.</span></p>
+            <p class="note"><span class="n">4</span><span>In the folder: each file opens in Drive.</span></p>
             <p class="note warn"><span class="n">!</span><span>If a step fails with a Drive or script message, see <a href="/how-to/google-scripts/">Bring back the Google scripts</a>.</span></p>
             <p class="note warn"><span class="n">!</span><span>If it fails again after <b>Try again</b> for any other reason, write to the desk's owner. READ ME FIRST - ERC handoff has the address.</span></p>
             <div class="foot"></div>
@@ -543,7 +547,7 @@
         <button type="button" class="go next">Next<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
       </div>
     </div>
-    <section class="need" aria-labelledby="h-need"><h2 id="h-need">What you need</h2><ul><li>The desk password. READ ME FIRST - ERC handoff, in the shared drive, says who has it.</li><li>Google Drive for desktop, with the shared drive in Finder. Each brief gets a folder in <code>ERC Content Desk/ERC Research Briefs/</code>.</li><li>Claude Code, opened on that <code>ERC Research Briefs</code> folder. The house rules, like <code>VOICE.md</code> and <code>REPORTING.md</code>, sit beside the brief folders in <code>erc-research-briefs/</code>.</li><li>Node.js, Grammarly, Word, Outlook and Chrome.</li></ul></section>
+    <section class="need" aria-labelledby="h-need"><h2 id="h-need">What you need</h2><ul><li>The desk password. It is in READ ME FIRST - ERC handoff, in the shared drive.</li><li>Google Drive for desktop, with the shared drive in Finder. Each brief gets a folder in <code>ERC Content Desk/ERC Research Briefs/</code>.</li><li>Claude Code, opened on that <code>ERC Research Briefs</code> folder. The house rules, like <code>VOICE.md</code> and <code>REPORTING.md</code>, sit beside the brief folders in <code>erc-research-briefs/</code>.</li><li>Node.js, Grammarly, Word, Outlook and Chrome.</li></ul></section>
   </main>
 
   <script>
@@ -714,6 +718,6 @@
       ready = true;
     })();
   </script>
-  <script type="module" src="/js/problem-mount.js?v=2"></script>
+  <script type="module" src="/js/problem-mount.js?v=3"></script>
 </body>
 </html>

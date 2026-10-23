@@ -123,11 +123,6 @@
       .pin:hover .tip { visibility: visible; opacity: 1; }
     }
 
-    /* Hidden until the pointer is on the still or focus is in it; a tap shows them on a touch screen. */
-    .pin { opacity: 0; pointer-events: none; }
-    .shot:focus-within .pin, .shot.is-shown .pin { opacity: 1; pointer-events: auto; }
-    @media (hover: hover) { .shot:hover .pin { opacity: 1; pointer-events: auto; } }
-
     /* The numbered circle of a note. */
     .n { display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: var(--radius-round); background: var(--accent); color: var(--text-on-color); font: 700 12px/1 var(--font-sans); font-style: normal; }
 
@@ -585,6 +580,6 @@
       ready = true;
     })();
   </script>
-  <script type="module" src="/js/problem-mount.js?v=2"></script>
+  <script type="module" src="/js/problem-mount.js?v=3"></script>
 </body>
 </html>

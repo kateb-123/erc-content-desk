@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { TYPE_ORDER } from '../js/schema.js';
 import { PUBLIC_LINKS } from '../js/public-links.js';
 
@@ -181,4 +181,64 @@ test('every control the how-to names is a control the builder names, in the buil
 
 test('Next issue links the newsletter how-to beside Open the builder', () => {
   assert.match(issueUi, /'\/how-to\/newsletter\/'/);
+});
+
+// ── The guides made by how-to/make-deck.mjs (Kate, Oct 23: steps 1 and 2
+// showed only with the mouse on the picture): a still's pins show at rest,
+// and the words beside it list every pin's step under its number, so the
+// picture adds to the words and never hides a step.
+const howToDir = new URL('../how-to/', import.meta.url);
+const decks = readdirSync(howToDir).filter((d) => existsSync(new URL(`${d}/deck.json`, howToDir)));
+const deckPage = (d) => readFileSync(new URL(`${d}/index.html`, howToDir), 'utf8');
+const unesc = (t) => t.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+
+test('every guide made by make-deck.mjs shows its pins at rest', () => {
+  assert.ok(decks.length >= 7, `the guides (${decks.join(', ')})`);
+  for (const d of decks) {
+    const html = deckPage(d);
+    assert.match(html, /Built by how-to\/make-deck\.mjs/, `${d} is made by make-deck.mjs`);
+    assert.doesNotMatch(html, /\.pin \{ opacity: 0/, `${d}: no pin waits for the mouse`);
+  }
+});
+
+test('every pin on a guide\'s still has its step in the words beside it, under its number', () => {
+  for (const d of decks) {
+    const deck = JSON.parse(readFileSync(new URL(`${d}/deck.json`, howToDir), 'utf8'));
+    const stills = deck.chapters.flatMap((c) => c.slides.filter((s) => !s.steps));
+    const slides = deckPage(d).split('<div class="slide" role="group"').slice(1);
+    assert.equal(slides.length, stills.length, `${d}: a slide for every still`);
+    slides.forEach((slide, k) => {
+      const where = `${d}, ${stills[k].shot}`;
+      const pins = [...slide.matchAll(/class="pin(?: up)?" style="[^"]*" aria-label="([^"]*)"><span class="num" aria-hidden="true">\d+<\/span>/g)].map((m) => unesc(m[1]));
+      const rows = [...slide.matchAll(/<p class="note"><span class="n">(\d+)<\/span><span>([\s\S]*?)<\/span><\/p>/g)];
+      assert.deepEqual(rows.map((r) => +r[1]), pins.map((_, i) => i + 1), `${where}: a row for every pin, in order`);
+      // A slide whose notes cover every pin already lists its steps; elsewhere
+      // each row names its pin, then adds the pin's note when it has one.
+      const noted = new Set((stills[k].notes ?? []).map((n) => String(n.n)));
+      if (pins.every((_, i) => noted.has(String(i + 1)))) return;
+      rows.forEach(([, n, words], i) => assert.ok(unesc(words).includes(pins[i]), `${where}: row ${n} names its pin, "${pins[i]}"`));
+    });
+  }
+});
+
+// Where the password is (Kate, Oct 23): in READ ME FIRST - ERC handoff, and
+// the how-tos say so plainly. The value itself is never written anywhere.
+test('the how-tos say the password is in the handoff doc, never only who has it', () => {
+  const files = readdirSync(howToDir, { recursive: true }).filter((f) => /\.(html|json|txt)$/.test(f));
+  for (const f of files) assert.doesNotMatch(readFileSync(new URL(f, howToDir), 'utf8'), /who has the password|says who has it/i, f);
+  assert.ok(deckPage('exchange').includes('Password: the desk password, the one Content Sort asks for. It is in READ ME FIRST - ERC handoff, in the shared drive.'), 'Publish\'s ask');
+  assert.ok(deckPage('research-briefs').includes('The desk password. It is in READ ME FIRST - ERC handoff, in the shared drive.'), 'What you need');
+});
+
+// The help button's script changes with the desk's (Oct 23: I need help! in
+// the top bar), so every how-to loads it at the version the desk loads.
+test('every how-to loads the help button at the desk\'s own version', () => {
+  const desk = readFileSync(new URL('../index.html', import.meta.url), 'utf8').match(/\/js\/problem-mount\.js\?v=(\d+)/)[1];
+  const files = readdirSync(howToDir, { recursive: true }).filter((f) => /(^|\/)index\.html$|^make-(deck|page)\.mjs$/.test(f));
+  assert.ok(files.length >= 13, `pages and makers (${files.length})`);
+  for (const f of files) {
+    const v = readFileSync(new URL(f, howToDir), 'utf8').match(/\/js\/problem-mount\.js\?v=(\d+)/);
+    assert.ok(v, `${f} loads the help button`);
+    assert.equal(v[1], desk, `${f} loads it at the desk's v=${desk}`);
+  }
 });

@@ -123,11 +123,6 @@
       .pin:hover .tip { visibility: visible; opacity: 1; }
     }
 
-    /* Hidden until the pointer is on the still or focus is in it; a tap shows them on a touch screen. */
-    .pin { opacity: 0; pointer-events: none; }
-    .shot:focus-within .pin, .shot.is-shown .pin { opacity: 1; pointer-events: auto; }
-    @media (hover: hover) { .shot:hover .pin { opacity: 1; pointer-events: auto; } }
-
     /* The numbered circle of a note. */
     .n { display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: var(--radius-round); background: var(--accent); color: var(--text-on-color); font: 700 12px/1 var(--font-sans); font-style: normal; }
 
@@ -312,8 +307,10 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Keep what helps someone make or study education policy. Delete the rest, and keep each thing once.</p>
-            <p class="note"><span class="n">3</span><span>The line at the top then says where it waits next.</span></p>
-            <p class="note"><span class="n">4</span><span><b>Undo</b> is on the line at the top, and on the greyed row at the bottom of the list.</span></p>
+            <p class="note"><span class="n">1</span><span>The item the card shows. Pick a row, or move with the up and down arrows.</span></p>
+            <p class="note"><span class="n">2</span><span>Type: what the item is. Pick one, then its subtype.</span></p>
+            <p class="note"><span class="n">3</span><span>Keep and next: keeps it and opens the next item. K does the same. The line at the top then says where it waits next.</span></p>
+            <p class="note"><span class="n">4</span><span>Delete: takes it out of the queue. D does the same. <b>Undo</b> is on the line at the top, and on the greyed row at the bottom of the list.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -433,7 +430,9 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">A triangle in the list means the card has a question. <b>Keep and next</b> waits until the type and the link are settled.</p>
-            <p class="note"><span class="n">1</span><span>After <b>Verify link</b>, press <b>Confirm</b> if the page is right, or <b>Change</b> to paste the right link.</span></p>
+            <p class="note"><span class="n">1</span><span>Verify link: opens the page in a new tab. After <b>Verify link</b>, press <b>Confirm</b> if the page is right, or <b>Change</b> to paste the right link.</span></p>
+            <p class="note"><span class="n">2</span><span>Type: its label stays orange until one is picked.</span></p>
+            <p class="note"><span class="n">3</span><span>Keep and next waits, and says what it needs.</span></p>
             <p class="note warn"><span class="n">!</span><span><b>Possible duplicate</b> names the earlier item. Not every repeat shows it.</span></p>
             <div class="foot"></div>
           </div>
@@ -450,7 +449,9 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Not sure? Press <b>Skip for now</b>. Clear <b>Past</b> and <b>Already live</b> with <b>Dismiss all</b>; one <b>Undo</b> brings a group back.</p>
-            
+            <p class="note"><span class="n">1</span><span>Skipped: an item you parked. It waits under the new ones.</span></p>
+            <p class="note"><span class="n">2</span><span>Past: events and opportunities whose date or deadline has gone.</span></p>
+            <p class="note"><span class="n">3</span><span>Already live: links the Policy Exchange already has.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -471,7 +472,10 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Kept events, ERC events, opportunities, reports and research with no abstract get a description in the ERC's voice. Check each one here before it goes out.</p>
-            <p class="note"><span class="n">2</span><span>The rewrite starts when you keep, so most arrive on their own.</span></p>
+            <p class="note"><span class="n">1</span><span>Needs a rewrite: kept items still waiting for their description.</span></p>
+            <p class="note"><span class="n">2</span><span>Rewrite 1 description: writes the ones still waiting. The rewrite starts when you keep, so most arrive on their own.</span></p>
+            <p class="note"><span class="n">3</span><span>Original: the text it came with.</span></p>
+            <p class="note"><span class="n">4</span><span>Edit: write or fix the description by hand.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -683,6 +687,6 @@
       ready = true;
     })();
   </script>
-  <script type="module" src="/js/problem-mount.js?v=2"></script>
+  <script type="module" src="/js/problem-mount.js?v=3"></script>
 </body>
 </html>

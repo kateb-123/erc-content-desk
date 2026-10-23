@@ -219,5 +219,5 @@
       ]
     }
   ],
-  "below": "<section class=\"need\" aria-labelledby=\"h-need\"><h2 id=\"h-need\">What you need</h2><ul><li>The desk password. READ ME FIRST - ERC handoff, in the shared drive, says who has it.</li><li>Google Drive for desktop, with the shared drive in Finder. Each brief gets a folder in <code>ERC Content Desk/ERC Research Briefs/</code>.</li><li>Claude Code, opened on that <code>ERC Research Briefs</code> folder. The house rules, like <code>VOICE.md</code> and <code>REPORTING.md</code>, sit beside the brief folders in <code>erc-research-briefs/</code>.</li><li>Node.js, Grammarly, Word, Outlook and Chrome.</li></ul></section>"
+  "below": "<section class=\"need\" aria-labelledby=\"h-need\"><h2 id=\"h-need\">What you need</h2><ul><li>The desk password. It is in READ ME FIRST - ERC handoff, in the shared drive.</li><li>Google Drive for desktop, with the shared drive in Finder. Each brief gets a folder in <code>ERC Content Desk/ERC Research Briefs/</code>.</li><li>Claude Code, opened on that <code>ERC Research Briefs</code> folder. The house rules, like <code>VOICE.md</code> and <code>REPORTING.md</code>, sit beside the brief folders in <code>erc-research-briefs/</code>.</li><li>Node.js, Grammarly, Word, Outlook and Chrome.</li></ul></section>"
 }

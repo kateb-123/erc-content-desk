@@ -39,7 +39,14 @@ for (const [title, slug] of PAGES) {
   const file = new URL(`./${slug}/index.html`, import.meta.url);
   if (!existsSync(file)) continue;
   const body = readFileSync(file, 'utf8');
-  const main = body.match(/<main[\s\S]*?<\/main>/i)?.[0] ?? body;
+  let main = body.match(/<main[\s\S]*?<\/main>/i)?.[0] ?? body;
+  // A guide made by make-deck.mjs lists its pins in its words: a pin whose
+  // label is there already is left out here, so no step is read twice.
+  if (body.includes('Built by how-to/make-deck.mjs')) {
+    const pin = /<button type="button" class="pin[^"]*" style="[^"]*" aria-label="([^"]*)"[\s\S]*?<\/button>/g;
+    const words = main.replace(pin, '');
+    main = main.replace(pin, (button, label) => (words.includes(label) ? '' : button));
+  }
   parts.push(`\n\n# ${title}\nhttps://erc-content-desk.vercel.app/how-to/${slug}/\n\n${text(main)}`);
 }
 // What the pages draw at load, written out (review, Oct 23): the item types and the public links.

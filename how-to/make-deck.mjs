@@ -13,16 +13,30 @@ if (!slug) { console.error('usage: node how-to/make-deck.mjs <slug>'); process.e
 const here = p => new URL(`./${p}`, import.meta.url);
 const deck = JSON.parse(readFileSync(here(`${slug}/deck.json`), 'utf8'));
 const model = readFileSync(here('newsletter/index.html'), 'utf8');
-const style = model.match(/<style>[\s\S]*?<\/style>/)[0];
+// A guide's pins show at rest, each one listed in the words beside it (Kate,
+// Oct 23: steps 1 and 2 showed only with the mouse on the picture). The
+// newsletter how-to keeps its own pins hidden until then.
+const HIDDEN = `
+    /* Hidden until the pointer is on the still or focus is in it; a tap shows them on a touch screen. */
+    .pin { opacity: 0; pointer-events: none; }
+    .shot:focus-within .pin, .shot.is-shown .pin { opacity: 1; pointer-events: auto; }
+    @media (hover: hover) { .shot:hover .pin { opacity: 1; pointer-events: auto; } }
+`;
+const modelStyle = model.match(/<style>[\s\S]*?<\/style>/)[0];
+if (!modelStyle.includes(HIDDEN)) throw new Error('the newsletter how-to\'s rule that hides the pins has changed: match it in HIDDEN, how-to/make-deck.mjs');
+const style = modelStyle.replace(HIDDEN, '');
 const script = model.slice(model.lastIndexOf('<script>', model.indexOf('// ---- The pins')), model.indexOf('</script>', model.indexOf('// ---- The pins')) + '</script>'.length);
 
 const esc = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const attr = esc;
 
-function shotHtml(name) {
+function shotMeta(name) {
   const metaFile = here(`${slug}/shots/${name}.json`);
   if (!existsSync(metaFile)) throw new Error(`no capture for ${slug}/${name}: run node how-to/capture.mjs ${slug}`);
-  const m = JSON.parse(readFileSync(metaFile, 'utf8'));
+  return JSON.parse(readFileSync(metaFile, 'utf8'));
+}
+
+function shotHtml(name, m) {
   const pins = (m.pins ?? []).map((p, i) => `<button type="button" class="pin${p.y > 70 ? ' up' : ''}" style="--x:${p.x};--y:${p.y}" aria-label="${attr(p.label)}"><span class="num" aria-hidden="true">${i + 1}</span><span class="tip" aria-hidden="true">${esc(p.label)}</span></button>`).join('\n              ');
   return `<div class="frame">
             <div class="shot" style="--iw:${m.iw};--ih:${m.ih};--cx:${m.cx};--cy:${m.cy};--cw:${m.cw};--ch:${m.ch}">
@@ -34,6 +48,25 @@ function shotHtml(name) {
 
 function notesHtml(notes = []) {
   return notes.map(n => `<p class="note${n.warn ? ' warn' : ''}"><span class="n${n.go ? ' go' : ''}">${esc(n.n ?? '')}</span><span>${n.html}</span></p>`).join('\n            ');
+}
+
+// Every pin's step in the words, under its number. A slide whose notes cover
+// every pin already lists its steps; elsewhere a row is the pin's label, then
+// its note when it has one. The notes with no number (a warning, the next
+// button) follow.
+function stepsHtml(slide, pins) {
+  const notes = slide.notes ?? [];
+  const numbered = n => /^\d+$/.test(String(n.n ?? ''));
+  for (const n of notes) if (numbered(n) && !(+n.n >= 1 && +n.n <= pins.length)) throw new Error(`${slug}/${slide.shot}: note ${n.n} has no pin`);
+  const noteFor = i => notes.find(n => numbered(n) && +n.n === i + 1);
+  const listed = pins.every((_, i) => noteFor(i));
+  const rows = pins.map((p, i) => {
+    const note = noteFor(i);
+    if (listed) return note;
+    const label = esc(p.label) + (/[.!?…]$/.test(p.label) ? '' : '.');
+    return { n: String(i + 1), html: note ? `${label} ${note.html}` : label };
+  });
+  return notesHtml([...rows, ...notes.filter(n => !numbered(n))]);
 }
 
 function slideHtml(chapter, slide, i) {
@@ -55,13 +88,14 @@ function slideHtml(chapter, slide, i) {
           </div>
         </div>`;
   }
+  const m = shotMeta(slide.shot);
   return `<div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">${slide.cap}</p>
-            ${notesHtml(slide.notes)}
+            ${stepsHtml(slide, m.pins ?? [])}
             <div class="foot"></div>
           </div>
-          ${shotHtml(slide.shot)}
+          ${shotHtml(slide.shot, m)}
         </div>`;
 }
 
@@ -124,7 +158,7 @@ const html = `<!DOCTYPE html>
   </main>
 
   ${script}
-  <script type="module" src="/js/problem-mount.js?v=2"></script>
+  <script type="module" src="/js/problem-mount.js?v=3"></script>
 </body>
 </html>
 `;

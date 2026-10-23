@@ -123,11 +123,6 @@
       .pin:hover .tip { visibility: visible; opacity: 1; }
     }
 
-    /* Hidden until the pointer is on the still or focus is in it; a tap shows them on a touch screen. */
-    .pin { opacity: 0; pointer-events: none; }
-    .shot:focus-within .pin, .shot.is-shown .pin { opacity: 1; pointer-events: auto; }
-    @media (hover: hover) { .shot:hover .pin { opacity: 1; pointer-events: auto; } }
-
     /* The numbered circle of a note. */
     .n { display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: var(--radius-round); background: var(--accent); color: var(--text-on-color); font: 700 12px/1 var(--font-sans); font-style: normal; }
 
@@ -332,8 +327,10 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap"><b>Edit</b> on Next issue, Finalize and Publish opens this form.</p>
-            <p class="note"><span class="n">1</span><span>Fix an item kept under the wrong type here, without deleting it.</span></p>
-            <p class="note"><span class="n">3</span><span>Keep a GIF under 2.5 MB.</span></p>
+            <p class="note"><span class="n">1</span><span>Type and Subtype: what the item is, open to change even after Keep. Fix an item kept under the wrong type here, without deleting it.</span></p>
+            <p class="note"><span class="n">2</span><span>ERC Newsletter only: ticked, it skips the Policy Exchange.</span></p>
+            <p class="note"><span class="n">3</span><span>Add media: a picture or a PDF flyer. Keep a GIF under 2.5 MB.</span></p>
+            <p class="note"><span class="n">4</span><span>Save: keeps the changes. Cancel drops them.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -374,7 +371,9 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">A change on the Sheet reaches the desk within ten minutes; reload to see it. If it never does, see <a href="/how-to/google-scripts/">Bring back the Google scripts</a>.</p>
-            <p class="note"><span class="n">3</span><span>Type each date in column A, from row 2, as <b>2026-11-10</b>.</span></p>
+            <p class="note"><span class="n">1</span><span>Shows a week before the last send date: time to add the next ones.</span></p>
+            <p class="note"><span class="n">2</span><span>A send date: press it to open that issue on Next issue.</span></p>
+            <p class="note"><span class="n">3</span><span>The Sheet's schedule tab: opens it in a new tab. Type each date in column A, from row 2, as <b>2026-11-10</b>.</span></p>
             <p class="note warn"><span class="n">!</span><span><b>A date shown as 11/10/2026 is skipped.</b></span></p>
             <div class="foot"></div>
           </div>
@@ -396,6 +395,8 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Once an item is live, no <b>Edit</b> on the desk reaches the site. Only Highlight's card words and photo do, in the home page's big card.</p>
+            <p class="note"><span class="n">1</span><span>Already live: the item is on the site. Click its row to open it.</span></p>
+            <p class="note"><span class="n">2</span><span>Edit: changes the desk's copy, never the site.</span></p>
             <p class="note warn"><span class="n">!</span><span><b>The desk's Delete never touches the site.</b></span></p>
             <div class="foot"></div>
           </div>
@@ -433,7 +434,8 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">To see Sheet 1 as it is now, reload the browser page.</p>
-            
+            <p class="note"><span class="n">1</span><span>To be added: the rows on Sheet 1 when the desk was loaded.</span></p>
+            <p class="note"><span class="n">2</span><span>Open the sign-up sheet: names and addresses, in a new tab.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -448,6 +450,8 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Rows you delete on the Newsletter scrapes tabs stay deleted.</p>
+            <p class="note"><span class="n">1</span><span>Run the scraper: starts a run now.</span></p>
+            <p class="note"><span class="n">2</span><span>The last run: what it found. Open the sheet goes to Newsletter scrapes.</span></p>
             <p class="note warn"><span class="n">!</span><span><b>The scraper does not read the Scraper sources Sheet.</b> Changing its sources needs code.</span></p>
             <div class="foot"></div>
           </div>
@@ -657,6 +661,6 @@
       ready = true;
     })();
   </script>
-  <script type="module" src="/js/problem-mount.js?v=2"></script>
+  <script type="module" src="/js/problem-mount.js?v=3"></script>
 </body>
 </html>
