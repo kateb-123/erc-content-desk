@@ -16,6 +16,11 @@ export const PUBLIC_LINKS = [
   { key: 'listserv', label: 'Join listserv', href: 'https://erc-share.vercel.app/listserv/', icon: 'address-book', sub: 'Public facing link' },
 ];
 
+/** The team's own submit page (Kate, Oct 23, her pick E): under the public
+ *  links on the front page, set apart, to open in a tab of its own and pin.
+ *  Never one of PUBLIC_LINKS, which the team's how-to shares. */
+export const TEAM_SUBMIT = { key: 'team-submit', label: 'Team submit page', href: '/team-submit/', icon: 'thumbtack', note: 'Open it in its own tab, then right-click the tab and pick Pin.' };
+
 /** Copy link: writes the address and says Copied for two seconds; only this
  *  button changes. Every public link has one. */
 export function copyLinkButton(link) {

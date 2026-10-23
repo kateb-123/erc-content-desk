@@ -1,4 +1,4 @@
-/** Pure helpers for the front page: the six hubs' cards. */
+/** Pure helpers for the front page: the hubs' rows and their groups. */
 import { isoToShort } from './queue-view.js';
 import { sortList } from './sort-view.js';
 import { issueRows, sendsIn } from './issue-view.js';
@@ -16,6 +16,14 @@ export function recentlyAdded(rows, count = 4) {
     .sort((a, b) => String(b.submitted_at ?? '').localeCompare(String(a.submitted_at ?? '')))
     .slice(0, count);
 }
+
+/** The front page's groups (Kate, Oct 23, her pick E): the hubs by step, each
+ *  group one list under its label. Public links stands apart, a menu at the right. */
+export const HOME_GROUPS = [
+  { label: 'Bring it in', keys: ['team', 'queue'] },
+  { label: 'Send it out', keys: ['newsletter', 'listserv', 'exchange'] },
+  { label: 'Research', keys: ['briefs'] },
+];
 
 const hub = key => HUBS.find(h => h.key === key);
 const lower = text => (text ? text[0].toLowerCase() + text.slice(1) : '');

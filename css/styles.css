@@ -464,47 +464,65 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .publish-table tr.p-notready .rewrite-note { color: var(--text-warning-on-tint); }
 .table-scroll { overflow-x: auto; }
 
-/* The front page (Kate's wireframes, Sep 17): the share form on the left, a
-   360px column on the right with the three lanes and the newest items. */
+/* The front page (Kate, Oct 23, 2026, her pick E): the hubs as one list per
+   step under a label over the maize rule, Bring it in, Send it out and
+   Research, with Public links as a 304px menu at the right. */
 .home-title { font: var(--page-title); letter-spacing: -.2px; margin: 0; }   /* the page title: 32px Mulish bold */
 .home-page .lede { margin: var(--spacing-02) 0 0; }
-/* The six hubs (Kate's drawn map, Oct 6): white boxes in a grid, three to a
-   row on a laptop. Each is a name with its arrow, the count as a big numeral,
-   what it counts, and a line at its foot; the teal bar on hover. The name is
-   the card's link, stretched over the whole box, so a card's own links (a
-   how-to, Copy link) sit above it and never nest. */
-.desk-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--spacing-06); margin-top: var(--gap-28); }
+.home-hubs { display: grid; grid-template-columns: minmax(0, 1fr) 304px; gap: var(--spacing-08); align-items: start; margin-top: var(--spacing-06); }
+.home-groups { display: flex; flex-direction: column; gap: var(--spacing-06); }
+.home-hubs .hub-label { margin-bottom: var(--spacing-03); }
+.desk-list, .home-links-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); overflow: hidden; }
+/* A row a hub: its name with the arrow, the count, what it counts with its
+   status lines, and its own links; the teal wash and bar on hover. The name
+   is the row's link, stretched over the whole row, so the row's own links sit
+   above it and never nest. */
 .desk-card {
-  position: relative; display: flex; flex-direction: column; gap: var(--spacing-01); min-height: 176px;
-  padding: var(--spacing-06) var(--spacing-06) var(--spacing-06) 21px;
-  background: var(--layer); border: 1px solid var(--layer-line); border-left: 4px solid transparent; border-radius: var(--radius);
+  position: relative; display: grid; grid-template-columns: 184px minmax(40px, max-content) minmax(0, 1fr) 160px; column-gap: var(--spacing-06); align-items: center;
+  padding: var(--spacing-05) var(--spacing-06) var(--spacing-05) 20px;   /* 24px on the left with the bar */
+  border-left: 4px solid transparent; border-top: 1px solid var(--line-in);
   color: var(--ink);
   transition: background-color var(--duration-fast-01) var(--ease-productive), border-color var(--duration-fast-01) var(--ease-productive);
 }
+.desk-card:first-child { border-top: 0; }
 .desk-card.is-live:hover { background: var(--door-hover); border-left-color: var(--accent); }
-.desk-card:has(.desk-card-go:focus-visible) { box-shadow: var(--focus-ring); }
-.desk-card-head { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-05); margin-bottom: var(--spacing-02); }
+.desk-card:has(.desk-card-go:focus-visible) { box-shadow: inset 0 0 0 2px var(--focus); }   /* the list clips a ring outside, so it is drawn inside */
+.desk-card-head { display: flex; align-items: center; gap: var(--spacing-03); }
 .desk-card-name { font: var(--sub-title); letter-spacing: -.1px; margin: 0; }
 a.desk-card-go { color: var(--ink); text-decoration: none; }
-a.desk-card-go::after { content: ''; position: absolute; inset: 0; }   /* the whole card is the name's link */
-a.desk-card-go:focus-visible { outline: none; box-shadow: none; }   /* the card carries the one ring */
-.desk-card-count { font: var(--numeral); font-size: 28px; line-height: 36px; }
-.desk-card-count:empty { display: none; }
+a.desk-card-go::after { content: ''; position: absolute; inset: 0; }   /* the whole row is the name's link */
+a.desk-card-go:focus-visible { outline: none; box-shadow: none; }   /* the row carries the one ring */
+.desk-card-count { font: var(--numeral); text-align: right; font-variant-numeric: tabular-nums; }
+.desk-card-words { display: flex; flex-direction: column; gap: var(--spacing-01); min-width: 0; }
 .desk-card-sub { font: var(--meta-type); color: var(--text-helper); }
 .desk-card-sub .fa-solid { font-size: 12px; }
-.desk-card-foot { margin-top: auto; padding-top: var(--spacing-05); display: flex; flex-direction: column; gap: var(--spacing-01); }
-/* A card's own links stand above the stretched name. */
-.desk-card-link { position: relative; z-index: 1; font: var(--meta-type); color: var(--link-primary); text-decoration: underline; align-self: flex-start; }
+.desk-card-links { display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-01); }
+/* A row's own links stand above the stretched name. */
+.desk-card-link { position: relative; z-index: 1; font: var(--meta-type); color: var(--link-primary); text-decoration: underline; }
 .desk-card-link:hover { color: var(--link-primary-hover); }
 .desk-card-link:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); border-radius: 2px; }
 .desk-card .fa-arrow-right { font-size: 14px; color: var(--icon-secondary); }
 .desk-card.is-live:hover .fa-arrow-right { color: var(--accent); }
-/* Public links: a row a page, its name and Copy link. */
-.desk-card-rows { display: flex; flex-direction: column; }
-.desk-card-row { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-05); padding: var(--spacing-03) 0; border-top: 1px solid var(--line-in); }
-.desk-card-row:first-child { border-top: 0; padding-top: 0; }
-.desk-card-row .desk-card-link { font: var(--body-type); color: var(--ink); text-decoration: none; }
-.desk-card-row .desk-card-link:hover { color: var(--link-primary); text-decoration: underline; }
+/* Public links: a row a page, its icon and name, and Copy link; then the
+   team's own submit page on the quiet surface, with how to pin it. */
+.desk-card-row { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-04); padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--line-in);
+  transition: background-color var(--duration-fast-01) var(--ease-productive); }
+.desk-card-row:first-child { border-top: 0; }
+.desk-card-row:hover { background: var(--accent-alpha); }
+.desk-card-row .desk-card-link, .home-pin-link { display: inline-flex; align-items: center; gap: var(--spacing-04); font: var(--body-type); color: var(--ink); text-decoration: none; }
+.desk-card-row .desk-card-link:hover, .home-pin-link:hover { color: var(--link-primary); text-decoration: underline; }
+.home-links-box .fa-solid { width: var(--spacing-05); text-align: center; font-size: 14px; color: var(--icon-secondary); }
+.desk-card-row:hover .fa-solid, .home-pin:hover .fa-solid { color: var(--accent); }
+.home-pin { padding: var(--spacing-04) var(--spacing-05) var(--spacing-05); background: var(--layer-01); border-top: 1px solid var(--line-in); }
+/* A 1024 to 1199 wide window (review, Oct 23): the links drop under the words
+   and the menu narrows, so the status lines keep their width. */
+@media (max-width: 1199px) {
+  .home-hubs { grid-template-columns: minmax(0, 1fr) 280px; gap: var(--spacing-06); }
+  .desk-card { grid-template-columns: 184px minmax(40px, max-content) minmax(0, 1fr); row-gap: var(--spacing-02); }
+  .desk-card-links { grid-column: 3; flex-direction: row; flex-wrap: wrap; gap: var(--spacing-01) var(--spacing-04); }
+}
+.home-pin-link:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); border-radius: 2px; }
+.home-pin-note { margin: var(--spacing-02) 0 0 calc(var(--spacing-05) + var(--spacing-04)); font: var(--meta-type); color: var(--text-helper); }   /* under the name, past the icon */
 .home-note { margin-top: var(--spacing-05); }
 
 /* A small tertiary: the base button at 32px. */
@@ -1198,3 +1216,15 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
 .spring-banner .spring-open { height: 32px; gap: var(--spacing-02); }
 .spring-banner .spring-acts { display: flex; gap: var(--spacing-05); }
 .spring-banner .spring-acts .linkish { height: 32px; padding: 0 var(--spacing-03); }
+
+/* Redraft's ask (Kate, Oct 23): the warning note in Redraft's place in the Draft box's tools row, at the row's meta size. */
+.draft-tools .draft-ask { margin: 0; font: var(--meta-type); }
+.draft-ask .fa-triangle-exclamation { margin-right: var(--spacing-02); color: var(--warn-mark); }
+
+/* Finalize: the line under a rewrite to check, that it lives in this tab until checked (Kate, Oct 23). */
+.f-card .f-unsaved { margin: var(--spacing-04) 0 0; }
+
+/* The bulk review's own initials (Kate, Oct 23): the form's field at the
+   form's width, right above Add N to the queue. */
+.bulk-initials { margin: 0 0 var(--spacing-05); }
+.bulk-initials input { width: 7rem; }
