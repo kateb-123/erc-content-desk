@@ -106,10 +106,30 @@ export function whenLine(item, today = '') {
   return item.type === 'opportunity' ? (d ? `closes ${d}` : '') : d;
 }
 
-/** True when nothing about the picks changed: the same links, order, photos and card words. */
+/** True when nothing about the picks changed: the same links, order, photos, days and card words. */
 export function samePicks(a, b) {
   return a.length === b.length && a.every((p, i) => p.link === b[i].link && (p.image || '') === (b[i].image || '')
+    && (p.until || '') === (b[i].until || '')
     && (p.title || '') === (b[i].title || '') && (p.summary || '') === (b[i].summary || ''));
+}
+
+/** The day a pick drops off the card (Kate, Oct 23: the Highlight's own page
+ *  shows it and lets her change it). A non-date clears it, and the server
+ *  then sets the default. */
+export function setUntil(picks, link, iso) {
+  const key = clean(link);
+  if (!picks.some(p => p.link === key)) return picks;
+  const day = /^\d{4}-\d{2}-\d{2}$/.test(clean(iso)) ? clean(iso) : '';
+  return picks.map(p => p.link === key ? { ...p, until: day } : p);
+}
+
+/** Her picks when a fresh check of the site lands (Kate, Oct 23: "it always
+ *  resets"): untouched, they follow the site's pins; changed and unsaved,
+ *  they stay as she left them. `mine` null is the first arrival. */
+export function followPicks(mine, oldPins, newPins) {
+  const fresh = (newPins ?? []).map(pickOf);
+  if (!mine) return fresh;
+  return samePicks(mine, (oldPins ?? []).map(pickOf)) ? fresh : mine;
 }
 
 /** The Pick from table's filters (Kate, Sep 23: "so we can find events

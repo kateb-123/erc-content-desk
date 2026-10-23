@@ -172,3 +172,16 @@ test('photoUpdates puts a pick\'s photo on the desk\'s own row when the row has 
   ], rows);
   assert.deepEqual(updates.map(r => [r.id, r.infographic]), [['a', 'https://img/new.jpg']]);
 });
+
+// Her day on a pick (Kate, Oct 23: the Highlight's own page shows each pick's
+// day and lets her change it): a real day from today on is kept; a past or
+// junk day takes the default, so a pin never vanishes the moment it is saved.
+test('cleanPicks keeps a pick\'s own day from today on; a past or junk day takes the default', () => {
+  const hub = hubRows(CSV);
+  const keep = cleanPicks([{ link: 'https://x.org/naep', until: '2026-12-15' }], { hub, today: '2026-10-23' });
+  assert.equal(keep.items[0].until, '2026-12-15');
+  const past = cleanPicks([{ link: 'https://x.org/naep', until: '2026-10-01' }], { hub, today: '2026-10-23' });
+  assert.equal(past.items[0].until, '2026-11-06', 'a research pin with a past day: two weeks from today');
+  const junk = cleanPicks([{ link: 'https://x.org/sdp', until: 'next week' }], { hub, today: '2026-10-23' });
+  assert.equal(junk.items[0].until, '2026-11-01', 'an opportunity with no real day: its deadline');
+});

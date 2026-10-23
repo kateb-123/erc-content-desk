@@ -126,7 +126,9 @@ export function cleanPicks(picks, { adding = [], hub = [], today = '' }) {
     if (items.length >= MAX_HIGHLIGHTS) continue;
     const words = wantsCardWords(row.type);
     items.push({
-      link: pick.link, image: pick.image, until: pick.until || defaultUntil(row, today),
+      // Her own day stands from today on; a past or missing one takes the default,
+      // so a pin never drops off the moment it is saved (Oct 23).
+      link: pick.link, image: pick.image, until: (isoDay(pick.until) && isoDay(pick.until) >= clean(today).slice(0, 10)) ? isoDay(pick.until) : defaultUntil(row, today),
       title: words ? fitTitle(pick.title) : '', summary: words ? fitSummary(pick.summary) : '',
     });
   }

@@ -10,7 +10,7 @@ import { buildImageControl } from './item-image.js';
 import { typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
 import { SUMMARY_MAX, TITLE_MAX, wantsCardWords } from './card-words.js';
-import { MAX_PICKS, LIVE_PER_SECTION, bandAfter, addPick, removePick, movePick, setPhoto, setCardWords, candidates, whenLine, sectionFilters, filterCandidates, trimLive, searchCandidates } from './highlight-view.js';
+import { MAX_PICKS, LIVE_PER_SECTION, bandAfter, addPick, removePick, movePick, setPhoto, setCardWords, setUntil, candidates, whenLine, sectionFilters, filterCandidates, trimLive, searchCandidates } from './highlight-view.js';
 import { el, button } from './ui-aids.js';
 
 // The Pick from table's filter and search (Kate, Sep 23: "so we can find
@@ -147,18 +147,16 @@ function box(title, note) {
  *   saveBar: the highlight's own Save, drawn under the picks when they changed
  */
 export function renderHighlights(container, { now, cards = [], adding, hub, picks, today, cardBusy = new Set(), cardFailed = new Set(), onChange, onCardWords, saveBar = null }) {
+  // Since Oct 23 the Highlight is a page of its own (js/highlight-page.js): the
+  // page's title says what it is, so no section head; live picks need no label.
   const ctx = { adding, hub };
   const after = bandAfter(picks, ctx);
   const change = (next, always = false) => { if (always || next !== picks) onChange(next); };
 
-  const head = el('div', 'section-head hl-head');
-  head.append(el('h3', 'section-label', 'Highlight'), el('span', 'section-note', 'Each needs a photo'));
-  container.append(head);
-
   const cols = el('div', 'hl-cols');
 
   // Left: what the home page shows this minute.
-  const nowBox = box('Now');
+  const nowBox = box('On the site now');
   if (!now.length && !cards.length) nowBox.append(el('p', 'hl-empty', 'No picks: the site shows its own feed.'));
   else {
     const list = el('ol', 'hl-list');
@@ -169,13 +167,13 @@ export function renderHighlights(container, { now, cards = [], adding, hub, pick
   }
   cols.append(nowBox);
 
-  // Right: what it will show once this publish lands, in her order.
-  const afterBox = box('After this publish', `${after.length} of ${MAX_PICKS}`);
+  // Right: her picks, in her order, until she saves them.
+  const afterBox = box('Your picks', `${after.length} of ${MAX_PICKS}`);
   if (!after.length) afterBox.append(el('p', 'hl-empty', 'Nothing picked.'));
   else {
     const list = el('ol', 'hl-list');
     after.forEach((item, i) => {
-      const li = row(item, i + 1, today, item.from === 'adding' ? 'adding now' : item.from === 'live' ? 'live' : 'no longer on the site');
+      const li = row(item, i + 1, today, item.from === 'missing' ? 'no longer on the site' : '');
       if (item.cardWords) cardWordsOn(li, item, { busy: cardBusy.has(item.link), failed: cardFailed.has(item.link), change, ask: onCardWords, picks });
       const tools = el('div', 'hl-tools');
       if (item.cardWords && item.summary && editingCard !== item.link && !cardBusy.has(item.link)) {
@@ -185,6 +183,17 @@ export function renderHighlights(container, { now, cards = [], adding, hub, pick
       const control = buildImageControl(item.image, value => change(setPhoto(picks, item.link, value)),
         { words: { ...PHOTO_WORDS, add: item.photo ? 'Replace photo' : 'Add photo' } });
       tools.append(control.el);
+      // The day it drops off the card (Kate, Oct 23): shown and set here.
+      const dayLabel = el('label', 'hl-until');
+      dayLabel.append(el('span', '', 'Until'));
+      const day = el('input');
+      day.type = 'date';
+      day.value = item.until;
+      day.min = today;
+      day.dataset.focus = `hl-until:${item.link}`;
+      day.addEventListener('change', () => change(setUntil(picks, item.link, day.value)));
+      dayLabel.append(day);
+      tools.append(dayLabel);
       const up = button('', 'hl-arrow', { focus: `hl-up:${item.link}`, icon: 'chevron-up', onClick: () => change(movePick(picks, item.link, -1)) });
       up.setAttribute('aria-label', 'Move up');
       up.disabled = i === 0;

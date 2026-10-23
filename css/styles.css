@@ -963,6 +963,12 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .qh-list > .load-line, .qh-list > .load-failed { margin: 0; padding: var(--spacing-05); }
 .qh-door { width: 100%; }
 .qh-side-note { font: var(--meta-type); color: var(--text-helper); margin: var(--spacing-03) 0 0; }
+.qh-door-second { margin-top: var(--spacing-04); }
+.qh-edit { display: inline-block; margin-top: var(--spacing-05); }
+.p-highlight-line { margin: var(--spacing-05) 0 0; font: var(--meta-type); color: var(--text-helper); }
+.hl-until { display: inline-flex; align-items: center; gap: var(--spacing-02); font: var(--meta-type); color: var(--text-helper); }
+.hl-until input { height: 32px; padding: 0 var(--spacing-03); border: 1px solid var(--border-strong-01); border-radius: var(--radius-input); background: var(--field-01); color: var(--ink); font: var(--meta-type); }
+.hl-until input:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 /* Run the scraper (Kate, Oct 19): the hubs' label, the outline button, one line, the Drive link. */
 .qh-scraper { margin-top: var(--spacing-07); }
 .qh-scraper .hub-label { margin-bottom: var(--spacing-04); }

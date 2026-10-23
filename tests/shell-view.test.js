@@ -102,3 +102,11 @@ test('the bar draws the breadcrumb and no hub links', async () => {
   assert.doesNotMatch(src, /laneLinks/);
   assert.match(src, /'topbar-signout', 'Sign out'/);
 });
+
+// The Highlight's own page (Kate, Oct 23): under Policy Exchange, beside Publish.
+test('the Highlight opens at /#highlight and crumbs under Policy Exchange', () => {
+  assert.equal(openedScreen('#highlight'), 'highlight');
+  assert.equal(screenHash('highlight'), '#highlight');
+  const trail = crumbs('highlight');
+  assert.deepEqual(trail.map(c => c.label), ['ERC Content Desk', 'Policy Exchange', 'Highlight']);
+});

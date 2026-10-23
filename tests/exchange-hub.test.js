@@ -49,3 +49,15 @@ test('the hub links the Exchange edit door, and never its password', async () =>
   assert.match(src, /Edit live items/);
   assert.doesNotMatch(src, /ADMIN_PASSWORD|password:/i);
 });
+
+// Publish no longer carries the highlight (Kate, Oct 23): the picks have their
+// own page and their own Save, so a publish never rewrites the card.
+test('Publish sends no highlight picks and points to the Highlight page; the hub has a Highlight door', async () => {
+  const { readFileSync } = await import('node:fs');
+  const publish = readFileSync(new URL('../js/publish-ui.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(publish, /highlights:\s*picks/);
+  assert.doesNotMatch(publish, /renderHighlights/);
+  assert.match(publish, /onGoTo\('highlight'\)/);
+  const hub = readFileSync(new URL('../js/exchange-ui.js', import.meta.url), 'utf8');
+  assert.match(hub, /'\/#highlight'/);
+});

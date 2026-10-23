@@ -15,8 +15,6 @@ import { buildEditForm, holdIfDirty } from './edit-form.js';
 import { checkSvg, faIcon } from './icons.js';
 import { screenHead } from './screen-info.js';
 import { FATES, publishRows, legendItems, filterByFate, fateShares } from './publish-view.js';
-import { renderHighlights } from './highlight-ui.js';
-import { pickOf, withoutPhoto, samePicks, setCardWords, wantingWords, carryPicks } from './highlight-view.js';
 import { el, button, focusKeyIn, restoreFocus, busyLine } from './ui-aids.js';
 
 /** Hand the browser a file. Kate's Chrome puts downloads straight in her Drive,
@@ -47,15 +45,9 @@ let trialPosting = false; // showing the "posting…" shadow alert
 let trialDone = 0;        // count on the mocked receipt (0 = not yet)
 let confirming = false;   // the one ask before the append-only write
 let typedPassword = '';   // what the ask's field holds, kept across a redraw; Confirm sends it and clears it
-let picks = null;         // her highlight picks (Kate, Sep 23), from the check's own until she changes them
-let picksFor = null;      // the preview the picks were taken from
-let hlAsk = false;        // the highlight's own Save is asking for the password (Kate, Oct 6)
-let carry = null;         // her picks across the highlight's own Save: the held ones stay picked
-const cardBusy = new Set();    // picks whose card words are being written (Kate, Sep 30)
-const cardFailed = new Set();  // picks whose card words did not come
 
 /** Arriving at Publish never lands on a standing ask. */
-export function resetPublishAsk() { confirming = false; hlAsk = false; typedPassword = ''; }
+export function resetPublishAsk() { confirming = false; typedPassword = ''; }
 
 /** The onward door, right of the screen head. */
 function newsletterDoor(onGoTo) {
@@ -160,19 +152,6 @@ function fateBar(container, list, rerender) {
 export function renderPublish(container, props) {
   const { rows, today, preview, busy, justPublished, justHighlighted, onPublish, onGoTo, onRecheck, publishedCsv, publishedCopy = null, copyError = '', onEditRow, publishError = '' } = props;
   const rerender = () => renderPublish(container, props);
-  // A fresh check brings the picks as the Exchange holds them; hers stand
-  // until the check changes under them.
-  if (preview !== picksFor) {
-    // After the highlight's own Save, a pick going out with the next publish
-    // stays picked beside the saved ones; otherwise the Exchange's own.
-    const going = new Set((preview?.adding ?? []).map(item => String(rows.find(r => r.id === item.id)?.link ?? '').trim()).filter(Boolean));
-    picks = carry && preview ? carryPicks(carry, preview.highlights?.items ?? [], going) : (preview?.highlights?.items ?? []).map(pickOf);
-    if (preview) carry = null;
-    hlAsk = false;
-    picksFor = preview;
-    cardBusy.clear();
-    cardFailed.clear();
-  }
   // An open, edited form holds any way out (the same rule as Finalize).
   const held = () => holdIfDirty(openForm, container.querySelector('.f-detail-row'));
   const focusKey = focusKeyIn(container);   // a redraw keeps the keyboard's place
@@ -188,11 +167,6 @@ export function renderPublish(container, props) {
   const candidates = readyToPublish(rows);
   const byId = new Map(rows.map(r => [r.id, r]));
   const adding = (preview?.adding ?? []).map(item => byId.get(item.id)).filter(Boolean);
-  // The highlight (Kate, Sep 23): the picks as the Exchange holds them, hers
-  // beside them, and the rows they can be drawn from.
-  const nowPicks = (preview?.highlights?.items ?? []).map(pickOf);
-  const picksChanged = Boolean(preview) && !samePicks(picks ?? [], nowPicks);
-  const hlCtx = { adding, hub: preview?.hub ?? [] };
 
   const { head, lede } = screenHead('Publish', 'publish',
     'Publish adds the Adding rows to the Exchange. Click a colour under the bar to filter.');
@@ -200,7 +174,9 @@ export function renderPublish(container, props) {
     // The receipt card below is the confirmation — the head stays bare.
   } else if (busy && !preview) {
   } else if (!candidates.length) {
-    lede.textContent = 'Nothing to publish.';
+    // A quiet day (Kate, Oct 23): the highlight has its own page now.
+    lede.append('Nothing to publish. ');
+    lede.append(button('Change the highlight', 'linkish', { focus: 'to-highlight', onClick: () => onGoTo('highlight') }));
   } else {
     // A failed check says so (the status bar carries the reason); Re-check stays.
     lede.append(preview ? 'Checked against the live Exchange · ' : 'The check failed · ');
@@ -219,7 +195,7 @@ export function renderPublish(container, props) {
     // is filed in Drive by the publish itself.
     const btn = el('button', 'primary', `Publish ${adding.length} to the Exchange`);
     btn.dataset.focus = 'publish';
-    btn.addEventListener('click', () => { confirming = true; hlAsk = false; rerender(); });
+    btn.addEventListener('click', () => { confirming = true; rerender(); });
     head.append(btn);
   } else if (preview && !busy && !trialPosting) {
     // Nothing to add: the only move left is the newsletter door.
@@ -233,9 +209,6 @@ export function renderPublish(container, props) {
     const words = el('p', 'p-ask-words');
     words.append(faIcon('triangle-exclamation'), ' Publish ', el('strong', '', String(adding.length)), ' to the ', el('strong', '', 'live'), ' Exchange?');
     ask.append(words);
-    // A pick with no photo is named here and lets her through (Kate: ask, then allow).
-    const bare = withoutPhoto(picks ?? [], hlCtx).length;
-    if (bare) ask.append(el('p', 'p-ask-note', `${bare} highlight${bare === 1 ? ' has' : 's have'} no photo.`));
     // The password, typed again here (Kate, Sep 23): the ask stays until it is right.
     const row = el('div', 'p-ask-row');
     const label = el('label', 'sr-only', 'Password');
@@ -268,14 +241,15 @@ export function renderPublish(container, props) {
         setTimeout(() => { trialPosting = false; trialDone = n; rerender(); }, 1100);
       } else {
         // The ask stands while the write runs: a refused password comes back to it.
-        onPublish({ password, highlights: picks ?? [] });
+        // The highlight is its own page since Oct 23: a publish never touches the card.
+        onPublish({ password });
       }
     });
     // Cancel goes back on the Publish button the ask replaced.
     const no = button('Cancel', 'linkish alert-word nl-cancel', { focus: 'publish', onClick: () => { confirming = false; typedPassword = ''; rerender(); } });
     row.append(label, field, ok, ' \u00b7 ', no);
     ask.append(row);
-    if (publishError && !hlAsk) {
+    if (publishError) {
       const line = el('p', 'field-error', publishError);
       line.id = 'publish-error';
       line.setAttribute('role', 'alert');
@@ -314,7 +288,6 @@ export function renderPublish(container, props) {
     receipt.append(el('p', '', isTrial
       ? 'Nothing went to the live Exchange.'
       : 'The site updates in about a minute.'));
-    if (!isTrial && justHighlighted != null) receipt.append(el('p', 'receipt-highlight', `Highlight: ${justHighlighted} item${justHighlighted === 1 ? '' : 's'}.`));
     const door = el('button', 'door', 'Go to Newsletter ');
     door.append(faIcon('arrow-right'));
     door.addEventListener('click', () => { trialDone = 0; onGoTo('issue'); });
@@ -350,7 +323,7 @@ export function renderPublish(container, props) {
   // out of the write; it carries no number anywhere.
   if (!preview) return;
   const list = publishRows(preview, rows);
-  if (!list.length) { highlightStep(); return; }
+  if (!list.length) return;
   if (fateFilter && !list.some(r => r.fate === fateFilter)) fateFilter = null;
   fateBar(container, list, rerender);
 
@@ -366,112 +339,10 @@ export function renderPublish(container, props) {
   const scroll = el('div', 'table-scroll');
   scroll.append(table);
   container.append(scroll);
-  highlightStep();
+  // The card on the Exchange's home page has its own page (Kate, Oct 23).
+  const toHighlight = el('p', 'p-highlight-line');
+  toHighlight.append('The home page\'s big card is set on its own page. ');
+  toHighlight.append(button('Change the highlight', 'linkish', { focus: 'to-highlight', onClick: () => onGoTo('highlight') }));
+  container.append(toHighlight);
   restoreFocus(container, focusKey, null);
-
-  // The highlight step (Kate, Sep 23): the picks are view state here; a
-  // change redraws the page and rides the next write.
-  function highlightStep() {
-    if (!preview?.highlights) return;
-    renderHighlights(container, {
-      now: preview.highlights.items ?? [], cards: preview.highlights.cards ?? [], adding: hlCtx.adding, hub: hlCtx.hub, picks: picks ?? [], today,
-      cardBusy, cardFailed, onCardWords: askCardWords, saveBar: saveBar(),
-      onChange: next => {
-        // A pick just made that is an event or an opportunity gets its card
-        // words written now (Kate, Sep 30); one that was on the Exchange
-        // before waits for her word.
-        const had = new Set((picks ?? []).map(p => p.link));
-        picks = next;
-        askCardWords(wantingWords(next, hlCtx).filter(link => !had.has(link)));
-        rerender();
-      },
-    });
-  }
-
-  /** The highlight's own Save (Kate, Oct 6: "when you change the highlights,
-   *  there is nothing to save them"), right under the picks, whether or not
-   *  anything waits to publish. It writes the pins alone, asking the password
-   *  once; a pick going out with the next publish is held and stays picked. */
-  function saveBar() {
-    if (!picksChanged || showReceipt) return null;
-    const bar = el('div', 'hl-save');
-    if (busy) { bar.append(busyLine('Updating the highlight')); return bar; }
-    const going = new Set(adding.map(r => String(r.link ?? '').trim()));
-    const waiting = (picks ?? []).filter(p => going.has(p.link)).length;
-    const heldNote = waiting
-      ? el('p', 'hl-save-note', 'Picks not live yet go up with the next publish.')
-      : null;
-    if (!hlAsk) {
-      const save = button('Update the highlight', 'primary hl-save-btn', { focus: 'hl-save', onClick: () => { hlAsk = true; confirming = false; rerender(); } });
-      const cancel = button('Cancel changes', 'linkish quiet-link', { focus: 'hl-cancel', onClick: () => { picks = nowPicks; cardBusy.clear(); cardFailed.clear(); rerender(); } });
-      bar.append(save, cancel);
-      if (heldNote) bar.append(heldNote);
-      return bar;
-    }
-    const ask = el('form', 'nl-ask p-ask hl-ask');
-    ask.noValidate = true;
-    const words = el('p', 'p-ask-words');
-    words.append(faIcon('triangle-exclamation'), ' Update the highlight on the ', el('strong', '', 'live'), ' Exchange?');
-    ask.append(words);
-    const bare = withoutPhoto(picks ?? [], hlCtx).length;
-    if (bare) ask.append(el('p', 'p-ask-note', `${bare} highlight${bare === 1 ? ' has' : 's have'} no photo.`));
-    if (heldNote) ask.append(heldNote);
-    const row = el('div', 'p-ask-row');
-    const field = el('input');
-    field.type = 'password';
-    field.id = 'hl-password';
-    field.autocomplete = 'current-password';
-    field.dataset.focus = 'hl-password';
-    field.value = typedPassword;
-    field.placeholder = 'Password';
-    field.setAttribute('aria-label', 'Password');
-    if (publishError) { field.setAttribute('aria-invalid', 'true'); field.setAttribute('aria-describedby', 'hl-error'); }
-    const ok = button('Confirm', 'linkish alert-word', { focus: 'hl-save' });
-    ok.type = 'submit';
-    ok.disabled = !typedPassword;
-    field.addEventListener('input', () => { typedPassword = field.value; ok.disabled = !typedPassword; });
-    ask.addEventListener('submit', event => {
-      event.preventDefault();
-      if (!typedPassword) { field.focus(); return; }
-      const password = typedPassword;
-      typedPassword = '';
-      ok.disabled = true;
-      carry = picks ?? [];
-      onPublish({ password, highlights: picks ?? [], only: 'highlight' });
-    });
-    const no = button('Cancel', 'linkish alert-word nl-cancel', { focus: 'hl-save', onClick: () => { hlAsk = false; typedPassword = ''; rerender(); } });
-    row.append(field, ok, ' \u00b7 ', no);
-    ask.append(row);
-    if (publishError) {
-      const line = el('p', 'field-error', publishError);
-      line.id = 'hl-error';
-      line.setAttribute('role', 'alert');
-      ask.append(line);
-    }
-    bar.append(ask);
-    if (focusKey !== 'hl-password') queueMicrotask(() => field.focus({ preventScroll: true }));
-    return bar;
-  }
-
-  /** The model writes the card's words for these picks; they land on the
-   *  picks still there when the answer comes. */
-  async function askCardWords(links) {
-    const wanted = links.filter(link => !cardBusy.has(link));
-    if (!wanted.length || !props.cardWords) return;
-    for (const link of wanted) { cardBusy.add(link); cardFailed.delete(link); }
-    rerender();
-    try {
-      const data = await props.cardWords(wanted);
-      const cards = new Map((data.cards ?? []).map(c => [c.link, c]));
-      for (const link of wanted) {
-        cardBusy.delete(link);
-        const card = cards.get(link);
-        if (card && card.summary) picks = setCardWords(picks ?? [], link, card);
-        else cardFailed.add(link);
-      }
-    } catch {
-      for (const link of wanted) { cardBusy.delete(link); cardFailed.add(link); }
-    }
-    rerender();
-  }
 }

@@ -12,6 +12,7 @@ import { nextIssueDate } from './schedule.js';
 import { renderSort } from './sort-ui.js';
 import { renderFinalize, resetFinalizeEntry } from './finalize-ui.js';
 import { renderPublish, downloadCsv, resetPublishAsk } from './publish-ui.js';
+import { renderHighlightPage, resetHighlightAsk } from './highlight-page.js';
 import { renderPast } from './past-ui.js';
 import { renderSchedule } from './schedule-ui.js';
 import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToFinalize, canRewrite } from './workflow.js';
@@ -67,7 +68,7 @@ const state = {
   lastKeepAll: null,        // [{ id, old }] from the last Keep all remaining, until undone or left
 };
 
-const screens = Object.fromEntries(['home', 'team', 'queue', 'issue', 'schedule', 'past', 'sort', 'finalize', 'listserv', 'exchange', 'publish', 'briefs', 'brief']
+const screens = Object.fromEntries(['home', 'team', 'queue', 'issue', 'schedule', 'past', 'sort', 'finalize', 'listserv', 'exchange', 'publish', 'highlight', 'briefs', 'brief']
   .map(name => [name, document.querySelector(`#screen-${name}`)]));
 const statusEl = document.querySelector('#desk-status');
 
@@ -338,6 +339,13 @@ function goTo(key) {
     state.screen = key;
     if (!state.publishPreview && may) { loadPublishPreview(); return; }
   }
+  // The Highlight's own page (Oct 23) reads the same check as Publish.
+  if (key === 'highlight' && state.screen !== 'highlight') {
+    state.publishError = '';
+    resetHighlightAsk();
+    state.screen = key;
+    if (!state.publishPreview && may) { loadPublishPreview(); return; }
+  }
   state.screen = key;
   render();
 }
@@ -568,7 +576,7 @@ async function signOutNow() {
  *  opened by a sign-in. */
 function arrive(screen) {
   if (screen === 'sort') readBeforeSort();
-  if (screen === 'publish' && !state.publishPreview) loadPublishPreview();
+  if ((screen === 'publish' || screen === 'highlight') && !state.publishPreview) loadPublishPreview();
   if (screen === 'briefs' && !state.briefs) loadBriefs();
   if (screen === 'brief' && (!state.brief || state.brief.id !== state.briefId)) loadBrief(state.briefId);
 }
@@ -768,7 +776,7 @@ function unsendFromNewsletter(ids) {
   setStatus(`Taken out of the issue: ${targets.length === 1 ? (targets[0].headline || targets[0].link || 'this item') : `${targets.length} items`}`, 'ok');
 }
 
-const SCREEN_ORDER = ['home', 'team', 'queue', 'sort', 'finalize', 'issue', 'schedule', 'past', 'listserv', 'exchange', 'publish', 'briefs', 'brief'];
+const SCREEN_ORDER = ['home', 'team', 'queue', 'sort', 'finalize', 'issue', 'schedule', 'past', 'listserv', 'exchange', 'publish', 'highlight', 'briefs', 'brief'];
 // Every screen but the front page has an address (/#sort, /#newsletter,
 // /#exchange, and the old screens' own until they fold into the lanes), so a
 // typed or bookmarked one opens there and a reload stays put.
@@ -976,6 +984,13 @@ function render() {
       onRecheck: () => { state.publishPreview = null; loadPublishPreview(); },
       // The card's words for a highlight pick (Kate, Sep 30): the same call
       // as Finalize's rewrite, asked by link.
+    });
+  } else if (state.screen === 'highlight') {
+    renderHighlightPage(screens.highlight, {
+      preview: state.publishPreview, today: common.today, busy: state.busy, publishError: state.publishError,
+      onSave: ({ password, highlights }) => publishNow({ password, highlights, only: 'highlight' }),
+      onRecheck: () => { state.publishPreview = null; loadPublishPreview(); },
+      // The card's words for a pick (Kate, Sep 30): the same call as Finalize's rewrite, asked by link.
       cardWords: links => postJson('/api/rewrite', { card: links }, 'write the card'),
     });
   }

@@ -88,7 +88,7 @@ test('whenLine is the date, or the deadline for an opportunity, in short form', 
   assert.equal(whenLine({ type: 'research', date: '', deadline: '' }), '');
 });
 
-test('samePicks: the same links in the same order with the same photos and card words, nothing else', () => {
+test('samePicks: the same links in the same order with the same photos, days and card words, nothing else', () => {
   const a = [{ link: 'https://x.org/a', image: '' }, { link: 'https://x.org/b', image: 'https://img/b.jpg', summary: 'Come along.' }];
   assert.equal(samePicks(a, a.map(p => ({ ...p }))), true);
   assert.equal(samePicks(a, [a[1], a[0]]), false);
@@ -96,7 +96,7 @@ test('samePicks: the same links in the same order with the same photos and card 
   assert.equal(samePicks(a, [a[0], { ...a[1], image: '' }]), false);
   assert.equal(samePicks(a, [a[0], { ...a[1], summary: 'Come.' }]), false);
   assert.equal(samePicks(a, [{ ...a[0], title: 'Renamed' }, a[1]]), false);
-  assert.equal(samePicks(a, [{ ...a[0], until: '2026-10-08' }, a[1]]), true);   // the day is the server's to set
+  assert.equal(samePicks(a, [{ ...a[0], until: '2026-10-08' }, a[1]]), false);   // the day is hers to set since Oct 23 (the Highlight's own page)
   assert.equal(samePicks([], []), true);
 });
 
@@ -146,4 +146,29 @@ test('carryPicks: the saved picks as the Exchange holds them, the held ones as t
   assert.equal(out[0].until, '2026-10-20', 'the saved one as the Exchange holds it');
   assert.equal(out[1].summary, 'Soon.', 'the held one as she left it');
   assert.deepEqual(carryPicks(mine, saved, new Set()).map(p => p.link), ['https://x.org/a', 'https://x.org/b'], 'a held pick no longer going out drops');
+});
+
+// The Highlight on its own page (Kate, Oct 23: "own page is fine"): each pick
+// shows the day it drops off the card, and she can change it.
+test('setUntil puts a day on the pick; a non-date clears it, and samePicks notices the change', async () => {
+  const { setUntil } = await import('../js/highlight-view.js');
+  const picks = [pickOf({ link: 'https://x.org/naep', until: '2026-11-01' })];
+  const later = setUntil(picks, 'https://x.org/naep', '2026-12-01');
+  assert.equal(later[0].until, '2026-12-01');
+  assert.equal(setUntil(picks, 'https://x.org/naep', 'soon')[0].until, '');
+  assert.equal(setUntil(picks, 'https://x.org/other', '2026-12-01'), picks, 'a pick not there leaves the list as it was');
+  assert.equal(samePicks(picks, later), false, 'a new day is a change to save');
+  assert.equal(samePicks(picks, [pickOf({ link: 'https://x.org/naep', until: '2026-11-01' })]), true);
+});
+
+// "It always resets" (Kate, Oct 23): a fresh check of the site no longer
+// throws her unsaved picks away. Untouched picks follow the site; changed ones stay.
+test('followPicks: untouched picks follow the site; picks she changed stay as she left them', async () => {
+  const { followPicks } = await import('../js/highlight-view.js');
+  const oldPins = [pickOf({ link: 'https://x.org/naep', until: '2026-11-01' })];
+  const newPins = [pickOf({ link: 'https://x.org/sdp', until: '2026-11-01' })];
+  assert.deepEqual(followPicks(null, oldPins, newPins), newPins, 'first arrival: the site\'s pins');
+  assert.deepEqual(followPicks(oldPins.map(p => ({ ...p })), oldPins, newPins), newPins, 'untouched: the site moved, so do they');
+  const mine = [...oldPins, pickOf({ link: 'https://x.org/new' })];
+  assert.equal(followPicks(mine, oldPins, newPins), mine, 'changed and unsaved: kept');
 });
