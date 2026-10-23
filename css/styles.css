@@ -226,7 +226,9 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .past-list > .past-row:first-child { border-top: 0; }
 .past-row:hover { background: var(--row-hover); color: var(--ink); }
 .past-row .fa-solid { font-size: 11px; color: var(--icon-secondary); }
-@media (max-width: 1000px) { .nl-page { grid-template-columns: minmax(0, 1fr); } }
+/* A breakpoint is the window's width, and the sidebar takes 232px of it (A, Oct 23): each below is 232px
+   past the width it was set for before the sidebar, so the page's own column folds where it did. */
+@media (max-width: 1232px) { .nl-page { grid-template-columns: minmax(0, 1fr); } }
 .bulk-door .bulk-status { min-height: 0; margin: 0; }   /* takes no room until it has words */
 
 .status { min-height: 20px; margin: 0; font-size: 14px; position: sticky; top: 0; z-index: 2; background: var(--background); }   /* stays in view down a long list (design audit b3) */
@@ -363,7 +365,7 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .f-progress { height: 8px; border-radius: 0; background: var(--layer-accent-01); overflow: hidden; margin: calc(-1 * var(--spacing-02)) 0 var(--spacing-06); }
 .f-progress i { display: block; height: 100%; background: var(--interactive); border-radius: 0; }
 .f-split { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr); gap: var(--spacing-05); align-items: start; }
-@media (max-width: 900px) { .f-split { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1132px) { .f-split { grid-template-columns: minmax(0, 1fr); } }
 .f-group-head {
   display: flex; align-items: center; gap: var(--spacing-03); width: 100%; box-sizing: border-box; margin: 0; height: auto;
   padding: var(--spacing-03) var(--spacing-05) var(--spacing-02); border: 0; border-top: 1px solid var(--line-in); border-radius: var(--radius); background: none;
@@ -408,8 +410,8 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
   background: var(--layer-02); border: 1px solid var(--line-in); border-radius: var(--radius); padding: var(--spacing-05); margin: var(--spacing-01) 0 var(--spacing-02);
 }
 .f-facts { margin: 0; display: grid; gap: var(--spacing-03); padding: 0 var(--spacing-05) 0 0; border-right: 1px solid var(--line-in); }
-@media (max-width: 700px) { .f-facts { border-right: none; padding: 0; } }
-@media (max-width: 700px) { .f-detail-cols { grid-template-columns: 1fr; } }
+@media (max-width: 932px) { .f-facts { border-right: none; padding: 0; } }
+@media (max-width: 932px) { .f-detail-cols { grid-template-columns: 1fr; } }
 .f-fact { display: grid; gap: 1px; }
 .f-fact-label { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--muted); }
 .f-fact-value { margin: 0; color: var(--ink); }
@@ -513,9 +515,10 @@ a.desk-card-go:focus-visible { outline: none; box-shadow: none; }   /* the row c
 .home-links-box .fa-solid { width: var(--spacing-05); text-align: center; font-size: 14px; color: var(--icon-secondary); }
 .desk-card-row:hover .fa-solid, .home-pin:hover .fa-solid { color: var(--accent); }
 .home-pin { padding: var(--spacing-04) var(--spacing-05) var(--spacing-05); background: var(--layer-01); border-top: 1px solid var(--line-in); }
-/* A 1024 to 1199 wide window (review, Oct 23): the links drop under the words
-   and the menu narrows, so the status lines keep their width. */
-@media (max-width: 1199px) {
+/* A 1024 to 1199 wide page (review, Oct 23; the window 232px wider since the
+   sidebar): the links drop under the words and the menu narrows, so the status
+   lines keep their width. */
+@media (max-width: 1431px) {
   .home-hubs { grid-template-columns: minmax(0, 1fr) 280px; gap: var(--spacing-06); }
   .desk-card { grid-template-columns: 184px minmax(40px, max-content) minmax(0, 1fr); row-gap: var(--spacing-02); }
   .desk-card-links { grid-column: 3; flex-direction: row; flex-wrap: wrap; gap: var(--spacing-01) var(--spacing-04); }
@@ -765,7 +768,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .sc-tools .trash-link { margin: 0; padding: 0 var(--spacing-02); }
 .sort-card input:not([type="checkbox"]):not(.card-title), .sort-card textarea:not(.sc-desc-edit) { background: transparent; }
 .f-edit-card input, .f-edit-card textarea { background: var(--field-02); }   /* a field on the grey edit box is white (Carbon's layer model) */
-@media (max-width: 900px) {
+@media (max-width: 1132px) {
   .sort-split { grid-template-columns: minmax(0, 1fr); }
 }
 .queue-row.is-deleted .queue-actions { opacity: 1; }
@@ -1054,7 +1057,7 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
 .brief-page .steps { margin: 0 0 var(--spacing-08); }
 .brief-split { margin-top: 0; }
 /* Two columns from 1024 up, as the desk's other pages; narrower (the app's side pane) the folder goes under the brief, so the brief keeps its width. */
-@media (max-width: 1023px) { .brief-split { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1255px) { .brief-split { grid-template-columns: minmax(0, 1fr); } }
 .brief-stage { padding: var(--spacing-05) var(--spacing-06); }
 .brief-paper { margin: 0 0 var(--spacing-05); font: var(--body-type); color: var(--ink); }
 .brief-paper .fa-solid { color: var(--icon-secondary); margin-right: var(--spacing-02); }

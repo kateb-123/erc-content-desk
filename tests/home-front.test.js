@@ -183,9 +183,10 @@ test('the look: the teal wash and bar on a row, the wash on a menu row, and a te
   for (const sel of ['.desk-card:has(.desk-card-go:focus-visible)', '.home-pin-link:focus-visible']) assert.doesNotMatch(rule(sel), /--mark|maize/, 'never yellow');
 });
 
-test('on a 1024 to 1199 wide window the links drop under the words, so the status lines keep their width (review, Oct 23)', () => {
+// The window is 232px wider than the page since the sidebar (A, Oct 23), so the breakpoint moved with it.
+test('on a 1024 to 1199 wide page the links drop under the words, so the status lines keep their width (review, Oct 23)', () => {
   const css = readFileSync(new URL('../css/styles.css', import.meta.url), 'utf8');
-  const narrow = css.match(/@media \(max-width: 1199px\) \{([\s\S]*?)\n\}/)?.[1] ?? '';
+  const narrow = css.match(/@media \(max-width: 1431px\) \{([\s\S]*?)\n\}/)?.[1] ?? '';
   assert.match(narrow, /\.desk-card \{[^}]*grid-template-columns:\s*184px minmax\(40px, max-content\) minmax\(0, 1fr\)/);
   assert.match(narrow, /\.desk-card-links \{[^}]*grid-column: 3/);
   assert.match(narrow, /\.home-hubs \{[^}]*280px/);
