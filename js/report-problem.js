@@ -1,6 +1,6 @@
 /**
- * Report a problem (Kate, Oct 22, 2026, the handoff): a button in the corner
- * of every desk page; Kathy types what went wrong and Send drops it into
+ * Report a problem (Kate, Oct 22, 2026, the handoff): a button on every desk
+ * page; Kathy types what went wrong and Send drops it into
  * Kate's Google Form in her personal Drive, whose answers go to a Sheet there
  * and email her. No server of ours is involved.
  *
@@ -11,6 +11,9 @@
  * the button does not show: no dead ends.
  */
 export const PROBLEM_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScUL7E2SJzPA_6yeaRKnHEwQ-83Id5wHBF1jafzq8RpYqTtwg/viewform?usp=pp_url&entry.1596946882=WHAT&entry.1057870924=PAGE&entry.739829798=WHO';   // Kate's form, ERC Content Desk problems, in her personal Drive (Oct 23)
+
+/** The button's words (Kate, Oct 23: "I need help!"). */
+export const HELP_LABEL = 'I need help!';
 
 /** The form's address to post to and its three answer keys, from the pre-filled link; null without one. */
 export function parsePrefill(url = PROBLEM_FORM_URL) {
@@ -37,22 +40,33 @@ export function problemBody({ what, page, who }, fields) {
   return body;
 }
 
-/** Draws the corner button and its panel on a desk page; nothing while there is no form. */
+/** Puts the button in the top bar, before Sign out where there is one. */
+function seat(header, button) {
+  if (button.parentElement === header) return;
+  header.insertBefore(button, header.querySelector('.topbar-lanes'));
+}
+
+/** Draws the button and its panel on a desk page; nothing while there is no form.
+ *  Since Oct 23 (Kate, her pick A) the button is a word in the top bar: the
+ *  corner one covered working controls. A page with no top bar keeps the corner. */
 export function mountProblemButton(doc = document, url = PROBLEM_FORM_URL) {
   const form = parsePrefill(url);
-  if (!form || doc.querySelector('.problem-fab')) return;
+  if (!form || doc.querySelector('.problem-fab, .problem-top')) return;
+  const header = doc.querySelector('header.topbar');
   if (!doc.querySelector('link[href^="/css/problem.css"]')) {
     const sheet = doc.createElement('link');
-    sheet.rel = 'stylesheet'; sheet.href = '/css/problem.css?v=1';
+    sheet.rel = 'stylesheet'; sheet.href = '/css/problem.css?v=3';
     doc.head.append(sheet);
   }
   const fab = doc.createElement('button');
   fab.type = 'button';
-  fab.className = 'problem-fab';
-  fab.textContent = 'Report a problem';
+  fab.className = header ? 'problem-top' : 'problem-fab';
+  fab.textContent = HELP_LABEL;
+  fab.setAttribute('aria-expanded', 'false');
   const panel = doc.createElement('form');
   panel.className = 'problem-panel';
   panel.hidden = true;
+  if (header) panel.classList.add('is-top');
   panel.innerHTML = `<label for="problem-what">What went wrong?</label>
     <textarea id="problem-what" rows="4" required></textarea>
     <label for="problem-who">Your name</label>
@@ -64,8 +78,8 @@ export function mountProblemButton(doc = document, url = PROBLEM_FORM_URL) {
   const who = panel.querySelector('#problem-who');
   const said = panel.querySelector('.problem-said');
   try { who.value = localStorage.getItem('desk.problemWho') || ''; } catch { /* no storage, no memory */ }
-  fab.addEventListener('click', () => { panel.hidden = !panel.hidden; said.textContent = ''; if (!panel.hidden) what.focus(); });
-  panel.querySelector('.problem-cancel').addEventListener('click', () => { panel.hidden = true; fab.focus(); });
+  fab.addEventListener('click', () => { panel.hidden = !panel.hidden; fab.setAttribute('aria-expanded', String(!panel.hidden)); said.textContent = ''; if (!panel.hidden) what.focus(); });
+  panel.querySelector('.problem-cancel').addEventListener('click', () => { panel.hidden = true; fab.setAttribute('aria-expanded', 'false'); fab.focus(); });
   panel.addEventListener('submit', async event => {
     event.preventDefault();
     if (!what.value.trim()) { said.textContent = 'Say what went wrong first.'; what.focus(); return; }
@@ -83,5 +97,9 @@ export function mountProblemButton(doc = document, url = PROBLEM_FORM_URL) {
       said.append("Couldn't send from here. ", a);
     }
   });
-  doc.body.append(panel, fab);
+  if (!header) { doc.body.append(panel, fab); return; }
+  doc.body.append(panel);
+  seat(header, fab);
+  // The desk and the builder build their bar after this runs; put the button back in.
+  new MutationObserver(() => seat(header, fab)).observe(header, { childList: true });
 }
