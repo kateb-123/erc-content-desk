@@ -61,6 +61,10 @@ function newsletterDoor(onGoTo) {
 const FATE_CLASS = { adding: 'p-adding', held: 'p-held', fix: 'p-notready', live: 'p-skip' };
 const FATE_LABEL = Object.fromEntries(FATES.map(f => [f.key, f.label]));
 
+/** An open, edited form holds any switch away from it (review, Oct 23); the
+ *  warning goes in the form's own cell. */
+const heldOnPublish = () => holdIfDirty(openForm, document.querySelector('#screen-publish .f-detail-row td'));
+
 function itemRows({ row, fate }, { rerender, onGoTo, today, onEditRow }) {
   const isOpen = expanded.has(row.id);
   const rowClass = ['f-item', FATE_CLASS[fate], isOpen && 'is-open'].filter(Boolean).join(' ');
@@ -93,7 +97,7 @@ function itemRows({ row, fate }, { rerender, onGoTo, today, onEditRow }) {
     // What is wrong, and the fix in place (review, Oct 23): the row opens its
     // own Edit, which carries the type, the subtype and the link.
     const jump = button(fixReason(row) || 'Needs a fix', 'linkish p-fate-fix',
-      { onClick: event => { event.stopPropagation(); expanded.add(row.id); editingId = row.id; rerender(); } });
+      { onClick: event => { event.stopPropagation(); if (editingId !== row.id && heldOnPublish()) return; expanded.add(row.id); editingId = row.id; rerender(); } });
     jump.title = 'Opens its Edit';
     fateTd.append(jump);
   } else {
@@ -102,6 +106,7 @@ function itemRows({ row, fate }, { rerender, onGoTo, today, onEditRow }) {
   tr.append(fateTd);
 
   tr.addEventListener('click', () => {
+    if (heldOnPublish()) return;
     if (expanded.has(row.id)) expanded.delete(row.id);
     else expanded.add(row.id);
     rerender();
@@ -121,7 +126,7 @@ function itemRows({ row, fate }, { rerender, onGoTo, today, onEditRow }) {
   } else {
     td.append(detailBody(row, today));
     const tools = el('div', 'f-detail-tools');
-    tools.append(button(' Edit', 'linkish edit-link', { focus: `edit:${row.id}`, icon: 'pen', onClick: () => { editingId = row.id; rerender(); } }));
+    tools.append(button(' Edit', 'linkish edit-link', { focus: `edit:${row.id}`, icon: 'pen', onClick: () => { if (heldOnPublish()) return; editingId = row.id; rerender(); } }));
     // A live row's edit stays on the desk (review, Oct 23): the site keeps its own.
     if (fate === 'live') tools.append(el('span', 'item-source p-live-note', 'An edit here changes the desk, not the site. Fix the site with Edit live items, on the Policy Exchange page.'));
     td.append(tools);
@@ -147,7 +152,7 @@ function fateBar(container, list, rerender) {
     b.dataset.focus = `legend:${item.key}`;
     b.setAttribute('aria-pressed', String(fateFilter === item.key));
     b.append(el('span', `p-dot p-seg-${item.key}`), item.text);
-    b.addEventListener('click', () => { fateFilter = fateFilter === item.key ? null : item.key; rerender(); });
+    b.addEventListener('click', () => { if (heldOnPublish()) return; fateFilter = fateFilter === item.key ? null : item.key; rerender(); });
     legend.append(b);
   }
   box.append(bar, legend);
@@ -185,7 +190,7 @@ export function renderPublish(container, props) {
   } else {
     // A failed check says so (the status bar carries the reason); Re-check stays.
     lede.append(preview ? 'Checked against the live Exchange · ' : 'The check failed · ');
-    const again = button('Re-check', 'linkish', { focus: 'recheck', onClick: () => { again.disabled = true; onRecheck(); } });
+    const again = button('Re-check', 'linkish', { focus: 'recheck', onClick: () => { if (heldOnPublish()) return; again.disabled = true; onRecheck(); } });
     lede.append(again);
   }
 

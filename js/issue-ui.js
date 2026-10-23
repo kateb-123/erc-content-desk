@@ -77,7 +77,12 @@ function editingRow(row, n, { onEditRow, rerender }) {
 
 /** The Edit word before a row's own action. */
 function editWord(row, rerender) {
-  return button(' Edit', 'linkish edit-link', { focus: `edit:${row.id}`, icon: 'pen', onClick: () => { editingId = row.id; rerender(); } });
+  // An open, edited form on another row holds the switch (review, Oct 23).
+  return button(' Edit', 'linkish edit-link', { focus: `edit:${row.id}`, icon: 'pen', onClick: () => {
+    if (holdIfDirty(openForm, document.querySelector('#screen-issue .nl-row.is-editing'))) return;
+    editingId = row.id;
+    rerender();
+  } });
 }
 
 /** One item in the issue: its number, the title and what it is, Edit, Remove. */
