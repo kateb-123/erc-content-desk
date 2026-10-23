@@ -61,13 +61,16 @@ const LINE_ICONS = {
   signout: [['path', { d: 'M14 4.5h3.5A1.5 1.5 0 0 1 19 6v12a1.5 1.5 0 0 1-1.5 1.5H14' }], ['path', { d: 'M10 8 6 12l4 4' }], ['path', { d: 'M6.5 12H15' }]],
   lock: [['rect', { x: 5.5, y: 10.5, width: 13, height: 9.5, rx: 2 }], ['path', { d: 'M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5' }]],
   check: [['path', { d: 'm6.5 12.5 3.5 3.5 7.5-8' }]],
+  pin: [['path', { d: 'M9 4h6l-1 5 3 3v2H7v-2l3-3z' }], ['path', { d: 'M12 14v6' }]],
+  chevron: [['path', { d: 'm9.5 6 6 6-6 6' }]],
+  warning: [['path', { d: 'M10.4 4.8a1.8 1.8 0 0 1 3.2 0l7 12.4a1.8 1.8 0 0 1-1.6 2.8H5a1.8 1.8 0 0 1-1.6-2.8z' }], ['path', { d: 'M12 10v3.6' }], ['path', { d: 'M12 16.8v.1' }]],
 };
 
 /** One of the line icons, for decoration: hidden from assistive tech, sized and coloured by CSS. */
-export function lineIcon(name) {
+export function lineIcon(name, className = '') {
   const NS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(NS, 'svg');
-  svg.setAttribute('class', `line-icon line-icon-${name}`);
+  svg.setAttribute('class', `line-icon line-icon-${name}${className ? ` ${className}` : ''}`);
   svg.setAttribute('viewBox', '0 0 24 24');
   svg.setAttribute('aria-hidden', 'true');
   svg.setAttribute('focusable', 'false');

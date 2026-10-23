@@ -6,20 +6,21 @@
  * desk's address), and the Exchange itself. No row shows its address (her
  * words: "I friggin hate having the url displayed"). In her drawing's order:
  * the Exchange, Submit content, the listserv sign-up. The team's how-to draws
- * its Links to share from this list too.
+ * its Links to share from this list too, in Font Awesome (`icon`); the front
+ * page draws them in the sidebar's line icons (`line`, Kate's pick A, Oct 23).
  */
 import { el } from './ui-aids.js';
 
 export const PUBLIC_LINKS = [
-  { key: 'exchange', label: 'ERC Policy Exchange', href: 'https://erc-policy-exchange.vercel.app/', icon: 'display', sub: 'Public facing link' },
-  { key: 'share', label: 'Submit content', href: 'https://erc-share.vercel.app/submit/', icon: 'square-plus', sub: 'Public facing link' },
-  { key: 'listserv', label: 'Join listserv', href: 'https://erc-share.vercel.app/listserv/', icon: 'address-book', sub: 'Public facing link' },
+  { key: 'exchange', label: 'ERC Policy Exchange', href: 'https://erc-policy-exchange.vercel.app/', icon: 'display', line: 'exchange', sub: 'Public facing link' },
+  { key: 'share', label: 'Submit content', href: 'https://erc-share.vercel.app/submit/', icon: 'square-plus', line: 'submit', sub: 'Public facing link' },
+  { key: 'listserv', label: 'Join listserv', href: 'https://erc-share.vercel.app/listserv/', icon: 'address-book', line: 'listserv', sub: 'Public facing link' },
 ];
 
 /** The team's own submit page (Kate, Oct 23, her pick E): under the public
  *  links on the front page, set apart, to open in a tab of its own and pin.
  *  Never one of PUBLIC_LINKS, which the team's how-to shares. */
-export const TEAM_SUBMIT = { key: 'team-submit', label: 'Team submit page', href: '/team-submit/', icon: 'thumbtack', note: 'Open it in its own tab, then right-click the tab and pick Pin.' };
+export const TEAM_SUBMIT = { key: 'team-submit', label: 'Team submit page', href: '/team-submit/', icon: 'thumbtack', line: 'pin', note: 'Open it in its own tab, then right-click the tab and pick Pin.' };
 
 /** Copy link: writes the address and says Copied for two seconds; only this
  *  button changes. Every public link has one. */

@@ -465,67 +465,85 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .publish-table tr.p-notready .rewrite-note { color: var(--text-warning-on-tint); }
 .table-scroll { overflow-x: auto; }
 
-/* The front page (Kate, Oct 23, 2026, her pick E): the hubs as one list per
-   step under a label over a rule, Bring it in, Send it out and
-   Research, with Public links as a 304px menu at the right. */
+/* The front page (Kate, Oct 23, 2026, her pick E, in her pick A of the looks):
+   the hubs as one white grouped list per step under a quiet label, Bring it
+   in, Send it out and Research, with Public links as a 304px menu at the
+   right. The title and its lede at the left of the head, How it all connects
+   at its right. */
+.home-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--spacing-05); margin: 0 0 var(--spacing-07); }
 .home-title { font: var(--page-title); letter-spacing: -.6px; margin: 0; }   /* the page title: 34px bold */
 .home-page .lede { margin: var(--spacing-02) 0 0; }
-.home-hubs { display: grid; grid-template-columns: minmax(0, 1fr) 304px; gap: var(--spacing-08); align-items: start; margin-top: var(--spacing-06); }
+.home-guide {
+  display: inline-flex; align-items: center; gap: var(--spacing-03); height: 32px; padding: 0 var(--spacing-04);
+  border: 1px solid var(--border-subtle-01); border-radius: var(--radius); background: var(--layer); box-shadow: var(--shadow-card);
+  font: 500 13px/18px var(--font-sans); color: var(--ink); text-decoration: none; white-space: nowrap;
+}
+.home-guide:hover { background: var(--wash-hover); color: var(--ink); }
+.home-guide .line-icon { width: 16px; height: 16px; color: var(--icon-secondary); }
+.home-hubs { display: grid; grid-template-columns: minmax(0, 1fr) 304px; gap: var(--spacing-07); align-items: start; }
 .home-groups { display: flex; flex-direction: column; gap: var(--spacing-06); }
 .home-hubs .hub-label { margin-bottom: var(--spacing-03); }
-.desk-list, .home-links-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); overflow: hidden; }
-/* A row a hub: its name with the arrow, the count, what it counts with its
-   status lines, and its own links; the accent's wash and bar on hover. The name
-   is the row's link, stretched over the whole row, so the row's own links sit
-   above it and never nest. */
-.desk-card {
-  position: relative; display: grid; grid-template-columns: 184px minmax(40px, max-content) minmax(0, 1fr) 160px; column-gap: var(--spacing-06); align-items: center;
-  padding: var(--spacing-05) var(--spacing-06) var(--spacing-05) 20px;   /* 24px on the left with the bar */
-  border-left: 4px solid transparent; border-top: 1px solid var(--line-in);
-  color: var(--ink);
-  transition: background-color var(--duration-fast-01) var(--ease-productive), border-color var(--duration-fast-01) var(--ease-productive);
-}
-.desk-card:first-child { border-top: 0; }
-.desk-card.is-live:hover { background: var(--door-hover); border-left-color: var(--accent); }
-.desk-card:has(.desk-card-go:focus-visible) { box-shadow: inset 0 0 0 2px var(--focus); }   /* the list clips a ring outside, so it is drawn inside */
-.desk-card-head { display: flex; align-items: center; gap: var(--spacing-03); }
-.desk-card-name { font: var(--sub-title); letter-spacing: -.1px; margin: 0; }
-a.desk-card-go { color: var(--ink); text-decoration: none; }
-a.desk-card-go::after { content: ''; position: absolute; inset: 0; }   /* the whole row is the name's link */
-a.desk-card-go:focus-visible { outline: none; box-shadow: none; }   /* the row carries the one ring */
-.desk-card-count { font: var(--numeral); text-align: right; font-variant-numeric: tabular-nums; }
-.desk-card-words { display: flex; flex-direction: column; gap: var(--spacing-01); min-width: 0; }
-.desk-card-sub { font: var(--meta-type); color: var(--text-helper); }
-.desk-card-sub .fa-solid { font-size: 12px; }
-.desk-card-links { display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-01); }
-/* A row's own links stand above the stretched name. */
-.desk-card-link { position: relative; z-index: 1; font: var(--meta-type); color: var(--link-primary); text-decoration: underline; }
-.desk-card-link:hover { color: var(--link-primary-hover); }
-.desk-card-link:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); border-radius: 2px; }
-.desk-card .fa-arrow-right { font-size: 14px; color: var(--icon-secondary); }
-.desk-card.is-live:hover .fa-arrow-right { color: var(--accent); }
-/* Public links: a row a page, its icon and name, and Copy link; then the
+/* A grouped list: a white box with a whisper of shadow, its rows divided by a
+   hairline that starts at the words, past the icon. */
+.home-list { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius-card); box-shadow: var(--shadow-card); overflow: hidden; }
+.home-tile { flex: none; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius); background: var(--accent-10); color: var(--accent); }
+.home-main { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: var(--spacing-04); }
+/* A row a hub: its icon, its name, a line per kind of fact, its own links,
+   the count and a chevron. The name is the row's link, stretched over the
+   whole row, so the row's own links sit above it and never nest. */
+.home-row { position: relative; display: flex; align-items: flex-start; gap: var(--spacing-04); padding-left: var(--spacing-05); color: var(--ink); transition: background-color var(--duration-fast-01) var(--ease-productive); }
+.home-row .home-tile { margin-top: var(--spacing-04); }
+.home-row .home-main { padding: var(--spacing-04) var(--spacing-05) var(--spacing-04) 0; }
+.home-row + .home-row .home-main, .home-warn + .home-row .home-main { border-top: 1px solid var(--line-in); }
+.home-row:hover { background: var(--wash-hover); }
+.home-row:has(.home-name:focus-visible) { box-shadow: inset 0 0 0 2px var(--focus); }   /* the list clips a ring outside, so it is drawn inside */
+.home-list > .home-row:first-child { border-radius: var(--radius-card) var(--radius-card) 0 0; }   /* the ring and the hover follow the list's corners */
+.home-list > .home-row:last-child { border-radius: 0 0 var(--radius-card) var(--radius-card); }
+.home-list > .home-row:only-child { border-radius: var(--radius-card); }
+.home-words { flex: 1 1 auto; min-width: 0; }
+a.home-name { font: 600 15px/20px var(--font-sans); color: var(--ink); text-decoration: none; }
+a.home-name::after { content: ''; position: absolute; inset: 0; }   /* the whole row is the name's link */
+a.home-name:focus-visible { outline: none; box-shadow: none; }   /* the row carries the one ring */
+/* Her line rules (Oct 23): one line per kind of fact, never wrapping; the
+   first fact, what the count counts, is the darker one. */
+.home-line { display: flex; align-items: center; gap: var(--spacing-02); margin: var(--spacing-01) 0 0; font: var(--meta-type); color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-line .line-icon { width: 13px; height: 13px; stroke-width: 2; }
+.home-lead { color: var(--ink); font-weight: 500; }
+.home-dot { flex: none; width: 7px; height: 7px; border-radius: var(--radius-round); background: var(--support-success); }
+.home-row-links { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: var(--spacing-01) var(--spacing-04); margin-top: var(--spacing-02); font: 500 13px/18px var(--font-sans); }
+.home-row-links a { color: var(--link-primary); text-decoration: none; }
+.home-row-links a:hover { color: var(--link-primary-hover); text-decoration: underline; }
+.home-row-links a:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); border-radius: 2px; }
+.home-count { flex: none; min-width: 2ch; text-align: right; font: 600 22px/28px var(--font-sans); letter-spacing: -.3px; font-variant-numeric: tabular-nums; }
+.home-count.is-zero { color: var(--text-placeholder); }
+.home-chevron { width: 16px; height: 16px; stroke-width: 2.2; color: var(--gray-400); }
+.home-row:hover .home-chevron { color: var(--icon-secondary); }
+/* The newsletter's schedule warning, a note of its own under its row, lined up with the words. */
+.home-warn { display: flex; align-items: flex-start; gap: var(--spacing-03); margin: 0 var(--spacing-05) var(--spacing-04) calc(var(--spacing-05) + 32px + var(--spacing-04)); padding: var(--spacing-03) var(--spacing-04); border-radius: var(--radius); background: var(--notification-warning-background); color: var(--text-warning-on-tint); font: var(--meta-type); }
+.home-warn .line-icon { width: 16px; height: 16px; margin-top: 1px; stroke-width: 2; color: var(--support-warning); }
+/* Public links: a row a page, its icon, its name and Copy link; then the
    team's own submit page on the quiet surface, with how to pin it. */
-.desk-card-row { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-04); padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--line-in);
-  transition: background-color var(--duration-fast-01) var(--ease-productive); }
-.desk-card-row:first-child { border-top: 0; }
-.desk-card-row:hover { background: var(--accent-alpha); }
-.desk-card-row .desk-card-link, .home-pin-link { display: inline-flex; align-items: center; gap: var(--spacing-04); font: var(--body-type); color: var(--ink); text-decoration: none; }
-.desk-card-row .desk-card-link:hover, .home-pin-link:hover { color: var(--link-primary); text-decoration: underline; }
-.home-links-box .fa-solid { width: var(--spacing-05); text-align: center; font-size: 14px; color: var(--icon-secondary); }
-.desk-card-row:hover .fa-solid, .home-pin:hover .fa-solid { color: var(--accent); }
-.home-pin { padding: var(--spacing-04) var(--spacing-05) var(--spacing-05); background: var(--layer-01); border-top: 1px solid var(--line-in); }
-/* A 1024 to 1199 wide page (review, Oct 23; the window 232px wider since the
-   sidebar): the links drop under the words and the menu narrows, so the status
-   lines keep their width. */
-@media (max-width: 1431px) {
-  .home-hubs { grid-template-columns: minmax(0, 1fr) 280px; gap: var(--spacing-06); }
-  .desk-card { grid-template-columns: 184px minmax(40px, max-content) minmax(0, 1fr); row-gap: var(--spacing-02); }
-  .desk-card-links { grid-column: 3; flex-direction: row; flex-wrap: wrap; gap: var(--spacing-01) var(--spacing-04); }
-}
+.home-links-box .home-tile { width: 28px; height: 28px; border-radius: var(--radius-input); background: var(--layer-accent-01); color: var(--icon-secondary); }
+.home-links-box .home-tile .line-icon { width: 16px; height: 16px; }
+.home-link-row { display: flex; align-items: center; gap: var(--spacing-04); padding-left: var(--spacing-04); }
+.home-link-row .home-main { gap: var(--spacing-03); padding: var(--spacing-04) var(--spacing-04) var(--spacing-04) 0; }
+.home-link-row + .home-link-row .home-main { border-top: 1px solid var(--line-in); }
+a.home-link-name { flex: 1 1 auto; min-width: 0; font: 400 14px/20px var(--font-sans); color: var(--ink); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+a.home-link-name:hover { color: var(--link-primary); text-decoration: underline; }
+.ql-copy.home-copy { flex: none; height: 28px; padding: 0 var(--spacing-04); border: 0; border-radius: var(--radius-pill); background: var(--accent-10); color: var(--accent); font: 600 13px/18px var(--font-sans); text-decoration: none; }
+button.home-copy:hover:not(:disabled) { background: var(--accent-20); border: 0; color: var(--accent-70); }
+.home-pin { display: flex; align-items: flex-start; gap: var(--spacing-04); padding: var(--spacing-04); background: var(--layer-01); border-top: 1px solid var(--line-in); }
+.home-pin-words { min-width: 0; }
+a.home-pin-link { font: 600 14px/20px var(--font-sans); color: var(--ink); text-decoration: none; }
+a.home-pin-link:hover { color: var(--link-primary); text-decoration: underline; }
 .home-pin-link:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); border-radius: 2px; }
-.home-pin-note { margin: var(--spacing-02) 0 0 calc(var(--spacing-05) + var(--spacing-04)); font: var(--meta-type); color: var(--text-helper); }   /* under the name, past the icon */
+.home-pin-note { margin: var(--spacing-01) 0 0; font: var(--meta-type); color: var(--text-helper); }
+/* A narrow page: the menu drops under the lists, so a row keeps its width. */
+@media (max-width: 1199px) {
+  .home-hubs { grid-template-columns: minmax(0, 1fr); }
+}
 .home-note { margin-top: var(--spacing-05); }
+@media (prefers-reduced-motion: reduce) { .home-row { transition: none; } }
 
 /* A small tertiary: the base button at 32px. */
 .mini-btn { height: 32px; padding: 0 var(--spacing-04); white-space: nowrap; }
@@ -865,8 +883,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .sched-note { margin: var(--spacing-04) 0 0; }
 .sched-warn, .p-unchecked { margin: 0 0 var(--spacing-05); padding: var(--spacing-04) var(--spacing-05); border: 1px solid var(--warn-line); border-left: 4px solid var(--warn-mark); border-radius: var(--radius); background: var(--warn-bg); font: var(--body-type); color: var(--ink); }
 .sched-warn .fa-solid, .p-unchecked .fa-solid { color: var(--warn-mark); }
-.desk-card-warn { color: var(--text-warning); }
-.desk-card-warn .fa-solid { color: var(--warn-mark); }
 
 /* ── The sign-in (Kate, Sep 23; her pick B): a bare page, one box in the middle ── */
 /* The window's height less the bar and the page's paddings, so the box sits
@@ -1206,8 +1222,6 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
 .howto-link { margin: var(--spacing-04) 0 0; font: var(--meta-type); }
 .howto-link a { color: var(--link-primary); text-decoration: underline; font-weight: 600; }
 .howto-link .fa-book-open { color: var(--muted); }
-.home-guides { display: flex; gap: var(--spacing-06); flex-wrap: wrap; margin: calc(-1 * var(--spacing-04)) 0 var(--spacing-05); }
-.home-guides .howto-link { margin: 0; }
 
 /* The spring dates note (Kate, Oct 23, her pick B): the warning note under the
    top bar on every desk page, from the day after Thanksgiving until the next

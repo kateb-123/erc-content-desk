@@ -41,8 +41,8 @@ test('a Forthcoming line is real words, so it reads at 4.5:1 on the white page',
   assert.ok(contrast(hex(ink), hex('--background')) >= 4.5, ink);
 });
 
-test('a hub card draws one focus ring, on the card, none on its name', () => {
-  assert.match(rule('a.desk-card-go:focus-visible'), /box-shadow:\s*none/);
+test('a hub row draws one focus ring, on the row, none on its name', () => {
+  assert.match(rule('a.home-name:focus-visible'), /box-shadow:\s*none/);
 });
 
 test("the Exchange's last update is the later of the site's own and the desk's last publish", () => {

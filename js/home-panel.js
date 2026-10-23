@@ -33,15 +33,17 @@ const lower = text => (text ? text[0].toLowerCase() + text.slice(1) : '');
  * status. A card is { key, label, href, count, sub, foot }, plus `links`
  * (lines that are links of their own), `copies` (Public links' rows),
  * `lock` (Sort is behind the password) and the newsletter's `next` send date,
- * short, which the sidebar shows (Kate's pick A, Oct 23). Counts are null
- * until the rows are in; a line about something not known yet is ''.
+ * short, which the sidebar shows (Kate's pick A, Oct 23). `counts` is false
+ * for a hub with no number (the team's form, the public links); `live` marks a
+ * site or form that is up, for its green dot. Counts are null until the rows
+ * are in; a line about something not known yet is ''.
  *   preview    the Exchange check, or null until it lands
  *   archive    the builder's archive index, or null/false
  *   hubUpdated the live site's last change, YYYY-MM-DD; '' when it did not answer, null while asked
  *   signups    { live, sheet, waiting, last } from the listserv, or null; the count is Sheet 1's (Oct 8)
  */
 export function hubCards({ rows = [], schedule = [], today = '', loaded = false, preview = null, archive = null, hubUpdated = null, signups = null, briefs = null }) {
-  const card = (key, rest) => ({ key, label: hub(key).label, href: hub(key).href, count: null, sub: '', foot: '', ...rest });
+  const card = (key, rest) => ({ key, label: hub(key).label, href: hub(key).href, count: null, counts: true, sub: '', foot: '', ...rest });
 
   // Content queue: what waits for Sort, exactly as Sort's list counts it, and how many came from outside.
   const waiting = loaded ? sortList(rows).live : [];
@@ -60,16 +62,16 @@ export function hubCards({ rows = [], schedule = [], today = '', loaded = false,
   const exchange = exchangeStatus({ rows, today, loaded, preview, hubUpdated });
 
   return [
-    card('team', { sub: "The team's form", links: [{ label: 'How to submit content', href: '/how-to/submit-content/' }] }),
+    card('team', { counts: false, sub: "The team's form", links: [{ label: 'How to submit content', href: '/how-to/submit-content/' }] }),
     card('queue', { count: loaded ? waiting.length : null, sub: `waiting for Sort${outside ? ` · ${outside} from outside` : ''}`, foot: 'Sort, password protected', lock: true }),
     // The newsletter's HTML (Kate, Oct 8): three pages linked at the card's foot, never downloads.
     card('newsletter', { next: next ? isoToShort(next, today) : '', ...(next
       ? { count: loaded ? issueRows(rows, next).length : null, sub: `in the ${isoToShort(next, today)} issue · ${lower(sendsIn(next, today))}` }
       : { sub: 'No issue scheduled' }), foot: sent ? `Last sent ${isoToShort(sent, today)}` : '', warn: loaded ? scheduleEndingWords(schedule, today, d => isoToShort(d, today)) : '', links: EMAIL_PAGES.map(p => ({ label: p.label, href: p.href, blank: true })) }),
     // The sign-up sheet rides the card too (Kate, Oct 8), opening in a new tab.
-    card('listserv', { count: signups?.sheet && Number.isFinite(signups.waiting) ? signups.waiting : null, sub: 'to be added', foot: signupFoot, links: [{ label: SIGNUP_SHEET.label, href: SIGNUP_SHEET.href, blank: true }] }),
-    card('links', { copies: PUBLIC_LINKS }),
-    card('exchange', { count: exchange.waiting, sub: 'waiting to publish', foot: exchange.site === 'Live' ? `Live · updated ${exchange.updated}` : '' }),
+    card('listserv', { count: signups?.sheet && Number.isFinite(signups.waiting) ? signups.waiting : null, sub: 'to be added', foot: signupFoot, live: Boolean(signups?.live && !signups.error), links: [{ label: SIGNUP_SHEET.label, href: SIGNUP_SHEET.href, blank: true }] }),
+    card('links', { counts: false, copies: PUBLIC_LINKS }),
+    card('exchange', { count: exchange.waiting, sub: 'waiting to publish', foot: exchange.site === 'Live' ? `Live · updated ${exchange.updated}` : '', live: exchange.site === 'Live' }),
     // Research briefs (Kate, Oct 20): hers alone; the count only once her sign-in has read the list.
     card('briefs', { ...briefsCard(briefs), foot: 'Password protected', lock: true }),
   ];

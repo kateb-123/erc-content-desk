@@ -54,6 +54,10 @@ test('hubCards: the seven hubs in her order, each with its status', () => {
   ]);
   assert.equal(cards[6].lock, true, 'the lock on its line');
   assert.equal(cards[2].next, 'Oct 20', 'the next send date, short, for the sidebar (A, Oct 23)');
+  // Pick A's rows (Oct 23): a hub that counts shows its number and leads with what it counts;
+  // a live site or form wears the green dot beside its Live.
+  assert.deepEqual(cards.map(c => c.counts), [false, true, true, true, false, true, true]);
+  assert.deepEqual(cards.map(c => Boolean(c.live)), [false, false, false, true, false, true, false]);
   // Not signed in, the list is not known: the card says only that it is locked.
   const quiet = hubCards({ rows: hubRows, schedule: hubSchedule, today: '2026-10-07', loaded: true, preview: null, archive: [], hubUpdated: '', signups: null, briefs: null });
   assert.deepEqual([quiet[6].count, quiet[6].sub, quiet[6].foot], [null, '', 'Password protected']);
@@ -92,6 +96,7 @@ test('hubCards: the newsletter with no send date ahead says so; last sent is the
 test('hubCards: a listserv not set up says so, and one with no sign-ups yet says it is live', () => {
   const off = hubCards({ rows: [], schedule: [], today: '2026-10-07', loaded: true, preview: null, archive: null, hubUpdated: null, signups: { live: false, waiting: null, last: '' } });
   assert.equal(off[3].foot, 'Not set up');
+  assert.equal(Boolean(off[3].live), false, 'no green dot on a form that is not set up');
   assert.equal(off[3].count, null);
   const quiet = hubCards({ rows: [], schedule: [], today: '2026-10-07', loaded: true, preview: null, archive: null, hubUpdated: null, signups: { live: true, sheet: true, waiting: 0, last: '' } });
   assert.equal(quiet[3].foot, 'Live');

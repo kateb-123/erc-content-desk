@@ -885,7 +885,7 @@ After the review Kate picked a new look for the whole desk (The look, at the
 top of this file). It lands in three steps on a branch, each checked in the
 sandbox before anything goes live:
 
-1. **The look and the sidebar** (this step): the tokens in `css/tokens.css`,
+1. **The look and the sidebar** (done): the tokens in `css/tokens.css`,
    the computer's own face, the sidebar on the desk, the builder and the
    email's pages, labels in sentence case, hairlines for the maize rules, the
    blue tab icon. I need help! moves from the top bar into the sidebar's foot,
@@ -893,7 +893,18 @@ sandbox before anything goes live:
    page keeps it in the corner and a how-to in its bar. The builder's step
    card is white on the grey page with soft corners. Every other screen keeps
    its layout and takes the new look through the tokens.
-2. **The front page** as A's grouped lists, with the line rules.
+2. **The front page** as A's grouped lists, with the line rules (done):
+   the title and its lede at the left of the head and How it all connects as
+   a white button at its right (All how-tos lives in the sidebar now); each
+   group a white list with 12px corners; a row is the hub's icon on a pale
+   blue tile, its name, one line for what the count counts (that first fact
+   darker: "waiting for Sort", then "· 1 from outside" in grey), one for its
+   status (the lock where the password is, a green dot beside Live), its own
+   links in blue, the count (grey when it is 0) and a chevron. No line wraps;
+   a cut line shows itself in full on hover. The schedule warning is a note
+   of its own under the Newsletter row. Public links keeps its three rows,
+   each with Copy link as a blue pill, and the Team submit page under them;
+   under 1200px wide the menu drops below the lists.
 3. **Content Sort** in A's layout: the list type first, the card's byline and
    foot, the decision column.
 
