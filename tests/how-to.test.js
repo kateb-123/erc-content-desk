@@ -313,3 +313,16 @@ test('the newsletter how-to says the draft is saved in one browser, on the first
   assert.ok(first.includes(line), 'on the first Outline slide');
   assert.ok(readFileSync(new URL('desk-guide.txt', howToDir), 'utf8').includes(line), 'and in the desk guide');
 });
+
+// Kate, Oct 23: How it all connects is her drawn diagram (pick B of three) in place of the
+// three boxes and "Beside the pipeline"; "The two weeks" stays.
+test('How it all connects shows the drawn diagram, keeps The two weeks, and drops the three boxes', () => {
+  const page = readFileSync(new URL('../how-to/pipeline/index.html', import.meta.url), 'utf8');
+  assert.match(page, /<figure class="pl-diagram">\s*<svg viewBox="0 0 1150 760"[^>]*role="img" aria-label="Three layers\./);
+  assert.match(page, /<figcaption>Read the middle row left to right\./);
+  assert.match(page, /<h2>The two weeks<\/h2>/);
+  assert.match(page, /Any day: publish to the Exchange\./);
+  assert.doesNotMatch(page, /class="pl-row"/);
+  assert.doesNotMatch(page, /<h2>Beside the pipeline<\/h2>/);
+  assert.ok(page.indexOf('class="pl-diagram"') < page.indexOf('<h2>The two weeks</h2>'), 'the diagram comes before The two weeks');
+});
