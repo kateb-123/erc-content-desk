@@ -6,7 +6,7 @@ import { busyWords } from './icons.js';
 import { renderHome } from './home-ui.js';
 import { renderTeam } from './team-ui.js';
 import { renderSidebar } from './shell-ui.js';
-import { openedScreen, openedId, briefHash, screenHash, pageTitle, navBadges } from './shell-view.js';
+import { openedScreen, openedId, briefHash, screenHash, pageTitle, navBadges, sidebarCheck } from './shell-view.js';
 import { hubCards } from './home-panel.js';
 import { renderIssue, resetIssueEntry, pickIssue } from './issue-ui.js';
 import { nextIssueDate } from './schedule.js';
@@ -19,7 +19,7 @@ import { renderSchedule } from './schedule-ui.js';
 import { renderSpringBanner } from './spring-banner.js';
 import { keep, trash, circleback, markNewsletterIssue, clearNewsletterIssue, withoutAutoFilled, readyToFinalize, canRewrite, nextStops } from './workflow.js';
 import { rewriteTargets, landRewrites } from './rewrite-client.js';
-import { unchangedNote, uncheckedRewrites, reapplyRewrites } from './finalize-view.js';
+import { unchangedNote, uncheckedRewrites, reapplyRewrites, keptRow, undoKeep } from './finalize-view.js';
 import { todayCentral } from './today.js';
 import { sessionStatus, signIn as signInRequest, signOut as signOutRequest } from './auth-client.js';
 import { isLocked, SIGN_IN_ON, authError, lockedOut, WRONG_PASSWORD } from './auth-view.js';
@@ -65,6 +65,10 @@ const state = {
   briefs: null, briefsError: false, briefId: '', brief: null, briefFiles: undefined, briefError: '',
   newBriefOpen: false, creatingBrief: false, createError: '', savingNotes: false, notesSaved: '', draftRunning: false, draftError: '', cropFailed: [], restartFailed: '',
   publishPreview: null,
+  // The last Exchange check that landed this visit, kept when a change clears
+  // the current one: the sidebar, the front page and the Exchange page count
+  // from it, one number (Kate, Oct 23); null until one lands, and after a publish.
+  lastCheck: null,
   publishedCsv: '',       // the CSV from the last publish, the receipt's download when the Drive copy failed
   publishedCopy: null,    // { name, url } of the copy the publish filed in Drive (Oct 22)
   copyError: '',
@@ -81,6 +85,7 @@ const statusEl = document.querySelector('#desk-status');
 function setStatus(message, kind = 'busy', action = null) {
   statusEl.className = `status status-${kind}`;
   statusEl.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+  statusEl.title = message;   // the whole message on hover where the band's one line cuts it (review, Oct 23)
   // Anything in flight shows the dots loader beside its words; with
   // a retry button, the sentence does not also say to try again.
   if (action) message = message.replace(/ Try again in a minute\.$/, '');
@@ -480,7 +485,7 @@ async function loadPublishPreview() {
   setStatus('');   // Publish's own loader carries this — no second row in the bar
   try {
     const data = await readReply(await fetch('/api/publish'), 'check the Exchange');
-    state.publishPreview = data;
+    state.publishPreview = state.lastCheck = data;
     setStatus('', 'ok');
   } catch (err) {
     if (shutOut(err)) return;
@@ -491,7 +496,8 @@ async function loadPublishPreview() {
 }
 
 /** The Exchange check for the front page's lane: no loader, no status line; a
- *  miss leaves the lane on its stand-in count until the rows change. */
+ *  miss leaves the lane on the last check that landed, or on its stand-in
+ *  count (the sidebar shows none) until the rows change. */
 const laneCheck = { inFlight: false, failedAt: null };
 async function quietPublishCheck() {
   laneCheck.inFlight = true;
@@ -499,7 +505,7 @@ async function quietPublishCheck() {
   try {
     await whenSaved();
     const data = await readReply(await fetch('/api/publish'), 'check the Exchange');
-    if (state.rows === rowsAsked || !state.publishPreview) state.publishPreview = data;
+    if (state.rows === rowsAsked || !state.publishPreview) state.publishPreview = state.lastCheck = data;
   } catch (err) {
     laneCheck.failedAt = rowsAsked;
     if (lockedOut(err)) { laneCheck.inFlight = false; shutOut(err); return; }
@@ -540,6 +546,8 @@ async function publishNow({ password, highlights, only }) {
       setStatus('Nothing new to add: those rows are already live.', 'ok');
       return true;
     }
+    // The publish changed what waits, so no count stands until the next check lands.
+    state.lastCheck = null;
     // The copy is filed in Drive by the publish itself (Oct 22); the receipt names it.
     // reload() writes its own 'Loading…'/'' status; the confirmation message
     // has to be set after it finishes, or reload() overwrites it.
@@ -820,6 +828,8 @@ function focusHeading(section) {
 }
 
 function render() {
+  // Once a check has landed this visit, a change on any page asks again, so the sidebar's count never goes stale (review, Oct 23).
+  if (state.loaded && state.lastCheck && !state.publishPreview && !laneCheck.inFlight && laneCheck.failedAt !== state.rows) quietPublishCheck();
   for (const [name, el] of Object.entries(screens)) el.hidden = name !== state.screen;
   const locked = isLocked(state.screen) && state.auth !== true;
   const today = todayCentral();
@@ -828,7 +838,7 @@ function render() {
   // there, counted as the front page counts it.
   renderSidebar(document.querySelector('.sidebar'), {
     screen: state.screen, onGo: goTo, signedIn: state.auth === true, onSignOut: signOutNow,
-    badges: navBadges(hubCards({ rows: state.rows, schedule: state.schedule, today, loaded: state.loaded, preview: state.publishPreview, archive: state.archive, hubUpdated: state.hubUpdated, signups: state.signups, briefs: state.briefs })),
+    badges: navBadges(hubCards({ rows: state.rows, schedule: state.schedule, today, loaded: state.loaded, preview: sidebarCheck(state.publishPreview, state.lastCheck), archive: state.archive, hubUpdated: state.hubUpdated, signups: state.signups, briefs: state.briefs })),
   });
   document.title = pageTitle(state.screen);
   // The sidebar's links switch screens in place. Every screen but the front
@@ -870,7 +880,7 @@ function render() {
     if (state.loaded && !state.publishPreview && !laneCheck.inFlight && laneCheck.failedAt !== state.rows) quietPublishCheck();
     renderHome(screens.home, {
       ...common, loaded: state.loaded, loadFailed: state.loadFailed,
-      preview: state.publishPreview, archive: state.archive, hubUpdated: state.hubUpdated, signups: state.signups, briefs: state.briefs,
+      preview: sidebarCheck(state.publishPreview, state.lastCheck), archive: state.archive, hubUpdated: state.hubUpdated, signups: state.signups, briefs: state.briefs,
       onGoTo: goTo,
       onRefresh: reload,
     });
@@ -893,7 +903,7 @@ function render() {
   } else if (state.screen === 'exchange') {
     // What waits to publish comes from the live Exchange check: the quiet one the front page asks for.
     if (state.loaded && !state.publishPreview && !laneCheck.inFlight && laneCheck.failedAt !== state.rows) quietPublishCheck();
-    renderExchange(screens.exchange, { ...common, loaded: state.loaded, preview: state.publishPreview, hubUpdated: state.hubUpdated, onGoTo: goTo });
+    renderExchange(screens.exchange, { ...common, loaded: state.loaded, preview: sidebarCheck(state.publishPreview, state.lastCheck), hubUpdated: state.hubUpdated, onGoTo: goTo });
   } else if (state.screen === 'listserv') {
     renderListserv(screens.listserv, { signups: state.signups, today: common.today, onRetry: () => { state.signups = null; render(); loadSignups(); } });
   } else if (state.screen === 'team') {
@@ -953,39 +963,49 @@ function render() {
         const row = state.rows.find(r => r.id === id);
         state.rewriteReview.delete(id);
         state.verifiedIds.add(id);
-        if (row) persist([{ ...row, rewrite_checked: new Date().toISOString() }]);
+        if (row) persist([keptRow(row, { rewrite: state.rewriteText.get(id), stamp: new Date().toISOString() })]);
         else render();
       },
       // Keep all remaining: every rewrite
-      // still waiting is kept, stamped in one write.
+      // still waiting is kept, stamped in one write. Each row's old words and
+      // its rewrite are kept for the way back.
       onVerifyAll: ids => {
         const stamp = new Date().toISOString();
         const changed = [];
         const before = [];
         for (const id of ids) {
           const row = state.rows.find(r => r.id === id);
-          before.push({ id, old: state.rewriteReview.get(id) ?? '' });
+          const kept = row && keptRow(row, { rewrite: state.rewriteText.get(id), stamp });
+          before.push({ id, old: state.rewriteReview.get(id) ?? '', rewrite: kept?.blurb ?? state.rewriteText.get(id) ?? '' });
           state.rewriteReview.delete(id);
           state.verifiedIds.add(id);
-          if (row) changed.push({ ...row, rewrite_checked: stamp });
+          if (kept) changed.push(kept);
         }
         state.lastKeepAll = before;
         if (changed.length) persist(changed); else render();
       },
-      // The way back from Keep all remaining: the originals return and the checks reopen.
-      onUndoKeepAll: () => {
+      // The way back from Keep all remaining: each check reopens as it was
+      // (bug, Oct 23): the store gets its old words back, the check shows the
+      // rewrite as After, Before and Use original as they were.
+      onUndoKeepAll: async () => {
         const back = state.lastKeepAll ?? [];
         state.lastKeepAll = null;
-        const changed = [];
-        for (const { id, old } of back) {
+        const saved = [];
+        for (const { id, old, rewrite } of back) {
           const row = state.rows.find(r => r.id === id);
           if (!row) continue;
+          const way = undoKeep(row, { old, rewrite });
           state.rewriteReview.set(id, old);
+          state.rewriteText.set(id, way.shown.blurb);
           state.verifiedIds.delete(id);
-          changed.push({ ...row, blurb: old, rewrite_checked: '' });
+          saved.push(way.saved);
         }
-        state.reviewTotal = state.rewriteReview.size;
-        if (changed.length) persist(changed); else render();
+        // The count reads as it did before the keep ("1 of 4 checked").
+        state.reviewTotal = Math.max(state.reviewTotal, state.rewriteReview.size);
+        if (!saved.length) { render(); return; }
+        await persist(saved);
+        state.rows = reapplyRewrites(state.rows, state.rewriteText, state.rewriteReview);
+        render();
       },
       onTrash: row => {
         // Junk spotted mid-finalize goes out at once, its open check dropped so

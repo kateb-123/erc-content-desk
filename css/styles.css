@@ -364,16 +364,17 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
    The progress bar is Carbon's: 8px, square, on the accent layer. */
 .f-progress { height: 8px; border-radius: 0; background: var(--layer-accent-01); overflow: hidden; margin: calc(-1 * var(--spacing-02)) 0 var(--spacing-06); }
 .f-progress i { display: block; height: 100%; background: var(--interactive); border-radius: 0; }
-.f-split { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr); gap: var(--spacing-05); align-items: start; }
-@media (max-width: 1132px) { .f-split { grid-template-columns: minmax(0, 1fr); } }
+.f-split { min-width: 0; }   /* the list and the card, laid out in the Sort frame below (pick A, Oct 23) */
+/* A group's head in the list pane, as Sort's: a hairline over each after the first, its count in grey at its right. */
 .f-group-head {
-  display: flex; align-items: center; gap: var(--spacing-03); width: 100%; box-sizing: border-box; margin: 0; height: auto;
-  padding: var(--spacing-03) var(--spacing-05) var(--spacing-02); border: 0; border-top: 1px solid var(--line-in); border-radius: var(--radius); background: none;
-  font: inherit; font-size: 12px; line-height: 16px; letter-spacing: 0; font-weight: 600; color: var(--muted); text-align: left;
+  display: flex; align-items: center; gap: var(--spacing-03); width: calc(100% - 2 * var(--spacing-05)); box-sizing: border-box; margin: var(--spacing-03) var(--spacing-05) var(--spacing-01); height: auto;
+  padding: var(--spacing-04) 0 var(--spacing-02); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; background: none;
+  font: 600 13px/18px var(--font-sans); letter-spacing: 0; color: var(--ink); text-align: left;
 }
+.f-list > .f-group-head:first-child { margin-top: 0; border-top: 0; }
 .f-group-head.is-fold { cursor: pointer; }
-.f-group-head.is-fold:hover:not(:disabled) { background: var(--row-hover); border-color: var(--line-in); color: var(--ink); }
-.f-group-count { margin-left: auto; font-weight: 600; letter-spacing: 0; }
+.f-group-head.is-fold:hover:not(:disabled) { background: none; border-color: var(--line-in); color: var(--link-primary); }
+.f-group-count { margin-left: auto; font-weight: 500; letter-spacing: 0; color: var(--muted); }
 .f-group-head .fa-solid { font-size: .6rem; }
 .f-group-head.is-fold .fa-chevron-down, .f-group-head.is-fold .fa-chevron-right { width: 12px; text-align: center; color: var(--icon-secondary); }   /* the opener on the left, like every fold (audit round two, f1) */
 /* Finalize's rows follow Sort's (style audit, Sep 16): the row, text, title and
@@ -383,7 +384,6 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .f-list-row.is-deleted .f-row-title { text-decoration: line-through; }
 .f-list-row.is-deleted .linkish { margin-left: auto; }
 .f-list-row .fa-check { color: var(--ok-mark); flex: none; margin-top: var(--spacing-01); }
-.f-card .type-line { margin: 0 0 var(--spacing-02); }
 .f-card .f-verify-actions .quiet-link { margin-left: auto; }
 .f-card .f-verify-actions .trash-link + .primary { margin-left: auto; }
 .f-diff-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-04); margin: var(--spacing-03) 0 0; }
@@ -673,122 +673,271 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .tab.is-active .tab-count { background: var(--layer-accent-01); }
 .page-tabs-note { margin-left: auto; font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text-helper); }
 
-/* Sort content's Sort tab (Kate's wireframes, Sep 17): the list, 420px, down
-   the left, the chosen item's card on the right, kept in view while the list
-   scrolls. Finalize's list and card share the row and card rules. */
-.sort-split { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: var(--spacing-06); align-items: start; }
-.sort-list, .f-list { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); overflow: hidden; }
-.sort-list-head { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-03) var(--spacing-05); background: var(--layer-01); font-size: 12px; line-height: 16px; letter-spacing: 0; }
-.sort-list-count { font: var(--body-type); font-weight: 500; color: var(--ink); }
-.sort-list-order { margin-left: auto; color: var(--text-helper); }
-.sort-group-head { border-top: 1px solid var(--line-in); }   /* Past and Already live, each with its sweep (Sep 22) */
-.sort-group-head .trash-link { margin-left: auto; }
+/* ── Content Sort in pick A (Kate, Oct 23, 2026; design/mockups/a-sort.html,
+   step 3 of 3). The page runs edge to edge beside the sidebar: the head is a
+   toolbar band, the list a white pane down the left, flush with the sidebar,
+   and beside it the chosen item's white card with the decisions in a column
+   of their own. Finalize wears the same band, pane, rows and card. Her line
+   rules for the rows: one line per kind of fact, the first darker, never
+   wrapping. One scrollbar, the page's (Kate, Sep 23). ── */
+:root {
+  --sort-list-w: 300px;                                            /* the list pane */
+  --sort-pad: calc(var(--spacing-05) + var(--spacing-02));          /* 20px: the band's sides and the stage's edge */
+  --sort-row-indent: calc(var(--spacing-04) + 15px + var(--spacing-03));   /* a row's words, past the triangle's place */
+}
+
+/* The column gives way to the page: no gutters, no 1280px cap. The status
+   line keeps its one slot (a message never moves the page), now inside the
+   band between the tabs and the wait, and stays in view down a long list. */
+.desk-main:has(> main > #screen-sort:not([hidden])), .desk-main:has(> main > #screen-finalize:not([hidden])) {
+  max-width: none; padding: 0; min-height: 100vh;
+  display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr;
+}
+.desk-main:has(> main > #screen-sort:not([hidden])) > #desk-banner, .desk-main:has(> main > #screen-finalize:not([hidden])) > #desk-banner { grid-row: 1; margin: var(--spacing-04) var(--sort-pad) 0; }
+/* One line, 24px tall, 16px down: the middle of the 56px band (review,
+   Oct 23). The box is as wide as its words, up to the wait at the right; a
+   longer message ends in an ellipsis, and its action (Undo, Try again) keeps
+   a slot of its own at the right end, so it follows the words and is never cut. */
+.desk-main:has(> main > #screen-sort:not([hidden])) > #desk-status, .desk-main:has(> main > #screen-finalize:not([hidden])) > #desk-status {
+  --status-start: calc(var(--sort-list-w) + var(--spacing-07)); --status-end: 0px; --status-act: 0px;
+  grid-row: 2; grid-column: 1; align-self: start; justify-self: start; position: sticky; top: 0; z-index: 3;
+  margin: var(--spacing-05) var(--status-end) 0 var(--status-start); max-width: calc(100% - var(--status-start) - var(--status-end));
+  height: 24px; min-height: 0; padding-right: var(--status-act);
+  font-size: 13px; line-height: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: transparent; pointer-events: none;
+}
+/* The right end is kept clear only while the band has a wait note there to protect (review, Oct 23). */
+.desk-main:has(> main > #screen-sort:not([hidden]) .page-tabs-note) > #desk-status, .desk-main:has(> main > #screen-finalize:not([hidden]) .page-tabs-note) > #desk-status { --status-end: 200px; }
+.desk-main:has(> main > #screen-sort:not([hidden])) > #desk-status:not(:empty), .desk-main:has(> main > #screen-finalize:not([hidden])) > #desk-status:not(:empty) { background: var(--gray-50); pointer-events: auto; }
+.desk-main:has(> main > #screen-sort:not([hidden])) > #desk-status:has(> button), .desk-main:has(> main > #screen-finalize:not([hidden])) > #desk-status:has(> button) { --status-act: var(--spacing-09); }   /* Undo: 48px */
+.desk-main:has(> main > #screen-sort:not([hidden])) > #desk-status.status-error:has(> button), .desk-main:has(> main > #screen-finalize:not([hidden])) > #desk-status.status-error:has(> button) { --status-act: calc(var(--spacing-10) + var(--spacing-05)); }   /* Try again, Retry now: 80px */
+.desk-main:has(> main > #screen-sort:not([hidden])) > #desk-status > button, .desk-main:has(> main > #screen-finalize:not([hidden])) > #desk-status > button {
+  position: absolute; top: 0; right: 0; justify-content: center; min-width: var(--status-act); height: 24px; margin: 0; padding: 0 var(--spacing-02);
+  background: var(--gray-50); font-size: 13px; line-height: 24px;   /* the band's ground: a word wider than its slot covers the words' end, never sits on them */
+}
+.desk-main:has(> main > #screen-sort:not([hidden])) > #desk-status > button:hover:not(:disabled), .desk-main:has(> main > #screen-finalize:not([hidden])) > #desk-status > button:hover:not(:disabled) { background: var(--sidebar-hover); }
+/* The line clips what is drawn outside it, so the ring is drawn inside, as in the lists. */
+.desk-main:has(> main > #screen-sort:not([hidden])) > #desk-status > button:focus-visible, .desk-main:has(> main > #screen-finalize:not([hidden])) > #desk-status > button:focus-visible { outline-offset: -2px; box-shadow: inset 0 0 0 2px var(--focus); }
+.desk-main:has(> main > #screen-sort:not([hidden])) > main, .desk-main:has(> main > #screen-finalize:not([hidden])) > main { grid-row: 2; grid-column: 1; display: flex; flex-direction: column; min-width: 0; }
+#screen-sort:not([hidden]), #screen-finalize:not([hidden]) { flex: 1 0 auto; display: flex; flex-direction: column; }
+
+/* The band: the title, the tabs as a segmented control (a white segment on a
+   grey track), and the wait at its right, on a toolbar's ground. */
+.sort-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-04) var(--spacing-05); min-height: 56px; margin: 0; padding: var(--spacing-03) var(--sort-pad); background: var(--gray-50); border-bottom: 1px solid var(--sidebar-line); }
+.sort-bar .page-title { margin: 0; font: 600 15px/20px var(--font-sans); letter-spacing: 0; }
+.sort-bar .page-tabs { flex: 1 1 auto; gap: var(--spacing-05); border-bottom: 0; }
+.sort-bar .tabs { display: inline-flex; gap: var(--spacing-01); padding: var(--spacing-01); border-radius: var(--radius); background: var(--gray-200); }
+.sort-bar .tab { height: 28px; gap: var(--spacing-03); margin: 0; padding: 0 var(--spacing-04); border: 0; border-radius: var(--radius-input); background: transparent; color: var(--gray-800); font: 500 13px/18px var(--font-sans); }
+.sort-bar .tab:hover:not(:disabled) { background: var(--sidebar-hover); color: var(--ink); border: 0; }
+.sort-bar .tab.is-active, .sort-bar .tab.is-active:hover:not(:disabled) { background: var(--layer-02); color: var(--ink); font-weight: 600; border: 0; box-shadow: var(--shadow-card); }
+.sort-bar .tab:focus-visible, .sort-bar .tab.is-active:focus-visible { box-shadow: var(--focus-ring); }
+.sort-bar .tab-count, .sort-bar .tab.is-active .tab-count { min-width: 0; height: auto; padding: 0; border-radius: 0; background: none; color: var(--muted); font: 500 13px/18px var(--font-sans); font-variant-numeric: tabular-nums; }
+.sort-bar .page-tabs-note { margin-left: auto; font: var(--meta-type); color: var(--text-secondary); }
+
+/* Under the band: the list pane, then the stage. */
+.sort-split { flex: 1 0 auto; display: grid; grid-template-columns: var(--sort-list-w) minmax(0, 1fr); align-items: stretch; }
+.sort-list, .f-list { min-width: 0; padding-bottom: var(--spacing-04); background: var(--layer); border-right: 1px solid var(--sidebar-line); overflow: hidden; }
+.sort-list-head { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-04) var(--spacing-05) var(--spacing-03); font: var(--meta-type); }
+.sort-list-count { font: 600 13px/18px var(--font-sans); color: var(--ink); }
+.sort-list-order { margin-left: auto; font: 400 12px/16px var(--font-sans); color: var(--text-helper); }
+/* Past and Already live (Sep 22): a hairline over each, its count in grey, Dismiss all at its right. */
+.sort-group-head { margin: var(--spacing-03) var(--spacing-05) 0; padding: var(--spacing-04) 0 var(--spacing-02); border-top: 1px solid var(--line-in); }
+.sort-group-count { color: var(--muted); font-weight: 500; }
+.sort-group-head .trash-link { height: 26px; margin: 0 calc(-1 * var(--spacing-03)) 0 auto; padding: 0 var(--spacing-03); font: 600 12px/16px var(--font-sans); }
+.sort-group-head .trash-link:hover:not(:disabled) { background: var(--sidebar-hover); }
+
+/* A row: soft corners inside the pane, no rules between; the triangle (or its
+   place) on the left, the title with the day it came in at its right, then
+   one line that never wraps, the tag at its end. */
 .sort-row, .f-list-row {
-  display: flex; align-items: flex-start; gap: var(--spacing-03); width: 100%; height: auto; box-sizing: border-box; text-align: left;
-  padding: 13px var(--spacing-05) 13px 13px; border: 0; border-top: 1px solid var(--line-in); border-left: 4px solid transparent; border-radius: 0; background: transparent;
-  font: inherit; letter-spacing: 0; color: var(--ink); cursor: pointer;
+  display: flex; align-items: flex-start; gap: var(--spacing-03); width: calc(100% - 2 * var(--spacing-03)); height: auto; margin: 0 var(--spacing-03) var(--spacing-01); box-sizing: border-box; text-align: left;
+  padding: var(--spacing-03) var(--spacing-04) var(--spacing-03) var(--sort-row-indent); border: 0; border-radius: var(--radius); background: transparent;
+  font: inherit; font-weight: 400; letter-spacing: 0; color: var(--ink); cursor: pointer;
   transition: background-color var(--duration-fast-01) var(--ease-productive);
 }
-.f-list > :first-child { border-top: 0; }
-.sort-row:hover:not(:disabled), .f-list-row:hover:not(:disabled) { border-color: var(--line-in); border-left-color: transparent; background: var(--row-hover); color: var(--ink); }
-.sort-row.is-selected:hover:not(:disabled) { border-left-color: var(--accent); }
-.sort-row.is-selected, .f-list-row.is-selected { background-color: var(--selected); color: var(--accent-deep); border-left-color: var(--accent); }
-.sort-row.is-selected:hover:not(:disabled), .f-list-row.is-selected:hover:not(:disabled) { background: var(--selected); color: var(--accent-deep); }   /* the chosen row keeps its tint under the mouse */
+.sort-row.has-mark, .f-list-row.has-mark { padding-left: var(--spacing-04); }
+.sort-row:hover:not(:disabled), .f-list-row:hover:not(:disabled) { border: 0; background: var(--row-hover); color: var(--ink); }
 .sort-row-text, .f-row-text { display: flex; flex-direction: column; gap: var(--spacing-01); min-width: 0; flex: 1 1 auto; }
-.sort-row.is-selected .sort-row-title { font-weight: 600; }
-.sort-row-title .badge, .sort-card-top .badge { margin-right: 0; }
-.sort-row-title, .f-row-title { font: var(--body-type); line-height: 21px; }
-.sort-row-tag { flex: none; margin: 0; }
-.sort-row-meta, .f-row-type { font: var(--meta-type); color: var(--text-helper); }
-/* A row the card has a question about (no type, the link, a duplicate): the triangle before the title. */
-.sort-row .fix-mark, .f-list-row .fix-mark { color: var(--warn-mark); font-size: 15px; margin-top: 3px; flex: none; }
-.sort-done { display: flex; align-items: flex-start; gap: var(--spacing-03); padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--line-in); background: var(--layer-01); }
+.sort-row-top { display: flex; align-items: baseline; gap: var(--spacing-04); }
+.sort-row-title, .f-row-title { flex: 1 1 auto; min-width: 0; font: 600 14px/19px var(--font-sans); }
+.sort-row-date { flex: none; font: 400 12px/17px var(--font-sans); color: var(--muted); font-variant-numeric: tabular-nums; }
+.sort-row-line { display: flex; align-items: center; gap: var(--spacing-03); min-width: 0; white-space: nowrap; }
+.sort-row-meta, .f-row-type { flex: 1 1 auto; min-width: 0; font: 400 12px/17px var(--font-sans); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sort-row-lead { color: var(--gray-800); font-weight: 600; }
+.sort-row-lead.is-fix { color: var(--warn); }   /* needs doing, in words: the triangle is never the only signal */
+.sort-row-tag { flex: none; height: 17px; margin: 0; padding: 0 var(--spacing-03); font: 600 11px/17px var(--font-sans); }
+.sort-row .fix-mark, .f-list-row .fix-mark { flex: none; display: inline-flex; margin-top: var(--spacing-01); color: var(--warn-mark); }
+.fix-mark .line-icon { width: 15px; height: 15px; stroke-width: 2.2; }
+/* The chosen row: the blue fill, its words white (pick A). */
+.sort-row.is-selected, .f-list-row.is-selected, .sort-row.is-selected:hover:not(:disabled), .f-list-row.is-selected:hover:not(:disabled) { background: var(--accent); color: var(--text-on-color); }
+/* Every word on it is white, 5.0:1 on the blue: the pale blue of the first
+   draft read at 4.4:1 at 12px (review, Oct 23). The weights keep the order. */
+.sort-row.is-selected .sort-row-date, .sort-row.is-selected .sort-row-meta, .f-list-row.is-selected .f-row-type,
+.sort-row.is-selected .sort-row-lead, .sort-row.is-selected .fix-mark, .f-list-row.is-selected .fix-mark, .f-list-row.is-selected .fa-check { color: var(--text-on-color); }
+.sort-row.is-selected .sort-row-tag { background: var(--accent-deep); color: var(--text-on-color); }
+/* On the blue fill the inside ring would vanish: there it is a white line inside, as on a picked type (Kate, Sep 23). */
+.sort-list .sort-row.is-selected:focus-visible, .f-list .f-list-row.is-selected:focus-visible { box-shadow: inset 0 0 0 2px var(--text-on-color); }
+/* What was kept or deleted this visit, greyed at the foot with its word and Undo. */
+.sort-done { display: flex; align-items: flex-start; gap: var(--spacing-03); margin: 0 var(--spacing-03) var(--spacing-01); padding: var(--spacing-03) var(--spacing-04) var(--spacing-03) var(--sort-row-indent); border-radius: var(--radius); background: var(--layer-01); }
 .sort-done .sort-row-title, .sort-done .sort-row-meta { color: var(--muted); }
 .sort-done.is-trashed .sort-row-title { text-decoration: line-through; }
-.sort-done-acts { margin-left: auto; white-space: nowrap; }
-/* The review card (the handoff, Sep 22): one white box split by a vertical
-   rule, the item as it reads on the left, the decisions on the right. */
-/* One scrollbar, the page's (Kate, Sep 23: "two scrollbars fighting"): the card neither pins nor scrolls inside itself. */
-.sort-card, .f-card { padding: var(--spacing-05); box-sizing: border-box; }
-.sort-card { display: flex; align-items: stretch; padding: 0; }
-.sc-left { flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-08, 18px); padding: var(--spacing-06); }
-.sc-right { flex: 0 1 300px; min-width: 260px; display: flex; flex-direction: column; gap: 22px; padding: var(--spacing-06); border-left: 1px solid var(--line-in); }
-.sc-spacer { flex: 1 1 auto; }
-.sc-kicker { display: flex; align-items: baseline; justify-content: space-between; gap: var(--spacing-04); }
-.sc-facts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-03); min-width: 0; }
-.sc-source { font: var(--label-type); letter-spacing: var(--label-tracking); color: var(--ink); }
-.sort-card-pos { flex: none; font: var(--meta-type); color: var(--text-helper); }
-.sc-facts .badge { margin: 0; }
+.sort-done-acts { margin-left: auto; white-space: nowrap; font: var(--meta-type); }
+
+/* The stage: the item's card and the decision column side by side; under
+   about 1020px wide the column drops under the card. */
+.sort-card, .f-card { box-sizing: border-box; min-width: 0; }
+.sort-card { display: flex; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; gap: var(--spacing-05); padding: var(--sort-pad); }
+.sc-left {
+  flex: 999 1 340px; min-width: 0; display: flex; flex-direction: column; padding: var(--spacing-06) var(--spacing-06) var(--spacing-06);
+  background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+}
+.sc-left:has(> .sc-foot:last-child) { padding-bottom: 0; }
+.sort-card .sc-left > * { margin: 0; }
+.sort-card .sc-left > * + * { margin-top: var(--spacing-04); }   /* above the parts' own margins (a note's card-quiet) */
+.sc-left > .card-title, .sc-left > .sc-byline, .sc-left > .card-title + .sc-where { margin-top: var(--spacing-03); }
+.sc-left > .sc-byline + .sc-where { margin-top: var(--spacing-01); }
+.sc-left > .sc-desc, .sc-left > .card-grid { margin-top: var(--spacing-05); }
+.sc-kicker { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-04); }
+.sc-facts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02) var(--spacing-03); min-width: 0; }
+.sc-type { font: 600 12px/16px var(--font-sans); color: var(--muted); }
+.sc-facts .badge { height: 20px; margin: 0; font: 600 11px/16px var(--font-sans); }
+.sort-card-pos { flex: none; font: 400 12px/16px var(--font-sans); color: var(--text-helper); font-variant-numeric: tabular-nums; }
 /* The title is edited in place: borderless, a rule appears under it on hover. */
-.sort-card .card-title { height: auto; padding: 0; font: var(--card-title); letter-spacing: -.2px; background: transparent; border: 1px solid transparent; margin: calc(-1 * var(--spacing-03)) 0; }
+.sort-card .card-title { height: auto; padding: 0; font: 700 22px/28px var(--font-sans); letter-spacing: -.3px; color: var(--ink); background: transparent; border: 1px solid transparent; border-radius: var(--radius-input); }
 /* A textarea since Oct 23, one line that grows, so a long title wraps (review). */
 .sort-card textarea.card-title { display: block; width: 100%; min-height: 0; resize: none; overflow: hidden; field-sizing: content; }
-.sort-card .card-title:hover { border-bottom-color: var(--layer-line); }   /* the rule appears under the title on hover */
-.sc-meta { margin: calc(-1 * var(--spacing-03)) 0 0; font: var(--meta-type); color: var(--text-helper); }
-.sc-meta .source-link { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
-.sc-meta .fa-arrow-up-right-from-square, .card-note-box .fa-arrow-up-right-from-square { font-size: 11px; }
-.sc-meta .linkish { height: auto; padding: 0; margin: 0; font: inherit; color: var(--muted); }
-.sc-meta .linkish:hover:not(:disabled) { background: none; color: var(--ink); }
-.card-link-line { margin: 0; font: var(--body-sm-type, 400 14px/21px var(--font-sans)); color: var(--muted); }
+.sort-card .card-title:hover { border-bottom-color: var(--layer-line); }
+.sc-byline { font: 500 14px/20px var(--font-sans); color: var(--ink); }
+.sc-where { font: var(--meta-type); color: var(--muted); }
+/* The link: its domain on a quiet pill, Change beside it. */
+.sc-link { display: flex; align-items: center; gap: var(--spacing-04); min-width: 0; }
+.sc-link-pill { display: inline-flex; align-items: center; gap: var(--spacing-02); min-width: 0; max-width: 100%; height: 28px; padding: 0 var(--spacing-03); border-radius: var(--radius-input); background: var(--layer-accent-01); color: var(--link-primary); font: 500 13px/18px var(--font-sans); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-link-pill:hover { background: var(--gray-200); color: var(--link-primary-hover); }
+.sc-link-pill .fa-solid { flex: none; font-size: 11px; }
+.sc-link .sc-change { height: auto; padding: 0; margin: 0; font: 400 13px/18px var(--font-sans); color: var(--muted); }
+.sc-link .sc-change:hover:not(:disabled) { background: none; color: var(--ink); }
+.card-note-box .fa-arrow-up-right-from-square { font-size: 11px; }
+.card-link-line { margin: 0; font: var(--body-sm-type); color: var(--muted); }
 .card-link-change { display: flex; align-items: flex-end; gap: var(--spacing-04); flex-wrap: wrap; }
 .card-link-change .card-field { flex: 1 1 260px; }
 .card-link-change .field-error { flex-basis: 100%; }
-/* The card's questions: the Globe-blue note, one per question, its title at 15/500 and its line under it. */
-.card-note-box { padding: 14px var(--spacing-05); border: 1px solid var(--warn-line); border-left: 4px solid var(--warn-mark); border-radius: var(--radius); background: var(--warn-bg); }
+/* The card's questions: the warning note, one per question, its title and its line under it. */
+.card-note-box { padding: var(--spacing-04) var(--spacing-05); border: 1px solid var(--warn-line); border-left: 4px solid var(--warn-mark); border-radius: var(--radius); background: var(--warn-bg); }
 .card-note-head { margin: 0 0 var(--spacing-01); font: var(--body-type); font-weight: 500; color: var(--ink); }
 .card-note-head .fa-solid { margin-right: var(--spacing-03); color: var(--warn-mark); }
 .card-quiet { margin: 0; font: var(--meta-type); color: var(--muted); }
-/* The description as prose, a field while Edit is open; Edit and Add media under it. */
-.sc-desc { display: flex; flex-direction: column; gap: var(--spacing-03); }
-.sc-prose { margin: 0; padding: 6px 8px 6px 0; font: var(--prose-type, 400 16px/25px var(--font-sans)); color: var(--ink); cursor: text; border-radius: var(--radius); }
+/* The description as prose, a field while Edit is open; Edit and Add media under it, small outline buttons. */
+.sc-desc { display: flex; flex-direction: column; gap: var(--spacing-04); }
+.sc-prose { margin: 0 calc(-1 * var(--spacing-02)); padding: var(--spacing-01) var(--spacing-02); font: var(--prose-type); color: var(--gray-850); cursor: text; border-radius: var(--radius-input); }
 .sc-prose:hover { background: var(--wash-hover); }
 .sc-prose.is-empty { color: var(--text-helper); }
-.sort-card textarea.sc-desc-edit { min-height: 128px; padding: 10px 12px; border: 1px solid var(--wash-line); border-radius: var(--radius); background: var(--wash); font: var(--prose-type, 400 16px/25px var(--font-sans)); }
-.sc-words { display: flex; align-items: center; gap: var(--spacing-05); }
-.sc-words .linkish { height: auto; padding: 0; margin: 0; font: var(--prose-type, 400 16px/25px var(--font-sans)); color: var(--muted); }
-.sc-words .linkish:hover:not(:disabled) { background: none; color: var(--ink); }
-.sc-words .img-upload .media-add { height: auto; padding: 0; margin: 0; font: var(--prose-type, 400 16px/25px var(--font-sans)); }
-.card-field > label, .card-field-label, .card-type legend, .card-send legend { margin: 0 0 var(--spacing-03); padding: 0; }
-.card-type, .card-send { border: 0; padding: 0; margin: 0; min-width: 0; }
-.card-type.is-alert legend { color: var(--warn); }
-/* The type as a stack, the subtypes as chips; the picked one fills with the accent. */
-.type-stack { display: flex; flex-direction: column; gap: 6px; }
-.type-opt, .type-chip {
-  display: inline-flex; align-items: center; justify-content: flex-start; text-align: left;
-  border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer); color: var(--ink); font: var(--body-type); cursor: pointer;
-  transition: background-color var(--duration-fast-01) var(--ease-productive), border-color var(--duration-fast-01) var(--ease-productive);
+.sort-card textarea.sc-desc-edit { min-height: 128px; padding: var(--spacing-03) var(--spacing-04); border: 1px solid var(--wash-line); border-radius: var(--radius); background: var(--wash); font: var(--prose-type); }
+.sc-words { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-03); }
+.sc-words .img-upload { gap: var(--spacing-03); }
+.sc-words .sc-tool, .sc-words .media-add {
+  display: inline-flex; align-items: center; gap: var(--spacing-02); height: 32px; margin: 0; padding: 0 var(--spacing-04);
+  border: 1px solid var(--accent-line); border-radius: var(--radius); background: var(--layer); color: var(--ink); font: 500 13px/18px var(--font-sans); text-decoration: none;
 }
-.type-opt { height: 38px; padding: 0 var(--spacing-04); width: 100%; }
-.type-chip { height: 32px; padding: 0 var(--spacing-04); font-size: 14px; }
-.type-opt:hover:not(:disabled), .type-chip:hover:not(:disabled) { background: var(--hover); border-color: var(--border-strong-01); color: var(--ink); }
-.type-opt.is-picked, .type-chip.is-picked, .type-opt.is-picked:hover:not(:disabled), .type-chip.is-picked:hover:not(:disabled) { background: var(--button-primary); border-color: var(--button-primary); color: var(--text-on-accent); font-weight: 500; }
-.sc-sub-label { margin-top: var(--spacing-04); }
-.type-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-05) var(--spacing-06); }
-/* Send it to: the one box beside a two-line label. */
-.card-send label.check { display: flex; align-items: flex-start; gap: var(--spacing-04); margin: 0; cursor: pointer; }
-.card-send input { width: 16px; height: 16px; margin: 3px 0 0; flex: none; accent-color: var(--accent); }
-.check-lines { display: flex; flex-direction: column; }
-.check-name { font: var(--body-type); color: var(--ink); }
-.check-sub { font: var(--meta-type); color: var(--text-helper); }
-/* The decisions: Keep and next full width, Skip for now under it, then a rule and Delete far from the pair. */
+.sc-words .sc-tool:hover:not(:disabled), .sc-words .media-add:hover:not(:disabled) { background: var(--wash-hover); border-color: var(--border-strong-01); color: var(--ink); }
+.sc-words .img-upload .media-add.linkish { text-decoration: none; }   /* a button with its icon, so no underline (the control draws its own words) */
+.sc-words .sc-tool .fa-solid { margin: 0; font-size: 12px; }
+.sc-words .media-add::before { content: "\f03e"; font-family: "Font Awesome 7 Free"; font-weight: 900; font-size: 12px; }   /* fa-image: the control writes its own words */
+.sc-words .img-upload .skip-link { height: 32px; margin: 0; padding: 0 var(--spacing-03); font: 500 13px/18px var(--font-sans); }
+.card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-05) var(--spacing-06); }   /* the fields the type uses, two to a row (also the brief's form) */
+.card-field > label, .card-field-label { margin: 0 0 var(--spacing-03); padding: 0; }
+/* The foot: who added it, over a hairline. */
+.sc-left > .sc-foot { margin-top: calc(var(--spacing-05) + var(--spacing-02)); padding: var(--spacing-04) 0; border-top: 1px solid var(--line-in); font: 400 12px/17px var(--font-sans); color: var(--muted); }
+.sort-card input:not([type="checkbox"]):not(.card-title), .sort-card textarea:not(.sc-desc-edit) { background: transparent; }
+.f-edit-card input, .f-edit-card textarea { background: var(--field-02); }   /* a field on the grey edit box is white (Carbon's layer model) */
+
+/* The decision column: the type box, the switch's box, then the three decisions. */
+.sc-right { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-04); }
+.sc-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius-card); box-shadow: var(--shadow-card); overflow: hidden; }
+.card-type, .card-send { border: 0; padding: 0; margin: 0; min-width: 0; }
+.card-type legend { margin: 0; padding: var(--spacing-04) var(--spacing-04) var(--spacing-02); font: 600 12px/16px var(--font-sans); color: var(--muted); }
+.card-type.is-alert legend { color: var(--warn); }
+/* The type as rows, a hairline between; the picked one bold with a blue check, its subtypes as pills under it. */
+.type-stack { display: flex; flex-direction: column; }
+.type-opt { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-03); width: 100%; height: 38px; padding: 0 var(--spacing-04); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; background: transparent; color: var(--ink); font: 400 14px/18px var(--font-sans); text-align: left; cursor: pointer; transition: background-color var(--duration-fast-01) var(--ease-productive); }
+.type-stack > .type-opt:first-child { border-top: 0; }
+.type-opt:hover:not(:disabled) { background: var(--wash-hover); border-color: var(--line-in); color: var(--ink); }
+.type-opt.is-picked, .type-opt.is-picked:hover:not(:disabled) { font-weight: 600; color: var(--ink); }
+.type-check { width: 17px; height: 17px; stroke-width: 2.6; color: var(--accent); }
+.sc-type-box .type-opt:focus-visible { outline-offset: -2px; box-shadow: inset 0 0 0 2px var(--focus); }   /* the box clips a ring outside, so it is drawn inside */
+.type-chips { display: flex; flex-wrap: wrap; gap: var(--spacing-02); padding: var(--spacing-01) var(--spacing-04) var(--spacing-04); }
+.type-chip { height: 28px; padding: 0 var(--spacing-04); border: 0; border-radius: var(--radius-pill); background: var(--layer-accent-01); color: var(--ink); font: 500 12px/16px var(--font-sans); cursor: pointer; transition: background-color var(--duration-fast-01) var(--ease-productive); }
+.type-chip:hover:not(:disabled) { background: var(--gray-300); border: 0; color: var(--ink); }
+.type-chip.is-picked, .type-chip.is-picked:hover:not(:disabled) { background: var(--button-primary); color: var(--text-on-accent); font-weight: 600; }
+/* ERC Newsletter only: its name and the switch on one line, where it goes under them. */
+.sc-send-box { padding: var(--spacing-04) var(--spacing-04); }
+.card-send label.check { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name switch" "sub sub"; align-items: center; column-gap: var(--spacing-04); margin: 0; cursor: pointer; }
+.card-send .check-lines { display: contents; }
+.card-send .check-name { grid-area: name; font: 500 14px/19px var(--font-sans); color: var(--ink); }
+.card-send .check-sub { grid-area: sub; margin-top: var(--spacing-02); font: 400 12px/17px var(--font-sans); color: var(--muted); }
+.card-send input[role="switch"] {
+  grid-area: switch; appearance: none; -webkit-appearance: none; position: relative; flex: none; width: 44px; height: 26px; margin: 0;
+  border: 0; border-radius: var(--radius-pill); background: var(--gray-300); cursor: pointer; transition: background-color var(--duration-fast-01) var(--ease-productive);
+}
+.card-send input[role="switch"]::before { content: ''; position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: var(--radius-round); background: var(--layer-02); box-shadow: var(--shadow-card); transition: transform var(--duration-fast-02) var(--ease-standard); }
+.card-send input[role="switch"]:checked { background: var(--accent); }
+.card-send input[role="switch"]:checked::before { transform: translateX(18px); }
+.card-send input[role="switch"]:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+/* The decisions: Keep and next full width, Skip for now the grey fill, Delete
+   the red word; each shows its key at its right. */
 .sc-decide { display: flex; flex-direction: column; gap: var(--spacing-04); }
-.sort-card .sc-keep { width: 100%; height: 48px; justify-content: space-between; padding: 0 var(--spacing-05); }
-.sort-card .sc-keep { flex-direction: row-reverse; }   /* the helper draws the icon first; the check sits at the right */
-.sort-card .sc-keep .fa-solid { position: static; }
+.sort-card button.sc-keep { width: 100%; height: 44px; justify-content: flex-start; gap: var(--spacing-03); padding: 0 var(--spacing-04) 0 var(--spacing-05); font: 600 15px/20px var(--font-sans); }
 /* Locked, its word is darker than the disabled grey's, 5.5:1 (usability audit,
    Kate's pick, Sep 23), and the reason sits under it. */
 .sort-card .sc-keep:disabled { color: var(--text-locked); }
 /* The reason sits tight under the button it explains (4px), with the column's 12px to Skip for now below it, so it never reads as Skip's. */
 .sc-keep-why { font: var(--meta-type); color: var(--muted); margin: calc(-1 * var(--spacing-03)) 0 0; }
-.sort-card .sc-skip { width: 100%; height: 40px; justify-content: flex-start; padding: 0 var(--spacing-04); margin: 0; }
-.sc-tools { border-top: 1px solid var(--line-in); padding-top: 14px; }
-.sc-tools .trash-link { margin: 0; padding: 0 var(--spacing-02); }
-.sort-card input:not([type="checkbox"]):not(.card-title), .sort-card textarea:not(.sc-desc-edit) { background: transparent; }
-.f-edit-card input, .f-edit-card textarea { background: var(--field-02); }   /* a field on the grey edit box is white (Carbon's layer model) */
-@media (max-width: 1132px) {
-  .sort-split { grid-template-columns: minmax(0, 1fr); }
+.sort-card .sc-skip, .sort-card .sc-delete { width: 100%; height: 40px; justify-content: flex-start; gap: var(--spacing-03); margin: 0; padding: 0 var(--spacing-04) 0 var(--spacing-05); border: 0; border-radius: var(--radius); font: 600 14px/18px var(--font-sans); }
+.sort-card .sc-skip { background: var(--gray-200); color: var(--ink); }
+.sort-card .sc-skip:hover:not(:disabled) { background: var(--gray-300); border: 0; color: var(--ink); }
+.sort-card .sc-delete:hover:not(:disabled) { background: var(--sidebar-hover); }
+.sort-card .sc-delete .fa-solid { margin: 0; font-size: 14px; }
+.sc-key { display: inline-flex; align-items: center; justify-content: center; flex: none; min-width: 22px; height: 22px; margin-left: auto; padding: 0 var(--spacing-02); border-radius: var(--radius-input); background: var(--layer-02); color: var(--tag-color-gray); font: 600 12px/16px var(--font-sans); box-shadow: var(--shadow-card); }
+.sc-keep .sc-key { background: var(--accent-deep); color: var(--text-on-color); box-shadow: none; }
+.sc-keep:disabled .sc-key { background: var(--layer-02); color: var(--text-locked); }
+.sort-pane-empty { margin: var(--sort-pad); }
+@media (prefers-reduced-motion: reduce) { .sort-row, .f-list-row, .type-opt, .type-chip, .card-send input[role="switch"], .card-send input[role="switch"]::before { transition: none; } }
+
+/* Finalize in the same frame: the list pane down the left, its head, the
+   progress and the card beside it. */
+#screen-finalize:has(> .f-split):not([hidden]) { display: grid; grid-template-columns: var(--sort-list-w) minmax(0, 1fr); grid-template-rows: auto auto auto 1fr; }
+#screen-finalize > .sort-bar { grid-column: 1 / -1; grid-row: 1; }
+#screen-finalize:has(> .f-split) > .finalize-head { grid-column: 2; grid-row: 2; }
+#screen-finalize:has(> .f-split) > .f-progress { grid-column: 2; grid-row: 3; }
+#screen-finalize > .f-split { display: contents; }
+#screen-finalize .f-side { grid-column: 1; grid-row: 2 / 5; display: flex; flex-direction: column; min-width: 0; }
+#screen-finalize .f-side > .f-list { flex: 1 1 auto; }
+#screen-finalize .f-split > :not(.f-side) { grid-column: 2; grid-row: 4; align-self: start; margin: 0 var(--sort-pad) var(--sort-pad); }
+#screen-finalize > .finalize-head { margin: 0; padding: var(--sort-pad) var(--sort-pad) var(--spacing-05); }
+#screen-finalize > .f-progress { margin: 0 var(--sort-pad) var(--spacing-05); }
+#screen-finalize > .load-line { margin: var(--sort-pad); }
+.f-card { padding: var(--spacing-06); background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius-card); box-shadow: var(--shadow-card); }
+.f-card .type-line { margin: 0 0 var(--spacing-03); font: 600 12px/16px var(--font-sans); color: var(--muted); }
+.f-card .f-check-title { margin: 0 0 var(--spacing-02); font: 700 22px/28px var(--font-sans); letter-spacing: -.3px; }
+.f-card .f-check-source { font: var(--meta-type); }
+
+/* Forced colours (Windows high contrast) drop the blue fill, the grey track
+   and the white knob, so both marks are drawn again in system colours, as
+   the sidebar's are (review, Oct 23). Every row keeps a 2px edge in the
+   page's colour, so choosing one moves nothing; the chosen one's edge is
+   Highlight, and the focus line sits 2px inside it in the text colour, so a
+   chosen row with focus shows both. The switch keeps its track, its knob
+   and its state: on, the track fills with Highlight. */
+@media (forced-colors: active) {
+  .sort-row, .f-list-row, .sort-row:hover:not(:disabled), .f-list-row:hover:not(:disabled) { border: 2px solid Canvas; }
+  .sort-row.is-selected, .f-list-row.is-selected, .sort-row.is-selected:hover:not(:disabled), .f-list-row.is-selected:hover:not(:disabled) { border-color: Highlight; }
+  .sort-list .sort-row:focus-visible, .f-list .f-list-row:focus-visible { outline-color: CanvasText; outline-offset: -6px; }
+  .card-send input[role="switch"] { border: 1px solid ButtonText; background-color: ButtonFace; }
+  .card-send input[role="switch"]::before { top: 2px; left: 2px; width: 20px; height: 20px; background-color: ButtonText; }
+  .card-send input[role="switch"]:checked { border-color: Highlight; background-color: Highlight; }
+  .card-send input[role="switch"]:checked::before { background-color: HighlightText; }
+  .card-send input[role="switch"]:focus-visible { outline-offset: 2px; }
 }
+/* ── end of Content Sort in pick A ── */
 .queue-row.is-deleted .queue-actions { opacity: 1; }
 .queue-gone { font-size: 12px; letter-spacing: 0; color: var(--muted); margin-right: var(--spacing-03); }
 
@@ -1245,3 +1394,41 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
    form's width, right above Add N to the queue. */
 .bulk-initials { margin: 0 0 var(--spacing-05); }
 .bulk-initials input { width: 7rem; }
+
+/* Newsletter's Next issue, in Kate's order (Kate, Oct 23): the head line across
+   the top (the issue's date, how far off, the later issues, the builder door at
+   its right), then the lists, with the how-tos, the builder note and the last
+   issue in a slim column beside them; under 1232px wide the column drops under
+   the lists, as the page did before. */
+.nl-page { grid-template-columns: minmax(0, 1fr) 280px; }
+.nl-head { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-06); padding: var(--spacing-05) var(--spacing-06); background: var(--layer); border: 1px solid var(--layer-line); }
+.nl-head-words { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--spacing-04); row-gap: var(--spacing-02); min-width: 0; }
+.nl-head .nl-date { font: var(--numeral); }
+.nl-head .nl-others { flex-basis: 100%; }
+.nl-head .nl-door { flex: none; min-width: 240px; gap: var(--spacing-06); }
+.nl-side { gap: var(--spacing-03); padding-top: var(--spacing-03); }
+.nl-side .nl-howto { align-self: flex-start; margin-top: 0; }
+.nl-side .nl-builder-note { margin: 0 0 var(--spacing-03); }
+@media (max-width: 1232px) { .nl-page { grid-template-columns: minmax(0, 1fr); } }
+
+/* The Policy Exchange, in Kate's order (Kate, Oct 23): one column at a
+   reading width, the Publish and Highlight doors side by side at its top, then
+   Status, then Edit live items with its line, and the how-tos and the code
+   line at the foot over a hairline. */
+.ex-doors, .ex-status, .ex-edit, .ex-foot { max-width: 720px; }
+.ex-doors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-05); }
+.ex-doors .qh-door-second { margin-top: 0; }
+.ex-status { margin-top: var(--spacing-07); }
+.ex-edit { margin-top: var(--spacing-06); }
+.ex-edit .qh-edit { margin-top: 0; }
+.ex-foot { margin-top: var(--spacing-07); padding-top: var(--spacing-02); border-top: 1px solid var(--line); }
+
+/* The Listserv, in Kate's order (Kate, Oct 23): To be added leads, the
+   sheet's door and the steps right under the count's lines in one box, then
+   the sign-up form. */
+.hub-count .hub-door { margin-top: var(--spacing-05); }
+
+/* The Listserv's side note drops under the boxes on a narrow window (Kate, Oct 23):
+   at 1024 wide the 360px column squeezed the boxes to about 310px. The fold is the
+   Newsletter's, 1232px (1000 plus the sidebar's 232); the Content queue's split is not touched. */
+@media (max-width: 1232px) { #screen-listserv .qh-split { grid-template-columns: minmax(0, 1fr); } }

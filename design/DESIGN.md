@@ -43,8 +43,9 @@ Newsroom) she picked **A, Native**: the desk as a Mac app.
   tracking, no rule under them. Hairlines divide.
 - **Her line rules for rows** (Oct 23), for the front page and Sort: one line
   per kind of fact, the first fact darker, and a line never wraps. Sort's list
-  rows lead with the type (a row that needs a fix leads with its problem), the
-  date at the right; Sort's card shows the byline under the title and "Added
+  rows lead with the source, or an event's date or a deadline (her call, Oct
+  23: "source first, like the mockup"; a row that needs a fix leads with its
+  problem in orange words), the date it came in at the right; Sort's card shows the byline under the title and "Added
   ... by ..." at its foot.
 
 The U-M Library look of Sep 23 to Oct 23 that this replaces: a white page under
@@ -905,8 +906,32 @@ sandbox before anything goes live:
    of its own under the Newsletter row. Public links keeps its three rows,
    each with Copy link as a blue pill, and the Team submit page under them;
    under 1200px wide the menu drops below the lists.
-3. **Content Sort** in A's layout: the list type first, the card's byline and
-   foot, the decision column.
+3. **Content Sort** in A's layout (done; Finalize shares its list and card):
+   the page runs edge to edge beside the sidebar under a 56px toolbar band
+   (the title, Sort and Finalize as a segmented control, the status line on
+   one line in the band, "Oldest has waited N days" at the right); a 300px
+   white list pane, rows with soft corners and no rules, the chosen row a
+   solid blue fill with white words (a border too in high contrast); the card
+   one white box (type and subtype with the fact tags and "N of M", the title,
+   the byline, source and date, the link on a pill with Change, the notes, the
+   description, Edit and Add media, the type's fields, "Added ... by ..." over
+   a hairline); the decision column: a Type box with the picked type's
+   subtypes as pills under it, ERC Newsletter only drawn as a switch with its
+   line, Keep and next (blue), Skip for now (grey fill) and Delete (red), each
+   with its key chip K, S or D. Under 1132px wide the decision column drops
+   under the card. Every key, ask and Undo is as before.
+
+**Pages lead with what their sidebar row counts** (Kate, Oct 23: "if someone
+clicks listserv, they probably want to see the new ones to add first"):
+Listserv opens on To be added (the count, Open the sign-up sheet and the
+three steps), then the sign-up form; Policy Exchange on the Publish and
+Highlight doors, then the site's status, Edit live items, then the how-to
+links and the code line, in one 720px column; Newsletter's Next issue on a
+head line ("Oct 27 issue", sends in N days, Open the builder), then the
+lists. The Policy Exchange count is one number everywhere (the sidebar, the
+front page, the door), what the live check says Publish would add, and
+nothing until that check lands, never a guess. Listserv's side note drops
+under its boxes below 1232px wide.
 
 The how-tos keep the navy bar and their pictures of the old look until they
 are re-shot (`how-to/capture.mjs`, `how-to/make-deck.mjs`).
