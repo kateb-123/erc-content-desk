@@ -321,6 +321,8 @@ test('How it all connects shows the drawn diagram, keeps The two weeks, and drop
   assert.match(page, /<figure class="pl-diagram">\s*<svg viewBox="0 0 1150 760"[^>]*role="img" aria-label="Three layers\./);
   assert.match(page, /<figcaption>Read the middle row left to right\./);
   assert.match(page, /<h2>The two weeks<\/h2>/);
+  assert.match(page, /Who sends an item, what the desk does with it, and where it ends up\./, 'the lede says what the diagram shows (Kate, Oct 23)');
+  assert.doesNotMatch(page, /Open a box for the whole step/);
   assert.match(page, /Any day: publish to the Exchange\./);
   assert.doesNotMatch(page, /class="pl-row"/);
   assert.doesNotMatch(page, /<h2>Beside the pipeline<\/h2>/);

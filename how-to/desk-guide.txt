@@ -9,7 +9,7 @@ ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-c
 
 ## How it all connects
 
-Three steps. Open a box for the whole step.
+Who sends an item, what the desk does with it, and where it ends up.
 
  1 In
 
