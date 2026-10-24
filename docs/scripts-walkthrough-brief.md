@@ -2,7 +2,7 @@
 
 Written Oct 24, 2026, and fact-checked the same day. The walkthrough is for a teammate (Kathy) who is not a developer and does not use git.
 
-Code version: every step follows the live code on GitHub's `main` (commit 2ccf9b7, checked with `git ls-remote` on Oct 24). On the branch `feat/native-look`, `apps-script/`, `api/` and the existing how-to's `deck.json` are the same as on GitHub's `main`, and the two raw links below serve the same script files byte for byte. The local `main` branch in the desk's folder is stale (a336a6a): check against `origin/main`, never local `main`.
+Code version: every step follows the live code on GitHub's `main` (commit 45924a7 since Oct 24). On the branch `feat/native-look`, `apps-script/`, `api/` and the existing how-to's `deck.json` are the same as on GitHub's `main`, and the two raw links below serve the same script files byte for byte. The local `main` branch in the desk's folder is stale (a336a6a): check against `origin/main`, never local `main`.
 
 ## 1. What stopped, and what keeps working
 
@@ -21,7 +21,7 @@ Since they stopped:
 - New send dates typed on the schedule tab do not reach the desk. The desk's own copy runs through Dec 15.
 - The scraper's Monday run (next: Oct 26, 7:00 Central) will fail to deliver. Today the Content queue still reads "Last run Oct 22, for the Nov 3 issue: ..."; after a failed run it reads "The last run failed on GitHub. Last good run Oct 22."
 - Research briefs: a new brief cannot be made, **Write the draft** fails, and a brief's page reads "Drive didn't answer. Use the folder link above."
-- Publish still publishes. Its CSV copy in Drive fails, and it will keep failing after these steps: the desk script takes only .xlsx, .txt, .pdf, .md, .docx, .png and .jpg file names, and the copy is a .csv. The receipt offers the download instead. That is a code fix for the desk's owner, not part of this walkthrough.
+- Publish still publishes. Its CSV copy in Drive fails, and the receipt offers the download instead. The repository's Code.gs takes .csv names since Oct 24 (commit 45924a7), so the copy comes back once these steps paste that file.
 
 Keeps working: the desk and the newsletter builder (their data is in the desk's own database), Submit content and the public submit form, Content Sort, Newsletter, Publish, and the Policy Exchange. They run on Vercel.
 
