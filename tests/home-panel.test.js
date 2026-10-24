@@ -76,9 +76,10 @@ test('hubCards: before the rows are in, no counts; what is not known says nothin
   assert.equal(cards[5].foot, '');
 });
 
-test('hubCards: the Exchange counts the kept rows it could publish until its check lands', () => {
+// Kate, Oct 23: one number everywhere; until the live check lands the Exchange has no count, never the kept rows' guess.
+test('hubCards: the Exchange has no count until its check lands', () => {
   const cards = hubCards({ rows: hubRows, schedule: hubSchedule, today: '2026-10-07', loaded: true, preview: null, archive: [], hubUpdated: '', signups: null });
-  assert.equal(cards[5].count, 1, 'p1: kept, not published, ticked for the Exchange');
+  assert.equal(cards[5].count, null, 'no guess before the check');
   assert.equal(cards[5].foot, '', 'the site did not answer: nothing claimed');
 });
 

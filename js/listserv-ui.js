@@ -51,7 +51,9 @@ export function renderListserv(container, { signups, today, onRetry }) {
   if (s.note) { const note = el('p', 'hub-count-note', s.note); if (!signups?.error) note.append(...retry); countBox.append(note); }
   if (s.updated) countBox.append(el('p', 'hub-count-note', `Last updated ${s.updated}.`));
 
-  // Adding people (Kate, Oct 8): the sheet's door, then her three steps.
+  // Adding people (Kate, Oct 8): the sheet's door, then her three steps,
+  // right under the count since Oct 23 (her rule: a page leads with what its
+  // sidebar row counts, and the count is why someone opened it).
   const door = el('a', 'sort-door hub-door');
   door.href = SIGNUP_SHEET.href; door.target = '_blank'; door.rel = 'noopener';
   door.dataset.focus = 'sheet';
@@ -60,14 +62,12 @@ export function renderListserv(container, { signups, today, onRetry }) {
   door.append(faIcon('table'), doorWords, faIcon('arrow-up-right-from-square'));
   const steps = el('ol', 'hub-steps');
   steps.append(...SHEET_STEPS.map(words => el('li', '', words)));
-  const addBox = el('div', 'hub-box hub-adding');
-  addBox.append(door, steps);
+  countBox.append(door, steps);
 
   const main = el('div');
   main.append(
-    el('h3', 'section-label hub-label', 'Sign-up form'), formBox,
     el('h3', 'section-label hub-label', 'To be added'), countBox,
-    el('h3', 'section-label hub-label', 'Adding people'), addBox,
+    el('h3', 'section-label hub-label', 'Sign-up form'), formBox,
   );
   const side = el('aside', 'qh-side');
   side.append(el('p', 'hub-aside', 'Names and addresses are in the sign-up sheet.'));

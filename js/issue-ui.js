@@ -1,10 +1,12 @@
 /**
  * Newsletter's Next issue tab (Kate's wireframes, Sep 17, and her answers,
- * Sep 18). On the left, what is in the issue, by section the way the email
- * will read, with Remove and Quick add; under it, what is ready to add, with
- * Add. On the right, the issue: its date, how far off it is, the builder
- * door, and the last issue sent. Order, the opening note and the preview stay
- * in the builder. Merges the old Next newsletter and Send to Newsletter.
+ * Sep 18; the order hers of Oct 23). First a head line: the issue's date, how
+ * far off it is, the later issues, and the builder door at its right. Then
+ * what is in the issue, by section the way the email will read, with Remove
+ * and Quick add; under it, what is ready to add, with Add. In a slim column
+ * beside them, the how-tos, the builder note and the last issue sent. Order,
+ * the opening note and the preview stay in the builder. Merges the old Next
+ * newsletter and Send to Newsletter.
  */
 import { faIcon } from './icons.js';
 import { isoToShort } from './queue-view.js';
@@ -259,11 +261,12 @@ export function renderIssue(container, props) {
     main.append(fold);
   }
 
-  // ── The issue: its date, how far off, the builder, the last one sent. ──
-  const side = el('aside', 'nl-side');
-  const box = el('section', 'nl-issue');
-  box.append(el('p', 'block-label', 'This issue'));
-  box.append(el('p', 'nl-date', when), el('p', 'nl-sends', sendsIn(issue, today)));
+  // ── The head line, first (Kate, Oct 23: a page leads with what its sidebar
+  // row counts, and Newsletter's is the next send date): the issue's date,
+  // how far off it is, the later issues, and the builder door at its right. ──
+  const head = el('section', 'nl-head');
+  const words = el('div', 'nl-head-words');
+  words.append(el('p', 'nl-date', `${when} issue`), el('p', 'nl-sends', sendsIn(issue, today)));
   // The other scheduled issues, to stage ahead (an event for its own issue).
   const others = upcoming.filter(d => d !== issue);
   if (others.length) {
@@ -273,14 +276,16 @@ export function renderIssue(container, props) {
       if (i) line.append(' · ');
       line.append(button(isoToShort(d, today), 'linkish', { focus: `issue:${d}`, onClick: () => { issuePick = d; askId = null; rerender(); } }));
     });
-    box.append(line);
+    words.append(line);
   }
-  side.append(box);
   const door = el('a', 'nl-door', 'Open the builder');
   door.href = `/builder/?issue=${issue}`;   // the builder opens on this issue (Kate, Oct 23)
   door.append(faIcon('arrow-right'));
-  side.append(door);
-  // The how-to for whoever builds the issue (Kate, Sep 30), a quiet link under the door.
+  head.append(words, door);
+
+  // ── Beside the lists, a slim column: the how-tos, the builder note, the last issue sent. ──
+  const side = el('aside', 'nl-side');
+  // The how-to for whoever builds the issue (Kate, Sep 30), a quiet link.
   const howTo = el('a', 'nl-howto', 'How to build an issue');
   howTo.href = '/how-to/newsletter/';
   // The builder takes what is here when it opens; later changes here stay out
@@ -296,7 +301,7 @@ export function renderIssue(container, props) {
     side.append(lastBox);
   }
 
-  page.append(main, side);
+  page.append(head, main, side);
   parts.push(page);
 
   // A redraw keeps the keyboard's place; focus inside the quick add stays put.

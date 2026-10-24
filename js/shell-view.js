@@ -112,12 +112,18 @@ export function navCurrent(screen) {
 
 /** What waits at each item, from the front page's rows (home-panel.js's
  *  hubCards): Sort's count is the queue's, the newsletter shows its next send
- *  date. '' while a count is not known. */
+ *  date. '' while a count is not known, and for a guess: Policy Exchange shows
+ *  only what the live check counted (Kate, Oct 23: one number). */
 export function navBadges(cards = []) {
   const by = Object.fromEntries(cards.map(c => [c.key, c]));
-  const n = c => (Number.isFinite(c?.count) ? String(c.count) : '');
+  const n = c => (Number.isFinite(c?.count) && !c.guess ? String(c.count) : '');
   return { sort: n(by.queue), newsletter: by.newsletter?.next ?? '', listserv: n(by.listserv), exchange: n(by.exchange), briefs: n(by.briefs) };
 }
+
+/** The Exchange check the counts read: the current one, else the last one
+ *  that landed this visit, since any change clears the current one; null
+ *  before any has landed. */
+export const sidebarCheck = (current, last) => current ?? last ?? null;
 
 /** What a sidebar item says to a screen reader: its name, its lock, and what waits there. */
 export function navLabel(item, badge = '') {

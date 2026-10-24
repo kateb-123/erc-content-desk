@@ -108,7 +108,8 @@ test('a row: its icon, the name as the link, a line per kind of fact with the fi
     assert.ok(row(key).querySelector('.home-chevron'), `${key} has its chevron`);
   }
   const count = key => row(key).querySelector('.home-count')?.textContent ?? null;
-  assert.deepEqual(['team', 'queue', 'newsletter', 'listserv', 'exchange', 'briefs'].map(count), [null, '2', '1', '3', '1', '']);
+  // The Exchange shows no number until its live check lands (Kate, Oct 23: one number everywhere, never a guess).
+  assert.deepEqual(['team', 'queue', 'newsletter', 'listserv', 'exchange', 'briefs'].map(count), [null, '2', '1', '3', '', '']);
   const lines = key => texts(row(key).querySelectorAll('.home-line'));
   assert.deepEqual(lines('team'), ["The team's form"]);
   assert.deepEqual(lines('queue'), ['waiting for Sort · 1 from outside', 'Sort, password protected']);

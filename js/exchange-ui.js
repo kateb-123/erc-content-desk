@@ -5,6 +5,13 @@
  * sits under Newsletter, and its Confirm still asks the desk password. The
  * code, the handoff and where the logins are kept are forthcoming; the
  * logins themselves never go on a page (the repo is public).
+ *
+ * The order (Kate, Oct 23): a page leads with what its sidebar row counts,
+ * because that is why someone clicked it. The row counts what waits to
+ * publish, so the doors lead (Publish with its count, then Highlight), then
+ * Status, then Edit live items with its line, and at the foot the how-tos and
+ * where the code and the logins are. Waiting to publish stays in Status: the
+ * Exchange how-to pins it (how-to/exchange/shots.json).
  */
 import { exchangeStatus } from './exchange-view.js';
 import { hubHead, HUB_LEDES, howToLink } from './hub-head.js';
@@ -26,25 +33,7 @@ export function renderExchange(container, { rows, today, loaded, preview, hubUpd
   const focusKey = focusKeyIn(container);   // a late load redraws the page; the keyboard keeps its place
   const s = exchangeStatus({ rows, today, loaded, preview, hubUpdated });
   const page = el('div', 'hub-page');
-  const split = el('div', 'qh-split');
-  const main = el('div');
 
-  const live = el('a', 'hub-link', 'Open the Exchange');
-  live.href = SITE; live.target = '_blank'; live.rel = 'noopener';
-  live.dataset.focus = 'site';
-  live.append(' ', faIcon('arrow-up-right-from-square'), el('span', 'sr-only', ' (opens in a new tab)'));
-  const site = el('span', s.site === 'Live' ? 'hub-ok' : 'hub-quiet', s.site);
-  const box = el('div', 'hub-box');
-  box.append(
-    stat('The site', [site, ' · ', live]),
-    stat('Last updated', s.updated || (s.site === 'Checking' ? '' : 'Not known')),
-    stat('Waiting to publish', s.waiting == null ? '' : String(s.waiting)),
-  );
-  main.append(el('h3', 'section-label hub-label', 'Status'), box,
-    howToLink('How to publish to the Exchange', '/how-to/exchange/#publish'), howToLink('How to change the Policy Exchange', '/how-to/exchange/'), howToLink('How it all connects', '/how-to/pipeline/'),
-    el('p', 'qh-side-note', 'Code: github.com/kateb-123/erc-policy-exchange-app. Who holds the logins: READ ME FIRST, in the shared drive.'));
-
-  const side = el('aside', 'qh-side');
   const door = el('a', 'sort-door qh-door');
   door.href = '/#publish';
   door.dataset.focus = 'publish';
@@ -61,16 +50,37 @@ export function renderExchange(container, { rows, today, loaded, preview, hubUpd
   const pins = preview?.highlights ? (preview.highlights.items ?? []).length : null;
   hlWords.append(el('span', 'door-name', 'Highlight'), el('span', 'door-note', pins == null ? '' : `${pins} on the home page`));
   hl.append(faIcon('star'), hlWords, faIcon('arrow-right'));
+  const doors = el('div', 'ex-doors');
+  doors.append(door, hl);
+
+  const live = el('a', 'hub-link', 'Open the Exchange');
+  live.href = SITE; live.target = '_blank'; live.rel = 'noopener';
+  live.dataset.focus = 'site';
+  live.append(' ', faIcon('arrow-up-right-from-square'), el('span', 'sr-only', ' (opens in a new tab)'));
+  const site = el('span', s.site === 'Live' ? 'hub-ok' : 'hub-quiet', s.site);
+  const box = el('div', 'hub-box');
+  box.append(
+    stat('The site', [site, ' · ', live]),
+    stat('Last updated', s.updated || (s.site === 'Checking' ? '' : 'Not known')),
+    stat('Waiting to publish', s.waiting == null ? '' : String(s.waiting)),
+  );
+  const status = el('div', 'ex-status');
+  status.append(el('h3', 'section-label hub-label', 'Status'), box);
+
   // The Exchange's own edit door (Kate, Oct 23): the one place a live item is
   // fixed, hidden or deleted. It asks the team password, the desk's (Oct 23).
   const edit = el('a', 'hub-link qh-edit', 'Edit live items');
   edit.href = 'https://erc-policy-exchange.vercel.app/2ujhtc8daz/';
   edit.target = '_blank'; edit.rel = 'noopener';
   edit.append(' ', faIcon('arrow-up-right-from-square'), el('span', 'sr-only', ' (opens in a new tab)'));
-  side.append(door, hl, edit, el('p', 'qh-side-note', 'Fix, hide or delete what is already live. It asks the team password.'));
+  const editing = el('div', 'ex-edit');
+  editing.append(edit, el('p', 'qh-side-note', 'Fix, hide or delete what is already live. It asks the team password.'));
 
-  split.append(main, side);
-  page.append(hubHead('Policy Exchange', HUB_LEDES.exchange), split);
+  const foot = el('div', 'ex-foot');
+  foot.append(howToLink('How to publish to the Exchange', '/how-to/exchange/#publish'), howToLink('How to change the Policy Exchange', '/how-to/exchange/'), howToLink('How it all connects', '/how-to/pipeline/'),
+    el('p', 'qh-side-note', 'Code: github.com/kateb-123/erc-policy-exchange-app. Who holds the logins: READ ME FIRST, in the shared drive.'));
+
+  page.append(hubHead('Policy Exchange', HUB_LEDES.exchange), doors, status, editing, foot);
   container.replaceChildren(page);
   if (focusKey !== null) restoreFocus(container, focusKey, page.querySelector('.page-title'));
 }

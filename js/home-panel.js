@@ -71,7 +71,8 @@ export function hubCards({ rows = [], schedule = [], today = '', loaded = false,
     // The sign-up sheet rides the card too (Kate, Oct 8), opening in a new tab.
     card('listserv', { count: signups?.sheet && Number.isFinite(signups.waiting) ? signups.waiting : null, sub: 'to be added', foot: signupFoot, live: Boolean(signups?.live && !signups.error), links: [{ label: SIGNUP_SHEET.label, href: SIGNUP_SHEET.href, blank: true }] }),
     card('links', { counts: false, copies: PUBLIC_LINKS }),
-    card('exchange', { count: exchange.waiting, sub: 'waiting to publish', foot: exchange.site === 'Live' ? `Live · updated ${exchange.updated}` : '', live: exchange.site === 'Live' }),
+    // guess: the count is the stand-in until the live check lands, which the sidebar never shows (Kate, Oct 23).
+    card('exchange', { count: exchange.waiting, guess: !preview, sub: 'waiting to publish', foot: exchange.site === 'Live' ? `Live · updated ${exchange.updated}` : '', live: exchange.site === 'Live' }),
     // Research briefs (Kate, Oct 20): hers alone; the count only once her sign-in has read the list.
     card('briefs', { ...briefsCard(briefs), foot: 'Password protected', lock: true }),
   ];
