@@ -24,10 +24,15 @@ test('a locked Keep and next says why in a line right under it, and the line des
 });
 
 // Kate, Sep 23: "we really only need source if it's external". The initials stay.
-test("the card's label and the list row's line take the source from shownSource, with no placeholder", () => {
-  assert.match(src, /import \{[^}]*\bshownSource\b[^}]*\} from '\.\/sort-view\.js'/);
-  assert.match(src, /function rowMeta\(row, today\) \{\s*return \[shownSource\(row\), row\.submitter && `added by \$\{row\.submitter\}`/);
-  assert.match(src, /const source = shownSource\(row\);\s*if \(source\) facts\.append\(el\('span', 'sc-source', source\)\)/);
+// Pick A (Oct 23, step 3): the row's line and the card's line under its byline
+// are built in sort-view.js (rowLine, cardLines), both from shownSource; "added
+// by" left the row for the card's foot, and the source left the card's kicker
+// for the line under the byline. This assertion pinned the old places.
+test("the card's line and the list row's line take the source from shownSource, with no placeholder", () => {
+  const view = readFileSync(new URL('../js/sort-view.js', import.meta.url), 'utf8');
+  assert.match(src, /import \{[^}]*\browLine\b[^}]*\bcardLines\b[^}]*\} from '\.\/sort-view\.js'/);
+  assert.match(view, /export function rowLine\(row, ctx, today\) \{\s*const source = shownSource\(row\);/);
+  assert.match(view, /export function cardLines\(row, today\) \{[\s\S]*?const from = shownSource\(\{ \.\.\.row, authors: '' \}\);/);
   assert.doesNotMatch(src, /'No source'/, 'with nothing to show, the tags sit there alone');
-  assert.doesNotMatch(src, /row\.source \|\| row\.authors/, 'one copy of the rule, in sort-view.js');
+  assert.doesNotMatch(src + view, /row\.source \|\| row\.authors/, 'one copy of the rule, in shownSource');
 });

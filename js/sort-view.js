@@ -4,7 +4,7 @@
  * here writes anywhere.
  */
 import { isoToShort, bySubmitted } from './queue-view.js';
-import { TYPE_ORDER, isValidSubtype, typeIsFlat } from './schema.js';
+import { TYPE_ORDER, isValidSubtype, typeIsFlat, typeDisplay } from './schema.js';
 import { duplicateFlags, linkNeedsCheck, missingFields } from './workflow.js';
 
 // What each field is called on the card.
@@ -91,6 +91,58 @@ export function dupeReason(row, ctx) {
   if (!dupes.has(row.id)) return '';
   const prior = rows.find(r => r.id === dupes.get(row.id));
   return prior && !String(prior.published_at ?? '').trim() ? dupeBadgeText(prior, ctx?.today) : '';
+}
+
+// ── Her line rules (Kate, Oct 23, pick A): one line per kind of fact, the
+// first fact darker, and a line never wraps ──
+
+/** What a row that needs a fix leads with, in the words its card's notes use. */
+export function fixWords(row, ctx) {
+  const out = [];
+  if (needsType(row)) out.push('Needs a type');
+  if (linkNeedsCheck(row)) out.push('Check the link');
+  if (dupeReason(row, ctx)) out.push('Possible duplicate');
+  return out;
+}
+
+/** An item's own day, short: an event's date, an opportunity's deadline. */
+function whenOf(row, today) {
+  const t = row?.type;
+  if (t === 'event' || t === 'erc_event') return isoToShort(row.date, today);
+  const due = t === 'opportunity' ? isoToShort(row.deadline, today) : '';
+  return due ? `Deadline ${due}` : '';
+}
+
+/** A list row's line under its title: a row that needs a fix leads with its
+ *  problems; otherwise an event's day or an opportunity's deadline leads, then
+ *  where it is from, who wrote it, and "from outside" for an outside
+ *  submission. Who added it, and when, are the card's. */
+export function rowLine(row, ctx, today) {
+  const source = shownSource(row);
+  const authors = String(row?.authors ?? '').trim();
+  const facts = [whenOf(row, today), source, authors !== source ? authors : '', row?.submitter_email ? 'from outside' : ''].filter(Boolean);
+  const fixes = fixWords(row, ctx);
+  if (fixes.length) return { lead: fixes.join(' · '), rest: facts, fix: true };
+  return { lead: facts[0] ?? '', rest: facts.slice(1), fix: false };
+}
+
+/** The card's lines: the type over the title, the byline under it, then where
+ *  it is from with its own day (the year always shown), and "Added ... by ..."
+ *  at its foot. The byline carries the authors, so the line under it never
+ *  repeats them. */
+export function cardLines(row, today) {
+  const typed = TYPE_ORDER.includes(row?.type || '');
+  const type = typed ? [typeDisplay(row.type), String(row.subtype ?? '').trim()].filter(Boolean).join(' · ') : '';
+  const from = shownSource({ ...row, authors: '' });
+  const day = isoToShort(row?.type === 'opportunity' ? row.deadline : row?.date, '');
+  const dated = day && row?.type === 'opportunity' ? `Deadline ${day}` : day;
+  const added = [isoToShort(row?.submitted_at, today), row?.submitter && `by ${row.submitter}`].filter(Boolean);
+  return {
+    type,
+    byline: String(row?.authors ?? '').trim(),
+    where: [from, dated].filter(Boolean).join(' · '),
+    added: added.length ? `Added ${added.join(' ')}` : '',
+  };
 }
 
 const PRIOR_WORDS = { trashed: 'deleted', kept: 'kept', circleback: 'skipped', new: 'in the queue' };   // skipped, the word Sort shows (review, Oct 23)

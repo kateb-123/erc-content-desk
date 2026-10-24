@@ -12,7 +12,7 @@ import { readyToFinalize, canRewrite, needsDescription } from './workflow.js';
 import { isErc, sortList } from './sort-view.js';
 import { TYPE_ORDER, typeDisplay } from './schema.js';
 import { isoToShort } from './queue-view.js';
-import { busyWords, faIcon } from './icons.js';
+import { busyWords, faIcon, lineIcon } from './icons.js';
 import { finalizeStage, finalizeGroups, finalizeProgress, onTheWay, pickSelection, finalizeWaiting, factsFor, checkSides, unsavedNote } from './finalize-view.js';
 import { buildEditForm, holdIfDirty } from './edit-form.js';
 import { sortPageHead } from './page-head.js';
@@ -251,12 +251,14 @@ export function renderFinalize(container, props) {
   });
   const toCheck = groups.find(g => g.key === 'check')?.rows ?? [];
 
-  // ── The head: Sort content's title and tabs, then one line of progress and one action on the right. ──
-  container.append(sortPageHead({
+  // ── The head: Sort content's toolbar band (pick A, Oct 23), then one line of progress and one action on the right. ──
+  const bar = sortPageHead({
     active: 'finalize',
     counts: { sort: sortList(rows).live.length, finalize: finalizeWaiting(rows, verified) },
     onGoTo, canLeave: () => !held(),
-  }));
+  });
+  bar.classList.add('sort-bar');
+  container.append(bar);
   const head = el('div', 'screen-head finalize-head');
   const lede = el('p', 'lede');
   head.append(lede);
@@ -354,8 +356,9 @@ export function renderFinalize(container, props) {
       if (row.id === selectedId) item.setAttribute('aria-current', 'true');
       if (group.key === 'rewrite') {
         // Colour is never the only signal: the triangle, as on Sort's rows.
-        const mark = faIcon('triangle-exclamation');
-        mark.classList.add('fix-mark');
+        const mark = el('span', 'fix-mark');
+        mark.append(lineIcon('warning'));
+        item.classList.add('has-mark');
         item.append(mark);
       }
       item.append(rowText(row));

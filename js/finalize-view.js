@@ -174,6 +174,24 @@ export function checkSides(row, old) {
   return { before: String(row?.original_text ?? '').trim(), marked: false, revert: false };
 }
 
+/** A Keep's row as it is saved: stamped, its description the rewrite. A row
+ *  blank in memory never saves blank over a rewrite to keep (bug, Oct 23). */
+export function keptRow(row, { rewrite = '', stamp }) {
+  const blurb = String(row.blurb ?? '').trim() ? row.blurb : (rewrite || row.blurb || '');
+  return { ...row, blurb, rewrite_checked: stamp };
+}
+
+/** The way back from a Keep (bug, Oct 23: Undo put the old words back as
+ *  the text, so a row with none reopened with an empty After). `saved` is the
+ *  stored row as it was before the keep, its own words and unchecked; `shown`
+ *  is the row as the check showed it, the rewrite as After. */
+export function undoKeep(row, { old = '', rewrite }) {
+  return {
+    saved: { ...row, blurb: old ?? '', rewrite_checked: '' },
+    shown: { ...row, blurb: rewrite || row.blurb || '', rewrite_checked: '' },
+  };
+}
+
 /** A rewrite that landed lives in this tab until it is checked (Kate, Oct 23:
  *  "say so plainly"). A reload loses it, and nothing asks for it again on
  *  its own, so the line claims no more than that. */
