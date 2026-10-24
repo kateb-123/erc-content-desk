@@ -1,8 +1,9 @@
 // Writes a plain how-to page: node how-to/make-page.mjs <slug> <title> <lede> <body.html>
 // The handoff pages (Oct 22, 2026) share this shell so each is only its words.
 // Since the look of Oct 23 (Kate's pick A) the shell is a desk page: the
-// sidebar at the left (js/shell-ui.js, lighting All how-tos at its foot), one
-// reading column on the gray page, styled by how-to/howto.css.
+// sidebar at the left (js/howto-sidebar.js: the desk's, with its counts,
+// lighting All how-tos at its foot), one reading column on the gray page,
+// styled by how-to/howto.css.
 // The index is the slug "." (how-to/index.html).
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 const [slug, title, lede, bodyFile] = process.argv.slice(2);
@@ -18,22 +19,19 @@ const html = `<!DOCTYPE html>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6bde'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
-  <link rel="stylesheet" href="/css/shell.css?v=8" />
+  <link rel="stylesheet" href="/css/shell.css?v=9" />
   <link rel="stylesheet" href="/how-to/howto.css?v=3" />
 </head>
 <body>
   <a class="skip-to-main" href="#main">Skip to content</a>
-  <!-- The desk's sidebar, built by /js/shell-ui.js: a how-to lights All how-tos at its foot. -->
+  <!-- The desk's sidebar and its counts, built by /js/howto-sidebar.js: a how-to lights All how-tos at its foot. -->
   <nav class="sidebar" aria-label="Desk"></nav>
   <main class="ht-page" id="main">
     <h1>${esc(title)}</h1>
     <p class="ht-lede">${esc(lede)}</p>
 ${body}
   </main>
-  <script type="module">
-    import { renderSidebar } from '/js/shell-ui.js';
-    renderSidebar(document.querySelector('.sidebar'), { screen: 'howto' });
-  </script>
+  <script type="module" src="/js/howto-sidebar.js?v=1"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

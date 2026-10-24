@@ -1,25 +1,25 @@
 {
   "iw": 2560,
   "ih": 1800,
-  "cx": 412,
-  "cy": 136,
-  "cw": 2148,
-  "ch": 932,
-  "alt": "Save & Export: the step row with Save & Export current, Back and Next, then Copy HTML, Save to the archive and Download .html.",
+  "cx": 668,
+  "cy": 392,
+  "cw": 1688,
+  "ch": 420,
+  "alt": "Save & Export: the line Copy the issue into Outlook, then archive it, over Copy HTML, Save to the archive and Download .html.",
   "pins": [
     {
-      "x": 23.8,
-      "y": 52.6,
+      "x": 15.2,
+      "y": 55.7,
       "label": "Copy HTML: the whole email, ready for Outlook"
     },
     {
-      "x": 40.3,
-      "y": 52.6,
+      "x": 36.1,
+      "y": 55.7,
       "label": "Save to the archive: keeps it under Past issues. Off on a sample"
     },
     {
       "x": 55.6,
-      "y": 52.6,
+      "y": 55.7,
       "label": "Download .html: the same file, saved to your computer"
     }
   ]

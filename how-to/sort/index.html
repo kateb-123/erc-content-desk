@@ -10,7 +10,7 @@
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
   <link rel="stylesheet" href="/css/styles.css?v=190" />
-  <link rel="stylesheet" href="/css/shell.css?v=8" />
+  <link rel="stylesheet" href="/css/shell.css?v=9" />
   <script>document.documentElement.classList.add('js');</script>
   <!-- Built by how-to/make-deck.mjs from sort/deck.json; the styles and script are the newsletter how-to's. -->
   <style>
@@ -18,15 +18,17 @@
        walkthrough as slides, or Styles, the email's looks. Every slide has two
        columns: its words on the left, about a third, and its picture on the
        right; Back, the dots and Next sit at the foot of the words. Numbered
-       pins on the screenshots name the controls in the builder's words and
-       show while the pointer is on the picture. Styles, the last chip, swaps
-       the slides for a menu of groups on the left and one look at a time on
-       the right, in the same columns. Without script every slide and look
-       shows, one after another. Read on a desktop. Nothing here writes to
-       the desk. Since Oct 23 the page is a desk page in pick A: the
-       sidebar at its left (js/shell-ui.js), the head on the gray page, the
-       parts as the desk's segmented control, the deck a white card. Every
-       how-to made by make-deck.mjs copies these styles and the script. */
+       pins on the screenshots name the controls in the builder's words; they
+       show at rest, and the words list each pin's step under its number
+       (Oct 23: steps showed only with the mouse on the picture). Styles, the
+       last chip, swaps the slides for a menu of groups on the left and one
+       look at a time on the right, in the same columns. Without script every
+       slide and look shows, one after another. Read on a desktop. Nothing
+       here writes to the desk. Since Oct 23 the page is a desk page in pick
+       A: the sidebar at its left with the desk's counts (js/howto-sidebar.js),
+       the head on the gray page, the parts as the desk's segmented control,
+       the deck a white card. Every how-to made by make-deck.mjs copies these
+       styles and the script as they are. */
     :root {
       --fh: clamp(340px, calc(100vh - 340px), 470px);   /* the picture's height at most; the frame is this plus its padding */
       --pad: var(--spacing-05);
@@ -281,14 +283,13 @@
       .slide.in-back > .frame, .slide.in-back > .side > :not(.foot), .styles .sg-look.in-back { animation: in-back var(--duration-moderate-02) var(--ease-productive); }
       @keyframes in-next { from { opacity: 0; transform: translateX(20px); } }
       @keyframes in-back { from { opacity: 0; transform: translateX(-20px); } }
-      .pin { transition: opacity var(--duration-moderate-02) var(--ease-productive); }
       .pin .tip { transition: opacity var(--duration-fast-02) var(--ease-productive), visibility var(--duration-fast-02) var(--ease-productive); }
     }
   </style>
 </head>
 <body>
   <a class="skip-to-main" href="#main">Skip to content</a>
-  <!-- The desk's sidebar, built by /js/shell-ui.js: a how-to lights All how-tos at its foot. -->
+  <!-- The desk's sidebar and its counts, built by /js/howto-sidebar.js: a how-to lights All how-tos at its foot. -->
   <nav class="sidebar" aria-label="Desk"></nav>
 
   <div class="howto-main">
@@ -432,7 +433,7 @@
           </div>
           <div class="frame">
             <div class="shot" style="--iw:2560;--ih:1800;--cx:1968;--cy:40;--cw:584;--ch:1150">
-              <div class="crop"><div class="zoom"><img src="shots/send.png" width="2560" height="1800" loading="lazy" alt="The decision column of a campus event's card: Event picked, the A&amp;M subtype picked, and ERC Newsletter only switched on, with the line Skips the Policy Exchange: another unit's campus event." /></div></div>
+              <div class="crop"><div class="zoom"><img src="shots/send.png" width="2560" height="1800" loading="lazy" alt="The decision column of an event's card: Event picked with its A&amp;M chip, ERC Newsletter only switched on with the line Skips the Policy Exchange, then Keep and next, Skip for now and Delete." /></div></div>
               <button type="button" class="pin" style="--x:50;--y:11.8" aria-label="ERC event: anything the ERC hosts or co-hosts"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">ERC event: anything the ERC hosts or co-hosts</span></button>
               <button type="button" class="pin" style="--x:18.8;--y:31.1" aria-label="A&amp;M: an event on campus, another unit's"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">A&amp;M: an event on campus, another unit's</span></button>
               <button type="button" class="pin" style="--x:40.4;--y:61.2" aria-label="ERC Newsletter only: on, the item never reaches Publish"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">ERC Newsletter only: on, the item never reaches Publish</span></button>
@@ -450,11 +451,11 @@
             <div class="foot"></div>
           </div>
           <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:1032;--cy:0;--cw:1528;--ch:1800">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:1064;--cy:0;--cw:1496;--ch:1800">
               <div class="crop"><div class="zoom"><img src="shots/questions.png" width="2560" height="1800" loading="lazy" alt="A card with questions: the Check the link note with Verify link, the Type label in orange with no type picked, and Keep and next grayed with Set a type first under it." /></div></div>
-              <button type="button" class="pin" style="--x:35.2;--y:23.7" aria-label="Verify link: opens the page in a new tab"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Verify link: opens the page in a new tab</span></button>
-              <button type="button" class="pin" style="--x:66.9;--y:4.1" aria-label="Type: its label stays orange until one is picked"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Type: its label stays orange until one is picked</span></button>
-              <button type="button" class="pin" style="--x:80.4;--y:46.1" aria-label="Keep and next waits, and says what it needs"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Keep and next waits, and says what it needs</span></button>
+              <button type="button" class="pin" style="--x:33.8;--y:23.7" aria-label="Verify link: opens the page in a new tab"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Verify link: opens the page in a new tab</span></button>
+              <button type="button" class="pin" style="--x:66.2;--y:4.1" aria-label="Type: its label stays orange until one is picked"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Type: its label stays orange until one is picked</span></button>
+              <button type="button" class="pin" style="--x:79.9;--y:46.1" aria-label="Keep and next waits, and says what it needs"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Keep and next waits, and says what it needs</span></button>
             </div>
           </div>
         </div>
@@ -469,7 +470,7 @@
           </div>
           <div class="frame">
             <div class="shot" style="--iw:2560;--ih:1800;--cx:0;--cy:0;--cw:2560;--ch:1800">
-              <div class="crop"><div class="zoom"><img src="shots/groups.png" width="2560" height="1800" loading="lazy" alt="Sort scrolled to the foot of its list: a skipped item with its Skipped tag, then the Past group with Dismiss all and its dated items, then the Already live group with Dismiss all; the chosen item's card beside them." /></div></div>
+              <div class="crop"><div class="zoom"><img src="shots/groups.png" width="2560" height="1800" loading="lazy" alt="Sort scrolled to the foot of its list: a skipped item with its Skipped tag, then the Past group with Dismiss all and its dated items, then the Already live group with Dismiss all." /></div></div>
               <button type="button" class="pin" style="--x:37.5;--y:25.2" aria-label="Skipped: an item you parked. It waits under the new ones"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Skipped: an item you parked. It waits under the new ones</span></button>
               <button type="button" class="pin" style="--x:29.8;--y:30.3" aria-label="Past: events and opportunities whose date or deadline has gone"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Past: events and opportunities whose date or deadline has gone</span></button>
               <button type="button" class="pin up" style="--x:29.8;--y:85.8" aria-label="Already live: links the Policy Exchange already has"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Already live: links the Policy Exchange already has</span></button>
@@ -701,10 +702,7 @@
       ready = true;
     })();
   </script>
-  <script type="module">
-    import { renderSidebar } from '/js/shell-ui.js';
-    renderSidebar(document.querySelector('.sidebar'), { screen: 'howto' });
-  </script>
+  <script type="module" src="/js/howto-sidebar.js?v=1"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

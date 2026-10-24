@@ -2,10 +2,10 @@
   "iw": 2560,
   "ih": 1800,
   "cx": 831,
-  "cy": 1350,
+  "cy": 798,
   "cw": 1369,
   "ch": 230,
-  "alt": "An item on the email under the pointer, with a small grip at its left edge.",
+  "alt": "An event on the email under the pointer, lit in pale blue, with a small grip at its left edge.",
   "pins": [
     {
       "x": 9.5,

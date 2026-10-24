@@ -10,7 +10,7 @@
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
   <link rel="stylesheet" href="/css/styles.css?v=190" />
-  <link rel="stylesheet" href="/css/shell.css?v=8" />
+  <link rel="stylesheet" href="/css/shell.css?v=9" />
   <script>document.documentElement.classList.add('js');</script>
   <!-- Built by how-to/make-deck.mjs from ask-claude/deck.json; the styles and script are the newsletter how-to's. -->
   <style>
@@ -18,15 +18,17 @@
        walkthrough as slides, or Styles, the email's looks. Every slide has two
        columns: its words on the left, about a third, and its picture on the
        right; Back, the dots and Next sit at the foot of the words. Numbered
-       pins on the screenshots name the controls in the builder's words and
-       show while the pointer is on the picture. Styles, the last chip, swaps
-       the slides for a menu of groups on the left and one look at a time on
-       the right, in the same columns. Without script every slide and look
-       shows, one after another. Read on a desktop. Nothing here writes to
-       the desk. Since Oct 23 the page is a desk page in Kate's pick A: the
-       sidebar at its left (js/shell-ui.js), the head on the gray page, the
-       parts as the desk's segmented control, the deck a white card. Every
-       how-to made by make-deck.mjs copies these styles and the script. */
+       pins on the screenshots name the controls in the builder's words; they
+       show at rest, and the words list each pin's step under its number
+       (Oct 23: steps showed only with the mouse on the picture). Styles, the
+       last chip, swaps the slides for a menu of groups on the left and one
+       look at a time on the right, in the same columns. Without script every
+       slide and look shows, one after another. Read on a desktop. Nothing
+       here writes to the desk. Since Oct 23 the page is a desk page in pick
+       A: the sidebar at its left with the desk's counts (js/howto-sidebar.js),
+       the head on the gray page, the parts as the desk's segmented control,
+       the deck a white card. Every how-to made by make-deck.mjs copies these
+       styles and the script as they are. */
     :root {
       --fh: clamp(340px, calc(100vh - 340px), 470px);   /* the picture's height at most; the frame is this plus its padding */
       --pad: var(--spacing-05);
@@ -281,14 +283,13 @@
       .slide.in-back > .frame, .slide.in-back > .side > :not(.foot), .styles .sg-look.in-back { animation: in-back var(--duration-moderate-02) var(--ease-productive); }
       @keyframes in-next { from { opacity: 0; transform: translateX(20px); } }
       @keyframes in-back { from { opacity: 0; transform: translateX(-20px); } }
-      .pin { transition: opacity var(--duration-moderate-02) var(--ease-productive); }
       .pin .tip { transition: opacity var(--duration-fast-02) var(--ease-productive), visibility var(--duration-fast-02) var(--ease-productive); }
     }
   </style>
 </head>
 <body>
   <a class="skip-to-main" href="#main">Skip to content</a>
-  <!-- The desk's sidebar, built by /js/shell-ui.js: a how-to lights All how-tos at its foot. -->
+  <!-- The desk's sidebar and its counts, built by /js/howto-sidebar.js: a how-to lights All how-tos at its foot. -->
   <nav class="sidebar" aria-label="Desk"></nav>
 
   <div class="howto-main">
@@ -570,10 +571,7 @@
       ready = true;
     })();
   </script>
-  <script type="module">
-    import { renderSidebar } from '/js/shell-ui.js';
-    renderSidebar(document.querySelector('.sidebar'), { screen: 'howto' });
-  </script>
+  <script type="module" src="/js/howto-sidebar.js?v=1"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

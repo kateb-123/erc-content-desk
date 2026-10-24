@@ -62,24 +62,6 @@ button.sidebar-item:disabled { background: transparent; color: var(--text-disabl
   .sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--sidebar-line); }
 }
 
-/* ── The how-tos' top bar (Sep 17 to Oct 23) ─────────────────────────────
-   The how-to pages carry it as markup until they move to the sidebar: a 56px
-   navy bar with a breadcrumb. */
-.topbar, .topbar * { box-sizing: border-box; }
-.topbar {
-  height: 56px; flex: none;
-  display: flex; align-items: center; gap: var(--spacing-03);
-  padding: 0 var(--gap-56);
-  background: var(--color-blue-400);
-  font: var(--body-type); color: var(--text-inverse);
-}
-.topbar-crumbs { display: flex; align-items: center; gap: var(--spacing-03); min-width: 0; }
-.topbar-crumbs a { color: var(--text-inverse); text-decoration: none; transition: color var(--duration-fast-01) var(--ease-productive); }
-.topbar-crumbs a:hover { color: var(--color-maize-400); }
-.topbar-brand { font: var(--label-type); }
-.topbar-sep { color: var(--color-blue-200); }
-.topbar a:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
-
 /* A wait, in words (Kate, Sep 23: the sliding dots went; her pick of nine was
    shimmering words). The words say what is happening in the quiet gray, and a
    soft blue light sweeps across them left to right. The one copy for both

@@ -2,7 +2,7 @@
   {
     "name": "outline",
     "url": "/builder/?fresh=cap",
-    "alt": "The Outline step: the Issue list set to October 27, 2026, and the top of the item table.",
+    "alt": "The Outline step: Back grayed and Next over the step's card, the Issue list set to October 27, 2026, Pulled 4 from the desk, and the top of the item table with Upcoming Events.",
     "before": [
       {
         "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: ['sbx_032', 'sbx_014', 'sbx_016', 'sbx_017'].map(id => ({ id, newsletter_issue: '2026-10-27' })) }) }).then(r => r.json())"
@@ -20,11 +20,11 @@
       }
     ],
     "crop": "[data-step=\"triage\"] .triage-meta",
-    "pad": 200,
+    "pad": 136,
     "pins": [
       {
         "selector": "[data-step=\"triage\"] select.triage-field-input",
-        "label": "Issue: the date; picking it brings in what the desk holds for it. To practice, pick a sample under Samples",
+        "label": "Issue: the date; picking it brings in what the desk holds for it. To practice, pick Sample issue (fictional) under Samples",
         "nth": 0
       }
     ]
@@ -32,7 +32,7 @@
   {
     "name": "outline-rows",
     "url": "/builder/?fresh=cap",
-    "alt": "The Outline table: a grip at the left of the first section and of every item; the row under the pointer shows Move to… in blue and Remove in red.",
+    "alt": "The Outline table: Upcoming Events and Opportunities, a grip at the left of each section and item; the Rural Schools Symposium row is lit, with Move to… in blue, and every row has Remove in red.",
     "before": [
       {
         "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: ['sbx_032', 'sbx_014', 'sbx_016', 'sbx_017'].map(id => ({ id, newsletter_issue: '2026-10-27' })) }) }).then(r => r.json())"
@@ -81,7 +81,7 @@
   {
     "name": "tweak",
     "url": "/builder/?fresh=cap",
-    "alt": "Preview & Tweak: Add an item, Add a callout and the Contents strip checkbox over the email; the email opens with its date line, masthead, contents strip and introduction.",
+    "alt": "Preview & Tweak beside the desk's sidebar: the step row, Back and Next, then Add an item, Add a callout and the Contents strip checkbox over the email, which opens with its date line, masthead, contents strip and introduction.",
     "before": [
       {
         "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: ['sbx_032', 'sbx_014', 'sbx_016', 'sbx_017'].map(id => ({ id, newsletter_issue: '2026-10-27' })) }) }).then(r => r.json())"
@@ -198,7 +198,7 @@
   {
     "name": "sheet-grip",
     "url": "/builder/?fresh=cap",
-    "alt": "An item on the email under the pointer, with a small grip at its left edge.",
+    "alt": "An event on the email under the pointer, lit in pale blue, with a small grip at its left edge.",
     "before": [
       {
         "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: ['sbx_032', 'sbx_014', 'sbx_016', 'sbx_017'].map(id => ({ id, newsletter_issue: '2026-10-27' })) }) }).then(r => r.json())"
@@ -222,7 +222,7 @@
         "wait": 2500
       },
       {
-        "eval": "(() => { const f = document.querySelector('.edit-preview-iframe'); const d = f.contentDocument; const z = parseFloat(f.style.zoom) || 1; const fr = f.getBoundingClientRect(); const put = (id, r) => { const m = document.createElement('div'); m.id = id; m.style.cssText = 'position:absolute;opacity:0;pointer-events:none;left:' + (fr.left + scrollX + r.left * z) + 'px;top:' + (fr.top + scrollY + r.top * z) + 'px;width:' + (r.width * z) + 'px;height:' + (r.height * z) + 'px'; document.body.append(m); }; const t = d.querySelector('[data-edit-section=\"events\"][data-edit-field=\"title\"]'); t.scrollIntoView({ block: 'center' }); t.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); const es = [...d.querySelectorAll('.ec-item-hover')]; let l = 1e9, tp = 1e9, r = 0, b = 0; for (const e of es) { const q = e.getBoundingClientRect(); l = Math.min(l, q.left); tp = Math.min(tp, q.top); r = Math.max(r, q.right); b = Math.max(b, q.bottom); } put('cap-block', { left: l - 30, top: tp - 8, width: r - l + 30, height: b - tp + 16 }); put('cap-grip', d.querySelector('.ec-grip').getBoundingClientRect()); })()",
+        "eval": "(() => { const f = document.querySelector('.edit-preview-iframe'); const d = f.contentDocument; const z = parseFloat(f.style.zoom) || 1; const put = (id, r) => { const fr = f.getBoundingClientRect(); const m = document.createElement('div'); m.id = id; m.style.cssText = 'position:absolute;opacity:0;pointer-events:none;left:' + (fr.left + scrollX + r.left * z) + 'px;top:' + (fr.top + scrollY + r.top * z) + 'px;width:' + (r.width * z) + 'px;height:' + (r.height * z) + 'px'; document.body.append(m); }; const t = d.querySelector('[data-edit-section=\"events\"][data-edit-field=\"title\"]'); t.scrollIntoView({ block: 'center' }); t.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); const es = [...d.querySelectorAll('.ec-item-hover')]; let l = 1e9, tp = 1e9, r = 0, b = 0; for (const e of es) { const q = e.getBoundingClientRect(); l = Math.min(l, q.left); tp = Math.min(tp, q.top); r = Math.max(r, q.right); b = Math.max(b, q.bottom); } put('cap-block', { left: l - 30, top: tp - 8, width: r - l + 30, height: b - tp + 16 }); put('cap-grip', d.querySelector('.ec-grip').getBoundingClientRect()); })()",
         "wait": 400
       }
     ],
@@ -239,7 +239,7 @@
   {
     "name": "export",
     "url": "/builder/?fresh=cap",
-    "alt": "Save & Export: the step row with Save & Export current, Back and Next, then Copy HTML, Save to the archive and Download .html.",
+    "alt": "Save & Export: the line Copy the issue into Outlook, then archive it, over Copy HTML, Save to the archive and Download .html.",
     "before": [
       {
         "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: ['sbx_032', 'sbx_014', 'sbx_016', 'sbx_017'].map(id => ({ id, newsletter_issue: '2026-10-27' })) }) }).then(r => r.json())"
@@ -264,7 +264,7 @@
       }
     ],
     "crop": "[data-step=\"export\"]",
-    "pad": 140,
+    "pad": 12,
     "pins": [
       {
         "selector": ".export-btn-row button:has-text(\"Copy HTML\")",

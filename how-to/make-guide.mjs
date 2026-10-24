@@ -23,12 +23,15 @@ const PAGES = [
 const text = html => html
   .replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, '')
   .replace(/<header[\s\S]*?<\/header>/gi, '').replace(/<nav[\s\S]*?<\/nav>/gi, '')
+  // A drawn diagram reads as words (review, Oct 23): what it shows, as a
+  // screen reader hears it, then each of its labels on a line of its own.
+  .replace(/<svg\b[^>]*\baria-label="([^"]*)"[^>]*>/gi, '\n\n$1\n\n').replace(/<\/text>/gi, '\n')
   // A link keeps its address (review, Oct 23): the text, then the address.
   .replace(/<a\b[^>]*href="([^"#][^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, (_, href, words) => `${words} (${href.startsWith('/') ? SITE + href : href})`)
   .replace(/<(h[1-4])[^>]*>/gi, '\n\n## ').replace(/<\/h[1-4]>/gi, '\n')
-  .replace(/<li[^>]*>/gi, '\n- ').replace(/<(p|tr|div|br)[^>]*>/gi, '\n').replace(/<\/t[dh]>/gi, ' | ')
+  .replace(/<li\b[^>]*>/gi, '\n- ').replace(/<(p|tr|div|br)\b[^>]*>/gi, '\n').replace(/<\/t[dh]>/gi, ' | ')
   .replace(/<[^>]+>/g, '')
-  .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;|&rsquo;/g, "'").replace(/&nbsp;/g, ' ').replace(/&#187;/g, '»')
+  .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;|&#x27;|&rsquo;/g, "'").replace(/&nbsp;/g, ' ').replace(/&#187;/g, '»')
   .replace(/[ \t]+/g, ' ').replace(/\n\s*\n\s*\n+/g, '\n\n').trim();
 
 const parts = [
@@ -40,13 +43,12 @@ for (const [title, slug] of PAGES) {
   if (!existsSync(file)) continue;
   const body = readFileSync(file, 'utf8');
   let main = body.match(/<main[\s\S]*?<\/main>/i)?.[0] ?? body;
-  // A guide made by make-deck.mjs lists its pins in its words: a pin whose
-  // label is there already is left out here, so no step is read twice.
-  if (body.includes('Built by how-to/make-deck.mjs')) {
-    const pin = /<button type="button" class="pin[^"]*" style="[^"]*" aria-label="([^"]*)"[\s\S]*?<\/button>/g;
-    const words = main.replace(pin, '');
-    main = main.replace(pin, (button, label) => (words.includes(label) ? '' : button));
-  }
+  // A guide lists its pins in its words (the decks, and the newsletter
+  // how-to since Oct 23): a pin whose label is there already is left out
+  // here, so no step is read twice.
+  const pin = /<button type="button" class="pin[^"]*" style="[^"]*" aria-label="([^"]*)"[\s\S]*?<\/button>/g;
+  const words = main.replace(pin, '');
+  main = main.replace(pin, (button, label) => (words.includes(label) ? '' : button));
   parts.push(`\n\n# ${title}\nhttps://erc-content-desk.vercel.app/how-to/${slug}/\n\n${text(main)}`);
 }
 // What the pages draw at load, written out (review, Oct 23): the item types and the public links.

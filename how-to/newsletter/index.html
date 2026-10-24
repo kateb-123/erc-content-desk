@@ -10,7 +10,7 @@
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
   <link rel="stylesheet" href="/css/styles.css?v=190" />
-  <link rel="stylesheet" href="/css/shell.css?v=8" />
+  <link rel="stylesheet" href="/css/shell.css?v=9" />
   <script>
     (() => {
       const html = document.documentElement;
@@ -22,15 +22,17 @@
        walkthrough as slides, or Styles, the email's looks. Every slide has two
        columns: its words on the left, about a third, and its picture on the
        right; Back, the dots and Next sit at the foot of the words. Numbered
-       pins on the screenshots name the controls in the builder's words and
-       show while the pointer is on the picture. Styles, the last chip, swaps
-       the slides for a menu of groups on the left and one look at a time on
-       the right, in the same columns. Without script every slide and look
-       shows, one after another. Read on a desktop. Nothing here writes to
-       the desk. Since Oct 23 the page is a desk page in pick A: the
-       sidebar at its left (js/shell-ui.js), the head on the gray page, the
-       parts as the desk's segmented control, the deck a white card. Every
-       how-to made by make-deck.mjs copies these styles and the script. */
+       pins on the screenshots name the controls in the builder's words; they
+       show at rest, and the words list each pin's step under its number
+       (Oct 23: steps showed only with the mouse on the picture). Styles, the
+       last chip, swaps the slides for a menu of groups on the left and one
+       look at a time on the right, in the same columns. Without script every
+       slide and look shows, one after another. Read on a desktop. Nothing
+       here writes to the desk. Since Oct 23 the page is a desk page in pick
+       A: the sidebar at its left with the desk's counts (js/howto-sidebar.js),
+       the head on the gray page, the parts as the desk's segmented control,
+       the deck a white card. Every how-to made by make-deck.mjs copies these
+       styles and the script as they are. */
     :root {
       --fh: clamp(340px, calc(100vh - 340px), 470px);   /* the picture's height at most; the frame is this plus its padding */
       --pad: var(--spacing-05);
@@ -136,11 +138,6 @@
       .pin:hover { z-index: 3; }
       .pin:hover .tip { visibility: visible; opacity: 1; }
     }
-
-    /* Hidden until the pointer is on the still or focus is in it; a tap shows them on a touch screen. */
-    .pin { opacity: 0; pointer-events: none; }
-    .shot:focus-within .pin, .shot.is-shown .pin { opacity: 1; pointer-events: auto; }
-    @media (hover: hover) { .shot:hover .pin { opacity: 1; pointer-events: auto; } }
 
     /* The numbered circle of a note. */
     .n { display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: var(--radius-round); background: var(--accent); color: var(--text-on-color); font: 700 12px/1 var(--font-sans); font-style: normal; }
@@ -290,14 +287,13 @@
       .slide.in-back > .frame, .slide.in-back > .side > :not(.foot), .styles .sg-look.in-back { animation: in-back var(--duration-moderate-02) var(--ease-productive); }
       @keyframes in-next { from { opacity: 0; transform: translateX(20px); } }
       @keyframes in-back { from { opacity: 0; transform: translateX(-20px); } }
-      .pin { transition: opacity var(--duration-moderate-02) var(--ease-productive); }
       .pin .tip { transition: opacity var(--duration-fast-02) var(--ease-productive), visibility var(--duration-fast-02) var(--ease-productive); }
     }
   </style>
 </head>
 <body>
   <a class="skip-to-main" href="#main">Skip to content</a>
-  <!-- The desk's sidebar, built by /js/shell-ui.js: a how-to lights All how-tos at its foot. -->
+  <!-- The desk's sidebar and its counts, built by /js/howto-sidebar.js: a how-to lights All how-tos at its foot. -->
   <nav class="sidebar" aria-label="Desk"></nav>
 
   <div class="howto-main">
@@ -330,6 +326,7 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">On Next issue, Open the builder. Pick the issue's date: everything staged for it comes in, and anything new each time it opens.</p>
+            <p class="note"><span class="n">1</span><span>Issue: the date; picking it brings in what the desk holds for it. To practice, pick Sample issue (fictional) under Samples.</span></p>
             <p class="note warn"><span class="n"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span><b>The draft is saved only in the browser you build it in. Finish the issue there.</b></p>
             <section class="from" id="items" aria-labelledby="h-items">
               <h3 id="h-items">Where items come from</h3>
@@ -345,9 +342,9 @@
             <div class="foot"></div>
           </div>
           <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:358;--cy:162;--cw:2202;--ch:976">
-              <div class="crop"><div class="zoom"><img src="shots/outline.png" width="2560" height="1800" loading="lazy" alt="The Outline step: the Issue list set to Sample issue (fictional), and the top of the item table." /></div></div>
-              <button type="button" class="pin" style="--x:30;--y:50" aria-label="Issue: the date; picking it brings in what the desk holds for it. To practice, pick a sample under Samples"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Issue: the date; picking it brings in what the desk holds for it. To practice, pick a sample under Samples</span></button>
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:486;--cy:290;--cw:2052;--ch:720">
+              <div class="crop"><div class="zoom"><img src="shots/outline.png" width="2560" height="1800" loading="lazy" alt="The Outline step: Back grayed and Next over the step's card, the Issue list set to October 27, 2026, Pulled 4 from the desk, and the top of the item table with Upcoming Events." /></div></div>
+              <button type="button" class="pin" style="--x:25.9;--y:50" aria-label="Issue: the date; picking it brings in what the desk holds for it. To practice, pick Sample issue (fictional) under Samples"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Issue: the date; picking it brings in what the desk holds for it. To practice, pick Sample issue (fictional) under Samples</span></button>
             </div>
           </div>
         </div>
@@ -355,11 +352,15 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Put the issue in the order it should print. Drag a section or an item by its grip; it lands where you drop it.</p>
+            <p class="note"><span class="n">1</span><span>A section's grip: drag the whole section up or down the email.</span></p>
+            <p class="note"><span class="n">2</span><span>An item's grip: drag it within its section.</span></p>
+            <p class="note"><span class="n">3</span><span>Move to…: file it under another section or group.</span></p>
+            <p class="note"><span class="n">4</span><span>Remove: takes it out. Undo on its row puts it back.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
             <div class="shot" style="--iw:2560;--ih:1800;--cx:518;--cy:831;--cw:1988;--ch:581">
-              <div class="crop"><div class="zoom"><img src="shots/outline-rows.png" width="2560" height="1800" loading="lazy" alt="The Outline table: a grip at the left of the ERC Spotlight section and of every item; the hovered row shows Move to… in blue and Remove in red." /></div></div>
+              <div class="crop"><div class="zoom"><img src="shots/outline-rows.png" width="2560" height="1800" loading="lazy" alt="The Outline table: Upcoming Events and Opportunities, a grip at the left of each section and item; the Rural Schools Symposium row is lit, with Move to… in blue, and every row has Remove in red." /></div></div>
               <button type="button" class="pin" style="--x:13.9;--y:25.5" aria-label="A section's grip: drag the whole section up or down the email"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">A section's grip: drag the whole section up or down the email</span></button>
               <button type="button" class="pin" style="--x:14.7;--y:47.8" aria-label="An item's grip: drag it within its section"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">An item's grip: drag it within its section</span></button>
               <button type="button" class="pin" style="--x:74.4;--y:49.7" aria-label="Move to…: file it under another section or group"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Move to…: file it under another section or group</span></button>
@@ -376,15 +377,20 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">The email as it will land in Outlook. Click anything on it to change it; what is not on it yet comes from the buttons above.</p>
+            <p class="note"><span class="n">1</span><span>Add an item: something the desk did not have.</span></p>
+            <p class="note"><span class="n">2</span><span>Add a callout: a box that asks readers for something.</span></p>
+            <p class="note"><span class="n">3</span><span>Contents strip: show or hide the row of section names.</span></p>
+            <p class="note"><span class="n">4</span><span>The contents strip on the email, one link per section.</span></p>
+            <p class="note"><span class="n go"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span><span><b>Reset layout</b> appears beside them once you change the section order, the contents strip or a look. It puts them all back.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
             <div class="shot" style="--iw:2560;--ih:1800;--cx:0;--cy:0;--cw:2560;--ch:1264">
-              <div class="crop"><div class="zoom"><img src="shots/tweak.png" width="2560" height="1800" loading="lazy" alt="Preview &amp; Tweak: Add an item, Add a callout, the Contents strip checkbox and Reset layout over the email; the email opens with its date line, masthead, contents strip and introduction." /></div></div>
+              <div class="crop"><div class="zoom"><img src="shots/tweak.png" width="2560" height="1800" loading="lazy" alt="Preview &amp; Tweak beside the desk's sidebar: the step row, Back and Next, then Add an item, Add a callout and the Contents strip checkbox over the email, which opens with its date line, masthead, contents strip and introduction." /></div></div>
               <button type="button" class="pin" style="--x:75.2;--y:47" aria-label="Add an item: something the desk did not have"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Add an item: something the desk did not have</span></button>
               <button type="button" class="pin" style="--x:85;--y:47" aria-label="Add a callout: a box that asks readers for something"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Add a callout: a box that asks readers for something</span></button>
               <button type="button" class="pin" style="--x:91.2;--y:47" aria-label="Contents strip: show or hide the row of section names"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Contents strip: show or hide the row of section names</span></button>
-              <button type="button" class="pin" style="--x:60.3;--y:77.8" aria-label="The contents strip on the email, one link per section"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">The contents strip on the email, one link per section</span></button>
+              <button type="button" class="pin up" style="--x:60.3;--y:77.8" aria-label="The contents strip on the email, one link per section"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">The contents strip on the email, one link per section</span></button>
             </div>
           </div>
         </div>
@@ -392,6 +398,10 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Click an item and its card opens beside it. Every change shows on the email as you make it; Done closes the card.</p>
+            <p class="note"><span class="n">1</span><span>The item you clicked, lit on the email.</span></p>
+            <p class="note"><span class="n">2</span><span>How it is laid out: pick a look. Styles shows each one.</span></p>
+            <p class="note"><span class="n">3</span><span>Its words: title, link, description, date, time, place, media.</span></p>
+            <p class="note"><span class="n">4</span><span>Done closes the card. Undo changes puts it all back.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -408,12 +418,13 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Reorder here too: point at an item or a section heading and drag it by the grip that appears at its left.</p>
+            <p class="note"><span class="n">1</span><span>The grip: it shows when you point at an item.</span></p>
             <p class="note warn"><span class="n"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span><b>Fix things here, never in Outlook, so the archive matches what went out.</b></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:831;--cy:1350;--cw:1369;--ch:230">
-              <div class="crop"><div class="zoom"><img src="shots/sheet-grip.png" width="2560" height="1800" loading="lazy" alt="An item on the email hovered, with a small grip at its left edge." /></div></div>
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:831;--cy:798;--cw:1369;--ch:230">
+              <div class="crop"><div class="zoom"><img src="shots/sheet-grip.png" width="2560" height="1800" loading="lazy" alt="An event on the email under the pointer, lit in pale blue, with a small grip at its left edge." /></div></div>
               <button type="button" class="pin" style="--x:9.5;--y:47.4" aria-label="The grip: it shows when you point at an item"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The grip: it shows when you point at an item</span></button>
             </div>
           </div>
@@ -427,15 +438,18 @@
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
             <p class="cap">Copy HTML and send it (the next part). Once it has gone out, Save to the archive, so Past issues keeps it.</p>
+            <p class="note"><span class="n">1</span><span>Copy HTML: the whole email, ready for Outlook.</span></p>
+            <p class="note"><span class="n">2</span><span>Save to the archive: keeps it under Past issues. Off on a sample.</span></p>
+            <p class="note"><span class="n">3</span><span>Download .html: the same file, saved to your computer.</span></p>
             <p class="note"><span class="n go"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span><span><b>Start the next issue</b> clears the draft for the next one.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:412;--cy:136;--cw:2148;--ch:932">
-              <div class="crop"><div class="zoom"><img src="shots/export.png" width="2560" height="1800" loading="lazy" alt="Save &amp; Export: the step row with Save &amp; Export current, Back, and the buttons Copy HTML, Save to the archive and Download .html." /></div></div>
-              <button type="button" class="pin up" style="--x:23.8;--y:52.6" aria-label="Copy HTML: the whole email, ready for Outlook"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Copy HTML: the whole email, ready for Outlook</span></button>
-              <button type="button" class="pin up" style="--x:40.3;--y:52.6" aria-label="Save to the archive: keeps it under Past issues. Off on a sample"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Save to the archive: keeps it under Past issues. Off on a sample</span></button>
-              <button type="button" class="pin up" style="--x:55.6;--y:52.6" aria-label="Download .html: the same file, saved to your computer"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Download .html: the same file, saved to your computer</span></button>
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:668;--cy:392;--cw:1688;--ch:420">
+              <div class="crop"><div class="zoom"><img src="shots/export.png" width="2560" height="1800" loading="lazy" alt="Save &amp; Export: the line Copy the issue into Outlook, then archive it, over Copy HTML, Save to the archive and Download .html." /></div></div>
+              <button type="button" class="pin" style="--x:15.2;--y:55.7" aria-label="Copy HTML: the whole email, ready for Outlook"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Copy HTML: the whole email, ready for Outlook</span></button>
+              <button type="button" class="pin" style="--x:36.1;--y:55.7" aria-label="Save to the archive: keeps it under Past issues. Off on a sample"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Save to the archive: keeps it under Past issues. Off on a sample</span></button>
+              <button type="button" class="pin" style="--x:55.6;--y:55.7" aria-label="Download .html: the same file, saved to your computer"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Download .html: the same file, saved to your computer</span></button>
             </div>
           </div>
         </div>
@@ -941,10 +955,7 @@
       ready = true;
     })();
   </script>
-  <script type="module">
-    import { renderSidebar } from '/js/shell-ui.js';
-    renderSidebar(document.querySelector('.sidebar'), { screen: 'howto' });
-  </script>
+  <script type="module" src="/js/howto-sidebar.js?v=1"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

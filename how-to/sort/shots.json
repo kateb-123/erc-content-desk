@@ -50,7 +50,7 @@
   {
     "name": "send",
     "url": "/?fresh=cap#sort",
-    "alt": "The decision column of a campus event's card: Event picked, the A&M subtype picked, and ERC Newsletter only switched on, with the line Skips the Policy Exchange: another unit's campus event.",
+    "alt": "The decision column of an event's card: Event picked with its A&M chip, ERC Newsletter only switched on with the line Skips the Policy Exchange, then Keep and next, Skip for now and Delete.",
     "before": [
       {
         "click": "#screen-sort button.sort-row:has-text('ERC Fall Speaker Series')"
@@ -92,7 +92,7 @@
       }
     ],
     "crop": "#screen-sort .sort-card",
-    "pad": 16,
+    "pad": 0,
     "pins": [
       {
         "selector": "#screen-sort .card-note-box a.source-link",
@@ -114,7 +114,7 @@
   {
     "name": "groups",
     "url": "/?fresh=cap#sort",
-    "alt": "Sort scrolled to the foot of its list: a skipped item with its Skipped tag, then the Past group with Dismiss all and its dated items, then the Already live group with Dismiss all; the chosen item's card beside them.",
+    "alt": "Sort scrolled to the foot of its list: a skipped item with its Skipped tag, then the Past group with Dismiss all and its dated items, then the Already live group with Dismiss all.",
     "before": [
       {
         "eval": "window.scrollTo(0, document.documentElement.scrollHeight)",

@@ -15,17 +15,11 @@ const here = p => new URL(`./${p}`, import.meta.url);
 const deck = JSON.parse(readFileSync(here(`${slug}/deck.json`), 'utf8'));
 const model = readFileSync(here('newsletter/index.html'), 'utf8');
 // A guide's pins show at rest, each one listed in the words beside it (Kate,
-// Oct 23: steps 1 and 2 showed only with the mouse on the picture). The
-// newsletter how-to keeps its own pins hidden until then.
-const HIDDEN = `
-    /* Hidden until the pointer is on the still or focus is in it; a tap shows them on a touch screen. */
-    .pin { opacity: 0; pointer-events: none; }
-    .shot:focus-within .pin, .shot.is-shown .pin { opacity: 1; pointer-events: auto; }
-    @media (hover: hover) { .shot:hover .pin { opacity: 1; pointer-events: auto; } }
-`;
-const modelStyle = model.match(/<style>[\s\S]*?<\/style>/)[0];
-if (!modelStyle.includes(HIDDEN)) throw new Error('the newsletter how-to\'s rule that hides the pins has changed: match it in HIDDEN, how-to/make-deck.mjs');
-const style = modelStyle.replace(HIDDEN, '');
+// Oct 23: steps 1 and 2 showed only with the mouse on the picture); since the
+// same night the newsletter how-to does too, so its styles are copied as they
+// are, and a rule there that hides the pins again stops the build.
+const style = model.match(/<style>[\s\S]*?<\/style>/)[0];
+if (/\.pin \{ opacity: 0/.test(style)) throw new Error('the newsletter how-to hides its pins again: a guide\'s pins show at rest (how-to/make-deck.mjs)');
 const script = model.slice(model.lastIndexOf('<script>', model.indexOf('// ---- The pins')), model.indexOf('</script>', model.indexOf('// ---- The pins')) + '</script>'.length);
 
 const esc = t => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -120,14 +114,14 @@ const html = `<!DOCTYPE html>
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
   <link rel="stylesheet" href="/css/styles.css?v=190" />
-  <link rel="stylesheet" href="/css/shell.css?v=8" />
+  <link rel="stylesheet" href="/css/shell.css?v=9" />
   <script>document.documentElement.classList.add('js');</script>
   <!-- Built by how-to/make-deck.mjs from ${slug}/deck.json; the styles and script are the newsletter how-to's. -->
   ${style}
 </head>
 <body>
   <a class="skip-to-main" href="#main">Skip to content</a>
-  <!-- The desk's sidebar, built by /js/shell-ui.js: a how-to lights All how-tos at its foot. -->
+  <!-- The desk's sidebar and its counts, built by /js/howto-sidebar.js: a how-to lights All how-tos at its foot. -->
   <nav class="sidebar" aria-label="Desk"></nav>
 
   <div class="howto-main">
@@ -163,10 +157,7 @@ const html = `<!DOCTYPE html>
   </div>
 
   ${script}
-  <script type="module">
-    import { renderSidebar } from '/js/shell-ui.js';
-    renderSidebar(document.querySelector('.sidebar'), { screen: 'howto' });
-  </script>
+  <script type="module" src="/js/howto-sidebar.js?v=1"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

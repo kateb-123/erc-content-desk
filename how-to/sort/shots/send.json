@@ -5,7 +5,7 @@
   "cy": 40,
   "cw": 584,
   "ch": 1150,
-  "alt": "The decision column of a campus event's card: Event picked, the A&M subtype picked, and ERC Newsletter only switched on, with the line Skips the Policy Exchange: another unit's campus event.",
+  "alt": "The decision column of an event's card: Event picked with its A&M chip, ERC Newsletter only switched on with the line Skips the Policy Exchange, then Keep and next, Skip for now and Delete.",
   "pins": [
     {
       "x": 50,

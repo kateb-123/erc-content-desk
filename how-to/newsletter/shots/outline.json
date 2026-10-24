@@ -1,16 +1,16 @@
 {
   "iw": 2560,
   "ih": 1800,
-  "cx": 358,
-  "cy": 162,
-  "cw": 2202,
-  "ch": 976,
-  "alt": "The Outline step: the Issue list set to October 27, 2026, and the top of the item table.",
+  "cx": 486,
+  "cy": 290,
+  "cw": 2052,
+  "ch": 720,
+  "alt": "The Outline step: Back grayed and Next over the step's card, the Issue list set to October 27, 2026, Pulled 4 from the desk, and the top of the item table with Upcoming Events.",
   "pins": [
     {
-      "x": 30,
+      "x": 25.9,
       "y": 50,
-      "label": "Issue: the date; picking it brings in what the desk holds for it. To practice, pick a sample under Samples"
+      "label": "Issue: the date; picking it brings in what the desk holds for it. To practice, pick Sample issue (fictional) under Samples"
     }
   ]
 }

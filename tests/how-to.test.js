@@ -221,6 +221,33 @@ test('every pin on a guide\'s still has its step in the words beside it, under i
   }
 });
 
+// The newsletter how-to does the same (Oct 23, night): its pins show at rest
+// and each is listed under its number in the words beside its still, in the
+// markup the guides use, from the capture files. The guides copy its styles
+// as they are, so all eight look alike.
+test('the newsletter how-to shows its pins at rest, in the styles the guides copy', () => {
+  assert.doesNotMatch(nl, /\.pin \{ opacity: 0/, 'no pin waits for the mouse');
+  const style = html => html.match(/<style>[\s\S]*?<\/style>/)[0];
+  for (const d of decks) assert.equal(style(deckPage(d)), style(nl), `${d} wears the newsletter how-to's styles unchanged`);
+});
+
+test('every pin on a newsletter still is its capture\'s, with its step in the words beside it, under its number', () => {
+  const slides = nl.split('<div class="slide" role="group"').slice(1).filter((s) => s.includes('<div class="shot" '));
+  assert.ok(slides.length >= 6, `slides with a still (${slides.length})`);
+  for (const slide of slides) {
+    const name = slide.match(/<img src="shots\/([a-z0-9-]+)\.png"/)[1];
+    const m = JSON.parse(readFileSync(new URL(`shots/${name}.json`, nlDir), 'utf8'));
+    assert.ok(slide.includes(`<div class="shot" style="--iw:${m.iw};--ih:${m.ih};--cx:${m.cx};--cy:${m.cy};--cw:${m.cw};--ch:${m.ch}">`), `${name}: the capture's crop`);
+    assert.equal(unesc(slide.match(/<img src="shots\/[^"]+" [^>]*alt="([^"]*)"/)[1]), m.alt, `${name}: the capture's alt`);
+    const pins = [...slide.matchAll(/class="(pin(?: up)?)" style="--x:([\d.]+);--y:([\d.]+)" aria-label="([^"]*)"><span class="num" aria-hidden="true">\d+<\/span>/g)];
+    assert.deepEqual(pins.map((p) => [unesc(p[4]), +p[2], +p[3]]), m.pins.map((p) => [p.label, p.x, p.y]), `${name}: the capture's pins`);
+    pins.forEach((p, i) => assert.equal(p[1], m.pins[i].y > 70 ? 'pin up' : 'pin', `${name}: pin ${i + 1} opens its bubble as the guides do`));
+    const rows = [...slide.matchAll(/<p class="note"><span class="n">(\d+)<\/span><span>([\s\S]*?)<\/span><\/p>/g)];
+    assert.deepEqual(rows.map((r) => +r[1]), pins.map((_, i) => i + 1), `${name}: a row for every pin, in order`);
+    rows.forEach(([, n, words], i) => assert.ok(unesc(words).includes(m.pins[i].label), `${name}: row ${n} names its pin`));
+  }
+});
+
 // Where the password is (Kate, Oct 23): in READ ME FIRST - ERC handoff, and
 // the how-tos say so plainly. The value itself is never written anywhere.
 test('the how-tos say the password is in the handoff doc, never only who has it', () => {
@@ -327,4 +354,21 @@ test('How it all connects shows the drawn diagram, keeps The two weeks, and drop
   assert.doesNotMatch(page, /class="pl-row"/);
   assert.doesNotMatch(page, /<h2>Beside the pipeline<\/h2>/);
   assert.ok(page.indexOf('class="pl-diagram"') < page.indexOf('<h2>The two weeks</h2>'), 'the diagram comes before The two weeks');
+});
+
+// The desk guide reads the drawn diagram as words (review, Oct 23): what it
+// shows, as a screen reader hears it, then each of its labels on a line of its
+// own, never run together.
+test('the desk guide reads the pipeline diagram as words, a label to a line', () => {
+  const page = readFileSync(new URL('../how-to/pipeline/index.html', import.meta.url), 'utf8');
+  const guide = readFileSync(new URL('desk-guide.txt', howToDir), 'utf8');
+  const part = guide.slice(guide.indexOf('# How it all connects'), guide.indexOf('# How to submit content'));
+  const said = page.match(/<svg viewBox="0 0 1150 760"[^>]*aria-label="([^"]+)"/)[1];
+  assert.ok(part.includes(said), 'what the diagram shows, in its own words');
+  const lines = part.split('\n');
+  const labels = [...page.slice(page.indexOf('<figure class="pl-diagram">'), page.indexOf('</figure>')).matchAll(/<text\b[^>]*>([^<]+)<\/text>/g)].map((m) => unesc(m[1].replace(/&#x27;/g, "'")));
+  assert.ok(labels.length >= 60, `the diagram's labels (${labels.length})`);
+  for (const label of labels) assert.ok(lines.includes(label), `"${label}" on a line of its own`);
+  assert.doesNotMatch(part, /Out in the worldOn the desk|&#x27;/, 'nothing run together or left as code');
+  assert.ok(part.includes('Read the middle row left to right.'), 'and its caption');
 });

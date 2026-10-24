@@ -9,73 +9,92 @@ https://erc-content-desk.vercel.app/how-to/pipeline/
 
 Who sends an item, what the desk does with it, and where it ends up.
 
-Out in the worldOn the deskUnderneath
+Three layers. On top, who sends and who reads: your team, anyone using the public form, the public site and the listserv inboxes. In the middle, the desk: Submit content, the Content queue, Content Sort, Finalize, then the Policy Exchange and the newsletter. Underneath, the parts: Drive and the scraper, the database with its Sheet copy, Claude, Outlook and GitHub. Filters on the way: you review a split doc, you pick the scraper files, a bot check, repeats stop, you keep, skip or delete, newsletter-only and already-live items stay off the Exchange, and you pick 3 to 5 of each for the newsletter. Beside it, sign-ups go to a Google Sheet and you add them to the listserv; research briefs are drafted by Claude and filed in Drive.
 
-Your teamlinks and files
-
-Anyonethe public form
-
-The sitethe Exchange
-
-Inboxesthe listserv
-
-Submit contentform, bulk door
-
-Content queuewaits for you
-
+Out in the world
+On the desk
+Underneath
+Your team
+links and files
+Anyone
+the public form
+The site
+the Exchange
+Inboxes
+the listserv
+Submit content
+form, bulk door
+Content queue
+waits for you
 Content Sort
-
 keep, skip, delete
-
 Finalize
-
 Policy Exchange
-
 Publish
-
-NewsletterNext issue, builder
-
-Already in?repeats stop
-
-Deleted: off the lists,kept on recordSkipped: waits for later
+Newsletter
+Next issue, builder
+Already in?
+repeats stop
+Deleted: off the lists,
+kept on record
+Skipped: waits for later
 links, files
-You review the splitfor a doc or a sheet
-
-Bot checkstops spamtagged From outsideDrivewhat it foundThe scraperGitHub, Mondays 7:00
+You review the split
+for a doc or a sheet
+Bot check
+stops spam
+tagged From outside
+Drive
+what it found
+The scraper
+GitHub, Mondays 7:00
 files
-
-You pick the filesthe rest stay in Drive
-
-Databasethe recordGoogle Sheeta copy
-
-Claudereads each link; rewrites events, opportunities, reports
+You pick the files
+the rest stay in Drive
+Database
+the record
+Google Sheet
+a copy
+Claude
+reads each link; rewrites events, opportunities, reports
 reads
-rewritesOutlookerc@tamu.eduGitHubthe site&#x27;s list
-
-Newsletter only?held back
-Already live?skipped
-
-You pick3 to 5 of each
+rewrites
+Outlook
+erc@tamu.edu
+GitHub
+the site's list
+Newsletter only?
+held back
+Already live?
+skipped
+You pick
+3 to 5 of each
 Beside it, on the same parts
-
-Anyonethe sign-up formGoogle SheetSheet 1, sign-ups
-
-Listservwho to add
-
-You add themthen clear Sheet 1
-
-Inboxes on the listservthe same ones as above
-
+Anyone
+the sign-up form
+Google Sheet
+Sheet 1, sign-ups
+Listserv
+who to add
+You add them
+then clear Sheet 1
+Inboxes on the listserv
+the same ones as above
 Research briefs
-
-a paper becomes a briefClaudedrafts it
-Drivethe brief&#x27;s folder
-
-Your proofthen the author, then live
-- a page of the deska system underneath
+a paper becomes a brief
+Claude
+drafts it
+Drive
+the brief's folder
+Your proof
+then the author, then live
+a page of the desk
+a system underneath
 a filter
 items move
-a copy is keptwhere it ends up
+a copy is kept
+where it ends up
+
 Read the middle row left to right. Look up to see who an item comes from and where it ends up, down to see the part that does the work. Every orange pill is a filter: it says what gets through, or what stops.
 
 ## The two weeks
@@ -292,6 +311,8 @@ https://erc-content-desk.vercel.app/how-to/newsletter/
 
 On Next issue, Open the builder. Pick the issue's date: everything staged for it comes in, and anything new each time it opens.
  
+1Issue: the date; picking it brings in what the desk holds for it. To practice, pick Sample issue (fictional) under Samples.
+ 
 The draft is saved only in the browser you build it in. Finish the issue there.
 
 ## Where items come from
@@ -308,46 +329,57 @@ The draft is saved only in the browser you build it in. Finish the issue there.
  
 - The builder: picking the issue brings in what is in it.
 
- 1Issue: the date; picking it brings in what the desk holds for it. To practice, pick a sample under Samples
-
 Put the issue in the order it should print. Drag a section or an item by its grip; it lands where you drop it.
-
- 1A section's grip: drag the whole section up or down the email
- 2An item's grip: drag it within its section
- 3Move to…: file it under another section or group
- 4Remove: takes it out. Undo on its row puts it back
+ 
+1A section's grip: drag the whole section up or down the email.
+ 
+2An item's grip: drag it within its section.
+ 
+3Move to…: file it under another section or group.
+ 
+4Remove: takes it out. Undo on its row puts it back.
 
 ## 2Step 2: Preview & Tweak
 
 The email as it will land in Outlook. Click anything on it to change it; what is not on it yet comes from the buttons above.
-
- 1Add an item: something the desk did not have
- 2Add a callout: a box that asks readers for something
- 3Contents strip: show or hide the row of section names
- 4The contents strip on the email, one link per section
+ 
+1Add an item: something the desk did not have.
+ 
+2Add a callout: a box that asks readers for something.
+ 
+3Contents strip: show or hide the row of section names.
+ 
+4The contents strip on the email, one link per section.
+ 
+Reset layout appears beside them once you change the section order, the contents strip or a look. It puts them all back.
 
 Click an item and its card opens beside it. Every change shows on the email as you make it; Done closes the card.
-
- 1The item you clicked, lit on the email
- 2How it is laid out: pick a look. Styles shows each one
- 3Its words: title, link, description, date, time, place, media
- 4Done closes the card. Undo changes puts it all back
+ 
+1The item you clicked, lit on the email.
+ 
+2How it is laid out: pick a look. Styles shows each one.
+ 
+3Its words: title, link, description, date, time, place, media.
+ 
+4Done closes the card. Undo changes puts it all back.
 
 Reorder here too: point at an item or a section heading and drag it by the grip that appears at its left.
  
+1The grip: it shows when you point at an item.
+ 
 Fix things here, never in Outlook, so the archive matches what went out.
-
- 1The grip: it shows when you point at an item
 
 ## 3Step 3: Save & Export
 
 Copy HTML and send it (the next part). Once it has gone out, Save to the archive, so Past issues keeps it.
  
+1Copy HTML: the whole email, ready for Outlook.
+ 
+2Save to the archive: keeps it under Past issues. Off on a sample.
+ 
+3Download .html: the same file, saved to your computer.
+ 
 Start the next issue clears the draft for the next one.
-
- 1Copy HTML: the whole email, ready for Outlook
- 2Save to the archive: keeps it under Past issues. Off on a sample
- 3Download .html: the same file, saved to your computer
 
 ## Send from erc@tamu.edu
 
