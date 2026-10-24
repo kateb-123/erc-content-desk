@@ -1,20 +1,20 @@
 {
   "iw": 2560,
   "ih": 1800,
-  "cx": 48,
-  "cy": 384,
-  "cw": 1664,
-  "ch": 1330,
-  "alt": "The Listserv page: the sign-up form's status, To be added with a count of 3 counted as the page opened, and Adding people with Open the sign-up sheet and three steps.",
+  "cx": 512,
+  "cy": 270,
+  "cw": 1200,
+  "ch": 1088,
+  "alt": "The Listserv page's left column: To be added with a count of 3 counted as the page opened, Open the sign-up sheet and the three steps, then the sign-up form's status.",
   "pins": [
     {
       "x": 50,
-      "y": 47.5,
+      "y": 14.2,
       "label": "To be added: the rows on Sheet 1 when the desk was loaded"
     },
     {
       "x": 50,
-      "y": 76.4,
+      "y": 32.9,
       "label": "Open the sign-up sheet: names and addresses, in a new tab"
     }
   ]

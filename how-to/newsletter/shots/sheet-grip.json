@@ -1,0 +1,16 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 831,
+  "cy": 1350,
+  "cw": 1369,
+  "ch": 230,
+  "alt": "An item on the email under the pointer, with a small grip at its left edge.",
+  "pins": [
+    {
+      "x": 9.5,
+      "y": 47.4,
+      "label": "The grip: it shows when you point at an item"
+    }
+  ]
+}

@@ -5,91 +5,78 @@ Every how-to for the ERC Content Desk (https://erc-content-desk.vercel.app) in o
 # How it all connects
 https://erc-content-desk.vercel.app/how-to/pipeline/
 
-ERC Content Desk (https://erc-content-desk.vercel.app/) / How-tos (https://erc-content-desk.vercel.app/how-to/)
-
 ## How it all connects
 
 Who sends an item, what the desk does with it, and where it ends up.
 
- 1 In
+Out in the worldOn the deskUnderneath
 
-## Submit content
+Your teamlinks and files
 
-A link, or a spreadsheet of them. Everything lands in the Content queue.
- The whole step
+Anyonethe public form
 
-- Paste a link and press Add to the queue. Or drop a spreadsheet or doc on the bulk door and press Add all to the queue.
- 
-- Mondays at 7:00 the scraper files what it found in Drive. Drop the files you want on the bulk door. Run the scraper, on the Content queue, runs it any time.
- 
-- The public form's items arrive tagged From outside.
+The sitethe Exchange
 
-How to submit content (https://erc-content-desk.vercel.app/how-to/submit-content/)
+Inboxesthe listserv
 
-→
+Submit contentform, bulk door
 
- 2 Decide
+Content queuewaits for you
 
-## Content Sort
+Content Sort
 
-Keep, skip or delete. Then check the rewrites on Finalize.
- The whole step
+keep, skip, delete
 
-- Sign in with the desk password.
- 
-- Give each item a type. Press Keep and next, Skip for now or Delete.
- 
-- Tick ERC Newsletter only to keep an item off the Exchange. Campus events come ticked.
- 
-- Open Finalize, the tab beside Sort. Events, opportunities and reports get a rewrite. Press Keep or Use original before you add or publish them.
+Finalize
 
-How to sort (https://erc-content-desk.vercel.app/how-to/sort/)
+Policy Exchange
 
-→
+Publish
 
- 3 Out
+NewsletterNext issue, builder
 
-## Newsletter
+Already in?repeats stop
 
-Every kept item can go in.
- The whole step
+Deleted: off the lists,kept on recordSkipped: waits for later
+links, files
+You review the splitfor a doc or a sheet
 
-- On Next issue, press Add on the items you want. Aim for 3 to 5 research items and 3 to 5 headlines.
- 
-- Press Open the builder: Outline, Preview & Tweak, Save & Export.
- 
-- Copy HTML into Outlook on the web and send from erc@tamu.edu.
- 
-- Press Save to the archive.
+Bot checkstops spamtagged From outsideDrivewhat it foundThe scraperGitHub, Mondays 7:00
+files
 
-How to build the newsletter (https://erc-content-desk.vercel.app/how-to/newsletter/)
+You pick the filesthe rest stay in Drive
 
- 3 Out
+Databasethe recordGoogle Sheeta copy
 
-## Policy Exchange
+Claudereads each link; rewrites events, opportunities, reports
+reads
+rewritesOutlookerc@tamu.eduGitHubthe site&#x27;s list
 
-Publish. Skips anything ticked ERC Newsletter only.
- The whole step
+Newsletter only?held back
+Already live?skipped
 
-- Open Policy Exchange, then Publish.
- 
-- Press Publish N to the Exchange, type the desk password, press Confirm. A copy of the list lands in Drive.
- 
-- Highlight picks up to 6 items for the home page. Each needs a photo.
+You pick3 to 5 of each
+Beside it, on the same parts
 
-How to publish (https://erc-content-desk.vercel.app/how-to/exchange/#publish)
+Anyonethe sign-up formGoogle SheetSheet 1, sign-ups
 
-## Beside the pipeline
+Listservwho to add
 
-## Research briefs
+You add themthen clear Sheet 1
 
-A paper becomes a brief: New brief, Write the draft, your proof, then the author.
- 
-How to make a research brief (https://erc-content-desk.vercel.app/how-to/research-briefs/)
+Inboxes on the listservthe same ones as above
 
-## Listserv
+Research briefs
 
-Sign-ups land on Sheet 1. Add them to the listserv, move their rows to Sheet 2, clear Sheet 1.
+a paper becomes a briefClaudedrafts it
+Drivethe brief&#x27;s folder
+
+Your proofthen the author, then live
+- a page of the deska system underneath
+a filter
+items move
+a copy is keptwhere it ends up
+Read the middle row left to right. Look up to see who an item comes from and where it ends up, down to see the part that does the work. Every orange pill is a filter: it says what gets through, or what stops.
 
 ## The two weeks
 
@@ -169,7 +156,7 @@ Keep what helps someone make or study education policy. Delete the rest, and kee
  
 3Keep and next: keeps it and opens the next item. K does the same. The line at the top then says where it waits next.
  
-4Delete: takes it out of the queue. D does the same. Undo is on the line at the top, and on the greyed row at the bottom of the list.
+4Delete: takes it out of the queue. D does the same. Undo is on the line at the top, and on the grayed row at the bottom of the list.
 
 About two in five papers, events and opportunities are kept, and one headline in five. An issue wants 3 to 5 outside research items or reports and 3 to 5 headlines.
 
@@ -249,7 +236,7 @@ Leave ERC Newsletter only unticked for most items. Tick it to keep one off the P
 
  1ERC event: anything the ERC hosts or co-hosts
  2A&M: an event on campus, another unit's
- 3ERC Newsletter only: ticked, the item never reaches Publish
+ 3ERC Newsletter only: on, the item never reaches Publish
 
 A triangle in the list means the card has a question. Keep and next waits until the type and the link are settled.
  
@@ -275,7 +262,7 @@ Kept events, ERC events, opportunities, reports and research with no abstract ge
  
 1Needs a rewrite: kept items still waiting for their description.
  
-2Rewrite 1 description: writes the ones still waiting. The rewrite starts when you keep, so most arrive on their own.
+2Rewrite the descriptions: writes the ones still waiting. The rewrite starts when you keep, so most arrive on their own.
  
 3Original: the text it came with.
  
@@ -341,7 +328,7 @@ The email as it will land in Outlook. Click anything on it to change it; what is
 
 Click an item and its card opens beside it. Every change shows on the email as you make it; Done closes the card.
 
- 1The item you clicked, outlined on the email
+ 1The item you clicked, lit on the email
  2How it is laid out: pick a look. Styles shows each one
  3Its words: title, link, description, date, time, place, media
  4Done closes the card. Undo changes puts it all back
@@ -576,7 +563,7 @@ Only the Adding rows go to the site.
  
 1Check them on Finalize: read each rewrite before it goes out.
  
-2A colour: click it to show only those rows.
+2A color: click it to show only those rows.
  
 3Fate: Adding, Held for newsletter, Needs a fix or Already live. A row that needs a fix names what is missing. Click those words to fix it in place.
  

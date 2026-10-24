@@ -1,0 +1,26 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 412,
+  "cy": 136,
+  "cw": 2148,
+  "ch": 932,
+  "alt": "Save & Export: the step row with Save & Export current, Back and Next, then Copy HTML, Save to the archive and Download .html.",
+  "pins": [
+    {
+      "x": 23.8,
+      "y": 52.6,
+      "label": "Copy HTML: the whole email, ready for Outlook"
+    },
+    {
+      "x": 40.3,
+      "y": 52.6,
+      "label": "Save to the archive: keeps it under Past issues. Off on a sample"
+    },
+    {
+      "x": 55.6,
+      "y": 52.6,
+      "label": "Download .html: the same file, saved to your computer"
+    }
+  ]
+}

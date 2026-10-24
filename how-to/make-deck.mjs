@@ -1,7 +1,8 @@
 // Builds a how-to in the newsletter how-to's layout (Kate, Oct 23: "more
-// visual for all the how-tos like the one for the newsletter"): the navy band,
-// chips for the parts, one slide at a time with its words on the left and a
-// marked screenshot of the real desk on the right. The styles and the deck's
+// visual for all the how-tos like the one for the newsletter"): the desk's
+// sidebar, the page head with its door as the blue primary, the parts as the
+// desk's segmented control, one slide at a time with its words on the left and
+// a marked screenshot of the real desk on the right. The styles and the deck's
 // script are read from how-to/newsletter/index.html, so the guides never drift.
 //   node how-to/make-deck.mjs <slug>
 // reads how-to/<slug>/deck.json and how-to/<slug>/shots/*.json (from
@@ -115,28 +116,31 @@ const html = `<!DOCTYPE html>
   <meta name="robots" content="noindex" />
   <title>${esc(deck.title)} · ERC Content Desk</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6bde'/%3E%3Cpath d='M9 16.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="/css/tokens.css?v=11" />
-  <link rel="stylesheet" href="/css/styles.css?v=180" />
-  <link rel="stylesheet" href="/css/shell.css?v=7" />
+  <!-- The desk's own sheets, at index.html's versions: bump them together. -->
+  <link rel="stylesheet" href="/css/tokens.css?v=12" />
+  <link rel="stylesheet" href="/css/styles.css?v=190" />
+  <link rel="stylesheet" href="/css/shell.css?v=8" />
   <script>document.documentElement.classList.add('js');</script>
   <!-- Built by how-to/make-deck.mjs from ${slug}/deck.json; the styles and script are the newsletter how-to's. -->
   ${style}
 </head>
 <body>
-  <header class="topbar"><nav class="topbar-crumbs" aria-label="Breadcrumb"><a class="topbar-brand" href="/">ERC Content Desk</a><span class="topbar-sep">/</span><a href="/how-to/">How-tos</a></nav></header>
+  <a class="skip-to-main" href="#main">Skip to content</a>
+  <!-- The desk's sidebar, built by /js/shell-ui.js: a how-to lights All how-tos at its foot. -->
+  <nav class="sidebar" aria-label="Desk"></nav>
 
-  <div class="band"><div class="in">
+  <div class="howto-main">
+  <header class="howto-head">
     <div>
-      <div class="eyebrow">How to</div>
+      <p class="eyebrow">How to</p>
       <h1>${esc(deck.h1)}</h1>
       <p class="lede">${esc(deck.lede)}</p>
     </div>${deck.open ? `
     <a class="open" href="${attr(deck.open.href)}" target="_blank" rel="noopener">${esc(deck.open.label)}<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>` : ''}
-  </div></div>
+  </header>
 
-  <main class="page">
+  <main class="page" id="main">
     <nav class="chips" aria-label="Parts">
       ${chips}
     </nav>
@@ -156,8 +160,13 @@ const html = `<!DOCTYPE html>
       </div>
     </div>${deck.below ? `\n    ${deck.below}` : ''}
   </main>
+  </div>
 
   ${script}
+  <script type="module">
+    import { renderSidebar } from '/js/shell-ui.js';
+    renderSidebar(document.querySelector('.sidebar'), { screen: 'howto' });
+  </script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

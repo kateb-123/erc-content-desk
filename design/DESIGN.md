@@ -17,14 +17,14 @@ in), not like an AI tool, "a little like a phone app but only for web". Of four
 looks drawn on the front page and Sort (A Native, B Studio, C Widgets, D
 Newsroom) she picked **A, Native**: the desk as a Mac app.
 
-- **A grey sidebar** down the left of every desk page, the height of the
+- **A gray sidebar** down the left of every desk page, the height of the
   window, still while the page scrolls: the desk's name on a blue tile with a
   white check; Home; the hubs by step under the front page's own group names
   (Bring it in: Submit content, Content queue, Content Sort; Send it out:
   Newsletter, Listserv, Policy Exchange; Research: Research briefs), each with
-  a line icon in the blue and, at its right in grey, what waits there: Sort's
+  a line icon in the blue and, at its right in gray, what waits there: Sort's
   count, the next send date, the sign-ups, what waits to publish, the briefs in
-  progress, and a lock on the two password pages. Where you are is a grey pill;
+  progress, and a lock on the two password pages. Where you are is a gray pill;
   a page under a hub (Publish, the Highlight, the builder, a brief) marks its
   hub. At its foot, over a hairline: All how-tos, I need help! and Sign out
   while a sign-in holds. It replaces the navy top bar and its breadcrumb, and
@@ -32,14 +32,14 @@ Newsroom) she picked **A, Native**: the desk as a Mac app.
   a sidebar that came and went would jump the page).
 - **The computer's own face**: San Francisco on a Mac, Segoe UI on Windows. No
   web font loads.
-- **A light grey page with white boxes on it.** 12px corners on a grouped list
+- **A light gray page with white boxes on it.** 12px corners on a grouped list
   or a card, 8px on buttons and notes, 7px on fields and the sidebar's rows; a
   shadow only under a panel that floats.
 - **One blue**, `#0b6bde` (5.0:1 on white), for everything you can press: the
   filled button, links, the focus ring, the chosen row, the sidebar's icons.
   Orange for what needs doing, green for done, red for an error, each a darker
   step when it is words.
-- **Labels are sentence case**, 13px semibold in the quiet grey: no caps, no
+- **Labels are sentence case**, 13px semibold in the quiet gray: no caps, no
   tracking, no rule under them. Hairlines divide.
 - **Her line rules for rows** (Oct 23), for the front page and Sort: one line
   per kind of fact, the first fact darker, and a line never wraps. Sort's list
@@ -53,8 +53,9 @@ a 56px navy bar with a breadcrumb; teal `#1d7491` for everything interactive
 and maize `#ffcb05` for the brand's rule under labels and table heads; Mulish,
 with Crimson Text for large titles; 2px corners on fields and 4px on buttons
 and boxes; uppercase 14px labels with 1.25px tracking. Its ramps stay at the
-foot of `css/tokens.css` (`--color-blue-400` and the rest) for the how-to
-pages, which keep the navy bar until they are re-shot. The Sep 22 refresh
+foot of `css/tokens.css` (`--color-blue-400` and the rest), read only by the
+old top bar's rules, which no page draws: the how-tos wear the desk's look,
+sidebar and all, since Oct 23. The Sep 22 refresh
 before it: the cream ground `#f6f3ec`; Archivo and Lora; orange `#ff8200` as
 the only mark.
 
@@ -82,14 +83,14 @@ value is in the file.
 | `--border-interactive` | gray 300 | the how-tos' rule under their heads (maize until Oct 23); the desk draws none |
 | `--button-primary` / `-hover` / `-active` | blue 500 `#0b6bde` / 600 `#0a5fc6` / 700 `#0853ae` | the filled buttons (`--accent`), both apps |
 | `--button-secondary` / `-hover` | gray 800 `#3a3a3c` / gray 850 `#2c2c2e` | the graphite fill: the builder's Save to the archive and Download |
-| `--button-disabled` / `--text-on-color-disabled` / `--text-locked` | gray 300 / gray 500 / `#48484a` | a locked control: full opacity, grey fill; the locked Keep's word at 7.3:1 |
+| `--button-disabled` / `--text-on-color-disabled` / `--text-locked` | gray 300 / gray 500 / `#48484a` | a locked control: full opacity, gray fill; the locked Keep's word at 7.3:1 |
 | `--link-primary` / `-hover` | blue 500 / blue 700 | links |
 | `--focus` / `--focus-inset` / `--focus-ring` | blue 500 / blue 500 / the ring as one shadow | a 2px blue ring standing 2px off the control on a white gap (never yellow, Kate, Sep 23), drawn as a box-shadow so it never moves the page. Programmatic focus (`[tabindex="-1"]`) draws none |
 | `--support-error` / `--button-danger-secondary` | red 600 `#d70015` | destructive words (`--err`, 5.4:1) and the error note's bar |
 | `--support-success` / `--text-success` | green 500 `#2fa854` / green 700 `#1e7e3a` | done as an icon (`--ok-mark`) / as words (`--ok`) |
 | `--support-warning` / `--text-warning` | orange 500 `#d9620b` / orange 600 `#b54708` | needs doing as an icon, the triangle (`--warn-mark`) / as words (`--warn`) |
 | `--support-info` | blue 500 | the info note's bar and icon |
-| `--notification-*-background` / `-border` | info blue 50, success green 50, warning orange 50, error red 50; the border the role's colour at 30% | inline notes; words on them are `--text-primary` |
+| `--notification-*-background` / `-border` | info blue 50, success green 50, warning orange 50, error red 50; the border the role's color at 30% | inline notes; words on them are `--text-primary` |
 | `--text-success-on-tint` / `--text-warning-on-tint` | green 800 `#1a6b31` / `#7a3300` | a word on those tints (5.9:1, 8.4:1) |
 | `--tag-background-*` / `--tag-color-*` | gray: gray 150 / gray 700; blue: blue 50 / blue 700; review: orange 50 / `#7a3300` | tags: a fact, New, a duplicate |
 | `--radius-card` / `--radius` / `--radius-input` / `--radius-pill` | 12px / 8px / 7px / 999px | a grouped list or a card / buttons, notes, menus / fields and sidebar rows / pills |
@@ -113,7 +114,7 @@ template and the public Exchange site.
   field), sentence case with no tracking; a big numeral 28/34 at 600. The
   sidebar's rows are 14/18, its group names 12/16 at 600, its counts 13px in
   tabular figures. Buttons are 700; a lit tab is 700 over a 2px blue bar.
-- Body copy is left-aligned, never centred or justified. Numbers are digits.
+- Body copy is left-aligned, never centered or justified. Numbers are digits.
 
 ## Shape
 
@@ -122,12 +123,12 @@ template and the public Exchange site.
   (`--radius-input`) on fields and the sidebar's rows. Bars and the progress
   tracks stay square. Pills are fully round (`--radius-pill`): tags, counts,
   the toggle.
-- **White boxes with a hairline on a grey page.** A card, a list or a table is
+- **White boxes with a hairline on a gray page.** A card, a list or a table is
   `--layer-02` white with a 1px `--layer-line` hairline; a box inside a card
   (Finalize's edit box, a quote box, the list head) is `--layer-01`, gray 75,
   with no border. Rows divide with `--line-in`, lift to `--wash-hover` on
   hover, and the chosen one sits on blue 50 in blue 700 at 600 with a 4px blue
-  bar on the left. Blue means "this one" or "you can press this"; grey means
+  bar on the left. Blue means "this one" or "you can press this"; gray means
   "a surface".
 - **Buttons.** 40px tall (32px in a screen head or a section head, 48px for the
   builder's export trio), 16px side padding, the label left at 700. A primary is
@@ -140,7 +141,7 @@ template and the public Exchange site.
   edits are already live is a ghost word (audit round two, Sep 17).
   Quiet words (Edit, Delete, Skip, Undo, Cancel in a panel) are ghost buttons:
   32px, a `--background-hover` fill on hover. No press scale. On the desk,
-  where links and quiet words are grey like secondary text, a word that acts
+  where links and quiet words are gray like secondary text, a word that acts
   with no icon wears an underline (View info, Change, Verify link, Undo,
   Re-check), so it never reads as text; Edit and Delete carry their icons,
   Skip and Cancel stay muted (design critique, Sep 18).
@@ -160,7 +161,7 @@ template and the public Exchange site.
   (audit round two, Sep 17).
 - **Notes.** Every panel that speaks is the system's callout: a
   `--notification-*-background`, a 1px `-border`, a 4px left bar in the
-  `--support-*` colour, the matching icon, `--text-primary` words. Info for the
+  `--support-*` color, the matching icon, `--text-primary` words. Info for the
   View info panel; warning for Sort's card questions (the link, a duplicate),
   Send early?, the builder's restore banner and its Replace the archived issue?
   ask; success and error for the builder's upload, pull, save and export
@@ -216,13 +217,13 @@ look, everywhere it appears.
 | Action | Icon | Look | Means |
 |---|---|---|---|
 | **Keep and next** (Sort) / **Keep** (Finalize) | ✓ `fa-check` | the primary: the app's fill, the check in its right slot (the ONE per card) | accept into the pipeline and move to the next item / accept the rewrite |
-| **Skip for now** | none | muted ghost button | park it (status stays `circleback` underneath); it sinks to the bottom of Sort's list with a grey Skipped tag, and its card has Keep and next and Delete (Kate, Sep 18) |
-| **Delete** | `fa-trash-can` | red ghost button | trash the ITEM for good (any screen, any time); the row stays listed greyed with Undo for the visit on Sort, Finalize and Next issue's Past items (design audit, Sep 17) |
-| **Edit** | `fa-pen` | ghost button in the link colour | the same inline edit on Finalize, under a row on Newsletter's Next issue (In this issue and Ready to add) and inside an open row on Publish (Kate, Sep 22: an edit button on each part of the pipeline; the Exchange is append-only, so an edit after an item is live changes the desk, not the site); persists on Save: the fields the type uses, then Link and Media, on the grey edit box; any way out of an edited form holds with "Save or cancel this edit first." Sort's card has no Edit: every field on it is edited in place and saves as you leave it (Kate, Sep 18) |
+| **Skip for now** | none | muted ghost button | park it (status stays `circleback` underneath); it sinks to the bottom of Sort's list with a gray Skipped tag, and its card has Keep and next and Delete (Kate, Sep 18) |
+| **Delete** | `fa-trash-can` | red ghost button | trash the ITEM for good (any screen, any time); the row stays listed grayed with Undo for the visit on Sort, Finalize and Next issue's Past items (design audit, Sep 17) |
+| **Edit** | `fa-pen` | ghost button in the link color | the same inline edit on Finalize, under a row on Newsletter's Next issue (In this issue and Ready to add) and inside an open row on Publish (Kate, Sep 22: an edit button on each part of the pipeline; the Exchange is append-only, so an edit after an item is live changes the desk, not the site); persists on Save: the fields the type uses, then Link and Media, on the gray edit box; any way out of an edited form holds with "Save or cancel this edit first." Sort's card has no Edit: every field on it is edited in place and saves as you leave it (Kate, Sep 18) |
 | **Use original** | `fa-rotate-left` | muted ghost button | reject the rewrite, keep the Sheet text |
 | **Remove** | `fa-trash-can` | red ghost button | take OUT of the newsletter issue (returns to the pool); shares Delete's icon by Kate's explicit pick; on Next issue and in the builder the row stays listed with Undo (Sep 17) |
 | **Verify link ↗ → Confirm / Change** | `fa-triangle-exclamation` | warning note, one ask | open the source, then stamp it good or paste a new link; a link that needs no check shows as itself with Change beside it |
-| **View info / Hide info** | none | a word in the link colour beside every screen/step title | opens the tinted instruction panel |
+| **View info / Hide info** | none | a word in the link color beside every screen/step title | opens the tinted instruction panel |
 | **Re-check** | none | a link in Publish's lede | force a fresh hub check |
 | **Add media** → Replace / Remove media | none | a small ghost word under the card's fields, then Replace and the muted Remove word | attach a picture or PDF flyer to any item (Sort's card and Finalize's Edit; newsletter items in the builder), the URL rides the row’s infographic column into the email |
 | **Add** | none | a small tertiary on each row of Next issue's Ready to add | put the item in the issue; the status line says "Added: title" with Undo (Sep 18) |
@@ -230,10 +231,10 @@ look, everywhere it appears.
 | **Send early? → Confirm / Cancel** | fa-clock on the note | warning note, one ask (same as Verify link) | adding an event that belongs to a later issue, the words stay bare, the bubble carries the icon |
 | Door buttons (Go to Publish, Go to Newsletter, the receipt's door) | → `fa-arrow-right` | Carbon's tertiary button with the arrow in its right slot (Sep 15, option A; square since Sep 17), right of the screen head | move along the pipeline; the one filled button on a screen is then always its decision |
 | **Top bar** (ERC Content Desk / the hub / the page) | none | a 56px bar under a hairline; crumb links in the ink | the way back up (Kate's wireframes, Sep 17; crumbs alone since Oct 6): the brand leads home, a hub's crumb opens its page in place, the builder's pages crumb under Newsletter |
-| **Keep the rest (N)** | ✓ `fa-check` | the small dark-grey button, Carbon's secondary (Kate, Sep 17: a sweep across a list is grey, the one decision on a card is the primary), right of Finalize's head while rewrites wait to be checked | keep every rewrite still to check. Sort's Keep the rest went with its sections (Kate, Sep 18: "Drop it") |
+| **Keep the rest (N)** | ✓ `fa-check` | the small dark-gray button, Carbon's secondary (Kate, Sep 17: a sweep across a list is gray, the one decision on a card is the primary), right of Finalize's head while rewrites wait to be checked | keep every rewrite still to check. Sort's Keep the rest went with its sections (Kate, Sep 18: "Drop it") |
 | **Send it to** ERC Newsletter only | none | one checkbox on Sort's card (Kate, Sep 22; two boxes, Newsletter and Policy Exchange, from Sep 18) | where the item goes once kept: unticked it waits in the newsletter's pool at once AND on Publish, ticked it waits in the newsletter's pool and never reaches Publish; a campus event comes ticked: an Event with the A&M subtype, another unit's, the one thing held off the Exchange by default (Kate, Sep 22); ERC's own events go everywhere, and the old Spotlight request flag moves nothing. Nowhere is not a state, so Keep and next no longer locks on it |
 | **Dismiss all** | `fa-trash-can` | red ghost word at the right of a group's head on Sort | deletes every row in that group in one change, with one Undo ("Dismissed N. Undo"). The groups (Kate, Sep 22): Past, an event whose date has gone or an opportunity whose deadline has passed, and Already live, a link the live Exchange already has (the same check Publish runs, asked for quietly on arrival); they sit under the skipped rows, each row tagged, and a row in both is Already live |
-| **Undo** (Sort) | none | the status line's word after a decision; a greyed row's own Undo | Keys on Sort (Sep 17): up and down move, K keeps, S skips, D deletes, U undoes; the buttons' tooltips name them. A decision says itself in the status line ("Kept: title. Undo"), the card moves to the next item and takes focus; Undo says what it undid |
+| **Undo** (Sort) | none | the status line's word after a decision; a grayed row's own Undo | Keys on Sort (Sep 17): up and down move, K keeps, S skips, D deletes, U undoes; the buttons' tooltips name them. A decision says itself in the status line ("Kept: title. Undo"), the card moves to the next item and takes focus; Undo says what it undid |
 | **Copy saved in Drive** (the receipt's line) | none | a line on the receipt with the file's name as a link; **Download the CSV** as a ghost word only when the copy failed | since Oct 22 (Kate: "can it just get saved to the google drive?") the publish itself files the whole list after the write in the team drive, ERC Content Desk / Policy Exchange, named erc-exchange-<date>-<time>.csv, through the Sheet's script; no download step before Publish any more. From Sep 22 to Oct 22 the CSV came first: Download the CSV as the primary, Publish only once it had been downloaded, and the receipt's Download the CSV again |
 | **Publish N to the Exchange → Confirm / Cancel** | `fa-triangle-exclamation` on the ask | the primary, then one warning note in its place | the one ask before the append-only write to the public site (design audit b6, Sep 17), at body-01 with the count and "live" in 600; Keep the rest on Finalize gets "Kept N rewrites. Undo" instead of an ask |
 
@@ -278,11 +279,11 @@ when). The stat tiles and the queue fold of Sep
 Sort content (Kate's wireframes, Sep 17, and her answers, Sep 18;
 `design/mockups/sort.png`) is one page with two tabs, Sort and Finalize,
 each with its count; the Sort tab's row says how long the oldest item has
-waited. Sort is one list, 420px, down the left: a grey head ("N waiting",
+waited. Sort is one list, 420px, down the left: a gray head ("N waiting",
 "Newest first"), then the waiting items newest first (the kept items that
 lost their type among them), then the skipped ones newest first, each with a
-grey Skipped tag, then the Past and Already live groups (Sep 22), each
-with a Dismiss all, and last, greyed, what was kept or deleted this visit with
+gray Skipped tag, then the Past and Already live groups (Sep 22), each
+with a Dismiss all, and last, grayed, what was kept or deleted this visit with
 its Undo. A row is the title with source · added by who · when; the chosen
 one sits on the selected layer with its 3px bar and its title at 600. On the
 right the card, kept in view while the list scrolls, one white box split by
@@ -323,11 +324,11 @@ shown (no data). Past issues lists the archive newest first; each opens the
 email as it went out. builder/archive.html now lands on /#past.
 
 Orange means "needs doing", nowhere else on the screen (the system's warning
-colour, Sep 23; UT's Globe blue held the job from Sep 17, and Carbon's warning
+color, Sep 23; UT's Globe blue held the job from Sep 17, and Carbon's warning
 yellow before that). A row the card has a question about leads its title with
 an orange triangle (`fa-triangle-exclamation`); a missing type turns the Type
 label and its row orange. It is the only orange on the screen, so it cannot be
-read as an accent. Keep and next stays locked in Carbon's disabled grey until the type
+read as an accent. Keep and next stays locked in Carbon's disabled gray until the type
 and the link are settled and the item has somewhere to go, and its tooltip
 says which. The Spotlight request checkbox and its tag went on Sep 22: ERC Spotlight is fed by the ERC event type, and anything else is moved there by hand in the builder.
 
@@ -339,25 +340,25 @@ button DISAPPEARS; nothing is re-pushable.
 ## Motion
 
 All CSS/vanilla; `prefers-reduced-motion` kills everything. Carbon's clock:
-`--duration-fast-01` 70ms for a colour, `--duration-fast-02` 110ms for a move,
+`--duration-fast-01` 70ms for a color, `--duration-fast-02` 110ms for a move,
 nothing over `--duration-moderate-02` 240ms, and nothing decorative moves.
 
 - Decision: NO motion (Kate, Sep 9; the slide and the shrink were both
-  rejected). The decided row greys in place at the bottom of the list with
+  rejected). The decided row grays in place at the bottom of the list with
   Undo; that is what records the decision.
 - Screen switch: ±16px directional slide, 110ms `--ease-standard`.
 - Confirmations: SVG check draws itself, 240ms.
 - Loading: shimmering words (Kate, Sep 23, her pick of nine; the sliding dots
   of Sep 1 are gone, "i hate those so much now"). Every wait says what it is
   ("Reading 2 new items…", "Adding…", "Checking the live Exchange…") in the
-  quiet grey, and a soft blue light sweeps across the words (`.busy-words`,
+  quiet gray, and a soft blue light sweeps across the words (`.busy-words`,
   `busyWords()` in js/icons.js, `busyLine()` in js/ui-aids.js for a panel).
-  Reduced motion and forced colours hold them still as plain words.
+  Reduced motion and forced colors hold them still as plain words.
 - Blocking progress popup (bulk upload's Add all, Sep 10): page dimmed with
   `--overlay`, a square `--layer-01` card, the count at heading-02, an 8px
   `--interactive` bar on a `--layer-accent-01` track, one muted line under it.
   No close button, no Escape: it exists to stop clicking around mid-upload.
-- Buttons: 70ms colour change on hover, no press scale.
+- Buttons: 70ms color change on hover, no press scale.
 
 ## Copy
 
@@ -378,12 +379,16 @@ thing everywhere (see the vocabulary table).
   and focus is a ring (Kate, Sep 2: no shadows; pick A, Oct 23, brings these two).
 - No hex outside `css/tokens.css`; no size off the spacing scale.
 - One blue on both apps (Oct 23; teal from Sep 23); the desk and the builder
-  do not differ by accent. No maize, no navy in the desk; the how-tos keep the
-  old bar until they are re-shot.
-- Colour is never the only signal: a status colour ships with its icon and a word.
+  do not differ by accent. No maize, no navy in the desk or the how-tos,
+  which wear the desk's look, sidebar and all.
+- Color is never the only signal: a status color ships with its icon and a word.
 - Nothing is "done" without a screenshot from the running sandbox.
 
 ## The how-to deck (Sep 30)
+
+Since Oct 23 it wears the desk's look (see the end of this file): the
+sidebar, the head with its blue door, the parts as the segmented control.
+The navy band, its maize rule and white button below are its Sep 30 look.
 
 The team's how-to lives on the desk's open side at `/how-to/submit-content/`
 (Kate, Sep 30: "it should live in vercel, on the content desk page, for how to
@@ -393,7 +398,7 @@ slides a little", a page that SCROLLS with a JUMP MENU (sticky, the section
 in view lit; it began at the page's side and moved to a row under the band
 when she found the page "scrunched and not 1 column": the content is ONE
 COLUMN, 1120px wide), and under a heading "just the slides if needed". The
-cover became a navy band, the bar's colour extended, with the eyebrow's
+cover became a navy band, the bar's color extended, with the eyebrow's
 maize rule and a white button (her C of four), then one row 140px tall,
 the words left and the button right ("header is still too big", twice). Three sections, hers: Add content, two slides under the desk's own
 tabs, Add one item and Bulk add items (her wireframe answers: named tabs
@@ -418,6 +423,9 @@ idiots". Steps only, and only where the screen does not already say it.
 Sample content is obviously fake, in Aggie names (Howdy Policy Trivia Night).
 
 ## The newsletter how-to (Sep 30, evening)
+
+Since Oct 23 it wears the desk's look too; the band and its white button
+below are its Sep 30 look, and Open Newsletter is the blue door in its head.
 
 The second how-to, `/how-to/newsletter/`, for whoever builds an issue
 (Kate: "Kathy, and whoever builds an issue when she is out"; no name on
@@ -451,7 +459,7 @@ same: the hub's name as the title and one line under it.
 - **Submit content** (/#team): the form and its how-to (above).
 - **Content queue** (/#queue): everything ever submitted, newest first,
   deleted items left out, each wearing where it stands: Waiting (the review
-  tint), Kept (grey), In the <date> issue (blue), On the Exchange (green),
+  tint), Kept (gray), In the <date> issue (blue), On the Exchange (green),
   the word always saying it. A search by title or source. An outside
   submission (it came with an email) is tagged From outside and shows no name
   or email: the page is open. On the right, Content Sort's filled door with a
@@ -463,7 +471,7 @@ same: the hub's name as the title and one line under it.
   22 events, 32 research, 152 headlines, 17 opportunities.") with Open the
   files, the run's folder in the shared drive, in a new tab; while a run is
   on the button goes and the line shimmers with the start time; a failed run
-  says so in the warning colour with the button back. The haul lands twice
+  says so in the warning color with the button back. The haul lands twice
   in Drive (her pick, Oct 19: "a new sheet based on the scrape, by the
   newsletter send out dates", one Sheet with a tab per issue): the run's
   spreadsheets in a folder named by date, for the bulk door, and every row
@@ -527,7 +535,7 @@ same: the hub's name as the title and one line under it.
   code, the handoff and where the logins are kept are forthcoming; the logins
   themselves never go on a page or in this public repo.
 
-Her red Forthcoming items show as quiet grey lines with a clock, each to be
+Her red Forthcoming items show as quiet gray lines with a clock, each to be
 built in a round of its own.
 
 ## The seventh hub: Research briefs (Oct 20 and 21)
@@ -619,7 +627,7 @@ brief past the paper stage says so on its page.
   where it stopped."; a failed step says so in red with Try the step again.
   Done, the stage is Your proof and the box is the Draft: the body-prose
   count with its band as a pill (review tint under the floor or over the
-  cap, grey in the band), the three downloads and Redraft (starts
+  cap, gray in the band), the three downloads and Redraft (starts
   over from the read; since Oct 23 it asks first, "This replaces brief-draft.md
   and your edits in it." with Write it again and Cancel) on one row, then the brief itself as reading text,
   her pick A of three (Oct 22: "easier to read like just on the webpage"):
@@ -669,7 +677,7 @@ brief past the paper stage says so on its page.
   table in the desk's table idiom, or the chart with "The chart's numbers"
   under it), then "Kept: ... Left out: ..."; the other cuts follow as rows,
   280px each, with their label, caption and pill. The chart is drawn by
-  `js/brief-visual.js` in the printed brief's colours from the Texas A&M
+  `js/brief-visual.js` in the printed brief's colors from the Texas A&M
   brand guide, Aggie Maroon bars and Dark Gray words in Open Sans, the
   value on each bar, upright columns for short labels and full-width bars
   under each name for long ones, and filed as `proposed-figure-1.png` for
@@ -727,7 +735,7 @@ Kate's answers to the usability audit, each one decided by her:
 - **Source on Sort** shows only when it is not the ERC's own: blank or "ERC"
   shows nothing; "added by" stays.
 - **One name**, "Policy Exchange", for the lane, the page and Finalize's doors.
-- **The builder**: a removed item stays greyed in place with its own Undo until
+- **The builder**: a removed item stays grayed in place with its own Undo until
   the step is left; the Issue list hides past dates but keeps a draft's own;
   Discard keeps the draft in the desk's database for 90 days, listed under
   Recently discarded on the first step with Restore (the `drafts` table, made
@@ -770,7 +778,7 @@ below describe the lock as built on Sep 23.
   at card-title size, the Password field and the teal Sign in, and nothing
   else to read ("you're soooo text heavy"); a refusal is the red line under
   the field, and the ask stays. Under the box, Submit content in the quiet
-  grey, for anyone who landed there. One sign-in lasts a day on that
+  gray, for anyone who landed there. One sign-in lasts a day on that
   computer, as an HttpOnly cookie signed by the password
   (`api/_lib/session.js`; `/api/auth` is answered by `middleware.js` at the
   edge, since `api/` holds the Hobby plan's twelve functions). The server
@@ -891,17 +899,18 @@ sandbox before anything goes live:
    email's pages, labels in sentence case, hairlines for the maize rules, the
    blue tab icon. I need help! moves from the top bar into the sidebar's foot,
    before Sign out, and its panel opens beside the sidebar; the team's own
-   page keeps it in the corner and a how-to in its bar. The builder's step
-   card is white on the grey page with soft corners. Every other screen keeps
+   page keeps it in the corner (a how-to kept it in its bar until the how-tos
+   took the sidebar, the same day). The builder's step
+   card is white on the gray page with soft corners. Every other screen keeps
    its layout and takes the new look through the tokens.
 2. **The front page** as A's grouped lists, with the line rules (done):
    the title and its lede at the left of the head and How it all connects as
    a white button at its right (All how-tos lives in the sidebar now); each
    group a white list with 12px corners; a row is the hub's icon on a pale
    blue tile, its name, one line for what the count counts (that first fact
-   darker: "waiting for Sort", then "· 1 from outside" in grey), one for its
+   darker: "waiting for Sort", then "· 1 from outside" in gray), one for its
    status (the lock where the password is, a green dot beside Live), its own
-   links in blue, the count (grey when it is 0) and a chevron. No line wraps;
+   links in blue, the count (gray when it is 0) and a chevron. No line wraps;
    a cut line shows itself in full on hover. The schedule warning is a note
    of its own under the Newsletter row. Public links keeps its three rows,
    each with Copy link as a blue pill, and the Team submit page under them;
@@ -917,7 +926,7 @@ sandbox before anything goes live:
    description, Edit and Add media, the type's fields, "Added ... by ..." over
    a hairline); the decision column: a Type box with the picked type's
    subtypes as pills under it, ERC Newsletter only drawn as a switch with its
-   line, Keep and next (blue), Skip for now (grey fill) and Delete (red), each
+   line, Keep and next (blue), Skip for now (gray fill) and Delete (red), each
    with its key chip K, S or D. Under 1132px wide the decision column drops
    under the card. Every key, ask and Undo is as before.
 
@@ -933,5 +942,5 @@ front page, the door), what the live check says Publish would add, and
 nothing until that check lands, never a guess. Listserv's side note drops
 under its boxes below 1232px wide.
 
-The how-tos keep the navy bar and their pictures of the old look until they
-are re-shot (`how-to/capture.mjs`, `how-to/make-deck.mjs`).
+The how-tos wear the desk's look, sidebar and all, and every picture in them
+is of it, shot with `how-to/capture.mjs` and built with `how-to/make-deck.mjs`.

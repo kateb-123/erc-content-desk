@@ -1,25 +1,25 @@
 {
   "iw": 2560,
   "ih": 1800,
-  "cx": 98,
-  "cy": 124,
-  "cw": 2364,
-  "ch": 1100,
+  "cx": 562,
+  "cy": 756,
+  "cw": 1900,
+  "ch": 1044,
   "alt": "The byline under New brief, filled from the paper: title, authors, journal, last name and year, then an empty Topic word with the folder's name under it, Author of record, and Brief author.",
   "pins": [
     {
       "x": 25.2,
-      "y": 55.6,
+      "y": 57.1,
       "label": "Author's last name: starts the folder's name"
     },
     {
       "x": 25.2,
-      "y": 70.5,
+      "y": 72.8,
       "label": "Topic word: ends the folder's name"
     },
     {
       "x": 25.2,
-      "y": 89.1,
+      "y": 92,
       "label": "Brief author: named on the draft's cover"
     }
   ]

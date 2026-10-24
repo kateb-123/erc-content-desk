@@ -1,0 +1,16 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 358,
+  "cy": 162,
+  "cw": 2202,
+  "ch": 976,
+  "alt": "The Outline step: the Issue list set to October 27, 2026, and the top of the item table.",
+  "pins": [
+    {
+      "x": 30,
+      "y": 50,
+      "label": "Issue: the date; picking it brings in what the desk holds for it. To practice, pick a sample under Samples"
+    }
+  ]
+}

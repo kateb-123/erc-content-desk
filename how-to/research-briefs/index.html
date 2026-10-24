@@ -6,11 +6,11 @@
   <meta name="robots" content="noindex" />
   <title>How to make a research brief · ERC Content Desk</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6bde'/%3E%3Cpath d='M9 16.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="/css/tokens.css?v=11" />
-  <link rel="stylesheet" href="/css/styles.css?v=180" />
-  <link rel="stylesheet" href="/css/shell.css?v=7" />
+  <!-- The desk's own sheets, at index.html's versions: bump them together. -->
+  <link rel="stylesheet" href="/css/tokens.css?v=12" />
+  <link rel="stylesheet" href="/css/styles.css?v=190" />
+  <link rel="stylesheet" href="/css/shell.css?v=8" />
   <script>document.documentElement.classList.add('js');</script>
   <!-- Built by how-to/make-deck.mjs from research-briefs/deck.json; the styles and script are the newsletter how-to's. -->
   <style>
@@ -23,7 +23,10 @@
        the slides for a menu of groups on the left and one look at a time on
        the right, in the same columns. Without script every slide and look
        shows, one after another. Read on a desktop. Nothing here writes to
-       the desk. */
+       the desk. Since Oct 23 the page is a desk page in Kate's pick A: the
+       sidebar at its left (js/shell-ui.js), the head on the gray page, the
+       parts as the desk's segmented control, the deck a white card. Every
+       how-to made by make-deck.mjs copies these styles and the script. */
     :root {
       --fh: clamp(340px, calc(100vh - 340px), 470px);   /* the picture's height at most; the frame is this plus its padding */
       --pad: var(--spacing-05);
@@ -37,29 +40,36 @@
     a:hover { color: var(--link-primary-hover); }
     a:focus-visible, button:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
 
-    /* The band: the bar's navy, the page's name on it. */
-    .band { background: var(--color-blue-400); color: var(--text-inverse); padding: var(--spacing-06) var(--gap-56); }
-    .band .in { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-06); flex-wrap: wrap; }
-    .eyebrow { display: inline-block; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--color-maize-400); padding-bottom: 6px; border-bottom: 2px solid var(--color-maize-400); margin: 0 0 var(--spacing-03); }
-    .band h1 { font: var(--card-title); font-size: 24px; line-height: 32px; margin: 0 0 var(--spacing-01); }
-    .band .lede { font: var(--meta-type); color: var(--color-blue-100); margin: 0; }
-    .open { display: inline-flex; align-items: center; height: 40px; padding: 0 var(--spacing-05); border-radius: var(--radius); background: var(--text-inverse); color: var(--color-blue-400); font-weight: 700; text-decoration: none; }
-    .open:hover { background: var(--color-blue-100); color: var(--color-blue-400); }
-    .open:focus-visible { box-shadow: 0 0 0 2px var(--color-blue-400), 0 0 0 4px var(--text-inverse); }
-    .open .fa-solid { margin-left: var(--spacing-05); font-size: 14px; }
+    /* The page beside the sidebar: the desk's own column, 32px down, 40px in. */
+    .howto-main { min-width: 0; width: 100%; max-width: 1280px; margin: 0 auto; padding: var(--gap-28) var(--gap-56) var(--gap-72); }
 
-    .page { max-width: 1200px; margin: 0 auto; padding: var(--spacing-05) var(--gap-56) var(--gap-72); }
+    /* The head, as every desk page draws it (pick A, Oct 23): a quiet label,
+       the title and its lede at the left, the door to the page at the right
+       as the blue primary. The sidebar is the way back. */
+    .howto-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--spacing-05); margin: 0 0 var(--spacing-06); }
+    .howto-head > div { min-width: 0; }
+    .eyebrow { margin: 0 0 var(--spacing-02); font: var(--label-type); color: var(--muted); }
+    .howto-head h1 { font: var(--page-title); letter-spacing: -.6px; color: var(--ink); margin: 0; }
+    .howto-head .lede { font: var(--lede-type); color: var(--muted); margin: var(--spacing-02) 0 0; }
+    .open { display: inline-flex; align-items: center; gap: var(--spacing-04); height: 40px; padding: 0 var(--spacing-05); border-radius: var(--radius); background: var(--accent); color: var(--text-on-color); font: 700 15px/22px var(--font-sans); text-decoration: none; white-space: nowrap; }
+    .open:hover { background: var(--button-primary-hover); color: var(--text-on-color); }
+    .open:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+    .open .fa-solid { font-size: 13px; }
 
-    /* The chapter chips: the parts in order, then Styles; the one on screen filled. */
-    .chips { display: flex; flex-wrap: wrap; gap: var(--spacing-03); margin: 0 0 var(--spacing-04); }
-    .chips a { display: inline-flex; align-items: center; gap: var(--spacing-03); height: 36px; padding: 0 var(--spacing-05); border: 1px solid var(--accent-line); border-radius: var(--radius-pill); background: var(--background); color: var(--ink); font: var(--meta-type); font-weight: 600; text-decoration: none; white-space: nowrap; }
-    .chips a:hover { background: var(--hover); border-color: var(--text-secondary); color: var(--ink); }
-    .chips a[aria-current] { background: var(--accent); border-color: var(--accent); color: var(--text-on-color); }
-    .chips .step { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-left: calc(-1 * var(--spacing-02)); border: 1px solid currentColor; border-radius: var(--radius-round); font-size: 12px; line-height: 1; font-weight: 700; }
+    .page { min-width: 0; }
 
-    /* The deck: a white box with a hairline, a thin bar for how far along.
-       It holds the slides or Styles, never both. */
-    .deck { position: relative; background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); overflow: hidden; }
+    /* The parts as the desk's segmented control (Sort's band, pick A): a gray
+       track, the part on screen a white segment; the step's number in a ring. */
+    .chips { display: inline-flex; flex-wrap: wrap; gap: var(--spacing-01); margin: 0 0 var(--spacing-04); padding: var(--spacing-01); border-radius: var(--radius); background: var(--gray-200); }
+    .chips a { display: inline-flex; align-items: center; gap: var(--spacing-03); height: 28px; padding: 0 var(--spacing-04); border-radius: var(--radius-input); color: var(--gray-800); font: 500 13px/18px var(--font-sans); text-decoration: none; white-space: nowrap; }
+    .chips a:hover { background: var(--sidebar-hover); color: var(--ink); }
+    .chips a[aria-current], .chips a[aria-current]:hover { background: var(--layer-02); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-card); }
+    .chips a:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+    .chips .step { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-left: calc(-1 * var(--spacing-01)); border: 1px solid currentColor; border-radius: var(--radius-round); font-size: 11px; line-height: 1; font-weight: 600; }
+
+    /* The deck: a white card with soft corners and a hairline, a thin bar for
+       how far along. It holds the slides or Styles, never both. */
+    .deck { position: relative; background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius-card); box-shadow: var(--shadow-card); overflow: hidden; }
     .progress { height: 3px; background: var(--layer-accent-01); }
     .progress span { display: block; height: 100%; width: 0; background: var(--accent); }
     html:not(.js) .progress, html:not(.js) .controls, html:not(.js) .foot { display: none; }
@@ -93,11 +103,11 @@
 
     /* Where items come from: the desk's path to the builder, a few lines on the first Outline slide. */
     .from { padding-top: var(--spacing-04); border-top: 1px solid var(--layer-line); }
-    .from h3 { margin: 0 0 var(--spacing-03); font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--muted); }
+    .from h3 { margin: 0 0 var(--spacing-03); font: var(--label-type); color: var(--muted); }
     .from ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-02); font: var(--meta-type); color: var(--ink); }
     .from li { position: relative; padding-left: var(--spacing-05); }
     .from li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: var(--radius-round); background: var(--accent); }
-    .from li:not(:last-child)::after { content: ''; position: absolute; left: 2px; top: 17px; bottom: calc(-1 * var(--spacing-02) - 3px); width: 2px; background: var(--color-teal-200); }
+    .from li:not(:last-child)::after { content: ''; position: absolute; left: 2px; top: 17px; bottom: calc(-1 * var(--spacing-02) - 3px); width: 2px; background: var(--accent-20); }
     .from b { font-weight: 700; }
 
     /* A still: a window on the picture (the crop). Every number is the
@@ -130,7 +140,7 @@
     .note { display: flex; align-items: center; gap: var(--spacing-04); margin: 0; font: var(--meta-type); color: var(--ink); }
     .note b { font-weight: 700; }
     .note .n.go { background: var(--background); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
-    .note.warn .n { background: var(--color-maize-100); color: var(--text-warning-on-tint); box-shadow: inset 0 0 0 1px var(--notification-warning-border); }
+    .note.warn .n { background: var(--notification-warning-background); color: var(--text-warning-on-tint); box-shadow: inset 0 0 0 1px var(--notification-warning-border); }
     .note.warn b { color: var(--text-warning-on-tint); }
 
     /* The controls: Back, the dots of this part, Next. They move to the foot
@@ -277,18 +287,21 @@
   </style>
 </head>
 <body>
-  <header class="topbar"><nav class="topbar-crumbs" aria-label="Breadcrumb"><a class="topbar-brand" href="/">ERC Content Desk</a><span class="topbar-sep">/</span><a href="/how-to/">How-tos</a></nav></header>
+  <a class="skip-to-main" href="#main">Skip to content</a>
+  <!-- The desk's sidebar, built by /js/shell-ui.js: a how-to lights All how-tos at its foot. -->
+  <nav class="sidebar" aria-label="Desk"></nav>
 
-  <div class="band"><div class="in">
+  <div class="howto-main">
+  <header class="howto-head">
     <div>
-      <div class="eyebrow">How to</div>
+      <p class="eyebrow">How to</p>
       <h1>Make a research brief</h1>
       <p class="lede">From the paper to a live brief, in the desk's seven stages.</p>
     </div>
     <a class="open" href="/#briefs" target="_blank" rel="noopener">Open Research briefs<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
-  </div></div>
+  </header>
 
-  <main class="page">
+  <main class="page" id="main">
     <nav class="chips" aria-label="Parts">
       <a href="#paper"><span class="step" aria-hidden="true">1</span>Paper and notes</a>
       <a href="#draft"><span class="step" aria-hidden="true">2</span>Draft</a>
@@ -314,12 +327,12 @@
             <div class="foot"></div>
           </div>
           <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:48;--cy:184;--cw:2464;--ch:1240">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:512;--cy:72;--cw:2000;--ch:1298">
               <div class="crop"><div class="zoom"><img src="shots/hub.png" width="2560" height="1800" loading="lazy" alt="Research briefs: New brief at the head, then a table of four briefs, each with its title, a row of seven stage dots with the current one named, and what it waits for." /></div></div>
-              <button type="button" class="pin" style="--x:92.4;--y:6.5" aria-label="New brief: starts one from the paper and your notes"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">New brief: starts one from the paper and your notes</span></button>
-              <button type="button" class="pin" style="--x:34.7;--y:31.2" aria-label="Where it is: the seven stages, with the current one named"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Where it is: the seven stages, with the current one named</span></button>
-              <button type="button" class="pin" style="--x:84;--y:32.7" aria-label="Waits for: the next thing to do, and since when"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Waits for: the next thing to do, and since when</span></button>
-              <button type="button" class="pin" style="--x:13.3;--y:31" aria-label="The title opens the brief's own page"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">The title opens the brief's own page</span></button>
+              <button type="button" class="pin" style="--x:90.8;--y:6.2" aria-label="New brief: starts one from the paper and your notes"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">New brief: starts one from the paper and your notes</span></button>
+              <button type="button" class="pin" style="--x:35;--y:30.9" aria-label="Where it is: the seven stages, with the current one named"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Where it is: the seven stages, with the current one named</span></button>
+              <button type="button" class="pin" style="--x:82.8;--y:32" aria-label="Waits for: the next thing to do, and since when"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Waits for: the next thing to do, and since when</span></button>
+              <button type="button" class="pin" style="--x:15.8;--y:29.1" aria-label="The title opens the brief's own page"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">The title opens the brief's own page</span></button>
             </div>
           </div>
         </div>
@@ -335,11 +348,11 @@
           </div>
           <div class="frame">
             <div class="shot" style="--iw:2560;--ih:1800;--cx:0;--cy:0;--cw:2560;--ch:1800">
-              <div class="crop"><div class="zoom"><img src="shots/new-brief.png" width="2560" height="1800" loading="lazy" alt="New brief open above the table: a file field for the paper as a PDF and one for your notes, Paste instead under the notes, and Create the brief greyed with Choose the paper and your notes first under it." /></div></div>
-              <button type="button" class="pin" style="--x:16.3;--y:31.6" aria-label="The paper, as a PDF: the desk reads it and fills in the byline"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The paper, as a PDF: the desk reads it and fills in the byline</span></button>
-              <button type="button" class="pin" style="--x:62.1;--y:31.6" aria-label="Your notes, as a file: they steer the draft"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Your notes, as a file: they steer the draft</span></button>
-              <button type="button" class="pin" style="--x:55;--y:37.7" aria-label="Paste instead: opens a box to paste or type the notes"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Paste instead: opens a box to paste or type the notes</span></button>
-              <button type="button" class="pin" style="--x:12.9;--y:43.4" aria-label="Create the brief: opens once both files are in and the paper is read"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">Create the brief: opens once both files are in and the paper is read</span></button>
+              <div class="crop"><div class="zoom"><img src="shots/new-brief.png" width="2560" height="1800" loading="lazy" alt="New brief open above the table: a file field for the paper as a PDF and one for your notes, Paste instead under the notes, and Create the brief grayed with Choose the paper and your notes first under it." /></div></div>
+              <button type="button" class="pin" style="--x:34;--y:24.5" aria-label="The paper, as a PDF: the desk reads it and fills in the byline"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The paper, as a PDF: the desk reads it and fills in the byline</span></button>
+              <button type="button" class="pin" style="--x:70.8;--y:24.5" aria-label="Your notes, as a file: they steer the draft"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Your notes, as a file: they steer the draft</span></button>
+              <button type="button" class="pin" style="--x:63.9;--y:30.3" aria-label="Paste instead: opens a box to paste or type the notes"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Paste instead: opens a box to paste or type the notes</span></button>
+              <button type="button" class="pin" style="--x:30.9;--y:36.1" aria-label="Create the brief: opens once both files are in and the paper is read"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">Create the brief: opens once both files are in and the paper is read</span></button>
             </div>
           </div>
         </div>
@@ -353,11 +366,11 @@
             <div class="foot"></div>
           </div>
           <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:98;--cy:124;--cw:2364;--ch:1100">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:562;--cy:756;--cw:1900;--ch:1044">
               <div class="crop"><div class="zoom"><img src="shots/byline.png" width="2560" height="1800" loading="lazy" alt="The byline under New brief, filled from the paper: title, authors, journal, last name and year, then an empty Topic word with the folder's name under it, Author of record, and Brief author." /></div></div>
-              <button type="button" class="pin" style="--x:25.2;--y:55.6" aria-label="Author's last name: starts the folder's name"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Author's last name: starts the folder's name</span></button>
-              <button type="button" class="pin up" style="--x:25.2;--y:70.5" aria-label="Topic word: ends the folder's name"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Topic word: ends the folder's name</span></button>
-              <button type="button" class="pin up" style="--x:25.2;--y:89.1" aria-label="Brief author: named on the draft's cover"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Brief author: named on the draft's cover</span></button>
+              <button type="button" class="pin" style="--x:25.2;--y:57.1" aria-label="Author's last name: starts the folder's name"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Author's last name: starts the folder's name</span></button>
+              <button type="button" class="pin up" style="--x:25.2;--y:72.8" aria-label="Topic word: ends the folder's name"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Topic word: ends the folder's name</span></button>
+              <button type="button" class="pin up" style="--x:25.2;--y:92" aria-label="Brief author: named on the draft's cover"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Brief author: named on the draft's cover</span></button>
             </div>
           </div>
         </div>
@@ -379,12 +392,12 @@
             <div class="foot"></div>
           </div>
           <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:48;--cy:184;--cw:2464;--ch:1406">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:512;--cy:72;--cw:2000;--ch:1336">
               <div class="crop"><div class="zoom"><img src="shots/brief.png" width="2560" height="1800" loading="lazy" alt="A brief's page at Paper and notes: the title, its folder link, the seven stages, the notes box with Save notes, Write the draft, and In the folder listing the paper and notes.md." /></div></div>
-              <button type="button" class="pin" style="--x:45.7;--y:10.2" aria-label="Opens the brief's folder on the team drive"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Opens the brief's folder on the team drive</span></button>
-              <button type="button" class="pin" style="--x:33.8;--y:58.2" aria-label="Your notes: they steer the draft"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Your notes: they steer the draft</span></button>
-              <button type="button" class="pin up" style="--x:11.2;--y:94.2" aria-label="Write the draft: reads the paper, plans the pages, writes the brief"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Write the draft: reads the paper, plans the pages, writes the brief</span></button>
-              <button type="button" class="pin" style="--x:84.1;--y:43.3" aria-label="In the folder: each file opens in Drive"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">In the folder: each file opens in Drive</span></button>
+              <button type="button" class="pin" style="--x:52.2;--y:10.8" aria-label="Opens the brief's folder on the team drive"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Opens the brief's folder on the team drive</span></button>
+              <button type="button" class="pin" style="--x:30;--y:57.5" aria-label="Your notes: they steer the draft"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Your notes: they steer the draft</span></button>
+              <button type="button" class="pin up" style="--x:13.5;--y:93.9" aria-label="Write the draft: reads the paper, plans the pages, writes the brief"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Write the draft: reads the paper, plans the pages, writes the brief</span></button>
+              <button type="button" class="pin" style="--x:80.4;--y:42.6" aria-label="In the folder: each file opens in Drive"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">In the folder: each file opens in Drive</span></button>
             </div>
           </div>
         </div>
@@ -549,6 +562,7 @@
     </div>
     <section class="need" aria-labelledby="h-need"><h2 id="h-need">What you need</h2><ul><li>The desk password. It is in READ ME FIRST - ERC handoff, in the shared drive.</li><li>Google Drive for desktop, with the shared drive in Finder. Each brief lives in <code>ERC Content Desk / ERC Research Briefs / your brief's folder</code>.</li><li>Claude Code, opened on <code>ERC Content Desk / ERC Research Briefs</code>. The house rules, template and scripts are in <code>ERC Content Desk / ERC Research Briefs / erc-research-briefs</code>.</li><li>Node.js, Grammarly, Word, Outlook and Chrome.</li></ul></section>
   </main>
+  </div>
 
   <script>
     // ---- The pins: one clicked keeps its label open; on a touch screen a tap on the still shows them ----
@@ -717,6 +731,10 @@
       show(...(target(location.hash) || ['walk', 0]));
       ready = true;
     })();
+  </script>
+  <script type="module">
+    import { renderSidebar } from '/js/shell-ui.js';
+    renderSidebar(document.querySelector('.sidebar'), { screen: 'howto' });
   </script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>

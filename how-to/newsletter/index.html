@@ -6,11 +6,11 @@
   <meta name="robots" content="noindex" />
   <title>How to build the newsletter · ERC Content Desk</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6bde'/%3E%3Cpath d='M9 16.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="/css/tokens.css?v=11" />
-  <link rel="stylesheet" href="/css/styles.css?v=180" />
-  <link rel="stylesheet" href="/css/shell.css?v=7" />
+  <!-- The desk's own sheets, at index.html's versions: bump them together. -->
+  <link rel="stylesheet" href="/css/tokens.css?v=12" />
+  <link rel="stylesheet" href="/css/styles.css?v=190" />
+  <link rel="stylesheet" href="/css/shell.css?v=8" />
   <script>
     (() => {
       const html = document.documentElement;
@@ -27,7 +27,10 @@
        the slides for a menu of groups on the left and one look at a time on
        the right, in the same columns. Without script every slide and look
        shows, one after another. Read on a desktop. Nothing here writes to
-       the desk. */
+       the desk. Since Oct 23 the page is a desk page in pick A: the
+       sidebar at its left (js/shell-ui.js), the head on the gray page, the
+       parts as the desk's segmented control, the deck a white card. Every
+       how-to made by make-deck.mjs copies these styles and the script. */
     :root {
       --fh: clamp(340px, calc(100vh - 340px), 470px);   /* the picture's height at most; the frame is this plus its padding */
       --pad: var(--spacing-05);
@@ -41,29 +44,36 @@
     a:hover { color: var(--link-primary-hover); }
     a:focus-visible, button:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
 
-    /* The band: the bar's navy, the page's name on it. */
-    .band { background: var(--color-blue-400); color: var(--text-inverse); padding: var(--spacing-06) var(--gap-56); }
-    .band .in { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-06); flex-wrap: wrap; }
-    .eyebrow { display: inline-block; font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--color-maize-400); padding-bottom: 6px; border-bottom: 2px solid var(--color-maize-400); margin: 0 0 var(--spacing-03); }
-    .band h1 { font: var(--card-title); font-size: 24px; line-height: 32px; margin: 0 0 var(--spacing-01); }
-    .band .lede { font: var(--meta-type); color: var(--color-blue-100); margin: 0; }
-    .open { display: inline-flex; align-items: center; height: 40px; padding: 0 var(--spacing-05); border-radius: var(--radius); background: var(--text-inverse); color: var(--color-blue-400); font-weight: 700; text-decoration: none; }
-    .open:hover { background: var(--color-blue-100); color: var(--color-blue-400); }
-    .open:focus-visible { box-shadow: 0 0 0 2px var(--color-blue-400), 0 0 0 4px var(--text-inverse); }
-    .open .fa-solid { margin-left: var(--spacing-05); font-size: 14px; }
+    /* The page beside the sidebar: the desk's own column, 32px down, 40px in. */
+    .howto-main { min-width: 0; width: 100%; max-width: 1280px; margin: 0 auto; padding: var(--gap-28) var(--gap-56) var(--gap-72); }
 
-    .page { max-width: 1200px; margin: 0 auto; padding: var(--spacing-05) var(--gap-56) var(--gap-72); }
+    /* The head, as every desk page draws it (pick A, Oct 23): a quiet label,
+       the title and its lede at the left, the door to the page at the right
+       as the blue primary. The sidebar is the way back. */
+    .howto-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--spacing-05); margin: 0 0 var(--spacing-06); }
+    .howto-head > div { min-width: 0; }
+    .eyebrow { margin: 0 0 var(--spacing-02); font: var(--label-type); color: var(--muted); }
+    .howto-head h1 { font: var(--page-title); letter-spacing: -.6px; color: var(--ink); margin: 0; }
+    .howto-head .lede { font: var(--lede-type); color: var(--muted); margin: var(--spacing-02) 0 0; }
+    .open { display: inline-flex; align-items: center; gap: var(--spacing-04); height: 40px; padding: 0 var(--spacing-05); border-radius: var(--radius); background: var(--accent); color: var(--text-on-color); font: 700 15px/22px var(--font-sans); text-decoration: none; white-space: nowrap; }
+    .open:hover { background: var(--button-primary-hover); color: var(--text-on-color); }
+    .open:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+    .open .fa-solid { font-size: 13px; }
 
-    /* The chapter chips: the parts in order, then Styles; the one on screen filled. */
-    .chips { display: flex; flex-wrap: wrap; gap: var(--spacing-03); margin: 0 0 var(--spacing-04); }
-    .chips a { display: inline-flex; align-items: center; gap: var(--spacing-03); height: 36px; padding: 0 var(--spacing-05); border: 1px solid var(--accent-line); border-radius: var(--radius-pill); background: var(--background); color: var(--ink); font: var(--meta-type); font-weight: 600; text-decoration: none; white-space: nowrap; }
-    .chips a:hover { background: var(--hover); border-color: var(--text-secondary); color: var(--ink); }
-    .chips a[aria-current] { background: var(--accent); border-color: var(--accent); color: var(--text-on-color); }
-    .chips .step { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-left: calc(-1 * var(--spacing-02)); border: 1px solid currentColor; border-radius: var(--radius-round); font-size: 12px; line-height: 1; font-weight: 700; }
+    .page { min-width: 0; }
 
-    /* The deck: a white box with a hairline, a thin bar for how far along.
-       It holds the slides or Styles, never both. */
-    .deck { position: relative; background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); overflow: hidden; }
+    /* The parts as the desk's segmented control (Sort's band, pick A): a gray
+       track, the part on screen a white segment; the step's number in a ring. */
+    .chips { display: inline-flex; flex-wrap: wrap; gap: var(--spacing-01); margin: 0 0 var(--spacing-04); padding: var(--spacing-01); border-radius: var(--radius); background: var(--gray-200); }
+    .chips a { display: inline-flex; align-items: center; gap: var(--spacing-03); height: 28px; padding: 0 var(--spacing-04); border-radius: var(--radius-input); color: var(--gray-800); font: 500 13px/18px var(--font-sans); text-decoration: none; white-space: nowrap; }
+    .chips a:hover { background: var(--sidebar-hover); color: var(--ink); }
+    .chips a[aria-current], .chips a[aria-current]:hover { background: var(--layer-02); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-card); }
+    .chips a:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+    .chips .step { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-left: calc(-1 * var(--spacing-01)); border: 1px solid currentColor; border-radius: var(--radius-round); font-size: 11px; line-height: 1; font-weight: 600; }
+
+    /* The deck: a white card with soft corners and a hairline, a thin bar for
+       how far along. It holds the slides or Styles, never both. */
+    .deck { position: relative; background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius-card); box-shadow: var(--shadow-card); overflow: hidden; }
     .progress { height: 3px; background: var(--layer-accent-01); }
     .progress span { display: block; height: 100%; width: 0; background: var(--accent); }
     html:not(.js) .progress, html:not(.js) .controls, html:not(.js) .foot { display: none; }
@@ -97,11 +107,11 @@
 
     /* Where items come from: the desk's path to the builder, a few lines on the first Outline slide. */
     .from { padding-top: var(--spacing-04); border-top: 1px solid var(--layer-line); }
-    .from h3 { margin: 0 0 var(--spacing-03); font: var(--label-type); text-transform: uppercase; letter-spacing: var(--label-tracking); color: var(--muted); }
+    .from h3 { margin: 0 0 var(--spacing-03); font: var(--label-type); color: var(--muted); }
     .from ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-02); font: var(--meta-type); color: var(--ink); }
     .from li { position: relative; padding-left: var(--spacing-05); }
     .from li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: var(--radius-round); background: var(--accent); }
-    .from li:not(:last-child)::after { content: ''; position: absolute; left: 2px; top: 17px; bottom: calc(-1 * var(--spacing-02) - 3px); width: 2px; background: var(--color-teal-200); }
+    .from li:not(:last-child)::after { content: ''; position: absolute; left: 2px; top: 17px; bottom: calc(-1 * var(--spacing-02) - 3px); width: 2px; background: var(--accent-20); }
     .from b { font-weight: 700; }
 
     /* A still: a window on the picture (the crop). Every number is the
@@ -139,7 +149,7 @@
     .note { display: flex; align-items: center; gap: var(--spacing-04); margin: 0; font: var(--meta-type); color: var(--ink); }
     .note b { font-weight: 700; }
     .note .n.go { background: var(--background); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
-    .note.warn .n { background: var(--color-maize-100); color: var(--text-warning-on-tint); box-shadow: inset 0 0 0 1px var(--notification-warning-border); }
+    .note.warn .n { background: var(--notification-warning-background); color: var(--text-warning-on-tint); box-shadow: inset 0 0 0 1px var(--notification-warning-border); }
     .note.warn b { color: var(--text-warning-on-tint); }
 
     /* The controls: Back, the dots of this part, Next. They move to the foot
@@ -286,18 +296,21 @@
   </style>
 </head>
 <body>
-  <header class="topbar"><nav class="topbar-crumbs" aria-label="Breadcrumb"><a class="topbar-brand" href="/">ERC Content Desk</a><span class="topbar-sep">/</span><a href="/how-to/">How-tos</a></nav></header>
+  <a class="skip-to-main" href="#main">Skip to content</a>
+  <!-- The desk's sidebar, built by /js/shell-ui.js: a how-to lights All how-tos at its foot. -->
+  <nav class="sidebar" aria-label="Desk"></nav>
 
-  <div class="band"><div class="in">
+  <div class="howto-main">
+  <header class="howto-head">
     <div>
-      <div class="eyebrow">How to</div>
+      <p class="eyebrow">How to</p>
       <h1>Build the newsletter</h1>
       <p class="lede">Pick the issue, put it in order, fix it on the email, and send it from erc@tamu.edu.</p>
     </div>
     <a class="open" href="https://erc-content-desk.vercel.app/#newsletter" target="_blank" rel="noopener">Open Newsletter<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
-  </div></div>
+  </header>
 
-  <main class="page">
+  <main class="page" id="main">
     <nav class="chips" aria-label="Parts">
       <a href="#outline"><span class="step" aria-hidden="true">1</span>Outline</a>
       <a href="#tweak"><span class="step" aria-hidden="true">2</span>Preview &amp; Tweak</a>
@@ -332,9 +345,9 @@
             <div class="foot"></div>
           </div>
           <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:490;--cy:560;--cw:1590;--ch:710">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:358;--cy:162;--cw:2202;--ch:976">
               <div class="crop"><div class="zoom"><img src="shots/outline.png" width="2560" height="1800" loading="lazy" alt="The Outline step: the Issue list set to Sample issue (fictional), and the top of the item table." /></div></div>
-              <button type="button" class="pin" style="--x:38;--y:29.3" aria-label="Issue: the date; picking it brings in what the desk holds for it. To practice, pick a sample under Samples"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Issue: the date; picking it brings in what the desk holds for it. To practice, pick a sample under Samples</span></button>
+              <button type="button" class="pin" style="--x:30;--y:50" aria-label="Issue: the date; picking it brings in what the desk holds for it. To practice, pick a sample under Samples"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Issue: the date; picking it brings in what the desk holds for it. To practice, pick a sample under Samples</span></button>
             </div>
           </div>
         </div>
@@ -345,12 +358,12 @@
             <div class="foot"></div>
           </div>
           <div class="frame">
-            <div class="shot" style="--iw:1540;--ih:792;--cx:0;--cy:0;--cw:1540;--ch:792">
-              <div class="crop"><div class="zoom"><img src="shots/outline-rows.png" width="1540" height="792" loading="lazy" alt="The Outline table: a grip at the left of the ERC Spotlight section and of every item; the hovered row shows Move to… in teal and Remove in red." /></div></div>
-              <button type="button" class="pin" style="--x:3.38;--y:20.02" aria-label="A section's grip: drag the whole section up or down the email"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">A section's grip: drag the whole section up or down the email</span></button>
-              <button type="button" class="pin" style="--x:4.42;--y:36.4" aria-label="An item's grip: drag it within its section"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">An item's grip: drag it within its section</span></button>
-              <button type="button" class="pin" style="--x:81.51;--y:37.74" aria-label="Move to…: file it under another section or group"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Move to…: file it under another section or group</span></button>
-              <button type="button" class="pin" style="--x:92.2;--y:38.07" aria-label="Remove: takes it out. Undo on its row puts it back"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">Remove: takes it out. Undo on its row puts it back</span></button>
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:518;--cy:831;--cw:1988;--ch:581">
+              <div class="crop"><div class="zoom"><img src="shots/outline-rows.png" width="2560" height="1800" loading="lazy" alt="The Outline table: a grip at the left of the ERC Spotlight section and of every item; the hovered row shows Move to… in blue and Remove in red." /></div></div>
+              <button type="button" class="pin" style="--x:13.9;--y:25.5" aria-label="A section's grip: drag the whole section up or down the email"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">A section's grip: drag the whole section up or down the email</span></button>
+              <button type="button" class="pin" style="--x:14.7;--y:47.8" aria-label="An item's grip: drag it within its section"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">An item's grip: drag it within its section</span></button>
+              <button type="button" class="pin" style="--x:74.4;--y:49.7" aria-label="Move to…: file it under another section or group"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Move to…: file it under another section or group</span></button>
+              <button type="button" class="pin" style="--x:82.7;--y:50.1" aria-label="Remove: takes it out. Undo on its row puts it back"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">Remove: takes it out. Undo on its row puts it back</span></button>
             </div>
           </div>
         </div>
@@ -366,12 +379,12 @@
             <div class="foot"></div>
           </div>
           <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:110;--cy:690;--cw:1880;--ch:1110">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:0;--cy:0;--cw:2560;--ch:1264">
               <div class="crop"><div class="zoom"><img src="shots/tweak.png" width="2560" height="1800" loading="lazy" alt="Preview &amp; Tweak: Add an item, Add a callout, the Contents strip checkbox and Reset layout over the email; the email opens with its date line, masthead, contents strip and introduction." /></div></div>
-              <button type="button" class="pin" style="--x:7.13;--y:5.77" aria-label="Add an item: something the desk did not have"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Add an item: something the desk did not have</span></button>
-              <button type="button" class="pin" style="--x:21.6;--y:5.77" aria-label="Add a callout: a box that asks readers for something"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Add a callout: a box that asks readers for something</span></button>
-              <button type="button" class="pin" style="--x:35.64;--y:5.77" aria-label="Contents strip: show or hide the row of section names"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Contents strip: show or hide the row of section names</span></button>
-              <button type="button" class="pin" style="--x:28.72;--y:44.77" aria-label="The contents strip on the email, one link per section"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">The contents strip on the email, one link per section</span></button>
+              <button type="button" class="pin" style="--x:75.2;--y:47" aria-label="Add an item: something the desk did not have"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Add an item: something the desk did not have</span></button>
+              <button type="button" class="pin" style="--x:85;--y:47" aria-label="Add a callout: a box that asks readers for something"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Add a callout: a box that asks readers for something</span></button>
+              <button type="button" class="pin" style="--x:91.2;--y:47" aria-label="Contents strip: show or hide the row of section names"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Contents strip: show or hide the row of section names</span></button>
+              <button type="button" class="pin" style="--x:60.3;--y:77.8" aria-label="The contents strip on the email, one link per section"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">The contents strip on the email, one link per section</span></button>
             </div>
           </div>
         </div>
@@ -382,12 +395,12 @@
             <div class="foot"></div>
           </div>
           <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:700;--cy:560;--cw:1850;--ch:960">
-              <div class="crop"><div class="zoom"><img src="shots/tweak-card.png" width="2560" height="1800" loading="lazy" alt="An event clicked on the email, outlined in teal, with its card open beside it: How it is laid out, Picture size, px, Its words, and Done at the top." /></div></div>
-              <button type="button" class="pin" style="--x:8.93;--y:30.34" aria-label="The item you clicked, outlined on the email"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The item you clicked, outlined on the email</span></button>
-              <button type="button" class="pin" style="--x:59.72;--y:18.34" aria-label="How it is laid out: pick a look. Styles shows each one"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">How it is laid out: pick a look. Styles shows each one</span></button>
-              <button type="button" class="pin" style="--x:81.85;--y:18.34" aria-label="Its words: title, link, description, date, time, place, media"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Its words: title, link, description, date, time, place, media</span></button>
-              <button type="button" class="pin" style="--x:85.66;--y:9.14" aria-label="Done closes the card. Undo changes puts it all back"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">Done closes the card. Undo changes puts it all back</span></button>
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:904;--cy:36;--cw:1656;--ch:1764">
+              <div class="crop"><div class="zoom"><img src="shots/tweak-card.png" width="2560" height="1800" loading="lazy" alt="An event clicked on the email, lit in blue, with its card open beside it: How it is laid out, Its words, and Done at the top." /></div></div>
+              <button type="button" class="pin" style="--x:17.3;--y:30.5" aria-label="The item you clicked, lit on the email"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The item you clicked, lit on the email</span></button>
+              <button type="button" class="pin" style="--x:46.4;--y:43.2" aria-label="How it is laid out: pick a look. Styles shows each one"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">How it is laid out: pick a look. Styles shows each one</span></button>
+              <button type="button" class="pin" style="--x:80.3;--y:36.3" aria-label="Its words: title, link, description, date, time, place, media"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Its words: title, link, description, date, time, place, media</span></button>
+              <button type="button" class="pin" style="--x:92.3;--y:31.2" aria-label="Done closes the card. Undo changes puts it all back"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">Done closes the card. Undo changes puts it all back</span></button>
             </div>
           </div>
         </div>
@@ -399,9 +412,9 @@
             <div class="foot"></div>
           </div>
           <div class="frame">
-            <div class="shot" style="--iw:1352;--ih:396;--cx:0;--cy:0;--cw:1352;--ch:396">
-              <div class="crop"><div class="zoom"><img src="shots/sheet-grip.png" width="1352" height="396" loading="lazy" alt="An item on the email hovered, with a small grip at its left edge." /></div></div>
-              <button type="button" class="pin" style="--x:27.37;--y:24" aria-label="The grip: it shows when you point at an item"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The grip: it shows when you point at an item</span></button>
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:831;--cy:1350;--cw:1369;--ch:230">
+              <div class="crop"><div class="zoom"><img src="shots/sheet-grip.png" width="2560" height="1800" loading="lazy" alt="An item on the email hovered, with a small grip at its left edge." /></div></div>
+              <button type="button" class="pin" style="--x:9.5;--y:47.4" aria-label="The grip: it shows when you point at an item"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The grip: it shows when you point at an item</span></button>
             </div>
           </div>
         </div>
@@ -418,11 +431,11 @@
             <div class="foot"></div>
           </div>
           <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:440;--cy:270;--cw:1680;--ch:650">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:412;--cy:136;--cw:2148;--ch:932">
               <div class="crop"><div class="zoom"><img src="shots/export.png" width="2560" height="1800" loading="lazy" alt="Save &amp; Export: the step row with Save &amp; Export current, Back, and the buttons Copy HTML, Save to the archive and Download .html." /></div></div>
-              <button type="button" class="pin up" style="--x:15.33;--y:87.63" aria-label="Copy HTML: the whole email, ready for Outlook"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Copy HTML: the whole email, ready for Outlook</span></button>
-              <button type="button" class="pin up" style="--x:37.43;--y:87.63" aria-label="Save to the archive: keeps it under Past issues. Off on a sample"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Save to the archive: keeps it under Past issues. Off on a sample</span></button>
-              <button type="button" class="pin up" style="--x:58.23;--y:87.63" aria-label="Download .html: the same file, saved to your computer"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Download .html: the same file, saved to your computer</span></button>
+              <button type="button" class="pin up" style="--x:23.8;--y:52.6" aria-label="Copy HTML: the whole email, ready for Outlook"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Copy HTML: the whole email, ready for Outlook</span></button>
+              <button type="button" class="pin up" style="--x:40.3;--y:52.6" aria-label="Save to the archive: keeps it under Past issues. Off on a sample"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Save to the archive: keeps it under Past issues. Off on a sample</span></button>
+              <button type="button" class="pin up" style="--x:55.6;--y:52.6" aria-label="Download .html: the same file, saved to your computer"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Download .html: the same file, saved to your computer</span></button>
             </div>
           </div>
         </div>
@@ -529,28 +542,28 @@
                 <div class="sg-stage"><div class="sg-pic"><img src="gallery/item-bare.png" width="1280" height="140" alt="An event as Title and details: the title, then the date, time and place." loading="lazy" /></div></div>
                 <div class="sg-cap">
                   <div class="sg-txt"><h4 class="sg-name">Title and details</h4><p>A plain listing: the title and its details, nothing under them.</p></div>
-                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:56;--cy:192;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="1148" height="1288" alt="The Title and details tile in the builder." loading="lazy" /></span></span>
+                  <span class="sg-crop" style="--iw:2560;--ih:1800;--cx:1448;--cy:718;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="2560" height="1800" alt="The Title and details tile in the builder." loading="lazy" /></span></span>
                 </div>
               </div>
               <div class="sg-look" role="group" aria-roledescription="slide">
                 <div class="sg-stage"><div class="sg-pic"><img src="gallery/item-text.png" width="1280" height="264" alt="An event With description: title, details, then a sentence with a bold name, an italic book title and a link." loading="lazy" /></div></div>
                 <div class="sg-cap">
                   <div class="sg-txt"><h4 class="sg-name">With description</h4><p>When a sentence or two helps: the description prints under the details.</p></div>
-                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:284;--cy:192;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="1148" height="1288" alt="The With description tile in the builder." loading="lazy" /></span></span>
+                  <span class="sg-crop" style="--iw:2560;--ih:1800;--cx:1676;--cy:718;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="2560" height="1800" alt="The With description tile in the builder." loading="lazy" /></span></span>
                 </div>
               </div>
               <div class="sg-look" role="group" aria-roledescription="slide">
                 <div class="sg-stage"><div class="sg-pic"><img src="gallery/item-stamp.png" width="1280" height="404" alt="An opportunity as Stamp beside the text: a small picture under the title, beside the description." loading="lazy" /></div></div>
                 <div class="sg-cap">
                   <div class="sg-txt"><h4 class="sg-name">Stamp beside the text</h4><p>A small photo under the title, beside the description: 96 wide unless you size it.</p></div>
-                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:56;--cy:380;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="1148" height="1288" alt="The Stamp beside the text tile in the builder." loading="lazy" /></span></span>
+                  <span class="sg-crop" style="--iw:2560;--ih:1800;--cx:1448;--cy:906;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="2560" height="1800" alt="The Stamp beside the text tile in the builder." loading="lazy" /></span></span>
                 </div>
               </div>
               <div class="sg-look" role="group" aria-roledescription="slide">
                 <div class="sg-stage"><div class="sg-pic"><img src="gallery/item-headshot.png" width="1280" height="482" alt="An event as Headshot beside it all: a portrait standing beside the title, details and description." loading="lazy" /></div></div>
                 <div class="sg-cap">
                   <div class="sg-txt"><h4 class="sg-name">Headshot beside it all</h4><p>A portrait beside the whole item, 160 wide: for a speaker.</p></div>
-                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:284;--cy:380;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="1148" height="1288" alt="The Headshot beside it all tile in the builder." loading="lazy" /></span></span>
+                  <span class="sg-crop" style="--iw:2560;--ih:1800;--cx:1676;--cy:906;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="2560" height="1800" alt="The Headshot beside it all tile in the builder." loading="lazy" /></span></span>
                 </div>
               </div>
               <div class="sg-look" role="group" aria-roledescription="slide">
@@ -561,7 +574,7 @@
                 </div></div>
                 <div class="sg-cap">
                   <div class="sg-txt"><h4 class="sg-name">Date card</h4><p>For a big ERC event, in ERC Spotlight or Upcoming Events. The block takes the item's Date, Time and Location; under the tile, tick Zoom available and paste a Flyer link. A card never shows a photo.</p></div>
-                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:40;--cy:588;--cw:488;--ch:380;--dw:244px"><span><img src="shots/card-datecard.png" width="1148" height="1288" alt="The Date card tile picked, Zoom available ticked and a Flyer link filled in." loading="lazy" /></span></span>
+                  <span class="sg-crop" style="--iw:2560;--ih:1800;--cx:1426;--cy:1106;--cw:494;--ch:384;--dw:247px"><span><img src="shots/card-datecard.png" width="2560" height="1800" alt="The Date card tile picked, Zoom available ticked and a Flyer link filled in." loading="lazy" /></span></span>
                 </div>
               </div>
             </div>
@@ -572,7 +585,7 @@
             <h3 class="sg-gname" id="sg-h-research">Research boxes</h3>
             <div class="sg-head">
               <p>Every ERC Research item is a tinted box. <b>Kind</b> on its card sets the label at the top; the title is the link, so there is no button.</p>
-              <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:40;--cy:136;--cw:444;--ch:176;--dw:222px"><span><img src="shots/card-research.png" width="1148" height="1288" alt="The Kind chips: Research Brief, Research Report, Journal Article and ERC Explains." loading="lazy" /></span></span>
+              <span class="sg-crop" style="--iw:2560;--ih:1800;--cx:1426;--cy:650;--cw:494;--ch:192;--dw:247px"><span><img src="shots/card-research.png" width="2560" height="1800" alt="The Kind chips: Research Brief, Research Report, Journal Article and ERC Explains." loading="lazy" /></span></span>
             </div>
             <div class="sg-looks">
               <div class="sg-look" role="group" aria-roledescription="slide">
@@ -599,28 +612,28 @@
             <h3 class="sg-gname" id="sg-h-callouts">Callouts</h3>
             <div class="sg-head">
               <p><b>Add a callout</b> over the email, then pick <b>Its style</b> on its card. Share something with the ERC always sits last.</p>
-              <span class="sg-crop" style="--iw:1094;--ih:104;--cx:290;--cy:22;--cw:262;--ch:62;--dw:131px"><span><img src="shots/tweak-doors.png" width="1094" height="104" alt="The Add a callout button over the email." loading="lazy" /></span></span>
+              <span class="sg-crop" style="--iw:2560;--ih:1800;--cx:2043;--cy:554;--cw:268;--ch:80;--dw:134px"><span><img src="shots/tweak-doors.png" width="2560" height="1800" alt="The Add a callout button over the email." loading="lazy" /></span></span>
             </div>
             <div class="sg-looks">
               <div class="sg-look" role="group" aria-roledescription="slide">
                 <div class="sg-stage"><div class="sg-pic"><img src="gallery/callout-gray.png" width="1280" height="402" alt="A Light gray box callout: a title, a line and a maroon Sign up button on light gray." loading="lazy" /></div></div>
                 <div class="sg-cap">
                   <div class="sg-txt"><h4 class="sg-name">Light gray box</h4><p>Sits inside the section before it: a quiet ask.</p></div>
-                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:284;--cy:192;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-callout.png" width="1148" height="1288" alt="The Light gray box tile in the builder." loading="lazy" /></span></span>
+                  <span class="sg-crop" style="--iw:2560;--ih:1800;--cx:1676;--cy:718;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-callout.png" width="2560" height="1800" alt="The Light gray box tile in the builder." loading="lazy" /></span></span>
                 </div>
               </div>
               <div class="sg-look" role="group" aria-roledescription="slide">
                 <div class="sg-stage"><div class="sg-pic"><img src="gallery/callout-dotted.png" width="1280" height="458" alt="A Dotted rule callout: a dotted maroon border around a title, a line, a deadline line and a button." loading="lazy" /></div></div>
                 <div class="sg-cap">
                   <div class="sg-txt"><h4 class="sg-name">Dotted rule</h4><p>Also inside the section; the Deadline line is optional.</p></div>
-                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:56;--cy:380;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-callout.png" width="1148" height="1288" alt="The Dotted rule tile in the builder." loading="lazy" /></span></span>
+                  <span class="sg-crop" style="--iw:2560;--ih:1800;--cx:1448;--cy:906;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-callout.png" width="2560" height="1800" alt="The Dotted rule tile in the builder." loading="lazy" /></span></span>
                 </div>
               </div>
               <div class="sg-look" role="group" aria-roledescription="slide">
                 <div class="sg-stage"><div class="sg-pic"><img src="gallery/callout-maroon.png" width="1280" height="420" alt="The Share something with the ERC callout as a Maroon block: white words and a white button on maroon." loading="lazy" /></div></div>
                 <div class="sg-cap">
                   <div class="sg-txt"><h4 class="sg-name">Maroon block</h4><p>Its own maroon panel, the loudest of the three.</p></div>
-                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:56;--cy:192;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-callout.png" width="1148" height="1288" alt="The Maroon block tile in the builder." loading="lazy" /></span></span>
+                  <span class="sg-crop" style="--iw:2560;--ih:1800;--cx:1448;--cy:718;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-callout.png" width="2560" height="1800" alt="The Maroon block tile in the builder." loading="lazy" /></span></span>
                 </div>
               </div>
             </div>
@@ -644,7 +657,7 @@
                     <li><span class="sg-btn sg-i" aria-hidden="true">I</span><span class="sg-spec"><span class="sr-only">Italic: </span><i>The Imaginary Classroom</i></span><span class="sg-rule">Italic for book and report titles.</span></li>
                     <li><span class="sg-btn" aria-hidden="true"><i class="fa-solid fa-link"></i></span><span class="sg-spec"><span class="sr-only">Link: </span><span class="sg-link">RSVP here</span></span><span class="sg-rule">A link prints maroon, bold and underlined.</span></li>
                   </ul>
-                  <span class="sg-crop" style="--iw:1148;--ih:1288;--cx:576;--cy:682;--cw:532;--ch:128;--dw:266px"><span><img src="shots/card-research.png" width="1148" height="1288" alt="The Description box's toolbar: B, I and the link button." loading="lazy" /></span></span>
+                  <span class="sg-crop" style="--iw:2560;--ih:1800;--cx:1962;--cy:1194;--cw:544;--ch:154;--dw:272px"><span><img src="shots/card-research.png" width="2560" height="1800" alt="The Description box's toolbar: B, I and the link button." loading="lazy" /></span></span>
                 </div>
               </div>
             </div>
@@ -676,9 +689,9 @@
               <div class="sg-look sg-note" role="group" aria-roledescription="slide">
                 <div class="sg-stage">
                   <ul class="sg-mini" role="list">
-                    <li class="sg-yes"><span class="sg-crop" style="--iw:1148;--ih:1288;--cx:56;--cy:380;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="1148" height="1288" alt="Yes: the Stamp beside the text tile." loading="lazy" /></span></span><i class="fa-solid fa-circle-check" aria-hidden="true"></i></li>
-                    <li class="sg-yes"><span class="sg-crop" style="--iw:1148;--ih:1288;--cx:284;--cy:380;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="1148" height="1288" alt="Yes: the Headshot beside it all tile." loading="lazy" /></span></span><i class="fa-solid fa-circle-check" aria-hidden="true"></i></li>
-                    <li class="sg-no"><span class="sg-crop" style="--iw:1148;--ih:1288;--cx:56;--cy:600;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="1148" height="1288" alt="No: the Date card tile." loading="lazy" /></span></span><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></li>
+                    <li class="sg-yes"><span class="sg-crop" style="--iw:2560;--ih:1800;--cx:1448;--cy:906;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="2560" height="1800" alt="Yes: the Stamp beside the text tile." loading="lazy" /></span></span><i class="fa-solid fa-circle-check" aria-hidden="true"></i></li>
+                    <li class="sg-yes"><span class="sg-crop" style="--iw:2560;--ih:1800;--cx:1676;--cy:906;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="2560" height="1800" alt="Yes: the Headshot beside it all tile." loading="lazy" /></span></span><i class="fa-solid fa-circle-check" aria-hidden="true"></i></li>
+                    <li class="sg-no"><span class="sg-crop" style="--iw:2560;--ih:1800;--cx:1448;--cy:1126;--cw:200;--ch:124;--dw:100px"><span><img src="shots/card-item.png" width="2560" height="1800" alt="No: the Date card tile." loading="lazy" /></span></span><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></li>
                   </ul>
                 </div>
                 <div class="sg-cap"><div class="sg-txt">
@@ -742,7 +755,7 @@
                 </div></div>
                 <div class="sg-cap">
                   <div class="sg-txt"><h4 class="sg-name">Contents strip</h4><p>The row of section names under the masthead, each a link into the email. On or off with the Contents strip box over the email.</p></div>
-                  <span class="sg-crop" style="--iw:1094;--ih:104;--cx:560;--cy:22;--cw:250;--ch:62;--dw:125px"><span><img src="shots/tweak-doors.png" width="1094" height="104" alt="The Contents strip checkbox over the email." loading="lazy" /></span></span>
+                  <span class="sg-crop" style="--iw:2560;--ih:1800;--cx:2311;--cy:568;--cw:247;--ch:52;--dw:123.5px"><span><img src="shots/tweak-doors.png" width="2560" height="1800" alt="The Contents strip checkbox over the email." loading="lazy" /></span></span>
                 </div>
               </div>
             </div>
@@ -758,6 +771,7 @@
       </div>
     </div>
   </main>
+  </div>
 
   <script>
     // ---- The pins: one clicked keeps its label open; on a touch screen a tap on the still shows them ----
@@ -926,6 +940,10 @@
       show(...(target(location.hash) || ['walk', 0]));
       ready = true;
     })();
+  </script>
+  <script type="module">
+    import { renderSidebar } from '/js/shell-ui.js';
+    renderSidebar(document.querySelector('.sidebar'), { screen: 'howto' });
   </script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>

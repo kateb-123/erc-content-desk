@@ -60,7 +60,7 @@ function build(nav, onGo) {
   });
 
   const foot = el('div', 'sidebar-foot');
-  const guides = el('a', 'sidebar-item is-quiet');
+  const guides = el('a', 'sidebar-item is-quiet sidebar-guides');
   guides.href = '/how-to/';
   guides.append(...parts('book', 'All how-tos'));
   const out = el('button', 'sidebar-item is-quiet sidebar-signout');
@@ -90,6 +90,10 @@ export function renderSidebar(nav, { screen, onGo, signedIn = false, onSignOut, 
     a.querySelector('.sidebar-count').textContent = badge;
     a.setAttribute('aria-label', navLabel(entry, badge));
   }
+  // A how-to page lights All how-tos at the foot (Oct 23).
+  const guides = nav.querySelector('.sidebar-guides');
+  if (here === 'howto') guides.setAttribute('aria-current', 'page');
+  else guides.removeAttribute('aria-current');
   signOuts.set(nav, onSignOut);
   const out = nav.querySelector('.sidebar-signout');
   const show = Boolean(signedIn && onSignOut);

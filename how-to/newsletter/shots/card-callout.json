@@ -1,0 +1,26 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 1392,
+  "cy": 526,
+  "cw": 1148,
+  "ch": 1274,
+  "alt": "A callout's card: the Its style tiles, Maroon block, Light gray box and Dotted rule, then Its words.",
+  "pins": [
+    {
+      "x": 13.6,
+      "y": 21.5,
+      "label": "The Maroon block tile"
+    },
+    {
+      "x": 33.4,
+      "y": 21.5,
+      "label": "The Light gray box tile"
+    },
+    {
+      "x": 13.6,
+      "y": 36.3,
+      "label": "The Dotted rule tile"
+    }
+  ]
+}

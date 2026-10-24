@@ -101,13 +101,13 @@
   {
     "name": "exchange-hub",
     "url": "/?fresh=cap#exchange",
-    "alt": "The Policy Exchange page's right column: Publish, Highlight with 2 on the home page, then Edit live items and its note.",
+    "alt": "The Policy Exchange page: the Publish and Highlight doors, Highlight with 2 on the home page, then the site's status, then Edit live items and its note.",
     "before": [
       {
         "waitFor": "#screen-exchange .qh-edit"
       }
     ],
-    "crop": "#screen-exchange .qh-side",
+    "crop": "#screen-exchange .hub-page",
     "pad": 16,
     "pins": [
       {
@@ -125,7 +125,7 @@
   {
     "name": "listserv",
     "url": "/?fresh=cap#listserv",
-    "alt": "The Listserv page: the sign-up form's status, To be added with a count of 3 counted as the page opened, and Adding people with Open the sign-up sheet and three steps.",
+    "alt": "The Listserv page's left column: To be added with a count of 3 counted as the page opened, Open the sign-up sheet and the three steps, then the sign-up form's status.",
     "before": [
       {
         "waitFor": "#screen-listserv .hub-count .hub-numeral"

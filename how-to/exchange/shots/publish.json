@@ -1,29 +1,29 @@
 {
   "iw": 2560,
   "ih": 1800,
-  "cx": 48,
-  "cy": 216,
-  "cw": 2464,
-  "ch": 1178,
-  "alt": "Publish: Checked against the live Exchange, a note that a rewrite is not checked yet, the coloured bar with 2 adding, 1 held for newsletter and Already live, the table with each row's Fate, and Publish 2 to the Exchange at the top right.",
+  "cx": 512,
+  "cy": 104,
+  "cw": 2000,
+  "ch": 1190,
+  "alt": "Publish: Checked against the live Exchange, a note that a rewrite is not checked yet, the colored bar with 2 adding, 1 held for newsletter and Already live, the table with each row's Fate, and Publish 2 to the Exchange at the top right.",
   "pins": [
     {
-      "x": 51.1,
+      "x": 58.9,
       "y": 23.9,
       "label": "Check them on Finalize: read each rewrite before it goes out"
     },
     {
-      "x": 4.6,
-      "y": 36.7,
-      "label": "A colour: click it to show only those rows"
+      "x": 5.4,
+      "y": 36.3,
+      "label": "A color: click it to show only those rows"
     },
     {
-      "x": 92.5,
-      "y": 52.9,
+      "x": 90.8,
+      "y": 51.9,
       "label": "Fate: Adding, Held for newsletter, Needs a fix or Already live"
     },
     {
-      "x": 89.5,
+      "x": 87.5,
       "y": 9.5,
       "label": "Publish N to the Exchange: asks for the password next"
     }

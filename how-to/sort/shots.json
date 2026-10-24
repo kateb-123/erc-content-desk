@@ -2,7 +2,7 @@
   {
     "name": "sort",
     "url": "/?fresh=cap#sort",
-    "alt": "Content Sort: the waiting items down the left, newest first, with a working paper chosen; its card on the right shows New research, the Working Paper subtype, Keep and next, Skip for now and Delete.",
+    "alt": "Content Sort: the waiting items in the white list down the left, newest first, a working paper chosen in blue; its card in the middle, and the decisions on the right: New research with the Working Paper subtype, ERC Newsletter only as a switch, Keep and next, Skip for now and Delete.",
     "before": [
       {
         "click": "#screen-sort button.sort-row:has-text('Call for Reviewers')"
@@ -15,6 +15,11 @@
       },
       {
         "wait": 700
+      },
+      {
+        "eval": "window.scrollTo(0, 0)",
+        "wait": 400,
+        "note": "A row click scrolls the page; the shot starts at the top, the Sort and Finalize band in view."
       }
     ],
     "crop": null,
@@ -36,7 +41,7 @@
         "nth": 0
       },
       {
-        "selector": "#screen-sort .sc-tools .trash-link",
+        "selector": "#screen-sort .sc-delete",
         "label": "Delete: takes it out of the queue. D does the same",
         "nth": 0
       }
@@ -45,10 +50,10 @@
   {
     "name": "send",
     "url": "/?fresh=cap#sort",
-    "alt": "The right side of a campus event's card: Event picked, the A&M subtype picked, and ERC Newsletter only ticked, with the line Skips the Policy Exchange: another unit's campus event.",
+    "alt": "The decision column of a campus event's card: Event picked, the A&M subtype picked, and ERC Newsletter only switched on, with the line Skips the Policy Exchange: another unit's campus event.",
     "before": [
       {
-        "click": "#screen-sort button.sort-row:has-text('Elena Vasquez')"
+        "click": "#screen-sort button.sort-row:has-text('ERC Fall Speaker Series')"
       },
       {
         "wait": 700
@@ -69,7 +74,7 @@
       },
       {
         "selector": "#screen-sort .card-send .check-name",
-        "label": "ERC Newsletter only: ticked, the item never reaches Publish",
+        "label": "ERC Newsletter only: on, the item never reaches Publish",
         "nth": 0
       }
     ]
@@ -77,7 +82,7 @@
   {
     "name": "questions",
     "url": "/?fresh=cap#sort",
-    "alt": "A card with questions: the Check the link note with Verify link, the Type label in orange with no type picked, and Keep and next greyed with Set a type first under it.",
+    "alt": "A card with questions: the Check the link note with Verify link, the Type label in orange with no type picked, and Keep and next grayed with Set a type first under it.",
     "before": [
       {
         "click": "#screen-sort button.sort-row:has-text('FWISD')"
@@ -109,16 +114,14 @@
   {
     "name": "groups",
     "url": "/?fresh=cap#sort",
-    "alt": "The lower half of Sort's list: a skipped item with its Skipped tag, then the Past group with Dismiss all and five dated items, then the Already live group with Dismiss all.",
+    "alt": "Sort scrolled to the foot of its list: a skipped item with its Skipped tag, then the Past group with Dismiss all and its dated items, then the Already live group with Dismiss all; the chosen item's card beside them.",
     "before": [
       {
-        "click": "#screen-sort .sort-group-head .sort-list-count:has-text('Already live')"
-      },
-      {
-        "wait": 700
+        "eval": "window.scrollTo(0, document.documentElement.scrollHeight)",
+        "wait": 600
       }
     ],
-    "crop": "#screen-sort .sort-list",
+    "crop": null,
     "pad": 16,
     "pins": [
       {
@@ -141,14 +144,22 @@
   {
     "name": "finalize",
     "url": "/?fresh=cap#finalize",
-    "alt": "Content Sort's Finalize tab: Rewrite 1 description at the top right, an ERC workshop under Needs a rewrite on the left, and its card with the Original text, Edit and Delete.",
+    "alt": "Content Sort's Finalize tab: Rewrite 2 descriptions at the top right, a report and an event under Needs a rewrite on the left, and the report's card with its Original text, Edit and Delete.",
     "before": [
+      {
+        "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ rows: [{ id: 'sbx_019', rewrite_checked: '', blurb: 'Half-day workshop pairing ERC researchers with district data leads to scope shared research questions for the spring. Space is limited and registration closes September 22.' }, { id: 'sbx_020', rewrite_checked: '', blurb: '' }] }) }).then(r => r.ok)",
+        "note": "A Keep on an earlier capture stamps the sandbox's kept event and report as checked, and a Rewrite gives them its stand-in words; this puts both back as the sandbox starts, under Needs a rewrite with their own text as Original."
+      },
+      {
+        "eval": "setTimeout(() => location.reload(), 0)",
+        "wait": 2500
+      },
       {
         "waitFor": "#screen-finalize .f-card"
       }
     ],
     "crop": "#screen-finalize",
-    "pad": 16,
+    "pad": 0,
     "pins": [
       {
         "selector": "#screen-finalize p.f-group-head",
@@ -157,7 +168,7 @@
       },
       {
         "selector": "#screen-finalize .finalize-head button.primary",
-        "label": "Rewrite 1 description: writes the ones still waiting",
+        "label": "Rewrite the descriptions: writes the ones still waiting",
         "nth": 0
       },
       {

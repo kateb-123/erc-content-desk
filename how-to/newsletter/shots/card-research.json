@@ -1,0 +1,21 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 1392,
+  "cy": 526,
+  "cw": 1148,
+  "ch": 1274,
+  "alt": "A research item's card: the Kind chips Research Brief, Research Report, Journal Article and ERC Explains, then Its words with the Description box's toolbar.",
+  "pins": [
+    {
+      "x": 24.5,
+      "y": 19.2,
+      "label": "Kind: Research Brief, Research Report, Journal Article or ERC Explains"
+    },
+    {
+      "x": 73.3,
+      "y": 60.4,
+      "label": "The Description box's toolbar: bold, italic and a link"
+    }
+  ]
+}

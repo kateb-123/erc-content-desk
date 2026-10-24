@@ -23,7 +23,7 @@
             },
             {
               "n": "4",
-              "html": "<b>Undo</b> is on the line at the top, and on the greyed row at the bottom of the list.",
+              "html": "<b>Undo</b> is on the line at the top, and on the grayed row at the bottom of the list.",
               "warn": false,
               "go": false
             }

@@ -1,0 +1,36 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 1392,
+  "cy": 526,
+  "cw": 1148,
+  "ch": 1274,
+  "alt": "An event's card in the builder: the How it is laid out tiles, Title and details, With description, Stamp beside the text, Headshot beside it all and Date card, then Its words.",
+  "pins": [
+    {
+      "x": 13.6,
+      "y": 21.5,
+      "label": "The Title and details tile"
+    },
+    {
+      "x": 33.4,
+      "y": 21.5,
+      "label": "The With description tile"
+    },
+    {
+      "x": 13.6,
+      "y": 37.5,
+      "label": "The Stamp beside the text tile"
+    },
+    {
+      "x": 33.4,
+      "y": 37.5,
+      "label": "The Headshot beside it all tile"
+    },
+    {
+      "x": 13.6,
+      "y": 53.5,
+      "label": "The Date card tile"
+    }
+  ]
+}

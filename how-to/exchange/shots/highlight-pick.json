@@ -1,30 +1,30 @@
 {
   "iw": 2560,
   "ih": 1800,
-  "cx": 48,
-  "cy": 936,
-  "cw": 2464,
-  "ch": 864,
+  "cx": 512,
+  "cy": 978,
+  "cw": 2000,
+  "ch": 822,
   "alt": "Pick from: a Search box, the section filters All, Research, Events, Opportunities and Headlines with counts, and the table of live items, each with Highlight, or In and its place once picked.",
   "pins": [
     {
-      "x": 53.9,
-      "y": 8.3,
+      "x": 82.4,
+      "y": 7.8,
       "label": "Search: by title or source, every live item"
     },
     {
-      "x": 19.6,
-      "y": 18.1,
+      "x": 23.3,
+      "y": 16.8,
       "label": "A section: show only its items"
     },
     {
-      "x": 94.1,
-      "y": 50,
+      "x": 92.9,
+      "y": 49.4,
       "label": "Highlight: adds it to Your picks"
     },
     {
-      "x": 95.8,
-      "y": 36.7,
+      "x": 94.8,
+      "y": 35.6,
       "label": "In, 2nd: already picked, and its place on the card"
     }
   ]

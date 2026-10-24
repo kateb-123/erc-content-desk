@@ -1,0 +1,31 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 904,
+  "cy": 36,
+  "cw": 1656,
+  "ch": 1764,
+  "alt": "An event clicked on the email, lit in blue, with its card open beside it: How it is laid out, Its words, and Done at the top.",
+  "pins": [
+    {
+      "x": 17.3,
+      "y": 30.5,
+      "label": "The item you clicked, lit on the email"
+    },
+    {
+      "x": 46.4,
+      "y": 43.2,
+      "label": "How it is laid out: pick a look. Styles shows each one"
+    },
+    {
+      "x": 80.3,
+      "y": 36.3,
+      "label": "Its words: title, link, description, date, time, place, media"
+    },
+    {
+      "x": 92.3,
+      "y": 31.2,
+      "label": "Done closes the card. Undo changes puts it all back"
+    }
+  ]
+}

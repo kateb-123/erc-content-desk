@@ -1,20 +1,20 @@
 {
   "iw": 2560,
   "ih": 1800,
-  "cx": 48,
-  "cy": 216,
-  "cw": 2464,
-  "ch": 1338,
+  "cx": 512,
+  "cy": 104,
+  "cw": 2000,
+  "ch": 1202,
   "alt": "Publish with a live headline's row open: Already live in its Fate column, and under it Edit with the line An edit here changes the desk, not the site.",
   "pins": [
     {
-      "x": 92.5,
-      "y": 74,
+      "x": 90.8,
+      "y": 71.2,
       "label": "Already live: the item is on the site. Click its row to open it"
     },
     {
-      "x": 6.7,
-      "y": 82.8,
+      "x": 8.2,
+      "y": 80.9,
       "label": "Edit: changes the desk's copy, never the site"
     }
   ]

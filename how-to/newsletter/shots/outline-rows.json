@@ -1,0 +1,31 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 518,
+  "cy": 831,
+  "cw": 1988,
+  "ch": 581,
+  "alt": "The Outline table: a grip at the left of the first section and of every item; the row under the pointer shows Move to… in blue and Remove in red.",
+  "pins": [
+    {
+      "x": 13.9,
+      "y": 25.5,
+      "label": "A section's grip: drag the whole section up or down the email"
+    },
+    {
+      "x": 14.7,
+      "y": 47.8,
+      "label": "An item's grip: drag it within its section"
+    },
+    {
+      "x": 74.4,
+      "y": 49.7,
+      "label": "Move to…: file it under another section or group"
+    },
+    {
+      "x": 82.7,
+      "y": 50.1,
+      "label": "Remove: takes it out. Undo on its row puts it back"
+    }
+  ]
+}

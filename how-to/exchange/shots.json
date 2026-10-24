@@ -2,7 +2,7 @@
   {
     "name": "hub",
     "url": "/?fresh=cap#exchange",
-    "alt": "The Policy Exchange page: the site's status with Waiting to publish, and on the right the Publish and Highlight doors and Edit live items.",
+    "alt": "The Policy Exchange page: the Publish and Highlight doors side by side, Publish with how many wait, then the site's Status box with Waiting to publish, then Edit live items with its note.",
     "before": [
       {
         "waitFor": "#screen-exchange a.qh-edit"
@@ -36,10 +36,21 @@
   {
     "name": "publish",
     "url": "/?fresh=cap#publish",
-    "alt": "Publish: Checked against the live Exchange, a note that a rewrite is not checked yet, the coloured bar with 2 adding, 1 held for newsletter and Already live, the table with each row's Fate, and Publish 2 to the Exchange at the top right.",
+    "alt": "Publish: Checked against the live Exchange, a note that a rewrite is not checked yet, the colored bar with 2 adding, 1 held for newsletter and Already live, the table with each row's Fate, and Publish 2 to the Exchange at the top right.",
     "before": [
       {
+        "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ rows: [{ id: 'sbx_019', rewrite_checked: '', blurb: 'Half-day workshop pairing ERC researchers with district data leads to scope shared research questions for the spring. Space is limited and registration closes September 22.' }, { id: 'sbx_020', rewrite_checked: '', blurb: '' }] }) }).then(r => r.ok)",
+        "note": "The note about an unchecked rewrite needs one: a Keep on an earlier capture stamps the sandbox's kept event and report as checked, and a Rewrite gives them its stand-in words; this puts both back as the sandbox starts."
+      },
+      {
+        "eval": "setTimeout(() => location.reload(), 0)",
+        "wait": 2500
+      },
+      {
         "waitFor": "#screen-publish .publish-table"
+      },
+      {
+        "waitFor": "#screen-publish .p-unchecked button"
       }
     ],
     "crop": "#screen-publish",
@@ -52,7 +63,7 @@
       },
       {
         "selector": "#screen-publish .p-legend-item",
-        "label": "A colour: click it to show only those rows",
+        "label": "A color: click it to show only those rows",
         "nth": 0
       },
       {

@@ -2,7 +2,7 @@
   {
     "name": "listserv",
     "url": "/?fresh=cap#listserv",
-    "alt": "The Listserv page: Status reads Live, taking sign-ups; under To be added the count is 3, with Rows on Sheet 1, counted as this page opened; then Adding people.",
+    "alt": "The Listserv page: under To be added the count is 3, with Rows on Sheet 1, counted as this page opened, Open the sign-up sheet and the three steps; then the Sign-up form box, its Status reading Live, taking sign-ups.",
     "before": [
       {
         "waitFor": ".hub-count .hub-count-note"

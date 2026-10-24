@@ -6,13 +6,16 @@
   <meta name="robots" content="noindex" />
   <title>How-tos · ERC Content Desk</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6bde'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" />
-  <link rel="stylesheet" href="/css/tokens.css?v=11" />
-  <link rel="stylesheet" href="/how-to/howto.css?v=1" />
+  <!-- The desk's own sheets, at index.html's versions: bump them together. -->
+  <link rel="stylesheet" href="/css/tokens.css?v=12" />
+  <link rel="stylesheet" href="/css/shell.css?v=8" />
+  <link rel="stylesheet" href="/how-to/howto.css?v=3" />
 </head>
-<body style="margin:0;background:var(--background)">
-  <main class="ht-page">
-    <p class="ht-crumb"><a href="/">ERC Content Desk</a> / <a href="/how-to/">How-tos</a></p>
+<body>
+  <a class="skip-to-main" href="#main">Skip to content</a>
+  <!-- The desk's sidebar, built by /js/shell-ui.js: a how-to lights All how-tos at its foot. -->
+  <nav class="sidebar" aria-label="Desk"></nav>
+  <main class="ht-page" id="main">
     <h1>How-tos</h1>
     <p class="ht-lede">Every guide for the desk.</p>
     <ul class="ht-list">
@@ -29,6 +32,10 @@
     </ul>
 
   </main>
+  <script type="module">
+    import { renderSidebar } from '/js/shell-ui.js';
+    renderSidebar(document.querySelector('.sidebar'), { screen: 'howto' });
+  </script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

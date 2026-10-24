@@ -1,0 +1,31 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 0,
+  "cy": 0,
+  "cw": 2560,
+  "ch": 1264,
+  "alt": "Preview & Tweak: Add an item, Add a callout and the Contents strip checkbox over the email; the email opens with its date line, masthead, contents strip and introduction.",
+  "pins": [
+    {
+      "x": 75.2,
+      "y": 47,
+      "label": "Add an item: something the desk did not have"
+    },
+    {
+      "x": 85,
+      "y": 47,
+      "label": "Add a callout: a box that asks readers for something"
+    },
+    {
+      "x": 91.2,
+      "y": 47,
+      "label": "Contents strip: show or hide the row of section names"
+    },
+    {
+      "x": 60.3,
+      "y": 77.8,
+      "label": "The contents strip on the email, one link per section"
+    }
+  ]
+}

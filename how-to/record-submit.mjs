@@ -14,11 +14,12 @@ const PLAYWRIGHT = process.env.PLAYWRIGHT_CORE || '/Users/KateBarnes/.npm-global
 const { chromium } = await import(PLAYWRIGHT);
 const only = process.argv[2] || '';
 const here = p => new URL(`./submit-content/${p}`, import.meta.url).pathname;
-// The form's own width with the page's 40px gutters, so the words stay big in
-// the slide, at the shape of the Sep 30 recordings (1280 by 1100). The page is
+// The sidebar (232px, since the look of Oct 23) beside the form's full 840px
+// width with the page's 56px gutters, at the shape of the Sep 30 recordings
+// (920 by 790, which held the form alone under the top bar). The page is
 // drawn at twice its size (Z): a recording keeps the window's own pixels, so
 // this is how it stays sharp on a fine screen.
-const W = 920, H = 790, Z = 2;
+const W = 1152, H = 990, Z = 2;
 const XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
 // The spreadsheet's rows as the desk's /api/bulk hands them back: a
@@ -56,10 +57,11 @@ async function open() {
   });
   await page.goto('http://localhost:4197/#team', { waitUntil: 'networkidle' });
   await page.waitForTimeout(1200);
-  // I need help!, in the top bar, is not part of any step. The page's
-  // full-window height is a window again under the zoom, and the form's box
-  // keeps a gap under it when it is scrolled to the foot of the window.
-  await page.addStyleTag({ content: `html { zoom: ${Z}; } body, .desk { min-height: calc(100vh / ${Z}) !important; } .problem-top, .problem-fab, .problem-panel { display: none !important; } .form-box { scroll-margin-bottom: 24px; }` });
+  // I need help! sits in the sidebar's foot and stays in the picture, as the
+  // how-tos' stills keep it (capture.mjs); only its panel is kept shut. The
+  // page's full-window height is a window again under the zoom, and the form's
+  // box keeps a gap under it when it is scrolled to the foot of the window.
+  await page.addStyleTag({ content: `html { zoom: ${Z}; } body, .desk { min-height: calc(100vh / ${Z}) !important; } .problem-panel { display: none !important; } .form-box { scroll-margin-bottom: 24px; }` });
   await rest(page);
   return page;
 }

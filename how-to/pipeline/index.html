@@ -6,38 +6,32 @@
   <meta name="robots" content="noindex" />
   <title>How it all connects · ERC Content Desk</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6bde'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap" />
-  <link rel="stylesheet" href="/css/tokens.css?v=11" />
-  <link rel="stylesheet" href="/how-to/howto.css?v=1" />
+  <!-- The desk's own sheets, at index.html's versions: bump them together. -->
+  <link rel="stylesheet" href="/css/tokens.css?v=12" />
+  <link rel="stylesheet" href="/css/shell.css?v=8" />
+  <link rel="stylesheet" href="/how-to/howto.css?v=3" />
 </head>
-<body style="margin:0;background:var(--background)">
-  <main class="ht-page">
-    <p class="ht-crumb"><a href="/">ERC Content Desk</a> / <a href="/how-to/">How-tos</a></p>
+<body>
+  <a class="skip-to-main" href="#main">Skip to content</a>
+  <!-- The desk's sidebar, built by /js/shell-ui.js: a how-to lights All how-tos at its foot. -->
+  <nav class="sidebar" aria-label="Desk"></nav>
+  <main class="ht-page" id="main">
     <h1>How it all connects</h1>
     <p class="ht-lede">Who sends an item, what the desk does with it, and where it ends up.</p>
 <style>
-.ht-page{max-width:1080px}
-.pl-row{display:grid;grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr) 32px minmax(0,1fr);align-items:start;margin:var(--spacing-06) 0}
-.pl-arrow{align-self:center;text-align:center;font:700 24px Mulish,sans-serif;color:var(--button-primary)}
-.pl-out{display:grid;gap:var(--spacing-04)}
-.pl-box{border:1px solid var(--border-subtle-01);border-radius:var(--radius);background:var(--layer-02);padding:var(--spacing-05)}
-.pl-n{display:inline-block;font:700 14px/18px Mulish,sans-serif;letter-spacing:1.25px;text-transform:uppercase;color:var(--button-primary);border-bottom:2px solid var(--border-interactive);margin-bottom:var(--spacing-03)}
-.pl-box h3{font:700 20px/28px Mulish,sans-serif;margin:0 0 var(--spacing-02)}
-.pl-box > p{margin:0;font:16px/24px Mulish,sans-serif}
-.pl-box details{margin-top:var(--spacing-04);border-top:1px solid var(--border-subtle-01);padding-top:var(--spacing-03)}
-.pl-box summary{cursor:pointer;font:600 14px/20px Mulish,sans-serif;color:var(--link-primary)}
-.pl-box summary:focus-visible{outline:none;box-shadow:var(--focus-ring)}
-.pl-box ol,.pl-box ul{margin:var(--spacing-03) 0 0;padding-left:var(--spacing-06);font:15px/22px Mulish,sans-serif}
-.pl-box li{margin:0 0 var(--spacing-02)}
-.pl-side{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--spacing-04)}
+/* The two weeks, in the desk's look (pick A, Oct 23): four white cards with soft corners and a hairline,
+   each day as a sentence-case label in the quiet gray; Any day as a dashed note under them. */
 .pl-cal{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--spacing-04)}
-.pl-any{margin-top:var(--spacing-04);border:1px dashed var(--border-strong-01);border-radius:var(--radius);padding:var(--spacing-04) var(--spacing-05);font:16px/24px Mulish,sans-serif}
-@media (max-width:860px){.pl-row{grid-template-columns:minmax(0,1fr)}.pl-arrow{transform:rotate(90deg);margin:var(--spacing-02) 0}.pl-side,.pl-cal{grid-template-columns:minmax(0,1fr)}}
+.pl-box{border:1px solid var(--border-subtle-01);border-radius:var(--radius-card);background:var(--layer-02);box-shadow:var(--shadow-card);padding:var(--spacing-05)}
+.pl-n{display:block;font:var(--meta-type);font-weight:600;color:var(--text-secondary);margin-bottom:var(--spacing-02)}
+.pl-box > p{margin:0;font:var(--body-type)}
+.pl-any{margin-top:var(--spacing-04);border:1px dashed var(--border-strong-01);border-radius:var(--radius-card);padding:var(--spacing-04) var(--spacing-05);font:var(--body-type)}
+@media (max-width:1100px){.pl-cal{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 
 <!-- How it all connects, drawn (Kate's pick B of three, Oct 23, 2026): who sends and who reads on top, the desk in the
      middle, the parts that run it underneath; every orange pill is a filter. It replaces the three boxes (.pl-row) and
-     "Beside the pipeline"; "The two weeks" stays. Its colours are pick A's tokens (feat/native-look's css/tokens.css). -->
+     "Beside the pipeline"; "The two weeks" stays. Its colors are pick A's tokens (feat/native-look's css/tokens.css). -->
 <style>
 .ht-page{max-width:1200px}
 .pl-diagram{margin:var(--spacing-06) 0 var(--spacing-07);padding:var(--spacing-06);background:var(--layer-02);border:1px solid var(--border-subtle-01);border-radius:var(--radius-card);box-shadow:var(--shadow-card)}
@@ -58,7 +52,12 @@
 </div>
 <p class="pl-any">Any day: publish to the Exchange.</p>
 
+
   </main>
+  <script type="module">
+    import { renderSidebar } from '/js/shell-ui.js';
+    renderSidebar(document.querySelector('.sidebar'), { screen: 'howto' });
+  </script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

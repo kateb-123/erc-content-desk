@@ -1,19 +1,19 @@
 {
   "iw": 2560,
   "ih": 1800,
-  "cx": 32,
-  "cy": 1354,
-  "cw": 2496,
+  "cx": 1424,
+  "cy": 1080,
+  "cw": 1070,
   "ch": 176,
   "alt": "Under Your picks once a pick changed: Update the highlight and Cancel changes.",
   "pins": [
     {
-      "x": 9.6,
+      "x": 21.6,
       "y": 50,
       "label": "Update the highlight: asks for the password, then Confirm"
     },
     {
-      "x": 23.3,
+      "x": 52.6,
       "y": 50,
       "label": "Cancel changes: back to what the site shows now"
     }

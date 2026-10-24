@@ -43,6 +43,8 @@ const SCREENS = {
   briefs: { hub: 'briefs', hash: '#briefs' },
   // One brief's page: /#briefs/<id>, the id read from the address (openedId); the page carries its title.
   brief: { hub: 'briefs', hash: null, page: 'Brief' },
+  // The how-to pages (Oct 23): under no hub; they light All how-tos at the sidebar's foot.
+  howto: { hub: null, hash: null, page: 'How-tos' },
 };
 
 const BRIEF_PREFIX = '#briefs/';
@@ -103,10 +105,12 @@ export const NAV = [
 ];
 
 /** The sidebar item a screen marks: its own, or its hub's for a page under a
- *  hub; Finalize, Sort's tab, marks Content Sort. */
+ *  hub; Finalize, Sort's tab, marks Content Sort; a how-to marks All how-tos
+ *  at the foot. */
 export function navCurrent(screen) {
   if (screen === 'home') return 'home';
   if (screen === 'sort' || screen === 'finalize') return 'sort';
+  if (screen === 'howto') return 'howto';
   return SCREENS[screen]?.hub ?? null;
 }
 

@@ -36,7 +36,7 @@
   {
     "name": "new-brief",
     "url": "/?fresh=newbrief#briefs",
-    "alt": "New brief open above the table: a file field for the paper as a PDF and one for your notes, Paste instead under the notes, and Create the brief greyed with Choose the paper and your notes first under it.",
+    "alt": "New brief open above the table: a file field for the paper as a PDF and one for your notes, Paste instead under the notes, and Create the brief grayed with Choose the paper and your notes first under it.",
     "before": [
       {
         "waitFor": ".briefs-table"

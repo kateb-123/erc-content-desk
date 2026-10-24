@@ -1,24 +1,24 @@
 {
   "iw": 2560,
   "ih": 1800,
-  "cx": 48,
-  "cy": 184,
-  "cw": 2464,
-  "ch": 608,
+  "cx": 512,
+  "cy": 72,
+  "cw": 2000,
+  "ch": 606,
   "alt": "Newsletter's Schedule tab: a warning that send dates end Oct 27, the Oct 27 date marked Next with 4 in the issue, and Edit dates on the Sheet's schedule tab.",
   "pins": [
     {
       "x": 50,
-      "y": 51.6,
+      "y": 51.8,
       "label": "Shows a week before the last send date: time to add the next ones"
     },
     {
       "x": 50,
-      "y": 75.3,
+      "y": 75.2,
       "label": "A send date: press it to open that issue on Next issue"
     },
     {
-      "x": 12.9,
+      "x": 16.4,
       "y": 91.9,
       "label": "The Sheet's schedule tab: opens it in a new tab"
     }

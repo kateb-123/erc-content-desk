@@ -1,0 +1,26 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 1392,
+  "cy": 526,
+  "cw": 1148,
+  "ch": 1274,
+  "alt": "The Date card tile picked, Zoom available ticked and a Flyer link filled in.",
+  "pins": [
+    {
+      "x": 13.6,
+      "y": 53.5,
+      "label": "Date card: the tile picked"
+    },
+    {
+      "x": 24.5,
+      "y": 62,
+      "label": "Zoom available: a line on the date block"
+    },
+    {
+      "x": 24.5,
+      "y": 71.6,
+      "label": "Flyer link: View flyer on the card"
+    }
+  ]
+}

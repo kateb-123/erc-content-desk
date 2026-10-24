@@ -1,0 +1,556 @@
+[
+  {
+    "name": "outline",
+    "url": "/builder/?fresh=cap",
+    "alt": "The Outline step: the Issue list set to October 27, 2026, and the top of the item table.",
+    "before": [
+      {
+        "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: ['sbx_032', 'sbx_014', 'sbx_016', 'sbx_017'].map(id => ({ id, newsletter_issue: '2026-10-27' })) }) }).then(r => r.json())"
+      },
+      {
+        "eval": "localStorage.clear(); sessionStorage.clear(); location.reload()",
+        "wait": 3000
+      },
+      {
+        "eval": "(async () => { const sel = () => document.querySelector('[data-step=\"triage\"] select'); for (let i = 0; i < 40 && !sel()?.querySelector('option[value=\"2026-10-27\"]'); i++) await new Promise(r => setTimeout(r, 250)); const s = sel(); s.value = '2026-10-27'; s.dispatchEvent(new Event('change', { bubbles: true })); })()"
+      },
+      {
+        "waitFor": ".outline-table",
+        "wait": 800
+      }
+    ],
+    "crop": "[data-step=\"triage\"] .triage-meta",
+    "pad": 200,
+    "pins": [
+      {
+        "selector": "[data-step=\"triage\"] select.triage-field-input",
+        "label": "Issue: the date; picking it brings in what the desk holds for it. To practice, pick a sample under Samples",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "outline-rows",
+    "url": "/builder/?fresh=cap",
+    "alt": "The Outline table: a grip at the left of the first section and of every item; the row under the pointer shows Move to… in blue and Remove in red.",
+    "before": [
+      {
+        "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: ['sbx_032', 'sbx_014', 'sbx_016', 'sbx_017'].map(id => ({ id, newsletter_issue: '2026-10-27' })) }) }).then(r => r.json())"
+      },
+      {
+        "eval": "localStorage.clear(); sessionStorage.clear(); location.reload()",
+        "wait": 3000
+      },
+      {
+        "eval": "(async () => { const sel = () => document.querySelector('[data-step=\"triage\"] select'); for (let i = 0; i < 40 && !sel()?.querySelector('option[value=\"2026-10-27\"]'); i++) await new Promise(r => setTimeout(r, 250)); const s = sel(); s.value = '2026-10-27'; s.dispatchEvent(new Event('change', { bubbles: true })); })()"
+      },
+      {
+        "waitFor": ".outline-table",
+        "wait": 800
+      },
+      {
+        "eval": "(() => { document.querySelector('.outline-table tr.outline-item').classList.add('cap-hover'); document.head.append(Object.assign(document.createElement('style'), { textContent: 'tr.outline-item.cap-hover { background: var(--row-hover); } tr.outline-item.cap-hover .outline-move, tr.outline-item.cap-hover .triage-drag-handle { color: var(--link-primary); }' })); })()",
+        "wait": 300
+      }
+    ],
+    "crop": ".outline-table tr.outline-item",
+    "pad": 120,
+    "pins": [
+      {
+        "selector": ".outline-table tr.outline-section .triage-drag-handle",
+        "label": "A section's grip: drag the whole section up or down the email",
+        "nth": 0
+      },
+      {
+        "selector": ".outline-table tr.outline-item .triage-drag-handle",
+        "label": "An item's grip: drag it within its section",
+        "nth": 0
+      },
+      {
+        "selector": ".outline-table tr.outline-item .outline-move",
+        "label": "Move to…: file it under another section or group",
+        "nth": 0
+      },
+      {
+        "selector": ".outline-table tr.outline-item .outline-remove",
+        "label": "Remove: takes it out. Undo on its row puts it back",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "tweak",
+    "url": "/builder/?fresh=cap",
+    "alt": "Preview & Tweak: Add an item, Add a callout and the Contents strip checkbox over the email; the email opens with its date line, masthead, contents strip and introduction.",
+    "before": [
+      {
+        "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: ['sbx_032', 'sbx_014', 'sbx_016', 'sbx_017'].map(id => ({ id, newsletter_issue: '2026-10-27' })) }) }).then(r => r.json())"
+      },
+      {
+        "eval": "localStorage.clear(); sessionStorage.clear(); location.reload()",
+        "wait": 3000
+      },
+      {
+        "eval": "(async () => { const sel = () => document.querySelector('[data-step=\"triage\"] select'); for (let i = 0; i < 40 && !sel()?.querySelector('option[value=\"2026-10-27\"]'); i++) await new Promise(r => setTimeout(r, 250)); const s = sel(); s.value = '2026-10-27'; s.dispatchEvent(new Event('change', { bubbles: true })); })()"
+      },
+      {
+        "waitFor": ".outline-table",
+        "wait": 800
+      },
+      {
+        "click": "[data-wizard-next]"
+      },
+      {
+        "waitFor": ".edit-toolbar",
+        "wait": 2500
+      },
+      {
+        "eval": "(() => { const f = document.querySelector('.edit-preview-iframe'); const d = f.contentDocument; const z = parseFloat(f.style.zoom) || 1; const fr = f.getBoundingClientRect(); const put = (id, r) => { const m = document.createElement('div'); m.id = id; m.style.cssText = 'position:absolute;opacity:0;pointer-events:none;left:' + (fr.left + scrollX + r.left * z) + 'px;top:' + (fr.top + scrollY + r.top * z) + 'px;width:' + (r.width * z) + 'px;height:' + (r.height * z) + 'px'; document.body.append(m); }; put('cap-strip', d.querySelector('td[style*=\"padding:10px 16px 11px 16px\"]').getBoundingClientRect()); })()"
+      }
+    ],
+    "crop": ".edit-toolbar",
+    "pad": 300,
+    "pins": [
+      {
+        "selector": ".edit-doors button:has-text(\"Add an item\")",
+        "label": "Add an item: something the desk did not have",
+        "nth": 0
+      },
+      {
+        "selector": ".edit-doors button:has-text(\"Add a callout\")",
+        "label": "Add a callout: a box that asks readers for something",
+        "nth": 0
+      },
+      {
+        "selector": ".edit-doors .layout-check input",
+        "label": "Contents strip: show or hide the row of section names",
+        "nth": 0
+      },
+      {
+        "selector": "#cap-strip",
+        "label": "The contents strip on the email, one link per section",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "tweak-card",
+    "url": "/builder/?fresh=cap",
+    "alt": "An event clicked on the email, lit in blue, with its card open beside it: How it is laid out, Its words, and Done at the top.",
+    "before": [
+      {
+        "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: ['sbx_032', 'sbx_014', 'sbx_016', 'sbx_017'].map(id => ({ id, newsletter_issue: '2026-10-27' })) }) }).then(r => r.json())"
+      },
+      {
+        "eval": "localStorage.clear(); sessionStorage.clear(); location.reload()",
+        "wait": 3000
+      },
+      {
+        "eval": "(async () => { const sel = () => document.querySelector('[data-step=\"triage\"] select'); for (let i = 0; i < 40 && !sel()?.querySelector('option[value=\"2026-10-27\"]'); i++) await new Promise(r => setTimeout(r, 250)); const s = sel(); s.value = '2026-10-27'; s.dispatchEvent(new Event('change', { bubbles: true })); })()"
+      },
+      {
+        "waitFor": ".outline-table",
+        "wait": 800
+      },
+      {
+        "click": "[data-wizard-next]"
+      },
+      {
+        "waitFor": ".edit-toolbar",
+        "wait": 2500
+      },
+      {
+        "eval": "(() => { const d = document.querySelector('.edit-preview-iframe').contentDocument; d.querySelector('[data-edit-section=\"events\"][data-edit-field=\"title\"]').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })); })()"
+      },
+      {
+        "waitFor": ".drawer-card",
+        "wait": 1200
+      },
+      {
+        "eval": "(() => { const f = document.querySelector('.edit-preview-iframe'); const d = f.contentDocument; const z = parseFloat(f.style.zoom) || 1; const fr = f.getBoundingClientRect(); const put = (id, r) => { const m = document.createElement('div'); m.id = id; m.style.cssText = 'position:absolute;opacity:0;pointer-events:none;left:' + (fr.left + scrollX + r.left * z) + 'px;top:' + (fr.top + scrollY + r.top * z) + 'px;width:' + (r.width * z) + 'px;height:' + (r.height * z) + 'px'; document.body.append(m); }; put('cap-item', d.querySelector('[data-edit-section=\"events\"][data-edit-field=\"title\"]').getBoundingClientRect()); })()"
+      }
+    ],
+    "crop": ".edit-drawer",
+    "pad": 250,
+    "pins": [
+      {
+        "selector": "#cap-item",
+        "label": "The item you clicked, lit on the email",
+        "nth": 0
+      },
+      {
+        "selector": ".drawer-card .wires[aria-label=\"How it is laid out\"]",
+        "label": "How it is laid out: pick a look. Styles shows each one",
+        "nth": 0
+      },
+      {
+        "selector": ".drawer-card .drawer-fields > .drawer-h4",
+        "label": "Its words: title, link, description, date, time, place, media",
+        "nth": 0
+      },
+      {
+        "selector": ".drawer-card .drawer-card-done",
+        "label": "Done closes the card. Undo changes puts it all back",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "sheet-grip",
+    "url": "/builder/?fresh=cap",
+    "alt": "An item on the email under the pointer, with a small grip at its left edge.",
+    "before": [
+      {
+        "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: ['sbx_032', 'sbx_014', 'sbx_016', 'sbx_017'].map(id => ({ id, newsletter_issue: '2026-10-27' })) }) }).then(r => r.json())"
+      },
+      {
+        "eval": "localStorage.clear(); sessionStorage.clear(); location.reload()",
+        "wait": 3000
+      },
+      {
+        "eval": "(async () => { const sel = () => document.querySelector('[data-step=\"triage\"] select'); for (let i = 0; i < 40 && !sel()?.querySelector('option[value=\"2026-10-27\"]'); i++) await new Promise(r => setTimeout(r, 250)); const s = sel(); s.value = '2026-10-27'; s.dispatchEvent(new Event('change', { bubbles: true })); })()"
+      },
+      {
+        "waitFor": ".outline-table",
+        "wait": 800
+      },
+      {
+        "click": "[data-wizard-next]"
+      },
+      {
+        "waitFor": ".edit-toolbar",
+        "wait": 2500
+      },
+      {
+        "eval": "(() => { const f = document.querySelector('.edit-preview-iframe'); const d = f.contentDocument; const z = parseFloat(f.style.zoom) || 1; const fr = f.getBoundingClientRect(); const put = (id, r) => { const m = document.createElement('div'); m.id = id; m.style.cssText = 'position:absolute;opacity:0;pointer-events:none;left:' + (fr.left + scrollX + r.left * z) + 'px;top:' + (fr.top + scrollY + r.top * z) + 'px;width:' + (r.width * z) + 'px;height:' + (r.height * z) + 'px'; document.body.append(m); }; const t = d.querySelector('[data-edit-section=\"events\"][data-edit-field=\"title\"]'); t.scrollIntoView({ block: 'center' }); t.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); const es = [...d.querySelectorAll('.ec-item-hover')]; let l = 1e9, tp = 1e9, r = 0, b = 0; for (const e of es) { const q = e.getBoundingClientRect(); l = Math.min(l, q.left); tp = Math.min(tp, q.top); r = Math.max(r, q.right); b = Math.max(b, q.bottom); } put('cap-block', { left: l - 30, top: tp - 8, width: r - l + 30, height: b - tp + 16 }); put('cap-grip', d.querySelector('.ec-grip').getBoundingClientRect()); })()",
+        "wait": 400
+      }
+    ],
+    "crop": "#cap-block",
+    "pad": 24,
+    "pins": [
+      {
+        "selector": "#cap-grip",
+        "label": "The grip: it shows when you point at an item",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "export",
+    "url": "/builder/?fresh=cap",
+    "alt": "Save & Export: the step row with Save & Export current, Back and Next, then Copy HTML, Save to the archive and Download .html.",
+    "before": [
+      {
+        "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: ['sbx_032', 'sbx_014', 'sbx_016', 'sbx_017'].map(id => ({ id, newsletter_issue: '2026-10-27' })) }) }).then(r => r.json())"
+      },
+      {
+        "eval": "localStorage.clear(); sessionStorage.clear(); location.reload()",
+        "wait": 3000
+      },
+      {
+        "eval": "(async () => { const sel = () => document.querySelector('[data-step=\"triage\"] select'); for (let i = 0; i < 40 && !sel()?.querySelector('option[value=\"2026-10-27\"]'); i++) await new Promise(r => setTimeout(r, 250)); const s = sel(); s.value = '2026-10-27'; s.dispatchEvent(new Event('change', { bubbles: true })); })()"
+      },
+      {
+        "waitFor": ".outline-table",
+        "wait": 800
+      },
+      {
+        "click": "[data-nav-step=\"export\"] .step-btn"
+      },
+      {
+        "waitFor": ".export-btn-row",
+        "wait": 800
+      }
+    ],
+    "crop": "[data-step=\"export\"]",
+    "pad": 140,
+    "pins": [
+      {
+        "selector": ".export-btn-row button:has-text(\"Copy HTML\")",
+        "label": "Copy HTML: the whole email, ready for Outlook",
+        "nth": 0
+      },
+      {
+        "selector": ".export-btn-row button:has-text(\"Save to the archive\")",
+        "label": "Save to the archive: keeps it under Past issues. Off on a sample",
+        "nth": 0
+      },
+      {
+        "selector": ".export-btn-row button:has-text(\"Download .html\")",
+        "label": "Download .html: the same file, saved to your computer",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "card-item",
+    "url": "/builder/?fresh=cap",
+    "alt": "An event's card in the builder: the How it is laid out tiles, Title and details, With description, Stamp beside the text, Headshot beside it all and Date card, then Its words.",
+    "before": [
+      {
+        "eval": "localStorage.clear(); sessionStorage.clear(); location.reload()",
+        "wait": 3000
+      },
+      {
+        "eval": "(async () => { const sel = () => document.querySelector('[data-step=\"triage\"] select'); for (let i = 0; i < 40 && !sel()?.querySelector('option[value=\"sample:practice\"]'); i++) await new Promise(r => setTimeout(r, 250)); const s = sel(); s.value = 'sample:practice'; s.dispatchEvent(new Event('change', { bubbles: true })); })()"
+      },
+      {
+        "waitFor": ".outline-table",
+        "wait": 800
+      },
+      {
+        "click": "[data-wizard-next]"
+      },
+      {
+        "waitFor": ".edit-toolbar",
+        "wait": 2500
+      },
+      {
+        "eval": "(() => { const d = document.querySelector('.edit-preview-iframe').contentDocument; d.querySelector('[data-edit-item=\"ps3\"][data-edit-field=\"title\"]').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })); })()",
+        "note": "The EdTalk event, which has a headshot, so Stamp beside the text and Headshot beside it all show as they work, not dimmed."
+      },
+      {
+        "waitFor": ".drawer-card",
+        "wait": 1200
+      }
+    ],
+    "crop": ".drawer-card",
+    "pad": 7,
+    "pins": [
+      {
+        "selector": ".drawer-card .wires .wire",
+        "label": "The Title and details tile",
+        "nth": 0
+      },
+      {
+        "selector": ".drawer-card .wires .wire",
+        "label": "The With description tile",
+        "nth": 1
+      },
+      {
+        "selector": ".drawer-card .wires .wire",
+        "label": "The Stamp beside the text tile",
+        "nth": 2
+      },
+      {
+        "selector": ".drawer-card .wires .wire",
+        "label": "The Headshot beside it all tile",
+        "nth": 3
+      },
+      {
+        "selector": ".drawer-card .wires .wire",
+        "label": "The Date card tile",
+        "nth": 4
+      }
+    ]
+  },
+  {
+    "name": "card-datecard",
+    "url": "/builder/?fresh=cap",
+    "alt": "The Date card tile picked, Zoom available ticked and a Flyer link filled in.",
+    "before": [
+      {
+        "eval": "localStorage.clear(); sessionStorage.clear(); location.reload()",
+        "wait": 3000
+      },
+      {
+        "eval": "(async () => { const sel = () => document.querySelector('[data-step=\"triage\"] select'); for (let i = 0; i < 40 && !sel()?.querySelector('option[value=\"sample:practice\"]'); i++) await new Promise(r => setTimeout(r, 250)); const s = sel(); s.value = 'sample:practice'; s.dispatchEvent(new Event('change', { bubbles: true })); })()"
+      },
+      {
+        "waitFor": ".outline-table",
+        "wait": 800
+      },
+      {
+        "click": "[data-wizard-next]"
+      },
+      {
+        "waitFor": ".edit-toolbar",
+        "wait": 2500
+      },
+      {
+        "eval": "(() => { const d = document.querySelector('.edit-preview-iframe').contentDocument; d.querySelector('[data-edit-section=\"events\"][data-edit-field=\"title\"]').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })); })()"
+      },
+      {
+        "waitFor": ".drawer-card",
+        "wait": 1200
+      },
+      {
+        "click": ".drawer-card .wire:has-text(\"Date card\")",
+        "wait": 1200
+      },
+      {
+        "click": ".drawer-card .look-check input",
+        "wait": 600
+      },
+      {
+        "fill": [
+          ".drawer-card input[type=\"url\"]",
+          "https://example.org/aggie/howdy-trivia-flyer.pdf"
+        ],
+        "wait": 1000
+      }
+    ],
+    "crop": ".drawer-card",
+    "pad": 7,
+    "pins": [
+      {
+        "selector": ".drawer-card .wires .wire.is-on",
+        "label": "Date card: the tile picked",
+        "nth": 0
+      },
+      {
+        "selector": ".drawer-card .look-check",
+        "label": "Zoom available: a line on the date block",
+        "nth": 0
+      },
+      {
+        "selector": ".drawer-card input[type=\"url\"]",
+        "label": "Flyer link: View flyer on the card",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "card-research",
+    "url": "/builder/?fresh=cap",
+    "alt": "A research item's card: the Kind chips Research Brief, Research Report, Journal Article and ERC Explains, then Its words with the Description box's toolbar.",
+    "before": [
+      {
+        "eval": "localStorage.clear(); sessionStorage.clear(); location.reload()",
+        "wait": 3000
+      },
+      {
+        "eval": "(async () => { const sel = () => document.querySelector('[data-step=\"triage\"] select'); for (let i = 0; i < 40 && !sel()?.querySelector('option[value=\"sample:practice\"]'); i++) await new Promise(r => setTimeout(r, 250)); const s = sel(); s.value = 'sample:practice'; s.dispatchEvent(new Event('change', { bubbles: true })); })()"
+      },
+      {
+        "waitFor": ".outline-table",
+        "wait": 800
+      },
+      {
+        "click": "[data-wizard-next]"
+      },
+      {
+        "waitFor": ".edit-toolbar",
+        "wait": 2500
+      },
+      {
+        "eval": "(() => { const d = document.querySelector('.edit-preview-iframe').contentDocument; d.querySelector('[data-edit-section=\"research\"][data-edit-field=\"title\"]').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })); })()"
+      },
+      {
+        "waitFor": ".drawer-card",
+        "wait": 1200
+      }
+    ],
+    "crop": ".drawer-card",
+    "pad": 7,
+    "pins": [
+      {
+        "selector": ".drawer-card .size-chips[aria-label=\"Kind\"]",
+        "label": "Kind: Research Brief, Research Report, Journal Article or ERC Explains",
+        "nth": 0
+      },
+      {
+        "selector": ".drawer-card .rich-toolbar",
+        "label": "The Description box's toolbar: bold, italic and a link",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "card-callout",
+    "url": "/builder/?fresh=cap",
+    "alt": "A callout's card: the Its style tiles, Maroon block, Light gray box and Dotted rule, then Its words.",
+    "before": [
+      {
+        "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: ['sbx_032', 'sbx_014', 'sbx_016', 'sbx_017'].map(id => ({ id, newsletter_issue: '2026-10-27' })) }) }).then(r => r.json())"
+      },
+      {
+        "eval": "localStorage.clear(); sessionStorage.clear(); location.reload()",
+        "wait": 3000
+      },
+      {
+        "eval": "(async () => { const sel = () => document.querySelector('[data-step=\"triage\"] select'); for (let i = 0; i < 40 && !sel()?.querySelector('option[value=\"2026-10-27\"]'); i++) await new Promise(r => setTimeout(r, 250)); const s = sel(); s.value = '2026-10-27'; s.dispatchEvent(new Event('change', { bubbles: true })); })()"
+      },
+      {
+        "waitFor": ".outline-table",
+        "wait": 800
+      },
+      {
+        "click": "[data-wizard-next]"
+      },
+      {
+        "waitFor": ".edit-toolbar",
+        "wait": 2500
+      },
+      {
+        "eval": "(() => { const d = document.querySelector('.edit-preview-iframe').contentDocument; d.querySelector('[data-edit-section=\"callout\"][data-edit-field=\"title\"]').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })); })()"
+      },
+      {
+        "waitFor": ".drawer-card",
+        "wait": 1200
+      }
+    ],
+    "crop": ".drawer-card",
+    "pad": 7,
+    "pins": [
+      {
+        "selector": ".drawer-card .wires[aria-label=\"Its style\"] .wire",
+        "label": "The Maroon block tile",
+        "nth": 0
+      },
+      {
+        "selector": ".drawer-card .wires[aria-label=\"Its style\"] .wire",
+        "label": "The Light gray box tile",
+        "nth": 1
+      },
+      {
+        "selector": ".drawer-card .wires[aria-label=\"Its style\"] .wire",
+        "label": "The Dotted rule tile",
+        "nth": 2
+      }
+    ]
+  },
+  {
+    "name": "tweak-doors",
+    "url": "/builder/?fresh=cap",
+    "alt": "The buttons over the email: Add an item, Add a callout and the Contents strip checkbox.",
+    "before": [
+      {
+        "eval": "fetch('/api/sheet', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: ['sbx_032', 'sbx_014', 'sbx_016', 'sbx_017'].map(id => ({ id, newsletter_issue: '2026-10-27' })) }) }).then(r => r.json())"
+      },
+      {
+        "eval": "localStorage.clear(); sessionStorage.clear(); location.reload()",
+        "wait": 3000
+      },
+      {
+        "eval": "(async () => { const sel = () => document.querySelector('[data-step=\"triage\"] select'); for (let i = 0; i < 40 && !sel()?.querySelector('option[value=\"2026-10-27\"]'); i++) await new Promise(r => setTimeout(r, 250)); const s = sel(); s.value = '2026-10-27'; s.dispatchEvent(new Event('change', { bubbles: true })); })()"
+      },
+      {
+        "waitFor": ".outline-table",
+        "wait": 800
+      },
+      {
+        "click": "[data-wizard-next]"
+      },
+      {
+        "waitFor": ".edit-toolbar",
+        "wait": 2500
+      }
+    ],
+    "crop": ".edit-doors",
+    "pad": 8,
+    "pins": [
+      {
+        "selector": ".edit-doors button:has-text(\"Add a callout\")",
+        "label": "Add a callout",
+        "nth": 0
+      },
+      {
+        "selector": ".edit-doors .layout-check",
+        "label": "Contents strip",
+        "nth": 0
+      }
+    ]
+  }
+]

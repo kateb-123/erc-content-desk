@@ -1,25 +1,25 @@
 {
   "iw": 2560,
   "ih": 1800,
-  "cx": 936,
+  "cx": 1032,
   "cy": 0,
-  "cw": 1576,
-  "ch": 1342,
-  "alt": "A card with questions: the Check the link note with Verify link, the Type label in orange with no type picked, and Keep and next greyed with Set a type first under it.",
+  "cw": 1528,
+  "ch": 1800,
+  "alt": "A card with questions: the Check the link note with Verify link, the Type label in orange with no type picked, and Keep and next grayed with Set a type first under it.",
   "pins": [
     {
-      "x": 32.7,
-      "y": 38.5,
+      "x": 35.2,
+      "y": 23.7,
       "label": "Verify link: opens the page in a new tab"
     },
     {
-      "x": 65.5,
-      "y": 7.5,
+      "x": 66.9,
+      "y": 4.1,
       "label": "Type: its label stays orange until one is picked"
     },
     {
-      "x": 78.9,
-      "y": 74.4,
+      "x": 80.4,
+      "y": 46.1,
       "label": "Keep and next waits, and says what it needs"
     }
   ]

@@ -1,0 +1,21 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 1790,
+  "cy": 546,
+  "cw": 770,
+  "ch": 96,
+  "alt": "The buttons over the email: Add an item, Add a callout and the Contents strip checkbox.",
+  "pins": [
+    {
+      "x": 50.3,
+      "y": 50,
+      "label": "Add a callout"
+    },
+    {
+      "x": 83.7,
+      "y": 50,
+      "label": "Contents strip"
+    }
+  ]
+}
