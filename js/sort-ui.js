@@ -8,7 +8,7 @@
  * switch, then Keep and next, Skip for now and Delete, each showing its key.
  * Keep and next stays locked, saying why under it, until the type and the
  * link are settled. The source shows unless it is the ERC. Rows kept or
- * deleted this visit grey at the bottom of the list with Undo.
+ * deleted this visit gray at the bottom of the list with Undo.
  */
 import { linkNeedsCheck, missingFields, reshareFlags, sendTo, sendToValue, sendToNote } from './workflow.js';
 import { TYPE_ORDER, typeDisplay, subtypesFor, typeIsFlat } from './schema.js';
@@ -446,7 +446,7 @@ function listRow(row, { props, rerender, ctx, index }) {
 
 const DONE_WORDS = { trashed: 'Deleted', kept: 'Kept' };
 
-/** A row kept or deleted this visit, greyed at the bottom with its word and Undo. */
+/** A row kept or deleted this visit, grayed at the bottom with its word and Undo. */
 function doneRow(row, { props, ctx }) {
   const item = el('div', `sort-done is-${row.status}`);
   const text = el('span', 'sort-row-text');

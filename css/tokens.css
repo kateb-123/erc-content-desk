@@ -1,9 +1,9 @@
-/* The one place a colour, a size or a face is written down. Every page loads
+/* The one place a color, a size or a face is written down. Every page loads
    this first.
 
    Since Oct 23, 2026 the desk wears Kate's pick A of four looks: a Mac app,
-   for the web. The computer's own face; a light grey page with white grouped
-   lists on it, 12px corners and a whisper of shadow; a grey sidebar; one blue
+   for the web. The computer's own face; a light gray page with white grouped
+   lists on it, 12px corners and a whisper of shadow; a gray sidebar; one blue
    for everything interactive, dark enough to read at 5:1 on white; orange for
    what needs doing, green for done, red for an error. Not TAMU's look: the
    Aggie template is for what the desk sends out, and the desk is where things
@@ -25,7 +25,7 @@
   --gray-400: #c7c7cc;   /* a row's chevron */
   --gray-500: #8e8e93;   /* placeholders; a field's rule, 3.3:1 on white */
   --gray-600: #6e6e73;   /* secondary words, 5.1:1 on white */
-  --gray-650: #636366;   /* the sidebar's quiet words, 5.1:1 on its grey */
+  --gray-650: #636366;   /* the sidebar's quiet words, 5.1:1 on its gray */
   --gray-700: #48484a;
   --gray-800: #3a3a3c;
   --gray-850: #2c2c2e;
@@ -34,7 +34,7 @@
   --blue-50: #e7f0fc;
   --blue-100: #cfe1f9;
   --blue-300: #6ea6ec;   /* a link on the dark ground, 6.7:1 */
-  --blue-500: #0b6bde;   /* the one interactive colour, 5.0:1 on white */
+  --blue-500: #0b6bde;   /* the one interactive color, 5.0:1 on white */
   --blue-600: #0a5fc6;
   --blue-700: #0853ae;
 
@@ -52,7 +52,7 @@
   --red-600: #d70015;    /* an error, 5.4:1 on white */
   --red-700: #b30012;
 
-  /* Surfaces: the grey page, white layers on it. */
+  /* Surfaces: the gray page, white layers on it. */
   --background: var(--gray-100);
   --background-hover: var(--gray-75);
   --background-inverse: var(--gray-900);
@@ -79,7 +79,7 @@
   --text-disabled: var(--gray-500);
   --text-on-color: #ffffff;
   --text-on-color-disabled: var(--gray-500);
-  --text-locked: #48484a;                     /* the word on a locked Keep and next: 7.3:1 on the disabled grey */
+  --text-locked: #48484a;                     /* the word on a locked Keep and next: 7.3:1 on the disabled gray */
   --text-inverse: #ffffff;
   --link-primary: var(--blue-500);
   --link-primary-hover: var(--blue-700);
@@ -109,7 +109,7 @@
   --interactive: var(--blue-500);             /* the progress bars */
   --toggle-off: var(--gray-500);
 
-  /* Status. Each role is an icon colour, a note tint and a 30% border; the
+  /* Status. Each role is an icon color, a note tint and a 30% border; the
      word beside the icon is text-primary. Published green, needs doing
      orange, an error red, information blue. */
   --support-error: var(--red-600);
@@ -125,7 +125,7 @@
   --notification-info-background: var(--blue-50);
   --notification-info-border: #0b6bde4d;
 
-  /* Status as words: an icon's colour is too light for text. */
+  /* Status as words: an icon's color is too light for text. */
   --text-success: var(--green-700);
   --text-success-on-tint: var(--green-800);
   --text-warning: var(--orange-600);
@@ -225,7 +225,7 @@
   --duration-moderate-02: 240ms;
 }
 
-/* The newsletter email's own colours, for the builder's swatches: small drawings of the
+/* The newsletter email's own colors, for the builder's swatches: small drawings of the
    email, the one place in-app that wears them (Oct 5, 2026). */
 :root {
   --mail-maroon: #500000;

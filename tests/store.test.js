@@ -99,7 +99,7 @@ test('db mode: when the sheet is down the stale copy is served and the stamp is 
   assert.deepEqual(db.calls.map(c => c[0]), ['readScheduleRows', 'getMeta']);
 });
 
-test('sheet mode: the old behaviour exactly, database untouched', async () => {
+test('sheet mode: the old behavior exactly, database untouched', async () => {
   const db = fake(), sheet = fake([row('a', { _rowNumber: 5 })]);
   const store = createStore({ mode: 'sheet', db, sheet, log: quiet });
   await store.readAllRows();

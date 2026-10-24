@@ -80,7 +80,7 @@ test('the slots and their Changed tag are drawn from the tokens', () => {
   assert.match(read('js/highlight-ui.js'), /'badge badge-new hl-changed', 'Changed'/);
   assert.match(rule(css, '.badge-new'), /background: var\(--tag-background-blue\); color: var\(--tag-color-blue\)/);
   assert.match(rule(css, '.hl-changed'), /height: 20px/);
-  // Words that say Empty are read, so they keep the helper grey's contrast.
+  // Words that say Empty are read, so they keep the helper gray's contrast.
   assert.match(rule(css, '.hl-slot-empty'), /color: var\(--text-helper\)/);
 });
 

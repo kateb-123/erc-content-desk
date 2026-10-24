@@ -25,7 +25,7 @@ test('no page draws the sliding dots any more', () => {
   }
 });
 
-test('the busy words shimmer, and hold still for reduced motion and forced colours', () => {
+test('the busy words shimmer, and hold still for reduced motion and forced colors', () => {
   const css = read('css/shell.css');
   const rule = css.match(/\.busy-words \{([^}]*)\}/)[1];
   assert.match(rule, /animation:\s*busy-sheen/);

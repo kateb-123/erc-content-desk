@@ -94,7 +94,7 @@ function setWizardStatus(msg) {
   wizardStatus.textContent = msg;
 }
 
-/** A note's icon: the glyph that goes with its --support-* colour, ahead of the words. */
+/** A note's icon: the glyph that goes with its --support-* color, ahead of the words. */
 function noteIcon(name) {
   const i = faIcon(name);
   i.classList.add('note-icon');
@@ -109,7 +109,7 @@ function option(value, text, selected = false) {
   return opt;
 }
 
-/** A quiet word in the link colour: the builder's ghost button. */
+/** A quiet word in the link color: the builder's ghost button. */
 function ghostButton(label) {
   return button(label, 'ghost-btn');
 }
@@ -159,7 +159,7 @@ function syncStepNav() {
     const btn = indicator.querySelector('button');
     if (shows === 'current') btn.setAttribute('aria-current', 'step');
     else btn.removeAttribute('aria-current');
-    // A locked step is greyed, and its title says why.
+    // A locked step is grayed, and its title says why.
     if (shows === 'locked') { btn.setAttribute('aria-disabled', 'true'); btn.title = lockedMessage(navStep, at.itemCount, at.placeholders); }
     else { btn.removeAttribute('aria-disabled'); btn.removeAttribute('title'); }
   });
@@ -181,7 +181,7 @@ const RENDER = { triage: renderTriage, edit: renderEdit, export: renderExport };
 function goTo(step) {
   const idx = STEPS.indexOf(step);
 
-  // Leaving a step makes its removals final: the greyed rows and their Undo go.
+  // Leaving a step makes its removals final: the grayed rows and their Undo go.
   if (step !== state.step) settleRemovals();
   state.step = step;
   state.reached = Math.max(state.reached, idx);
@@ -192,7 +192,7 @@ function goTo(step) {
   setWizardStatus('');
 
   // Both pairs: Back sleeps on the first step; Next has nowhere to go on
-  // the last, so it goes rather than greys.
+  // the last, so it goes rather than grays.
   backBtns.forEach((b) => { b.disabled = idx === 0; });
   nextBtns.forEach((b) => { b.hidden = idx === STEPS.length - 1; });
 
@@ -553,7 +553,7 @@ async function pullIssue() {
 /**
  * What Remove took out on the step on screen (Kate, Sep 23: the desk's own
  * pattern). Each item has left the issue already, so the preview and the
- * saved draft never carry it; it stays listed where it stood, greyed with its
+ * saved draft never carry it; it stays listed where it stood, grayed with its
  * own Undo, until goTo leaves the step and settles it. Kept with the issue it
  * came out of, so a replaced issue never takes back another issue's item.
  */
@@ -585,7 +585,7 @@ function putBackIds() {
 /**
  * Take one item out of the issue: the Outline row's Remove and the Preview &
  * Edit card's Remove. `rerender` redraws the step on screen, with the item
- * greyed in place; `fromKeyboard` (a click with detail 0) hands focus to its Undo.
+ * grayed in place; `fromKeyboard` (a click with detail 0) hands focus to its Undo.
  */
 let _undoToastTimer = null;
 function deleteItemWithUndo(itemId, rerender, fromKeyboard = false) {
@@ -599,7 +599,7 @@ function deleteItemWithUndo(itemId, rerender, fromKeyboard = false) {
   if (fromKeyboard) focusInStep(`[data-undo-item="${CSS.escape(itemId)}"]`);
 }
 
-/** A greyed row's Undo: the item goes back into the issue where its row sits.
+/** A grayed row's Undo: the item goes back into the issue where its row sits.
  *  From the keyboard, focus goes to the row's Remove, or on Preview & Edit,
  *  where the card is closed, to the column's title. */
 function undoRemove(itemId, rerender, fromKeyboard = false) {
@@ -629,7 +629,7 @@ function tellDesk(item, removed) {
     .catch(() => setWizardStatus(removed ? "Removed here only: the desk couldn't be reached." : "Back here only: the desk couldn't be reached."));
 }
 
-/** A removed item's greyed row, drawn as the desk draws Next issue's: its
+/** A removed item's grayed row, drawn as the desk draws Next issue's: its
  *  title, the word Removed, and its own Undo. */
 function removedRow(item, rowClass, rerender) {
   const title = item.fields?.title || '(untitled)';
@@ -745,7 +745,7 @@ function renderTriage() {
   const issue = state.issue;
 
   // Nothing pulled yet: one line under Pull, and no empty table to puzzle over.
-  // Items removed on this visit still list, greyed, so the last one out is not lost.
+  // Items removed on this visit still list, grayed, so the last one out is not lost.
   if (!issue || (!countIssueItems(issue) && !waitingRemovals().length)) {
     emptyLine(container, 'Nothing here yet.');
     return;
@@ -837,7 +837,7 @@ function renderTriage() {
         // now (Kate, Oct 7); the email still prints an older draft's featured event.
 
         // The actions, quiet on every row (Kate, Oct 7): Move to… and Remove;
-        // Undo on a removed row (the desk's greyed row).
+        // Undo on a removed row (the desk's grayed row).
         const td3 = el('td', 'r outline-actions');
         if (removed.has(item)) {
           const undo = button('Undo', 'ghost-btn outline-undo', { onClick: (e) => undoRemove(item.id, renderTriage, e.detail === 0) });
@@ -1077,7 +1077,7 @@ function wireOutlineDrag(tbody, issue, { onSection, onItem }) {
 
 /**
  * CSS injected into the editable iframe to show hover affordance. Built when
- * the iframe loads so the colours come from the builder's own tokens: the
+ * the iframe loads so the colors come from the builder's own tokens: the
  * hover wash (--accent-10) while the pointer is over an item, the chosen
  * tint (--highlight) for the flash on click.
  */
@@ -2346,7 +2346,7 @@ function renderEdit() {
   toolbar.append(previewNote, doors);
   container.appendChild(toolbar);
 
-  // What Remove took out on this visit waits here, greyed with its own Undo,
+  // What Remove took out on this visit waits here, grayed with its own Undo,
   // until the step is left; the preview already goes without it.
   const waiting = waitingRemovals();
   if (waiting.length) {

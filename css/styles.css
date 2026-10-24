@@ -1,5 +1,5 @@
 /* The desk in Kate's pick A of the looks (Oct 23, 2026): a Mac app, for the
-   web. A grey page beside a grey sidebar, white lists and cards on it, one
+   web. A gray page beside a gray sidebar, white lists and cards on it, one
    blue for everything interactive. Every value below is a token from
    /css/tokens.css; the desk's own names are aliases so the rules read in the
    desk's vocabulary. The builder loads the same tokens. */
@@ -15,7 +15,7 @@
   --line: var(--border-subtle-00);     /* hairlines on the page */
   --line-in: var(--border-subtle-01);  /* hairlines inside a layer */
   --accent: var(--button-primary);
-  --tint: var(--wash);                 /* held rows: the quiet grey surface */
+  --tint: var(--wash);                 /* held rows: the quiet gray surface */
   --selected: var(--wash-row);         /* the chosen row: the pale blue, under its 4px blue bar */
   --hover: var(--background-hover);
   --row-hover: var(--wash-hover);
@@ -43,7 +43,7 @@ a:hover { color: var(--link-primary-hover); }
 
 h2, h3 { font-family: var(--font-sans); letter-spacing: 0; }
 
-/* A card: a white box with a hairline, square (Kate, Sep 17, pick C; Carbon's grey tile before). */
+/* A card: a white box with a hairline, square (Kate, Sep 17, pick C; Carbon's gray tile before). */
 .card {
   background: var(--layer);
   border: 1px solid var(--layer-line);
@@ -53,7 +53,7 @@ h2, h3 { font-family: var(--font-sans); letter-spacing: 0; }
 
 .lede { font: var(--lede-type); color: var(--muted); margin: 0 0 var(--spacing-06); }
 
-/* The micro-label over a field: 13px semibold, helper grey, in sentence case since the look of Oct 23 (caps before). */
+/* The micro-label over a field: 13px semibold, helper gray, in sentence case since the look of Oct 23 (caps before). */
 label, .type-picker legend, .subtype-label, .card-field-label, .card-type legend, .card-send legend, .f-edit-grid label, .f-edit-media {
   display: block; font: var(--label-type); font-weight: 500; letter-spacing: var(--label-tracking); color: var(--text-helper);
 }
@@ -232,7 +232,7 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .bulk-door .bulk-status { min-height: 0; margin: 0; }   /* takes no room until it has words */
 
 .status { min-height: 20px; margin: 0; font-size: 14px; position: sticky; top: 0; z-index: 2; background: var(--background); }   /* stays in view down a long list (design audit b3) */
-.submit-form .status { background: var(--layer); }   /* the form sits on a white card, not on the grey page */
+.submit-form .status { background: var(--layer); }   /* the form sits on a white card, not on the gray page */
 .status-ok { color: var(--ok); }
 .status-error { color: var(--err); }
 .status-busy { color: var(--muted); }
@@ -301,14 +301,14 @@ button.primary:hover:not(:disabled) { background: var(--button-primary-hover); b
 button.primary:active:not(:disabled) { background: var(--accent-deep); color: var(--text-on-color); }   /* the pressed fill is dark, so its label is white */
 button.primary:disabled { background: var(--button-disabled); border-color: transparent; color: var(--text-on-color-disabled); }
 /* Keep the rest, a sweep across a whole list, is Carbon's secondary, the dark
-   grey fill (Kate, Sep 17: "a shade of the grey"); the one decision on a card
+   gray fill (Kate, Sep 17: "a shade of the gray"); the one decision on a card
    keeps the primary. */
 button.primary.list-keep:not(:disabled) { background: var(--button-secondary); border-color: transparent; color: var(--text-on-color); }
 button.primary.list-keep:hover:not(:disabled) { background: var(--button-secondary-hover); border-color: transparent; color: var(--text-on-color); }
 button.primary.list-keep:active:not(:disabled) { background: var(--button-secondary-active); }
 
-/* Tags (Carbon's 24px pill, label-01 type), one colour per meaning: bare
-   .badge = a grey fact ("Already live", "In a past issue", "Spotlight
+/* Tags (Carbon's 24px pill, label-01 type), one color per meaning: bare
+   .badge = a gray fact ("Already live", "In a past issue", "Spotlight
    requested"); .badge-new = blue; .badge-dupe = yellow caution (the builder's
    duplicate warning; Sort's rows carry none since Sep 15, Needs a fix gathers
    them). */
@@ -327,7 +327,7 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .badge-live { background: var(--notification-success-background); color: var(--text-success-on-tint); }
 .alert-word { color: var(--link-primary); }
 .alert-word:hover { color: var(--link-primary-hover); }
-/* On the desk links and quiet words are grey (Kate's pick, Sep 17), the grey of
+/* On the desk links and quiet words are gray (Kate's pick, Sep 17), the gray of
    secondary text, so a word that acts wears an underline or it reads as text
    (design critique, Sep 18). Words with an icon (Edit, Delete) and the muted
    ones (Skip, Cancel) read as buttons already. */
@@ -345,7 +345,7 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .img-status { color: var(--muted); display: inline-flex; align-items: center; gap: var(--spacing-03); }
 .type-line { color: var(--muted); margin: 0; }
 .type-line .type-label { color: var(--ink); }
-/* Quiet action words: Carbon's ghost button, the word in the link colour with
+/* Quiet action words: Carbon's ghost button, the word in the link color with
    a fill on hover; never wrap between icon and word. Skip/Use original are the
    muted pair. */
 .linkish {
@@ -365,7 +365,7 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .f-progress { height: 8px; border-radius: 0; background: var(--layer-accent-01); overflow: hidden; margin: calc(-1 * var(--spacing-02)) 0 var(--spacing-06); }
 .f-progress i { display: block; height: 100%; background: var(--interactive); border-radius: 0; }
 .f-split { min-width: 0; }   /* the list and the card, laid out in the Sort frame below (pick A, Oct 23) */
-/* A group's head in the list pane, as Sort's: a hairline over each after the first, its count in grey at its right. */
+/* A group's head in the list pane, as Sort's: a hairline over each after the first, its count in gray at its right. */
 .f-group-head {
   display: flex; align-items: center; gap: var(--spacing-03); width: calc(100% - 2 * var(--spacing-05)); box-sizing: border-box; margin: var(--spacing-03) var(--spacing-05) var(--spacing-01); height: auto;
   padding: var(--spacing-04) 0 var(--spacing-02); border: 0; border-top: 1px solid var(--line-in); border-radius: 0; background: none;
@@ -442,7 +442,7 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 .publish-table tr.p-skip .item-title { color: var(--muted); font-weight: 400; }
 /* Publish as one table (Claude Design round two, Kate's pick Sep 16): a bar
    whose segments share the rows by fate, a legend that filters, a Fate column.
-   Token colours only: the held segment is the loader ramp's light blue. */
+   Token colors only: the held segment is the loader ramp's light blue. */
 .p-fate-box { margin: var(--spacing-02) 0 var(--spacing-05); }
 .p-fate-bar { display: flex; gap: 2px; height: 8px; border-radius: 0; overflow: hidden; background: var(--layer-accent-01); }
 .p-seg { display: block; min-width: 6px; }
@@ -572,9 +572,9 @@ a.home-pin-link:hover { color: var(--link-primary); text-decoration: underline; 
 .queue-table tbody tr:hover td { background-image: linear-gradient(var(--hover), var(--hover)); }
 .queue-table td.missing { color: var(--text-helper); }
 
-/* Motion: Carbon's productive easing, 70ms for a colour and 110ms for a move;
+/* Motion: Carbon's productive easing, 70ms for a color and 110ms for a move;
    state never waits on it. Reduced-motion users get instant changes via the
-   block at the end. No press scale: Carbon buttons change colour, not size. */
+   block at the end. No press scale: Carbon buttons change color, not size. */
 button { transition: border-color var(--duration-fast-01) var(--ease-productive), background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive); }
 
 @keyframes rise-in { from { opacity: 0; transform: translateY(4px); } }
@@ -593,9 +593,9 @@ input:not([type]):focus, input[type="text"]:focus, input[type="url"]:focus, inpu
 }
 button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
 /* The type picker and the Sort and Finalize lists clip what is drawn outside a
-   control, so there the ring is drawn inside it, 2px in the focus colour
+   control, so there the ring is drawn inside it, 2px in the focus color
    (usability audit, Kate's pick, Sep 23). The transparent outline, the ring
-   under forced colours, moves inside with it. */
+   under forced colors, moves inside with it. */
 .pill-row .type-word:focus-visible, .sort-list .sort-row:focus-visible, .f-list .f-list-row:focus-visible { outline-offset: -2px; box-shadow: inset 0 0 0 2px var(--focus); }
 /* The picked type is filled with the accent, where the ring would vanish: there it is a white line inside (Kate, Sep 23). */
 .pill-row .type-word.is-picked:focus-visible { box-shadow: inset 0 0 0 2px var(--text-on-color); }
@@ -649,7 +649,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 }
 
 /* Home queue: the trash can column. One click deletes and the row stays put,
-   greyed with an Undo, because the rows are dense and a mis-click is cheap. */
+   grayed with an Undo, because the rows are dense and a mis-click is cheap. */
 .queue-actions { text-align: right; white-space: nowrap; }
 .queue-actions .trash-link { height: 24px; padding: 0 var(--spacing-02); margin: 0; }
 /* An in-flight row action's mark: the mini dots where the button was, keyed so focus comes back to the row (e17). */
@@ -722,7 +722,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 #screen-sort:not([hidden]), #screen-finalize:not([hidden]) { flex: 1 0 auto; display: flex; flex-direction: column; }
 
 /* The band: the title, the tabs as a segmented control (a white segment on a
-   grey track), and the wait at its right, on a toolbar's ground. */
+   gray track), and the wait at its right, on a toolbar's ground. */
 .sort-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-04) var(--spacing-05); min-height: 56px; margin: 0; padding: var(--spacing-03) var(--sort-pad); background: var(--gray-50); border-bottom: 1px solid var(--sidebar-line); }
 .sort-bar .page-title { margin: 0; font: 600 15px/20px var(--font-sans); letter-spacing: 0; }
 .sort-bar .page-tabs { flex: 1 1 auto; gap: var(--spacing-05); border-bottom: 0; }
@@ -740,7 +740,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .sort-list-head { display: flex; align-items: center; gap: var(--spacing-04); padding: var(--spacing-04) var(--spacing-05) var(--spacing-03); font: var(--meta-type); }
 .sort-list-count { font: 600 13px/18px var(--font-sans); color: var(--ink); }
 .sort-list-order { margin-left: auto; font: 400 12px/16px var(--font-sans); color: var(--text-helper); }
-/* Past and Already live (Sep 22): a hairline over each, its count in grey, Dismiss all at its right. */
+/* Past and Already live (Sep 22): a hairline over each, its count in gray, Dismiss all at its right. */
 .sort-group-head { margin: var(--spacing-03) var(--spacing-05) 0; padding: var(--spacing-04) 0 var(--spacing-02); border-top: 1px solid var(--line-in); }
 .sort-group-count { color: var(--muted); font-weight: 500; }
 .sort-group-head .trash-link { height: 26px; margin: 0 calc(-1 * var(--spacing-03)) 0 auto; padding: 0 var(--spacing-03); font: 600 12px/16px var(--font-sans); }
@@ -777,7 +777,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .sort-row.is-selected .sort-row-tag { background: var(--accent-deep); color: var(--text-on-color); }
 /* On the blue fill the inside ring would vanish: there it is a white line inside, as on a picked type (Kate, Sep 23). */
 .sort-list .sort-row.is-selected:focus-visible, .f-list .f-list-row.is-selected:focus-visible { box-shadow: inset 0 0 0 2px var(--text-on-color); }
-/* What was kept or deleted this visit, greyed at the foot with its word and Undo. */
+/* What was kept or deleted this visit, grayed at the foot with its word and Undo. */
 .sort-done { display: flex; align-items: flex-start; gap: var(--spacing-03); margin: 0 var(--spacing-03) var(--spacing-01); padding: var(--spacing-03) var(--spacing-04) var(--spacing-03) var(--sort-row-indent); border-radius: var(--radius); background: var(--layer-01); }
 .sort-done .sort-row-title, .sort-done .sort-row-meta { color: var(--muted); }
 .sort-done.is-trashed .sort-row-title { text-decoration: line-through; }
@@ -848,7 +848,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 /* The foot: who added it, over a hairline. */
 .sc-left > .sc-foot { margin-top: calc(var(--spacing-05) + var(--spacing-02)); padding: var(--spacing-04) 0; border-top: 1px solid var(--line-in); font: 400 12px/17px var(--font-sans); color: var(--muted); }
 .sort-card input:not([type="checkbox"]):not(.card-title), .sort-card textarea:not(.sc-desc-edit) { background: transparent; }
-.f-edit-card input, .f-edit-card textarea { background: var(--field-02); }   /* a field on the grey edit box is white (Carbon's layer model) */
+.f-edit-card input, .f-edit-card textarea { background: var(--field-02); }   /* a field on the gray edit box is white (Carbon's layer model) */
 
 /* The decision column: the type box, the switch's box, then the three decisions. */
 .sc-right { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: var(--spacing-04); }
@@ -882,11 +882,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .card-send input[role="switch"]:checked { background: var(--accent); }
 .card-send input[role="switch"]:checked::before { transform: translateX(18px); }
 .card-send input[role="switch"]:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
-/* The decisions: Keep and next full width, Skip for now the grey fill, Delete
+/* The decisions: Keep and next full width, Skip for now the gray fill, Delete
    the red word; each shows its key at its right. */
 .sc-decide { display: flex; flex-direction: column; gap: var(--spacing-04); }
 .sort-card button.sc-keep { width: 100%; height: 44px; justify-content: flex-start; gap: var(--spacing-03); padding: 0 var(--spacing-04) 0 var(--spacing-05); font: 600 15px/20px var(--font-sans); }
-/* Locked, its word is darker than the disabled grey's, 5.5:1 (usability audit,
+/* Locked, its word is darker than the disabled gray's, 5.5:1 (usability audit,
    Kate's pick, Sep 23), and the reason sits under it. */
 .sort-card .sc-keep:disabled { color: var(--text-locked); }
 /* The reason sits tight under the button it explains (4px), with the column's 12px to Skip for now below it, so it never reads as Skip's. */
@@ -920,11 +920,11 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .f-card .f-check-title { margin: 0 0 var(--spacing-02); font: 700 22px/28px var(--font-sans); letter-spacing: -.3px; }
 .f-card .f-check-source { font: var(--meta-type); }
 
-/* Forced colours (Windows high contrast) drop the blue fill, the grey track
-   and the white knob, so both marks are drawn again in system colours, as
+/* Forced colors (Windows high contrast) drop the blue fill, the gray track
+   and the white knob, so both marks are drawn again in system colors, as
    the sidebar's are (review, Oct 23). Every row keeps a 2px edge in the
-   page's colour, so choosing one moves nothing; the chosen one's edge is
-   Highlight, and the focus line sits 2px inside it in the text colour, so a
+   page's color, so choosing one moves nothing; the chosen one's edge is
+   Highlight, and the focus line sits 2px inside it in the text color, so a
    chosen row with focus shows both. The switch keeps its track, its knob
    and its state: on, the track fills with Highlight. */
 @media (forced-colors: active) {
@@ -1144,7 +1144,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hub-head .page-title { margin: 0; }
 .hub-head .lede { margin: var(--spacing-02) 0 0; }
 .hub-head { margin-bottom: var(--gap-28); }
-/* A forthcoming item, in the quiet grey (her red Forthcoming lines). */
+/* A forthcoming item, in the quiet gray (her red Forthcoming lines). */
 .forthcoming { font: var(--meta-type); color: var(--text-helper); margin: var(--spacing-05) 0 0; }
 .forthcoming .fa-solid { font-size: 12px; margin-right: var(--spacing-01); }
 
@@ -1311,7 +1311,7 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
 .new-brief .field-error:empty { display: none; }
 
 /* A hub's status box (the Policy Exchange, the Listserv): label, value. The label over a
-   box is a quiet grey word, as a Mac app heads a group (A, Oct 23; over a maize rule before). */
+   box is a quiet gray word, as a Mac app heads a group (A, Oct 23; over a maize rule before). */
 .hub-label { margin: 0 0 var(--spacing-03) var(--spacing-02); color: var(--text-secondary); }
 .hub-label ~ .hub-label { margin-top: var(--spacing-07); }
 .hub-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius); padding: var(--spacing-02) var(--spacing-06); }

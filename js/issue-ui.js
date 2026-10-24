@@ -21,7 +21,7 @@ import { DESK_SHEET } from './schedule.js';
 
 // View state, for as long as the page is open: the issue picked (''= the
 // next one), the quick add form, rows taken out or deleted this visit (they
-// stay listed, greyed, with Undo), and a later event asking "Send early?".
+// stay listed, grayed, with Undo), and a later event asking "Send early?".
 let quickIssue = '';   // the issue on screen, for Quick add
 let issuePick = '';
 
@@ -108,7 +108,7 @@ function issueRow(row, n, { onRemove, onEditRow, rerender }) {
   return item;
 }
 
-/** A row taken out (or deleted) this visit: greyed, with its word and Undo. */
+/** A row taken out (or deleted) this visit: grayed, with its word and Undo. */
 function goneRow(row, word, onUndo, key) {
   const item = el('div', 'nl-row is-gone');
   const text = el('span', 'nl-text');

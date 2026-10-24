@@ -17,7 +17,7 @@ function resolve(name) {
   return value;
 }
 
-/** WCAG contrast of two #rrggbb colours. */
+/** WCAG contrast of two #rrggbb colors. */
 function contrast(a, b) {
   const lum = hex => {
     const [r, g, bl] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
@@ -57,7 +57,7 @@ test('the locked Keep and next says its word at 4.5:1 or better, with the reason
   assert.match(why, /margin:\s*calc\(-1 \* var\(--spacing-03\)\) 0 0/);
 });
 
-test('where a list clips what is drawn outside a control, the ring is drawn inside, 2px in the focus colour', () => {
+test('where a list clips what is drawn outside a control, the ring is drawn inside, 2px in the focus color', () => {
   for (const selector of ['.pill-row .type-word:focus-visible', '.sort-list .sort-row:focus-visible', '.f-list .f-list-row:focus-visible']) {
     assert.match(declsOf(selector), /box-shadow:\s*inset 0 0 0 2px var\(--focus\)/, selector);
   }

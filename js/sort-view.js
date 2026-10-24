@@ -165,9 +165,9 @@ export function isNewToday(row, today) {
 /**
  * Sort's one list: the waiting rows newest first (the kept rows that lost
  * their type among them), then the skipped ones newest first under them
- * (Kate, Sep 18: skipped sinks to the bottom, tagged); last, greyed, the rows
+ * (Kate, Sep 18: skipped sinks to the bottom, tagged); last, grayed, the rows
  * kept or deleted this visit, so a mistake stays in reach. A row skipped this
- * visit is live with the skipped, not greyed.
+ * visit is live with the skipped, not grayed.
  */
 /** Already behind us (Kate, Sep 22): an event whose date has gone, an
  *  opportunity whose deadline has passed. Today still counts. */
@@ -184,7 +184,7 @@ export function isPast(row, today) {
  * them), then the skipped ones, and, given today and the Exchange's links,
  * two groups pulled out of those (Kate, Sep 22): `past` and `onHub`, each
  * with its own Dismiss all. A row that is both is on the hub. `done` is what
- * was kept or deleted this visit, greyed with Undo.
+ * was kept or deleted this visit, grayed with Undo.
  */
 export function sortList(rows, sessionDecided = new Set(), { today = '', liveLinks = new Set() } = {}) {
   const waiting = rows.filter(r => r.status === 'new' && !awaitingReader(r));

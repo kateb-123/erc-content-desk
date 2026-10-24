@@ -445,7 +445,7 @@ function clipOf(f, { brief, crops, cropFailed, files }) {
   return link;
 }
 
-/** The proposal as it would sit in the brief: the chart in the brief's colours, or the table under its label. */
+/** The proposal as it would sit in the brief: the chart in the brief's colors, or the table under its label. */
 function proposalOf(visual) {
   const wrap = el('div', 'draft-proposal');
   if (visual.kind === 'chart') {

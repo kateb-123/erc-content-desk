@@ -96,7 +96,7 @@ the right with a right arrow: Go to Finalize, Go to Publish, Send to Newsletter.
   with the count badge and a chevron on the left; click the heading and the table
   opens under it, and it stays the way you left it for the visit. Every waiting
   and parked item, newest first, sortable, with a red trash can per row. Deleting
-  greys the row in place with an Undo for the rest of the session. A row still
+  grays the row in place with an Undo for the rest of the session. A row still
   being read says "Reading...".
 
 ### Next newsletter
@@ -108,7 +108,7 @@ that takes the item out of the issue (it stays in the queue). Quick add opens a
 dashed panel right under the head, where the click was, headed "Add to the Sep 22
 newsletter", holding the submit form (no whole-doc door): what it saves lands in
 this issue AND in the queue at once, and the table shows it
-with a grey **Not sorted yet** badge until Sort has had it (Skipped if Sort
+with a gray **Not sorted yet** badge until Sort has had it (Skipped if Sort
 parked it). The status line says "In the next newsletter, and in the queue for
 Sort." A row Sort deletes leaves the issue with it. Send to Newsletter stays as
 the way to pick from what is already kept.
@@ -131,7 +131,7 @@ end of the road.
   the type line with Change and the badges, the title, the meta line, the
   description, notes, Open source, then **Edit** and **Delete** on the left and
   **Skip** and **Keep** on the right. A decision moves the card to the next row;
-  the decided row sinks to the bottom of the list, greyed (deleted ones struck
+  the decided row sinks to the bottom of the list, grayed (deleted ones struck
   through) with an Undo. A section with nothing left shows a dashed pane naming
   the next section that holds anything.
 - **The fix panel** (amber, on the card of a row under Needs a fix) says each
@@ -172,7 +172,7 @@ carries the **Go to Publish** door.
 On arrival it checks the live public file and shows a dots loader. Then one
 **fate bar**: an 8px square bar split by share of rows, adding in the accent,
 held for the newsletter in the loader's light blue, needs a fix in the amber
-line, already live in the line grey. Under it a legend
+line, already live in the line gray. Under it a legend
 ("2 adding", "1 held for the newsletter", "1 needs a fix", "Already live" with no
 number, ever); clicking an item shows only those rows, clicking again shows all.
 Then **one table** of every row: chevron, Title, Type, Submitted, **Fate**. Rows run
@@ -180,7 +180,7 @@ adding, held (on the tint), needs a fix (on the amber, its Fate is a link that
 opens Sort's Needs a fix), already live (muted). The chips, the folds and the
 alert are gone. One deliberate button: **Publish N to the Exchange**, which is
 replaced in place by one warning ask, Confirm or Cancel, and then disappears while
-it runs. After it, the page becomes a centred receipt card with a drawn check, and
+it runs. After it, the page becomes a centered receipt card with a drawn check, and
 a single **Send to Newsletter** door.
 
 **Right now Publish is in trial mode**: the click is a mock that shows a receipt

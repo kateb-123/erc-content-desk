@@ -1,13 +1,13 @@
 /* ERC Content Desk — refreshed theme, Sep 22 2026.
    Drop-in replacement for the Carbon values in design-system/tokens.css.
-   Same rule as before: this is the ONE file where a colour, size or face is
+   Same rule as before: this is the ONE file where a color, size or face is
    written down. Names keep the desk's existing aliases where they still apply,
    so the stylesheets mostly need their values changed, not their references.
 
    What changed from Carbon: the family (IBM Plex Sans -> Archivo + Lora), the
    page ground (white -> cream), the radius (0 -> 2px), the primary fill (ink ->
-   navy, on the desk as well as the builder), section headers (grey label ->
-   uppercase label over a 2px orange rule), and inner surfaces (grey layers ->
+   navy, on the desk as well as the builder), section headers (gray label ->
+   uppercase label over a 2px orange rule), and inner surfaces (gray layers ->
    an ink wash). Orange still only MARKS, never fills and never carries text.
    Still no maroon in-app and still no shadows anywhere. */
 
@@ -18,7 +18,7 @@
   --layer-line: #ded8cd;        /* the box's 1px hairline */
   --line-in: #e3ddd0;           /* dividers inside a box, the top bar's rule */
 
-  /* Inner surfaces: an ink wash, not a grey layer. Used for the list head,
+  /* Inner surfaces: an ink wash, not a gray layer. Used for the list head,
      the description field, pills, the quote box and the chosen row. */
   --wash: rgba(35, 32, 27, .045);
   --wash-line: rgba(35, 32, 27, .14);
@@ -89,6 +89,6 @@
 
   /* Motion, unchanged from Carbon's clock */
   --ease: cubic-bezier(.2, 0, .38, .9);
-  --dur-colour: 70ms;
+  --dur-color: 70ms;
   --dur-move: 110ms;
 }

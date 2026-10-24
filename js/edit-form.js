@@ -1,7 +1,7 @@
 /**
  * The one edit form. Sort's card and Finalize's card
  * open the same thing: the fields the row's type uses, then the link and the
- * media, on the grey edit box, dates as date inputs. It opens with editBase,
+ * media, on the gray edit box, dates as date inputs. It opens with editBase,
  * so a description prefilled from the original text is no change until it is
  * edited, and it knows when it holds unsaved typing, so any way out of it
  * can hold instead of throwing the typing away.

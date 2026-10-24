@@ -49,8 +49,8 @@ const state = {
   loadFailed: false,         // the first read failed: Home and Next newsletter offer Try again
   busy: false,
   undoStack: [],            // [{ rows, decision, kind }]: every Sort change, newest last; its top is what Undo last would restore
-  sortedIds: new Set(),     // decided since this page opened — they stay listed, greyed (view state)
-  decidedFrom: new Map(),   // id -> status before this session's decision: where Undo takes it back, and a row kept from Skipped greys under Skipped (view state)
+  sortedIds: new Set(),     // decided since this page opened — they stay listed, grayed (view state)
+  decidedFrom: new Map(),   // id -> status before this session's decision: where Undo takes it back, and a row kept from Skipped grays under Skipped (view state)
   rewriteReview: new Map(), // id -> the pre-rewrite description, until she checks it (view state)
   rewriteText: new Map(),   // id -> the rewrite that landed in this tab, so a reload keeps it (review, Oct 23)
   verifiedIds: new Set(),   // rewrites she has checked this visit (view state)
@@ -239,7 +239,7 @@ const DECIDED_WORDS = { keep: 'Kept', trash: 'Deleted', circleback: 'Skipped' };
 
 function decide(drawn, action) {
   const row = current(drawn);
-  // A decided row holds its place, greyed at the bottom of its section, so a
+  // A decided row holds its place, grayed at the bottom of its section, so a
   // mistake stays in reach. Deciding never moves you.
   state.decidedFrom.set(row.id, row.status);
   state.sortedIds.add(row.id);
@@ -265,7 +265,7 @@ function dismissAll(drawn) {
   setStatus(`Dismissed ${rows.length}`, 'ok', { label: 'Undo', onClick: undoLast });
 }
 
-/** Undo on one greyed row of Sort's list: back to the queue, in place. */
+/** Undo on one grayed row of Sort's list: back to the queue, in place. */
 function undoRow(row) {
   // Back to what it was: a row kept from Skipped returns to Skipped, not to new.
   const back = state.decidedFrom.get(row.id) ?? 'new';
@@ -288,7 +288,7 @@ async function readBeforeSort() {
   try {
     const { failed } = await readAllWaiting(ids, readNewRows);
     await reload();
-    // A failed read offers its own retry; a reload would drop the greyed rows and Undo.
+    // A failed read offers its own retry; a reload would drop the grayed rows and Undo.
     if (failed) setStatus(`${failed} new item${failed === 1 ? '' : 's'} couldn't be read yet.`, 'error', { label: 'Try again', onClick: readBeforeSort });
   } catch (err) {
     setStatus(plainError(err), 'error', { label: 'Try again', onClick: readBeforeSort });

@@ -25,7 +25,7 @@ Where this file touches either one, it says so.
 
 **A null difference is not "equal", and a group with a non-significant estimate is not counted in a claimed gap.** cortes's Highlight 03 says "equal sensitivity" where the paper says "no statistically significant differences". Its Executive Summary ties Black students to widening degree gaps on an estimate of -0.009 (0.009).
 
-**In a table of estimates, significance gets its own column: "Statistically significant?" with "Yes" or "No"** (meer) (Kate, Oct 22, 2026). The chips get colours of their own, not the green and grey that mark direction. A result significant only at the 10% level gets the same "Yes"; its caveat goes in the prose ("meets a less stringent standard of statistical significance", bowen) (Kate, Oct 22, 2026). A result that is not significant prints its estimate beside "No", so a negative sign is never hidden (Kate, Oct 22, 2026).
+**In a table of estimates, significance gets its own column: "Statistically significant?" with "Yes" or "No"** (meer) (Kate, Oct 22, 2026). The chips get colors of their own, not the green and gray that mark direction. A result significant only at the 10% level gets the same "Yes"; its caveat goes in the prose ("meets a less stringent standard of statistical significance", bowen) (Kate, Oct 22, 2026). A result that is not significant prints its estimate beside "No", so a negative sign is never hidden (Kate, Oct 22, 2026).
 *Example:* "First-generation students | 35.6 percentage points | Yes" (meer).
 
 ## 2. Uncertainty
@@ -166,7 +166,7 @@ Where this file touches either one, it says so.
 
 Every question below was ruled on by Kate on Oct 22, 2026.
 
-1. **Chip words and colours in a significance column.** Settled (Kate, Oct 22, 2026): meer's "Statistically significant?" Yes / No, with colours of their own.
+1. **Chip words and colors in a significance column.** Settled (Kate, Oct 22, 2026): meer's "Statistically significant?" Yes / No, with colors of their own.
 2. **What to do with p < 0.10.** Settled (Kate, Oct 22, 2026): the same "Yes" as the others; the caveat lives in the prose.
 3. **Null estimates.** Settled (Kate, Oct 22, 2026): print the estimate beside "No".
 4. **Signs in tables.** Settled (Kate, Oct 22, 2026): words in the cell, the header, or a plus sign, as the table needs; one way per table.

@@ -40,8 +40,8 @@ test('it wears the desk\'s look: the same sheets at the same versions, the syste
   for (const html of [page, desk]) assert.doesNotMatch(html, /fonts\.googleapis\.com/, 'no web font');
   assert.doesNotMatch(page, /Mulish|Crimson|Archivo|Lora/, 'no named face');
   assert.equal(tag(page, 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/'), tag(desk, 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/'), 'Font Awesome as the desk loads it');
-  assert.doesNotMatch(page, /<style/, 'no styles of its own: a colour lives in css/tokens.css');
-  assert.doesNotMatch(page, /#[0-9a-f]{3,8}\b/i, 'no colour literal in the page');
+  assert.doesNotMatch(page, /<style/, 'no styles of its own: a color lives in css/tokens.css');
+  assert.doesNotMatch(page, /#[0-9a-f]{3,8}\b/i, 'no color literal in the page');
 });
 
 test('no top bar, no breadcrumb, no desk links: the form alone, plus I need help!', () => {

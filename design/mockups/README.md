@@ -33,7 +33,7 @@ between Pull, Arrange, Edit and Export. Everything else is static markup.
 
 ### What this is and is not
 
-Greyscale on purpose. The palette is settled separately, so grey stands in
+Greyscale on purpose. The palette is settled separately, so gray stands in
 for the accent wherever something is selected or interactive. Dropping the
 real tokens in is a find-and-replace, not a redesign.
 

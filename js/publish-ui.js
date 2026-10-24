@@ -179,7 +179,7 @@ export function renderPublish(container, props) {
   const adding = (preview?.adding ?? []).map(item => byId.get(item.id)).filter(Boolean);
 
   const { head, lede } = screenHead('Publish', 'publish',
-    'Publish adds the Adding rows to the Exchange. Click a colour under the bar to filter.');
+    'Publish adds the Adding rows to the Exchange. Click a color under the bar to filter.');
   if (showReceipt) {
     // The receipt card below is the confirmation — the head stays bare.
   } else if (busy && !preview) {

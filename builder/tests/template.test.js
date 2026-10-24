@@ -464,7 +464,7 @@ test('the footer (Kate, Oct 6): a light gray band, the maroon lockup, a hairline
   assert.equal(count(html, '>Join the mailing list</a>'), 1, 'the header has the plain one; the footer keeps its words together');
 });
 
-test('document declares its language and a doctype, pins its colours for dark mode, and every new-tab link is noopener', () => {
+test('document declares its language and a doctype, pins its colors for dark mode, and every new-tab link is noopener', () => {
   const html = renderNewsletter(fullIssue());
   assert.ok(html.startsWith('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"'));
   assert.match(html, /<html lang="en"/);

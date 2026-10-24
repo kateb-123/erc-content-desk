@@ -63,7 +63,7 @@ test('Next issue\'s door names its issue', () => {
 
 test('the Outline\'s Remove is red at rest, the desk\'s red ghost word (INT-17)', () => {
   const rules = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].filter(([, sel]) => /\.outline-remove\b/.test(sel));
-  for (const [, sel, body] of rules) assert.doesNotMatch(body, /color:\s*var\(--text-secondary\)/, `grey Remove in: ${sel.trim()}`);
+  for (const [, sel, body] of rules) assert.doesNotMatch(body, /color:\s*var\(--text-secondary\)/, `gray Remove in: ${sel.trim()}`);
   assert.match(css, /\.ghost-btn--danger \{ color: var\(--button-danger-secondary\); \}/);
   assert.match(app, /button\(' Remove', 'ghost-btn ghost-btn--danger outline-remove'/);
 });

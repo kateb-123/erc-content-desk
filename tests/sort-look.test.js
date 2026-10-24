@@ -91,7 +91,7 @@ test('Sort and Finalize draw their head as the toolbar band, the tabs a segmente
   assert.match(band, /background:\s*var\(--gray-50\)/, "a toolbar's ground");
   assert.match(band, /border-bottom:\s*1px solid var\(--sidebar-line\)/);
   assert.match(band, /min-height:\s*56px/);
-  assert.match(declsOf('.sort-bar .tabs'), /background:\s*var\(--gray-200\)/, 'the grey track');
+  assert.match(declsOf('.sort-bar .tabs'), /background:\s*var\(--gray-200\)/, 'the gray track');
   assert.match(declsOf('.sort-bar .tab.is-active'), /background:\s*var\(--layer-02\)/, 'the lit segment is white');
   // Newsletter and the queue keep their own tab row: every band rule is scoped.
   assert.doesNotMatch(styles, /^\.tabs\s*\{[^}]*background/m);
@@ -140,7 +140,7 @@ test('a list row: the title with the day it came in at its right, then one line 
   assert.match(declsOf('.sort-row-line'), /white-space:\s*nowrap/, 'a line never wraps');
 });
 
-test("a group's head names it, its count in grey, and Dismiss all at its right", () => {
+test("a group's head names it, its count in gray, and Dismiss all at its right", () => {
   assert.match(sortUi, /head\.append\(el\('span', 'sort-list-count', label\)\);\s*head\.lastChild\.append\(' ', el\('span', 'sort-group-count', String\(rows\.length\)\)\)/);
   assert.doesNotMatch(sortUi, /`\$\{label\} · \$\{rows\.length\}`/);
 });
@@ -208,7 +208,7 @@ test('Keep and next, Skip for now and Delete each show their key, hidden from as
   assert.match(sortUi, /keep\.title = blocked \|\| 'Keep and next \(K\)'/);
   assert.match(sortUi, /skip\.title = 'Skip for now \(S\)'/);
   assert.match(sortUi, /del\.title = 'Delete \(D\)'/);
-  assert.match(declsOf('.sort-card .sc-skip'), /background:\s*var\(--gray-200\)/, 'Skip for now is the grey fill');
+  assert.match(declsOf('.sort-card .sc-skip'), /background:\s*var\(--gray-200\)/, 'Skip for now is the gray fill');
 });
 
 test("Finalize's list is Sort's pane and its card Sort's white box", () => {
@@ -230,7 +230,7 @@ test('every new Sort rule reads tokens and the spacing scale: no shadow but the 
 });
 
 // ── The review of step 3 (Oct 23): the status line inside the band, the
-// chosen row's small words at 4.5:1, and both marks kept in forced colours ──
+// chosen row's small words at 4.5:1, and both marks kept in forced colors ──
 
 const tokensCss = uncomment(read('css/tokens.css'));
 /** A custom property's final value, following var() chains through tokens.css and styles.css. */
@@ -255,7 +255,7 @@ function contrast(a, b) {
 }
 const FORCED = /@media \(forced-colors: active\)\s*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g;
 const sortBlock = uncomment(read('css/styles.css').split('/* ── Content Sort in pick A')[1]?.split('/* ── end of Content Sort in pick A')[0] ?? '');
-/** declsOf over some CSS of my choosing: the page as drawn (forced colours left out), or the forced-colours rules alone. */
+/** declsOf over some CSS of my choosing: the page as drawn (forced colors left out), or the forced-colors rules alone. */
 const declsIn = (css, selector) => [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
   .filter(m => m[1].split(',').map(s => s.trim()).includes(selector))
   .map(m => m[2]).join(';');
@@ -302,7 +302,7 @@ test("the chosen row's day, its second line and its tag read at 4.5:1 or better 
   assert.equal(declsIn(drawn, '.f-list-row.is-selected').match(/background:\s*var\((--[\w-]+)\)/)?.[1], ground);
   for (const sel of ['.sort-row.is-selected .sort-row-date', '.sort-row.is-selected .sort-row-meta', '.sort-row.is-selected .sort-row-lead', '.f-list-row.is-selected .f-row-type']) {
     const ink = colorOf(declsIn(drawn, sel));
-    assert.ok(ink, `${sel} names its colour`);
+    assert.ok(ink, `${sel} names its color`);
     const ratio = contrast(token(ink), token(ground));
     assert.ok(ratio >= 4.5, `${sel}: ${ink} on ${ground} is ${ratio.toFixed(2)}:1`);
   }
@@ -311,22 +311,22 @@ test("the chosen row's day, its second line and its tag read at 4.5:1 or better 
   assert.ok(contrast(token(colorOf(tag)), token(tagGround)) >= 4.5, 'the tag on the chosen row');
 });
 
-test('in forced colours the chosen row keeps a Highlight edge, every row the same edge in the page colour, the ring inside it', () => {
-  assert.ok(forced.length > 200, 'the Sort block has a forced-colours block');
+test('in forced colors the chosen row keeps a Highlight edge, every row the same edge in the page color, the ring inside it', () => {
+  assert.ok(forced.length > 200, 'the Sort block has a forced-colors block');
   for (const row of ['.sort-row', '.f-list-row']) {
     assert.match(declsIn(forced, row), /border:\s*2px solid Canvas/, `${row}: an edge that cannot be seen, so choosing one moves nothing`);
     assert.match(declsIn(forced, `${row}:hover:not(:disabled)`), /border:\s*2px solid Canvas/, 'the hover keeps it');
     assert.match(declsIn(forced, `${row}.is-selected`), /border-color:\s*Highlight/, `${row}: the chosen one`);
     assert.match(declsIn(forced, `${row}.is-selected:hover:not(:disabled)`), /border-color:\s*Highlight/);
   }
-  // The focus line is the text colour, 2px inside the edge, so a chosen row that has focus shows both.
+  // The focus line is the text color, 2px inside the edge, so a chosen row that has focus shows both.
   for (const sel of ['.sort-list .sort-row:focus-visible', '.f-list .f-list-row:focus-visible']) {
     assert.match(declsIn(forced, sel), /outline-offset:\s*-6px/, `${sel}: inside the chosen edge, a gap between`);
     assert.match(declsIn(forced, sel), /outline-color:\s*CanvasText/);
   }
 });
 
-test('in forced colours the ERC Newsletter only switch keeps its track, its knob and which way it is set', () => {
+test('in forced colors the ERC Newsletter only switch keeps its track, its knob and which way it is set', () => {
   const sw = '.card-send input[role="switch"]';
   assert.match(declsIn(forced, sw), /border:\s*1px solid ButtonText/, 'the track');
   assert.match(declsIn(forced, sw), /background-color:\s*ButtonFace/);
@@ -346,7 +346,7 @@ test('in forced colours the ERC Newsletter only switch keeps its track, its knob
   assert.equal(inset * 2 + size + travel, px(track.match(/(?<![\w-])width:\s*([^;]+)/)[1]) - 2, 'and on, as much at its right as at its left');
 });
 
-test('the forced-colours rules use system colours alone: a token or a hex would be forced away', () => {
+test('the forced-colors rules use system colors alone: a token or a hex would be forced away', () => {
   const bodies = [...forced.matchAll(/\{([^{}]*)\}/g)].map(m => m[1]).join(';');
   assert.doesNotMatch(bodies, /var\(--[\w-]*(color|accent|text|layer|gray|blue|line)/i);
   assert.doesNotMatch(bodies, /#[0-9a-f]{3,8}\b/i);

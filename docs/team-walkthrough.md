@@ -141,7 +141,7 @@ Pages, no password on either:
 ### The builder's four steps
 
 1. Review: pick the issue, Pull from the desk. Pull again any time; only new items are added.
-2. Outline: put the issue in order with the arrows, mark one event Featured, turn the research callout on or off. Remove keeps the row greyed with Undo. An item cannot move to another section here.
+2. Outline: put the issue in order with the arrows, mark one event Featured, turn the research callout on or off. Remove keeps the row grayed with Undo. An item cannot move to another section here.
 3. Preview & Edit: the email as it will look. This is for fixes: a typo, a title, a date, the introduction, a picture.
 4. Save & Export: Copy HTML and paste the issue into Outlook, then Save to the archive. Download .html keeps a file copy.
 

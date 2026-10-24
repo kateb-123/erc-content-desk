@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-// DESIGN.md: a colour is written down in css/tokens.css and nowhere else, and
-// every page reads its colours through a token it loads. The census walks each
+// DESIGN.md: a color is written down in css/tokens.css and nowhere else, and
+// every page reads its colors through a token it loads. The census walks each
 // page's stylesheets the way the browser does.
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const PAGES = ['index.html', 'builder/index.html'];
@@ -27,13 +27,13 @@ const used = css => new Set([...css.matchAll(/var\(\s*(--[\w-]+)\s*\)/g)].map(m 
 for (const page of PAGES) {
   const { linked, inline } = sheetsOf(page);
 
-  test(`${page}: no colour literal outside css/tokens.css`, () => {
+  test(`${page}: no color literal outside css/tokens.css`, () => {
     const sources = linked.filter(p => p !== 'css/tokens.css').map(p => [p, read(p)]);
     inline.forEach((css, i) => sources.push([`${page} <style> ${i + 1}`, css]));
     for (const [name, css] of sources) {
       const clean = css.replace(/\/\*[\s\S]*?\*\//g, '');
       const literals = clean.match(/#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\(/gi) ?? [];
-      assert.deepEqual(literals, [], `${name} writes a colour instead of reading a token`);
+      assert.deepEqual(literals, [], `${name} writes a color instead of reading a token`);
     }
   });
 

@@ -1,6 +1,6 @@
 // removals.test.js: Remove with its Undo in place (Kate, Sep 23: the desk's own
 // pattern). A removed item leaves the issue at once and stays listed where it
-// stood, greyed with its own Undo, until the step is left.
+// stood, grayed with its own Undo, until the step is left.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SECTION_REGISTRY, createEmptyIssue, countIssueItems, bucketSectionItems } from '../js/model.js';
@@ -87,7 +87,7 @@ test('Undo between removals: the rows still come back in their own places', () =
   assert.deepEqual(ids(issue.sections.policy.items), ['x', 'a', 'b', 'y']);
 });
 
-test('a greyed row keeps to the row above it when the rows around it move, and Undo lands there', () => {
+test('a grayed row keeps to the row above it when the rows around it move, and Undo lands there', () => {
   const issue = issueWith('policy', ['a', 'b', 'c']);
   const waiting = [];
   takeOut(issue, waiting, 'b');
@@ -98,7 +98,7 @@ test('a greyed row keeps to the row above it when the rows around it move, and U
   assert.deepEqual(ids(items), ['c', 'a', 'b']);
 });
 
-test('a greyed row sits in its own group, and only its own section lists it', () => {
+test('a grayed row sits in its own group, and only its own section lists it', () => {
   const reg = SECTION_REGISTRY.find((s) => s.key === 'events');
   const issue = createEmptyIssue();
   issue.sections.events.items = [
@@ -174,7 +174,7 @@ test('with no newer pick, a featured event comes back featured, as it was', () =
   assert.equal(h.featured, true);
 });
 
-test('a greyed row whose row above went some other way is still listed, last, and Undo still brings it back', () => {
+test('a grayed row whose row above went some other way is still listed, last, and Undo still brings it back', () => {
   const issue = issueWith('policy', ['a', 'b', 'c']);
   const waiting = [];
   takeOut(issue, waiting, 'b');

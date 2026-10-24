@@ -30,7 +30,7 @@ export function howToLink(words, href) {
   return line;
 }
 
-/** A line saying something is coming, in the quiet grey (her red Forthcoming). */
+/** A line saying something is coming, in the quiet gray (her red Forthcoming). */
 export function forthcoming(words) {
   const line = el('p', 'forthcoming');
   line.append(faIcon('clock'), ` ${words} · Forthcoming`);

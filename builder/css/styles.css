@@ -155,7 +155,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
   padding-right: var(--spacing-05);
 }
 
-/* The step's card: a white box with a hairline on the grey page, its corners soft (A, Oct 23; square before). */
+/* The step's card: a white box with a hairline on the gray page, its corners soft (A, Oct 23; square before). */
 .wizard-step {
   background: var(--layer-02);
   border: 1px solid var(--border-subtle-01);
@@ -180,7 +180,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 .info-panel .note-icon { color: var(--support-info); }
 
 /* Every note that speaks: Carbon's inline notification,
-   the tint, the bar, the icon in its --support-* colour, then the words. */
+   the tint, the bar, the icon in its --support-* color, then the words. */
 .note {
   display: flex; align-items: center; flex-wrap: wrap; gap: var(--spacing-03);
   width: fit-content; max-width: 100%; box-sizing: border-box;
@@ -202,7 +202,7 @@ body:has([data-step="edit"]:not([hidden])) :is(.builder-head, .step-list, .wizar
 .note-slot:empty { display: none; }
 .note-slot { margin-top: var(--spacing-03); }
 
-/* Quiet words are ghost buttons: 32px, the link colour, a fill on hover, no
+/* Quiet words are ghost buttons: 32px, the link color, a fill on hover, no
    underline. .linkish is the same button as drawn by js/item-image.js, the
    picture control shared with the desk. */
 .ghost-btn, .linkish {
@@ -375,7 +375,7 @@ tr.is-drop-after td { box-shadow: inset 0 -2px 0 var(--button-primary); }
 .outline-title { color: var(--text-primary); text-decoration: none; }
 a.outline-title:hover { text-decoration: underline; text-decoration-color: var(--link-primary); }
 .outline-meta { display: block; font-size: 12px; line-height: 16px; color: var(--text-secondary); }
-/* Move to… sits on every row in gray and takes the link colour when the row
+/* Move to… sits on every row in gray and takes the link color when the row
    is hovered (Kate, Oct 7: "quiet, always there"). Remove is the red ghost
    word at rest, as on the desk's Next issue (Kate, Oct 23). */
 .outline-move { color: var(--text-secondary); }
@@ -414,7 +414,7 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
 .edit-doors { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-02); }
 .edit-doors .layout-check { margin: 0 var(--spacing-02); }
 .edit-removed-bar { display: flex; flex-direction: column; gap: var(--spacing-02); margin-top: var(--spacing-04); }
-/* The stage: the sheet alone, centred; the box hovers over it. */
+/* The stage: the sheet alone, centered; the box hovers over it. */
 .edit-layout--float { position: relative; justify-content: center; }
 
 /* The box (Kate, Oct 5): a card that hovers over the sheet's right side,
@@ -505,9 +505,9 @@ a.outline-title:hover { text-decoration: underline; text-decoration-color: var(-
   color: var(--text-helper);
 }
 
-/* A removed item stays listed where it stood until the step is left, greyed
+/* A removed item stays listed where it stood until the step is left, grayed
    with its own Undo: the desk's removed row on Next issue (Kate, Sep 23). The
-   Outline greys the row in place; Preview & Tweak lists it over the sheet. */
+   Outline grays the row in place; Preview & Tweak lists it over the sheet. */
 .edit-removed-row {
   display: flex;
   align-items: center;
@@ -844,7 +844,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 /* Locked while the restore banner asks: Carbon's disabled word. */
 .discarded-act .ghost-btn:disabled { color: var(--text-disabled); background: none; cursor: not-allowed; }
 
-/* A quiet error: no tint, no alert, the icon in the error's colour, and Retry. */
+/* A quiet error: no tint, no alert, the icon in the error's color, and Retry. */
 .discarded-error { display: flex; align-items: center; flex-wrap: wrap; gap: var(--spacing-02); flex-basis: 100%; }
 .discarded + .discarded-error { margin-top: var(--spacing-03); }
 .discarded-error .note-icon { color: var(--support-error); }

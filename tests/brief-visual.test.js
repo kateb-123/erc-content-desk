@@ -1,7 +1,7 @@
 // tests/brief-visual.test.js: the proposed chart (Kate, Oct 22: "i want to
 // see their figure and the proposed new one before it goes off to the
 // author"; her picks: the plan picks a chart or a table, D1 maroon bars).
-// Drawn as SVG in the brief's print colours from the Texas A&M brand guide,
+// Drawn as SVG in the brief's print colors from the Texas A&M brand guide,
 // Aggie Maroon bars and Dark Gray words, with the counts on the bars.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -13,7 +13,7 @@ const visual = (over = {}) => ({
   bars: [{ label: 'Week 1', value: 25 }, { label: 'Week 2', value: 40 }, { label: 'Week 3', value: 72 }], ...over,
 });
 
-test('the brief\'s colours, from the brand guide: Aggie Maroon bars, Dark Gray words', () => {
+test('the brief\'s colors, from the brand guide: Aggie Maroon bars, Dark Gray words', () => {
   assert.deepEqual(CHART_COLOURS, { bar: '#500000', ink: '#3E3E3E', quiet: '#707070', rule: '#D1D1D1', ground: '#FFFFFF' });
 });
 

@@ -6,7 +6,7 @@ import { isErc, keptUntyped, readerQueue, sortList, oldestWait, fixReasons, dupe
 
 const at = (id, status, submitted_at, extra = {}) => ({ id, status, type: 'research', subtype: 'Report', submitted_at, ...extra });
 
-test('sortList: the waiting rows newest first, the skipped ones under them newest first, this visit\'s decisions greyed last', () => {
+test('sortList: the waiting rows newest first, the skipped ones under them newest first, this visit\'s decisions grayed last', () => {
   const rows = [
     at('n1', 'new', '2026-09-10T10:00:00Z'),
     at('n2', 'new', '2026-09-12T10:00:00Z'),
@@ -22,7 +22,7 @@ test('sortList: the waiting rows newest first, the skipped ones under them newes
   assert.deepEqual(done.map(r => r.id), ['k1', 't1']);
 });
 
-test('sortList: a row skipped this visit is still live, at the bottom with the skipped; a row kept from Skipped greys', () => {
+test('sortList: a row skipped this visit is still live, at the bottom with the skipped; a row kept from Skipped grays', () => {
   const rows = [at('a', 'circleback', '2026-09-12T10:00:00Z'), at('b', 'new', '2026-09-10T10:00:00Z'), at('c', 'kept', '2026-09-11T10:00:00Z')];
   const { live, done } = sortList(rows, new Set(['a', 'c']));
   assert.deepEqual(live.map(r => r.id), ['b', 'a']);

@@ -3,7 +3,7 @@
  * the proposed new one before it goes off to the author"; her pick D1, maroon
  * bars with the values on them). Pure: an SVG string from the proposal, drawn
  * on the brief page beside the paper's own figure and saved as a PNG for the
- * author round. These are the printed brief's colours, from the Texas A&M
+ * author round. These are the printed brief's colors, from the Texas A&M
  * brand guide (Aggie Maroon, Dark Gray, Gray, Light Gray), not the desk's:
  * the chart belongs to the brief, the way the email's maroon belongs to the
  * newsletter template. Every word from the model is escaped.

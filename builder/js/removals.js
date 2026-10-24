@@ -2,7 +2,7 @@
  * removals.js: Remove with its Undo in place (Kate, Sep 23: the desk's own
  * pattern, Next issue's removed rows). Remove takes an item out of the issue
  * at once, so the preview and the saved draft never carry it, and the step
- * keeps it listed where it stood, greyed with its own Undo, until the step is
+ * keeps it listed where it stood, grayed with its own Undo, until the step is
  * left; app.js holds the waiting list and drops it then. Each waiting removal
  * remembers the row listed just above it (an item, or another waiting
  * removal), so it keeps its place while other rows come, go and move, and
@@ -71,7 +71,7 @@ export function takeOut(issue, waiting, itemId) {
 }
 
 /**
- * Undo: the waiting item goes back into the issue under the row its greyed
+ * Undo: the waiting item goes back into the issue under the row its grayed
  * row is listed under, and stops waiting. One event is featured, so a
  * featured item that comes back after another was picked comes back plain.
  * @param {object} issue
@@ -91,7 +91,7 @@ export function putBack(issue, waiting, itemId) {
 }
 
 /** Where a waiting item goes back in its section's items: right after the
- *  nearest item above its greyed row, at the head when there is none, and at
+ *  nearest item above its grayed row, at the head when there is none, and at
  *  its old index when the trail above it is lost. */
 function returnIndex(items, waiting, entry) {
   const trail = new Set();

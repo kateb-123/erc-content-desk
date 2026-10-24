@@ -35,7 +35,7 @@ export function busyText(message) {
 /**
  * A wait, in words (Kate, Sep 23: the sliding dots went; her pick of nine was
  * shimmering words). The words say what is happening, and css/shell.css runs a
- * soft light across them; reduced motion and forced colours hold them still.
+ * soft light across them; reduced motion and forced colors hold them still.
  */
 export function busyWords(message) {
   const words = document.createElement('span');
@@ -46,7 +46,7 @@ export function busyWords(message) {
 
 
 /* The line icons of Kate's pick A (Oct 23): one stroke, round ends, drawn on
-   a 24px grid and coloured by currentColor. Each is its shapes, in order. */
+   a 24px grid and colored by currentColor. Each is its shapes, in order. */
 const LINE_ICONS = {
   home: [['path', { d: 'M4 10.2 12 4l8 6.2V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z' }]],
   submit: [['path', { d: 'M12 4v9' }], ['path', { d: 'm8.5 9.5 3.5 3.5 3.5-3.5' }], ['path', { d: 'M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4' }]],
@@ -66,7 +66,7 @@ const LINE_ICONS = {
   warning: [['path', { d: 'M10.4 4.8a1.8 1.8 0 0 1 3.2 0l7 12.4a1.8 1.8 0 0 1-1.6 2.8H5a1.8 1.8 0 0 1-1.6-2.8z' }], ['path', { d: 'M12 10v3.6' }], ['path', { d: 'M12 16.8v.1' }]],
 };
 
-/** One of the line icons, for decoration: hidden from assistive tech, sized and coloured by CSS. */
+/** One of the line icons, for decoration: hidden from assistive tech, sized and colored by CSS. */
 export function lineIcon(name, className = '') {
   const NS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(NS, 'svg');

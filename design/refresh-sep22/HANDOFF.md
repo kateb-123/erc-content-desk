@@ -19,7 +19,7 @@ the Newsletter or the Policy Exchange.
 
 `designs/Submit content.dc.html` and `designs/Content Sort.dc.html` are **design
 references written in HTML**. They are prototypes of the intended look and
-behaviour — not production code to lift. They render through a small runtime
+behavior — not production code to lift. They render through a small runtime
 (`designs/support.js`, which must sit beside them) that is part of the design
 tool, not part of the desk.
 
@@ -34,7 +34,7 @@ Both files open directly in a browser if you want to click through them.
 
 ## Fidelity
 
-**High fidelity.** Final colours, type, spacing and interaction behaviour. Every
+**High fidelity.** Final colors, type, spacing and interaction behavior. Every
 value in this README is the value in the design; recreate it to the pixel using
 the desk's own CSS. Stand-in content (queue items, sources, dates, URLs) is
 placeholder data — wire it to the real queue. Anything in square brackets, e.g.
@@ -52,12 +52,12 @@ Those rules need updating, not enforcing:
 | Radius 0 on everything but tags | **2px** on buttons, fields and boxes; 12px on pills |
 | Desk fills are ink, navy belongs to the builder | **Navy `#1e416b` fills on the desk too** (primary buttons, the picked type chip) |
 | Group labels sentence case, no uppercase anywhere | **Uppercase 12px/.7px tracking** micro-labels, and section headers sit over a **2px orange rule** |
-| Grey Carbon layers (`--layer-01` `#f4f4f4`) inside cards | An **ink wash** (`rgba(35,32,27,.045)`) for inner surfaces |
+| Gray Carbon layers (`--layer-01` `#f4f4f4`) inside cards | An **ink wash** (`rgba(35,32,27,.045)`) for inner surfaces |
 | Carbon's inline notification tints | Kept for the "needs doing" note only: Globe blue `#e8f2f6` on a `#006c93` bar |
 
 Unchanged and still binding: **orange only marks** — it never fills a button and
 never carries text (2.5:1 on white); **no maroon in-app**; **no shadows
-anywhere**; colour is never the only signal (a status colour always ships with
+anywhere**; color is never the only signal (a status color always ships with
 its icon and a word); every value lives in one tokens file.
 
 `theme-tokens.css` in this bundle is the new value set, written in the same
@@ -137,7 +137,7 @@ White `#ffffff`, 1px `#ded8cd`, radius 2px, padding 28px, inner
 > Note: the old front page had both an "Add a doc or spreadsheet" line and a
 > separate bulk-upload door. They are merged into this one fold. If the bulk
 > import needs its own progress popup, keep the Carbon blocking-progress
-> behaviour already spec'd for "Add all".
+> behavior already spec'd for "Add all".
 
 ## Queue (left column, under the form box)
 
@@ -225,7 +225,7 @@ White box, 1px `#ded8cd`, radius 2px.
   `<source> · added by <who> · <date>`.
 - **Chosen row**: 3px `#ff8200` left border, ground `rgba(35,32,27,.06)`, title
   at 600.
-- **Order**: waiting items newest first, then skipped ones (each with a grey
+- **Order**: waiting items newest first, then skipped ones (each with a gray
   `Skipped` pill at the row's right), then what was kept or deleted this visit —
   those in `#a8a096` with their own underlined **Undo** at the right.
 - **Footer**: `Showing 13 of 13` at 13/19 `#8c8478`, `11px 16px`.
@@ -322,11 +322,11 @@ link, and give it somewhere to go."
 
 ---
 
-## Interactions & behaviour
+## Interactions & behavior
 
 **Submit content**
 - Typing in the link field enables **Add to the queue** once a type is also
-  picked; until then it is the disabled grey.
+  picked; until then it is the disabled gray.
 - Submitting prepends the item to the Queue list, writes
   `Added: <title>.` plus **Undo** to the status line, and clears the form.
   Undo removes that item again and reports `Removed from the queue.`
@@ -342,16 +342,16 @@ link, and give it somewhere to go."
 - **Keep and next** / **Skip for now** / **Delete** move the item to that
   status, advance the card to the next waiting item, and write
   `Kept: <title>.` / `Skipped: …` / `Deleted: …` with **Undo** to the status
-  line. No motion on the decision — the row greys in place at the bottom of the
+  line. No motion on the decision — the row grays in place at the bottom of the
   list. That is what records it.
-- A greyed row's own **Undo** returns it to waiting and selects it.
+- A grayed row's own **Undo** returns it to waiting and selects it.
 - **Keyboard** (Sort tab, ignored while a field has focus): ↑/↓ move the
   selection, `K` keeps, `S` skips, `D` deletes, `U` undoes.
 - Tabs switch in place. **Rewrite N descriptions** clears every pending rewrite
   at once and reports it in the status line.
 - Finalize's **Keep** accepts one rewrite; **Delete** removes the item.
 
-**Motion.** 70ms on a colour, 110ms on a move, `cubic-bezier(.2,0,.38,.9)`,
+**Motion.** 70ms on a color, 110ms on a move, `cubic-bezier(.2,0,.38,.9)`,
 nothing over 240ms, nothing decorative. `prefers-reduced-motion` kills all of
 it. No press scale. No shadows — layers separate things and focus is an outline:
 `2px solid #23201b`, `outline-offset: 2px`.
@@ -378,7 +378,7 @@ must never drop what is being typed.
 
 ## Design tokens
 
-See `theme-tokens.css` — every colour, face, size and duration used by both
+See `theme-tokens.css` — every color, face, size and duration used by both
 screens, written to drop into `design-system/tokens.css`.
 
 ## Assets

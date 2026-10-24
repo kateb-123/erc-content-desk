@@ -721,7 +721,7 @@ export function renderBody(issue, opts = {}) {
     `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:${C.g200}; width:100%;"><tbody><tr><td>${inner}</td></tr></tbody></table></div>`;
 }
 
-// Dark-mode guards: every background and text colour the email uses, pinned.
+// Dark-mode guards: every background and text color the email uses, pinned.
 const BGS = [C.white, C.g100, C.tint, C.g200, C.maroon, C.maroonDark, C.g900];
 const INKS = [C.g900, C.g800, C.g700, C.g600, C.maroon, C.maroonLight, C.white, C.cream, C.ivory, C.g300, C.g400];
 function guards() {

@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 // perfect"): the hubs as one list per step under a label, Bring it in, Send it
 // out and Research, and Public links as a menu at the right, with the team's
 // own submit page under it to open in a tab and pin. Since her pick A of the
-// looks (the same evening) each list is a white grouped list on the grey page
+// looks (the same evening) each list is a white grouped list on the gray page
 // and each row keeps her line rules: one line per kind of fact, the first fact
 // darker, no line wrapping.
 
@@ -190,7 +190,7 @@ test('a redraw recounts the rows and keeps the menu, so a Copy link that said Co
 const css = readFileSync(new URL('../css/styles.css', import.meta.url), 'utf8');
 const rule = sel => css.match(new RegExp(`(?:^|\\n|\\})\\s*${sel.replace(/[.*()[\]:+>]/g, '\\$&')}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
 
-test('the look: white grouped lists on the grey page beside a 304px menu, the old card grid gone', () => {
+test('the look: white grouped lists on the gray page beside a 304px menu, the old card grid gone', () => {
   assert.match(rule('.home-hubs'), /grid-template-columns:\s*minmax\(0, 1fr\) 304px/);
   const list = rule('.home-list');
   assert.match(list, /background:\s*var\(--layer\)/);

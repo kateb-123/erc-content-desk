@@ -26,7 +26,7 @@ let selectedId = null;      // the row the card shows
 let shownId = null;         // the row the card showed last draw: a new one is brought into view
 let noneOpen = false;       // the No rewrite needed group, folded by default
 // Deleted from this screen since it opened, id -> the row as it was. They stay
-// listed, greyed, with an Undo: a mis-click on the red word
+// listed, grayed, with an Undo: a mis-click on the red word
 // beside Edit is one click from repair, as on Sort and the queue.
 const justDeleted = new Map();
 
@@ -355,7 +355,7 @@ export function renderFinalize(container, props) {
       item.dataset.focus = `row:${row.id}`;
       if (row.id === selectedId) item.setAttribute('aria-current', 'true');
       if (group.key === 'rewrite') {
-        // Colour is never the only signal: the triangle, as on Sort's rows.
+        // Color is never the only signal: the triangle, as on Sort's rows.
         const mark = el('span', 'fix-mark');
         mark.append(lineIcon('warning'));
         item.classList.add('has-mark');

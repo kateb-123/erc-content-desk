@@ -10,11 +10,11 @@
 .skip-to-main { position: absolute; left: var(--spacing-05); top: -100px; z-index: 100; height: 40px; padding: 0 var(--spacing-05); display: inline-flex; align-items: center; background: var(--layer-02); color: var(--link-primary); font: inherit; letter-spacing: 0; text-decoration: none; border: 1px solid var(--border-subtle-01); border-radius: var(--radius); }
 .skip-to-main:focus { top: var(--spacing-03); outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
 
-/* The line icons (js/icons.js): one stroke, round ends, the colour of their words. */
+/* The line icons (js/icons.js): one stroke, round ends, the color of their words. */
 .line-icon { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
 /* ── The sidebar ─────────────────────────────────────────────────────────
-   A grey column the height of the window, still while the page beside it
+   A gray column the height of the window, still while the page beside it
    scrolls: the desk's name, Home, the hubs by step under the front page's
    group names, each with what waits there at its right; How-tos, I need help!
    and Sign out at its foot. */
@@ -81,7 +81,7 @@ button.sidebar-item:disabled { background: transparent; color: var(--text-disabl
 .topbar a:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
 
 /* A wait, in words (Kate, Sep 23: the sliding dots went; her pick of nine was
-   shimmering words). The words say what is happening in the quiet grey, and a
+   shimmering words). The words say what is happening in the quiet gray, and a
    soft blue light sweeps across them left to right. The one copy for both
    apps: every page loads this file. */
 .busy-words {
@@ -93,8 +93,8 @@ button.sidebar-item:disabled { background: transparent; color: var(--text-disabl
 }
 @keyframes busy-sheen { from { background-position: 100% 0; } to { background-position: -150% 0; } }
 
-/* Held still: plain grey words with no light, for reduced motion and in
-   forced colours, where text drawn through a background would vanish. */
+/* Held still: plain gray words with no light, for reduced motion and in
+   forced colors, where text drawn through a background would vanish. */
 @media (prefers-reduced-motion: reduce) {
   .busy-words { animation: none; background: none; color: var(--text-secondary); }
   .sidebar-item { transition: none; }

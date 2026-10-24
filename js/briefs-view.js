@@ -5,7 +5,7 @@
  * briefs-ui.js draws what these say.
  *
  * The seven stages are her pipeline as she ran the Bowen brief; the last
- * two are round two and drawn greyed. A brief's folder on the team drive is
+ * two are round two and drawn grayed. A brief's folder on the team drive is
  * the author's last name, the year and a topic word (her pick, Oct 21,
  * since an author repeats).
  */
