@@ -31,7 +31,7 @@ const html = `<!DOCTYPE html>
     <p class="ht-lede">${esc(lede)}</p>
 ${body}
   </main>
-  <script type="module" src="/js/howto-sidebar.js?v=2"></script>
+  <script type="module" src="/js/howto-sidebar.js?v=3"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

@@ -10,6 +10,7 @@
  * Sheet 1 is the list to add from.
  */
 import { listservStatus, SIGNUP_SHEET, SHEET_STEPS } from './listserv-view.js';
+import { signupsDown, DOWN_WORDS, BRING_BACK } from './listserv-view.js';   // the status follows the script (Oct 25)
 import { PUBLIC_LINKS, copyLinkButton } from './public-links.js';
 import { hubHead, HUB_LEDES } from './hub-head.js';
 import { faIcon } from './icons.js';
@@ -25,6 +26,18 @@ function stat(label, ...value) {
   return row;
 }
 
+/** Down: the triangle and the words, then the link to the guide's Redeploy. */
+function downStatus() {
+  const words = el('span', 'hub-warn');
+  words.append(faIcon('triangle-exclamation'), DOWN_WORDS);
+  const back = el('a', 'hub-back', BRING_BACK.label);
+  back.href = BRING_BACK.href;
+  back.dataset.focus = 'back';
+  const box = el('span', 'hub-down');
+  box.append(words, ' ', back);
+  return box;
+}
+
 export function renderListserv(container, { signups, today, onRetry }) {
   const focusKey = focusKeyIn(container);   // a late load redraws the page; the keyboard keeps its place
   // Copy link keeps its node, so a Copied it just said survives the redraw.
@@ -35,7 +48,9 @@ export function renderListserv(container, { signups, today, onRetry }) {
   open.dataset.focus = 'form';
   open.append(' ', faIcon('arrow-up-right-from-square'), el('span', 'sr-only', ' (opens in a new tab)'));
   const formBox = el('div', 'hub-box');
-  const status = el('span', s.form.startsWith('Live') ? 'hub-ok' : 'hub-quiet', s.form);
+  // The status follows the script (the owner, Oct 25): down, it says so in the
+  // warning look, the triangle and the words, with the way to bring it back.
+  const status = signupsDown(signups) ? downStatus() : el('span', s.form.startsWith('Live') ? 'hub-ok' : 'hub-quiet', s.form);
   // A check or a count that failed says so, with its way to try again (review, Oct 6).
   const retry = s.retry && onRetry
     ? [' ', button('Try again', 'linkish', { focus: 'retry', onClick: () => { retry[1].disabled = true; onRetry(); } })]

@@ -107,3 +107,49 @@ test('the file mounts itself into the page\'s sidebar, and only where there is o
   assert.match(src, /import \{ hubCards \} from '\.\/home-panel\.js';/, 'the desk\'s own counts');
   assert.match(src, /import \{ fetchDesk, readReply \} from '\.\/sheet-client\.js';/, 'the desk\'s own reads');
 });
+
+// The builder and the email's three pages (the owner, Oct 25): their sidebar
+// showed the names alone, while every desk screen and how-to shows what waits.
+// They draw their own sidebar as before, for their own screen, and take the
+// counts from the how-tos' reader, countSidebar: one paint at once with the
+// names, then one as each read lands, never holding the page.
+const { countSidebar, isHowToPage } = await import('../js/howto-sidebar.js');
+const readSrc = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+
+test('countSidebar: the names at once, then the desk\'s own counts, from the same three reads', async () => {
+  const asked = [];
+  globalThis.fetch = async (url) => { asked.push(String(url)); return reply(replies[String(url)]); };
+  const painted = [];
+  const done = countSidebar((badges) => painted.push(badges), { today });
+  assert.equal(painted.length, 1, 'one paint before any read answers');
+  assert.deepEqual(Object.values(painted[0]).filter(Boolean), [], 'names alone');
+  await done;
+  assert.deepEqual(painted.at(-1), navBadges(hubCards({ rows, schedule, today, loaded: true, preview: check, signups })), 'what the front page\'s sidebar shows');
+  assert.deepEqual([...asked].sort(), ['/api/listserv', '/api/publish', '/api/sheet']);
+  globalThis.fetch = async (url) => (String(url) === '/api/publish' ? reply({ ok: false, error: 'The Exchange did not answer.' }, 502) : reply(replies[String(url)]));
+  const quiet = [];
+  await countSidebar((badges) => quiet.push(badges), { today });
+  assert.equal(quiet.at(-1).exchange, '', 'Policy Exchange stays blank until its live check lands');
+  assert.equal(quiet.at(-1).sort, '2');
+});
+
+test('only a how-to page mounts the sidebar by itself; the builder and the email pages draw their own', () => {
+  for (const p of ['/how-to/', '/how-to', '/how-to/sort/', '/how-to/google-scripts/index.html']) assert.equal(isHowToPage(p), true, p);
+  for (const p of ['/', '/builder/', '/newsletter/read-me/', '/newsletter/sample/', '/how-tos/', undefined]) assert.equal(isHowToPage(p), false, String(p));
+  assert.match(readSrc('js/howto-sidebar.js'), /if \(nav && isHowToPage\(globalThis\.location\?\.pathname\)\) mountHowtoSidebar\(nav\);/);
+});
+
+test('the builder and the email\'s three pages draw the sidebar with the counts, for their own screen, never waiting on them', () => {
+  const builder = readSrc('builder/js/app.js');
+  assert.match(builder, /import \{ countSidebar \} from '\.\.\/\.\.\/js\/howto-sidebar\.js';/);
+  assert.match(builder, /countSidebar\(badges => renderSidebar\(sidebar, \{ screen: 'builder', badges \}\)\);/);
+  const email = readSrc('js/email-page.js');
+  assert.match(email, /import \{ countSidebar \} from '\/js\/howto-sidebar\.js';/);
+  assert.match(email, /countSidebar\(badges => renderSidebar\(sidebar, \{ screen: 'emailpage', badges \}\)\);/);
+  assert.ok(email.indexOf('countSidebar(') < email.indexOf('await fetch'), 'the sidebar never waits for the email to draw');
+  for (const page of ['newsletter/template/index.html', 'newsletter/sample/index.html']) assert.match(readSrc(page), /<script type="module" src="\/js\/email-page\.js\?v=\d+"><\/script>/, page);
+  const readMe = readSrc('newsletter/read-me/index.html');
+  assert.match(readMe, /import \{ countSidebar \} from "\/js\/howto-sidebar\.js\?v=\d+";/);
+  assert.match(readMe, /countSidebar\(badges => renderSidebar\(sidebar, \{ screen: "emailpage", badges \}\)\);/);
+  for (const src of [builder, email, readMe]) assert.doesNotMatch(src, /await countSidebar/, 'never awaited');
+});

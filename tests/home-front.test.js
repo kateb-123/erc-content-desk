@@ -215,3 +215,32 @@ test('on a narrow page the menu drops under the lists, so a row keeps its width'
   const narrow = css.match(/@media \(max-width: 1199px\) \{([\s\S]*?)\n\}/)?.[1] ?? '';
   assert.match(narrow, /\.home-hubs \{[^}]*grid-template-columns:\s*minmax\(0, 1fr\)/);
 });
+
+// The owner, Oct 25: the Listserv row said Live with its green dot while the
+// sign-up script was down. While the script does not answer, the row drops
+// Live and its dot, and a note of its own under it, the schedule warning's
+// look, says so with the way to bring it back; the next answer clears it.
+test('the Listserv row while the sign-up script is down: no Live, no dot, a warning note under it with the way back', () => {
+  const page = draw({ signups: { live: true, sheet: false, waiting: null, last: '2026-10-21' } });
+  const list = page.querySelectorAll('.home-groups .home-list')[1];
+  const at = list.children.findIndex(n => n.dataset.key === 'listserv');
+  const row = list.children[at];
+  assert.equal(row.querySelector('.home-dot'), null, 'no green dot');
+  assert.deepEqual(texts(row.querySelectorAll('.home-line')), ['to be added', 'Last sign-up Oct 21']);
+  assert.equal(row.querySelector('.home-count').textContent, '', 'no number');
+  const note = list.children[at + 1];
+  assert.ok(note.matches('.home-warn'), 'the note under the row');
+  assert.ok(note.querySelector('.line-icon-warning'), 'with its triangle');
+  assert.equal(note.textContent.trim(), "Down: the sign-up script isn't answering, so sign-ups fail. How to bring it back");
+  const back = note.querySelector('a');
+  assert.equal(back.href, '/how-to/google-scripts/#redeploy');
+  assert.equal(back.textContent, 'How to bring it back');
+  assert.ok(list.children[at + 2].matches('.home-row'), 'then the next row');
+
+  const up = draw().querySelectorAll('.home-groups .home-list')[1];
+  const upAt = up.children.findIndex(n => n.dataset.key === 'listserv');
+  assert.ok(up.children[upAt].querySelector('.home-dot'), 'the dot is back once the script answers');
+  assert.ok(up.children[upAt + 1].matches('.home-row'), 'and no note');
+  // The schedule warning keeps its words alone.
+  assert.equal(draw().querySelector('.home-warn').querySelector('a'), null);
+});

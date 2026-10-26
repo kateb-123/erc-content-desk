@@ -21,6 +21,7 @@ import { getField, setField } from './editpath.js';
 import { computePreviewScale } from './preview.js';
 import { takeOut, putBack, listedItems, listedSections } from './removals.js';
 import { renderSidebar } from '../../js/shell-ui.js';
+import { countSidebar } from '../../js/howto-sidebar.js';
 import { STEPS, canEnterStep, lockedMessage, restoreBannerMessage, stepState, archivedEntry, archiveAskMessage, isoToDisplayDate, displayDateToISO, issueDateChoices, SAMPLES, sampleValue, sampleOf, SAMPLE_ARCHIVE_MESSAGE } from './wizard.js';
 import { normalizeLinkUrl, itemArrowMove } from './editing.js';
 // The per-issue layout options the Outline sets (Claude Design handoff, Oct 2026).
@@ -2828,8 +2829,10 @@ function renderDiscardedDrafts(container) {
   load();
 }
 
-// The desk's sidebar: the builder marks Newsletter.
-renderSidebar(document.querySelector('.sidebar'), { screen: 'builder' });
+// The desk's sidebar: the builder marks Newsletter, with what waits at each
+// item, counted the way the how-tos count it (Oct 25); the page never waits on it.
+const sidebar = document.querySelector('.sidebar');
+countSidebar(badges => renderSidebar(sidebar, { screen: 'builder', badges }));
 // A saved issue locks the Outline's Issue before it is drawn, so the first render already knows.
 const savedIssue = loadState();
 restorePending = Boolean(savedIssue);

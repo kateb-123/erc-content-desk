@@ -518,6 +518,8 @@ a.home-name:focus-visible { outline: none; box-shadow: none; }   /* the row carr
 /* The newsletter's schedule warning, a note of its own under its row, lined up with the words. */
 .home-warn { display: flex; align-items: flex-start; gap: var(--spacing-03); margin: 0 var(--spacing-05) var(--spacing-04) calc(var(--spacing-05) + 32px + var(--spacing-04)); padding: var(--spacing-03) var(--spacing-04); border-radius: var(--radius); background: var(--notification-warning-background); color: var(--text-warning-on-tint); font: var(--meta-type); }
 .home-warn .line-icon { width: 16px; height: 16px; margin-top: 1px; stroke-width: 2; color: var(--support-warning); }
+.home-warn-link { color: var(--link-primary); text-decoration: underline; }   /* the Listserv's way back (Oct 25) */
+.home-warn-link:hover { color: var(--link-primary-hover); }
 /* Public links: a row a page, its icon, its name and Copy link; then the
    team's own submit page on the quiet surface, with how to pin it. */
 .home-links-box .home-tile { width: 28px; height: 28px; border-radius: var(--radius-input); background: var(--layer-accent-01); color: var(--icon-secondary); }
@@ -1355,6 +1357,11 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
 .hub-stat-v { font: var(--body-type); color: var(--ink); }
 .hub-ok { color: var(--text-success); font-weight: 700; }
 .hub-quiet { color: var(--text-helper); }
+/* The status follows the script (Oct 25): down, the triangle and the words in the warning look, then the way back. */
+.hub-warn { color: var(--warn); font-weight: 600; }
+.hub-warn .fa-solid { margin-right: var(--spacing-03); color: var(--warn-mark); }
+.hub-back { color: var(--link-primary); text-decoration: underline; }
+.hub-back:hover { color: var(--link-primary-hover); }
 .hub-link { color: var(--link-primary); text-decoration: underline; }
 .hub-link:hover { color: var(--link-primary-hover); }
 .hub-link .fa-solid { font-size: 11px; }

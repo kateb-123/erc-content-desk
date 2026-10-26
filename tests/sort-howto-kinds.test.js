@@ -241,3 +241,32 @@ test('a rule\'s dot sits centered between the count and the rule, as layout D dr
   const esc = s => s.replace(/[()]/g, '\\$&');
   assert.match(kinds, new RegExp(`\\.sb-rule \\{[^}]*display: inline-flex;[^}]*gap: ${esc(chipGap)}`), 'the dot and the rule by the chip\'s own gap, not a bare space after a wider gap (the dot read lopsided, hugging the rule)');
 });
+
+// The scraper slide's pins (the owner, Oct 25): pins 1 and 2 sat on the
+// buttons' words in the still ("Run th(1)craper", "Add a(2)ource"), and 3 on
+// the last run's words. capture.mjs now sets a pin at its control's top right
+// corner or just beside it, and the slide's pins are the capture's.
+import { pinPoint } from '../how-to/pin-point.mjs';
+
+test('pinPoint: the middle by default, 10px in from the left, the top right corner, or just outside the left edge', () => {
+  const box = { x: 100, y: 200, width: 160, height: 40 };
+  assert.deepEqual(pinPoint(box), { x: 180, y: 220 });
+  assert.deepEqual(pinPoint(box, 'left'), { x: 110, y: 220 }, 'as before');
+  assert.deepEqual(pinPoint(box, 'corner'), { x: 260, y: 200 });
+  assert.deepEqual(pinPoint(box, 'before'), { x: 82, y: 220 });
+  assert.match(read('how-to/capture.mjs'), /import \{ pinPoint \} from '\.\/pin-point\.mjs';/, 'the capture places its pins by it');
+});
+
+test('the scraper slide pins its two buttons at their corners and the last run beside its words', () => {
+  const shot = JSON.parse(read('how-to/sort/shots.json')).find(s => s.name === 'scraper');
+  assert.deepEqual(shot.pins.map(p => p.at), ['corner', 'corner', 'before']);
+  const m = JSON.parse(read('how-to/sort/shots/scraper.json'));
+  assert.deepEqual(m.pins.map(p => p.label), shot.pins.map(p => p.label));
+  const [run, add, last] = m.pins;
+  assert.ok(run.y < last.y && add.y === run.y, 'the buttons\' corners share a line above the last run');
+  assert.ok(last.x < 5, 'the last run\'s pin sits at the left of its words');
+  const html = read('how-to/sort/index.html');
+  const slide = html.slice(html.indexOf('src="shots/scraper.png"'));
+  const pins = [...slide.matchAll(/class="pin(?: up)?" style="--x:(-?[\d.]+);--y:(-?[\d.]+)" aria-label="([^"]*)"/g)].slice(0, 3);
+  assert.deepEqual(pins.map(p => [+p[1], +p[2]]), m.pins.map(p => [p.x, p.y]), 'the built slide carries the capture\'s pins');
+});

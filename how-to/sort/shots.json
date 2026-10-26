@@ -14,17 +14,20 @@
       {
         "selector": "#screen-queue .qh-scraper button:has-text(\"Run the scraper\")",
         "label": "Run the scraper: starts a run now",
-        "nth": 0
+        "nth": 0,
+        "at": "corner"
       },
       {
         "selector": "#screen-queue .qh-scraper button:has-text(\"Add a source\")",
         "label": "Add a source: a site or feed for the scraper to read",
-        "nth": 0
+        "nth": 0,
+        "at": "corner"
       },
       {
         "selector": "#screen-queue p.qh-scraper-line:has(.qh-scraper-link)",
         "label": "The last run: what it found. Open the sheet goes to Newsletter scrapes",
-        "nth": 0
+        "nth": 0,
+        "at": "before"
       }
     ]
   },

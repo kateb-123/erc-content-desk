@@ -6,7 +6,7 @@ import { HUBS } from './shell-view.js';
 import { exchangeStatus } from './exchange-view.js';
 import { PUBLIC_LINKS } from './public-links.js';
 import { EMAIL_PAGES } from './email-pages.js';
-import { SIGNUP_SHEET } from './listserv-view.js';
+import { SIGNUP_SHEET, signupsDown, DOWN_WORDS, BRING_BACK } from './listserv-view.js';
 import { briefsCard } from './briefs-view.js';
 import { scheduleEndingWords } from './schedule.js';
 
@@ -55,8 +55,12 @@ export function hubCards({ rows = [], schedule = [], today = '', loaded = false,
     ? archive.map(e => e?.date).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d ?? '') && d <= today).sort().at(-1) ?? ''
     : '';
 
+  // The status follows the script (the owner, Oct 25): while it does not
+  // answer the row drops Live and its dot, and the note under it says so.
+  const down = signupsDown(signups);
   const signupFoot = !signups || signups.error ? ''
     : !signups.live ? 'Not set up'
+    : down ? (signups.last ? `Last sign-up ${isoToShort(signups.last, today)}` : '')
     : signups.last ? `Live · last sign-up ${isoToShort(signups.last, today)}` : 'Live';
 
   const exchange = exchangeStatus({ rows, today, loaded, preview, hubUpdated });
@@ -69,7 +73,7 @@ export function hubCards({ rows = [], schedule = [], today = '', loaded = false,
       ? { count: loaded ? issueRows(rows, next).length : null, sub: `in the ${isoToShort(next, today)} issue · ${lower(sendsIn(next, today))}` }
       : { sub: 'No issue scheduled' }), foot: sent ? `Last sent ${isoToShort(sent, today)}` : '', warn: loaded ? scheduleEndingWords(schedule, today, d => isoToShort(d, today)) : '', links: EMAIL_PAGES.map(p => ({ label: p.label, href: p.href, blank: true })) }),
     // The sign-up sheet rides the card too (Kate, Oct 8), opening in a new tab.
-    card('listserv', { count: signups?.sheet && Number.isFinite(signups.waiting) ? signups.waiting : null, sub: 'to be added', foot: signupFoot, live: Boolean(signups?.live && !signups.error), links: [{ label: SIGNUP_SHEET.label, href: SIGNUP_SHEET.href, blank: true }] }),
+    card('listserv', { count: signups?.sheet && Number.isFinite(signups.waiting) ? signups.waiting : null, sub: 'to be added', foot: signupFoot, live: Boolean(signups?.live && !signups.error && !down), warn: down ? DOWN_WORDS : '', warnLink: down ? BRING_BACK : null, links: [{ label: SIGNUP_SHEET.label, href: SIGNUP_SHEET.href, blank: true }] }),
     card('links', { counts: false, copies: PUBLIC_LINKS }),
     // guess: the count is the stand-in until the live check lands, which the sidebar never shows (Kate, Oct 23).
     card('exchange', { count: exchange.waiting, guess: !preview, sub: 'waiting to publish', foot: exchange.site === 'Live' ? `Live · updated ${exchange.updated}` : '', live: exchange.site === 'Live' }),

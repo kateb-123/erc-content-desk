@@ -447,7 +447,7 @@ const html = `<!DOCTYPE html>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
-  <link rel="stylesheet" href="/css/styles.css?v=194" />
+  <link rel="stylesheet" href="/css/styles.css?v=195" />
   <link rel="stylesheet" href="/css/shell.css?v=10" />
   <script>document.documentElement.classList.add('js');</script>
   <!-- Built by how-to/make-deck.mjs from ${slug}/deck.json; the styles and script are the newsletter how-to's. -->
@@ -495,7 +495,7 @@ const html = `<!DOCTYPE html>
     // ---- Keep or delete, as flashcards: a real card asks, Keep or Delete answers, its group lights ----
     (${flashcards})();
   </script>` : ''}
-  <script type="module" src="/js/howto-sidebar.js?v=2"></script>
+  <script type="module" src="/js/howto-sidebar.js?v=3"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

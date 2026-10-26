@@ -4,6 +4,21 @@
  * waiting, last, since }, counts and dates only; null while it is asked.
  */
 import { isoToShort } from './queue-view.js';
+import { partHref } from './howto-index.js';
+
+/** The sign-up script is down (the owner, Oct 25): the form is set up, but its
+ *  script did not answer the count, and then every public sign-up fails too
+ *  ("Couldn't reach the list just now"). Read from each answer, so the first
+ *  answer after a redeploy puts the status back by itself. */
+export function signupsDown(signups) {
+  if (!signups || signups.error || !signups.live) return false;
+  return !(signups.sheet === true && Number.isFinite(signups.waiting));
+}
+
+export const DOWN_WORDS = "Down: the sign-up script isn't answering, so sign-ups fail.";
+
+/** Where it is brought back: the Google scripts guide's Redeploy. */
+export const BRING_BACK = { label: 'How to bring it back', href: partHref('scripts', 'redeploy') };
 
 /**
  * Since Oct 8 (Kate: "does it keep a live count from the sheet?"; her pick)
@@ -15,7 +30,7 @@ import { isoToShort } from './queue-view.js';
 export function listservStatus(signups, today) {
   if (!signups) return { form: 'Checking', last: '', waiting: null, note: '', retry: false, updated: '' };
   if (signups.error) return { form: "Couldn't check just now", last: '', waiting: null, note: '', retry: true, updated: '' };
-  const form = signups.live ? 'Live, taking sign-ups' : 'Not set up';
+  const form = !signups.live ? 'Not set up' : signupsDown(signups) ? DOWN_WORDS : 'Live, taking sign-ups';
   const counted = signups.sheet === true && Number.isFinite(signups.waiting);
   return {
     form,

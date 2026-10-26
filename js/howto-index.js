@@ -64,6 +64,14 @@ export const SCREEN_GUIDES = {
   emailpage: ['email', 'pages'],
 };
 
+/** A part's address in its guide, for the one page that points at a part in
+ *  words (the owner, Oct 25: the Listserv's Down links the Google scripts'
+ *  Redeploy); '' for a part the guide does not have, so no link goes dead. */
+export function partHref(id, part) {
+  const guide = GUIDES.find(g => g.id === id);
+  return guide?.parts.some(p => p[1] === part) ? `${guide.href}#${part}` : '';
+}
+
 /** The builder's steps (its sections' data-step) and the newsletter guide's part for each. */
 export const BUILDER_PARTS = { triage: 'outline', edit: 'tweak', export: 'export' };
 

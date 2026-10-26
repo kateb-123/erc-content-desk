@@ -7,10 +7,13 @@
  */
 import { renderNewsletter } from '/builder/js/template.js';
 import { renderSidebar } from '/js/shell-ui.js';
+import { countSidebar } from '/js/howto-sidebar.js';
 import { el } from '/js/ui-aids.js';
 import { busyWords } from '/js/icons.js';
 
-renderSidebar(document.querySelector('.sidebar'), { screen: 'emailpage' });
+// The sidebar with what waits at each item, as on the desk (Oct 25); the email never waits on it.
+const sidebar = document.querySelector('.sidebar');
+countSidebar(badges => renderSidebar(sidebar, { screen: 'emailpage', badges }));
 
 const sheet = document.querySelector('.email-sheet');
 const status = document.querySelector('.email-status');

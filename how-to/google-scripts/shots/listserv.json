@@ -20,7 +20,7 @@
     {
       "x": 31.3,
       "y": 74.7,
-      "label": "Status: Live means the desk has the script's address, not that it works"
+      "label": "Status: Live means the script answered. Down means sign-ups fail"
     }
   ]
 }

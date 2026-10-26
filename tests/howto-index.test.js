@@ -147,3 +147,15 @@ test('the email\'s pages open the read me: the two pages tagged on each, the rea
   assert.equal(readMe.first.label, 'This guide');
   assert.equal(readMe.first.parts[0].href, '#pages');
 });
+
+// A part's address for the one page that points at a part in words (the
+// owner, Oct 25: the Listserv's Down links the Google scripts' Redeploy). It
+// comes from the guides here, so a renamed part can never leave a dead link.
+import { partHref } from '../js/howto-index.js';
+
+test('partHref: a guide\'s part by its anchor, and nothing for a part the guide does not have', () => {
+  assert.equal(partHref('scripts', 'redeploy'), '/how-to/google-scripts/#redeploy');
+  assert.equal(partHref('sort', 'scraper'), '/how-to/sort/#scraper');
+  assert.equal(partHref('scripts', 'nowhere'), '');
+  assert.equal(partHref('nobody', 'redeploy'), '');
+});

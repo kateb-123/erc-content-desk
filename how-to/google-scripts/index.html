@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
-  <link rel="stylesheet" href="/css/styles.css?v=194" />
+  <link rel="stylesheet" href="/css/styles.css?v=195" />
   <link rel="stylesheet" href="/css/shell.css?v=10" />
   <script>document.documentElement.classList.add('js');</script>
   <!-- Built by how-to/make-deck.mjs from google-scripts/deck.json; the styles and script are the newsletter how-to's. -->
@@ -379,7 +379,7 @@
             <p class="cap">For <b>subscribe to listserve</b>, open <a href="/#listserv">Listserv</a>.</p>
             <p class="note"><span class="n">1</span><span>To be added: a number means the sign-up script answered.</span></p>
             <p class="note"><span class="n">2</span><span>If the script is down this reads: Sheet 1 couldn't be counted just now.</span></p>
-            <p class="note"><span class="n">3</span><span>Status: Live means the desk has the script's address, not that it works.</span></p>
+            <p class="note"><span class="n">3</span><span>Status: Live means the script answered. Down means sign-ups fail.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -387,7 +387,7 @@
               <div class="crop"><div class="zoom"><img src="shots/listserv.png" width="2560" height="1800" loading="lazy" alt="The Listserv page: under To be added the count is 3, with Rows on Sheet 1, counted as this page opened, Open the sign-up sheet and the three steps; then the Sign-up form box, its Status reading Live, taking sign-ups." /></div></div>
               <button type="button" class="pin" style="--x:5.1;--y:26.2" aria-label="To be added: a number means the sign-up script answered"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">To be added: a number means the sign-up script answered</span></button>
               <button type="button" class="pin" style="--x:30;--y:30.5" aria-label="If the script is down this reads: Sheet 1 couldn't be counted just now."><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">If the script is down this reads: Sheet 1 couldn't be counted just now.</span></button>
-              <button type="button" class="pin up" style="--x:31.3;--y:74.7" aria-label="Status: Live means the desk has the script's address, not that it works"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Status: Live means the desk has the script's address, not that it works</span></button>
+              <button type="button" class="pin up" style="--x:31.3;--y:74.7" aria-label="Status: Live means the script answered. Down means sign-ups fail"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Status: Live means the script answered. Down means sign-ups fail</span></button>
             </div>
           </div>
         </div>
@@ -608,7 +608,7 @@
       ready = true;
     })();
   </script>
-  <script type="module" src="/js/howto-sidebar.js?v=2"></script>
+  <script type="module" src="/js/howto-sidebar.js?v=3"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

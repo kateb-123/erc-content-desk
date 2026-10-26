@@ -1058,7 +1058,7 @@ For subscribe to listserve, open Listserv (https://erc-content-desk.vercel.app/#
  
 2If the script is down this reads: Sheet 1 couldn't be counted just now.
  
-3Status: Live means the desk has the script's address, not that it works.
+3Status: Live means the script answered. Down means sign-ups fail.
 
 ## If it goes wrong
 

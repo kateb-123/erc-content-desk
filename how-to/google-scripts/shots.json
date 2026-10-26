@@ -24,7 +24,7 @@
       },
       {
         "selector": ".hub-stat .hub-ok",
-        "label": "Status: Live means the desk has the script's address, not that it works",
+        "label": "Status: Live means the script answered. Down means sign-ups fail",
         "nth": 0
       }
     ]

@@ -6,8 +6,11 @@
 // selector | null, pad, pins: [{ selector, label, nth }] }] and writes
 // how-to/<slug>/shots/<name>.png and <name>.json. Actions: { click }, { fill:
 // [selector, value] }, { press }, { wait }, { waitFor }, { hover }, { eval }.
+// A pin's `at` places it on its element (how-to/pin-point.mjs): the middle,
+// 'left', 'corner' (top right) or 'before' (just outside the left edge).
 // A locked page is signed in with the sandbox's own fake password.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { pinPoint } from './pin-point.mjs';
 
 const PLAYWRIGHT = process.env.PLAYWRIGHT_CORE || '/Users/KateBarnes/.npm-global/lib/node_modules/@playwright/cli/node_modules/playwright-core/index.mjs';
 const { chromium } = await import(PLAYWRIGHT);
@@ -67,7 +70,7 @@ for (const s of shots) {
       const el = page.locator(p.selector).nth(p.nth ?? 0);
       const b = await el.boundingBox();
       if (!b) { fails.push(`${slug}/${s.name}: pin ${p.selector} not found`); continue; }
-      const px = (p.at === 'left' ? b.x + 10 : b.x + b.width / 2), py = b.y + b.height / 2;
+      const { x: px, y: py } = pinPoint(b, p.at);
       pins.push({ x: +(((px - crop.x) / crop.width) * 100).toFixed(1), y: +(((py - crop.y) / crop.height) * 100).toFixed(1), label: p.label });
     }
     await page.screenshot({ path: here(`${slug}/shots/${s.name}.png`).pathname });

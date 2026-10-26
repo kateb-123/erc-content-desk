@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
   <link rel="stylesheet" href="/css/shell.css?v=10" />
-  <link rel="stylesheet" href="/css/styles.css?v=194" />
+  <link rel="stylesheet" href="/css/styles.css?v=195" />
 </head>
 <body>
   <a class="skip-to-main" href="#main">Skip to content</a>
@@ -36,7 +36,9 @@
   </main>
   <script type="module">
     import { renderSidebar } from "/js/shell-ui.js";
-    renderSidebar(document.querySelector(".sidebar"), { screen: "emailpage" });
+    import { countSidebar } from "/js/howto-sidebar.js?v=3";
+    const sidebar = document.querySelector(".sidebar");
+    countSidebar(badges => renderSidebar(sidebar, { screen: "emailpage", badges }));
   </script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>

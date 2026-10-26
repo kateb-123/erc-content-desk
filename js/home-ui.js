@@ -76,10 +76,17 @@ function hubRow(item, onGoTo) {
   return row;
 }
 
-/** The newsletter's schedule warning: a note of its own under its row. */
-function warnNote(words) {
+/** A row's warning, a note of its own under it: the newsletter's schedule,
+ *  and the Listserv's script while it is down, with the way back (Oct 25). */
+function warnNote(words, link = null) {
   const note = el('div', 'home-warn');
-  note.append(lineIcon('warning'), el('span', '', words));
+  const said = el('span', '', words);
+  if (link?.href) {
+    const a = el('a', 'home-warn-link', link.label);
+    a.href = link.href;
+    said.append(' ', a);
+  }
+  note.append(lineIcon('warning'), said);
   return note;
 }
 
@@ -142,7 +149,7 @@ export function renderHome(container, props) {
   page.querySelectorAll('.home-groups .home-list').forEach((list, i) => {
     list.replaceChildren(...HOME_GROUPS[i].keys.flatMap(key => {
       const item = byKey.get(key);
-      return item.warn ? [hubRow(item, onGoTo), warnNote(item.warn)] : [hubRow(item, onGoTo)];
+      return item.warn ? [hubRow(item, onGoTo), warnNote(item.warn, item.warnLink)] : [hubRow(item, onGoTo)];
     }));
   });
   const note = page.querySelector('.home-note');

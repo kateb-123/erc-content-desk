@@ -24,8 +24,9 @@ test('listservStatus: a form not set up, a copy not set up, a sheet that could n
   assert.equal(listservStatus({ live: false, kept: true, sheet: false, waiting: null, last: '', since: '' }, '2026-10-07').form, 'Not set up');
   assert.deepEqual(listservStatus({ live: true, kept: false, sheet: true, waiting: 2, last: '', since: '' }, '2026-10-07'),
     { form: 'Live, taking sign-ups', last: 'Not known', waiting: 2, note: 'Rows on Sheet 1, counted as this page opened.', retry: false, updated: '' }, 'the count needs no desk table');
+  // The owner, Oct 25: a script that did not answer is down, so the status says so, no longer "Live, taking sign-ups".
   assert.deepEqual(listservStatus({ live: true, kept: true, sheet: false, waiting: null, last: '2026-10-06', since: '' }, '2026-10-07'),
-    { form: 'Live, taking sign-ups', last: 'Oct 6', waiting: null, note: "Sheet 1 couldn't be counted just now.", retry: true, updated: '' });
+    { form: "Down: the sign-up script isn't answering, so sign-ups fail.", last: 'Oct 6', waiting: null, note: "Sheet 1 couldn't be counted just now.", retry: true, updated: '' });
   assert.deepEqual(listservStatus(null, '2026-10-07'), { form: 'Checking', last: '', waiting: null, note: '', retry: false, updated: '' });
 });
 
@@ -169,4 +170,71 @@ test('under 1232px wide the Listserv\'s side note drops under the boxes', () => 
   assert.ok(fold, 'a 1232px fold for the Listserv\'s split');
   assert.match(fold, /#screen-listserv \.qh-split \{[^}]*grid-template-columns:\s*minmax\(0, 1fr\)/, 'one column');
   assert.doesNotMatch(css, /@media \(max-width: 1232px\) \{\s*(?:[^{}]*,\s*)?\.qh-split \{/, 'the queue\'s split keeps its two columns');
+});
+
+// The status follows the script (the owner, Oct 25): the page read "Live,
+// taking sign-ups" whenever the desk had the script's address, even with the
+// script down and every public sign-up failing ("Couldn't reach the list just
+// now"). The status now comes from whether the script answered the count: when
+// it did not, it says so in the warning look, the triangle and the words, with
+// the way to bring it back; the first answer after a redeploy puts it back.
+import { signupsDown, DOWN_WORDS, BRING_BACK } from '../js/listserv-view.js';
+
+const downAnswer = { live: true, kept: true, sheet: false, waiting: null, last: '2026-10-21', since: '2026-10-14', updated: '2026-10-18' };
+
+test('the sign-ups are down while the script does not answer, and back the moment it does', () => {
+  assert.equal(signupsDown(downAnswer), true);
+  assert.equal(DOWN_WORDS, "Down: the sign-up script isn't answering, so sign-ups fail.");
+  assert.equal(listservStatus(downAnswer, '2026-10-25').form, DOWN_WORDS);
+  const back = { ...downAnswer, sheet: true, waiting: 2 };
+  assert.equal(signupsDown(back), false);
+  assert.equal(listservStatus(back, '2026-10-25').form, 'Live, taking sign-ups', 'nothing to switch back: the next answer is the status');
+  for (const s of [null, { error: true }, { live: false, kept: true, sheet: false, waiting: null }]) assert.equal(signupsDown(s), false, JSON.stringify(s));
+  assert.deepEqual(BRING_BACK, { label: 'How to bring it back', href: '/how-to/google-scripts/#redeploy' }, 'the guide\'s Redeploy');
+  for (const w of [DOWN_WORDS, BRING_BACK.label]) assert.doesNotMatch(w, /[\u2013\u2014]/);
+});
+
+test('the Listserv page says Down in the warning look, the triangle and the words, with the way back; Live is gone', async () => {
+  globalThis.document ??= { createElement: tag => new FakeNode(tag), createElementNS: (ns, tag) => new FakeNode(tag) };
+  const { renderListserv } = await import('../js/listserv-ui.js');
+  const container = new FakeNode('div');
+  renderListserv(container, { signups: downAnswer, today: '2026-10-25', onRetry: () => {} });
+  const [main] = container.querySelector('.qh-split').children;
+  const status = main.children[3].children[0];
+  assert.equal(status.children[0].textContent, 'Status');
+  const warn = status.querySelector('.hub-warn');
+  assert.ok(warn, 'the warning look');
+  assert.ok(warn.querySelector('.fa-triangle-exclamation'), 'with its triangle: never color alone');
+  assert.equal(warn.textContent.trim(), DOWN_WORDS);
+  const back = status.querySelector('.hub-back');
+  assert.equal(back.tagName, 'A');
+  assert.equal(back.textContent, 'How to bring it back');
+  assert.equal(back.href, BRING_BACK.href);
+  assert.equal(container.querySelector('.hub-ok'), null, 'no Live');
+  const count = main.children[1];
+  assert.equal(count.children[0].textContent, '', 'no number');
+  assert.match(count.children[1].textContent, /^Sheet 1 couldn't be counted just now\. Try again/, 'the count says so, with Try again');
+
+  const up = new FakeNode('div');
+  renderListserv(up, { signups: { ...downAnswer, sheet: true, waiting: 2 }, today: '2026-10-25', onRetry: () => {} });
+  assert.equal(up.querySelector('.hub-ok').textContent, 'Live, taking sign-ups', 'back by itself once the script answers');
+  assert.equal(up.querySelector('.hub-warn'), null);
+  assert.equal(up.querySelector('.hub-back'), null);
+});
+
+test('the Listserv card: no Live and no green dot while the script is down; a note under its row says so, with the way back', () => {
+  const card = signups => hubCards({ rows: [], schedule: [], today: '2026-10-25', loaded: true, signups }).find(c => c.key === 'listserv');
+  const down = card(downAnswer);
+  assert.equal(down.live, false, 'no green dot');
+  assert.equal(down.foot, 'Last sign-up Oct 21', 'the last sign-up, never Live');
+  assert.equal(down.count, null);
+  assert.equal(down.warn, DOWN_WORDS);
+  assert.deepEqual(down.warnLink, BRING_BACK);
+  const up = card({ ...downAnswer, sheet: true, waiting: 2 });
+  assert.equal(up.live, true);
+  assert.equal(up.foot, 'Live · last sign-up Oct 21');
+  assert.equal(up.warn, '');
+  assert.equal(up.warnLink, null);
+  assert.equal(card({ error: true }).warn, '', 'a desk that could not ask says nothing about the script');
+  assert.equal(card({ live: false, sheet: false, waiting: null, last: '' }).warn, '', 'a form not set up is Not set up, not down');
 });
