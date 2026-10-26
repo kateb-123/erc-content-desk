@@ -152,7 +152,7 @@ test('the Sheet\'s script gained the briefs doors, and sheets.js wraps them', ()
   const gs = read('../apps-script/Code.gs');
   for (const action of ["case 'briefFolder':", "case 'listFiles':", "case 'getFile':"]) assert.ok(gs.includes(action), action);
   assert.match(gs, /BRIEFS_FOLDER_ID/, 'the Research briefs folder\'s id is a script property');
-  assert.match(gs, /\(xlsx\|txt\|pdf\|md\|docx\|png\|jpg\|jpeg\)/, 'saveFile takes a paper, notes, a Word doc and a picture');
+  assert.match(gs, /\(xlsx\|txt\|pdf\|md\|docx\|png\|jpg\|jpeg\|csv\)/, 'saveFile takes a paper, notes, a Word doc, a picture and Publish\'s copy');
   const sheets = read('../api/_lib/sheets.js');
   for (const fn of ['export async function briefFolder(', 'export async function listFiles(', 'export async function getFile(']) assert.ok(sheets.includes(fn), fn);
   assert.match(read('../README.md'), /BRIEFS_FOLDER_ID/);

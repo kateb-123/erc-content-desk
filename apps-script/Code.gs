@@ -48,7 +48,7 @@ var BRIEFS_FOLDER_PROPERTY_NAME = 'BRIEFS_FOLDER_ID';
  *  (Oct 24, 2026). The id is the long part of the Sheet's address between
  *  /d/ and /edit. Not the id itself. */
 var SOURCES_SHEET_PROPERTY_NAME = 'SOURCES_SHEET_ID';
-var FILE_NAME_RULE = /^[A-Za-z0-9][A-Za-z0-9 _.-]{0,120}\.(xlsx|txt|pdf|md|docx|png|jpg|jpeg)$/;
+var FILE_NAME_RULE = /^[A-Za-z0-9][A-Za-z0-9 _.-]{0,120}\.(xlsx|txt|pdf|md|docx|png|jpg|jpeg|csv)$/;
 /** A folder inside a brief's folder, by name: the figures (Oct 22). */
 var SUB_RULE = /^[a-z]{1,20}$/;
 
@@ -245,7 +245,7 @@ function handleSaveFile(body) {
     return { ok: false, error: 'Server is not configured: the ' + SCRAPE_FOLDER_PROPERTY_NAME + ' script property is not set.' };
   }
   if (!body.name || !FILE_NAME_RULE.test(body.name)) {
-    return { ok: false, error: 'saveFile needs a plain file "name" ending in .xlsx, .txt, .pdf, .md, .docx, .png or .jpg.' };
+    return { ok: false, error: 'saveFile needs a plain file "name" ending in .xlsx, .txt, .pdf, .md, .docx, .png, .jpg or .csv.' };
   }
   if (!body.b64) {
     return { ok: false, error: 'saveFile needs the file as "b64".' };

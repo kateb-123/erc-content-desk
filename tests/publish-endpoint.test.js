@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { blankRow, CSV_COLUMNS } from '../js/schema.js';
 import { issueToken } from '../api/_lib/session.js';
 import { FEATURED_PATH } from '../api/_lib/highlights.js';
-import { createPublishHandler } from '../api/publish.js';
+import { createPublishHandler, copyName } from '../api/publish.js';
+import { readFileSync } from 'node:fs';
 
 // /api/publish behind the desk password (Kate, Sep 23): the check and the
 // write no longer need a signed-in browser (Sep 30); the write asks for the password
@@ -242,4 +243,10 @@ test('the check lists the kept items held for the newsletter, until their issue 
   const res = fakeRes();
   await handlerOver(desk(rows), fakeHub())(await signedReq('GET'), res);
   assert.deepEqual(res.body.newsletterOnly.map(r => r.id), ['h1', 'h2']);
+});
+
+test('the Drive copy\'s name is one the Sheet\'s script takes (live bug, Oct 24: the script refused .csv, so every copy since Oct 22 failed)', () => {
+  const code = readFileSync(new URL('../apps-script/Code.gs', import.meta.url), 'utf8');
+  const rule = new RegExp(/var FILE_NAME_RULE = \/(.+)\/;/.exec(code)[1]);
+  for (const name of [copyName('2026-09-23T20:05:00.000Z'), copyName('not a date')]) assert.match(name, rule, `${name} would be refused by the script`);
 });
