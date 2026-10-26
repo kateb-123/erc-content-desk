@@ -1,0 +1,21 @@
+{
+  "iw": 1280,
+  "ih": 663,
+  "cx": 0,
+  "cy": 0,
+  "cw": 760,
+  "ch": 640,
+  "alt": "The end of Code.gs, lines 499 to 526: the script's last functions, then the checkAccess helper pasted after the last line; the top reads Unsaved changes.",
+  "pins": [
+    {
+      "x": 44.5,
+      "y": 91.1,
+      "label": "The helper, after the last line"
+    },
+    {
+      "x": 51.3,
+      "y": 11.3,
+      "label": "Save"
+    }
+  ]
+}

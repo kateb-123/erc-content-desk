@@ -1,0 +1,16 @@
+{
+  "iw": 1280,
+  "ih": 663,
+  "cx": 0,
+  "cy": 0,
+  "cw": 700,
+  "ch": 590,
+  "alt": "The Apps Script editor as it opens for a new script: Untitled project at the top, Files with Code.gs, and an empty myFunction in the code.",
+  "pins": [
+    {
+      "x": 54.9,
+      "y": 2.4,
+      "label": "A new Untitled project is fine. Click the name and call it Listserv sign-up"
+    }
+  ]
+}

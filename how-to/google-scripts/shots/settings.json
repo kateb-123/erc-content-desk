@@ -1,0 +1,16 @@
+{
+  "iw": 1280,
+  "ih": 663,
+  "cx": 0,
+  "cy": 0,
+  "cw": 700,
+  "ch": 585,
+  "alt": "Project Settings: General settings with the time zone, two boxes already ticked, and the box Show appsscript.json manifest file in editor, ticked.",
+  "pins": [
+    {
+      "x": 14.3,
+      "y": 74.4,
+      "label": "Show \"appsscript.json\" manifest file in editor: tick it"
+    }
+  ]
+}

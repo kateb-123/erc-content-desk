@@ -437,6 +437,13 @@
     .steps ul li { position: relative; padding-left: 36px; }
     .steps ul li::before { content: ''; position: absolute; left: 7px; top: 9px; width: 8px; height: 8px; border-radius: var(--radius-round); background: var(--border-strong-01); }
   </style>
+  <style data-count>
+    .deck[data-dots="count"] .dots { counter-reset: dot; gap: var(--spacing-02); font: var(--meta-type); color: var(--muted); white-space: nowrap; }
+    .deck[data-dots="count"] .dots button { counter-increment: dot; visibility: hidden; width: 0; min-width: 0; padding: 0; }
+    .deck[data-dots="count"] .dots button[aria-current] { visibility: visible; width: auto; min-width: 0; }
+    .deck[data-dots="count"] .dots button[aria-current]::before { content: counter(dot); width: auto; height: auto; border-radius: 0; background: none; font: 600 14px/20px var(--font-sans); color: var(--ink); }
+    .deck[data-dots="count"] .dots::after { content: 'of ' counter(dot); }
+  </style>
 </head>
 <body>
   <a class="skip-to-main" href="#main">Skip to content</a>
@@ -448,7 +455,7 @@
     <div>
       <p class="eyebrow">How to</p>
       <h1>Bring back the Google scripts</h1>
-      <p class="lede">Two scripts, about 15 minutes. The code is on this page.</p>
+      <p class="lede">Two scripts, about 15 minutes. A picture of every screen, and the code on this page.</p>
     </div>
   </header>
 
@@ -463,7 +470,7 @@
       <a href="#later">Later: Add a source</a>
     </nav>
 
-    <div class="deck" role="region" aria-roledescription="carousel" aria-label="Bring back the Google scripts">
+    <div class="deck" role="region" aria-roledescription="carousel" aria-label="Bring back the Google scripts" data-dots="count">
       <div class="progress" aria-hidden="true"><span></span></div>
       <p class="sr-only" aria-live="polite" data-said></p>
 
@@ -473,58 +480,24 @@
 
         <div class="slide words" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Both scripts ran as the Google account of the person who deployed them. That account is closed, so both stopped, and nothing that failed in the gap is sent again.</p>
-            <p class="note quiet"><i class="fa-solid fa-circle-question" aria-hidden="true"></i><span>Unconfirmed: your access to the scripts. An Oct 22 note reads that the team drive gives you access to all but the Google Apps Scripts. The test is <b>Extensions</b> &gt; <b>Apps Script</b>.</span></p>
-            <p class="note quiet"><i class="fa-solid fa-circle-question" aria-hidden="true"></i><span>Unconfirmed: your role on the team drive. The desk script moves an older copy of a file to the trash when it saves a new one under the same name; on a team drive that takes Content manager or Manager. Contributor cannot trash.</span></p>
+            <p class="cap">Both scripts ran as the Google account of the person who deployed them. That account is closed, so you deploy them again as you.</p>
+            <p class="note quiet"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Your Sheet is called erc-content-desk and its project ends with Sheet API; the pictures show a test copy.</span></p>
             <div class="foot"></div>
           </div>
           <div class="text">
             <section class="steps" aria-labelledby="h-before-0-0">
               <h3 id="h-before-0-0">What you need</h3>
               <ul>
-                <li>A computer with Chrome, signed in to your TAMU Google account. Google lets only an account in the team drive's own domain deploy a script there, so a personal Gmail will not work. If other Google accounts are signed in too, use a window with only the TAMU one.</li>
-                <li>Edit access to both Sheets. They are on the team drive Education Research Center, in ERC Content Desk. Anyone who can edit a Sheet can edit its script. If <b>Extensions</b> &gt; <b>Apps Script</b> is missing or will not open, ask for edit access first.</li>
+                <li>Chrome, signed in to your TAMU Google account and no other.</li>
+                <li>Edit access to both Sheets.</li>
                 <li>About 15 minutes.</li>
-                <li>The desk's owner (<a href="/how-to/change-the-desk/#ask">Who to ask</a>), for the last step. Only the owner can change the desk's settings.</li>
               </ul>
             </section>
-          </div>
-        </div>
-
-        <div class="slide words" role="group" aria-roledescription="slide">
-          <div class="side">
-            <p class="cap">You do the Google side. The owner does the one step on Vercel, the desk's host. Nothing else changes.</p>
-            <p class="note warn"><span class="n">!</span><span><b>Keep private: the two new addresses, and the value of the <code>SHEET_API_TOKEN</code> script property.</b> The sign-up script has no token, so its address alone lets anyone add rows. The addresses go to the owner by email and nowhere else.</span></p>
-            <p class="note quiet"><i class="fa-solid fa-circle-question" aria-hidden="true"></i><span>Unconfirmed: whether the public pages' own Vercel project, erc-share, holds unused copies of either setting. Its code does not read them.</span></p>
-            <div class="foot"></div>
-          </div>
-          <div class="text">
-            <section class="steps" aria-labelledby="h-before-1-0">
-              <h3 id="h-before-1-0">Who changes what</h3>
+            <section class="steps" aria-labelledby="h-before-0-1">
+              <h3 id="h-before-0-1">The two Sheets</h3>
               <ul>
-                <li><b>You</b>: both scripts, in Google. Each gets a new deployment with a new address.</li>
-                <li><b>The desk's owner</b>: the two addresses, as two settings in the desk's Vercel project, then a redeploy. The owner's Vercel team has one member, so no one else can.</li>
-                <li><b>No one else</b>: the public pages, the Policy Exchange's sign-up and share pages, and the scraper on GitHub all call the desk itself, never a script. The scraper's own settings stay as they are.</li>
-                <li>Not fixed by these steps: the old sign-up page on erc-kate.github.io, linked from the September 8 issue, posts straight to an old script address and says thank you anyway. Sign-ups made there are lost, before and after. Changing that page takes the old erc-kate GitHub account.</li>
-              </ul>
-            </section>
-          </div>
-        </div>
-
-        <div class="slide words" role="group" aria-roledescription="slide">
-          <div class="side">
-            <p class="cap">Where each thing is. Every name here is the one the steps use.</p>
-            
-            <div class="foot"></div>
-          </div>
-          <div class="text">
-            <section class="steps" aria-labelledby="h-before-2-0">
-              <h3 id="h-before-2-0">The Sheets and their scripts</h3>
-              <ul>
-                <li>The desk's Sheet, <b>erc-content-desk</b>: team drive Education Research Center &gt; ERC Content Desk &gt; Content queue. Its script, script 1, is inside it: <b>Extensions</b> &gt; <b>Apps Script</b>. The project name starts with "ERC Content Desk" and ends with "Sheet API".</li>
-                <li>The sign-up Sheet, <b>subscribe to listserve</b>: team drive &gt; ERC Content Desk &gt; Listserv. Where its old script lived is not known, so you make script 2 inside this Sheet, <b>Extensions</b> &gt; <b>Apps Script</b>, and the team can always find it from the Sheet.</li>
-                <li>The code for both scripts: on this page, in a box with <b>Copy</b>, at the step that pastes it. It is a copy of the desk's repository, which is for whoever maintains the code, not for you.</li>
-                <li>The desk's settings: vercel.com, team <b>TAMU-ERC</b>, project <b>erc-content-desk</b>. The owner only.</li>
+                <li><b>erc-content-desk</b>, the desk's Sheet: team drive Education Research Center &gt; ERC Content Desk &gt; Content queue. Script 1 is inside it.</li>
+                <li><b>subscribe to listserve</b>, the sign-up Sheet: ERC Content Desk &gt; Listserv. Script 2 goes inside it.</li>
               </ul>
               <p class="links"><a href="https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit" target="_blank" rel="noopener">erc-content-desk<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a> <a href="https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit" target="_blank" rel="noopener">subscribe to listserve<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></p>
             </section>
@@ -536,51 +509,116 @@
       <section class="chapter" id="script-1" data-name="Script 1: the desk" aria-labelledby="h-script-1">
         <h2 class="pane-title" id="h-script-1"><span class="step" aria-hidden="true">1</span><span class="sr-only">Step 1: </span>Script 1: the desk</h2>
 
-        <div class="slide words" role="group" aria-roledescription="slide">
+        <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Open the desk's Sheet and its script, then its settings.</p>
-            <p class="note warn"><span class="n">!</span><span><b>If a new Untitled project opens instead, stop and email the desk's owner.</b> The token lives only in the real project.</span></p>
+            <p class="cap">Open the Sheet <a href="https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit" target="_blank" rel="noopener">erc-content-desk<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a> and its script.</p>
+            <p class="note"><span class="n">1</span><span>Extensions.</span></p>
+            <p class="note"><span class="n">2</span><span>Apps Script: the editor opens in a new tab.</span></p>
             <div class="foot"></div>
           </div>
-          <div class="text">
-            <section class="steps" aria-labelledby="h-script-1-0-0">
-              <h3 id="h-script-1-0-0">Open the script</h3>
-              <ol>
-                <li>Open the Sheet <b>erc-content-desk</b>.</li>
-                <li>Click <b>Extensions</b> &gt; <b>Apps Script</b>. The Apps Script editor opens in a new tab. The project name at the top starts with "ERC Content Desk" and ends with "Sheet API".</li>
-                <li>In the left bar, click <b>Project Settings</b> (the gear). The settings page opens.</li>
-                <li>Tick <b>Show "appsscript.json" manifest file in editor</b>. Nothing else changes yet.</li>
-              </ol>
-              <p class="links"><a href="https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit" target="_blank" rel="noopener">erc-content-desk<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></p>
-            </section>
+          <div class="frame">
+            <div class="shot" style="--iw:1424;--ih:703;--cx:300;--cy:0;--cw:620;--ch:520">
+              <div class="crop"><div class="zoom"><img src="shots/extensions.png" width="1424" height="703" loading="lazy" alt="A Google Sheet with its Extensions menu open: Add-ons, Macros, Apps Script, then AppSheet, Data Studio and a list of add-ons." /></div></div>
+              <button type="button" class="pin" style="--x:37.6;--y:6.3" aria-label="Extensions"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Extensions</span></button>
+              <button type="button" class="pin" style="--x:45.3;--y:27.8" aria-label="Apps Script: the editor opens in a new tab"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Apps Script: the editor opens in a new tab</span></button>
+            </div>
           </div>
         </div>
 
-        <div class="slide words" role="group" aria-roledescription="slide">
+        <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Check the script's properties and its permissions file. The properties belong to the script and are shared by everyone who uses it, so they should have survived the account closing.</p>
-            <p class="note warn"><span class="n">!</span><span><b>Leave <code>SHEET_API_TOKEN</code> alone.</b> If it is missing, stop and email the desk's owner. Never copy its value anywhere.</span></p>
-            <p class="note quiet"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>A folder's id is the last part of its address when the folder is open in Drive.</span></p>
-            <p class="note quiet"><i class="fa-solid fa-circle-question" aria-hidden="true"></i><span>Unconfirmed: the rest of the manifest, which is not in the repository.</span></p>
+            <p class="cap">The editor opens in a new tab.</p>
+            <p class="note"><span class="n">1</span><span>The project name. Yours ends with Sheet API.</span></p>
+            <p class="note"><span class="n">2</span><span>Project Settings, the gear.</span></p>
+            <p class="note warn"><span class="n">!</span><span><b>A new Untitled project here is the wrong place.</b> Stop and email the desk's owner (<a href="/how-to/change-the-desk/#ask">Who to ask</a>).</span></p>
             <div class="foot"></div>
           </div>
-          <div class="text">
-            <section class="steps" aria-labelledby="h-script-1-1-0">
-              <h3 id="h-script-1-1-0">The properties and the manifest</h3>
-              <ol start="5" style="counter-reset: step 4">
-                <li>Scroll to <b>Script Properties</b>. At least these three should be there: <code>SHEET_API_TOKEN</code>, a long value; <code>SCRAPE_FOLDER_ID</code>, the folder ERC Content Desk &gt; Newsletter &gt; Newsletter Scrape &gt; scrapes; <code>BRIEFS_FOLDER_ID</code>, the folder ERC Content Desk &gt; ERC Research Briefs. If a folder id is missing: <b>Edit script properties</b> &gt; <b>Add script property</b>, the name and the id, then <b>Save script properties</b>.</li>
-                <li>In the left bar, click <b>Editor</b> (the <code>&lt; &gt;</code> icon), then <b>appsscript.json</b>. Inside <code>"oauthScopes"</code> it should list both <code>https://www.googleapis.com/auth/spreadsheets</code> and <code>https://www.googleapis.com/auth/drive</code>. If one is missing, add it and save.</li>
-              </ol>
-            </section>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:0;--cy:0;--cw:700;--ch:590">
+              <div class="crop"><div class="zoom"><img src="shots/editor.png" width="1280" height="663" loading="lazy" alt="The Apps Script editor: the project name at the top, a left bar with the editor and settings icons, Files with Code.gs, and the code." /></div></div>
+              <button type="button" class="pin" style="--x:54.9;--y:2.4" aria-label="The project name. Yours ends with Sheet API"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The project name. Yours ends with Sheet API</span></button>
+              <button type="button" class="pin" style="--x:6.3;--y:47.1" aria-label="Project Settings, the gear"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Project Settings, the gear</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Project Settings.</p>
+            <p class="note"><span class="n">1</span><span>Show &quot;appsscript.json&quot; manifest file in editor: tick it.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:0;--cy:0;--cw:700;--ch:585">
+              <div class="crop"><div class="zoom"><img src="shots/settings.png" width="1280" height="663" loading="lazy" alt="Project Settings: General settings with the time zone, two boxes already ticked, and the box Show appsscript.json manifest file in editor, ticked." /></div></div>
+              <button type="button" class="pin up" style="--x:14.3;--y:74.4" aria-label="Show &quot;appsscript.json&quot; manifest file in editor: tick it"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Show &quot;appsscript.json&quot; manifest file in editor: tick it</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Further down the same page. Yours lists <code>SHEET_API_TOKEN</code> too: leave it. If it is missing, stop and email the desk's owner.</p>
+            <p class="note"><span class="n">1</span><span>Script Properties: scroll down to it.</span></p>
+            <p class="note"><span class="n">2</span><span>SCRAPE_FOLDER_ID and BRIEFS_FOLDER_ID: both should be there.</span></p>
+            <p class="note"><span class="n">3</span><span>Edit script properties: only if one is missing.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:60;--cy:60;--cw:810;--ch:603">
+              <div class="crop"><div class="zoom"><img src="shots/properties.png" width="1280" height="663" loading="lazy" alt="Further down Project Settings, Script Properties: two rows, SCRAPE_FOLDER_ID and BRIEFS_FOLDER_ID, each with a long value, and the button Edit script properties." /></div></div>
+              <button type="button" class="pin" style="--x:3.3;--y:40.8" aria-label="Script Properties: scroll down to it"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Script Properties: scroll down to it</span></button>
+              <button type="button" class="pin" style="--x:3.8;--y:59.7" aria-label="SCRAPE_FOLDER_ID and BRIEFS_FOLDER_ID: both should be there"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">SCRAPE_FOLDER_ID and BRIEFS_FOLDER_ID: both should be there</span></button>
+              <button type="button" class="pin up" style="--x:30.2;--y:84.1" aria-label="Edit script properties: only if one is missing"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Edit script properties: only if one is missing</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Adding a missing one. A folder's id is the last part of its address when the folder is open in Drive.</p>
+            <p class="note"><span class="n">1</span><span>Add script property.</span></p>
+            <p class="note"><span class="n">2</span><span>Property: the name, SCRAPE_FOLDER_ID.</span></p>
+            <p class="note"><span class="n">3</span><span>Value: the id of the folder ERC Content Desk &gt; Newsletter &gt; Newsletter Scrape &gt; scrapes.</span></p>
+            <p class="note"><span class="n">4</span><span>BRIEFS_FOLDER_ID: the id of the folder ERC Content Desk &gt; ERC Research Briefs.</span></p>
+            <p class="note"><span class="n">5</span><span>Save script properties.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:60;--cy:60;--cw:810;--ch:603">
+              <div class="crop"><div class="zoom"><img src="shots/add-property.png" width="1280" height="663" loading="lazy" alt="Script Properties being edited: a Property box and a Value box per row, an X at each row's end, then Add script property and Save script properties." /></div></div>
+              <button type="button" class="pin up" style="--x:28.9;--y:84.1" aria-label="Add script property"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Add script property</span></button>
+              <button type="button" class="pin" style="--x:3.8;--y:59.7" aria-label="Property: the name, SCRAPE_FOLDER_ID"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Property: the name, SCRAPE_FOLDER_ID</span></button>
+              <button type="button" class="pin" style="--x:93.5;--y:55.6" aria-label="Value: the id of the folder ERC Content Desk &gt; Newsletter &gt; Newsletter Scrape &gt; scrapes"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Value: the id of the folder ERC Content Desk &gt; Newsletter &gt; Newsletter Scrape &gt; scrapes</span></button>
+              <button type="button" class="pin up" style="--x:3.8;--y:74.6" aria-label="BRIEFS_FOLDER_ID: the id of the folder ERC Content Desk &gt; ERC Research Briefs"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">BRIEFS_FOLDER_ID: the id of the folder ERC Content Desk &gt; ERC Research Briefs</span></button>
+              <button type="button" class="pin up" style="--x:54.9;--y:84.1" aria-label="Save script properties"><span class="num" aria-hidden="true">5</span><span class="tip" aria-hidden="true">Save script properties</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Back in the editor, the permissions file.</p>
+            <p class="note"><span class="n">1</span><span>Editor, the &lt; &gt; icon.</span></p>
+            <p class="note"><span class="n">2</span><span>appsscript.json.</span></p>
+            <p class="note"><span class="n">3</span><span>These two lines inside oauthScopes. If one is missing, add it and save (Cmd+S or Ctrl+S).</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:0;--cy:0;--cw:760;--ch:640">
+              <div class="crop"><div class="zoom"><img src="shots/manifest.png" width="1280" height="663" loading="lazy" alt="The editor showing appsscript.json: eleven lines, with oauthScopes holding the spreadsheets line and the drive line; the top reads Saved to Drive." /></div></div>
+              <button type="button" class="pin" style="--x:5.8;--y:18.4" aria-label="Editor, the &lt; &gt; icon"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Editor, the &lt; &gt; icon</span></button>
+              <button type="button" class="pin" style="--x:26.3;--y:20" aria-label="appsscript.json"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">appsscript.json</span></button>
+              <button type="button" class="pin" style="--x:45.8;--y:45.2" aria-label="These two lines inside oauthScopes. If one is missing, add it and save (Cmd+S or Ctrl+S)"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">These two lines inside oauthScopes. If one is missing, add it and save (Cmd+S or Ctrl+S)</span></button>
+            </div>
           </div>
         </div>
 
         <div class="slide kind-code" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Copy the whole desk script from the box and paste it over the old code.</p>
-            <p class="note"><span class="n">7</span><span>Click <b>Copy</b> on the box. It copies the whole script, every line.</span></p>
-            <p class="note"><span class="n">8</span><span>Back in the editor, click <b>Code.gs</b>, click inside the code, select all (Cmd+A on a Mac, Ctrl+A on Windows) and paste. The old code is replaced. Click <b>Save project</b> (the disk icon).</span></p>
-            <p class="note warn"><span class="n">!</span><span><b>If the old code held <code>checkDrive</code> or <code>restoreMorningScrape</code>, the paste removes them, which is fine.</b> Never run restoreMorningScrape.</span></p>
+            <p class="cap">The desk script, whole.</p>
+            <p class="note"><span class="n">1</span><span><b>Copy</b>. It takes every line.</span></p>
+            <p class="note"><span class="n">2</span><span>In the editor, paste it over the old code. Next picture.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame code-frame">
@@ -1115,12 +1153,29 @@ function describeError(err) {
           </div>
         </div>
 
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">The script pasted over the old code, and saved.</p>
+            <p class="note"><span class="n">1</span><span>Code.gs.</span></p>
+            <p class="note"><span class="n">2</span><span>Click in the code, select all (Cmd+A or Ctrl+A) and paste.</span></p>
+            <p class="note"><span class="n">3</span><span>Save, the disk icon. The top then says Saved to Drive.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:0;--cy:0;--cw:760;--ch:640">
+              <div class="crop"><div class="zoom"><img src="shots/code-saved.png" width="1280" height="663" loading="lazy" alt="The editor with the desk script pasted into Code.gs, its first lines a comment headed ERC Content Desk, Sheet API; the top reads Saved to Drive." /></div></div>
+              <button type="button" class="pin" style="--x:7.8;--y:25" aria-label="Code.gs"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Code.gs</span></button>
+              <button type="button" class="pin" style="--x:44.5;--y:17.8" aria-label="Click in the code, select all (Cmd+A or Ctrl+A) and paste"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Click in the code, select all (Cmd+A or Ctrl+A) and paste</span></button>
+              <button type="button" class="pin" style="--x:51.3;--y:11.3" aria-label="Save, the disk icon. The top then says Saved to Drive"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Save, the disk icon. The top then says Saved to Drive</span></button>
+            </div>
+          </div>
+        </div>
+
         <div class="slide kind-code" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Add a small helper at the end and run it once, so Google asks for every permission the script needs.</p>
-            <p class="note"><span class="n">9</span><span>Click at the very end of Code.gs, paste the helper from the box, and save. It only reads three names, to start Google's permission screen. It is not in the repository's file.</span></p>
-            <p class="note"><span class="n">10</span><span>In the toolbar, open the function menu beside <b>Run</b> and <b>Debug</b>, pick <b>checkAccess</b>, then click <b>Run</b>.</span></p>
-            <p class="note"><span class="n">11</span><span><b>Authorization required</b> appears. Click <b>Review permissions</b>, then pick your TAMU account.</span></p>
+            <p class="cap">A small helper, run once, so Google asks for every permission the script needs.</p>
+            <p class="note"><span class="n">1</span><span><b>Copy</b>.</span></p>
+            <p class="note"><span class="n">2</span><span>Click at the very end of Code.gs, after the last line, and paste. Save.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame code-frame">
@@ -1142,59 +1197,164 @@ function describeError(err) {
           </div>
         </div>
 
-        <div class="slide words" role="group" aria-roledescription="slide">
+        <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Allow everything the script asks for.</p>
-            <p class="note quiet"><i class="fa-solid fa-camera" aria-hidden="true"></i><span>Your screenshot: the permissions screen.</span></p>
+            <p class="cap">The end of Code.gs with the helper in place.</p>
+            <p class="note"><span class="n">1</span><span>The helper, after the last line.</span></p>
+            <p class="note"><span class="n">2</span><span>Save.</span></p>
             <div class="foot"></div>
           </div>
-          <div class="text">
-            <section class="steps" aria-labelledby="h-script-1-4-0">
-              <h3 id="h-script-1-4-0">Allow it</h3>
-              <ol start="12" style="counter-reset: step 11">
-                <li>If Google says it hasn't verified this app, click <b>Advanced</b>, then <b>Go to</b> the project name <b>(unsafe)</b>. A script made inside TAMU may skip this screen.</li>
-                <li>Google lists what the script may do, each with its own box. Tick every box (Google may offer <b>Select all</b>), then <b>Continue</b>. An empty box is a partial grant, and the desk's writes fail later. Google's wording may differ slightly.</li>
-                <li>The <b>Execution log</b> opens below the code. It shows <code>erc-content-desk</code>, <code>scrapes</code> and <code>ERC Research Briefs</code>, then <b>Execution completed</b>. An error on a getFolderById line means a folder id in step 5 is missing or wrong.</li>
-              </ol>
-            </section>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:0;--cy:0;--cw:760;--ch:640">
+              <div class="crop"><div class="zoom"><img src="shots/helper-pasted.png" width="1280" height="663" loading="lazy" alt="The end of Code.gs, lines 499 to 526: the script's last functions, then the checkAccess helper pasted after the last line; the top reads Unsaved changes." /></div></div>
+              <button type="button" class="pin up" style="--x:44.5;--y:91.1" aria-label="The helper, after the last line"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The helper, after the last line</span></button>
+              <button type="button" class="pin" style="--x:51.3;--y:11.3" aria-label="Save"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Save</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Run the helper.</p>
+            <p class="note"><span class="n">1</span><span>The function menu, after Debug.</span></p>
+            <p class="note"><span class="n">2</span><span>checkAccess, last in the list.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:190;--cy:0;--cw:760;--ch:640">
+              <div class="crop"><div class="zoom"><img src="shots/function-menu.png" width="1280" height="663" loading="lazy" alt="The editor's toolbar with the function menu open over the code: a list of the script's functions, checkAccess last." /></div></div>
+              <button type="button" class="pin" style="--x:61.8;--y:11.3" aria-label="The function menu, after Debug"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The function menu, after Debug</span></button>
+              <button type="button" class="pin" style="--x:48.3;--y:60.6" aria-label="checkAccess, last in the list"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">checkAccess, last in the list</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">With checkAccess picked.</p>
+            <p class="note"><span class="n">1</span><span>Run.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:190;--cy:0;--cw:760;--ch:640">
+              <div class="crop"><div class="zoom"><img src="shots/run.png" width="1280" height="663" loading="lazy" alt="The editor's toolbar with checkAccess picked in the function menu, and Run beside Debug." /></div></div>
+              <button type="button" class="pin" style="--x:39.2;--y:9.7" aria-label="Run"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Run</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Google asks before the first run.</p>
+            <p class="note"><span class="n">1</span><span>Review permissions.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:190;--cy:0;--cw:760;--ch:640">
+              <div class="crop"><div class="zoom"><img src="shots/authorize.png" width="1280" height="663" loading="lazy" alt="A box over the editor, Authorization required: this app might not work as expected without providing all requested permissions; Cancel and Review permissions." /></div></div>
+              <button type="button" class="pin" style="--x:88.7;--y:56.6" aria-label="Review permissions"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Review permissions</span></button>
+            </div>
           </div>
         </div>
 
         <div class="slide words" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Make a new deployment. The old ones belong to the closed account, and Google does not move a deployment to another owner.</p>
-            <p class="note warn"><span class="n">!</span><span><b>If Anyone is not offered under Who has access, stop and tell the owner.</b> An option limited to Texas A&amp;M or to Google accounts will not work: the desk never signs in. Unconfirmed for your account; it was offered to the old one.</span></p>
-            <p class="note quiet"><i class="fa-solid fa-camera" aria-hidden="true"></i><span>Your screenshot: the New deployment box.</span></p>
+            <p class="cap">Google's permission window opens in its own tab.</p>
+            
             <div class="foot"></div>
           </div>
           <div class="text">
-            <section class="steps" aria-labelledby="h-script-1-5-0">
-              <h3 id="h-script-1-5-0">New deployment</h3>
-              <ol start="15" style="counter-reset: step 14">
-                <li>Click <b>Deploy</b> (top right) &gt; <b>New deployment</b>. The New deployment box opens.</li>
-                <li>Beside <b>Select type</b>, click the gear, then <b>Web app</b>. The box shows the web app's settings.</li>
-                <li><b>Description</b>: your name and the date. The old deployments show as Untitled (one may say Drive), so this marks yours.</li>
-                <li><b>Execute as</b>: <b>Me</b> (your TAMU address). <b>Who has access</b>: <b>Anyone</b>, not "Anyone with Google account". The desk calls the script without signing in to Google; the token is what protects it.</li>
+            <section class="steps" aria-labelledby="h-script-1-13-0">
+              <h3 id="h-script-1-13-0">Allow it</h3>
+              <ol>
+                <li>Pick your TAMU account.</li>
+                <li>If Google says it has not verified this app: <b>Advanced</b>, then <b>Go to Untitled project (unsafe)</b>. Yours says the project's name.</li>
+                <li>Tick every box, or <b>Select all</b>.</li>
+                <li><b>Continue</b>.</li>
               </ol>
             </section>
           </div>
         </div>
 
-        <div class="slide words" role="group" aria-roledescription="slide">
+        <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Deploy, copy the address, and try it once.</p>
-            <p class="note warn"><span class="n">!</span><span><b>Test deployments shows an address ending in <code>/dev</code>, which works only for people who can edit the script.</b> The desk needs the <code>/exec</code> one.</span></p>
+            <p class="cap">The Execution log opens under the code.</p>
+            <p class="note"><span class="n">1</span><span>Execution completed. Above it, the Sheet's name and the two folders' names.</span></p>
             <div class="foot"></div>
           </div>
-          <div class="text">
-            <section class="steps" aria-labelledby="h-script-1-6-0">
-              <h3 id="h-script-1-6-0">The address</h3>
-              <ol start="19" style="counter-reset: step 18">
-                <li>Click <b>Deploy</b>. If Google asks for permission again, allow it as in steps 11 to 13. The box shows the deployment's details.</li>
-                <li>Next to <b>Web app URL</b>, click <b>Copy</b>. The address ends in <code>/exec</code>. Then <b>Done</b>. Leave the old deployments as they are.</li>
-                <li>Paste the address into a private (Incognito) window. It reads: "ERC Content Desk sheet API is running. It only accepts POST requests." A Google sign-in page instead means Who has access is not Anyone (step 18).</li>
-              </ol>
-            </section>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:190;--cy:0;--cw:760;--ch:640">
+              <div class="crop"><div class="zoom"><img src="shots/log.png" width="1280" height="663" loading="lazy" alt="The Execution log under the code: Execution started, three Info lines naming the Sheet and two folders, then Execution completed." /></div></div>
+              <button type="button" class="pin up" style="--x:58.6;--y:83" aria-label="Execution completed. Above it, the Sheet's name and the two folders' names"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Execution completed. Above it, the Sheet's name and the two folders' names</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">A new deployment. The old ones belong to the closed account.</p>
+            <p class="note"><span class="n">1</span><span>Deploy.</span></p>
+            <p class="note"><span class="n">2</span><span>New deployment.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:480;--cy:0;--cw:695;--ch:585">
+              <div class="crop"><div class="zoom"><img src="shots/deploy-menu.png" width="1280" height="663" loading="lazy" alt="The Deploy button at the top right with its menu open: New deployment, Manage deployments, Test deployments." /></div></div>
+              <button type="button" class="pin" style="--x:86.6;--y:2.4" aria-label="Deploy"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Deploy</span></button>
+              <button type="button" class="pin" style="--x:71.9;--y:14" aria-label="New deployment"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">New deployment</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">The New deployment box.</p>
+            <p class="note"><span class="n">1</span><span>The gear beside Select type.</span></p>
+            <p class="note"><span class="n">2</span><span>Web app.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:250;--cy:20;--cw:780;--ch:625">
+              <div class="crop"><div class="zoom"><img src="shots/deploy-type.png" width="1280" height="663" loading="lazy" alt="The New deployment box: Select type with a gear, its menu open: Web app, API Executable, Add-on, Library; Please select a deployment type." /></div></div>
+              <button type="button" class="pin" style="--x:25.4;--y:12.8" aria-label="The gear beside Select type"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The gear beside Select type</span></button>
+              <button type="button" class="pin" style="--x:23.6;--y:22.1" aria-label="Web app"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Web app</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">The web app's settings.</p>
+            <p class="note"><span class="n">1</span><span>Description: your name and the date.</span></p>
+            <p class="note"><span class="n">2</span><span>Execute as: Me.</span></p>
+            <p class="note"><span class="n">3</span><span>Who has access: open it and pick Anyone, the last one. Not Anyone with Google account.</span></p>
+            <p class="note"><span class="n">4</span><span>Deploy.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:250;--cy:20;--cw:780;--ch:625">
+              <div class="crop"><div class="zoom"><img src="shots/deploy-access.png" width="1280" height="663" loading="lazy" alt="The New deployment box for a web app: Description filled in, Execute as Me, and the Who has access menu open: Only myself, Anyone with Google account, Anyone; Cancel and Deploy." /></div></div>
+              <button type="button" class="pin" style="--x:94.6;--y:22.4" aria-label="Description: your name and the date"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Description: your name and the date</span></button>
+              <button type="button" class="pin" style="--x:94.6;--y:39.7" aria-label="Execute as: Me"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Execute as: Me</span></button>
+              <button type="button" class="pin up" style="--x:28.3;--y:84.3" aria-label="Who has access: open it and pick Anyone, the last one. Not Anyone with Google account"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Who has access: open it and pick Anyone, the last one. Not Anyone with Google account</span></button>
+              <button type="button" class="pin up" style="--x:97.4;--y:89.1" aria-label="Deploy"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">Deploy</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">The address. Keep it private: it goes to the desk's owner by email and nowhere else.</p>
+            <p class="note"><span class="n">1</span><span>Copy, under Web app URL: this is the address to email.</span></p>
+            <p class="note"><span class="n">2</span><span>Done.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:250;--cy:20;--cw:780;--ch:625">
+              <div class="crop"><div class="zoom"><img src="shots/deploy-done.png" width="1280" height="663" loading="lazy" alt="The New deployment box after Deploy: Deployment successfully updated, Version 1 with the date, a blurred Deployment ID with Copy, then Web app URL, blurred, with Copy, and Done." /></div></div>
+              <button type="button" class="pin" style="--x:13.3;--y:63.4" aria-label="Copy, under Web app URL: this is the address to email"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Copy, under Web app URL: this is the address to email</span></button>
+              <button type="button" class="pin up" style="--x:97.4;--y:89.1" aria-label="Done"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Done</span></button>
+            </div>
           </div>
         </div>
       </section>
@@ -1203,12 +1363,62 @@ function describeError(err) {
       <section class="chapter" id="script-2" data-name="Script 2: the sign-up" aria-labelledby="h-script-2">
         <h2 class="pane-title" id="h-script-2"><span class="step" aria-hidden="true">2</span><span class="sr-only">Step 2: </span>Script 2: the sign-up</h2>
 
+        <div class="slide words" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">The same screens as script 1, with these differences.</p>
+            
+            <div class="foot"></div>
+          </div>
+          <div class="text">
+            <section class="steps" aria-labelledby="h-script-2-0-0">
+              <h3 id="h-script-2-0-0">What differs</h3>
+              <ul>
+                <li>The Sheet is <b>subscribe to listserve</b>.</li>
+                <li>A new Untitled project may open. That is fine.</li>
+                <li>No settings and no properties: the Sheet's id is in the code.</li>
+                <li>The code is the second box on this page.</li>
+                <li>Run <b>waitingCount</b>, not checkAccess.</li>
+              </ul>
+              <p class="links"><a href="https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit" target="_blank" rel="noopener">subscribe to listserve<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></p>
+            </section>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Open the Sheet <a href="https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit" target="_blank" rel="noopener">subscribe to listserve<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a> and its script.</p>
+            <p class="note"><span class="n">1</span><span>Extensions.</span></p>
+            <p class="note"><span class="n">2</span><span>Apps Script: the editor opens in a new tab.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1424;--ih:703;--cx:300;--cy:0;--cw:620;--ch:520">
+              <div class="crop"><div class="zoom"><img src="shots/extensions.png" width="1424" height="703" loading="lazy" alt="A Google Sheet with its Extensions menu open: Add-ons, Macros, Apps Script, then AppSheet, Data Studio and a list of add-ons." /></div></div>
+              <button type="button" class="pin" style="--x:37.6;--y:6.3" aria-label="Extensions"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Extensions</span></button>
+              <button type="button" class="pin" style="--x:45.3;--y:27.8" aria-label="Apps Script: the editor opens in a new tab"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Apps Script: the editor opens in a new tab</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">A project that already holds doPost and waitingCount is the old script: carry on in it. Otherwise:</p>
+            <p class="note"><span class="n">1</span><span>A new Untitled project is fine. Click the name and call it Listserv sign-up.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:0;--cy:0;--cw:700;--ch:590">
+              <div class="crop"><div class="zoom"><img src="shots/s2-editor.png" width="1280" height="663" loading="lazy" alt="The Apps Script editor as it opens for a new script: Untitled project at the top, Files with Code.gs, and an empty myFunction in the code." /></div></div>
+              <button type="button" class="pin" style="--x:54.9;--y:2.4" aria-label="A new Untitled project is fine. Click the name and call it Listserv sign-up"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">A new Untitled project is fine. Click the name and call it Listserv sign-up</span></button>
+            </div>
+          </div>
+        </div>
+
         <div class="slide kind-code" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Where the old sign-up script lived is not known. It does not matter: a deployment runs as the person who made it, so this is new either way, and the whole code is here.</p>
-            <p class="note"><span class="n">1</span><span>Open the Sheet <b>subscribe to listserve</b> (<a href="https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit" target="_blank" rel="noopener">open it<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>).</span></p>
-            <p class="note"><span class="n">2</span><span>Click <b>Extensions</b> &gt; <b>Apps Script</b>. One of two things opens. A project that already holds <code>doPost</code>, <code>doGet</code> and <code>waitingCount</code>: the old script was here; carry on in it. Or a new Untitled project holding only <code>function myFunction() {}</code>: the old script was elsewhere; carry on in this one, click the project name at the top and name it "Listserv sign-up".</span></p>
-            <p class="note"><span class="n">3</span><span>Click <b>Code.gs</b>, click inside the code, select all and paste the whole box, as for script 1. Click <b>Save project</b>. This script needs no script properties: the Sheet's id is in the code.</span></p>
+            <p class="cap">The sign-up script, whole.</p>
+            <p class="note"><span class="n">1</span><span><b>Copy</b>.</span></p>
+            <p class="note"><span class="n">2</span><span>In the editor, paste it over the old code. Next picture.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame code-frame">
@@ -1275,22 +1485,133 @@ function waitingCount() {
           </div>
         </div>
 
-        <div class="slide words" role="group" aria-roledescription="slide">
+        <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Run it once for the permissions, then deploy it the same way.</p>
-            
+            <p class="cap">Pasted and saved, as for script 1.</p>
+            <p class="note"><span class="n">1</span><span>Code.gs.</span></p>
+            <p class="note"><span class="n">2</span><span>Click in the code, select all (Cmd+A or Ctrl+A) and paste.</span></p>
+            <p class="note"><span class="n">3</span><span>Save, the disk icon. The top then says Saved to Drive.</span></p>
             <div class="foot"></div>
           </div>
-          <div class="text">
-            <section class="steps" aria-labelledby="h-script-2-1-0">
-              <h3 id="h-script-2-1-0">Run, deploy, try</h3>
-              <ol start="4" style="counter-reset: step 3">
-                <li>In the function menu pick <b>waitingCount</b>, then click <b>Run</b>. It reads Sheet 1, so Google asks for permission: <b>Review permissions</b>, your TAMU account, every box ticked, <b>Continue</b>. The log ends with <b>Execution completed</b>.</li>
-                <li><b>Deploy</b> &gt; <b>New deployment</b> &gt; the gear &gt; <b>Web app</b>. <b>Description</b>: your name and the date. <b>Execute as</b>: <b>Me</b>. <b>Who has access</b>: <b>Anyone</b>, since the desk asks for the count and sends sign-ups without signing in. Click <b>Deploy</b>.</li>
-                <li>Next to <b>Web app URL</b>, click <b>Copy</b>. Then <b>Done</b>.</li>
-                <li>In a private window, the address reads "The sign-up script is running." The same address with <code>?action=count</code> at the end reads <code>{"ok":true,"waiting":N}</code>, N being the rows on Sheet 1.</li>
-              </ol>
-            </section>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:0;--cy:0;--cw:760;--ch:640">
+              <div class="crop"><div class="zoom"><img src="shots/code-saved.png" width="1280" height="663" loading="lazy" alt="The editor with the desk script pasted into Code.gs, its first lines a comment headed ERC Content Desk, Sheet API; the top reads Saved to Drive." /></div></div>
+              <button type="button" class="pin" style="--x:7.8;--y:25" aria-label="Code.gs"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Code.gs</span></button>
+              <button type="button" class="pin" style="--x:44.5;--y:17.8" aria-label="Click in the code, select all (Cmd+A or Ctrl+A) and paste"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Click in the code, select all (Cmd+A or Ctrl+A) and paste</span></button>
+              <button type="button" class="pin" style="--x:51.3;--y:11.3" aria-label="Save, the disk icon. The top then says Saved to Drive"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Save, the disk icon. The top then says Saved to Drive</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Run waitingCount once. It reads Sheet 1, so Google asks for permission.</p>
+            <p class="note"><span class="n">1</span><span>The function menu, after Debug.</span></p>
+            <p class="note"><span class="n">2</span><span>waitingCount. The picture shows script 1's list.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:190;--cy:0;--cw:760;--ch:640">
+              <div class="crop"><div class="zoom"><img src="shots/s2-function-menu.png" width="1280" height="663" loading="lazy" alt="The editor's toolbar with the function menu open over the code, a list of the script's functions." /></div></div>
+              <button type="button" class="pin" style="--x:61.8;--y:11.3" aria-label="The function menu, after Debug"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The function menu, after Debug</span></button>
+              <button type="button" class="pin" style="--x:48.3;--y:60.6" aria-label="waitingCount. The picture shows script 1's list"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">waitingCount. The picture shows script 1's list</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Run. The picture shows script 1's checkAccess; yours says waitingCount.</p>
+            <p class="note"><span class="n">1</span><span>Run.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:190;--cy:0;--cw:760;--ch:640">
+              <div class="crop"><div class="zoom"><img src="shots/run.png" width="1280" height="663" loading="lazy" alt="The editor's toolbar with checkAccess picked in the function menu, and Run beside Debug." /></div></div>
+              <button type="button" class="pin" style="--x:39.2;--y:9.7" aria-label="Run"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Run</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Then allow it as for script 1: your account, every box, Continue. The log ends with Execution completed.</p>
+            <p class="note"><span class="n">1</span><span>Review permissions.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:190;--cy:0;--cw:760;--ch:640">
+              <div class="crop"><div class="zoom"><img src="shots/authorize.png" width="1280" height="663" loading="lazy" alt="A box over the editor, Authorization required: this app might not work as expected without providing all requested permissions; Cancel and Review permissions." /></div></div>
+              <button type="button" class="pin" style="--x:88.7;--y:56.6" aria-label="Review permissions"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Review permissions</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Deploy it the same way.</p>
+            <p class="note"><span class="n">1</span><span>Deploy.</span></p>
+            <p class="note"><span class="n">2</span><span>New deployment.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:480;--cy:0;--cw:695;--ch:585">
+              <div class="crop"><div class="zoom"><img src="shots/deploy-menu.png" width="1280" height="663" loading="lazy" alt="The Deploy button at the top right with its menu open: New deployment, Manage deployments, Test deployments." /></div></div>
+              <button type="button" class="pin" style="--x:86.6;--y:2.4" aria-label="Deploy"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Deploy</span></button>
+              <button type="button" class="pin" style="--x:71.9;--y:14" aria-label="New deployment"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">New deployment</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">A web app again.</p>
+            <p class="note"><span class="n">1</span><span>The gear beside Select type.</span></p>
+            <p class="note"><span class="n">2</span><span>Web app.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:250;--cy:20;--cw:780;--ch:625">
+              <div class="crop"><div class="zoom"><img src="shots/deploy-type.png" width="1280" height="663" loading="lazy" alt="The New deployment box: Select type with a gear, its menu open: Web app, API Executable, Add-on, Library; Please select a deployment type." /></div></div>
+              <button type="button" class="pin" style="--x:25.4;--y:12.8" aria-label="The gear beside Select type"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The gear beside Select type</span></button>
+              <button type="button" class="pin" style="--x:23.6;--y:22.1" aria-label="Web app"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Web app</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">The same settings. Who has access: Anyone, since the desk sends sign-ups without signing in.</p>
+            <p class="note"><span class="n">1</span><span>Description: your name and the date.</span></p>
+            <p class="note"><span class="n">2</span><span>Execute as: Me.</span></p>
+            <p class="note"><span class="n">3</span><span>Who has access: open it and pick Anyone, the last one. Not Anyone with Google account.</span></p>
+            <p class="note"><span class="n">4</span><span>Deploy.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:250;--cy:20;--cw:780;--ch:625">
+              <div class="crop"><div class="zoom"><img src="shots/deploy-access.png" width="1280" height="663" loading="lazy" alt="The New deployment box for a web app: Description filled in, Execute as Me, and the Who has access menu open: Only myself, Anyone with Google account, Anyone; Cancel and Deploy." /></div></div>
+              <button type="button" class="pin" style="--x:94.6;--y:22.4" aria-label="Description: your name and the date"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Description: your name and the date</span></button>
+              <button type="button" class="pin" style="--x:94.6;--y:39.7" aria-label="Execute as: Me"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Execute as: Me</span></button>
+              <button type="button" class="pin up" style="--x:28.3;--y:84.3" aria-label="Who has access: open it and pick Anyone, the last one. Not Anyone with Google account"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Who has access: open it and pick Anyone, the last one. Not Anyone with Google account</span></button>
+              <button type="button" class="pin up" style="--x:97.4;--y:89.1" aria-label="Deploy"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">Deploy</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">The second address. Copy it, then Done.</p>
+            <p class="note"><span class="n">1</span><span>Copy, under Web app URL: this is the address to email.</span></p>
+            <p class="note"><span class="n">2</span><span>Done.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:250;--cy:20;--cw:780;--ch:625">
+              <div class="crop"><div class="zoom"><img src="shots/deploy-done.png" width="1280" height="663" loading="lazy" alt="The New deployment box after Deploy: Deployment successfully updated, Version 1 with the date, a blurred Deployment ID with Copy, then Web app URL, blurred, with Copy, and Done." /></div></div>
+              <button type="button" class="pin" style="--x:13.3;--y:63.4" aria-label="Copy, under Web app URL: this is the address to email"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Copy, under Web app URL: this is the address to email</span></button>
+              <button type="button" class="pin up" style="--x:97.4;--y:89.1" aria-label="Done"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Done</span></button>
+            </div>
           </div>
         </div>
       </section>
@@ -1303,23 +1624,23 @@ function waitingCount() {
           <div class="side">
             <p class="cap">The desk reaches the scripts through two settings only the owner can change.</p>
             <p class="note warn"><span class="n">!</span><span><b>Email only.</b> Never a shared doc, a chat or a page: the sign-up address alone lets anyone add rows.</span></p>
-            <p class="note quiet"><i class="fa-solid fa-circle-question" aria-hidden="true"></i><span>Unconfirmed: which environments (Production, Preview) hold the two settings. The owner edits each one that exists.</span></p>
             <div class="foot"></div>
           </div>
           <div class="text">
             <section class="steps" aria-labelledby="h-send-0-0">
               <h3 id="h-send-0-0">You</h3>
               <ol>
-                <li>Email both addresses to the desk's owner (<a href="/how-to/change-the-desk/#ask">Who to ask</a>).</li>
+                <li>Each address in a private (Incognito) window first. The desk script reads "ERC Content Desk sheet API is running. It only accepts POST requests." and the sign-up script "The sign-up script is running." A Google sign-in page means Who has access is not Anyone.</li>
+                <li>Email both addresses to the desk's owner, at the address in <a href="https://docs.google.com/document/d/1DHzMJCA_Alep8suiZi7iICzLGSKtexvm6Z1yqVEoUFg/edit" target="_blank" rel="noopener">READ ME FIRST - ERC Content Desk<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>.</li>
                 <li>Say which is which: "erc-content-desk script" and "subscribe to listserve script".</li>
               </ol>
             </section>
             <section class="steps" aria-labelledby="h-send-0-1">
               <h3 id="h-send-0-1">The owner, once</h3>
               <ul>
-                <li>On vercel.com, team <b>TAMU-ERC</b>, project <b>erc-content-desk</b>: <b>Settings</b> &gt; <b>Environment Variables</b>. <code>SHEET_API_URL</code> gets the erc-content-desk address, <code>LISTSERV_URL</code> the subscribe to listserve address, each by the row's menu &gt; <b>Edit</b> &gt; <b>Save</b>. <code>SHEET_API_TOKEN</code> stays: it still matches the script property.</li>
-                <li><b>Deployments</b> &gt; the newest Production deployment &gt; the menu &gt; <b>Redeploy</b>. A changed setting only reaches a new deployment.</li>
-                <li>This once, the addresses change, so Vercel changes. Every later change to a script is a new version of your own deployment: the address stays, and Vercel stays as it is.</li>
+                <li>On vercel.com, team <b>TAMU-ERC</b>, project <b>erc-content-desk</b>: <b>Settings</b> &gt; <b>Environment Variables</b>. <code>SHEET_API_URL</code> gets the desk script's address, <code>LISTSERV_URL</code> the sign-up script's. <code>SHEET_API_TOKEN</code> stays.</li>
+                <li><b>Deployments</b> &gt; the newest Production deployment &gt; <b>Redeploy</b>. <a href="/#listserv">Listserv</a> then turns from Down to Live by itself.</li>
+                <li>A later change to a script is a new version of your own deployment: the address stays, and Vercel stays as it is.</li>
               </ul>
             </section>
           </div>
@@ -1332,7 +1653,7 @@ function waitingCount() {
 
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Once the owner says the redeploy is done, open <a href="/#listserv">Listserv</a>. A number under To be added means the sign-up script answered.</p>
+            <p class="cap">Once the owner says the redeploy is done, open <a href="/#listserv">Listserv</a>.</p>
             <p class="note"><span class="n">1</span><span>To be added: a number means the sign-up script answered.</span></p>
             <p class="note"><span class="n">2</span><span>If the script is down this reads: Sheet 1 couldn't be counted just now.</span></p>
             <p class="note"><span class="n">3</span><span>Status: Live means the script answered. Down means sign-ups fail.</span></p>
@@ -1341,7 +1662,7 @@ function waitingCount() {
           <div class="frame">
             <div class="shot" style="--iw:2560;--ih:1800;--cx:512;--cy:72;--cw:2000;--ch:1286">
               <div class="crop"><div class="zoom"><img src="shots/listserv.png" width="2560" height="1800" loading="lazy" alt="The Listserv page: under To be added the count is 3, with Rows on Sheet 1, counted as this page opened, Open the sign-up sheet and the three steps; then the Sign-up form box, its Status reading Live, taking sign-ups." /></div></div>
-              <button type="button" class="pin" style="--x:5.1;--y:27.4" aria-label="To be added: a number means the sign-up script answered"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">To be added: a number means the sign-up script answered</span></button>
+              <button type="button" class="pin" style="--x:2.3;--y:27.4" aria-label="To be added: a number means the sign-up script answered"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">To be added: a number means the sign-up script answered</span></button>
               <button type="button" class="pin" style="--x:30;--y:31.9" aria-label="If the script is down this reads: Sheet 1 couldn't be counted just now."><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">If the script is down this reads: Sheet 1 couldn't be counted just now.</span></button>
               <button type="button" class="pin up" style="--x:31.3;--y:78.2" aria-label="Status: Live means the script answered. Down means sign-ups fail"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Status: Live means the script answered. Down means sign-ups fail</span></button>
             </div>
@@ -1350,18 +1671,18 @@ function waitingCount() {
 
         <div class="slide words" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Then one test of each script. Delete the test rows after.</p>
+            <p class="cap">One test of each script. Delete the test rows after.</p>
             
             <div class="foot"></div>
           </div>
           <div class="text">
             <section class="steps" aria-labelledby="h-check-1-0">
-              <h3 id="h-check-1-0">Sign-ups and the desk's Sheet</h3>
+              <h3 id="h-check-1-0">Two tests</h3>
               <ol>
-                <li>On the public sign-up page, <a href="https://erc-share.vercel.app/listserv/" target="_blank" rel="noopener">erc-share.vercel.app/listserv<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>, sign up as "Test, delete me" with your own email, pass the check box, and send. The page says "Thank you. You are on the list."</li>
-                <li>Your test is the last row on Sheet 1 of <a href="https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit" target="_blank" rel="noopener">subscribe to listserve<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a> (<b>Open the sign-up sheet</b> on Listserv). Delete that row. The desk keeps its own copy of every sign-up, so Listserv's Last sign-up shows today, and Last updated may change to today too. Both are expected.</li>
-                <li>On <a href="/#team">Submit content</a>, add an obviously fake item with <b>Add to the queue</b>: the link https://example.org/test, the title "Test item, delete me", and your initials. Within a minute it is the last row on the first tab of <a href="https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit" target="_blank" rel="noopener">erc-content-desk<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>.</li>
-                <li>Delete it on <a href="/#sort">Content Sort</a> (the team password: <a href="/how-to/change-the-desk/#ask">Who to ask</a>). Its Sheet row stays, with its status set to trashed: rows are never removed.</li>
+                <li>On <a href="https://erc-share.vercel.app/listserv/" target="_blank" rel="noopener">erc-share.vercel.app/listserv<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>, sign up as "Test, delete me" with your own email. The page says "Thank you. You are on the list."</li>
+                <li>Delete that row, the last on Sheet 1 of <a href="https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit" target="_blank" rel="noopener">subscribe to listserve<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>. Listserv's Last sign-up then shows today: expected.</li>
+                <li>On <a href="/#team">Submit content</a>, add "Test item, delete me" with the link https://example.org/test and your initials. Within a minute it is the last row on the first tab of <a href="https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit" target="_blank" rel="noopener">erc-content-desk<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>.</li>
+                <li>Delete it on <a href="/#sort">Content Sort</a> (the team password: <a href="/how-to/change-the-desk/#ask">Who to ask</a>). Its Sheet row stays, marked trashed.</li>
               </ol>
             </section>
           </div>
@@ -1376,11 +1697,11 @@ function waitingCount() {
           <div class="text">
             <section class="steps" aria-labelledby="h-check-2-0">
               <h3 id="h-check-2-0">The rest</h3>
-              <ol start="5" style="counter-reset: step 4">
-                <li>On the <a href="/#queue">Content queue</a>, under <b>Scraper</b>, press <b>Run the scraper</b>. The line shimmers while it runs (the last run took under two minutes). When it ends: "Last run &lt;date&gt;, for the &lt;date&gt; issue: ..." with <b>Open the sheet</b> and <b>the files</b>. "The last run failed on GitHub." means the delivery still failed.</li>
-                <li>Open any brief's page on <a href="/#briefs">Research briefs</a> (the team password again: <a href="/how-to/change-the-desk/#ask">Who to ask</a>). Its files are listed, each a link into Drive. "Drive didn't answer. Use the folder link above." means the desk script still fails.</li>
-                <li>Later: a send date typed on <a href="https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit#gid=287660130" target="_blank" rel="noopener">the Sheet's schedule tab<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a> shows on <a href="/#schedule">Newsletter &gt; Schedule</a> within ten minutes.</li>
-              </ol>
+              <ul>
+                <li><a href="/#queue">Content queue</a> &gt; <b>Run the scraper</b>. Under two minutes later the line reads "Last run ..." with <b>Open the sheet</b>. "The last run failed on GitHub." means not yet.</li>
+                <li>Any brief on <a href="/#briefs">Research briefs</a> (the team password: <a href="/how-to/change-the-desk/#ask">Who to ask</a>) lists its files. "Drive didn't answer." means not yet.</li>
+                <li>A send date typed on <a href="https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit#gid=287660130" target="_blank" rel="noopener">the Sheet's schedule tab<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a> shows on <a href="/#schedule">Newsletter &gt; Schedule</a> within ten minutes.</li>
+              </ul>
             </section>
           </div>
         </div>
@@ -1398,15 +1719,22 @@ function waitingCount() {
           </div>
           <div class="text">
             <section class="steps" aria-labelledby="h-wrong-0-0">
-              <h3 id="h-wrong-0-0">A check fails</h3>
+              <h3 id="h-wrong-0-0">Where to look</h3>
               <ul>
-                <li>In the Apps Script editor, the left bar's <b>Executions</b> lists each call. A failed sign-up call shows as Failed; click it to read why. The desk script catches its own errors and answers them in words, so its calls show Completed even when they refuse.</li>
-                <li>A Google sign-in page in the private window: <b>Deploy</b> &gt; <b>Manage deployments</b> &gt; your deployment &gt; the pencil &gt; <b>Who has access</b>: <b>Anyone</b> &gt; <b>Deploy</b>. The address stays.</li>
-                <li>"Unauthorized: missing or incorrect token." on a brief's page, or in the desk's log: the token property changed. Do not guess a value. Email the owner.</li>
-                <li>"Server is not configured: the ... script property is not set.": add it as in step 5 of script 1. For <code>SHEET_API_TOKEN</code>, email the owner.</li>
-                <li>"The Sheet's script does not know this action yet." or "Unknown action": old code is live. Paste the desk script from this page again, save, then <b>Deploy</b> &gt; <b>Manage deployments</b> &gt; your deployment &gt; the pencil &gt; <b>Version</b>: <b>New version</b> &gt; <b>Deploy</b>.</li>
-                <li>A permission error naming Drive or Sheets: trap 2, on the next slide.</li>
-                <li>The private-window checks work but the desk still fails: the Vercel step is missing or not redeployed. The owner can read the desk's logs in Vercel, which keep only the last hour; "Sheet API returned HTTP 403" there means the desk still calls an old address.</li>
+                <li>In the editor, <b>Executions</b> lists each call. A failed sign-up call shows as Failed: click it to read why. The desk script answers its errors in words, so its calls show Completed even when they refuse.</li>
+              </ul>
+            </section>
+            <section class="steps" aria-labelledby="h-wrong-0-1">
+              <h3 id="h-wrong-0-1">A Google sign-in page in the private window</h3>
+              <ul>
+                <li>Who has access is not Anyone. <b>Deploy</b> &gt; <b>Manage deployments</b> &gt; your deployment &gt; the pencil &gt; <b>Who has access</b>: <b>Anyone</b> &gt; <b>Deploy</b>. The address stays.</li>
+                <li>No Anyone under Who has access at all: a TAMU setting. Stop and tell the owner; an option limited to Texas A&amp;M or to Google accounts will not work, because the desk never signs in.</li>
+              </ul>
+            </section>
+            <section class="steps" aria-labelledby="h-wrong-0-2">
+              <h3 id="h-wrong-0-2">&quot;Unauthorized: missing or incorrect token.&quot;</h3>
+              <ul>
+                <li>The token property changed. Do not guess a value. Email the owner.</li>
               </ul>
             </section>
           </div>
@@ -1414,42 +1742,115 @@ function waitingCount() {
 
         <div class="slide words" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Twelve traps, most met once while the scripts were set up.</p>
+            <p class="cap">Three more messages.</p>
             
             <div class="foot"></div>
           </div>
           <div class="text">
             <section class="steps" aria-labelledby="h-wrong-1-0">
-              <h3 id="h-wrong-1-0">The traps, 1 to 6</h3>
-              <ol>
-                <li><b>Permission is asked only when a function that needs it runs.</b> Running doGet asks nothing; a function that reads a Drive folder brings up the screen. Run checkAccess in the desk script and waitingCount in the sign-up script, never doGet or doPost.</li>
-                <li><b>Google's granular consent.</b> Each permission has its own box, and an empty box is a partial grant: once, the first grant was read-only, and making folders failed after. If it already went wrong, remove the script's access on your Google account's permissions page, <code>myaccount.google.com/u/N/permissions</code> (trap 3), then run checkAccess again and tick every box.</li>
-                <li><b>The account number in Google's addresses.</b> With several Google accounts signed in, each has a number in the address, such as <code>script.google.com/u/1/</code>, and Google's permissions page opens on account 0 unless its address carries the editor's number. Use <code>myaccount.google.com/u/&lt;the editor's number&gt;/permissions</code>, or a window signed in to TAMU only.</li>
-                <li><b>Saving changes nothing live.</b> The web app runs the code as it was deployed. <b>Manage deployments</b> &gt; the pencil &gt; <b>Version</b>: <b>New version</b> &gt; <b>Deploy</b>.</li>
-                <li><b>A new deployment gets a new address; a new version keeps it.</b> This time a new deployment is needed: the old ones belong to the closed account, so Vercel must change. Every later change is a new version of your own deployment, and Vercel stays as it is.</li>
-                <li><b>Several deployments, all looking alike.</b> Once, a new version went on only one of three. The description in step 17 marks yours: always pick that deployment.</li>
-              </ol>
+              <h3 id="h-wrong-1-0">&quot;Server is not configured: the ... script property is not set.&quot;</h3>
+              <ul>
+                <li>Add it as in script 1's Script Properties. For <code>SHEET_API_TOKEN</code>, email the owner.</li>
+              </ul>
+            </section>
+            <section class="steps" aria-labelledby="h-wrong-1-1">
+              <h3 id="h-wrong-1-1">&quot;The Sheet's script does not know this action yet.&quot; or &quot;Unknown action&quot;</h3>
+              <ul>
+                <li>Old code is live. Paste the desk script from this page again, save, then a new version: next picture.</li>
+              </ul>
+            </section>
+            <section class="steps" aria-labelledby="h-wrong-1-2">
+              <h3 id="h-wrong-1-2">The private window works but the desk still fails</h3>
+              <ul>
+                <li>The Vercel step is missing or not redeployed. In the desk's log, "Sheet API returned HTTP 403" means the desk still calls an old address.</li>
+              </ul>
+            </section>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Saving changes nothing live: the web app runs the code as it was deployed. To send a change to the same address, Deploy &gt; Manage deployments, then:</p>
+            <p class="note"><span class="n">1</span><span>The pencil.</span></p>
+            <p class="note"><span class="n">2</span><span>Version: New version.</span></p>
+            <p class="note"><span class="n">3</span><span>Deploy. The address stays.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:1280;--ih:663;--cx:250;--cy:20;--cw:780;--ch:625">
+              <div class="crop"><div class="zoom"><img src="shots/new-version.png" width="1280" height="663" loading="lazy" alt="The Manage deployments box with the deployment picked under Active, the pencil pressed, and the Version menu open: New version over Version 1; Cancel and Deploy." /></div></div>
+              <button type="button" class="pin" style="--x:90.8;--y:12.8" aria-label="The pencil"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">The pencil</span></button>
+              <button type="button" class="pin" style="--x:28.3;--y:34.4" aria-label="Version: New version"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Version: New version</span></button>
+              <button type="button" class="pin up" style="--x:97.4;--y:89.1" aria-label="Deploy. The address stays"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Deploy. The address stays</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">A red line in the Execution log when checkAccess runs.</p>
+            <p class="note"><span class="n">1</span><span>Invalid argument: id: a folder id property is missing or wrong (script 1, Script Properties).</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:640;--ih:332;--cx:0;--cy:30;--cw:640;--ch:272">
+              <div class="crop"><div class="zoom"><img src="shots/id-error.png" width="640" height="332" loading="lazy" alt="The Execution log after checkAccess ran: Execution started, the Sheet's name, then a red Error line, Exception: Invalid argument: id, at checkAccess." /></div></div>
+              <button type="button" class="pin up" style="--x:58.1;--y:76.8" aria-label="Invalid argument: id: a folder id property is missing or wrong (script 1, Script Properties)"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Invalid argument: id: a folder id property is missing or wrong (script 1, Script Properties)</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide words" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">The traps, one line each.</p>
+            
+            <div class="foot"></div>
+          </div>
+          <div class="text">
+            <section class="steps" aria-labelledby="h-wrong-4-0">
+              <h3 id="h-wrong-4-0">Google asked for no permission</h3>
+              <ul>
+                <li>Permission is asked only when a function that needs it runs. Run checkAccess or waitingCount, never doGet or doPost.</li>
+              </ul>
+            </section>
+            <section class="steps" aria-labelledby="h-wrong-4-1">
+              <h3 id="h-wrong-4-1">A permission error naming Drive or Sheets</h3>
+              <ul>
+                <li>Google's granular consent: an empty box is a partial grant. Remove the script's access at <code>myaccount.google.com/u/N/permissions</code>, run checkAccess again and tick every box.</li>
+                <li>The account number in Google's addresses: N above is the number in the editor's address, such as <code>script.google.com/u/1/</code>. A window signed in to TAMU only has none of this.</li>
+              </ul>
+            </section>
+            <section class="steps" aria-labelledby="h-wrong-4-2">
+              <h3 id="h-wrong-4-2">A change does nothing, or the address changed</h3>
+              <ul>
+                <li>A new deployment gets a new address; a new version keeps it. This once a new deployment was needed. Every later change is a new version of your own deployment.</li>
+                <li>Several deployments, all looking alike: pick the one with your description.</li>
+              </ul>
             </section>
           </div>
         </div>
 
         <div class="slide words" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">The other six.</p>
+            <p class="cap">The rest of the traps.</p>
             
             <div class="foot"></div>
           </div>
           <div class="text">
-            <section class="steps" aria-labelledby="h-wrong-2-0">
-              <h3 id="h-wrong-2-0">The traps, 7 to 12</h3>
-              <ol start="7" style="counter-reset: step 6">
-                <li><b>The wrong project.</b> Once, a script property went into a different Apps Script project. Always open a script from its Sheet, <b>Extensions</b> &gt; <b>Apps Script</b>, and check the name at the top.</li>
-                <li><b>Two old helpers.</b> The old desk script once held checkDrive and restoreMorningScrape, never in the repository's file. The paste in step 8 removes them, which is fine. Never run restoreMorningScrape: it was a one-time repair that moves files in and out of the trash.</li>
-                <li><b>The test address.</b> <b>Test deployments</b> shows an address ending in <code>/dev</code>, which works only for people who can edit the script. The desk needs the <code>/exec</code> one.</li>
-                <li><b>No Anyone under Who has access.</b> That is a TAMU setting. It was offered to the old account; unconfirmed for yours. If it is missing, stop and tell the owner: an option limited to Texas A&amp;M or to Google accounts will not work, because the desk never signs in.</li>
-                <li><b>Several accounts in one browser.</b> The editor may not open, or opens as the wrong account. Use a window signed in to TAMU only.</li>
-                <li><b>The scripts now run as you.</b> If your account ever closes, this happens again, and whoever follows does these same steps.</li>
-              </ol>
+            <section class="steps" aria-labelledby="h-wrong-5-0">
+              <h3 id="h-wrong-5-0">The editor opens the wrong project, or as the wrong account</h3>
+              <ul>
+                <li>The wrong project: always open a script from its Sheet, <b>Extensions</b> &gt; <b>Apps Script</b>, and check the name at the top.</li>
+                <li>Several accounts in one browser: use a window signed in to TAMU only.</li>
+              </ul>
+            </section>
+            <section class="steps" aria-labelledby="h-wrong-5-1">
+              <h3 id="h-wrong-5-1">Other</h3>
+              <ul>
+                <li>Two old helpers, checkDrive and restoreMorningScrape: the paste removes them, which is fine. Never run restoreMorningScrape.</li>
+                <li>The test address: <b>Test deployments</b> ends in <code>/dev</code>, for editors only. The desk needs <code>/exec</code>.</li>
+                <li>The scripts now run as you. If your account closes, whoever follows does these steps again.</li>
+              </ul>
             </section>
           </div>
         </div>
@@ -1461,23 +1862,22 @@ function waitingCount() {
 
         <div class="slide words" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Add a source, the Content queue's form, is already in the desk script on this page. It needs one more script property before it can write to the Scraper sources Sheet; until then the form says "The sources sheet is not connected yet."</p>
-            <p class="note quiet"><i class="fa-solid fa-circle-question" aria-hidden="true"></i><span>Unconfirmed: whether the live script already holds <code>SOURCES_SHEET_ID</code>. Step 5 of script 1 lists the three it must hold.</span></p>
+            <p class="cap">Add a source, the Content queue's form, is in the desk script already. It needs one more script property; until then the form says "The sources sheet is not connected yet."</p>
+            
             <div class="foot"></div>
           </div>
           <div class="text">
             <section class="steps" aria-labelledby="h-later-0-0">
               <h3 id="h-later-0-0">Connect the sources Sheet</h3>
               <ol>
-                <li>Open the Sheet <b>Scraper sources</b>, on the team drive: Education Research Center &gt; ERC Content Desk &gt; Newsletter. Its id is the long part of its address between <code>/d/</code> and <code>/edit</code>.</li>
-                <li>In the desk's script: <b>Project Settings</b> &gt; <b>Edit script properties</b> &gt; <b>Add script property</b>: <code>SOURCES_SHEET_ID</code> and that id. <b>Save script properties</b>. A property is read live: no new version is needed for it.</li>
+                <li>Open the Sheet <b>Scraper sources</b> (team drive: Education Research Center &gt; ERC Content Desk &gt; Newsletter). Its id is the part of its address between <code>/d/</code> and <code>/edit</code>.</li>
+                <li>In the desk's script: <b>Project Settings</b> &gt; <b>Edit script properties</b> &gt; <b>Add script property</b>: <code>SOURCES_SHEET_ID</code> and that id. <b>Save script properties</b>. No new version needed.</li>
               </ol>
             </section>
             <section class="steps" aria-labelledby="h-later-0-1">
               <h3 id="h-later-0-1">Any later change to the code</h3>
               <ol>
-                <li>Open <a href="https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit" target="_blank" rel="noopener">erc-content-desk<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a> &gt; <b>Extensions</b> &gt; <b>Apps Script</b>, and replace <b>Code.gs</b> with the box on this page, which is what gets updated. Save. Paste the checkAccess helper at the end again, since the paste removes it.</li>
-                <li>If the new code's notes name a new script property or permission, add it as in steps 5 and 6, then run checkAccess and tick every box.</li>
+                <li>Replace <b>Code.gs</b> with the box on this page, save, and paste the checkAccess helper at the end again. Run it, and tick every box if Google asks.</li>
                 <li><b>Deploy</b> &gt; <b>Manage deployments</b> &gt; your deployment &gt; the pencil &gt; <b>Version</b>: <b>New version</b> &gt; <b>Deploy</b>. Same address. Vercel needs nothing.</li>
               </ol>
             </section>

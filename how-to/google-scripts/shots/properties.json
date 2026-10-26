@@ -1,0 +1,26 @@
+{
+  "iw": 1280,
+  "ih": 663,
+  "cx": 60,
+  "cy": 60,
+  "cw": 810,
+  "ch": 603,
+  "alt": "Further down Project Settings, Script Properties: two rows, SCRAPE_FOLDER_ID and BRIEFS_FOLDER_ID, each with a long value, and the button Edit script properties.",
+  "pins": [
+    {
+      "x": 3.3,
+      "y": 40.8,
+      "label": "Script Properties: scroll down to it"
+    },
+    {
+      "x": 3.8,
+      "y": 59.7,
+      "label": "SCRAPE_FOLDER_ID and BRIEFS_FOLDER_ID: both should be there"
+    },
+    {
+      "x": 30.2,
+      "y": 84.1,
+      "label": "Edit script properties: only if one is missing"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "iw": 1280,
+  "ih": 663,
+  "cx": 250,
+  "cy": 20,
+  "cw": 780,
+  "ch": 625,
+  "alt": "The New deployment box after Deploy: Deployment successfully updated, Version 1 with the date, a blurred Deployment ID with Copy, then Web app URL, blurred, with Copy, and Done.",
+  "pins": [
+    {
+      "x": 13.3,
+      "y": 63.4,
+      "label": "Copy, under Web app URL: this is the address to email"
+    },
+    {
+      "x": 97.4,
+      "y": 89.1,
+      "label": "Done"
+    }
+  ]
+}

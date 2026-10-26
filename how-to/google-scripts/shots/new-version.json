@@ -1,0 +1,26 @@
+{
+  "iw": 1280,
+  "ih": 663,
+  "cx": 250,
+  "cy": 20,
+  "cw": 780,
+  "ch": 625,
+  "alt": "The Manage deployments box with the deployment picked under Active, the pencil pressed, and the Version menu open: New version over Version 1; Cancel and Deploy.",
+  "pins": [
+    {
+      "x": 90.8,
+      "y": 12.8,
+      "label": "The pencil"
+    },
+    {
+      "x": 28.3,
+      "y": 34.4,
+      "label": "Version: New version"
+    },
+    {
+      "x": 97.4,
+      "y": 89.1,
+      "label": "Deploy. The address stays"
+    }
+  ]
+}

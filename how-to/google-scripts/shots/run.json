@@ -1,0 +1,16 @@
+{
+  "iw": 1280,
+  "ih": 663,
+  "cx": 190,
+  "cy": 0,
+  "cw": 760,
+  "ch": 640,
+  "alt": "The editor's toolbar with checkAccess picked in the function menu, and Run beside Debug.",
+  "pins": [
+    {
+      "x": 39.2,
+      "y": 9.7,
+      "label": "Run"
+    }
+  ]
+}

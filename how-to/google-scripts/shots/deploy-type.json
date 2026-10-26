@@ -1,0 +1,21 @@
+{
+  "iw": 1280,
+  "ih": 663,
+  "cx": 250,
+  "cy": 20,
+  "cw": 780,
+  "ch": 625,
+  "alt": "The New deployment box: Select type with a gear, its menu open: Web app, API Executable, Add-on, Library; Please select a deployment type.",
+  "pins": [
+    {
+      "x": 25.4,
+      "y": 12.8,
+      "label": "The gear beside Select type"
+    },
+    {
+      "x": 23.6,
+      "y": 22.1,
+      "label": "Web app"
+    }
+  ]
+}

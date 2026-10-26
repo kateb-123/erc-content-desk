@@ -1,0 +1,16 @@
+{
+  "iw": 640,
+  "ih": 332,
+  "cx": 0,
+  "cy": 30,
+  "cw": 640,
+  "ch": 272,
+  "alt": "The Execution log after checkAccess ran: Execution started, the Sheet's name, then a red Error line, Exception: Invalid argument: id, at checkAccess.",
+  "pins": [
+    {
+      "x": 58.1,
+      "y": 76.8,
+      "label": "Invalid argument: id: a folder id property is missing or wrong (script 1, Script Properties)"
+    }
+  ]
+}

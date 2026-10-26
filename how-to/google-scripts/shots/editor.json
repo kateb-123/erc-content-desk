@@ -1,0 +1,21 @@
+{
+  "iw": 1280,
+  "ih": 663,
+  "cx": 0,
+  "cy": 0,
+  "cw": 700,
+  "ch": 590,
+  "alt": "The Apps Script editor: the project name at the top, a left bar with the editor and settings icons, Files with Code.gs, and the code.",
+  "pins": [
+    {
+      "x": 54.9,
+      "y": 2.4,
+      "label": "The project name. Yours ends with Sheet API"
+    },
+    {
+      "x": 6.3,
+      "y": 47.1,
+      "label": "Project Settings, the gear"
+    }
+  ]
+}

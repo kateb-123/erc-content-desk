@@ -15,7 +15,7 @@
         "selector": ".hub-count .hub-numeral",
         "label": "To be added: a number means the sign-up script answered",
         "nth": 0,
-        "at": "left"
+        "at": "before"
       },
       {
         "selector": ".hub-count .hub-count-note",

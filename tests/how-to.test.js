@@ -219,7 +219,9 @@ test('every pin on a guide\'s still has its step in the words beside it, under i
     // A slide of a kind (Sort's flashcards and source bands, Oct 25) is drawn
     // from its data and has no still, like a slide of steps.
     const stills = deck.chapters.flatMap((c) => c.slides.filter((s) => !s.steps && !s.kind));
-    const slides = deckPage(d).split('<div class="slide" role="group"').slice(1);
+    // Every slide is split off, then the stills kept: a code slide's numbered
+    // notes would otherwise ride with the still before it (the Google scripts, Oct 26).
+    const slides = deckPage(d).split(/<div class="slide[ "]/).slice(1).filter((s) => s.includes('<div class="shot" '));
     assert.equal(slides.length, stills.length, `${d}: a slide for every still`);
     slides.forEach((slide, k) => {
       const where = `${d}, ${stills[k].shot}`;
@@ -570,7 +572,7 @@ test('each repeated topic is told once, in its guide', () => {
   pages['read-me'] = visible(readFileSync(new URL('../newsletter/read-me/index.html', import.meta.url), 'utf8'));
   const on = (phrase) => Object.keys(pages).filter((k) => pages[k].toLowerCase().includes(phrase.toLowerCase())).sort();
   const topics = [
-    ['READ ME FIRST', ['change-the-desk']],                // who to ask, and where the team password is kept
+    ['READ ME FIRST', ['change-the-desk', 'google-scripts']],   // who to ask, and where the team password is kept; the Google scripts' Send names it for the owner's address (the owner, Oct 26)
     ['3 to 5 research', ['newsletter']],                  // the issue's aim
     ['ERC Newsletter only', ['sort']],                    // what reaches the Exchange
     ['Use original', ['sort']],                           // Finalize

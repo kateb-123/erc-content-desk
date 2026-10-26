@@ -1,0 +1,36 @@
+{
+  "iw": 1280,
+  "ih": 663,
+  "cx": 60,
+  "cy": 60,
+  "cw": 810,
+  "ch": 603,
+  "alt": "Script Properties being edited: a Property box and a Value box per row, an X at each row's end, then Add script property and Save script properties.",
+  "pins": [
+    {
+      "x": 28.9,
+      "y": 84.1,
+      "label": "Add script property"
+    },
+    {
+      "x": 3.8,
+      "y": 59.7,
+      "label": "Property: the name, SCRAPE_FOLDER_ID"
+    },
+    {
+      "x": 93.5,
+      "y": 55.6,
+      "label": "Value: the id of the folder ERC Content Desk > Newsletter > Newsletter Scrape > scrapes"
+    },
+    {
+      "x": 3.8,
+      "y": 74.6,
+      "label": "BRIEFS_FOLDER_ID: the id of the folder ERC Content Desk > ERC Research Briefs"
+    },
+    {
+      "x": 54.9,
+      "y": 84.1,
+      "label": "Save script properties"
+    }
+  ]
+}

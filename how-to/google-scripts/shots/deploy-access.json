@@ -1,0 +1,31 @@
+{
+  "iw": 1280,
+  "ih": 663,
+  "cx": 250,
+  "cy": 20,
+  "cw": 780,
+  "ch": 625,
+  "alt": "The New deployment box for a web app: Description filled in, Execute as Me, and the Who has access menu open: Only myself, Anyone with Google account, Anyone; Cancel and Deploy.",
+  "pins": [
+    {
+      "x": 94.6,
+      "y": 22.4,
+      "label": "Description: your name and the date"
+    },
+    {
+      "x": 94.6,
+      "y": 39.7,
+      "label": "Execute as: Me"
+    },
+    {
+      "x": 28.3,
+      "y": 84.3,
+      "label": "Who has access: open it and pick Anyone, the last one. Not Anyone with Google account"
+    },
+    {
+      "x": 97.4,
+      "y": 89.1,
+      "label": "Deploy"
+    }
+  ]
+}

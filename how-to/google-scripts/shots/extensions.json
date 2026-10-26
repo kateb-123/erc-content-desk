@@ -1,0 +1,21 @@
+{
+  "iw": 1424,
+  "ih": 703,
+  "cx": 300,
+  "cy": 0,
+  "cw": 620,
+  "ch": 520,
+  "alt": "A Google Sheet with its Extensions menu open: Add-ons, Macros, Apps Script, then AppSheet, Data Studio and a list of add-ons.",
+  "pins": [
+    {
+      "x": 37.6,
+      "y": 6.3,
+      "label": "Extensions"
+    },
+    {
+      "x": 45.3,
+      "y": 27.8,
+      "label": "Apps Script: the editor opens in a new tab"
+    }
+  ]
+}

@@ -416,6 +416,19 @@ const KIND_STYLE = `<style data-kinds>
     .steps ul li::before { content: ''; position: absolute; left: 7px; top: 9px; width: 8px; height: 8px; border-radius: var(--radius-round); background: var(--border-strong-01); }
   </style>`;
 
+// A part of many slides (Oct 26: the Google scripts' walkthrough, a picture of
+// every screen, nineteen in one part): its dots would not fit beside Back and
+// Next, so the deck counts instead, "3 of 19", by CSS counters over the same
+// buttons. The other dots stay hidden, not gone, so the count is right; Back
+// and Next still turn the slides. Written only into a deck that counts.
+const COUNT_STYLE = `<style data-count>
+    .deck[data-dots="count"] .dots { counter-reset: dot; gap: var(--spacing-02); font: var(--meta-type); color: var(--muted); white-space: nowrap; }
+    .deck[data-dots="count"] .dots button { counter-increment: dot; visibility: hidden; width: 0; min-width: 0; padding: 0; }
+    .deck[data-dots="count"] .dots button[aria-current] { visibility: visible; width: auto; min-width: 0; }
+    .deck[data-dots="count"] .dots button[aria-current]::before { content: counter(dot); width: auto; height: auto; border-radius: 0; background: none; font: 600 14px/20px var(--font-sans); color: var(--ink); }
+    .deck[data-dots="count"] .dots::after { content: 'of ' counter(dot); }
+  </style>`;
+
 /** The flashcards' script, written into the page as it is. Content Sort's
  *  Keep and Delete ask; the answer says Right or Not quite, stamps the card
  *  and lights its group; Next card turns to the next. K and D press the
@@ -565,6 +578,8 @@ function slideHtml(chapter, slide, i) {
 }
 
 const chips = deck.chapters.map(c => `<a href="#${c.id}">${c.step ? `<span class="step" aria-hidden="true">${c.step}</span>` : ''}${esc(c.name)}</a>`).join('\n      ');
+// A part of more than eight slides counts its slides instead of drawing a dot for each (COUNT_STYLE).
+const countsSlides = deck.chapters.some(c => c.slides.length > 8);
 const chapters = deck.chapters.map(c => `<!-- ===== ${esc(c.name)} ===== -->
       <section class="chapter" id="${c.id}" data-name="${attr(c.name)}" aria-labelledby="h-${c.id}">
         <h2 class="pane-title" id="h-${c.id}">${c.step ? `<span class="step" aria-hidden="true">${c.step}</span><span class="sr-only">Step ${c.step}: </span>` : ''}${esc(c.name)}</h2>
@@ -587,7 +602,7 @@ const html = `<!DOCTYPE html>
   <link rel="stylesheet" href="/css/shell.css?v=10" />
   <script>document.documentElement.classList.add('js');</script>
   <!-- Built by how-to/make-deck.mjs from ${slug}/deck.json; the styles and script are the newsletter how-to's. -->
-  ${style}${kindsUsed.size ? `\n  ${KIND_STYLE}` : ''}
+  ${style}${kindsUsed.size ? `\n  ${KIND_STYLE}` : ''}${countsSlides ? `\n  ${COUNT_STYLE}` : ''}
 </head>
 <body>
   <a class="skip-to-main" href="#main">Skip to content</a>
@@ -609,7 +624,7 @@ const html = `<!DOCTYPE html>
       ${chips}
     </nav>
 
-    <div class="deck" role="region" aria-roledescription="carousel" aria-label="${attr(deck.h1)}">
+    <div class="deck" role="region" aria-roledescription="carousel" aria-label="${attr(deck.h1)}"${countsSlides ? ' data-dots="count"' : ''}>
       <div class="progress" aria-hidden="true"><span></span></div>
       <p class="sr-only" aria-live="polite" data-said></p>
 

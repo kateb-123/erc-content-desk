@@ -1,0 +1,26 @@
+{
+  "iw": 1280,
+  "ih": 663,
+  "cx": 0,
+  "cy": 0,
+  "cw": 760,
+  "ch": 640,
+  "alt": "The editor showing appsscript.json: eleven lines, with oauthScopes holding the spreadsheets line and the drive line; the top reads Saved to Drive.",
+  "pins": [
+    {
+      "x": 5.8,
+      "y": 18.4,
+      "label": "Editor, the < > icon"
+    },
+    {
+      "x": 26.3,
+      "y": 20,
+      "label": "appsscript.json"
+    },
+    {
+      "x": 45.8,
+      "y": 45.2,
+      "label": "These two lines inside oauthScopes. If one is missing, add it and save (Cmd+S or Ctrl+S)"
+    }
+  ]
+}

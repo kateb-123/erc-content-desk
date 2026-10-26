@@ -1012,91 +1012,79 @@ https://erc-content-desk.vercel.app/how-to/google-scripts/
 
 ## Before you start
 
-Both scripts ran as the Google account of the person who deployed them. That account is closed, so both stopped, and nothing that failed in the gap is sent again.
+Both scripts ran as the Google account of the person who deployed them. That account is closed, so you deploy them again as you.
  
-Unconfirmed: your access to the scripts. An Oct 22 note reads that the team drive gives you access to all but the Google Apps Scripts. The test is Extensions > Apps Script.
- 
-Unconfirmed: your role on the team drive. The desk script moves an older copy of a file to the trash when it saves a new one under the same name; on a team drive that takes Content manager or Manager. Contributor cannot trash.
+Your Sheet is called erc-content-desk and its project ends with Sheet API; the pictures show a test copy.
 
 ## What you need
 
-- A computer with Chrome, signed in to your TAMU Google account. Google lets only an account in the team drive's own domain deploy a script there, so a personal Gmail will not work. If other Google accounts are signed in too, use a window with only the TAMU one.
+- Chrome, signed in to your TAMU Google account and no other.
  
-- Edit access to both Sheets. They are on the team drive Education Research Center, in ERC Content Desk. Anyone who can edit a Sheet can edit its script. If Extensions > Apps Script is missing or will not open, ask for edit access first.
+- Edit access to both Sheets.
  
 - About 15 minutes.
- 
-- The desk's owner (Who to ask (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask)), for the last step. Only the owner can change the desk's settings.
 
-You do the Google side. The owner does the one step on Vercel, the desk's host. Nothing else changes.
- 
-!Keep private: the two new addresses, and the value of the SHEET_API_TOKEN script property. The sign-up script has no token, so its address alone lets anyone add rows. The addresses go to the owner by email and nowhere else.
- 
-Unconfirmed: whether the public pages' own Vercel project, erc-share, holds unused copies of either setting. Its code does not read them.
+## The two Sheets
 
-## Who changes what
-
-- You: both scripts, in Google. Each gets a new deployment with a new address.
+- erc-content-desk, the desk's Sheet: team drive Education Research Center > ERC Content Desk > Content queue. Script 1 is inside it.
  
-- The desk's owner: the two addresses, as two settings in the desk's Vercel project, then a redeploy. The owner's Vercel team has one member, so no one else can.
- 
-- No one else: the public pages, the Policy Exchange's sign-up and share pages, and the scraper on GitHub all call the desk itself, never a script. The scraper's own settings stay as they are.
- 
-- Not fixed by these steps: the old sign-up page on erc-kate.github.io, linked from the September 8 issue, posts straight to an old script address and says thank you anyway. Sign-ups made there are lost, before and after. Changing that page takes the old erc-kate GitHub account.
-
-Where each thing is. Every name here is the one the steps use.
-
-## The Sheets and their scripts
-
-- The desk's Sheet, erc-content-desk: team drive Education Research Center > ERC Content Desk > Content queue. Its script, script 1, is inside it: Extensions > Apps Script. The project name starts with "ERC Content Desk" and ends with "Sheet API".
- 
-- The sign-up Sheet, subscribe to listserve: team drive > ERC Content Desk > Listserv. Where its old script lived is not known, so you make script 2 inside this Sheet, Extensions > Apps Script, and the team can always find it from the Sheet.
- 
-- The code for both scripts: on this page, in a box with Copy, at the step that pastes it. It is a copy of the desk's repository, which is for whoever maintains the code, not for you.
- 
-- The desk's settings: vercel.com, team TAMU-ERC, project erc-content-desk. The owner only.
+- subscribe to listserve, the sign-up Sheet: ERC Content Desk > Listserv. Script 2 goes inside it.
 
 erc-content-desk (https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit) subscribe to listserve (https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit)
 
 ## 1Step 1: Script 1: the desk
 
-Open the desk's Sheet and its script, then its settings.
+Open the Sheet erc-content-desk (https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit) and its script.
  
-!If a new Untitled project opens instead, stop and email the desk's owner. The token lives only in the real project.
+1Extensions.
+ 
+2Apps Script: the editor opens in a new tab.
 
-## Open the script
+The editor opens in a new tab.
+ 
+1The project name. Yours ends with Sheet API.
+ 
+2Project Settings, the gear.
+ 
+!A new Untitled project here is the wrong place. Stop and email the desk's owner (Who to ask (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask)).
 
-- Open the Sheet erc-content-desk.
+Project Settings.
  
-- Click Extensions > Apps Script. The Apps Script editor opens in a new tab. The project name at the top starts with "ERC Content Desk" and ends with "Sheet API".
- 
-- In the left bar, click Project Settings (the gear). The settings page opens.
- 
-- Tick Show "appsscript.json" manifest file in editor. Nothing else changes yet.
+1Show "appsscript.json" manifest file in editor: tick it.
 
-erc-content-desk (https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit)
+Further down the same page. Yours lists SHEET_API_TOKEN too: leave it. If it is missing, stop and email the desk's owner.
+ 
+1Script Properties: scroll down to it.
+ 
+2SCRAPE_FOLDER_ID and BRIEFS_FOLDER_ID: both should be there.
+ 
+3Edit script properties: only if one is missing.
 
-Check the script's properties and its permissions file. The properties belong to the script and are shared by everyone who uses it, so they should have survived the account closing.
+Adding a missing one. A folder's id is the last part of its address when the folder is open in Drive.
  
-!Leave SHEET_API_TOKEN alone. If it is missing, stop and email the desk's owner. Never copy its value anywhere.
+1Add script property.
  
-A folder's id is the last part of its address when the folder is open in Drive.
+2Property: the name, SCRAPE_FOLDER_ID.
  
-Unconfirmed: the rest of the manifest, which is not in the repository.
+3Value: the id of the folder ERC Content Desk > Newsletter > Newsletter Scrape > scrapes.
+ 
+4BRIEFS_FOLDER_ID: the id of the folder ERC Content Desk > ERC Research Briefs.
+ 
+5Save script properties.
 
-## The properties and the manifest
+Back in the editor, the permissions file.
+ 
+1Editor, the < > icon.
+ 
+2appsscript.json.
+ 
+3These two lines inside oauthScopes. If one is missing, add it and save (Cmd+S or Ctrl+S).
 
-- Scroll to Script Properties. At least these three should be there: SHEET_API_TOKEN, a long value; SCRAPE_FOLDER_ID, the folder ERC Content Desk > Newsletter > Newsletter Scrape > scrapes; BRIEFS_FOLDER_ID, the folder ERC Content Desk > ERC Research Briefs. If a folder id is missing: Edit script properties > Add script property, the name and the id, then Save script properties.
+The desk script, whole.
  
-- In the left bar, click Editor (the < > icon), then appsscript.json. Inside "oauthScopes" it should list both https://www.googleapis.com/auth/spreadsheets and https://www.googleapis.com/auth/drive. If one is missing, add it and save.
-
-Copy the whole desk script from the box and paste it over the old code.
+1Copy. It takes every line.
  
-7Click Copy on the box. It copies the whole script, every line.
- 
-8Back in the editor, click Code.gs, click inside the code, select all (Cmd+A on a Mac, Ctrl+A on Windows) and paste. The old code is replaced. Click Save project (the disk icon).
- 
-!If the old code held checkDrive or restoreMorningScrape, the paste removes them, which is fine. Never run restoreMorningScrape.
+2In the editor, paste it over the old code. Next picture.
 
 The desk script apps-script/Code.gs · 518 lines
  Copy
@@ -1107,13 +1095,19 @@ It starts with /** and ends with }. 518 lines.
  
 This code is a copy from the desk's repository on Oct 26, 2026. If the code changes, this box is what gets updated.
 
-Add a small helper at the end and run it once, so Google asks for every permission the script needs.
+The script pasted over the old code, and saved.
  
-9Click at the very end of Code.gs, paste the helper from the box, and save. It only reads three names, to start Google's permission screen. It is not in the repository's file.
+1Code.gs.
  
-10In the toolbar, open the function menu beside Run and Debug, pick checkAccess, then click Run.
+2Click in the code, select all (Cmd+A or Ctrl+A) and paste.
  
-11Authorization required appears. Click Review permissions, then pick your TAMU account.
+3Save, the disk icon. The top then says Saved to Drive.
+
+A small helper, run once, so Google asks for every permission the script needs.
+ 
+1Copy.
+ 
+2Click at the very end of Code.gs, after the last line, and paste. Save.
 
 The checkAccess helper
  Copy
@@ -1127,55 +1121,103 @@ The checkAccess helper
 
 It starts with function checkAccess() { and ends with }.
 
-Allow everything the script asks for.
+The end of Code.gs with the helper in place.
  
-Your screenshot: the permissions screen.
+1The helper, after the last line.
+ 
+2Save.
+
+Run the helper.
+ 
+1The function menu, after Debug.
+ 
+2checkAccess, last in the list.
+
+With checkAccess picked.
+ 
+1Run.
+
+Google asks before the first run.
+ 
+1Review permissions.
+
+Google's permission window opens in its own tab.
 
 ## Allow it
 
-- If Google says it hasn't verified this app, click Advanced, then Go to the project name (unsafe). A script made inside TAMU may skip this screen.
+- Pick your TAMU account.
  
-- Google lists what the script may do, each with its own box. Tick every box (Google may offer Select all), then Continue. An empty box is a partial grant, and the desk's writes fail later. Google's wording may differ slightly.
+- If Google says it has not verified this app: Advanced, then Go to Untitled project (unsafe). Yours says the project's name.
  
-- The Execution log opens below the code. It shows erc-content-desk, scrapes and ERC Research Briefs, then Execution completed. An error on a getFolderById line means a folder id in step 5 is missing or wrong.
+- Tick every box, or Select all.
+ 
+- Continue.
 
-Make a new deployment. The old ones belong to the closed account, and Google does not move a deployment to another owner.
+The Execution log opens under the code.
  
-!If Anyone is not offered under Who has access, stop and tell the owner. An option limited to Texas A&M or to Google accounts will not work: the desk never signs in. Unconfirmed for your account; it was offered to the old one.
- 
-Your screenshot: the New deployment box.
+1Execution completed. Above it, the Sheet's name and the two folders' names.
 
-## New deployment
+A new deployment. The old ones belong to the closed account.
+ 
+1Deploy.
+ 
+2New deployment.
 
-- Click Deploy (top right) > New deployment. The New deployment box opens.
+The New deployment box.
  
-- Beside Select type, click the gear, then Web app. The box shows the web app's settings.
+1The gear beside Select type.
  
-- Description: your name and the date. The old deployments show as Untitled (one may say Drive), so this marks yours.
- 
-- Execute as: Me (your TAMU address). Who has access: Anyone, not "Anyone with Google account". The desk calls the script without signing in to Google; the token is what protects it.
+2Web app.
 
-Deploy, copy the address, and try it once.
+The web app's settings.
  
-!Test deployments shows an address ending in /dev, which works only for people who can edit the script. The desk needs the /exec one.
+1Description: your name and the date.
+ 
+2Execute as: Me.
+ 
+3Who has access: open it and pick Anyone, the last one. Not Anyone with Google account.
+ 
+4Deploy.
 
-## The address
-
-- Click Deploy. If Google asks for permission again, allow it as in steps 11 to 13. The box shows the deployment's details.
+The address. Keep it private: it goes to the desk's owner by email and nowhere else.
  
-- Next to Web app URL, click Copy. The address ends in /exec. Then Done. Leave the old deployments as they are.
+1Copy, under Web app URL: this is the address to email.
  
-- Paste the address into a private (Incognito) window. It reads: "ERC Content Desk sheet API is running. It only accepts POST requests." A Google sign-in page instead means Who has access is not Anyone (step 18).
+2Done.
 
 ## 2Step 2: Script 2: the sign-up
 
-Where the old sign-up script lived is not known. It does not matter: a deployment runs as the person who made it, so this is new either way, and the whole code is here.
+The same screens as script 1, with these differences.
+
+## What differs
+
+- The Sheet is subscribe to listserve.
  
-1Open the Sheet subscribe to listserve (open it (https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit)).
+- A new Untitled project may open. That is fine.
  
-2Click Extensions > Apps Script. One of two things opens. A project that already holds doPost, doGet and waitingCount: the old script was here; carry on in it. Or a new Untitled project holding only function myFunction() {}: the old script was elsewhere; carry on in this one, click the project name at the top and name it "Listserv sign-up".
+- No settings and no properties: the Sheet's id is in the code.
  
-3Click Code.gs, click inside the code, select all and paste the whole box, as for script 1. Click Save project. This script needs no script properties: the Sheet's id is in the code.
+- The code is the second box on this page.
+ 
+- Run waitingCount, not checkAccess.
+
+subscribe to listserve (https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit)
+
+Open the Sheet subscribe to listserve (https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit) and its script.
+ 
+1Extensions.
+ 
+2Apps Script: the editor opens in a new tab.
+
+A project that already holds doPost and waitingCount is the old script: carry on in it. Otherwise:
+ 
+1A new Untitled project is fine. Click the name and call it Listserv sign-up.
+
+The sign-up script, whole.
+ 
+1Copy.
+ 
+2In the editor, paste it over the old code. Next picture.
 
 The sign-up script apps-script/listserv-count.gs · 50 lines
  Copy
@@ -1186,43 +1228,81 @@ It starts with /** and ends with }. 50 lines.
  
 This code is a copy from the desk's repository on Oct 26, 2026. If the code changes, this box is what gets updated.
 
-Run it once for the permissions, then deploy it the same way.
+Pasted and saved, as for script 1.
+ 
+1Code.gs.
+ 
+2Click in the code, select all (Cmd+A or Ctrl+A) and paste.
+ 
+3Save, the disk icon. The top then says Saved to Drive.
 
-## Run, deploy, try
+Run waitingCount once. It reads Sheet 1, so Google asks for permission.
+ 
+1The function menu, after Debug.
+ 
+2waitingCount. The picture shows script 1's list.
 
-- In the function menu pick waitingCount, then click Run. It reads Sheet 1, so Google asks for permission: Review permissions, your TAMU account, every box ticked, Continue. The log ends with Execution completed.
+Run. The picture shows script 1's checkAccess; yours says waitingCount.
  
-- Deploy > New deployment > the gear > Web app. Description: your name and the date. Execute as: Me. Who has access: Anyone, since the desk asks for the count and sends sign-ups without signing in. Click Deploy.
+1Run.
+
+Then allow it as for script 1: your account, every box, Continue. The log ends with Execution completed.
  
-- Next to Web app URL, click Copy. Then Done.
+1Review permissions.
+
+Deploy it the same way.
  
-- In a private window, the address reads "The sign-up script is running." The same address with ?action=count at the end reads {"ok":true,"waiting":N}, N being the rows on Sheet 1.
+1Deploy.
+ 
+2New deployment.
+
+A web app again.
+ 
+1The gear beside Select type.
+ 
+2Web app.
+
+The same settings. Who has access: Anyone, since the desk sends sign-ups without signing in.
+ 
+1Description: your name and the date.
+ 
+2Execute as: Me.
+ 
+3Who has access: open it and pick Anyone, the last one. Not Anyone with Google account.
+ 
+4Deploy.
+
+The second address. Copy it, then Done.
+ 
+1Copy, under Web app URL: this is the address to email.
+ 
+2Done.
 
 ## 3Step 3: Send the two addresses
 
 The desk reaches the scripts through two settings only the owner can change.
  
 !Email only. Never a shared doc, a chat or a page: the sign-up address alone lets anyone add rows.
- 
-Unconfirmed: which environments (Production, Preview) hold the two settings. The owner edits each one that exists.
 
 ## You
 
-- Email both addresses to the desk's owner (Who to ask (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask)).
+- Each address in a private (Incognito) window first. The desk script reads "ERC Content Desk sheet API is running. It only accepts POST requests." and the sign-up script "The sign-up script is running." A Google sign-in page means Who has access is not Anyone.
+ 
+- Email both addresses to the desk's owner, at the address in READ ME FIRST - ERC Content Desk (https://docs.google.com/document/d/1DHzMJCA_Alep8suiZi7iICzLGSKtexvm6Z1yqVEoUFg/edit).
  
 - Say which is which: "erc-content-desk script" and "subscribe to listserve script".
 
 ## The owner, once
 
-- On vercel.com, team TAMU-ERC, project erc-content-desk: Settings > Environment Variables. SHEET_API_URL gets the erc-content-desk address, LISTSERV_URL the subscribe to listserve address, each by the row's menu > Edit > Save. SHEET_API_TOKEN stays: it still matches the script property.
+- On vercel.com, team TAMU-ERC, project erc-content-desk: Settings > Environment Variables. SHEET_API_URL gets the desk script's address, LISTSERV_URL the sign-up script's. SHEET_API_TOKEN stays.
  
-- Deployments > the newest Production deployment > the menu > Redeploy. A changed setting only reaches a new deployment.
+- Deployments > the newest Production deployment > Redeploy. Listserv (https://erc-content-desk.vercel.app/#listserv) then turns from Down to Live by itself.
  
-- This once, the addresses change, so Vercel changes. Every later change to a script is a new version of your own deployment: the address stays, and Vercel stays as it is.
+- A later change to a script is a new version of your own deployment: the address stays, and Vercel stays as it is.
 
 ## 4Step 4: Check it worked
 
-Once the owner says the redeploy is done, open Listserv (https://erc-content-desk.vercel.app/#listserv). A number under To be added means the sign-up script answered.
+Once the owner says the redeploy is done, open Listserv (https://erc-content-desk.vercel.app/#listserv).
  
 1To be added: a number means the sign-up script answered.
  
@@ -1230,97 +1310,119 @@ Once the owner says the redeploy is done, open Listserv (https://erc-content-des
  
 3Status: Live means the script answered. Down means sign-ups fail.
 
-Then one test of each script. Delete the test rows after.
+One test of each script. Delete the test rows after.
 
-## Sign-ups and the desk's Sheet
+## Two tests
 
-- On the public sign-up page, erc-share.vercel.app/listserv (https://erc-share.vercel.app/listserv/), sign up as "Test, delete me" with your own email, pass the check box, and send. The page says "Thank you. You are on the list."
+- On erc-share.vercel.app/listserv (https://erc-share.vercel.app/listserv/), sign up as "Test, delete me" with your own email. The page says "Thank you. You are on the list."
  
-- Your test is the last row on Sheet 1 of subscribe to listserve (https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit) (Open the sign-up sheet on Listserv). Delete that row. The desk keeps its own copy of every sign-up, so Listserv's Last sign-up shows today, and Last updated may change to today too. Both are expected.
+- Delete that row, the last on Sheet 1 of subscribe to listserve (https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit). Listserv's Last sign-up then shows today: expected.
  
-- On Submit content (https://erc-content-desk.vercel.app/#team), add an obviously fake item with Add to the queue: the link https://example.org/test, the title "Test item, delete me", and your initials. Within a minute it is the last row on the first tab of erc-content-desk (https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit).
+- On Submit content (https://erc-content-desk.vercel.app/#team), add "Test item, delete me" with the link https://example.org/test and your initials. Within a minute it is the last row on the first tab of erc-content-desk (https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit).
  
-- Delete it on Content Sort (https://erc-content-desk.vercel.app/#sort) (the team password: Who to ask (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask)). Its Sheet row stays, with its status set to trashed: rows are never removed.
+- Delete it on Content Sort (https://erc-content-desk.vercel.app/#sort) (the team password: Who to ask (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask)). Its Sheet row stays, marked trashed.
 
 The scraper, the briefs and the send dates use the desk script too.
 
 ## The rest
 
-- On the Content queue (https://erc-content-desk.vercel.app/#queue), under Scraper, press Run the scraper. The line shimmers while it runs (the last run took under two minutes). When it ends: "Last run <date>, for the <date> issue: ..." with Open the sheet and the files. "The last run failed on GitHub." means the delivery still failed.
+- Content queue (https://erc-content-desk.vercel.app/#queue) > Run the scraper. Under two minutes later the line reads "Last run ..." with Open the sheet. "The last run failed on GitHub." means not yet.
  
-- Open any brief's page on Research briefs (https://erc-content-desk.vercel.app/#briefs) (the team password again: Who to ask (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask)). Its files are listed, each a link into Drive. "Drive didn't answer. Use the folder link above." means the desk script still fails.
+- Any brief on Research briefs (https://erc-content-desk.vercel.app/#briefs) (the team password: Who to ask (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask)) lists its files. "Drive didn't answer." means not yet.
  
-- Later: a send date typed on the Sheet's schedule tab (https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit#gid=287660130) shows on Newsletter > Schedule (https://erc-content-desk.vercel.app/#schedule) within ten minutes.
+- A send date typed on the Sheet's schedule tab (https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit#gid=287660130) shows on Newsletter > Schedule (https://erc-content-desk.vercel.app/#schedule) within ten minutes.
 
 ## If something goes wrong
 
 When a check fails, the message says which side it is.
 
-## A check fails
+## Where to look
 
-- In the Apps Script editor, the left bar's Executions lists each call. A failed sign-up call shows as Failed; click it to read why. The desk script catches its own errors and answers them in words, so its calls show Completed even when they refuse.
- 
-- A Google sign-in page in the private window: Deploy > Manage deployments > your deployment > the pencil > Who has access: Anyone > Deploy. The address stays.
- 
-- "Unauthorized: missing or incorrect token." on a brief's page, or in the desk's log: the token property changed. Do not guess a value. Email the owner.
- 
-- "Server is not configured: the ... script property is not set.": add it as in step 5 of script 1. For SHEET_API_TOKEN, email the owner.
- 
-- "The Sheet's script does not know this action yet." or "Unknown action": old code is live. Paste the desk script from this page again, save, then Deploy > Manage deployments > your deployment > the pencil > Version: New version > Deploy.
- 
-- A permission error naming Drive or Sheets: trap 2, on the next slide.
- 
-- The private-window checks work but the desk still fails: the Vercel step is missing or not redeployed. The owner can read the desk's logs in Vercel, which keep only the last hour; "Sheet API returned HTTP 403" there means the desk still calls an old address.
+- In the editor, Executions lists each call. A failed sign-up call shows as Failed: click it to read why. The desk script answers its errors in words, so its calls show Completed even when they refuse.
 
-Twelve traps, most met once while the scripts were set up.
+## A Google sign-in page in the private window
 
-## The traps, 1 to 6
+- Who has access is not Anyone. Deploy > Manage deployments > your deployment > the pencil > Who has access: Anyone > Deploy. The address stays.
+ 
+- No Anyone under Who has access at all: a TAMU setting. Stop and tell the owner; an option limited to Texas A&M or to Google accounts will not work, because the desk never signs in.
 
-- Permission is asked only when a function that needs it runs. Running doGet asks nothing; a function that reads a Drive folder brings up the screen. Run checkAccess in the desk script and waitingCount in the sign-up script, never doGet or doPost.
- 
-- Google's granular consent. Each permission has its own box, and an empty box is a partial grant: once, the first grant was read-only, and making folders failed after. If it already went wrong, remove the script's access on your Google account's permissions page, myaccount.google.com/u/N/permissions (trap 3), then run checkAccess again and tick every box.
- 
-- The account number in Google's addresses. With several Google accounts signed in, each has a number in the address, such as script.google.com/u/1/, and Google's permissions page opens on account 0 unless its address carries the editor's number. Use myaccount.google.com/u/<the editor's number>/permissions, or a window signed in to TAMU only.
- 
-- Saving changes nothing live. The web app runs the code as it was deployed. Manage deployments > the pencil > Version: New version > Deploy.
- 
-- A new deployment gets a new address; a new version keeps it. This time a new deployment is needed: the old ones belong to the closed account, so Vercel must change. Every later change is a new version of your own deployment, and Vercel stays as it is.
- 
-- Several deployments, all looking alike. Once, a new version went on only one of three. The description in step 17 marks yours: always pick that deployment.
+## "Unauthorized: missing or incorrect token."
 
-The other six.
+- The token property changed. Do not guess a value. Email the owner.
 
-## The traps, 7 to 12
+Three more messages.
 
-- The wrong project. Once, a script property went into a different Apps Script project. Always open a script from its Sheet, Extensions > Apps Script, and check the name at the top.
+## "Server is not configured: the ... script property is not set."
+
+- Add it as in script 1's Script Properties. For SHEET_API_TOKEN, email the owner.
+
+## "The Sheet's script does not know this action yet." or "Unknown action"
+
+- Old code is live. Paste the desk script from this page again, save, then a new version: next picture.
+
+## The private window works but the desk still fails
+
+- The Vercel step is missing or not redeployed. In the desk's log, "Sheet API returned HTTP 403" means the desk still calls an old address.
+
+Saving changes nothing live: the web app runs the code as it was deployed. To send a change to the same address, Deploy > Manage deployments, then:
  
-- Two old helpers. The old desk script once held checkDrive and restoreMorningScrape, never in the repository's file. The paste in step 8 removes them, which is fine. Never run restoreMorningScrape: it was a one-time repair that moves files in and out of the trash.
+1The pencil.
  
-- The test address. Test deployments shows an address ending in /dev, which works only for people who can edit the script. The desk needs the /exec one.
+2Version: New version.
  
-- No Anyone under Who has access. That is a TAMU setting. It was offered to the old account; unconfirmed for yours. If it is missing, stop and tell the owner: an option limited to Texas A&M or to Google accounts will not work, because the desk never signs in.
+3Deploy. The address stays.
+
+A red line in the Execution log when checkAccess runs.
  
-- Several accounts in one browser. The editor may not open, or opens as the wrong account. Use a window signed in to TAMU only.
+1Invalid argument: id: a folder id property is missing or wrong (script 1, Script Properties).
+
+The traps, one line each.
+
+## Google asked for no permission
+
+- Permission is asked only when a function that needs it runs. Run checkAccess or waitingCount, never doGet or doPost.
+
+## A permission error naming Drive or Sheets
+
+- Google's granular consent: an empty box is a partial grant. Remove the script's access at myaccount.google.com/u/N/permissions, run checkAccess again and tick every box.
  
-- The scripts now run as you. If your account ever closes, this happens again, and whoever follows does these same steps.
+- The account number in Google's addresses: N above is the number in the editor's address, such as script.google.com/u/1/. A window signed in to TAMU only has none of this.
+
+## A change does nothing, or the address changed
+
+- A new deployment gets a new address; a new version keeps it. This once a new deployment was needed. Every later change is a new version of your own deployment.
+ 
+- Several deployments, all looking alike: pick the one with your description.
+
+The rest of the traps.
+
+## The editor opens the wrong project, or as the wrong account
+
+- The wrong project: always open a script from its Sheet, Extensions > Apps Script, and check the name at the top.
+ 
+- Several accounts in one browser: use a window signed in to TAMU only.
+
+## Other
+
+- Two old helpers, checkDrive and restoreMorningScrape: the paste removes them, which is fine. Never run restoreMorningScrape.
+ 
+- The test address: Test deployments ends in /dev, for editors only. The desk needs /exec.
+ 
+- The scripts now run as you. If your account closes, whoever follows does these steps again.
 
 ## Later: Add a source
 
-Add a source, the Content queue's form, is already in the desk script on this page. It needs one more script property before it can write to the Scraper sources Sheet; until then the form says "The sources sheet is not connected yet."
- 
-Unconfirmed: whether the live script already holds SOURCES_SHEET_ID. Step 5 of script 1 lists the three it must hold.
+Add a source, the Content queue's form, is in the desk script already. It needs one more script property; until then the form says "The sources sheet is not connected yet."
 
 ## Connect the sources Sheet
 
-- Open the Sheet Scraper sources, on the team drive: Education Research Center > ERC Content Desk > Newsletter. Its id is the long part of its address between /d/ and /edit.
+- Open the Sheet Scraper sources (team drive: Education Research Center > ERC Content Desk > Newsletter). Its id is the part of its address between /d/ and /edit.
  
-- In the desk's script: Project Settings > Edit script properties > Add script property: SOURCES_SHEET_ID and that id. Save script properties. A property is read live: no new version is needed for it.
+- In the desk's script: Project Settings > Edit script properties > Add script property: SOURCES_SHEET_ID and that id. Save script properties. No new version needed.
 
 ## Any later change to the code
 
-- Open erc-content-desk (https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit) > Extensions > Apps Script, and replace Code.gs with the box on this page, which is what gets updated. Save. Paste the checkAccess helper at the end again, since the paste removes it.
- 
-- If the new code's notes name a new script property or permission, add it as in steps 5 and 6, then run checkAccess and tick every box.
+- Replace Code.gs with the box on this page, save, and paste the checkAccess helper at the end again. Run it, and tick every box if Google asks.
  
 - Deploy > Manage deployments > your deployment > the pencil > Version: New version > Deploy. Same address. Vercel needs nothing.
 

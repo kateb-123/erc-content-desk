@@ -1,0 +1,26 @@
+{
+  "iw": 1280,
+  "ih": 663,
+  "cx": 0,
+  "cy": 0,
+  "cw": 760,
+  "ch": 640,
+  "alt": "The editor with the desk script pasted into Code.gs, its first lines a comment headed ERC Content Desk, Sheet API; the top reads Saved to Drive.",
+  "pins": [
+    {
+      "x": 7.8,
+      "y": 25,
+      "label": "Code.gs"
+    },
+    {
+      "x": 44.5,
+      "y": 17.8,
+      "label": "Click in the code, select all (Cmd+A or Ctrl+A) and paste"
+    },
+    {
+      "x": 51.3,
+      "y": 11.3,
+      "label": "Save, the disk icon. The top then says Saved to Drive"
+    }
+  ]
+}
