@@ -4,6 +4,21 @@ Written Oct 24, 2026, and fact-checked the same day. The walkthrough is for a te
 
 Code version: every step follows the live code on GitHub's `main` (commit 45924a7 since Oct 24). On the branch `feat/native-look`, `apps-script/`, `api/` and the existing how-to's `deck.json` are the same as on GitHub's `main`, and the two raw links below serve the same script files byte for byte. The local `main` branch in the desk's folder is stale (a336a6a): check against `origin/main`, never local `main`.
 
+## 0. Where each thing is
+
+Every name below is the one the walkthrough should use. Nothing else is needed.
+
+| Thing | Where | Who can open it |
+|---|---|---|
+| The desk's Sheet, **erc-content-desk** | Team drive Education Research Center > ERC Content Desk > Content queue. https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit | Anyone on the team drive |
+| The desk's script (script 1) | Inside that Sheet: **Extensions** > **Apps Script**. Its project name starts with "ERC Content Desk" and ends with "Sheet API". It is bound to the Sheet, so it lives on the team drive with it. | Anyone who can edit the Sheet |
+| The sign-up Sheet, **subscribe to listserve** | Team drive > ERC Content Desk > Listserv. https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit | Anyone on the team drive |
+| The sign-up script (script 2) | Not known. Its code opens the Sheet by id, so the old one may have been inside the Sheet or a separate project in the closed account's own Drive, which is locked. Either way the walkthrough makes it inside the sign-up Sheet (**Extensions** > **Apps Script**), from the repository's copy, so the team can always find it from the Sheet. | Anyone who can edit the Sheet |
+| The code for both scripts | The desk's public repository on GitHub, folder `apps-script/`: `Code.gs` for script 1, `listserv-count.gs` for script 2, `appsscript.json` the manifest. Raw links are in section 3. https://github.com/kateb-123/erc-content-desk/tree/main/apps-script | Anyone, no login |
+| The desk's settings (`SHEET_API_URL`, `LISTSERV_URL`) | vercel.com, team **TAMU-ERC**, project **erc-content-desk**, Settings > Environment Variables | The desk's owner only, named in READ ME FIRST - ERC handoff |
+| READ ME FIRST - ERC handoff | Team drive > ERC Content Desk | Anyone on the team drive |
+| The existing how-to | https://erc-content-desk.vercel.app/how-to/google-scripts/ (its Redeploy tab is where the desk's Listserv page sends people while the script is down) | Anyone, no login |
+
 ## 1. What stopped, and what keeps working
 
 The person who deployed the two scripts has left, and that Google account is now disabled. The two Sheets and their scripts belong to the team drive, but a web app set to **Execute as: Me** runs as the account that deployed it, so both stopped. Live checks, Oct 24: the desk's `/api/listserv` answers `sheet:false`, the desk's own log shows the desk script answering HTTP 403, and the script address in the old sign-up page (section 1, below) answers 403 too.
@@ -92,14 +107,17 @@ Keep private: the two new addresses (they go to the owner by email, nowhere else
 
 ### Script 2: subscribe to listserve
 
+Where the old script lived is not known (section 0). It does not matter: a deployment runs as the person who made it, so this is a new project either way, and the repository holds the whole code. Make it inside the sign-up Sheet so the team can always find it from the Sheet.
+
 1. Open the Sheet subscribe to listserve: https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit
-2. Click **Extensions** > **Apps Script**. Unconfirmed: this project's name and its code file's name (probably Code.gs).
-3. Unconfirmed: that the sign-up script is attached to this Sheet. The handoff says it is, but its code opens the Sheet by its id, which also works from a script kept elsewhere. If the editor opens a new Untitled project holding only `function myFunction() {}`, the old script is not here: carry on in this project anyway, since the repository's copy finds Sheet 1 by its id.
-4. Open the code file. It should hold `doPost`, `doGet` and `waitingCount`, and a `SHEET_ID` line with this Sheet's id. Replace it all with the repository's copy, as in steps 7 and 8 above: https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/apps-script/listserv-count.gs. Click **Save project**. This script needs no script properties: the Sheet's id is in the code.
-5. In the function menu pick **waitingCount**, then click **Run**. It reads Sheet 1, so Google asks for permission: steps 11 to 13 above. The log ends with **Execution completed**.
-6. **Deploy** > **New deployment** > the gear > **Web app**. Description: your name and the date. **Execute as**: **Me**. **Who has access**: **Anyone**, since the desk asks for the count and sends sign-ups without signing in. Click **Deploy**.
-7. Next to **Web app URL**, click **Copy**.
-8. In a private window, the address reads "The sign-up script is running." The same address with `?action=count` at the end reads `{"ok":true,"waiting":N}`, N being the rows on Sheet 1.
+2. Click **Extensions** > **Apps Script**. One of two things opens:
+   - A project that already holds `doPost`, `doGet` and `waitingCount`: the old script was here. Carry on in it.
+   - A new Untitled project holding only `function myFunction() {}`: the old script was elsewhere. Carry on in this new project; the repository's copy finds Sheet 1 by its id. Click the project name at the top and name it "Listserv sign-up".
+3. Open the code file (Code.gs). Select all of it and replace it with the repository's copy, as in steps 7 and 8 above: https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/apps-script/listserv-count.gs. Click **Save project**. This script needs no script properties: the Sheet's id is in the code.
+4. In the function menu pick **waitingCount**, then click **Run**. It reads Sheet 1, so Google asks for permission: steps 11 to 13 above. The log ends with **Execution completed**.
+5. **Deploy** > **New deployment** > the gear > **Web app**. Description: your name and the date. **Execute as**: **Me**. **Who has access**: **Anyone**, since the desk asks for the count and sends sign-ups without signing in. Click **Deploy**.
+6. Next to **Web app URL**, click **Copy**.
+7. In a private window, the address reads "The sign-up script is running." The same address with `?action=count` at the end reads `{"ok":true,"waiting":N}`, N being the rows on Sheet 1.
 
 ### Send the two addresses
 
