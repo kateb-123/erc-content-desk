@@ -1,22 +1,80 @@
 {
   "title": "Bring back the Google scripts",
   "h1": "Bring back the Google scripts",
-  "lede": "Two scripts, 15 minutes.",
+  "lede": "Two scripts, about 15 minutes. The code is on this page.",
   "open": null,
   "chapters": [
     {
-      "id": "sheets",
-      "name": "Which Sheets",
+      "id": "before",
+      "name": "Before you start",
       "step": null,
       "slides": [
         {
-          "cap": "Each Sheet runs a Google script as the login that deployed it. When that login closes the script stops, and nothing that failed in the gap is sent again.",
+          "cap": "Both scripts ran as the Google account of the person who deployed them. That account is closed, so both stopped, and nothing that failed in the gap is sent again.",
+          "notes": [
+            {
+              "quiet": true,
+              "html": "Unconfirmed: your access to the scripts. An Oct 22 note reads that the team drive gives you access to all but the Google Apps Scripts. The test is <b>Extensions</b> &gt; <b>Apps Script</b>."
+            },
+            {
+              "quiet": true,
+              "html": "Unconfirmed: your role on the team drive. The desk script moves an older copy of a file to the trash when it saves a new one under the same name; on a team drive that takes Content manager or Manager. Contributor cannot trash."
+            }
+          ],
           "steps": [
             {
-              "title": "In ERC Content Desk on the shared drive",
+              "title": "What you need",
+              "bullets": true,
               "items": [
-                "<b>erc-content-desk</b>, in Content queue. Without it the queue's Sheet copy, new send dates, the scraper's files, Publish's copy in Drive and Research briefs stop.",
-                "<b>subscribe to listserve</b>, in Listserv. Without it sign-ups and the Listserv page's count stop."
+                "A computer with Chrome, signed in to your TAMU Google account. Google lets only an account in the team drive's own domain deploy a script there, so a personal Gmail will not work. If other Google accounts are signed in too, use a window with only the TAMU one.",
+                "Edit access to both Sheets. They are on the team drive Education Research Center, in ERC Content Desk. Anyone who can edit a Sheet can edit its script. If <b>Extensions</b> &gt; <b>Apps Script</b> is missing or will not open, ask for edit access first.",
+                "About 15 minutes.",
+                "The desk's owner (<a href=\"/how-to/change-the-desk/#ask\">Who to ask</a>), for the last step. Only the owner can change the desk's settings."
+              ],
+              "links": null
+            }
+          ]
+        },
+        {
+          "cap": "You do the Google side. The owner does the one step on Vercel, the desk's host. Nothing else changes.",
+          "notes": [
+            {
+              "n": "!",
+              "html": "<b>Keep private: the two new addresses, and the value of the <code>SHEET_API_TOKEN</code> script property.</b> The sign-up script has no token, so its address alone lets anyone add rows. The addresses go to the owner by email and nowhere else.",
+              "warn": true,
+              "go": false
+            },
+            {
+              "quiet": true,
+              "html": "Unconfirmed: whether the public pages' own Vercel project, erc-share, holds unused copies of either setting. Its code does not read them."
+            }
+          ],
+          "steps": [
+            {
+              "title": "Who changes what",
+              "bullets": true,
+              "items": [
+                "<b>You</b>: both scripts, in Google. Each gets a new deployment with a new address.",
+                "<b>The desk's owner</b>: the two addresses, as two settings in the desk's Vercel project, then a redeploy. The owner's Vercel team has one member, so no one else can.",
+                "<b>No one else</b>: the public pages, the Policy Exchange's sign-up and share pages, and the scraper on GitHub all call the desk itself, never a script. The scraper's own settings stay as they are.",
+                "Not fixed by these steps: the old sign-up page on erc-kate.github.io, linked from the September 8 issue, posts straight to an old script address and says thank you anyway. Sign-ups made there are lost, before and after. Changing that page takes the old erc-kate GitHub account."
+              ],
+              "links": null
+            }
+          ]
+        },
+        {
+          "cap": "Where each thing is. Every name here is the one the steps use.",
+          "notes": [],
+          "steps": [
+            {
+              "title": "The Sheets and their scripts",
+              "bullets": true,
+              "items": [
+                "The desk's Sheet, <b>erc-content-desk</b>: team drive Education Research Center &gt; ERC Content Desk &gt; Content queue. Its script, script 1, is inside it: <b>Extensions</b> &gt; <b>Apps Script</b>. The project name starts with \"ERC Content Desk\" and ends with \"Sheet API\".",
+                "The sign-up Sheet, <b>subscribe to listserve</b>: team drive &gt; ERC Content Desk &gt; Listserv. Where its old script lived is not known, so you make script 2 inside this Sheet, <b>Extensions</b> &gt; <b>Apps Script</b>, and the team can always find it from the Sheet.",
+                "The code for both scripts: on this page, in a box with <b>Copy</b>, at the step that pastes it. It is a copy of the desk's repository, which is for whoever maintains the code, not for you.",
+                "The desk's settings: vercel.com, team <b>TAMU-ERC</b>, project <b>erc-content-desk</b>. The owner only."
               ],
               "links": "<a href=\"https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit\" target=\"_blank\" rel=\"noopener\">erc-content-desk<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a> <a href=\"https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit\" target=\"_blank\" rel=\"noopener\">subscribe to listserve<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a>"
             }
@@ -25,29 +83,267 @@
       ]
     },
     {
-      "id": "redeploy",
-      "name": "Redeploy",
+      "id": "script-1",
+      "name": "Script 1: the desk",
       "step": 1,
       "slides": [
         {
-          "cap": "Do this in each Sheet. Each gets a new address, and the desk uses it once its owner sets it.",
+          "cap": "Open the desk's Sheet and its script, then its settings.",
           "notes": [
             {
               "n": "!",
-              "html": "<b>In erc-content-desk, leave Script properties alone: the desk's token and folder ids live there.</b>",
+              "html": "<b>If a new Untitled project opens instead, stop and email the desk's owner.</b> The token lives only in the real project.",
               "warn": true,
               "go": false
             }
           ],
           "steps": [
             {
-              "title": "For each Sheet",
+              "title": "Open the script",
               "items": [
-                "Open it, then <b>Extensions</b>, <b>Apps Script</b>.",
-                "<b>Deploy</b>, <b>New deployment</b>. Pick <b>Web app</b> from the gear.",
-                "<b>Execute as</b>: Me. <b>Who has access</b>: Anyone. Then <b>Deploy</b>.",
-                "Allow the permissions. If Google says unverified, choose <b>Advanced</b>, then <b>Go to</b> the project.",
-                "Copy the <b>Web app URL</b>, ending in <code>/exec</code>. Email it to the desk's owner (<a href=\"/how-to/change-the-desk/#ask\">Who to ask</a>) and say which Sheet."
+                "Open the Sheet <b>erc-content-desk</b>.",
+                "Click <b>Extensions</b> &gt; <b>Apps Script</b>. The Apps Script editor opens in a new tab. The project name at the top starts with \"ERC Content Desk\" and ends with \"Sheet API\".",
+                "In the left bar, click <b>Project Settings</b> (the gear). The settings page opens.",
+                "Tick <b>Show \"appsscript.json\" manifest file in editor</b>. Nothing else changes yet."
+              ],
+              "links": "<a href=\"https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit\" target=\"_blank\" rel=\"noopener\">erc-content-desk<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a>"
+            }
+          ]
+        },
+        {
+          "cap": "Check the script's properties and its permissions file. The properties belong to the script and are shared by everyone who uses it, so they should have survived the account closing.",
+          "notes": [
+            {
+              "n": "!",
+              "html": "<b>Leave <code>SHEET_API_TOKEN</code> alone.</b> If it is missing, stop and email the desk's owner. Never copy its value anywhere.",
+              "warn": true,
+              "go": false
+            },
+            {
+              "quiet": true,
+              "icon": "circle-info",
+              "html": "A folder's id is the last part of its address when the folder is open in Drive."
+            },
+            {
+              "quiet": true,
+              "html": "Unconfirmed: the rest of the manifest, which is not in the repository."
+            }
+          ],
+          "steps": [
+            {
+              "title": "The properties and the manifest",
+              "start": 5,
+              "items": [
+                "Scroll to <b>Script Properties</b>. At least these three should be there: <code>SHEET_API_TOKEN</code>, a long value; <code>SCRAPE_FOLDER_ID</code>, the folder ERC Content Desk &gt; Newsletter &gt; Newsletter Scrape &gt; scrapes; <code>BRIEFS_FOLDER_ID</code>, the folder ERC Content Desk &gt; ERC Research Briefs. If a folder id is missing: <b>Edit script properties</b> &gt; <b>Add script property</b>, the name and the id, then <b>Save script properties</b>.",
+                "In the left bar, click <b>Editor</b> (the <code>&lt; &gt;</code> icon), then <b>appsscript.json</b>. Inside <code>\"oauthScopes\"</code> it should list both <code>https://www.googleapis.com/auth/spreadsheets</code> and <code>https://www.googleapis.com/auth/drive</code>. If one is missing, add it and save."
+              ],
+              "links": null
+            }
+          ]
+        },
+        {
+          "kind": "code",
+          "cap": "Copy the whole desk script from the box and paste it over the old code.",
+          "code": {
+            "file": "apps-script/Code.gs",
+            "name": "The desk script"
+          },
+          "notes": [
+            {
+              "n": "7",
+              "html": "Click <b>Copy</b> on the box. It copies the whole script, every line."
+            },
+            {
+              "n": "8",
+              "html": "Back in the editor, click <b>Code.gs</b>, click inside the code, select all (Cmd+A on a Mac, Ctrl+A on Windows) and paste. The old code is replaced. Click <b>Save project</b> (the disk icon)."
+            },
+            {
+              "n": "!",
+              "html": "<b>If the old code held <code>checkDrive</code> or <code>restoreMorningScrape</code>, the paste removes them, which is fine.</b> Never run restoreMorningScrape.",
+              "warn": true,
+              "go": false
+            }
+          ]
+        },
+        {
+          "kind": "code",
+          "cap": "Add a small helper at the end and run it once, so Google asks for every permission the script needs.",
+          "code": {
+            "name": "The checkAccess helper",
+            "text": "function checkAccess() {\n  var props = PropertiesService.getScriptProperties();\n  Logger.log(SpreadsheetApp.getActiveSpreadsheet().getName());\n  Logger.log(DriveApp.getFolderById(props.getProperty('SCRAPE_FOLDER_ID')).getName());\n  Logger.log(DriveApp.getFolderById(props.getProperty('BRIEFS_FOLDER_ID')).getName());\n}\n"
+          },
+          "notes": [
+            {
+              "n": "9",
+              "html": "Click at the very end of Code.gs, paste the helper from the box, and save. It only reads three names, to start Google's permission screen. It is not in the repository's file."
+            },
+            {
+              "n": "10",
+              "html": "In the toolbar, open the function menu beside <b>Run</b> and <b>Debug</b>, pick <b>checkAccess</b>, then click <b>Run</b>."
+            },
+            {
+              "n": "11",
+              "html": "<b>Authorization required</b> appears. Click <b>Review permissions</b>, then pick your TAMU account."
+            }
+          ]
+        },
+        {
+          "cap": "Allow everything the script asks for.",
+          "notes": [
+            {
+              "quiet": true,
+              "icon": "camera",
+              "html": "Your screenshot: the permissions screen."
+            }
+          ],
+          "steps": [
+            {
+              "title": "Allow it",
+              "start": 12,
+              "items": [
+                "If Google says it hasn't verified this app, click <b>Advanced</b>, then <b>Go to</b> the project name <b>(unsafe)</b>. A script made inside TAMU may skip this screen.",
+                "Google lists what the script may do, each with its own box. Tick every box (Google may offer <b>Select all</b>), then <b>Continue</b>. An empty box is a partial grant, and the desk's writes fail later. Google's wording may differ slightly.",
+                "The <b>Execution log</b> opens below the code. It shows erc-content-desk, scrapes and ERC Research Briefs, then <b>Execution completed</b>. An error on a getFolderById line means a folder id in step 5 is missing or wrong."
+              ],
+              "links": null
+            }
+          ]
+        },
+        {
+          "cap": "Make a new deployment. The old ones belong to the closed account, and Google does not move a deployment to another owner.",
+          "notes": [
+            {
+              "n": "!",
+              "html": "<b>If Anyone is not offered under Who has access, stop and tell the owner.</b> An option limited to Texas A&amp;M or to Google accounts will not work: the desk never signs in. Unconfirmed for your account; it was offered to the old one.",
+              "warn": true,
+              "go": false
+            },
+            {
+              "quiet": true,
+              "icon": "camera",
+              "html": "Your screenshot: the New deployment box."
+            }
+          ],
+          "steps": [
+            {
+              "title": "New deployment",
+              "start": 15,
+              "items": [
+                "Click <b>Deploy</b> (top right) &gt; <b>New deployment</b>. The New deployment box opens.",
+                "Beside <b>Select type</b>, click the gear, then <b>Web app</b>. The box shows the web app's settings.",
+                "<b>Description</b>: your name and the date, for example \"Kathy, Oct 2026\". The old deployments show as Untitled (one may say Drive), so this marks yours.",
+                "<b>Execute as</b>: <b>Me</b> (your TAMU address). <b>Who has access</b>: <b>Anyone</b>, not \"Anyone with Google account\". The desk calls the script without signing in to Google; the token is what protects it."
+              ],
+              "links": null
+            }
+          ]
+        },
+        {
+          "cap": "Deploy, copy the address, and try it once.",
+          "notes": [
+            {
+              "n": "!",
+              "html": "<b>Test deployments shows an address ending in <code>/dev</code>, which works only for people who can edit the script.</b> The desk needs the <code>/exec</code> one.",
+              "warn": true,
+              "go": false
+            }
+          ],
+          "steps": [
+            {
+              "title": "The address",
+              "start": 19,
+              "items": [
+                "Click <b>Deploy</b>. If Google asks for permission again, allow it as in steps 11 to 13. The box shows the deployment's details.",
+                "Next to <b>Web app URL</b>, click <b>Copy</b>. The address ends in <code>/exec</code>. Then <b>Done</b>. Leave the old deployments as they are.",
+                "Paste the address into a private (Incognito) window. It reads: \"ERC Content Desk sheet API is running. It only accepts POST requests.\" A Google sign-in page instead means Who has access is not Anyone (step 18)."
+              ],
+              "links": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "script-2",
+      "name": "Script 2: the sign-up",
+      "step": 2,
+      "slides": [
+        {
+          "kind": "code",
+          "cap": "Where the old sign-up script lived is not known. It does not matter: a deployment runs as the person who made it, so this is new either way, and the whole code is here.",
+          "code": {
+            "file": "apps-script/listserv-count.gs",
+            "name": "The sign-up script"
+          },
+          "notes": [
+            {
+              "n": "1",
+              "html": "Open the Sheet <b>subscribe to listserve</b> (<a href=\"https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit\" target=\"_blank\" rel=\"noopener\">open it<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a>)."
+            },
+            {
+              "n": "2",
+              "html": "Click <b>Extensions</b> &gt; <b>Apps Script</b>. One of two things opens. A project that already holds <code>doPost</code>, <code>doGet</code> and <code>waitingCount</code>: the old script was here; carry on in it. Or a new Untitled project holding only <code>function myFunction() {}</code>: the old script was elsewhere; carry on in this one, click the project name at the top and name it \"Listserv sign-up\"."
+            },
+            {
+              "n": "3",
+              "html": "Click <b>Code.gs</b>, click inside the code, select all and paste the whole box, as for script 1. Click <b>Save project</b>. This script needs no script properties: the Sheet's id is in the code."
+            }
+          ]
+        },
+        {
+          "cap": "Run it once for the permissions, then deploy it the same way.",
+          "notes": [],
+          "steps": [
+            {
+              "title": "Run, deploy, try",
+              "start": 4,
+              "items": [
+                "In the function menu pick <b>waitingCount</b>, then click <b>Run</b>. It reads Sheet 1, so Google asks for permission: <b>Review permissions</b>, your TAMU account, every box ticked, <b>Continue</b>. The log ends with <b>Execution completed</b>.",
+                "<b>Deploy</b> &gt; <b>New deployment</b> &gt; the gear &gt; <b>Web app</b>. <b>Description</b>: your name and the date. <b>Execute as</b>: <b>Me</b>. <b>Who has access</b>: <b>Anyone</b>, since the desk asks for the count and sends sign-ups without signing in. Click <b>Deploy</b>.",
+                "Next to <b>Web app URL</b>, click <b>Copy</b>. Then <b>Done</b>.",
+                "In a private window, the address reads \"The sign-up script is running.\" The same address with <code>?action=count</code> at the end reads <code>{\"ok\":true,\"waiting\":N}</code>, N being the rows on Sheet 1."
+              ],
+              "links": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "send",
+      "name": "Send the two addresses",
+      "step": 3,
+      "slides": [
+        {
+          "cap": "The desk reaches the scripts through two settings only the owner can change.",
+          "notes": [
+            {
+              "n": "!",
+              "html": "<b>Email only.</b> Never a shared doc, a chat or a page: the sign-up address alone lets anyone add rows.",
+              "warn": true,
+              "go": false
+            },
+            {
+              "quiet": true,
+              "html": "Unconfirmed: which environments (Production, Preview) hold the two settings. The owner edits each one that exists."
+            }
+          ],
+          "steps": [
+            {
+              "title": "You",
+              "items": [
+                "Email both addresses to the desk's owner (<a href=\"/how-to/change-the-desk/#ask\">Who to ask</a>).",
+                "Say which is which: \"erc-content-desk script\" and \"subscribe to listserve script\"."
+              ],
+              "links": null
+            },
+            {
+              "title": "The owner, once",
+              "bullets": true,
+              "items": [
+                "On vercel.com, team <b>TAMU-ERC</b>, project <b>erc-content-desk</b>: <b>Settings</b> &gt; <b>Environment Variables</b>. <code>SHEET_API_URL</code> gets the erc-content-desk address, <code>LISTSERV_URL</code> the subscribe to listserve address, each by the row's menu &gt; <b>Edit</b> &gt; <b>Save</b>. <code>SHEET_API_TOKEN</code> stays: it still matches the script property.",
+                "<b>Deployments</b> &gt; the newest Production deployment &gt; the menu &gt; <b>Redeploy</b>. A changed setting only reaches a new deployment.",
+                "This once, the addresses change, so Vercel changes. Every later change to a script is a new version of your own deployment: the address stays, and Vercel stays as it is."
               ],
               "links": null
             }
@@ -57,58 +353,140 @@
     },
     {
       "id": "check",
-      "name": "Check it",
-      "step": 2,
+      "name": "Check it worked",
+      "step": 4,
       "slides": [
         {
-          "cap": "Once the owner says the new addresses are in, check each script.",
+          "cap": "Once the owner says the redeploy is done, open <a href=\"/#listserv\">Listserv</a>. A number under To be added means the sign-up script answered.",
+          "notes": [],
+          "shot": "listserv"
+        },
+        {
+          "cap": "Then one test of each script. Delete the test rows after.",
+          "notes": [],
           "steps": [
             {
-              "title": "erc-content-desk",
+              "title": "Sign-ups and the desk's Sheet",
               "items": [
-                "On <a href=\"/#team\">Submit content</a>, send a test item with <b>Add to the queue</b>.",
-                "Within a minute it is the last row on the Sheet's first tab.",
-                "<b>Delete</b> it on <a href=\"/#sort\">Content Sort</a>."
+                "On the public sign-up page, <a href=\"https://erc-share.vercel.app/listserv/\" target=\"_blank\" rel=\"noopener\">erc-share.vercel.app/listserv<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a>, sign up as \"Test, delete me\" with your own email, pass the check box, and send. The page says \"Thank you. You are on the list.\"",
+                "Your test is the last row on Sheet 1 of subscribe to listserve. Delete that row. The desk keeps its own copy of every sign-up, so Listserv's Last sign-up shows today, and Last updated may change to today too. Both are expected.",
+                "On <a href=\"/#team\">Submit content</a>, add an obviously fake item with <b>Add to the queue</b>: the link https://example.org/test, the title \"Test item, delete me\", and your initials. Within a minute it is the last row on the first tab of erc-content-desk.",
+                "Delete it on <a href=\"/#sort\">Content Sort</a> (the team password: <a href=\"/how-to/change-the-desk/#ask\">Who to ask</a>). Its Sheet row stays, with its status set to trashed: rows are never removed."
               ],
               "links": null
             }
           ]
         },
         {
-          "cap": "For <b>subscribe to listserve</b>, open <a href=\"/#listserv\">Listserv</a>.",
+          "cap": "The scraper, the briefs and the send dates use the desk script too.",
           "notes": [],
-          "shot": "listserv"
+          "steps": [
+            {
+              "title": "The rest",
+              "start": 5,
+              "items": [
+                "On the <a href=\"/#queue\">Content queue</a>, under <b>Scraper</b>, press <b>Run the scraper</b>. The line shimmers while it runs (the last run took under two minutes). When it ends: \"Last run &lt;date&gt;, for the &lt;date&gt; issue: ...\" with <b>Open the sheet</b> and <b>the files</b>. \"The last run failed on GitHub.\" means the delivery still failed.",
+                "Open any brief's page on <a href=\"/#briefs\">Research briefs</a> (the team password again: <a href=\"/how-to/change-the-desk/#ask\">Who to ask</a>). Its files are listed, each a link into Drive. \"Drive didn't answer. Use the folder link above.\" means the desk script still fails.",
+                "Later: a send date typed on the Sheet's schedule tab shows on <a href=\"/#schedule\">Newsletter &gt; Schedule</a> within ten minutes."
+              ],
+              "links": null
+            }
+          ]
         }
       ]
     },
     {
       "id": "wrong",
-      "name": "If it goes wrong",
+      "name": "If something goes wrong",
       "step": null,
       "slides": [
         {
-          "cap": "If a check fails, a message names the Sheet's script, or a menu is missing.",
+          "cap": "When a check fails, the message says which side it is.",
+          "notes": [],
           "steps": [
             {
-              "title": "A check fails, or \"Sheet API returned HTTP\"",
+              "title": "A check fails",
+              "bullets": true,
               "items": [
-                "In <b>Deploy</b>, <b>Manage deployments</b>, check <b>Who has access</b> reads Anyone.",
-                "Send the newest <b>Web app URL</b> to the desk's owner again."
+                "In the Apps Script editor, the left bar's <b>Executions</b> lists each call. A failed sign-up call shows as Failed; click it to read why. The desk script catches its own errors and answers them in words, so its calls show Completed even when they refuse.",
+                "A Google sign-in page in the private window: <b>Deploy</b> &gt; <b>Manage deployments</b> &gt; your deployment &gt; the pencil &gt; <b>Who has access</b>: <b>Anyone</b> &gt; <b>Deploy</b>. The address stays.",
+                "\"Unauthorized: missing or incorrect token.\" on a brief's page, or in the desk's log: the token property changed. Do not guess a value. Email the owner.",
+                "\"Server is not configured: the ... script property is not set.\": add it as in step 5 of script 1. For <code>SHEET_API_TOKEN</code>, email the owner.",
+                "\"The Sheet's script does not know this action yet.\" or \"Unknown action\": old code is live. Paste the desk script from this page again, save, then <b>Deploy</b> &gt; <b>Manage deployments</b> &gt; your deployment &gt; the pencil &gt; <b>Version</b>: <b>New version</b> &gt; <b>Deploy</b>.",
+                "A permission error naming Drive or Sheets: trap 2, on the next slide.",
+                "The private-window checks work but the desk still fails: the Vercel step is missing or not redeployed. The owner can read the desk's logs in Vercel, which keep only the last hour; \"Sheet API returned HTTP 403\" there means the desk still calls an old address."
+              ],
+              "links": null
+            }
+          ]
+        },
+        {
+          "cap": "Twelve traps, most met once while the scripts were set up.",
+          "notes": [],
+          "steps": [
+            {
+              "title": "The traps, 1 to 6",
+              "items": [
+                "<b>Permission is asked only when a function that needs it runs.</b> Running doGet asks nothing; a function that reads a Drive folder brings up the screen. Run checkAccess in the desk script and waitingCount in the sign-up script, never doGet or doPost.",
+                "<b>Google's granular consent.</b> Each permission has its own box, and an empty box is a partial grant: once, the first grant was read-only, and making folders failed after. If it already went wrong, remove the script's access on your Google account's permissions page, <code>myaccount.google.com/u/N/permissions</code> (trap 3), then run checkAccess again and tick every box.",
+                "<b>The account number in Google's addresses.</b> With several Google accounts signed in, each has a number in the address, such as <code>script.google.com/u/1/</code>, and Google's permissions page opens on account 0 unless its address carries the editor's number. Use <code>myaccount.google.com/u/&lt;the editor's number&gt;/permissions</code>, or a window signed in to TAMU only.",
+                "<b>Saving changes nothing live.</b> The web app runs the code as it was deployed. <b>Manage deployments</b> &gt; the pencil &gt; <b>Version</b>: <b>New version</b> &gt; <b>Deploy</b>.",
+                "<b>A new deployment gets a new address; a new version keeps it.</b> This time a new deployment is needed: the old ones belong to the closed account, so Vercel must change. Every later change is a new version of your own deployment, and Vercel stays as it is.",
+                "<b>Several deployments, all looking alike.</b> Once, a new version went on only one of three. The description in step 17 marks yours: always pick that deployment."
+              ],
+              "links": null
+            }
+          ]
+        },
+        {
+          "cap": "The other six.",
+          "notes": [],
+          "steps": [
+            {
+              "title": "The traps, 7 to 12",
+              "start": 7,
+              "items": [
+                "<b>The wrong project.</b> Once, a script property went into a different Apps Script project. Always open a script from its Sheet, <b>Extensions</b> &gt; <b>Apps Script</b>, and check the name at the top.",
+                "<b>Two old helpers.</b> The old desk script once held checkDrive and restoreMorningScrape, never in the repository's file. The paste in step 8 removes them, which is fine. Never run restoreMorningScrape: it was a one-time repair that moves files in and out of the trash.",
+                "<b>The test address.</b> <b>Test deployments</b> shows an address ending in <code>/dev</code>, which works only for people who can edit the script. The desk needs the <code>/exec</code> one.",
+                "<b>No Anyone under Who has access.</b> That is a TAMU setting. It was offered to the old account; unconfirmed for yours. If it is missing, stop and tell the owner: an option limited to Texas A&amp;M or to Google accounts will not work, because the desk never signs in.",
+                "<b>Several accounts in one browser.</b> The editor may not open, or opens as the wrong account. Use a window signed in to TAMU only.",
+                "<b>The scripts now run as you.</b> If your account ever closes, this happens again, and whoever follows does these same steps."
+              ],
+              "links": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "later",
+      "name": "Later: Add a source",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Add a source, the Content queue's form, is already in the desk script on this page. It needs one more script property before it can write to the Scraper sources Sheet; until then the form says \"The sources sheet is not connected yet.\"",
+          "notes": [
+            {
+              "quiet": true,
+              "html": "Unconfirmed: whether the live script already holds <code>SOURCES_SHEET_ID</code>. Step 5 of script 1 lists the three it must hold."
+            }
+          ],
+          "steps": [
+            {
+              "title": "Connect the sources Sheet",
+              "items": [
+                "Open the Sheet <b>Scraper sources</b>, in ERC Content Desk &gt; Newsletter. Its id is the long part of its address between <code>/d/</code> and <code>/edit</code>.",
+                "In the desk's script: <b>Project Settings</b> &gt; <b>Edit script properties</b> &gt; <b>Add script property</b>: <code>SOURCES_SHEET_ID</code> and that id. <b>Save script properties</b>. A property is read live: no new version is needed for it."
               ],
               "links": null
             },
             {
-              "title": "\"Unknown action\" or \"does not know this action yet\"",
+              "title": "Any later change to the code",
               "items": [
-                "Paste <code>apps-script/Code.gs</code> from the desk's code over the script in <b>erc-content-desk</b>, then save.",
-                "<b>Deploy</b>, <b>Manage deployments</b>, the pencil, <b>Version</b>: New version, then <b>Deploy</b>. The address stays the same."
-              ],
-              "links": "<a href=\"https://github.com/kateb-123/erc-content-desk/blob/main/apps-script/Code.gs\" target=\"_blank\" rel=\"noopener\">Code.gs on GitHub<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a>"
-            },
-            {
-              "title": "No Extensions menu",
-              "items": [
-                "You need edit access to the Sheet. Ask for it, then start again."
+                "Open erc-content-desk &gt; <b>Extensions</b> &gt; <b>Apps Script</b>, and replace <b>Code.gs</b> with the box on this page, which is what gets updated. Save. Paste the checkAccess helper at the end again, since the paste removes it.",
+                "If the new code's notes name a new script property or permission, add it as in steps 5 and 6, then run checkAccess and tick every box.",
+                "<b>Deploy</b> &gt; <b>Manage deployments</b> &gt; your deployment &gt; the pencil &gt; <b>Version</b>: <b>New version</b> &gt; <b>Deploy</b>. Same address. Vercel needs nothing."
               ],
               "links": null
             }

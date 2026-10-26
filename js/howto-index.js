@@ -33,8 +33,9 @@ export const GUIDES = [
   { id: 'pipeline', group: BEHIND, icon: 'book', title: 'How it all connects', line: 'Where an item goes, start to finish.', href: '/how-to/pipeline/', parts: [] },
   { id: 'change', group: BEHIND, icon: 'book', title: 'Change the desk', line: 'Who to ask, and what needs code.', href: '/how-to/change-the-desk/',
     parts: [['Who to ask', 'ask'], ["The Exchange's look", 'look']] },
+  // The walkthrough of docs/scripts-walkthrough-brief.md (Oct 26): its parts in its order.
   { id: 'scripts', group: BEHIND, icon: 'book', title: 'Bring back the Google scripts', line: "When sign-ups or the queue's Sheet stop updating.", href: '/how-to/google-scripts/',
-    parts: [['Which Sheets', 'sheets'], ['Redeploy', 'redeploy'], ['Check it', 'check'], ['If it goes wrong', 'wrong']] },
+    parts: [['Before you start', 'before'], ['Script 1: the desk', 'script-1'], ['Script 2: the sign-up', 'script-2'], ['Send the two addresses', 'send'], ['Check it worked', 'check'], ['If something goes wrong', 'wrong'], ['Later: Add a source', 'later']] },
   { id: 'ask', group: BEHIND, icon: 'book', title: 'Ask Claude about the desk', line: 'Questions answered from the how-tos.', href: '/how-to/ask-claude/',
     parts: [['Set it up once', 'setup'], ['Ask', 'ask'], ['Keep it current', 'current']] },
   { id: 'design', group: BEHIND, icon: 'book', title: 'Design for the ERC', line: 'Web pages, flyers and posts, and print.', href: '/how-to/design/',
@@ -66,7 +67,8 @@ export const SCREEN_GUIDES = {
 
 /** A part's address in its guide, for the one page that points at a part in
  *  words (the owner, Oct 25: the Listserv's Down links the Google scripts'
- *  Redeploy); '' for a part the guide does not have, so no link goes dead. */
+ *  part for the sign-up script, Script 2 since Oct 26); '' for a part the
+ *  guide does not have, so no link goes dead. */
 export function partHref(id, part) {
   const guide = GUIDES.find(g => g.id === id);
   return guide?.parts.some(p => p[1] === part) ? `${guide.href}#${part}` : '';

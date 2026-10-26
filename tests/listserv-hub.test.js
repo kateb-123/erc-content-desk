@@ -190,7 +190,7 @@ test('the sign-ups are down while the script does not answer, and back the momen
   assert.equal(signupsDown(back), false);
   assert.equal(listservStatus(back, '2026-10-25').form, 'Live, taking sign-ups', 'nothing to switch back: the next answer is the status');
   for (const s of [null, { error: true }, { live: false, kept: true, sheet: false, waiting: null }]) assert.equal(signupsDown(s), false, JSON.stringify(s));
-  assert.deepEqual(BRING_BACK, { label: 'How to bring it back', href: '/how-to/google-scripts/#redeploy' }, 'the guide\'s Redeploy');
+  assert.deepEqual(BRING_BACK, { label: 'How to bring it back', href: '/how-to/google-scripts/#script-2' }, 'the guide\'s part for the sign-up script (Script 2 since Oct 26; Redeploy before)');
   for (const w of [DOWN_WORDS, BRING_BACK.label]) assert.doesNotMatch(w, /[\u2013\u2014]/);
 });
 

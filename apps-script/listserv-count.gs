@@ -1,5 +1,5 @@
 /**
- * The sign-up sheet's Apps Script, whole (Oct 8, 2026): Kate's doPost as it
+ * The sign-up sheet's Apps Script, whole (Oct 8, 2026): the owner's doPost as it
  * was, which appends each sign-up to the first tab (Sheet 1), plus doGet,
  * which answers ?action=count with Sheet 1's rows for the desk's Listserv
  * hub: { ok: true, waiting: N }, N being the rows below the header with

@@ -13,9 +13,14 @@ const SITE = 'https://erc-content-desk.vercel.app';
 // so the guide and the panel never drift.
 const PAGES = GUIDES.map(g => [g.title, g.href]);
 
-const text = html => html
+const text = (html, href = '') => html
   .replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, '')
   .replace(/<header[\s\S]*?<\/header>/gi, '').replace(/<nav[\s\S]*?<\/nav>/gi, '')
+  // A whole script in a box (the Google scripts, Oct 26) is the repository's
+  // file, hundreds of lines: the guide says where the box is instead. A few
+  // lines in no file (the checkAccess helper) stay, as words.
+  .replace(/<pre class="code-pre"[^>]*\bdata-file="([^"]*)"[^>]*\bdata-lines="(\d+)"[^>]*\bdata-part="([^"]*)"[^>]*>[\s\S]*?<\/pre>/gi,
+    (_, file, lines, part) => `\n\nThe whole script, ${file} (${lines} lines), is in a box on the page with a Copy button: ${SITE}${href}#${part}\n\n`)
   // A drawn diagram reads as words (review, Oct 23): what it shows, as a
   // screen reader hears it, then each of its labels on a line of its own.
   .replace(/<svg\b[^>]*\baria-label="([^"]*)"[^>]*>/gi, '\n\n$1\n\n').replace(/<\/text>/gi, '\n')
@@ -44,7 +49,7 @@ for (const [title, href] of PAGES) {
   const pin = /<button type="button" class="pin[^"]*" style="[^"]*" aria-label="([^"]*)"[\s\S]*?<\/button>/g;
   const words = main.replace(pin, '');
   main = main.replace(pin, (button, label) => (words.includes(label) ? '' : button));
-  parts.push(`\n\n# ${title}\n${SITE}${href}\n\n${text(main)}`);
+  parts.push(`\n\n# ${title}\n${SITE}${href}\n\n${text(main, href)}`);
 }
 // What the pages draw at load, written out (review, Oct 23): the item types and the public links.
 parts.push('\n\n# Item types\nThe types an item can have on the desk, each with its subtypes.\n\n'

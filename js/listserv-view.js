@@ -17,8 +17,10 @@ export function signupsDown(signups) {
 
 export const DOWN_WORDS = "Down: the sign-up script isn't answering, so sign-ups fail.";
 
-/** Where it is brought back: the Google scripts guide's Redeploy. */
-export const BRING_BACK = { label: 'How to bring it back', href: partHref('scripts', 'redeploy') };
+/** Where it is brought back: the Google scripts guide's part for the sign-up
+ *  script (Script 2; the guide's Redeploy until Oct 26, when it became the
+ *  brief's walkthrough with a part per script). */
+export const BRING_BACK = { label: 'How to bring it back', href: partHref('scripts', 'script-2') };
 
 /**
  * Since Oct 8 (Kate: "does it keep a live count from the sheet?"; her pick)

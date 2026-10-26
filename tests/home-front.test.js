@@ -233,7 +233,7 @@ test('the Listserv row while the sign-up script is down: no Live, no dot, a warn
   assert.ok(note.querySelector('.line-icon-warning'), 'with its triangle');
   assert.equal(note.textContent.trim(), "Down: the sign-up script isn't answering, so sign-ups fail. How to bring it back");
   const back = note.querySelector('a');
-  assert.equal(back.href, '/how-to/google-scripts/#redeploy');
+  assert.equal(back.href, '/how-to/google-scripts/#script-2', 'the guide\'s part for the sign-up script');
   assert.equal(back.textContent, 'How to bring it back');
   assert.ok(list.children[at + 2].matches('.home-row'), 'then the next row');
 

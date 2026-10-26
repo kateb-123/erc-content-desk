@@ -1112,3 +1112,43 @@ and each band's sources with their counts, a short name with its full one
 - **Add a source from the how-to** goes to `/#queue/add-source`: the Content
   queue opens with its form open and Name focused, and the address goes back
   to `#queue`, so a reload shows the queue with the form shut.
+
+## The Google scripts walkthrough (Oct 26)
+
+`how-to/google-scripts/` is the walkthrough of
+`docs/scripts-walkthrough-brief.md`, for a teammate who is not a developer
+and never opens GitHub (the owner, Oct 25: she "won't know how to use
+github"). The deck's idiom stays, the brief's parts in its order: Before you
+start, Script 1: the desk, Script 2: the sign-up, Send the two addresses,
+Check it worked, If something goes wrong, Later: Add a source. Seven chips
+wrap to two rows at 1280. One action a step, Google's names in bold as the
+brief writes them, one line on what the screen shows next; Script 1's
+numbering runs 1 to 21 across its seven slides (`start` on a steps group).
+Never a password, a token's value, a `/exec` address, a Drive folder id or
+the name of the person who left ("the desk's owner", reached through Who to
+ask, where READ ME FIRST is named once). The Listserv's Down link lands on
+Script 2.
+
+- **The code kind** (`kind: "code"` in `make-deck.mjs`): the whole script in
+  a white box where a still would be, read from `apps-script/` at build time
+  and escaped, nothing else, so a paste is the file byte for byte
+  (`tests/scripts-howto.test.js` holds the box to the file). The box's head:
+  the script's name, its file and line count, and Copy, an outline button
+  that writes the clipboard or, where the browser refuses, selects the text
+  and copies it the old way, leaving it selected; it says Copied in the
+  success tint for a moment and a screen reader hears it. The box scrolls
+  inside itself (`max-height` under the frame's height, `overflow: auto`),
+  never the page sideways; plain 12px monospace, no line numbers, no
+  coloring; it takes focus, so the keyboard scrolls it. Under it, "It starts
+  with `/**` and ends with `}`" and "This code is a copy from the desk's
+  repository on <the build date>." The checkAccess helper, in no file, is
+  the same box from the slide's own text. The slide's steps are its numbered
+  notes beside the box. Without script Copy goes and every line shows.
+  `desk-guide.txt` never carries the code: it says where the box is.
+- **Quiet notes** (`quiet: true`): the brief's Unconfirmed marks with a
+  question mark where the number sits, in the quiet gray; the line that
+  stands for the teammate's own screenshot with a camera ("Your screenshot:
+  the permissions screen."), never an empty box.
+- **Bullets** (`bullets: true` on a steps group): facts, not actions, with a
+  gray dot in place of the number (What you need, Who changes what, Where
+  each thing is, the owner's Vercel step).

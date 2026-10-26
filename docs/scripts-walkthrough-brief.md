@@ -217,7 +217,7 @@ Links to give it:
 - The two Sheets (they open only for people on the team drive): erc-content-desk https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit and subscribe to listserve https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit
 - The desk pages in the checks: https://erc-content-desk.vercel.app/#listserv, https://erc-share.vercel.app/listserv/, https://erc-content-desk.vercel.app/#team, https://erc-content-desk.vercel.app/#queue
 
-## Appendix A: the desk script (apps-script/Code.gs, copy of Oct 25, 2026, commit 767b0af)
+## Appendix A: the desk script (apps-script/Code.gs, copy of Oct 26, 2026)
 
 Paste the whole box over the code in script 1's Code.gs. It starts with `/**` and ends with `}`.
 
@@ -263,7 +263,7 @@ var SCRAPE_FOLDER_PROPERTY_NAME = 'SCRAPE_FOLDER_ID';
 
 /** Name of the script property holding the id of the team drive folder
  *  ERC Content Desk/ERC Research Briefs, where each brief gets a folder of
- *  its own (Kate, Oct 20 and 21, 2026). The id is the last part of the
+ *  its own (the owner, Oct 20 and 21, 2026). The id is the last part of the
  *  folder's address. Not the id itself. */
 var BRIEFS_FOLDER_PROPERTY_NAME = 'BRIEFS_FOLDER_ID';
 /** Name of the script property holding the id of the Scraper sources Sheet
@@ -458,7 +458,7 @@ function handleHeader(sheet, values) {
 /**
  * Files one of the scraper's spreadsheets, or its run log, into the shared
  * drive: Newsletter Scrape/scrapes/<folder>/<name>, where <folder> is the
- * run's date. The desk sends the file as base64 (Kate, Oct 19, 2026: the
+ * run's date. The desk sends the file as base64 (the owner, Oct 19, 2026: the
  * haul in Drive "so it's available to everyone"). A delivery of the same
  * file on the same day replaces the earlier copy, which goes to the trash
  * for 30 days.
@@ -523,13 +523,13 @@ function scrapesSpreadsheet(folder) {
 }
 
 /**
- * Puts a run's rows on the tab of the issue they feed (Kate, Oct 19, 2026:
+ * Puts a run's rows on the tab of the issue they feed (the owner, Oct 19, 2026:
  * "a new sheet based on the scrape, by the newsletter send out dates"; her
  * pick: one Sheet, a tab per issue). The tab is made on first use with the
  * header frozen; the newest issue's tab sits first. A link already on the
  * tab is never written twice, and the script never removes a row, so what
  * the team deletes by hand stays deleted and a second run the same day
- * only adds what is new (Kate, Oct 20). Links are clickable.
+ * only adds what is new (the owner, Oct 20). Links are clickable.
  */
 function handleAppendScrape(body) {
   var folderId = PropertiesService.getScriptProperties().getProperty(SCRAPE_FOLDER_PROPERTY_NAME);
@@ -591,7 +591,7 @@ function handleAppendScrape(body) {
 
 /**
  * A brief's own folder under ERC Content Desk/ERC Research Briefs on the team
- * drive (Kate, Oct 20 and 21, 2026): lastname-year-topic, made on first use, found after. The desk files
+ * drive (the owner, Oct 20 and 21, 2026): lastname-year-topic, made on first use, found after. The desk files
  * the paper, her notes, the drafts and the Word doc into it by its id.
  */
 function handleBriefFolder(body) {
@@ -742,13 +742,13 @@ function describeError(err) {
 }
 ```
 
-## Appendix B: the sign-up script (apps-script/listserv-count.gs, copy of Oct 25, 2026, commit 767b0af)
+## Appendix B: the sign-up script (apps-script/listserv-count.gs, copy of Oct 26, 2026)
 
 Paste the whole box over the code in script 2's Code.gs. It starts with `/**` and ends with `}`.
 
 ```
 /**
- * The sign-up sheet's Apps Script, whole (Oct 8, 2026): Kate's doPost as it
+ * The sign-up sheet's Apps Script, whole (Oct 8, 2026): the owner's doPost as it
  * was, which appends each sign-up to the first tab (Sheet 1), plus doGet,
  * which answers ?action=count with Sheet 1's rows for the desk's Listserv
  * hub: { ok: true, waiting: N }, N being the rows below the header with

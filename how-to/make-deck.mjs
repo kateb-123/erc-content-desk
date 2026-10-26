@@ -12,6 +12,13 @@
 // a real item as Content Sort's card asking Keep or delete, and "sources",
 // three tinted bands of sources with how often each was kept. Their styles and
 // the flashcards' script are written into the page only when a slide uses them.
+// Since Oct 26 a third kind, "code" (the Google scripts' walkthrough, for a
+// teammate who never opens GitHub): a whole script in a box where a still would
+// be, read from its file in the repository at build time, with Copy; its steps
+// are the numbered notes beside it. A note may also be "quiet" (an Unconfirmed
+// mark, or the line that stands for the teammate's own screenshot), a steps
+// group may be "bullets" (facts, not actions) or carry a "start", so the
+// numbering runs on across the slides of one part.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { TYPE_ORDER, subtypesFor, typeDisplay } from '../js/schema.js';
 
@@ -48,7 +55,13 @@ function shotHtml(name, m) {
 }
 
 function notesHtml(notes = []) {
-  return notes.map(n => `<p class="note${n.warn ? ' warn' : ''}"><span class="n${n.go ? ' go' : ''}">${esc(n.n ?? '')}</span><span>${n.html}</span></p>`).join('\n            ');
+  return notes.map(n => {
+    // A quiet note (Oct 26): no number, an icon in its place, the words in the
+    // quiet gray. The brief's Unconfirmed marks (a question mark) and the line
+    // that stands where the teammate's own screenshot would go (a camera).
+    if (n.quiet) { kindsUsed.add('quiet'); return `<p class="note quiet"><i class="fa-solid fa-${attr(n.icon ?? 'circle-question')}" aria-hidden="true"></i><span>${n.html}</span></p>`; }
+    return `<p class="note${n.warn ? ' warn' : ''}"><span class="n${n.go ? ' go' : ''}">${esc(n.n ?? '')}</span><span>${n.html}</span></p>`;
+  }).join('\n            ');
 }
 
 // Every pin's step in the words, under its number. A slide whose notes cover
@@ -77,6 +90,87 @@ const fa = name => `<i class="fa-solid fa-${name}" aria-hidden="true"></i>`;
 // A short line after a group's name reads on, "Tests or changes a policy: research, ...", a leading ERC or A&M kept.
 const onward = line => (/^[A-Z](?![A-Z&])/.test(line) ? line[0].toLowerCase() + line.slice(1) : line);
 const kindsUsed = new Set();
+// The day this page was built, in College Station's calendar: a code box says it is the repository's copy of that day.
+const BUILT = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());
+
+/** A whole script in a box (Oct 26, the Google scripts' walkthrough; the
+ *  owner, Oct 25: the teammate "won't know how to use github"). The box is
+ *  the file in apps-script/ read now, escaped and nothing else: no line
+ *  numbers, no coloring, so a paste is the file. Or, for a few lines that are
+ *  in no file (the checkAccess helper), the slide's own text. Under it the
+ *  first and last line, so the teammate can see the paste took it all, and
+ *  the day of this copy. Copy is a button the page's script wires; without
+ *  script it goes and the text stays. The slide's steps are its numbered
+ *  notes, beside the box where a still's pins would be listed. */
+function codeHtml(chapter, slide) {
+  const where = `${slug}/${chapter.id}: code`;
+  const c = slide.code ?? {};
+  if (!c.file && !c.text) throw new Error(`${where}: a code slide names a file in the repository or carries its text`);
+  if (c.file && !/^[a-z-]+\/[A-Za-z0-9._-]+$/.test(c.file)) throw new Error(`${where}: ${c.file} is not a file at the repository's root`);
+  const text = c.file ? readFileSync(new URL(`../${c.file}`, import.meta.url), 'utf8') : c.text;
+  if (/\r/.test(text)) throw new Error(`${where}: carriage returns in the code`);
+  const lines = text.split('\n').length - (text.endsWith('\n') ? 1 : 0);
+  const first = text.split('\n')[0];
+  const last = text.trimEnd().split('\n').at(-1);
+  if (!c.name) throw new Error(`${where}: the box needs a name`);
+  kindsUsed.add('code');
+  const data = c.file ? ` data-file="${attr(c.file)}" data-lines="${lines}" data-part="${attr(chapter.id)}"` : '';
+  return `<div class="slide kind-code" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">${slide.cap}</p>
+            ${notesHtml(slide.notes)}
+            <div class="foot"></div>
+          </div>
+          <div class="frame code-frame">
+            <div class="codebox" data-codebox>
+              <div class="code-head">
+                <p class="code-name">${esc(c.name)}${c.file ? ` <span class="code-lines">${esc(c.file)} · ${lines} lines</span>` : ''}</p>
+                <button type="button" class="code-copy" aria-label="Copy ${attr(c.name)}">${fa('copy')}Copy</button>
+                <span class="sr-only" aria-live="polite" data-code-said></span>
+              </div>
+              <pre class="code-pre" tabindex="0" aria-label="${attr(c.name)}, the code"${data}><code>${esc(text)}</code></pre>
+              <p class="code-meta">It starts with <code>${esc(first)}</code> and ends with <code>${esc(last)}</code>.${c.file ? ` ${lines} lines.` : ''}</p>${c.file ? `
+              <p class="code-meta">This code is a copy from the desk's repository on ${esc(BUILT)}. If the code changes, this box is what gets updated.</p>` : ''}
+            </div>
+          </div>
+        </div>`;
+}
+
+/** The Copy button's script, written into the page as it is: the clipboard
+ *  when the browser allows it, else the text selected and copied the old way,
+ *  and left selected so Cmd+C still works; the button says Copied for a
+ *  moment and a screen reader hears it. */
+function codeCopy() {
+  document.querySelectorAll('[data-codebox]').forEach((box) => {
+    const pre = box.querySelector('.code-pre');
+    const btn = box.querySelector('.code-copy');
+    const said = box.querySelector('[data-code-said]');
+    const rest = btn.innerHTML;
+    let timer = 0;
+    const icon = (name) => { const i = document.createElement('i'); i.className = `fa-solid fa-${name}`; i.setAttribute('aria-hidden', 'true'); return i; };
+    const say = (ok) => {
+      btn.classList.toggle('is-done', ok);
+      btn.replaceChildren(icon(ok ? 'check' : 'triangle-exclamation'), ok ? 'Copied' : 'Select and copy');
+      said.textContent = ok ? 'Copied the whole script.' : 'The browser would not copy. The code is selected: press Cmd+C or Ctrl+C.';
+      clearTimeout(timer);
+      timer = setTimeout(() => { btn.classList.remove('is-done'); btn.innerHTML = rest; }, 2400);
+    };
+    const select = () => {
+      const range = document.createRange();
+      range.selectNodeContents(pre.querySelector('code'));
+      const sel = getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    };
+    btn.addEventListener('click', async () => {
+      const text = pre.textContent;
+      try { await navigator.clipboard.writeText(text); say(true); return; } catch (e) { /* no clipboard: the old way */ }
+      let ok = false;
+      try { select(); ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      say(ok);
+    });
+  });
+}
 
 /** Keep or delete as flashcards (her pick B): the six groups are words on the
  *  page, a side at a time, each name with its short line and its rules for a
@@ -286,6 +380,40 @@ const KIND_STYLE = `<style data-kinds>
     @media (prefers-reduced-motion: no-preference) {
       .fc-g, .sb-add { transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive); }
     }
+
+    /* A code slide (Oct 26, the Google scripts): the whole script in a box
+       where a still would be, its steps the numbered notes beside it. The box
+       scrolls inside itself, never the page sideways; plain monospace, the
+       desk's ink on white. Without script every line shows, and Copy goes. */
+    .code-frame { display: block; }
+    .codebox { display: flex; flex-direction: column; gap: var(--spacing-03); min-width: 0; }
+    .code-head { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-04); min-width: 0; }
+    .code-name { margin: 0; min-width: 0; font: 600 14px/20px var(--font-sans); color: var(--ink); overflow-wrap: anywhere; }
+    .code-lines { font-weight: 400; color: var(--muted); }
+    .code-copy { display: inline-flex; align-items: center; gap: var(--spacing-03); flex: none; height: 32px; padding: 0 var(--spacing-04); border: 1px solid var(--button-tertiary); border-radius: var(--radius); background: var(--layer-02); color: var(--text-in-outline); font: 600 14px/20px var(--font-sans); cursor: pointer; white-space: nowrap; }
+    .code-copy:hover { background: var(--hover); border-color: var(--text-secondary); color: var(--text-in-outline); }
+    .code-copy .fa-solid { font-size: 12px; }
+    .code-copy.is-done { border-color: var(--notification-success-border); background: var(--notification-success-background); color: var(--text-success-on-tint); }
+    html:not(.js) .code-copy { display: none; }
+    .code-pre { margin: 0; padding: var(--spacing-04); max-height: calc(var(--fh) - 112px); overflow: auto; background: var(--layer-02); border: 1px solid var(--layer-line); border-radius: var(--radius); color: var(--ink); font: 400 12px/18px Menlo, SFMono-Regular, Consolas, ui-monospace, monospace; tab-size: 2; white-space: pre; }   /* Menlo first: Chrome on a Mac draws ui-monospace as Courier */
+    .code-pre code { font: inherit; }   /* the browser's own code rule would set Courier */
+    .code-pre:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+    html:not(.js) .code-pre { max-height: none; overflow: visible; white-space: pre-wrap; }
+    .code-meta { margin: 0; font: var(--meta-type); color: var(--muted); }
+    .code-meta code { padding: 1px 4px; border-radius: 2px; background: var(--layer-02); font: 400 13px/18px Menlo, SFMono-Regular, Consolas, ui-monospace, monospace; color: var(--ink); }
+    @media (prefers-reduced-motion: no-preference) {
+      .code-copy { transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive), border-color var(--duration-fast-01) var(--ease-productive); }
+    }
+
+    /* A quiet note (Oct 26): an Unconfirmed mark, or the line where the
+       teammate's own screenshot would go. An icon where the number sits. */
+    .note.quiet { color: var(--muted); }
+    .note.quiet .fa-solid { flex: none; width: 22px; text-align: center; font-size: 14px; color: var(--muted); }
+
+    /* A steps group of facts, not actions (Oct 26): a dot in place of the number. */
+    .steps ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-04); font: var(--body-type); color: var(--ink); }
+    .steps ul li { position: relative; padding-left: 36px; }
+    .steps ul li::before { content: ''; position: absolute; left: 7px; top: 9px; width: 8px; height: 8px; border-radius: var(--radius-round); background: var(--border-strong-01); }
   </style>`;
 
 /** The flashcards' script, written into the page as it is. Content Sort's
@@ -398,13 +526,21 @@ function flashcards() {
 function slideHtml(chapter, slide, i) {
   if (slide.kind === 'flashcards') return flashcardsHtml(chapter, slide);
   if (slide.kind === 'sources') return sourcesHtml(chapter, slide);
+  if (slide.kind === 'code') return codeHtml(chapter, slide);
   if (slide.kind) throw new Error(`${slug}/${chapter.id}: no slide kind ${slide.kind}`);
   if (slide.steps) {
+    // A group is numbered steps; "bullets" makes it facts with a dot each, and
+    // "start" carries the numbering on from an earlier slide of the part.
+    const list = g => {
+      if (g.bullets) { kindsUsed.add('bullets'); return ['<ul>', '</ul>']; }
+      if (g.start) { if (!(Number.isInteger(g.start) && g.start > 1)) throw new Error(`${slug}/${chapter.id}: start is a step number past 1`); return [`<ol start="${g.start}" style="counter-reset: step ${g.start - 1}">`, '</ol>']; }
+      return ['<ol>', '</ol>'];
+    };
     const groups = slide.steps.map((g, j) => `<section class="steps" aria-labelledby="h-${chapter.id}-${i}-${j}">
               <h3 id="h-${chapter.id}-${i}-${j}">${esc(g.title)}</h3>
-              <ol>
+              ${list(g)[0]}
                 ${g.items.map(it => `<li>${it}</li>`).join('\n                ')}
-              </ol>${g.links ? `\n              <p class="links">${g.links}</p>` : ''}
+              ${list(g)[1]}${g.links ? `\n              <p class="links">${g.links}</p>` : ''}
             </section>`).join('\n            ');
     return `<div class="slide words" role="group" aria-roledescription="slide">
           <div class="side">
@@ -494,6 +630,10 @@ const html = `<!DOCTYPE html>
   <script>
     // ---- Keep or delete, as flashcards: a real card asks, Keep or Delete answers, its group lights ----
     (${flashcards})();
+  </script>` : ''}${kindsUsed.has('code') ? `
+  <script>
+    // ---- Copy a code box: the clipboard, or the text selected and copied the old way; Copied for a moment ----
+    (${codeCopy})();
   </script>` : ''}
   <script type="module" src="/js/howto-sidebar.js?v=3"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
