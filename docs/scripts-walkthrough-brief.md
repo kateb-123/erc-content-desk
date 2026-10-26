@@ -14,7 +14,7 @@ Every name below is the one the walkthrough should use. Nothing else is needed.
 | The desk's script (script 1) | Inside that Sheet: **Extensions** > **Apps Script**. Its project name starts with "ERC Content Desk" and ends with "Sheet API". It is bound to the Sheet, so it lives on the team drive with it. | Anyone who can edit the Sheet |
 | The sign-up Sheet, **subscribe to listserve** | Team drive > ERC Content Desk > Listserv. https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit | Anyone on the team drive |
 | The sign-up script (script 2) | Not known. Its code opens the Sheet by id, so the old one may have been inside the Sheet or a separate project in the closed account's own Drive, which is locked. Either way the walkthrough makes it inside the sign-up Sheet (**Extensions** > **Apps Script**), from the repository's copy, so the team can always find it from the Sheet. | Anyone who can edit the Sheet |
-| The code for both scripts | The desk's public repository on GitHub, folder `apps-script/`: `Code.gs` for script 1, `listserv-count.gs` for script 2, `appsscript.json` the manifest. Raw links are in section 3. https://github.com/kateb-123/erc-content-desk/tree/main/apps-script | Anyone, no login |
+| The code for both scripts | Appendix A (the desk script) and Appendix B (the sign-up script) at the end of this brief, each pasted whole into the Apps Script editor. They are copies of `apps-script/Code.gs` and `apps-script/listserv-count.gs` in the desk's public repository, https://github.com/kateb-123/erc-content-desk/tree/main/apps-script, which is for whoever maintains the code, not for the teammate. | Anyone |
 | The desk's settings (`SHEET_API_URL`, `LISTSERV_URL`) | vercel.com, team **TAMU-ERC**, project **erc-content-desk**, Settings > Environment Variables | The desk's owner only, named in READ ME FIRST - ERC handoff |
 | READ ME FIRST - ERC handoff | Team drive > ERC Content Desk | Anyone on the team drive |
 | The existing how-to | https://erc-content-desk.vercel.app/how-to/google-scripts/ (its Redeploy tab is where the desk's Listserv page sends people while the script is down) | Anyone, no login |
@@ -81,7 +81,7 @@ Keep private: the two new addresses (they go to the owner by email, nowhere else
    "https://www.googleapis.com/auth/drive"
    ```
    If one is missing, add it and save. Unconfirmed: the rest of the live manifest, which is not in the repository.
-7. In a new tab, open the repository's copy of the code: https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/apps-script/Code.gs. Select all of it and copy.
+7. Copy the whole of **Appendix A** at the end of this brief (the desk script, 518 lines). The walkthrough shows it in a box with a Copy button; the teammate never opens GitHub.
 8. Back in the editor, click **Code.gs**, click inside the code, select all (Cmd+A on a Mac, Ctrl+A on Windows) and paste. This replaces the old code. Click **Save project** (the disk icon).
 9. Click at the very end of Code.gs, paste this helper, and save. It only reads three names, to start Google's permission screen. It is not in the repository's file.
    ```
@@ -113,7 +113,7 @@ Where the old script lived is not known (section 0). It does not matter: a deplo
 2. Click **Extensions** > **Apps Script**. One of two things opens:
    - A project that already holds `doPost`, `doGet` and `waitingCount`: the old script was here. Carry on in it.
    - A new Untitled project holding only `function myFunction() {}`: the old script was elsewhere. Carry on in this new project; the repository's copy finds Sheet 1 by its id. Click the project name at the top and name it "Listserv sign-up".
-3. Open the code file (Code.gs). Select all of it and replace it with the repository's copy, as in steps 7 and 8 above: https://raw.githubusercontent.com/kateb-123/erc-content-desk/main/apps-script/listserv-count.gs. Click **Save project**. This script needs no script properties: the Sheet's id is in the code.
+3. Open the code file (Code.gs). Select all of it and replace it with the whole of **Appendix B** (the sign-up script, 50 lines), as in steps 7 and 8 above. Click **Save project**. This script needs no script properties: the Sheet's id is in the code.
 4. In the function menu pick **waitingCount**, then click **Run**. It reads Sheet 1, so Google asks for permission: steps 11 to 13 above. The log ends with **Execution completed**.
 5. **Deploy** > **New deployment** > the gear > **Web app**. Description: your name and the date. **Execute as**: **Me**. **Who has access**: **Anyone**, since the desk asks for the count and sends sign-ups without signing in. Click **Deploy**.
 6. Next to **Web app URL**, click **Copy**.
@@ -192,6 +192,13 @@ What to make:
 - It must open from a link in an email and read in full without JavaScript. A past Claude Design walkthrough needed JavaScript to open by email.
 - Sentence case, American spelling, plain short sentences, no em dashes, no emojis, no filler.
 
+The code goes in the page:
+
+- The teammate does not use GitHub. Each script's code is in the walkthrough itself, in a code box with a **Copy** button, at the step that pastes it: Appendix A at script 1's step 7, Appendix B at script 2's step 3. Plain text, no line numbers, no syntax coloring that changes characters, nothing cut.
+- Copy the code from the appendices below exactly. Do not reword, reformat, shorten or "fix" it. A changed character breaks the script.
+- Show the first and last line under the box ("It starts with ... and ends with ...") so the teammate can see the paste took the whole file.
+- If the code ever changes, the code box is what gets updated. Say so on the page: "This code is a copy from the desk's repository on the date shown."
+
 What not to invent:
 
 - Only these steps and these names. No buttons, menus, messages or behavior that are not in this brief. Where it says Unconfirmed, keep the mark or leave the line out.
@@ -209,3 +216,585 @@ Links to give it:
 - Every outside service: https://github.com/kateb-123/erc-content-desk/blob/main/docs/handbook/connections.md
 - The two Sheets (they open only for people on the team drive): erc-content-desk https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit and subscribe to listserve https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit
 - The desk pages in the checks: https://erc-content-desk.vercel.app/#listserv, https://erc-share.vercel.app/listserv/, https://erc-content-desk.vercel.app/#team, https://erc-content-desk.vercel.app/#queue
+
+## Appendix A: the desk script (apps-script/Code.gs, copy of Oct 25, 2026, commit 767b0af)
+
+Paste the whole box over the code in script 1's Code.gs. It starts with `/**` and ends with `}`.
+
+```
+/**
+ * ERC Content Desk — Sheet API
+ *
+ * This script turns this Google Sheet into a tiny web API that the Content
+ * Desk app talks to instead of the Google Sheets REST API. It runs under
+ * your own Google account, so it works even though Google Cloud is disabled
+ * for this account — nothing here needs a Cloud project or a service
+ * account.
+ *
+ * WHAT IT DOES: reads rows, appends a row, overwrites a row, or writes the
+ * header row. Since October 19, 2026 it also files the scraper's spreadsheets
+ * into the shared drive (saveFile, below). Since October 24, 2026 it also
+ * reads the Scraper sources Sheet and adds one row to it for the desk's Add a
+ * source form (listSources, addSource). It never runs arbitrary code sent
+ * to it and only touches the one sheet tab it's told to; the one thing it
+ * ever trashes is an older copy of a scraper file being delivered again.
+ *
+ * SECURITY: when you deploy this as a web app with "Who has access: Anyone",
+ * Google does NOT check who's calling — anyone with the URL could call it.
+ * The token check below is what actually protects the data: every request
+ * must include the same secret value you set as the SHEET_API_TOKEN script
+ * property (Project Settings → Script Properties, or Extensions → Apps
+ * Script → gear icon). The token is deliberately not written in this file,
+ * because this file is not a secret — paste it wherever you like.
+ *
+ * See README.md for the exact deployment steps.
+ */
+
+/** Name of the script property holding the shared secret. Not the secret itself. */
+var TOKEN_PROPERTY_NAME = 'SHEET_API_TOKEN';
+
+/** How long to wait for the sheet lock before giving up, in milliseconds. */
+var LOCK_TIMEOUT_MS = 10000;
+
+/** Name of the script property holding the id of the shared drive folder
+ *  the scraper's runs are filed under (Newsletter Scrape/scrapes). The id is
+ *  the last part of the folder's address in Drive. Not the id itself. */
+var SCRAPE_FOLDER_PROPERTY_NAME = 'SCRAPE_FOLDER_ID';
+
+/** Name of the script property holding the id of the team drive folder
+ *  ERC Content Desk/ERC Research Briefs, where each brief gets a folder of
+ *  its own (Kate, Oct 20 and 21, 2026). The id is the last part of the
+ *  folder's address. Not the id itself. */
+var BRIEFS_FOLDER_PROPERTY_NAME = 'BRIEFS_FOLDER_ID';
+/** Name of the script property holding the id of the Scraper sources Sheet
+ *  (ERC Content Desk/Newsletter/Scraper sources on the team drive): the list
+ *  of sources the scraper watches, where the desk's Add a source form writes
+ *  (Oct 24, 2026). The id is the long part of the Sheet's address between
+ *  /d/ and /edit. Not the id itself. */
+var SOURCES_SHEET_PROPERTY_NAME = 'SOURCES_SHEET_ID';
+var FILE_NAME_RULE = /^[A-Za-z0-9][A-Za-z0-9 _.-]{0,120}\.(xlsx|txt|pdf|md|docx|png|jpg|jpeg|csv)$/;
+/** A folder inside a brief's folder, by name: the figures (Oct 22). */
+var SUB_RULE = /^[a-z]{1,20}$/;
+
+/**
+ * Entry point Google calls for every POST request to the deployed web app.
+ */
+function doPost(e) {
+  var response;
+  try {
+    var body = parseRequestBody(e);
+    var authError = checkToken(body.token);
+    if (authError) {
+      response = { ok: false, error: authError };
+    } else {
+      response = handleAction(body);
+    }
+  } catch (err) {
+    // Anything unexpected still comes back as readable JSON, not a stack trace.
+    response = { ok: false, error: 'Server error: ' + describeError(err) };
+  }
+  return jsonOutput(response);
+}
+
+/**
+ * A GET to the deployed URL (e.g. pasted straight into a browser) gets a
+ * plain, friendly message instead of a Google error page — useful for
+ * confirming the deployment URL is correct.
+ */
+function doGet() {
+  return ContentService
+    .createTextOutput('ERC Content Desk sheet API is running. It only accepts POST requests.')
+    .setMimeType(ContentService.MimeType.TEXT);
+}
+
+/** Parses the JSON POST body. Throws a plain-language error if it can't. */
+function parseRequestBody(e) {
+  if (!e || !e.postData || !e.postData.contents) {
+    throw new Error('No request body was sent.');
+  }
+  try {
+    return JSON.parse(e.postData.contents);
+  } catch (err) {
+    throw new Error('Request body was not valid JSON.');
+  }
+}
+
+/**
+ * Checks the request's token against the SHEET_API_TOKEN script property.
+ * Returns an error message string if the request should be rejected, or
+ * null if it's allowed to proceed. Fails closed: if the property has never
+ * been set, every request is rejected.
+ */
+function checkToken(requestToken) {
+  var expected = PropertiesService.getScriptProperties().getProperty(TOKEN_PROPERTY_NAME);
+  if (!expected) {
+    return 'Server is not configured: the ' + TOKEN_PROPERTY_NAME + ' script property is not set.';
+  }
+  if (!requestToken || requestToken !== expected) {
+    return 'Unauthorized: missing or incorrect token.';
+  }
+  return null;
+}
+
+/** Dispatches to the right handler once the token has checked out. */
+function handleAction(body) {
+  switch (body.action) {
+    case 'saveFile':
+      return handleSaveFile(body);   // Drive, not the sheet
+    case 'appendScrape':
+      return withLock(function () { return handleAppendScrape(body); });   // the Newsletter scrapes Sheet in Drive
+    case 'briefFolder':
+      return handleBriefFolder(body);   // Research briefs on the team drive
+    case 'listFiles':
+      return handleListFiles(body);
+    case 'getFile':
+      return handleGetFile(body);
+    case 'listSources':
+      return handleListSources();   // the Scraper sources Sheet, by its id
+    case 'addSource':
+      return withLock(function () { return handleAddSource(body); });
+  }
+  var sheet = getTargetSheet(body.sheetName);
+
+  switch (body.action) {
+    case 'read':
+      return handleRead(sheet);
+    case 'append':
+      return withLock(function () { return handleAppend(sheet, body.values); });
+    case 'update':
+      return withLock(function () { return handleUpdate(sheet, body.rowNumber, body.values); });
+    case 'header':
+      return withLock(function () { return handleHeader(sheet, body.values); });
+    default:
+      return { ok: false, error: 'Unknown action: ' + body.action };
+  }
+}
+
+/** Finds the sheet tab to operate on: the named tab, or the first tab if none was given. */
+function getTargetSheet(sheetName) {
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  if (sheetName) {
+    var named = spreadsheet.getSheetByName(sheetName);
+    if (!named) throw new Error('No sheet tab named "' + sheetName + '".');
+    return named;
+  }
+  return spreadsheet.getSheets()[0];
+}
+
+/**
+ * Runs fn() while holding the script lock, so two requests can't write at
+ * the same time. Returns a clear error instead of throwing if the lock
+ * can't be acquired within LOCK_TIMEOUT_MS.
+ */
+function withLock(fn) {
+  var lock = LockService.getScriptLock();
+  var acquired = lock.tryLock(LOCK_TIMEOUT_MS);
+  if (!acquired) {
+    return { ok: false, error: "Couldn't get a lock on the sheet — another request was in progress. Try again." };
+  }
+  try {
+    return fn();
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Reads every data row (everything below row 1, the header) and returns it
+ * along with each row's real sheet row number, so the caller can write back
+ * to the right place later.
+ */
+function handleRead(sheet) {
+  var lastRow = sheet.getLastRow();
+  var lastColumn = sheet.getLastColumn();
+  if (lastRow < 2 || lastColumn < 1) {
+    return { ok: true, rows: [] };
+  }
+
+  var numDataRows = lastRow - 1;
+  // getDisplayValues, not getValues: getValues returns Google's typed values,
+  // so a date cell comes back as a Date object and would stringify to
+  // "Mon Jul 28 2026 00:00:00 GMT-0500 (...)" instead of "2026-07-28",
+  // corrupting the date column and the public hub CSV built from it.
+  // Display values give us exactly what the sheet shows, as text — which is
+  // also what the app writes back, so a round trip changes nothing.
+  var values = sheet.getRange(2, 1, numDataRows, lastColumn).getDisplayValues();
+  var rows = values.map(function (rowValues, i) {
+    return { rowNumber: i + 2, values: rowValues };
+  });
+  return { ok: true, rows: rows };
+}
+
+/** Appends one new row after the last row with content. */
+function handleAppend(sheet, values) {
+  if (!Array.isArray(values)) {
+    return { ok: false, error: 'append needs a "values" array.' };
+  }
+  sheet.appendRow(values);
+  return { ok: true };
+}
+
+/** Overwrites an existing row (by its 1-based sheet row number) with new values. */
+function handleUpdate(sheet, rowNumber, values) {
+  if (!Array.isArray(values)) {
+    return { ok: false, error: 'update needs a "values" array.' };
+  }
+  if (!rowNumber || rowNumber < 2) {
+    return { ok: false, error: 'update needs a valid "rowNumber" (2 or greater — row 1 is the header).' };
+  }
+  sheet.getRange(rowNumber, 1, 1, values.length).setValues([values]);
+  return { ok: true };
+}
+
+/** Writes the header row (row 1). */
+function handleHeader(sheet, values) {
+  if (!Array.isArray(values)) {
+    return { ok: false, error: 'header needs a "values" array.' };
+  }
+  sheet.getRange(1, 1, 1, values.length).setValues([values]);
+  return { ok: true };
+}
+
+/**
+ * Files one of the scraper's spreadsheets, or its run log, into the shared
+ * drive: Newsletter Scrape/scrapes/<folder>/<name>, where <folder> is the
+ * run's date. The desk sends the file as base64 (Kate, Oct 19, 2026: the
+ * haul in Drive "so it's available to everyone"). A delivery of the same
+ * file on the same day replaces the earlier copy, which goes to the trash
+ * for 30 days.
+ */
+function handleSaveFile(body) {
+  var folderId = PropertiesService.getScriptProperties().getProperty(SCRAPE_FOLDER_PROPERTY_NAME);
+  if (!folderId && !body.folderId) {
+    return { ok: false, error: 'Server is not configured: the ' + SCRAPE_FOLDER_PROPERTY_NAME + ' script property is not set.' };
+  }
+  if (!body.name || !FILE_NAME_RULE.test(body.name)) {
+    return { ok: false, error: 'saveFile needs a plain file "name" ending in .xlsx, .txt, .pdf, .md, .docx, .png, .jpg or .csv.' };
+  }
+  if (!body.b64) {
+    return { ok: false, error: 'saveFile needs the file as "b64".' };
+  }
+  var folder;
+  if (body.folderId) {
+    // A brief's own folder (briefFolder gave its id), or a folder inside it by name (its figures).
+    folder = DriveApp.getFolderById(String(body.folderId));
+    if (body.sub) {
+      if (!SUB_RULE.test(body.sub)) return { ok: false, error: 'saveFile needs a plain "sub": lowercase letters only.' };
+      var inside = folder.getFoldersByName(body.sub);
+      folder = inside.hasNext() ? inside.next() : folder.createFolder(body.sub);
+    }
+  } else {
+    if (!body.folder || !/^\d{4}-\d{2}-\d{2}$/.test(body.folder)) {
+      return { ok: false, error: 'saveFile needs a "folder" named by date, YYYY-MM-DD, or a "folderId".' };
+    }
+    var root = DriveApp.getFolderById(folderId);
+    var subs = root.getFoldersByName(body.folder);
+    folder = subs.hasNext() ? subs.next() : root.createFolder(body.folder);
+  }
+  var bytes = Utilities.base64Decode(body.b64);
+  var blob = Utilities.newBlob(bytes, body.contentType || 'application/octet-stream', body.name);
+  var older = folder.getFilesByName(body.name);
+  while (older.hasNext()) older.next().setTrashed(true);
+  var file = folder.createFile(blob);
+  return { ok: true, url: file.getUrl(), folderUrl: folder.getUrl() };
+}
+
+/** The spreadsheet the scrape by issue is kept in, inside the scrapes folder. */
+var SCRAPES_SHEET_NAME = 'Newsletter scrapes';
+var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** "2026-10-27" as a tab name, "Oct 27, 2026"; a run with no issue is "Run 2026-10-19". */
+function scrapeTabName(issue, run) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(issue || '');
+  if (!m) return 'Run ' + run;
+  return MONTHS[Number(m[2]) - 1] + ' ' + Number(m[3]) + ', ' + m[1];
+}
+
+/** Finds the Newsletter scrapes Sheet in the scrapes folder, or makes it there. */
+function scrapesSpreadsheet(folder) {
+  var files = folder.getFilesByType(MimeType.GOOGLE_SHEETS);
+  while (files.hasNext()) {
+    var file = files.next();
+    if (file.getName() === SCRAPES_SHEET_NAME) return SpreadsheetApp.openById(file.getId());
+  }
+  var made = SpreadsheetApp.create(SCRAPES_SHEET_NAME);
+  DriveApp.getFileById(made.getId()).moveTo(folder);
+  return made;
+}
+
+/**
+ * Puts a run's rows on the tab of the issue they feed (Kate, Oct 19, 2026:
+ * "a new sheet based on the scrape, by the newsletter send out dates"; her
+ * pick: one Sheet, a tab per issue). The tab is made on first use with the
+ * header frozen; the newest issue's tab sits first. A link already on the
+ * tab is never written twice, and the script never removes a row, so what
+ * the team deletes by hand stays deleted and a second run the same day
+ * only adds what is new (Kate, Oct 20). Links are clickable.
+ */
+function handleAppendScrape(body) {
+  var folderId = PropertiesService.getScriptProperties().getProperty(SCRAPE_FOLDER_PROPERTY_NAME);
+  if (!folderId) {
+    return { ok: false, error: 'Server is not configured: the ' + SCRAPE_FOLDER_PROPERTY_NAME + ' script property is not set.' };
+  }
+  if (!body.run || !/^\d{4}-\d{2}-\d{2}$/.test(body.run)) {
+    return { ok: false, error: 'appendScrape needs the "run" date, YYYY-MM-DD.' };
+  }
+  if (!Array.isArray(body.header) || !Array.isArray(body.rows)) {
+    return { ok: false, error: 'appendScrape needs a "header" array and a "rows" array.' };
+  }
+  var ss = scrapesSpreadsheet(DriveApp.getFolderById(folderId));
+  var name = scrapeTabName(body.issue, body.run);
+  var sheet = ss.getSheetByName(name);
+  var width = body.header.length;
+  if (!sheet) {
+    sheet = ss.insertSheet(name, 0);
+    var leftover = ss.getSheetByName('Sheet1');
+    if (leftover && ss.getSheets().length > 1 && leftover.getLastRow() === 0) ss.deleteSheet(leftover);
+  }
+  if (sheet.getLastRow() === 0) {
+    sheet.getRange(1, 1, 1, width).setValues([body.header]).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+  // Only links not already on the tab are written; nothing on the tab is ever removed here.
+  var linkCol = body.header.indexOf('Link') + 1;
+  var onTab = {};
+  var last = sheet.getLastRow();
+  if (linkCol > 0 && last > 1) {
+    sheet.getRange(2, linkCol, last - 1, 1).getValues().forEach(function (cell) {
+      if (cell[0]) onTab[String(cell[0]).trim()] = true;
+    });
+  }
+  var fresh = body.rows.filter(function (row) {
+    var link = linkCol > 0 ? String(row[linkCol - 1] || '').trim() : '';
+    return !link || !onTab[link];
+  });
+  if (fresh.length) {
+    var start = sheet.getLastRow() + 1;
+    var values = fresh.map(function (row) {
+      var out = [];
+      for (var i = 0; i < width; i++) out.push(row[i] == null ? '' : row[i]);
+      return out;
+    });
+    sheet.getRange(start, 1, values.length, width).setValues(values);
+    if (linkCol > 0) {
+      var formulas = values.map(function (row) {
+        var url = String(row[linkCol - 1] || '');
+        return [url ? '=HYPERLINK("' + url.replace(/"/g, '""') + '","' + url.replace(/"/g, '""') + '")' : ''];
+      });
+      sheet.getRange(start, linkCol, values.length, 1).setFormulas(formulas);
+    }
+  }
+  ss.setActiveSheet(sheet);
+  ss.moveActiveSheet(1);
+  return { ok: true, sheetUrl: ss.getUrl() + '#gid=' + sheet.getSheetId(), tab: name, added: fresh.length, skipped: body.rows.length - fresh.length };
+}
+
+/**
+ * A brief's own folder under ERC Content Desk/ERC Research Briefs on the team
+ * drive (Kate, Oct 20 and 21, 2026): lastname-year-topic, made on first use, found after. The desk files
+ * the paper, her notes, the drafts and the Word doc into it by its id.
+ */
+function handleBriefFolder(body) {
+  var rootId = PropertiesService.getScriptProperties().getProperty(BRIEFS_FOLDER_PROPERTY_NAME);
+  if (!rootId) {
+    return { ok: false, error: 'Server is not configured: the ' + BRIEFS_FOLDER_PROPERTY_NAME + ' script property is not set.' };
+  }
+  if (!body.name || !/^[a-z0-9][a-z0-9-]{0,80}$/.test(body.name)) {
+    return { ok: false, error: 'briefFolder needs a plain "name": letters, digits and dashes.' };
+  }
+  var root = DriveApp.getFolderById(rootId);
+  var subs = root.getFoldersByName(body.name);
+  var folder = subs.hasNext() ? subs.next() : root.createFolder(body.name);
+  return { ok: true, id: folder.getId(), url: folder.getUrl() };
+}
+
+/** What a folder holds, newest first: name, the day it last changed, its address, its size. */
+function handleListFiles(body) {
+  if (!body.folderId) return { ok: false, error: 'listFiles needs a "folderId".' };
+  var root = DriveApp.getFolderById(String(body.folderId));
+  var out = [];
+  var add = function (files, prefix) {
+    while (files.hasNext()) {
+      var f = files.next();
+      out.push({ name: prefix + f.getName(), updated: f.getLastUpdated().toISOString().slice(0, 10), url: f.getUrl(), size: f.getSize() });
+    }
+  };
+  add(root.getFiles(), '');
+  // The folders inside (a brief's figures), one level down, named before each file.
+  var subs = root.getFolders();
+  while (subs.hasNext()) {
+    var sub = subs.next();
+    add(sub.getFiles(), sub.getName() + '/');
+  }
+  out.sort(function (a, b) { return a.updated < b.updated ? 1 : a.updated > b.updated ? -1 : a.name.localeCompare(b.name); });
+  return { ok: true, files: out };
+}
+
+/** One file's bytes, base64, by name within a folder (the paper, for drafting). */
+function handleGetFile(body) {
+  if (!body.folderId || !body.name) return { ok: false, error: 'getFile needs a "folderId" and a "name".' };
+  var folder = DriveApp.getFolderById(String(body.folderId));
+  var files = null;
+  if (body.sub && SUB_RULE.test(body.sub)) {
+    // A brief's figures: the folder inside first, then the brief's folder, where a cut filed before the figures folder sits.
+    var inside = folder.getFoldersByName(body.sub);
+    if (inside.hasNext()) files = inside.next().getFilesByName(String(body.name));
+  }
+  if (!files || !files.hasNext()) files = folder.getFilesByName(String(body.name));
+  if (!files.hasNext()) return { ok: false, error: 'No file named ' + body.name + ' in that folder.' };
+  var blob = files.next().getBlob();
+  return { ok: true, name: blob.getName(), contentType: blob.getContentType(), b64: Utilities.base64Encode(blob.getBytes()) };
+}
+
+/** The Scraper sources Sheet's columns (Oct 22, 2026), for a Sheet with no header yet. */
+var SOURCES_HEADER = ['Source', 'Type', 'Subtype', 'Address', 'How it is read', 'Switched on', 'Why off'];
+var MAX_SOURCE_ROWS = 500;
+var MAX_SOURCE_CELL = 500;
+var SOURCES_NOT_SET = 'Server is not configured: the ' + SOURCES_SHEET_PROPERTY_NAME + ' script property is not set.';
+
+/** The Scraper sources Sheet's first tab, or null while its id is not set. */
+function sourcesSheet() {
+  var id = PropertiesService.getScriptProperties().getProperty(SOURCES_SHEET_PROPERTY_NAME);
+  return id ? SpreadsheetApp.openById(id).getSheets()[0] : null;
+}
+
+/** Row 1 as the Sheet shows it. */
+function sourcesHeaderOf(sheet) {
+  if (sheet.getLastRow() < 1 || sheet.getLastColumn() < 1) return [];
+  return sheet.getRange(1, 1, 1, sheet.getLastColumn()).getDisplayValues()[0].map(function (h) { return String(h).trim(); });
+}
+
+/** One address however it was typed (the desk's addressKey): scheme, www, a fragment and trailing slashes aside. */
+function sourceKey(address) {
+  return String(address || '').trim().toLowerCase().replace(/#.*$/, '').replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/+$/, '');
+}
+
+/** A cell written as plain text: a value that would start a formula keeps a leading apostrophe. */
+function plainCell(value) {
+  var text = String(value == null ? '' : value).slice(0, MAX_SOURCE_CELL);
+  return /^[=+\-@]/.test(text) ? "'" + text : text;
+}
+
+/** The Scraper sources Sheet: its header and every row, as shown (Oct 24, 2026). */
+function handleListSources() {
+  var sheet = sourcesSheet();
+  if (!sheet) return { ok: false, error: SOURCES_NOT_SET };
+  var header = sourcesHeaderOf(sheet);
+  var last = sheet.getLastRow();
+  if (last < 2 || !header.length) return { ok: true, header: header, rows: [] };
+  return { ok: true, header: header, rows: sheet.getRange(2, 1, last - 1, header.length).getDisplayValues() };
+}
+
+/**
+ * Adds one source from the desk's Add a source form (Oct 24, 2026), by column
+ * name under the Sheet's own header, every cell as plain text. An address
+ * already on the Sheet is not written twice: the answer names that row's
+ * source. Nothing on the Sheet is ever changed or removed here; switching a
+ * source off is done by hand, in its Switched on cell.
+ */
+function handleAddSource(body) {
+  var sheet = sourcesSheet();
+  if (!sheet) return { ok: false, error: SOURCES_NOT_SET };
+  var source = body.source;
+  if (!source || typeof source !== 'object') return { ok: false, error: 'addSource needs a "source".' };
+  if (!String(source.Source || '').trim() || !/^https?:\/\/\S+$/i.test(String(source.Address || ''))) {
+    return { ok: false, error: 'addSource needs a "Source" name and an http(s) "Address".' };
+  }
+  var header = sourcesHeaderOf(sheet);
+  if (!header.some(function (h) { return h; })) {
+    sheet.getRange(1, 1, 1, SOURCES_HEADER.length).setValues([SOURCES_HEADER]).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+    header = SOURCES_HEADER.slice();
+  }
+  var lower = header.map(function (h) { return h.toLowerCase(); });
+  var addressCol = lower.indexOf('address');
+  var nameCol = lower.indexOf('source');
+  if (addressCol < 0) return { ok: false, error: 'The sources sheet has no Address column.' };
+  var last = sheet.getLastRow();
+  if (last - 1 >= MAX_SOURCE_ROWS) return { ok: false, error: 'The sources sheet is full.' };
+  if (last > 1) {
+    var want = sourceKey(source.Address);
+    var rows = sheet.getRange(2, 1, last - 1, header.length).getDisplayValues();
+    for (var i = 0; i < rows.length; i++) {
+      if (sourceKey(rows[i][addressCol]) === want) return { ok: true, added: false, duplicate: nameCol >= 0 ? rows[i][nameCol] : '' };
+    }
+  }
+  var row = lower.map(function (h) {
+    for (var j = 0; j < SOURCES_HEADER.length; j++) {
+      if (SOURCES_HEADER[j].toLowerCase() === h) return plainCell(source[SOURCES_HEADER[j]]);
+    }
+    return '';
+  });
+  sheet.appendRow(row);
+  return { ok: true, added: true };
+}
+
+/** Wraps a JS object as the JSON response Apps Script sends back. */
+function jsonOutput(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/** Best-effort human-readable message from a thrown error of unknown shape. */
+function describeError(err) {
+  return (err && err.message) ? err.message : String(err);
+}
+```
+
+## Appendix B: the sign-up script (apps-script/listserv-count.gs, copy of Oct 25, 2026, commit 767b0af)
+
+Paste the whole box over the code in script 2's Code.gs. It starts with `/**` and ends with `}`.
+
+```
+/**
+ * The sign-up sheet's Apps Script, whole (Oct 8, 2026): Kate's doPost as it
+ * was, which appends each sign-up to the first tab (Sheet 1), plus doGet,
+ * which answers ?action=count with Sheet 1's rows for the desk's Listserv
+ * hub: { ok: true, waiting: N }, N being the rows below the header with
+ * something in column A. Never a name or an address.
+ *
+ * This is the SIGN-UP sheet's script, the one LISTSERV_URL posts to, not the
+ * desk's own Code.gs. To change it: open the script, select all, paste this
+ * file, save, then Deploy, Manage deployments, the pencil, Version: New
+ * version, Deploy. Saving alone changes nothing live. The URL stays the same.
+ */
+var SHEET_ID = '1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E';
+
+function doPost(e) {
+  var data = JSON.parse(e.postData.contents);
+
+  if (data.action === 'listserv_signup') {
+    var sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
+    sheet.appendRow([data.name, data.email, data.date_subscribed, data.time]);
+  }
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ status: 'ok' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet(e) {
+  if (e && e.parameter && e.parameter.action === 'count') {
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: true, waiting: waitingCount() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  return ContentService
+    .createTextOutput('The sign-up script is running.')
+    .setMimeType(ContentService.MimeType.TEXT);
+}
+
+/** Rows on the first tab (Sheet 1) with something in column A, the header left out. */
+function waitingCount() {
+  var sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
+  var last = sheet.getLastRow();
+  if (last < 2) return 0;
+  var values = sheet.getRange(2, 1, last - 1, 1).getValues();
+  var n = 0;
+  for (var i = 0; i < values.length; i++) {
+    if (String(values[i][0]).trim()) n++;
+  }
+  return n;
+}
+```
