@@ -277,6 +277,132 @@
       .pin .tip { transition: opacity var(--duration-fast-02) var(--ease-productive), visibility var(--duration-fast-02) var(--ease-productive); }
     }
   </style>
+  <style data-kinds>
+    /* Slides of a kind (Oct 25, the owner's picks of round two for Sort the
+       queue): flashcards for Keep or delete (B), three bands for Sources (D).
+       The slide's words span both columns under the part's title, and the
+       controls keep the left column's foot, so Back and Next stay put. */
+    /* The body fills what a slide's words would, less the controls' 40px and the gap over them, so nothing is left to stretch the foot. */
+    .js .slide.kind > .side { grid-area: 2 / 1 / 3 / 3; display: grid; grid-template-columns: subgrid; grid-template-rows: minmax(calc(var(--fh) + 2 * var(--pad) - var(--title-h) - 40px - var(--spacing-05)), auto) auto; row-gap: var(--spacing-05); }
+    .js .slide.kind > .side > .kind-body { grid-area: 1 / 1 / 2 / 3; }
+    .js .slide.kind > .side > .foot { grid-area: 2 / 1; align-self: end; margin: 0; padding: 0; }
+    .js .slide.kind > .side > .kind-aside { grid-area: 2 / 2; align-self: center; }
+    .js .slide.kind > .kind-head { grid-area: 1 / 2; align-self: start; }
+    html:not(.js) .slide.kind > .side { grid-column: 1 / -1; }
+    .kind-body { container: kind / inline-size; display: grid; min-width: 0; }
+    .kind-head { margin: 0; font: 400 15px/26px var(--font-sans); color: var(--muted); }
+    .kind-aside { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-03) var(--spacing-06); min-width: 0; margin: 0; font: var(--meta-type); color: var(--muted); }
+
+    /* Flashcards: the card at the left as Content Sort draws it, the ask and
+       the six groups in its decision column. */
+    .fc { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--spacing-05); align-items: stretch; min-width: 0; }
+    html:not(.js) .fc { grid-template-columns: minmax(0, 1fr); }
+    html:not(.js) .fc-card, html:not(.js) .fc-ask { display: none; }
+    .fc-card { container-type: inline-size; display: flex; flex-direction: column; min-width: 0; background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius-card); box-shadow: var(--shadow-card); overflow: hidden; }
+    .fc-card.is-delete { border-color: var(--notification-error-border); }
+    .fc-card.is-keep { border-color: var(--accent-20); }
+    .fc-face { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; padding: var(--spacing-06) var(--spacing-06) var(--spacing-05); }
+    .fc-kick { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-04); margin: 0; font: 600 14px/20px var(--font-sans); color: var(--muted); }
+    .fc-pos { flex: none; font-weight: 400; color: var(--text-helper); font-variant-numeric: tabular-nums; }
+    .fc-mid { display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-03); margin: auto 0; padding: var(--spacing-05) 0; }
+    .fc-title { margin: 0; font: 700 30px/36px var(--font-sans); letter-spacing: -.5px; color: var(--ink); overflow-wrap: break-word; }
+    .fc-where { margin: 0; font: 400 15px/22px var(--font-sans); color: var(--muted); }
+    .fc-host { display: inline-flex; align-items: center; height: 28px; margin: var(--spacing-02) 0 0; padding: 0 var(--spacing-03); border-radius: var(--radius-input); background: var(--layer-accent-01); color: var(--ink); font: 500 14px/20px var(--font-sans); }   /* the link's domain; not a link here, so not blue */
+    .fc-stamp { flex: none; display: flex; align-items: center; gap: var(--spacing-03); min-height: 64px; margin: 0; padding: 0 var(--spacing-06); font: 700 20px/24px var(--font-sans); }
+    .fc-stamp .fa-solid { flex: none; font-size: 19px; }
+    .fc-stamp.is-delete { background: var(--notification-error-background); color: var(--err); border-top: 1px solid var(--notification-error-border); }
+    .fc-stamp.is-keep { background: var(--accent-10); color: var(--accent-deep); border-top: 1px solid var(--accent-20); }
+    .fc-stamp.is-keep .fa-solid { color: var(--accent); }
+    .fc-dot { margin: 0 var(--spacing-01); font-weight: 400; color: var(--muted); }
+    .fc-why { font: 500 16px/22px var(--font-sans); color: var(--ink); }
+    @container (width < 480px) {
+      .fc-title { font-size: 24px; line-height: 30px; letter-spacing: -.3px; }
+      .fc-face { padding: var(--spacing-05); }
+      .fc-stamp { min-height: 56px; padding: 0 var(--spacing-05); font-size: 18px; }
+    }
+
+    .fc-dec { display: flex; flex-direction: column; gap: var(--spacing-03); min-width: 0; }
+    .fc-box { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius-card); box-shadow: var(--shadow-card); }
+    .fc-ask { padding: var(--spacing-04); }
+    .fc-asking, .fc-done { display: flex; flex-direction: column; gap: var(--spacing-03); }
+    .fc-asking[hidden], .fc-done[hidden] { display: none; }
+    .fc-done { min-height: calc(20px + 44px + 36px + 2 * var(--spacing-03)); justify-content: space-between; }   /* as tall as the ask, so the groups under it hold still */
+    .fc-q { margin: 0; font: 600 14px/20px var(--font-sans); color: var(--muted); }
+    /* Keep and Delete as Content Sort draws them (its .sort-card rules): the
+       fill full width, the red word, each with its key at its right. */
+    .fc-ask button.sc-keep { width: 100%; height: 44px; justify-content: flex-start; gap: var(--spacing-03); padding: 0 var(--spacing-04) 0 var(--spacing-05); font: 600 15px/20px var(--font-sans); }
+    .fc-ask button.sc-delete { width: 100%; height: 36px; justify-content: flex-start; gap: var(--spacing-03); margin: 0; padding: 0 var(--spacing-04) 0 var(--spacing-05); border: 0; border-radius: var(--radius); font: 600 14px/18px var(--font-sans); }
+    .fc-ask button.sc-delete:hover:not(:disabled) { background: var(--sidebar-hover); }
+    .fc-ask button.sc-delete .fa-solid { margin: 0; font-size: 14px; }
+    .fc-res { display: flex; align-items: center; gap: var(--spacing-03); min-height: 44px; margin: 0; padding: 0 var(--spacing-04); border-radius: var(--radius); font: 700 16px/20px var(--font-sans); }
+    .fc-res.is-right { background: var(--notification-success-background); color: var(--text-success-on-tint); }
+    .fc-res.is-wrong { background: var(--notification-warning-background); color: var(--text-warning-on-tint); }
+    .fc-ask button.fc-next { width: 100%; height: 40px; justify-content: flex-start; gap: var(--spacing-03); padding: 0 var(--spacing-04) 0 var(--spacing-05); font: 600 14px/18px var(--font-sans); }
+    .fc-next .fa-solid { margin-left: auto; font-size: 13px; }
+
+    .fc-legend { margin: 0; padding: var(--spacing-03) 0; }
+    .fc-lh { display: flex; align-items: center; gap: var(--spacing-03); margin: 0; padding: var(--spacing-01) var(--spacing-04); font: 600 14px/20px var(--font-sans); color: var(--muted); }
+    .fc-lh .fa-solid { font-size: 13px; }
+    .fc-lh.is-keep .fa-solid { color: var(--accent); }
+    .fc-lh.is-delete .fa-solid { color: var(--err); }
+    .fc-gs { list-style: none; margin: 0; padding: 0; }
+    .fc-gs + .fc-lh { margin-top: var(--spacing-03); }
+    .fc-g { display: flex; align-items: center; min-height: 26px; margin: 0 var(--spacing-03); padding: 0 var(--spacing-03); border-radius: var(--radius-input); font: 400 14px/18px var(--font-sans); color: var(--ink); }
+    .fc-g.is-lit.is-keep { background: var(--accent-10); color: var(--accent-deep); font-weight: 700; box-shadow: inset 3px 0 0 var(--accent); }
+    .fc-g.is-lit.is-delete { background: var(--notification-error-background); color: var(--err); font-weight: 700; box-shadow: inset 3px 0 0 var(--err); }
+    .js .fc-more { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }   /* the line and the rules: read aloud and in the desk guide */
+    html:not(.js) .fc-g { display: block; padding: var(--spacing-02) var(--spacing-03); }
+    html:not(.js) .fc-gname { font-weight: 700; }
+
+    /* Sources: three bands in the desk's note look, the sources as chips. */
+    .sb-bands { display: flex; flex-direction: column; gap: var(--spacing-04); min-width: 0; }
+    .sb-band { flex: 1 1 auto; display: grid; grid-template-columns: 196px minmax(0, 1fr); align-items: center; gap: var(--spacing-05); padding: var(--spacing-04) var(--spacing-05); border: 1px solid var(--layer-line); border-radius: var(--radius); background: var(--layer); box-shadow: inset 4px 0 0 var(--border-strong-01); }
+    .sb-band.is-keep { background: var(--notification-info-background); border-color: var(--notification-info-border); box-shadow: inset 4px 0 0 var(--accent); }
+    .sb-band.is-delete { background: var(--notification-error-background); border-color: var(--notification-error-border); box-shadow: inset 4px 0 0 var(--err); }
+    .sb-name { display: flex; align-items: center; gap: var(--spacing-03); margin: 0; font: 700 17px/22px var(--font-sans); color: var(--ink); }
+    .sb-icon { display: inline-grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: var(--radius-round); background: var(--layer); font-size: 13px; }
+    .sb-band.is-keep .sb-icon { color: var(--accent); }
+    .sb-band.is-read .sb-icon { background: var(--layer-accent-01); color: var(--gray-700); }
+    .sb-band.is-delete .sb-icon { color: var(--err); }
+    .sb-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--spacing-03); }
+    .sb-chip { display: flex; align-items: center; column-gap: var(--spacing-03); min-height: 32px; padding: var(--spacing-02) var(--spacing-04); background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius-pill); box-shadow: var(--shadow-card); font: 400 14px/20px var(--font-sans); color: var(--ink); }
+    .sb-chip b { font-weight: 600; }
+    .sb-chip abbr { text-decoration: none; }
+    .sb-n { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .sb-rule { display: inline-flex; align-items: baseline; gap: var(--spacing-03); font-weight: 500; }   /* the dot as far from the rule as from the count */
+    .sb-dot { color: var(--muted); }
+    /* The two doors under the bands: Add a source as an outline button, the sheet a link. */
+    .sb-add { display: inline-flex; align-items: center; gap: var(--spacing-03); height: 32px; padding: 0 var(--spacing-04); border: 1px solid var(--button-tertiary); border-radius: var(--radius); background: var(--layer-02); color: var(--text-in-outline); font: 600 14px/20px var(--font-sans); text-decoration: none; white-space: nowrap; }
+    .sb-add:hover { background: var(--hover); border-color: var(--text-secondary); color: var(--text-in-outline); }
+    .sb-add .fa-solid { font-size: 12px; }
+    .sb-sheet { font: 500 14px/20px var(--font-sans); white-space: nowrap; }
+    .sb-sheet .fa-solid { margin-left: 6px; font-size: 11px; }
+    /* A narrow deck (a 1024 window): the bands stand side by side, each source a row. */
+    @container kind (width < 760px) {
+      .fc { grid-template-columns: minmax(0, 1fr) 248px; gap: var(--spacing-04); }
+      .sb-bands { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--spacing-03); }
+      .sb-band { grid-template-columns: minmax(0, 1fr); align-content: start; align-items: start; gap: var(--spacing-03); padding: var(--spacing-04); }
+      .sb-name { font-size: 15px; line-height: 20px; }
+      .sb-icon { width: 24px; height: 24px; font-size: 12px; }
+      .sb-chips { flex-direction: column; flex-wrap: nowrap; gap: var(--spacing-02); }
+      .sb-chip { flex-wrap: wrap; min-height: 28px; padding: var(--spacing-01) var(--spacing-03); border-radius: var(--radius); font-size: 13px; line-height: 18px; }
+      .sb-rule { flex-basis: 100%; }   /* the rule on a line of its own, so no dot is needed before it */
+      .sb-dot { display: none; }
+    }
+    /* A short window: the decision column tighter, so it ends where the deck's frame does. */
+    @media (height < 800px) {
+      .fc-ask { padding: var(--spacing-03); }
+      .fc-asking, .fc-done { gap: var(--spacing-02); }
+      .fc-done { min-height: calc(20px + 44px + 36px + 2 * var(--spacing-02)); }
+      .fc-legend { padding: var(--spacing-02) 0; }
+      .fc-g { min-height: 24px; }
+      .fc-gs + .fc-lh { margin-top: var(--spacing-02); }
+      .fc-mid { padding: var(--spacing-03) 0; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .fc-g, .sb-add { transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive); }
+    }
+  </style>
 </head>
 <body>
   <a class="skip-to-main" href="#main">Skip to content</a>
@@ -355,51 +481,35 @@
           </div>
         </div>
 
-        <div class="slide words" role="group" aria-roledescription="slide">
+        <div class="slide kind kind-flashcards" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">About two in five papers, events and opportunities are kept, and one headline in five.</p>
-            
+            <p class="cap sr-only">Guess on each real card from the queue, then see its group. About two in five papers, events and opportunities are kept, and one headline in five.</p>
+            <div class="kind-body">
+              <div class="fc" data-flashcards>
+                <div class="fc-card"></div>
+                <div class="fc-dec">
+                  <div class="fc-box fc-ask"></div>
+                  <section class="fc-box fc-legend" aria-label="The groups">
+                    <h3 class="fc-lh is-keep"><i class="fa-solid fa-check" aria-hidden="true"></i>Keep<span class="sr-only"> when</span></h3>
+                    <ul class="fc-gs">
+                      <li class="fc-g is-keep" data-group="policy"><span class="fc-gname">Tests or changes a policy</span><span class="fc-more">: research, decisions, wider trends. The research tests a policy, such as teacher pay, attendance or pre-K. A headline reports a decision, a number or a finding, usually from a state or the federal government. A local story shows a wider trend: “Oklahoma School Closures Part of Statewide Picture of Enrollment Decline”.</span></li>
+                      <li class="fc-g is-keep" data-group="events"><span class="fc-gname">Policy events and money</span><span class="fc-more">: policy and research conferences, webinars, calls and grants. It is a conference on education policy or research, or its call for proposals. A policy webinar comes from a think tank or research group. It offers education researchers money, a fellowship or a call for proposals, with the deadline ahead.</span></li>
+                      <li class="fc-g is-keep" data-group="ours"><span class="fc-gname">Ours or added by hand</span><span class="fc-more">: ERC and A&amp;M events, a person's pick. It is an ERC event or an A&amp;M research talk. A person added it: their initials or name follow <b>added by</b> (<b>bulk upload</b> means none were given). Keep it unless it repeats.</span></li>
+                    </ul>
+                    <h3 class="fc-lh is-delete"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Delete<span class="sr-only"> when any of these is true</span></h3>
+                    <ul class="fc-gs">
+                      <li class="fc-g is-delete" data-group="off-topic"><span class="fc-gname">Not education policy</span><span class="fc-more">: off topic, or one campus, district or bill. It is not about education. It is one bill or one rule notice. It is campus news, a scandal or a celebrity. College news that is state policy stays. It is one district's news with no wider point: “Austin ISD faces deeper budget cuts as enrollment declines”. The research has no policy in it: a method, a theory or a program description.</span></li>
+                      <li class="fc-g is-delete" data-group="not-news"><span class="fc-gname">Not news we share</span><span class="fc-more">: opinion, roundups, jobs, awards, teaching or trade conferences. It is opinion, an interview, a podcast, a guide or a roundup. A webinar teaches classroom practice or sells something. It is a job, an award, or a teaching or trade conference. Grants with no deadline or for another field go too.</span></li>
+                      <li class="fc-g is-delete" data-group="repeat"><span class="fc-gname">Already in the queue</span><span class="fc-more">: a second copy of an item. It is a repeat. Keep the best copy.</span></li>
+                    </ul>
+                  </section>
+                </div>
+                <p class="sr-only" aria-live="polite" data-fc-said></p>
+                <script type="application/json" class="fc-data">[{"kicker":"New research · Working Paper","title":"Financing the AI Buildout","source":"NBER working papers","host":"nber.org","verdict":"delete","group":"off-topic","why":"Not about schools"},{"kicker":"New research · Working Paper","title":"The Effects of State-Level Loan Forgiveness Policies on Teacher Supply","source":"EdWorkingPapers","host":"edworkingpapers.com","verdict":"keep","group":"policy","why":"Tests a policy"},{"kicker":"Headline · National","title":"Week In Review: A slew of new K-12 policies and guidance","source":"K-12 Dive","host":"k12dive.com","verdict":"delete","group":"not-news","why":"A weekly roundup"},{"kicker":"Event · Off-Campus","title":"2026 OEP Conference: Arkansas Education, What We Know, What We're Learning, What's Next","source":"Office for Education Policy","host":"forms.gle","verdict":"keep","group":"events","why":"A state policy conference"},{"kicker":"Event · Off-Campus","title":"CONFERENCE: National Council of Teachers of Mathematics Annual Meeting","source":"FutureEd events","host":"future-ed.org","verdict":"delete","group":"not-news","why":"A teaching conference"},{"kicker":"Headline · National","title":"Oklahoma School Closures Part of Statewide Picture of Enrollment Decline","source":"The 74","host":"the74million.org","verdict":"keep","group":"policy","why":"A statewide trend"},{"kicker":"Headline · National","title":"Here’s What it Takes to Feed LAUSD Students Each Day","source":"The 74","host":"the74million.org","verdict":"delete","group":"off-topic","why":"One district only"},{"kicker":"Opportunity · Funding & Grants","title":"Arnold Ventures RFP: Causal Research on the Impacts of K-12 School Policies","source":"Arnold Ventures","host":"proposals.arnoldventures.org","verdict":"keep","group":"events","why":"Money for policy research"},{"kicker":"Headline · Texas","title":"Schools are experimenting with AI with little evidence or policy to guide them","source":"Texas Public Radio","host":"tpr.org","verdict":"delete","group":"repeat","why":"NPR's copy kept"},{"kicker":"Opportunity · Call for Proposals","title":"AEFP Annual Conference - Call for Proposals","source":"Association for Education Finance & Policy (AEFP)","host":"aefpweb.org","verdict":"keep","group":"events","why":"A policy conference's call"},{"kicker":"ERC event","title":"ERC Colloquium: Controversies in the Classroom","source":"Texas A&M University","host":"calendar.tamu.edu","verdict":"keep","group":"ours","why":"An ERC event"}]</script>
+              </div>
+            </div>
             <div class="foot"></div>
-          </div>
-          <div class="text">
-            <section class="steps" aria-labelledby="h-keep-1-0">
-              <h3 id="h-keep-1-0">Keep when</h3>
-              <ol>
-                <li>The research tests a policy, such as teacher pay, attendance or pre-K.</li>
-                <li>A headline reports a decision, a number or a finding, usually from a state or the federal government.</li>
-                <li>A local story shows a wider trend: “Oklahoma School Closures Part of Statewide Picture of Enrollment Decline”.</li>
-                <li>A policy webinar comes from a think tank or research group.</li>
-                <li>It is an ERC event or an A&amp;M research talk.</li>
-                <li>It offers education researchers money, a fellowship or a call for proposals, with the deadline ahead.</li>
-                <li>It is a conference on education policy or research, or its call for proposals.</li>
-                <li>A person added it: their initials or name follow <b>added by</b> (<b>bulk upload</b> means none were given). Keep it unless it repeats.</li>
-              </ol>
-              <p class="links"><a href="/how-to/submit-content/#types">Which type and subtype to pick</a></p>
-            </section>
-          </div>
-        </div>
-
-        <div class="slide words" role="group" aria-roledescription="slide">
-          <div class="side">
-            <p class="cap">Delete it when any of these is true.</p>
-            
-            <div class="foot"></div>
-          </div>
-          <div class="text">
-            <section class="steps" aria-labelledby="h-keep-2-0">
-              <h3 id="h-keep-2-0">Delete when</h3>
-              <ol>
-                <li>It is not about education.</li>
-                <li>It is one bill or one rule notice.</li>
-                <li>It is campus news, a scandal or a celebrity. College news that is state policy stays.</li>
-                <li>It is one district's news with no wider point: “Austin ISD faces deeper budget cuts as enrollment declines”.</li>
-                <li>It is opinion, an interview, a podcast, a guide or a roundup.</li>
-                <li>A webinar teaches classroom practice or sells something.</li>
-                <li>It is a job, an award, or a teaching or trade conference. Grants with no deadline or for another field go too.</li>
-                <li>The research has no policy in it: a method, a theory or a program description.</li>
-                <li>It is a repeat. Keep the best copy.</li>
-              </ol>
-            </section>
+            <p class="kind-aside"><a href="/how-to/submit-content/#types">Which type and subtype to pick</a></p>
           </div>
         </div>
       </section>
@@ -408,29 +518,46 @@
       <section class="chapter" id="sources" data-name="Sources" aria-labelledby="h-sources">
         <h2 class="pane-title" id="h-sources">Sources</h2>
 
-        <div class="slide words" role="group" aria-roledescription="slide">
+        <div class="slide kind kind-sources" role="group" aria-roledescription="slide">
+          <p class="cap kind-head">How often each was kept, Sep 3 to Oct 20</p>
           <div class="side">
-            <p class="cap">Some sources have a clear rule, from how often they were kept.</p>
-            
+            <div class="kind-body">
+              <div class="sb-bands">
+                <section class="sb-band is-keep" aria-labelledby="h-sources-band-0">
+                  <h3 class="sb-name" id="h-sources-band-0"><span class="sb-icon"><i class="fa-solid fa-check" aria-hidden="true"></i></span>Usually kept</h3>
+                  <ul class="sb-chips">
+                    <li class="sb-chip"><b>CALDER</b> <span class="sb-n">4 of 4</span></li>
+                    <li class="sb-chip"><b><abbr title="Texas Higher Education Coordinating Board">Coordinating Board</abbr></b> <span class="sb-n">3 of 3</span></li>
+                    <li class="sb-chip"><b>Texas Tribune</b> <span class="sb-n">4 of 5</span></li>
+                    <li class="sb-chip"><b>ERC and A&amp;M events</b> <span class="sb-n">20 of 26</span></li>
+                    <li class="sb-chip"><b><abbr title="Tennessee Education Research Alliance">Tennessee Ed Research Alliance</abbr></b> <span class="sb-n">3 of 4</span></li>
+                  </ul>
+                </section>
+                <section class="sb-band is-read" aria-labelledby="h-sources-band-1">
+                  <h3 class="sb-name" id="h-sources-band-1"><span class="sb-icon"><i class="fa-solid fa-eye" aria-hidden="true"></i></span>Read each one</h3>
+                  <ul class="sb-chips">
+                    <li class="sb-chip"><b>EdWorkingPapers</b> <span class="sb-n">32 of 58</span> <span class="sb-rule"><span class="sb-dot" aria-hidden="true">·</span> Most, not methods</span></li>
+                    <li class="sb-chip"><b>K-12 Dive</b> <span class="sb-n">6 of 17</span> <span class="sb-rule"><span class="sb-dot" aria-hidden="true">·</span> Findings and state counts, not roundups</span></li>
+                    <li class="sb-chip"><b>NBER</b> <span class="sb-n">3 of 18</span> <span class="sb-rule"><span class="sb-dot" aria-hidden="true">·</span> Schools only</span></li>
+                    <li class="sb-chip"><b>Urban Institute</b> <span class="sb-n">6 of 41</span> <span class="sb-rule"><span class="sb-dot" aria-hidden="true">·</span> Schools only</span></li>
+                  </ul>
+                </section>
+                <section class="sb-band is-delete" aria-labelledby="h-sources-band-2">
+                  <h3 class="sb-name" id="h-sources-band-2"><span class="sb-icon"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></span>Usually deleted</h3>
+                  <ul class="sb-chips">
+                    <li class="sb-chip"><b>WestEd</b> <span class="sb-n">1 of 8</span></li>
+                    <li class="sb-chip"><b>PBS NewsHour</b> <span class="sb-n">1 of 14</span></li>
+                    <li class="sb-chip"><b>Texas Public Radio</b> <span class="sb-n">0 of 12</span></li>
+                    <li class="sb-chip"><b>Federal Register</b> <span class="sb-n">0 of 8</span></li>
+                    <li class="sb-chip"><b><abbr title="U.S. Department of Education newsroom">Ed Department newsroom</abbr></b> <span class="sb-n">0 of 7</span></li>
+                    <li class="sb-chip"><b>KUT</b> <span class="sb-n">0 of 6</span></li>
+                    <li class="sb-chip"><b><abbr title="American Institutes for Research">AIR</abbr></b> <span class="sb-n">0 of 4</span></li>
+                  </ul>
+                </section>
+              </div>
+            </div>
             <div class="foot"></div>
-          </div>
-          <div class="text">
-            <section class="steps" aria-labelledby="h-sources-0-0">
-              <h3 id="h-sources-0-0">A clear rule</h3>
-              <ol>
-                <li><b>Urban Institute</b>, 6 of 41: delete unless it is about schools.</li>
-                <li><b>NBER</b>, 3 of 18: delete unless it is about schooling.</li>
-                <li><b>K-12 Dive</b>, 6 of 17: keep findings and state counts. Delete Week In Review.</li>
-                <li><b>EdWorkingPapers</b>, 32 of 58: keep most. Delete methods papers.</li>
-              </ol>
-            </section>
-            <section class="steps" aria-labelledby="h-sources-0-1">
-              <h3 id="h-sources-0-1">Nearly every time</h3>
-              <ol>
-                <li><b>Kept:</b> CALDER, Texas Tribune, the Texas Higher Education Coordinating Board, the Tennessee Education Research Alliance, and ERC and A&amp;M events.</li>
-                <li><b>Deleted:</b> Texas Public Radio, KUT, PBS NewsHour, the Department of Education newsroom, the Federal Register, WestEd and AIR.</li>
-              </ol>
-            </section>
+            <p class="kind-aside"><a class="sb-add" href="/#queue/add-source"><i class="fa-solid fa-plus" aria-hidden="true"></i>Add a source</a> <a class="sb-sheet" href="https://docs.google.com/spreadsheets/d/19gAAU4OTxGrfYqitBS3Nx9KjfIbE4qW_7C51Lq_pZhw/edit" target="_blank" rel="noopener">Open the sources sheet<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></p>
           </div>
         </div>
       </section>
@@ -759,6 +886,110 @@
       show(...(target(location.hash) || ['walk', 0]));
       ready = true;
     })();
+  </script>
+  <script>
+    // ---- Keep or delete, as flashcards: a real card asks, Keep or Delete answers, its group lights ----
+    (function flashcards() {
+  const make = (tag, cls, words) => {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (words != null) node.textContent = words;
+    return node;
+  };
+  const icon = (name) => { const i = make('i', `fa-solid fa-${name}`); i.setAttribute('aria-hidden', 'true'); return i; };
+  const keyChip = (k) => { const b = make('kbd', 'sc-key', k); b.setAttribute('aria-hidden', 'true'); return b; };
+  const VERB = { keep: 'Keep', delete: 'Delete' };
+  const MARK = { keep: 'check', delete: 'trash-can' };
+  document.querySelectorAll('[data-flashcards]').forEach((box) => {
+    const slide = box.closest('.slide');
+    const cards = JSON.parse(box.querySelector('.fc-data').textContent);
+    const face = box.querySelector('.fc-card');
+    const said = box.querySelector('[data-fc-said]');
+    const groups = new Map([...box.querySelectorAll('.fc-g')].map((g) => [g.dataset.group, g]));
+    const nameOf = (id) => groups.get(id)?.querySelector('.fc-gname')?.textContent ?? '';
+
+    // The ask, Content Sort's own Keep and Delete; then the answer and Next card.
+    const asking = make('div', 'fc-asking');
+    const keep = make('button', 'primary sc-keep', 'Keep');
+    keep.type = 'button';
+    keep.title = 'Keep (K)';
+    keep.append(keyChip('K'));
+    const del = make('button', 'linkish trash-link sc-delete', ' Delete');
+    del.type = 'button';
+    del.title = 'Delete (D)';
+    del.prepend(icon('trash-can'));
+    del.append(keyChip('D'));
+    asking.append(make('p', 'fc-q', 'Keep or delete?'), keep, del);
+    const done = make('div', 'fc-done');
+    const result = make('p', 'fc-res');
+    const next = make('button', 'fc-next');
+    next.type = 'button';
+    done.append(result, next);
+    box.querySelector('.fc-ask').append(asking, done);
+
+    let at = 0;
+    let answer = '';
+    function draw() {
+      const c = cards[at];
+      face.className = `fc-card${answer ? ` is-${c.verdict}` : ''}`;
+      const top = make('p', 'fc-kick');
+      top.append(make('span', '', c.kicker), make('span', 'fc-pos', `${at + 1} of ${cards.length}`));
+      const mid = make('div', 'fc-mid');
+      mid.append(make('h3', 'fc-title', c.title), make('p', 'fc-where', c.source), make('p', 'fc-host', c.host));
+      const body = make('div', 'fc-face');
+      body.append(top, mid);
+      face.replaceChildren(body);
+      if (answer) {
+        const stamp = make('p', `fc-stamp is-${c.verdict}`);
+        const dot = make('span', 'fc-dot', '·');
+        dot.setAttribute('aria-hidden', 'true');
+        stamp.append(icon(MARK[c.verdict]), make('b', '', VERB[c.verdict]), dot, make('span', 'fc-why', c.why));
+        face.append(stamp);
+        const right = answer === c.verdict;
+        result.className = `fc-res ${right ? 'is-right' : 'is-wrong'}`;
+        result.replaceChildren(icon(right ? 'check' : 'xmark'), right ? 'Right' : 'Not quite');
+        const last = at === cards.length - 1;
+        next.replaceChildren(last ? 'Start over' : 'Next card', icon(last ? 'rotate-left' : 'arrow-right'));
+      }
+      asking.hidden = Boolean(answer);
+      done.hidden = !answer;
+      groups.forEach((g, id) => g.classList.toggle('is-lit', Boolean(answer) && id === c.group));
+    }
+    function choose(v) {
+      if (answer) return;
+      answer = v;
+      draw();
+      const c = cards[at];
+      said.textContent = `${answer === c.verdict ? 'Right' : 'Not quite'}. ${VERB[c.verdict]}: ${c.why}. ${nameOf(c.group)}.`;
+      next.focus({ preventScroll: true });
+    }
+    function turn() {
+      at = (at + 1) % cards.length;
+      answer = '';
+      draw();
+      const c = cards[at];
+      said.textContent = `${at + 1} of ${cards.length}. ${c.title}. ${c.source}.`;
+      keep.focus({ preventScroll: true });
+    }
+    keep.addEventListener('click', () => choose('keep'));
+    del.addEventListener('click', () => choose('delete'));
+    next.addEventListener('click', turn);
+
+    const onScreen = () => { const r = slide.getBoundingClientRect(); return r.height > 0 && r.bottom > 0 && r.top < innerHeight; };
+    document.addEventListener('keydown', (e) => {
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.repeat || e.defaultPrevented) return;
+      const k = String(e.key).toLowerCase();
+      if ((k !== 'k' && k !== 'd') || answer) return;
+      if (!slide.classList.contains('is-on') || !onScreen()) return;
+      if (e.target.closest?.('input, textarea, select, [contenteditable]') || document.querySelector('dialog[open]')) return;
+      e.preventDefault();
+      const b = k === 'k' ? keep : del;
+      b.focus({ preventScroll: true });
+      b.click();
+    });
+    draw();
+  });
+})();
   </script>
   <script type="module" src="/js/howto-sidebar.js?v=2"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>

@@ -215,7 +215,9 @@ test('every guide made by make-deck.mjs shows its pins at rest', () => {
 test('every pin on a guide\'s still has its step in the words beside it, under its number', () => {
   for (const d of decks) {
     const deck = JSON.parse(readFileSync(new URL(`${d}/deck.json`, howToDir), 'utf8'));
-    const stills = deck.chapters.flatMap((c) => c.slides.filter((s) => !s.steps));
+    // A slide of a kind (Sort's flashcards and source bands, Oct 25) is drawn
+    // from its data and has no still, like a slide of steps.
+    const stills = deck.chapters.flatMap((c) => c.slides.filter((s) => !s.steps && !s.kind));
     const slides = deckPage(d).split('<div class="slide" role="group"').slice(1);
     assert.equal(slides.length, stills.length, `${d}: a slide for every still`);
     slides.forEach((slide, k) => {

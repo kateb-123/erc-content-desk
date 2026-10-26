@@ -1070,3 +1070,45 @@ and cut wherever the screen already says it.
   award, or a teaching or trade conference is deleted. ECS State Policy
   Tracker and the Austin American-Statesman left the Sources slide, switched
   off in the scraper on Oct 22.
+
+## Sort's how-to, round two (Oct 24)
+
+The owner's two picks from round two of the Sort how-to's options
+(`.superpowers/tmp/oct23-options/sort-v2/`), in place of the four word
+slides. `how-to/make-deck.mjs` draws both from `how-to/sort/deck.json`, and
+`desk-guide.txt` keeps every rule as words: each group's name, line and rules,
+and each band's sources with their counts, a short name with its full one
+("Coordinating Board (Texas Higher Education Coordinating Board)").
+
+- **Keep or delete, her pick B (flashcards)**: the Content Sort still, then
+  one slide. On the left a real item from the queue, drawn as Content Sort's
+  card: its type and subtype, "1 of 11", the title, the source and its domain
+  on a gray pill (not a link). No date and no name. On the right, "Keep or
+  delete?" with Content Sort's own Keep and Delete and their K and D chips.
+  An answer says Right or Not quite in their place, stamps the card with the
+  verdict and a short reason ("Keep · Tests a policy"), lights its group and
+  offers Next card (Start over on the last). Under the ask, the six groups,
+  three a side, in her names: Keep for Tests or changes a policy, Policy
+  events and money, Ours or added by hand; Delete for Not education policy,
+  Not news we share, Already in the queue. The 11 cards are queue items as
+  they were decided, but the OEP conference is a Keep under the conference
+  rule, its host as its source, and Texas Public Radio's repeat lights
+  Already in the queue. K and D answer only while the slide is up and on
+  screen, never in a field or under an open dialog, and once a card; the
+  arrows still turn slides, and nothing on the slide moves. Which type and
+  subtype to pick sits beside Next. Without script the slide lists the six
+  groups with every rule.
+- **The conference rule lives in the groups**: Policy events and money keeps
+  a conference on education policy or research and its call for proposals;
+  Not news we share deletes a job, an award, or a teaching or trade
+  conference.
+- **Sources, her pick D**: three tinted bands, Usually kept (the info tint),
+  Read each one (white with a gray bar) and Usually deleted (the error tint),
+  each source a chip with how often it was kept ("4 of 4"), from the queue
+  export of Sep 3 to Oct 20; a Read each one chip carries its rule ("Schools
+  only"). Under 760px of deck width the bands sit side by side as columns.
+  Under them, beside Next, Add a source (outline, with the plus) and Open the
+  sources sheet (in a new tab).
+- **Add a source from the how-to** goes to `/#queue/add-source`: the Content
+  queue opens with its form open and Name focused, and the address goes back
+  to `#queue`, so a reload shows the queue with the form shut.

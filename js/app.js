@@ -6,7 +6,7 @@ import { busyWords } from './icons.js';
 import { renderHome } from './home-ui.js';
 import { renderTeam } from './team-ui.js';
 import { renderSidebar } from './shell-ui.js';
-import { openedScreen, openedId, briefHash, screenHash, pageTitle, navBadges, sidebarCheck } from './shell-view.js';
+import { openedScreen, openedId, opensSourceForm, briefHash, screenHash, pageTitle, navBadges, sidebarCheck } from './shell-view.js';
 import { hubCards } from './home-panel.js';
 import { renderIssue, resetIssueEntry, pickIssue } from './issue-ui.js';
 import { nextIssueDate } from './schedule.js';
@@ -24,7 +24,7 @@ import { todayCentral } from './today.js';
 import { sessionStatus, signIn as signInRequest, signOut as signOutRequest } from './auth-client.js';
 import { isLocked, SIGN_IN_ON, authError, lockedOut, WRONG_PASSWORD } from './auth-view.js';
 import { renderSignIn } from './auth-ui.js';
-import { renderQueue } from './queue-ui.js';
+import { renderQueue, openSourceForm } from './queue-ui.js';
 import { renderExchange } from './exchange-ui.js';
 import { renderListserv } from './listserv-ui.js';
 import { renderBriefs, renderBrief, clearBriefDraft } from './briefs-ui.js';
@@ -815,6 +815,9 @@ const SCREEN_ORDER = ['home', 'team', 'queue', 'sort', 'finalize', 'issue', 'sch
 // Every screen but the front page has an address (/#sort, /#newsletter,
 // /#exchange, and the old screens' own until they fold into the lanes), so a
 // typed or bookmarked one opens there and a reload stays put.
+// /#queue/add-source (the Sort how-to's Add a source) opens the queue with
+// its form open; the first paint writes #queue back, so it is read once.
+if (opensSourceForm(location.hash)) openSourceForm();
 const openedAt = openedScreen(location.hash);
 state.screen = openedAt;
 state.briefId = openedId(location.hash);
@@ -1129,10 +1132,16 @@ async function addSource(fields) {
 
 // Back, Forward and a typed address switch screens like a menu pick would.
 window.addEventListener('hashchange', () => {
+  // A link to Add a source opens the queue's form, then the address is the queue's own.
+  const asked = opensSourceForm(location.hash);
+  if (asked) { openSourceForm(); history.replaceState(null, '', screenHash('queue')); }
   const target = openedScreen(location.hash);
   const id = openedId(location.hash);
   if (target === 'brief' && id !== state.briefId) { state.briefId = id; state.brief = null; }
   if (target !== state.screen || target === 'brief') goTo(target);
+  else if (asked) render();
+  // From another page the switch hands focus to the queue's heading; Name takes it back.
+  if (asked) document.getElementById('qs-name')?.focus({ preventScroll: true });
 });
 
 // The skip link focuses the page's main without a #main in the address, so

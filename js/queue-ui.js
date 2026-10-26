@@ -31,6 +31,8 @@ let tab = 'since';   // the open tab, for the visit: since the last issue, or al
 // the last one added. The open form is kept across redraws, so typing survives.
 let source = { open: false, answer: null };
 let sourcePanel = null;
+let focusName = false;   // the form was opened from its address: its Name field takes focus once drawn,
+let revealForm = false;  // and the form comes into view once the rows are in and the page has its height
 let lastDraw = null;   // the block's last draw, so the form's own redraws use the newest status
 
 const WHERE_CLASS = { Waiting: 'badge badge-waiting', Kept: 'badge', 'On the Exchange': 'badge badge-live' };
@@ -189,6 +191,24 @@ function sourceForm(box, onAddSource, redraw) {
   return form;
 }
 
+/** Opens Add a source's form at the next draw, its Name field focused (Oct
+ *  25): the Sort how-to's Sources slide links to /#queue/add-source, which
+ *  the desk reads once and turns back into /#queue. */
+export function openSourceForm() {
+  source = { open: true, answer: null };
+  sourcePanel = null;
+  focusName = true;
+  revealForm = true;
+}
+
+/** The form opened from its address, brought into view once the queue has
+ *  drawn its tabs and rows, so it does not slide away under them. */
+function revealSourceForm() {
+  if (!revealForm || !sourcePanel?.isConnected) return;
+  revealForm = false;
+  sourcePanel.scrollIntoView({ block: 'nearest' });
+}
+
 /** The answer to the last source added: a note that stays for the visit. */
 function sourceNote(answer) {
   const note = el('div', `qh-source-answer is-${answer.tone}`);
@@ -230,6 +250,11 @@ function drawScraper(box, s, onRunScraper, onAddSource) {
     if (!slot.querySelector('.qh-source-answer')) slot.replaceChildren(sourceNote(source.answer));
   } else slot.replaceChildren();
   slot.hidden = !slot.firstChild;
+  // Opened from its address: Name takes focus once the slot shows, since a field in a hidden slot cannot.
+  if (focusName) {
+    focusName = false;
+    sourcePanel.querySelector('#qs-name')?.focus({ preventScroll: true });
+  }
 
   const kids = [];
   const line = s.state === 'checking' ? busyLine(s.line)
@@ -278,6 +303,7 @@ export function renderQueue(container, props) {
     note.textContent = '';
     tabs.replaceChildren();
     list.replaceChildren(loadFailed ? tryAgain(onRefresh) : busyLine('Loading the queue'));
+    if (loadFailed) revealSourceForm();
     return;
   }
   const waiting = sortList(rows).live.length;
@@ -303,4 +329,5 @@ export function renderQueue(container, props) {
   const empty = listed.length ? 'No matches.'
     : shownSince ? `Nothing new since the ${isoToShort(since, today)} issue.` : 'Nothing submitted yet.';
   list.replaceChildren(...(shown.length ? shown.map(queueRow) : [el('p', 'qh-empty', empty)]));
+  revealSourceForm();
 }

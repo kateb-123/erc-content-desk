@@ -49,6 +49,17 @@ const SCREENS = {
 
 const BRIEF_PREFIX = '#briefs/';
 
+/** The Content queue with Add a source open (Oct 25): the Sort how-to's
+ *  Sources slide links here. The queue reads it once, as the page opens or
+ *  as the link is followed, and the address goes back to #queue, so a reload
+ *  shows the queue as it is. */
+export const SOURCE_FORM_HASH = '#queue/add-source';
+
+/** Whether an address asks for Add a source's form. */
+export function opensSourceForm(hash) {
+  return String(hash ?? '') === SOURCE_FORM_HASH;
+}
+
 // Old addresses keep landing where they used to.
 const OLD_HASHES = { '#issue': 'issue', '#build': 'issue' };   // Send to Newsletter folded into Next issue (Sep 18)
 
@@ -59,6 +70,7 @@ const hubOf = screen => HUBS.find(h => h.key === SCREENS[screen]?.hub) ?? null;
 export function openedScreen(hash) {
   const key = String(hash ?? '');
   if (OLD_HASHES[key]) return OLD_HASHES[key];
+  if (opensSourceForm(key)) return 'queue';
   if (key.startsWith(BRIEF_PREFIX) && key.length > BRIEF_PREFIX.length) return 'brief';
   return Object.keys(SCREENS).find(s => SCREENS[s].hash && SCREENS[s].hash === key) ?? 'home';
 }

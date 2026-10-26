@@ -19,6 +19,8 @@ const text = html => html
   // A drawn diagram reads as words (review, Oct 23): what it shows, as a
   // screen reader hears it, then each of its labels on a line of its own.
   .replace(/<svg\b[^>]*\baria-label="([^"]*)"[^>]*>/gi, '\n\n$1\n\n').replace(/<\/text>/gi, '\n')
+  // A short name keeps its full one (Sort's source chips, Oct 25): the name, then the full name.
+  .replace(/<abbr\b[^>]*\btitle="([^"]*)"[^>]*>([\s\S]*?)<\/abbr>/gi, '$2 ($1)')
   // A link keeps its address (review, Oct 23): the text, then the address.
   .replace(/<a\b[^>]*href="([^"#][^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, (_, href, words) => `${words} (${href.startsWith('/') ? SITE + href : href})`)
   .replace(/<(h[1-4])[^>]*>/gi, '\n\n## ').replace(/<\/h[1-4]>/gi, '\n')

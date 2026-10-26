@@ -73,69 +73,69 @@ Keep what helps someone make or study education policy. Delete the rest, and kee
  
 4Delete: takes it out of the queue. D does the same. Undo is on the line at the top, and on the grayed row at the bottom of the list.
 
-About two in five papers, events and opportunities are kept, and one headline in five.
+Guess on each real card from the queue, then see its group. About two in five papers, events and opportunities are kept, and one headline in five.
 
 ## Keep when
 
-- The research tests a policy, such as teacher pay, attendance or pre-K.
+- Tests or changes a policy: research, decisions, wider trends. The research tests a policy, such as teacher pay, attendance or pre-K. A headline reports a decision, a number or a finding, usually from a state or the federal government. A local story shows a wider trend: “Oklahoma School Closures Part of Statewide Picture of Enrollment Decline”.
  
-- A headline reports a decision, a number or a finding, usually from a state or the federal government.
+- Policy events and money: policy and research conferences, webinars, calls and grants. It is a conference on education policy or research, or its call for proposals. A policy webinar comes from a think tank or research group. It offers education researchers money, a fellowship or a call for proposals, with the deadline ahead.
  
-- A local story shows a wider trend: “Oklahoma School Closures Part of Statewide Picture of Enrollment Decline”.
+- Ours or added by hand: ERC and A&M events, a person's pick. It is an ERC event or an A&M research talk. A person added it: their initials or name follow added by (bulk upload means none were given). Keep it unless it repeats.
+
+## Delete when any of these is true
+
+- Not education policy: off topic, or one campus, district or bill. It is not about education. It is one bill or one rule notice. It is campus news, a scandal or a celebrity. College news that is state policy stays. It is one district's news with no wider point: “Austin ISD faces deeper budget cuts as enrollment declines”. The research has no policy in it: a method, a theory or a program description.
  
-- A policy webinar comes from a think tank or research group.
+- Not news we share: opinion, roundups, jobs, awards, teaching or trade conferences. It is opinion, an interview, a podcast, a guide or a roundup. A webinar teaches classroom practice or sells something. It is a job, an award, or a teaching or trade conference. Grants with no deadline or for another field go too.
  
-- It is an ERC event or an A&M research talk.
- 
-- It offers education researchers money, a fellowship or a call for proposals, with the deadline ahead.
- 
-- It is a conference on education policy or research, or its call for proposals.
- 
-- A person added it: their initials or name follow added by (bulk upload means none were given). Keep it unless it repeats.
+- Already in the queue: a second copy of an item. It is a repeat. Keep the best copy.
 
 Which type and subtype to pick (https://erc-content-desk.vercel.app/how-to/submit-content/#types)
 
-Delete it when any of these is true.
-
-## Delete when
-
-- It is not about education.
- 
-- It is one bill or one rule notice.
- 
-- It is campus news, a scandal or a celebrity. College news that is state policy stays.
- 
-- It is one district's news with no wider point: “Austin ISD faces deeper budget cuts as enrollment declines”.
- 
-- It is opinion, an interview, a podcast, a guide or a roundup.
- 
-- A webinar teaches classroom practice or sells something.
- 
-- It is a job, an award, or a teaching or trade conference. Grants with no deadline or for another field go too.
- 
-- The research has no policy in it: a method, a theory or a program description.
- 
-- It is a repeat. Keep the best copy.
-
 ## Sources
 
-Some sources have a clear rule, from how often they were kept.
+How often each was kept, Sep 3 to Oct 20
 
-## A clear rule
+## Usually kept
 
-- Urban Institute, 6 of 41: delete unless it is about schools.
+- CALDER 4 of 4
  
-- NBER, 3 of 18: delete unless it is about schooling.
+- Coordinating Board (Texas Higher Education Coordinating Board) 3 of 3
  
-- K-12 Dive, 6 of 17: keep findings and state counts. Delete Week In Review.
+- Texas Tribune 4 of 5
  
-- EdWorkingPapers, 32 of 58: keep most. Delete methods papers.
+- ERC and A&M events 20 of 26
+ 
+- Tennessee Ed Research Alliance (Tennessee Education Research Alliance) 3 of 4
 
-## Nearly every time
+## Read each one
 
-- Kept: CALDER, Texas Tribune, the Texas Higher Education Coordinating Board, the Tennessee Education Research Alliance, and ERC and A&M events.
+- EdWorkingPapers 32 of 58 · Most, not methods
  
-- Deleted: Texas Public Radio, KUT, PBS NewsHour, the Department of Education newsroom, the Federal Register, WestEd and AIR.
+- K-12 Dive 6 of 17 · Findings and state counts, not roundups
+ 
+- NBER 3 of 18 · Schools only
+ 
+- Urban Institute 6 of 41 · Schools only
+
+## Usually deleted
+
+- WestEd 1 of 8
+ 
+- PBS NewsHour 1 of 14
+ 
+- Texas Public Radio 0 of 12
+ 
+- Federal Register 0 of 8
+ 
+- Ed Department newsroom (U.S. Department of Education newsroom) 0 of 7
+ 
+- KUT 0 of 6
+ 
+- AIR (American Institutes for Research) 0 of 4
+
+Add a source (https://erc-content-desk.vercel.app/#queue/add-source) Open the sources sheet (https://docs.google.com/spreadsheets/d/19gAAU4OTxGrfYqitBS3Nx9KjfIbE4qW_7C51Lq_pZhw/edit)
 
 ## Card and list
 

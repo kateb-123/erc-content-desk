@@ -50,43 +50,188 @@
           "shot": "sort"
         },
         {
-          "cap": "About two in five papers, events and opportunities are kept, and one headline in five.",
-          "steps": [
+          "kind": "flashcards",
+          "cap": "Guess on each real card from the queue, then see its group. About two in five papers, events and opportunities are kept, and one headline in five.",
+          "groups": [
             {
-              "title": "Keep when",
-              "items": [
+              "id": "policy",
+              "verdict": "keep",
+              "name": "Tests or changes a policy",
+              "line": "Research, decisions, wider trends",
+              "rules": [
                 "The research tests a policy, such as teacher pay, attendance or pre-K.",
                 "A headline reports a decision, a number or a finding, usually from a state or the federal government.",
-                "A local story shows a wider trend: “Oklahoma School Closures Part of Statewide Picture of Enrollment Decline”.",
-                "A policy webinar comes from a think tank or research group.",
-                "It is an ERC event or an A&amp;M research talk.",
-                "It offers education researchers money, a fellowship or a call for proposals, with the deadline ahead.",
-                "It is a conference on education policy or research, or its call for proposals.",
-                "A person added it: their initials or name follow <b>added by</b> (<b>bulk upload</b> means none were given). Keep it unless it repeats."
-              ],
-              "links": "<a href=\"/how-to/submit-content/#types\">Which type and subtype to pick</a>"
-            }
-          ]
-        },
-        {
-          "cap": "Delete it when any of these is true.",
-          "steps": [
+                "A local story shows a wider trend: “Oklahoma School Closures Part of Statewide Picture of Enrollment Decline”."
+              ]
+            },
             {
-              "title": "Delete when",
-              "items": [
+              "id": "events",
+              "verdict": "keep",
+              "name": "Policy events and money",
+              "line": "Policy and research conferences, webinars, calls and grants",
+              "rules": [
+                "It is a conference on education policy or research, or its call for proposals.",
+                "A policy webinar comes from a think tank or research group.",
+                "It offers education researchers money, a fellowship or a call for proposals, with the deadline ahead."
+              ]
+            },
+            {
+              "id": "ours",
+              "verdict": "keep",
+              "name": "Ours or added by hand",
+              "line": "ERC and A&M events, a person's pick",
+              "rules": [
+                "It is an ERC event or an A&amp;M research talk.",
+                "A person added it: their initials or name follow <b>added by</b> (<b>bulk upload</b> means none were given). Keep it unless it repeats."
+              ]
+            },
+            {
+              "id": "off-topic",
+              "verdict": "delete",
+              "name": "Not education policy",
+              "line": "Off topic, or one campus, district or bill",
+              "rules": [
                 "It is not about education.",
                 "It is one bill or one rule notice.",
                 "It is campus news, a scandal or a celebrity. College news that is state policy stays.",
                 "It is one district's news with no wider point: “Austin ISD faces deeper budget cuts as enrollment declines”.",
+                "The research has no policy in it: a method, a theory or a program description."
+              ]
+            },
+            {
+              "id": "not-news",
+              "verdict": "delete",
+              "name": "Not news we share",
+              "line": "Opinion, roundups, jobs, awards, teaching or trade conferences",
+              "rules": [
                 "It is opinion, an interview, a podcast, a guide or a roundup.",
                 "A webinar teaches classroom practice or sells something.",
-                "It is a job, an award, or a teaching or trade conference. Grants with no deadline or for another field go too.",
-                "The research has no policy in it: a method, a theory or a program description.",
+                "It is a job, an award, or a teaching or trade conference. Grants with no deadline or for another field go too."
+              ]
+            },
+            {
+              "id": "repeat",
+              "verdict": "delete",
+              "name": "Already in the queue",
+              "line": "A second copy of an item",
+              "rules": [
                 "It is a repeat. Keep the best copy."
-              ],
-              "links": null
+              ]
             }
-          ]
+          ],
+          "cards": [
+            {
+              "type": "research",
+              "subtype": "Working Paper",
+              "title": "Financing the AI Buildout",
+              "source": "NBER working papers",
+              "host": "nber.org",
+              "verdict": "delete",
+              "group": "off-topic",
+              "why": "Not about schools"
+            },
+            {
+              "type": "research",
+              "subtype": "Working Paper",
+              "title": "The Effects of State-Level Loan Forgiveness Policies on Teacher Supply",
+              "source": "EdWorkingPapers",
+              "host": "edworkingpapers.com",
+              "verdict": "keep",
+              "group": "policy",
+              "why": "Tests a policy"
+            },
+            {
+              "type": "headline",
+              "subtype": "National",
+              "title": "Week In Review: A slew of new K-12 policies and guidance",
+              "source": "K-12 Dive",
+              "host": "k12dive.com",
+              "verdict": "delete",
+              "group": "not-news",
+              "why": "A weekly roundup"
+            },
+            {
+              "type": "event",
+              "subtype": "Off-Campus",
+              "title": "2026 OEP Conference: Arkansas Education, What We Know, What We're Learning, What's Next",
+              "source": "Office for Education Policy",
+              "host": "forms.gle",
+              "verdict": "keep",
+              "group": "events",
+              "why": "A state policy conference"
+            },
+            {
+              "type": "event",
+              "subtype": "Off-Campus",
+              "title": "CONFERENCE: National Council of Teachers of Mathematics Annual Meeting",
+              "source": "FutureEd events",
+              "host": "future-ed.org",
+              "verdict": "delete",
+              "group": "not-news",
+              "why": "A teaching conference"
+            },
+            {
+              "type": "headline",
+              "subtype": "National",
+              "title": "Oklahoma School Closures Part of Statewide Picture of Enrollment Decline",
+              "source": "The 74",
+              "host": "the74million.org",
+              "verdict": "keep",
+              "group": "policy",
+              "why": "A statewide trend"
+            },
+            {
+              "type": "headline",
+              "subtype": "National",
+              "title": "Here’s What it Takes to Feed LAUSD Students Each Day",
+              "source": "The 74",
+              "host": "the74million.org",
+              "verdict": "delete",
+              "group": "off-topic",
+              "why": "One district only"
+            },
+            {
+              "type": "opportunity",
+              "subtype": "Funding & Grants",
+              "title": "Arnold Ventures RFP: Causal Research on the Impacts of K-12 School Policies",
+              "source": "Arnold Ventures",
+              "host": "proposals.arnoldventures.org",
+              "verdict": "keep",
+              "group": "events",
+              "why": "Money for policy research"
+            },
+            {
+              "type": "headline",
+              "subtype": "Texas",
+              "title": "Schools are experimenting with AI with little evidence or policy to guide them",
+              "source": "Texas Public Radio",
+              "host": "tpr.org",
+              "verdict": "delete",
+              "group": "repeat",
+              "why": "NPR's copy kept"
+            },
+            {
+              "type": "opportunity",
+              "subtype": "Call for Proposals",
+              "title": "AEFP Annual Conference - Call for Proposals",
+              "source": "Association for Education Finance & Policy (AEFP)",
+              "host": "aefpweb.org",
+              "verdict": "keep",
+              "group": "events",
+              "why": "A policy conference's call"
+            },
+            {
+              "type": "erc_event",
+              "subtype": "",
+              "title": "ERC Colloquium: Controversies in the Classroom",
+              "source": "Texas A&M University",
+              "host": "calendar.tamu.edu",
+              "verdict": "keep",
+              "group": "ours",
+              "why": "An ERC event"
+            }
+          ],
+          "links": "<a href=\"/how-to/submit-content/#types\">Which type and subtype to pick</a>"
         }
       ]
     },
@@ -96,27 +241,124 @@
       "step": null,
       "slides": [
         {
-          "cap": "Some sources have a clear rule, from how often they were kept.",
-          "steps": [
+          "kind": "sources",
+          "cap": "How often each was kept, Sep 3 to Oct 20",
+          "bands": [
             {
-              "title": "A clear rule",
-              "items": [
-                "<b>Urban Institute</b>, 6 of 41: delete unless it is about schools.",
-                "<b>NBER</b>, 3 of 18: delete unless it is about schooling.",
-                "<b>K-12 Dive</b>, 6 of 17: keep findings and state counts. Delete Week In Review.",
-                "<b>EdWorkingPapers</b>, 32 of 58: keep most. Delete methods papers."
-              ],
-              "links": null
+              "verdict": "keep",
+              "name": "Usually kept",
+              "sources": [
+                {
+                  "name": "CALDER",
+                  "kept": 4,
+                  "of": 4
+                },
+                {
+                  "name": "Coordinating Board",
+                  "full": "Texas Higher Education Coordinating Board",
+                  "kept": 3,
+                  "of": 3
+                },
+                {
+                  "name": "Texas Tribune",
+                  "kept": 4,
+                  "of": 5
+                },
+                {
+                  "name": "ERC and A&M events",
+                  "kept": 20,
+                  "of": 26
+                },
+                {
+                  "name": "Tennessee Ed Research Alliance",
+                  "full": "Tennessee Education Research Alliance",
+                  "kept": 3,
+                  "of": 4
+                }
+              ]
             },
             {
-              "title": "Nearly every time",
-              "items": [
-                "<b>Kept:</b> CALDER, Texas Tribune, the Texas Higher Education Coordinating Board, the Tennessee Education Research Alliance, and ERC and A&amp;M events.",
-                "<b>Deleted:</b> Texas Public Radio, KUT, PBS NewsHour, the Department of Education newsroom, the Federal Register, WestEd and AIR."
-              ],
-              "links": null
+              "verdict": "read",
+              "name": "Read each one",
+              "sources": [
+                {
+                  "name": "EdWorkingPapers",
+                  "kept": 32,
+                  "of": 58,
+                  "rule": "Most, not methods"
+                },
+                {
+                  "name": "K-12 Dive",
+                  "kept": 6,
+                  "of": 17,
+                  "rule": "Findings and state counts, not roundups"
+                },
+                {
+                  "name": "NBER",
+                  "kept": 3,
+                  "of": 18,
+                  "rule": "Schools only"
+                },
+                {
+                  "name": "Urban Institute",
+                  "kept": 6,
+                  "of": 41,
+                  "rule": "Schools only"
+                }
+              ]
+            },
+            {
+              "verdict": "delete",
+              "name": "Usually deleted",
+              "sources": [
+                {
+                  "name": "WestEd",
+                  "kept": 1,
+                  "of": 8
+                },
+                {
+                  "name": "PBS NewsHour",
+                  "kept": 1,
+                  "of": 14
+                },
+                {
+                  "name": "Texas Public Radio",
+                  "kept": 0,
+                  "of": 12
+                },
+                {
+                  "name": "Federal Register",
+                  "kept": 0,
+                  "of": 8
+                },
+                {
+                  "name": "Ed Department newsroom",
+                  "full": "U.S. Department of Education newsroom",
+                  "kept": 0,
+                  "of": 7
+                },
+                {
+                  "name": "KUT",
+                  "kept": 0,
+                  "of": 6
+                },
+                {
+                  "name": "AIR",
+                  "full": "American Institutes for Research",
+                  "kept": 0,
+                  "of": 4
+                }
+              ]
             }
-          ]
+          ],
+          "add": {
+            "label": "Add a source",
+            "href": "/#queue/add-source"
+          },
+          "sheet": {
+            "label": "Open the sources sheet",
+            "href": "https://docs.google.com/spreadsheets/d/19gAAU4OTxGrfYqitBS3Nx9KjfIbE4qW_7C51Lq_pZhw/edit"
+          }
         }
       ]
     },
