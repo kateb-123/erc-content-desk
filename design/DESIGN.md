@@ -906,9 +906,18 @@ calls, one question at a time; the desk goes to the team after today.
   issue"); Keep says "Pick a subtype first" when only the subtype is missing;
   a long title wraps on the Sort card; the bulk fold's chevron points right;
   a link with no class is teal; Crimson Text no longer loads; the sign-in and
-  the how-tos say the password is in READ ME FIRST - ERC handoff (the password
-  itself never appears; since the trim of Oct 24 only Who to ask says where,
-  and every guide that asks for it links there).
+  the how-tos say the password is in READ ME FIRST - ERC Content Desk (the
+  password itself never appears; since the trim of Oct 24 only Who to ask says
+  where, and every guide that asks for it links there). Since Oct 26 the doc's
+  name is a link to it, on the sign-in, the Exchange hub's foot and Who to ask,
+  in the outside-link idiom, and every Google file a how-to names (the desk's
+  Sheet and its schedule tab, the sign-up Sheet, Newsletter scrapes and the
+  scrapes folder, Scraper sources, ERC Research Briefs, the Policy Exchange
+  folder) is a link that says once a page where it sits on the team drive;
+  the desk's own button for one (Open the sign-up sheet, Open the sheet, the
+  files) is named in bold beside it. The Google scripts guide alone keeps the
+  two folders' and the sources Sheet's ids off its page (its test), naming
+  where they sit instead.
 - **How-tos**: every step listed beside its picture, pins at rest; Submit
   content re-recorded on today's page.
 - **Said plainly instead of rebuilt** (her picks, for today): the builder's

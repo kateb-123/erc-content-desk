@@ -13,11 +13,11 @@
       "step": null,
       "slides": [
         {
-          "cap": "Rows you delete on the Newsletter scrapes tabs stay deleted.",
+          "cap": "Rows you delete on the <a href=\"https://docs.google.com/spreadsheets/d/1BtElrce0rR4W8QgtiAZRP_OO4H74n99S2UKmwbJDtko/edit\" target=\"_blank\" rel=\"noopener\">Newsletter scrapes<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a> tabs stay deleted. <b>Open the sheet</b> opens it, and <b>the files</b> opens the run's dated folder inside <a href=\"https://drive.google.com/drive/folders/1P7KCtPTN8QEosahGoth-qp04PZJ3JqwN\" target=\"_blank\" rel=\"noopener\">scrapes<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a>, on the team drive: Education Research Center &gt; ERC Content Desk &gt; Newsletter &gt; Newsletter Scrape.",
           "notes": [
             {
               "n": "!",
-              "html": "<b>Add a source only adds.</b> To stop one you added, set Switched on to no on the Scraper sources Sheet. The scraper's built-in sources need code.",
+              "html": "<b>Add a source only adds.</b> To stop one you added, set Switched on to no on the <a href=\"https://docs.google.com/spreadsheets/d/19gAAU4OTxGrfYqitBS3Nx9KjfIbE4qW_7C51Lq_pZhw/edit\" target=\"_blank\" rel=\"noopener\">Scraper sources Sheet<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a> (on the team drive: Education Research Center &gt; ERC Content Desk &gt; Newsletter). The scraper's built-in sources need code.",
               "warn": true,
               "go": false
             }
@@ -465,7 +465,7 @@
             },
             {
               "n": "!",
-              "html": "<b>Never fix an item in the Sheet's first tab.</b> It is a copy: the desk never reads it and writes over it.",
+              "html": "<b>Never fix an item in the Sheet's first tab.</b> It is a copy: the desk never reads it and writes over it. The Sheet is <a href=\"https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit\" target=\"_blank\" rel=\"noopener\">erc-content-desk<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a>, on the team drive: Education Research Center &gt; ERC Content Desk &gt; Content queue.",
               "warn": true,
               "go": false
             }

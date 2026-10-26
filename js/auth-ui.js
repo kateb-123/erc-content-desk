@@ -7,6 +7,8 @@
  * (Kate's drawn map, Oct 6), for anyone who landed here.
  */
 import { signInLine } from './auth-view.js';
+import { faIcon } from './icons.js';
+import { HANDOFF_DOC } from './public-links.js';
 import { el, button, busyLine, focusKeyIn, restoreFocus } from './ui-aids.js';
 
 const TITLES = { home: 'Desk', sort: 'Content Sort', finalize: 'Content Sort', publish: 'Policy Exchange', briefs: 'Research briefs', brief: 'Research briefs' };
@@ -73,7 +75,13 @@ export function renderSignIn(container, { screen, checking, busy, error, onSignI
   team.append(a);
   middle.append(team);
   // Where the password lives (review, Oct 23); never the password itself.
-  middle.append(el('p', 'signin-team', 'The password is in READ ME FIRST - ERC handoff, in the shared drive.'));
+  // The doc's name is a link to it (Oct 26), in the desk's outside-link idiom.
+  const where = el('p', 'signin-team', 'The password is in ');
+  const doc = el('a', '', 'READ ME FIRST - ERC Content Desk');
+  doc.href = HANDOFF_DOC; doc.target = '_blank'; doc.rel = 'noopener';
+  doc.append(' ', faIcon('arrow-up-right-from-square'), el('span', 'sr-only', ' (opens in a new tab)'));
+  where.append(doc, ', on the team drive.');
+  middle.append(where);
   container.append(page);
   // The field takes the keyboard on a fresh draw, and keeps it across a redraw.
   if (!restoreFocus(container, focusKey, null) && !busy) field.focus({ preventScroll: true });

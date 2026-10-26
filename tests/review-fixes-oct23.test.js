@@ -37,7 +37,11 @@ test('the bulk fold opens from a chevron pointing right, like every fold (IMP-9)
 
 test('the sign-in says the password is in the handoff doc (Kate, Oct 23: the doc holding it is fine)', () => {
   const ui = read('js/auth-ui.js');
-  assert.match(ui, /The password is in READ ME FIRST - ERC handoff, in the shared drive\./);
+  // Oct 26: the doc is READ ME FIRST - ERC Content Desk, and its name is a link to it.
+  assert.match(ui, /'The password is in '/);
+  assert.match(ui, /'READ ME FIRST - ERC Content Desk'/);
+  assert.match(ui, /doc\.href = HANDOFF_DOC; doc\.target = '_blank'; doc\.rel = 'noopener';/);
+  assert.match(ui, /', on the team drive\.'/);
   assert.doesNotMatch(ui, /Who has the password/);
 });
 

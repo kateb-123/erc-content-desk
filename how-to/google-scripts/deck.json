@@ -203,7 +203,7 @@
               "items": [
                 "If Google says it hasn't verified this app, click <b>Advanced</b>, then <b>Go to</b> the project name <b>(unsafe)</b>. A script made inside TAMU may skip this screen.",
                 "Google lists what the script may do, each with its own box. Tick every box (Google may offer <b>Select all</b>), then <b>Continue</b>. An empty box is a partial grant, and the desk's writes fail later. Google's wording may differ slightly.",
-                "The <b>Execution log</b> opens below the code. It shows erc-content-desk, scrapes and ERC Research Briefs, then <b>Execution completed</b>. An error on a getFolderById line means a folder id in step 5 is missing or wrong."
+                "The <b>Execution log</b> opens below the code. It shows <code>erc-content-desk</code>, <code>scrapes</code> and <code>ERC Research Briefs</code>, then <b>Execution completed</b>. An error on a getFolderById line means a folder id in step 5 is missing or wrong."
               ],
               "links": null
             }
@@ -231,7 +231,7 @@
               "items": [
                 "Click <b>Deploy</b> (top right) &gt; <b>New deployment</b>. The New deployment box opens.",
                 "Beside <b>Select type</b>, click the gear, then <b>Web app</b>. The box shows the web app's settings.",
-                "<b>Description</b>: your name and the date, for example \"Kathy, Oct 2026\". The old deployments show as Untitled (one may say Drive), so this marks yours.",
+                "<b>Description</b>: your name and the date. The old deployments show as Untitled (one may say Drive), so this marks yours.",
                 "<b>Execute as</b>: <b>Me</b> (your TAMU address). <b>Who has access</b>: <b>Anyone</b>, not \"Anyone with Google account\". The desk calls the script without signing in to Google; the token is what protects it."
               ],
               "links": null
@@ -369,8 +369,8 @@
               "title": "Sign-ups and the desk's Sheet",
               "items": [
                 "On the public sign-up page, <a href=\"https://erc-share.vercel.app/listserv/\" target=\"_blank\" rel=\"noopener\">erc-share.vercel.app/listserv<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a>, sign up as \"Test, delete me\" with your own email, pass the check box, and send. The page says \"Thank you. You are on the list.\"",
-                "Your test is the last row on Sheet 1 of subscribe to listserve. Delete that row. The desk keeps its own copy of every sign-up, so Listserv's Last sign-up shows today, and Last updated may change to today too. Both are expected.",
-                "On <a href=\"/#team\">Submit content</a>, add an obviously fake item with <b>Add to the queue</b>: the link https://example.org/test, the title \"Test item, delete me\", and your initials. Within a minute it is the last row on the first tab of erc-content-desk.",
+                "Your test is the last row on Sheet 1 of <a href=\"https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit\" target=\"_blank\" rel=\"noopener\">subscribe to listserve<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a> (<b>Open the sign-up sheet</b> on Listserv). Delete that row. The desk keeps its own copy of every sign-up, so Listserv's Last sign-up shows today, and Last updated may change to today too. Both are expected.",
+                "On <a href=\"/#team\">Submit content</a>, add an obviously fake item with <b>Add to the queue</b>: the link https://example.org/test, the title \"Test item, delete me\", and your initials. Within a minute it is the last row on the first tab of <a href=\"https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit\" target=\"_blank\" rel=\"noopener\">erc-content-desk<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a>.",
                 "Delete it on <a href=\"/#sort\">Content Sort</a> (the team password: <a href=\"/how-to/change-the-desk/#ask\">Who to ask</a>). Its Sheet row stays, with its status set to trashed: rows are never removed."
               ],
               "links": null
@@ -387,7 +387,7 @@
               "items": [
                 "On the <a href=\"/#queue\">Content queue</a>, under <b>Scraper</b>, press <b>Run the scraper</b>. The line shimmers while it runs (the last run took under two minutes). When it ends: \"Last run &lt;date&gt;, for the &lt;date&gt; issue: ...\" with <b>Open the sheet</b> and <b>the files</b>. \"The last run failed on GitHub.\" means the delivery still failed.",
                 "Open any brief's page on <a href=\"/#briefs\">Research briefs</a> (the team password again: <a href=\"/how-to/change-the-desk/#ask\">Who to ask</a>). Its files are listed, each a link into Drive. \"Drive didn't answer. Use the folder link above.\" means the desk script still fails.",
-                "Later: a send date typed on the Sheet's schedule tab shows on <a href=\"/#schedule\">Newsletter &gt; Schedule</a> within ten minutes."
+                "Later: a send date typed on <a href=\"https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit#gid=287660130\" target=\"_blank\" rel=\"noopener\">the Sheet's schedule tab<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a> shows on <a href=\"/#schedule\">Newsletter &gt; Schedule</a> within ten minutes."
               ],
               "links": null
             }
@@ -476,7 +476,7 @@
             {
               "title": "Connect the sources Sheet",
               "items": [
-                "Open the Sheet <b>Scraper sources</b>, in ERC Content Desk &gt; Newsletter. Its id is the long part of its address between <code>/d/</code> and <code>/edit</code>.",
+                "Open the Sheet <b>Scraper sources</b>, on the team drive: Education Research Center &gt; ERC Content Desk &gt; Newsletter. Its id is the long part of its address between <code>/d/</code> and <code>/edit</code>.",
                 "In the desk's script: <b>Project Settings</b> &gt; <b>Edit script properties</b> &gt; <b>Add script property</b>: <code>SOURCES_SHEET_ID</code> and that id. <b>Save script properties</b>. A property is read live: no new version is needed for it."
               ],
               "links": null
@@ -484,7 +484,7 @@
             {
               "title": "Any later change to the code",
               "items": [
-                "Open erc-content-desk &gt; <b>Extensions</b> &gt; <b>Apps Script</b>, and replace <b>Code.gs</b> with the box on this page, which is what gets updated. Save. Paste the checkAccess helper at the end again, since the paste removes it.",
+                "Open <a href=\"https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit\" target=\"_blank\" rel=\"noopener\">erc-content-desk<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a> &gt; <b>Extensions</b> &gt; <b>Apps Script</b>, and replace <b>Code.gs</b> with the box on this page, which is what gets updated. Save. Paste the checkAccess helper at the end again, since the paste removes it.",
                 "If the new code's notes name a new script property or permission, add it as in steps 5 and 6, then run checkAccess and tick every box.",
                 "<b>Deploy</b> &gt; <b>Manage deployments</b> &gt; your deployment &gt; the pencil &gt; <b>Version</b>: <b>New version</b> &gt; <b>Deploy</b>. Same address. Vercel needs nothing."
               ],

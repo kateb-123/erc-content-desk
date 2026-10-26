@@ -72,6 +72,7 @@ test('the newsletter how-to opens the Newsletter page and carries only the addre
   const addresses = new Set(nl.match(/https?:\/\/[^\s"'<)]+/g));
   const allowed = new Set([
     'https://erc-content-desk.vercel.app/#newsletter',
+    'https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit#gid=287660130',   // the schedule tab, on the Send dates slide (Oct 25)
     'https://appsource.microsoft.com/en-us/product/office/wa200002918',
     'https://support.microsoft.com/en-us/outlook/getstarted/use-add-ins-in-outlook',
     'https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap',
@@ -261,7 +262,108 @@ test('every pin on a newsletter still is its capture\'s, with its step in the wo
   }
 });
 
-// Where the password is (Kate, Oct 23): in READ ME FIRST - ERC handoff, and
+// ── The Google files (the owner, Oct 25): a how-to told the reader to open a
+// Google file and gave no link and no word on where it is on the team drive.
+// Every file the desk uses, by the names the how-tos use, each with its
+// address (verified on the team drive's own stubs, Oct 25); a slide, or a
+// page's foot, that names one carries its link, so a reader is never sent to
+// find it. A name inside <code> is a path in Finder, a value or what a log
+// prints, not a place to go. Two other things carry the desk's Sheet's name,
+// the Vercel project and the script's address, and the sign-up script's
+// address carries its Sheet's: those are named after the Sheets, not the Sheets.
+const SHEET = 'https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit';
+const SIGNUP = 'https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit';
+const GOOGLE_FILES = [
+  ['erc-content-desk', /erc-content-desk/, SHEET],                                   // the desk's Sheet (Content queue); the schedule tab is on it
+  ["the Sheet's first or schedule tab", /the Sheet's (?:first|schedule) tab/, SHEET],
+  ['subscribe to listserve', /subscribe to listserve/, SIGNUP],                       // the sign-up Sheet (Listserv)
+  ['the sign-up sheet', /sign-up [Ss]heet/, SIGNUP],
+  ['Newsletter scrapes', /Newsletter scrapes/, 'https://docs.google.com/spreadsheets/d/1BtElrce0rR4W8QgtiAZRP_OO4H74n99S2UKmwbJDtko/edit'],
+  ['the scrapes folder', /(?<!Newsletter )\bscrapes\b/, 'https://drive.google.com/drive/folders/1P7KCtPTN8QEosahGoth-qp04PZJ3JqwN'],
+  ['Scraper sources', /Scraper sources/, 'https://docs.google.com/spreadsheets/d/19gAAU4OTxGrfYqitBS3Nx9KjfIbE4qW_7C51Lq_pZhw/edit'],
+  ['ERC Research Briefs', /ERC Research Briefs/, 'https://drive.google.com/drive/folders/13Q8dz0Ar1g9iHQxW72KioKM04THCM-sr'],
+  ['Sent issues', /Sent issues/, 'https://drive.google.com/drive/folders/16OTN8Ey6EALnR9fZ6RKTbAhkWPSUXi_L'],
+  ['the Policy Exchange folder', /ERC Content Desk > Policy Exchange/, 'https://drive.google.com/drive/folders/1eSRrsHYDMnQZLoH-rOMilx40V7c8nsd_'],   // where each publish files its copy (api/publish.js)
+  ['READ ME FIRST - ERC Content Desk', /READ ME FIRST/, 'https://docs.google.com/document/d/1DHzMJCA_Alep8suiZi7iICzLGSKtexvm6Z1yqVEoUFg/edit'],   // the team's handoff doc (Oct 26)
+];
+const NAMED_AFTER = [/project erc-content-desk/g, /the erc-content-desk address/g, /the subscribe to listserve address/g, /erc-content-desk script/g, /subscribe to listserve script/g];
+// The Google scripts guide keeps the folders' and the sources Sheet's ids off its
+// page (tests/scripts-howto.test.js: the teammate reads an id off the file's own
+// address), so there those files are named with where they sit instead.
+const OFF_PAGE = { 'how-to/google-scripts/index.html': ['the scrapes folder', 'ERC Research Briefs', 'Scraper sources'] };
+const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const outLink = (href, words) => `<a href="${href}" target="_blank" rel="noopener">${words}<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>`;
+// A unit's words: no script, style or code, no tag, no address of the desk's
+// own site or repository (which carry the Sheet's name), nothing named after a Sheet.
+const wordsOf = (html) => {
+  let words = unesc(html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<code>[\s\S]*?<\/code>/g, ' ').replace(/<[^>]+>/g, ' '))
+    .replace(/&#39;|&#x27;|&rsquo;/g, "'")
+    .replace(/\S*(?:erc-content-desk\.vercel\.app|github\.com\/\S*erc-content-desk)\S*/g, ' ')
+    .replace(/\s+/g, ' ');
+  for (const re of NAMED_AFTER) words = words.replace(re, ' ');
+  return words;
+};
+// A page's units: each slide with what follows it to the next (the last one
+// carries the page's foot), or the whole page where it has no slides.
+const unitsOf = (html) => (html.match(/<main[\s\S]*?<\/main>/)?.[0] ?? html).split(/(?=<div class="slide[ "])/);
+const howToPages = [
+  ...readdirSync(howToDir, { recursive: true }).filter((f) => /(^|\/)index\.html$/.test(f)).map((f) => [`how-to/${f}`, new URL(f, howToDir)]),
+  ['newsletter/read-me/index.html', new URL('../newsletter/read-me/index.html', import.meta.url)],
+];
+
+test('every Google file a how-to names is a link on the slide that names it', () => {
+  let seen = 0;
+  for (const [name, file] of howToPages) {
+    unitsOf(readFileSync(file, 'utf8')).forEach((unit, k) => {
+      const words = wordsOf(unit);
+      for (const [what, re, link] of GOOGLE_FILES) {
+        const at = words.search(re);
+        if (at < 0) continue;
+        seen += 1;
+        if (OFF_PAGE[name]?.includes(what)) {
+          assert.ok(/ERC Content Desk > /.test(words), `${name}, unit ${k}: names ${what} with neither its link nor where it sits`);
+          continue;
+        }
+        assert.ok(unit.includes(`href="${link}`), `${name}, unit ${k}: names ${what} without its link: "${words.slice(Math.max(0, at - 70), at + 90).trim()}"`);
+      }
+    });
+  }
+  assert.ok(seen >= 14, `slides that name a Google file (${seen})`);
+});
+
+test('the desk guide carries every Google file\'s address it names, and the links are the decks\' outside-link idiom', () => {
+  const guide = readFileSync(new URL('desk-guide.txt', howToDir), 'utf8');
+  const words = guide.replace(/\S*(?:erc-content-desk\.vercel\.app|github\.com\/\S*erc-content-desk)\S*/g, ' ');
+  for (const [what, re, link] of GOOGLE_FILES) if (re.test(words)) assert.ok(guide.includes(link), `the desk guide names ${what} without its address`);
+  for (const [name, file] of howToPages) {
+    const html = readFileSync(file, 'utf8');
+    for (const [what, , link] of GOOGLE_FILES) {
+      for (const [tag] of html.matchAll(new RegExp(`<a [^>]*href="${reEsc(link)}[^"]*"[^>]*>`, 'g'))) {
+        assert.ok(/target="_blank"/.test(tag) && /rel="noopener"/.test(tag), `${name}: the link to ${what} opens in a new tab: ${tag}`);
+      }
+    }
+  }
+});
+
+// The handoff doc (Oct 26): one name, READ ME FIRST - ERC Content Desk, one
+// address. The older handoff doc is trashed, so its name and its id appear
+// nowhere the desk or its docs are read from. Both are built from halves here,
+// so this file is not a hit either.
+const OLD_DOC_NAME = ['READ ME FIRST', 'ERC handoff'].join(' - ');
+const OLD_DOC_ID = ['1z5oB', 'DDbAEXyw-IZ7biZoE1-VUJgwxi9qaUlBP5hH-mo'].join('');   // split so a grep for the id's first eight characters finds nothing here either
+test('the old handoff doc\'s name and id appear nowhere in js/, how-to/ or docs/', () => {
+  const root = new URL('../', import.meta.url);
+  const files = ['js', 'how-to', 'docs'].flatMap((d) => readdirSync(new URL(`${d}/`, root), { recursive: true }).filter((f) => /\.(js|mjs|json|html|md|txt|css|gs)$/.test(f)).map((f) => `${d}/${f}`));
+  assert.ok(files.length > 60, `files read (${files.length})`);
+  for (const f of files) {
+    const text = readFileSync(new URL(f, root), 'utf8');
+    assert.ok(!text.includes(OLD_DOC_NAME), `${f} names the old handoff doc`);
+    assert.ok(!text.includes(OLD_DOC_ID), `${f} carries the old handoff doc's id`);
+  }
+  assert.ok(deckPage('change-the-desk').includes(outLink(GOOGLE_FILES.find((f) => f[0] === 'READ ME FIRST - ERC Content Desk')[2], 'READ ME FIRST - ERC Content Desk')), 'Who to ask links the doc by its name');
+});
+
+// Where the password is (Kate, Oct 23): in READ ME FIRST - ERC Content Desk (its name since Oct 26, linked), and
 // the how-tos say so plainly. The value itself is never written anywhere.
 // Oct 24 (the trim): one password, one name, the handoff's: the team
 // password. Where it is kept is said once, in Change the desk's Who to ask,
@@ -275,7 +377,7 @@ test('the how-tos call it the team password, and say once where it is kept', () 
   }
   const ask = deckPage('change-the-desk');
   assert.ok(ask.includes('The team password is the one password.'), 'Who to ask names it');
-  assert.ok(ask.includes('It is in READ ME FIRST - ERC handoff, in the shared drive, with the owner\'s name.'), 'and says where it is kept');
+  assert.ok(ask.includes(`It is in ${outLink(GOOGLE_FILES.find(f => f[0] === 'READ ME FIRST - ERC Content Desk')[2], 'READ ME FIRST - ERC Content Desk')} (on the team drive: Education Research Center &gt; ERC Content Desk), with the owner's name.`), 'and says where it is kept, with the doc linked');
   for (const d of ['exchange', 'research-briefs']) assert.ok(deckPage(d).includes('<a href="/how-to/change-the-desk/#ask">team password</a>'), `${d} links the team password to where it is kept`);
 });
 

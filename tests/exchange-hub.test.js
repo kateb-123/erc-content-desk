@@ -146,7 +146,7 @@ test('the Exchange page leads with the Publish door and its count, and keeps eve
     'stat: Waiting to publish',
     'link: Edit live items (opens in a new tab)',
     'note: Fix, hide or delete what is already live. It asks the team password.',
-    'note: Code: github.com/kateb-123/erc-policy-exchange-app. Who holds the logins: READ ME FIRST, in the shared drive.',
+    'note: Code: github.com/kateb-123/erc-policy-exchange-app. Who holds the logins: READ ME FIRST - ERC Content Desk (opens in a new tab), on the team drive.',   // the doc's name is a link (Oct 26)
   ]);
 });
 

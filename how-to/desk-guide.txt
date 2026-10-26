@@ -51,7 +51,7 @@ https://erc-content-desk.vercel.app/how-to/sort/
 
 ## The scraper
 
-Rows you delete on the Newsletter scrapes tabs stay deleted.
+Rows you delete on the Newsletter scrapes (https://docs.google.com/spreadsheets/d/1BtElrce0rR4W8QgtiAZRP_OO4H74n99S2UKmwbJDtko/edit) tabs stay deleted. Open the sheet opens it, and the files opens the run's dated folder inside scrapes (https://drive.google.com/drive/folders/1P7KCtPTN8QEosahGoth-qp04PZJ3JqwN), on the team drive: Education Research Center > ERC Content Desk > Newsletter > Newsletter Scrape.
  
 1Run the scraper: starts a run now.
  
@@ -59,7 +59,7 @@ Rows you delete on the Newsletter scrapes tabs stay deleted.
  
 3The last run: what it found. Open the sheet goes to Newsletter scrapes.
  
-!Add a source only adds. To stop one you added, set Switched on to no on the Scraper sources Sheet. The scraper's built-in sources need code.
+!Add a source only adds. To stop one you added, set Switched on to no on the Scraper sources Sheet (https://docs.google.com/spreadsheets/d/19gAAU4OTxGrfYqitBS3Nx9KjfIbE4qW_7C51Lq_pZhw/edit) (on the team drive: Education Research Center > ERC Content Desk > Newsletter). The scraper's built-in sources need code.
 
 ## Keep or delete
 
@@ -197,7 +197,7 @@ Fix an item where it is now.
  
 !Delete is final once you reload or close the desk. To bring an item back, add its link again on Submit content.
  
-!Never fix an item in the Sheet's first tab. It is a copy: the desk never reads it and writes over it.
+!Never fix an item in the Sheet's first tab. It is a copy: the desk never reads it and writes over it. The Sheet is erc-content-desk (https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit), on the team drive: Education Research Center > ERC Content Desk > Content queue.
 
 ## Where it is now
 
@@ -227,7 +227,7 @@ https://erc-content-desk.vercel.app/how-to/newsletter/
 
 ## Send dates
 
-The send dates live on the Sheet's schedule tab. A change there reaches the desk within ten minutes; reload to see it. If it never does, see Bring back the Google scripts (https://erc-content-desk.vercel.app/how-to/google-scripts/).
+The send dates live on the Sheet's schedule tab (https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit#gid=287660130), in erc-content-desk on the team drive: Education Research Center > ERC Content Desk > Content queue. A change there reaches the desk within ten minutes; reload to see it. If it never does, see Bring back the Google scripts (https://erc-content-desk.vercel.app/how-to/google-scripts/).
  
 1Shows a week before the last send date: time to add the next ones.
  
@@ -545,7 +545,7 @@ Press Publish N to the Exchange.
  
 3Cancel: nothing is sent.
  
-→Each publish files a copy of the site's list in the shared drive, in ERC Content Desk, Policy Exchange.
+→Each publish files a copy of the site's list on the team drive: Education Research Center > ERC Content Desk > Policy Exchange (https://drive.google.com/drive/folders/1eSRrsHYDMnQZLoH-rOMilx40V7c8nsd_).
 
 ## Highlight
 
@@ -762,7 +762,7 @@ Sort the queue: Finalize (https://erc-content-desk.vercel.app/how-to/sort/#final
 ## What you need
 
 - The team password (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask).
-- Google Drive for desktop, with the shared drive in Finder. Each brief lives in ERC Content Desk / ERC Research Briefs / your brief's folder.
+- Google Drive for desktop, with the shared drive in Finder. Each brief lives in ERC Content Desk / ERC Research Briefs / your brief's folder (on the team drive: Education Research Center > ERC Content Desk > ERC Research Briefs (https://drive.google.com/drive/folders/13Q8dz0Ar1g9iHQxW72KioKM04THCM-sr)).
 - Claude Code, opened on ERC Content Desk / ERC Research Briefs. The house rules, template and scripts are in ERC Content Desk / ERC Research Briefs / erc-research-briefs.
 - Node.js, Grammarly, Word, Outlook and Chrome.
 
@@ -952,7 +952,7 @@ Anything a screen can't change goes to the desk's owner.
 
 - The team password is the one password. Content Sort and Research briefs ask for it, Publish and Highlight ask for it at Confirm, and so does the Exchange's edit door.
  
-- It is in READ ME FIRST - ERC handoff, in the shared drive, with the owner's name.
+- It is in READ ME FIRST - ERC Content Desk (https://docs.google.com/document/d/1DHzMJCA_Alep8suiZi7iICzLGSKtexvm6Z1yqVEoUFg/edit) (on the team drive: Education Research Center > ERC Content Desk), with the owner's name.
 
 ## A change in code
 
@@ -1105,7 +1105,7 @@ The whole script, apps-script/Code.gs (518 lines), is in a box on the page with 
 
 It starts with /** and ends with }. 518 lines.
  
-This code is a copy from the desk's repository on Oct 25, 2026. If the code changes, this box is what gets updated.
+This code is a copy from the desk's repository on Oct 26, 2026. If the code changes, this box is what gets updated.
 
 Add a small helper at the end and run it once, so Google asks for every permission the script needs.
  
@@ -1151,7 +1151,7 @@ Your screenshot: the New deployment box.
  
 - Beside Select type, click the gear, then Web app. The box shows the web app's settings.
  
-- Description: your name and the date, for example "Kathy, Oct 2026". The old deployments show as Untitled (one may say Drive), so this marks yours.
+- Description: your name and the date. The old deployments show as Untitled (one may say Drive), so this marks yours.
  
 - Execute as: Me (your TAMU address). Who has access: Anyone, not "Anyone with Google account". The desk calls the script without signing in to Google; the token is what protects it.
 
@@ -1184,7 +1184,7 @@ The whole script, apps-script/listserv-count.gs (50 lines), is in a box on the p
 
 It starts with /** and ends with }. 50 lines.
  
-This code is a copy from the desk's repository on Oct 25, 2026. If the code changes, this box is what gets updated.
+This code is a copy from the desk's repository on Oct 26, 2026. If the code changes, this box is what gets updated.
 
 Run it once for the permissions, then deploy it the same way.
 
@@ -1236,9 +1236,9 @@ Then one test of each script. Delete the test rows after.
 
 - On the public sign-up page, erc-share.vercel.app/listserv (https://erc-share.vercel.app/listserv/), sign up as "Test, delete me" with your own email, pass the check box, and send. The page says "Thank you. You are on the list."
  
-- Your test is the last row on Sheet 1 of subscribe to listserve. Delete that row. The desk keeps its own copy of every sign-up, so Listserv's Last sign-up shows today, and Last updated may change to today too. Both are expected.
+- Your test is the last row on Sheet 1 of subscribe to listserve (https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit) (Open the sign-up sheet on Listserv). Delete that row. The desk keeps its own copy of every sign-up, so Listserv's Last sign-up shows today, and Last updated may change to today too. Both are expected.
  
-- On Submit content (https://erc-content-desk.vercel.app/#team), add an obviously fake item with Add to the queue: the link https://example.org/test, the title "Test item, delete me", and your initials. Within a minute it is the last row on the first tab of erc-content-desk.
+- On Submit content (https://erc-content-desk.vercel.app/#team), add an obviously fake item with Add to the queue: the link https://example.org/test, the title "Test item, delete me", and your initials. Within a minute it is the last row on the first tab of erc-content-desk (https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit).
  
 - Delete it on Content Sort (https://erc-content-desk.vercel.app/#sort) (the team password: Who to ask (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask)). Its Sheet row stays, with its status set to trashed: rows are never removed.
 
@@ -1250,7 +1250,7 @@ The scraper, the briefs and the send dates use the desk script too.
  
 - Open any brief's page on Research briefs (https://erc-content-desk.vercel.app/#briefs) (the team password again: Who to ask (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask)). Its files are listed, each a link into Drive. "Drive didn't answer. Use the folder link above." means the desk script still fails.
  
-- Later: a send date typed on the Sheet's schedule tab shows on Newsletter > Schedule (https://erc-content-desk.vercel.app/#schedule) within ten minutes.
+- Later: a send date typed on the Sheet's schedule tab (https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit#gid=287660130) shows on Newsletter > Schedule (https://erc-content-desk.vercel.app/#schedule) within ten minutes.
 
 ## If something goes wrong
 
@@ -1312,13 +1312,13 @@ Unconfirmed: whether the live script already holds SOURCES_SHEET_ID. Step 5 of s
 
 ## Connect the sources Sheet
 
-- Open the Sheet Scraper sources, in ERC Content Desk > Newsletter. Its id is the long part of its address between /d/ and /edit.
+- Open the Sheet Scraper sources, on the team drive: Education Research Center > ERC Content Desk > Newsletter. Its id is the long part of its address between /d/ and /edit.
  
 - In the desk's script: Project Settings > Edit script properties > Add script property: SOURCES_SHEET_ID and that id. Save script properties. A property is read live: no new version is needed for it.
 
 ## Any later change to the code
 
-- Open erc-content-desk > Extensions > Apps Script, and replace Code.gs with the box on this page, which is what gets updated. Save. Paste the checkAccess helper at the end again, since the paste removes it.
+- Open erc-content-desk (https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit) > Extensions > Apps Script, and replace Code.gs with the box on this page, which is what gets updated. Save. Paste the checkAccess helper at the end again, since the paste removes it.
  
 - If the new code's notes name a new script property or permission, add it as in steps 5 and 6, then run checkAccess and tick every box.
  

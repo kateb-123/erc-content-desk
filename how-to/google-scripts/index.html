@@ -1110,7 +1110,7 @@ function describeError(err) {
 }
 </code></pre>
               <p class="code-meta">It starts with <code>/**</code> and ends with <code>}</code>. 518 lines.</p>
-              <p class="code-meta">This code is a copy from the desk's repository on Oct 25, 2026. If the code changes, this box is what gets updated.</p>
+              <p class="code-meta">This code is a copy from the desk's repository on Oct 26, 2026. If the code changes, this box is what gets updated.</p>
             </div>
           </div>
         </div>
@@ -1154,7 +1154,7 @@ function describeError(err) {
               <ol start="12" style="counter-reset: step 11">
                 <li>If Google says it hasn't verified this app, click <b>Advanced</b>, then <b>Go to</b> the project name <b>(unsafe)</b>. A script made inside TAMU may skip this screen.</li>
                 <li>Google lists what the script may do, each with its own box. Tick every box (Google may offer <b>Select all</b>), then <b>Continue</b>. An empty box is a partial grant, and the desk's writes fail later. Google's wording may differ slightly.</li>
-                <li>The <b>Execution log</b> opens below the code. It shows erc-content-desk, scrapes and ERC Research Briefs, then <b>Execution completed</b>. An error on a getFolderById line means a folder id in step 5 is missing or wrong.</li>
+                <li>The <b>Execution log</b> opens below the code. It shows <code>erc-content-desk</code>, <code>scrapes</code> and <code>ERC Research Briefs</code>, then <b>Execution completed</b>. An error on a getFolderById line means a folder id in step 5 is missing or wrong.</li>
               </ol>
             </section>
           </div>
@@ -1173,7 +1173,7 @@ function describeError(err) {
               <ol start="15" style="counter-reset: step 14">
                 <li>Click <b>Deploy</b> (top right) &gt; <b>New deployment</b>. The New deployment box opens.</li>
                 <li>Beside <b>Select type</b>, click the gear, then <b>Web app</b>. The box shows the web app's settings.</li>
-                <li><b>Description</b>: your name and the date, for example "Kathy, Oct 2026". The old deployments show as Untitled (one may say Drive), so this marks yours.</li>
+                <li><b>Description</b>: your name and the date. The old deployments show as Untitled (one may say Drive), so this marks yours.</li>
                 <li><b>Execute as</b>: <b>Me</b> (your TAMU address). <b>Who has access</b>: <b>Anyone</b>, not "Anyone with Google account". The desk calls the script without signing in to Google; the token is what protects it.</li>
               </ol>
             </section>
@@ -1270,7 +1270,7 @@ function waitingCount() {
 }
 </code></pre>
               <p class="code-meta">It starts with <code>/**</code> and ends with <code>}</code>. 50 lines.</p>
-              <p class="code-meta">This code is a copy from the desk's repository on Oct 25, 2026. If the code changes, this box is what gets updated.</p>
+              <p class="code-meta">This code is a copy from the desk's repository on Oct 26, 2026. If the code changes, this box is what gets updated.</p>
             </div>
           </div>
         </div>
@@ -1339,11 +1339,11 @@ function waitingCount() {
             <div class="foot"></div>
           </div>
           <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:512;--cy:72;--cw:2000;--ch:1346">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:512;--cy:72;--cw:2000;--ch:1286">
               <div class="crop"><div class="zoom"><img src="shots/listserv.png" width="2560" height="1800" loading="lazy" alt="The Listserv page: under To be added the count is 3, with Rows on Sheet 1, counted as this page opened, Open the sign-up sheet and the three steps; then the Sign-up form box, its Status reading Live, taking sign-ups." /></div></div>
-              <button type="button" class="pin" style="--x:5.1;--y:26.2" aria-label="To be added: a number means the sign-up script answered"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">To be added: a number means the sign-up script answered</span></button>
-              <button type="button" class="pin" style="--x:30;--y:30.5" aria-label="If the script is down this reads: Sheet 1 couldn't be counted just now."><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">If the script is down this reads: Sheet 1 couldn't be counted just now.</span></button>
-              <button type="button" class="pin up" style="--x:31.3;--y:74.7" aria-label="Status: Live means the script answered. Down means sign-ups fail"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Status: Live means the script answered. Down means sign-ups fail</span></button>
+              <button type="button" class="pin" style="--x:5.1;--y:27.4" aria-label="To be added: a number means the sign-up script answered"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">To be added: a number means the sign-up script answered</span></button>
+              <button type="button" class="pin" style="--x:30;--y:31.9" aria-label="If the script is down this reads: Sheet 1 couldn't be counted just now."><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">If the script is down this reads: Sheet 1 couldn't be counted just now.</span></button>
+              <button type="button" class="pin up" style="--x:31.3;--y:78.2" aria-label="Status: Live means the script answered. Down means sign-ups fail"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Status: Live means the script answered. Down means sign-ups fail</span></button>
             </div>
           </div>
         </div>
@@ -1359,8 +1359,8 @@ function waitingCount() {
               <h3 id="h-check-1-0">Sign-ups and the desk's Sheet</h3>
               <ol>
                 <li>On the public sign-up page, <a href="https://erc-share.vercel.app/listserv/" target="_blank" rel="noopener">erc-share.vercel.app/listserv<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>, sign up as "Test, delete me" with your own email, pass the check box, and send. The page says "Thank you. You are on the list."</li>
-                <li>Your test is the last row on Sheet 1 of subscribe to listserve. Delete that row. The desk keeps its own copy of every sign-up, so Listserv's Last sign-up shows today, and Last updated may change to today too. Both are expected.</li>
-                <li>On <a href="/#team">Submit content</a>, add an obviously fake item with <b>Add to the queue</b>: the link https://example.org/test, the title "Test item, delete me", and your initials. Within a minute it is the last row on the first tab of erc-content-desk.</li>
+                <li>Your test is the last row on Sheet 1 of <a href="https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit" target="_blank" rel="noopener">subscribe to listserve<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a> (<b>Open the sign-up sheet</b> on Listserv). Delete that row. The desk keeps its own copy of every sign-up, so Listserv's Last sign-up shows today, and Last updated may change to today too. Both are expected.</li>
+                <li>On <a href="/#team">Submit content</a>, add an obviously fake item with <b>Add to the queue</b>: the link https://example.org/test, the title "Test item, delete me", and your initials. Within a minute it is the last row on the first tab of <a href="https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit" target="_blank" rel="noopener">erc-content-desk<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>.</li>
                 <li>Delete it on <a href="/#sort">Content Sort</a> (the team password: <a href="/how-to/change-the-desk/#ask">Who to ask</a>). Its Sheet row stays, with its status set to trashed: rows are never removed.</li>
               </ol>
             </section>
@@ -1379,7 +1379,7 @@ function waitingCount() {
               <ol start="5" style="counter-reset: step 4">
                 <li>On the <a href="/#queue">Content queue</a>, under <b>Scraper</b>, press <b>Run the scraper</b>. The line shimmers while it runs (the last run took under two minutes). When it ends: "Last run &lt;date&gt;, for the &lt;date&gt; issue: ..." with <b>Open the sheet</b> and <b>the files</b>. "The last run failed on GitHub." means the delivery still failed.</li>
                 <li>Open any brief's page on <a href="/#briefs">Research briefs</a> (the team password again: <a href="/how-to/change-the-desk/#ask">Who to ask</a>). Its files are listed, each a link into Drive. "Drive didn't answer. Use the folder link above." means the desk script still fails.</li>
-                <li>Later: a send date typed on the Sheet's schedule tab shows on <a href="/#schedule">Newsletter &gt; Schedule</a> within ten minutes.</li>
+                <li>Later: a send date typed on <a href="https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit#gid=287660130" target="_blank" rel="noopener">the Sheet's schedule tab<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a> shows on <a href="/#schedule">Newsletter &gt; Schedule</a> within ten minutes.</li>
               </ol>
             </section>
           </div>
@@ -1469,14 +1469,14 @@ function waitingCount() {
             <section class="steps" aria-labelledby="h-later-0-0">
               <h3 id="h-later-0-0">Connect the sources Sheet</h3>
               <ol>
-                <li>Open the Sheet <b>Scraper sources</b>, in ERC Content Desk &gt; Newsletter. Its id is the long part of its address between <code>/d/</code> and <code>/edit</code>.</li>
+                <li>Open the Sheet <b>Scraper sources</b>, on the team drive: Education Research Center &gt; ERC Content Desk &gt; Newsletter. Its id is the long part of its address between <code>/d/</code> and <code>/edit</code>.</li>
                 <li>In the desk's script: <b>Project Settings</b> &gt; <b>Edit script properties</b> &gt; <b>Add script property</b>: <code>SOURCES_SHEET_ID</code> and that id. <b>Save script properties</b>. A property is read live: no new version is needed for it.</li>
               </ol>
             </section>
             <section class="steps" aria-labelledby="h-later-0-1">
               <h3 id="h-later-0-1">Any later change to the code</h3>
               <ol>
-                <li>Open erc-content-desk &gt; <b>Extensions</b> &gt; <b>Apps Script</b>, and replace <b>Code.gs</b> with the box on this page, which is what gets updated. Save. Paste the checkAccess helper at the end again, since the paste removes it.</li>
+                <li>Open <a href="https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit" target="_blank" rel="noopener">erc-content-desk<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a> &gt; <b>Extensions</b> &gt; <b>Apps Script</b>, and replace <b>Code.gs</b> with the box on this page, which is what gets updated. Save. Paste the checkAccess helper at the end again, since the paste removes it.</li>
                 <li>If the new code's notes name a new script property or permission, add it as in steps 5 and 6, then run checkAccess and tick every box.</li>
                 <li><b>Deploy</b> &gt; <b>Manage deployments</b> &gt; your deployment &gt; the pencil &gt; <b>Version</b>: <b>New version</b> &gt; <b>Deploy</b>. Same address. Vercel needs nothing.</li>
               </ol>

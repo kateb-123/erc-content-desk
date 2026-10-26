@@ -35,7 +35,7 @@
             },
             {
               "n": "→",
-              "html": "Each publish files a copy of the site's list in the shared drive, in ERC Content Desk, Policy Exchange.",
+              "html": "Each publish files a copy of the site's list on the team drive: Education Research Center &gt; ERC Content Desk &gt; <a href=\"https://drive.google.com/drive/folders/1eSRrsHYDMnQZLoH-rOMilx40V7c8nsd_\" target=\"_blank\" rel=\"noopener\">Policy Exchange<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a>.",
               "warn": false,
               "go": true
             }

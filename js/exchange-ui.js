@@ -16,6 +16,7 @@
 import { exchangeStatus } from './exchange-view.js';
 import { hubHead, HUB_LEDES } from './hub-head.js';
 import { faIcon } from './icons.js';
+import { HANDOFF_DOC } from './public-links.js';
 import { el, focusKeyIn, restoreFocus } from './ui-aids.js';
 
 const SITE = 'https://erc-policy-exchange.vercel.app/';
@@ -76,8 +77,14 @@ export function renderExchange(container, { rows, today, loaded, preview, hubUpd
   const editing = el('div', 'ex-edit');
   editing.append(edit, el('p', 'qh-side-note', 'Fix, hide or delete what is already live. It asks the team password.'));
 
+  // The handoff doc's name is a link to it (Oct 26), the desk's outside-link idiom.
   const foot = el('div', 'ex-foot');
-  foot.append(el('p', 'qh-side-note', 'Code: github.com/kateb-123/erc-policy-exchange-app. Who holds the logins: READ ME FIRST, in the shared drive.'));
+  const note = el('p', 'qh-side-note', 'Code: github.com/kateb-123/erc-policy-exchange-app. Who holds the logins: ');
+  const doc = el('a', '', 'READ ME FIRST - ERC Content Desk');
+  doc.href = HANDOFF_DOC; doc.target = '_blank'; doc.rel = 'noopener';
+  doc.append(' ', faIcon('arrow-up-right-from-square'), el('span', 'sr-only', ' (opens in a new tab)'));
+  note.append(doc, ', on the team drive.');
+  foot.append(note);
 
   page.append(hubHead('Policy Exchange', HUB_LEDES.exchange), doors, status, editing, foot);
   container.replaceChildren(page);

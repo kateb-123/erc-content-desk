@@ -15,8 +15,8 @@ Every name below is the one the walkthrough should use. Nothing else is needed.
 | The sign-up Sheet, **subscribe to listserve** | Team drive > ERC Content Desk > Listserv. https://docs.google.com/spreadsheets/d/1U_kFmkji6tPeD6OzRVcOWkaWz46pcQcogD1nYtObO2E/edit | Anyone on the team drive |
 | The sign-up script (script 2) | Not known. Its code opens the Sheet by id, so the old one may have been inside the Sheet or a separate project in the closed account's own Drive, which is locked. Either way the walkthrough makes it inside the sign-up Sheet (**Extensions** > **Apps Script**), from the repository's copy, so the team can always find it from the Sheet. | Anyone who can edit the Sheet |
 | The code for both scripts | Appendix A (the desk script) and Appendix B (the sign-up script) at the end of this brief, each pasted whole into the Apps Script editor. They are copies of `apps-script/Code.gs` and `apps-script/listserv-count.gs` in the desk's public repository, https://github.com/kateb-123/erc-content-desk/tree/main/apps-script, which is for whoever maintains the code, not for the teammate. | Anyone |
-| The desk's settings (`SHEET_API_URL`, `LISTSERV_URL`) | vercel.com, team **TAMU-ERC**, project **erc-content-desk**, Settings > Environment Variables | The desk's owner only, named in READ ME FIRST - ERC handoff |
-| READ ME FIRST - ERC handoff | Team drive > ERC Content Desk | Anyone on the team drive |
+| The desk's settings (`SHEET_API_URL`, `LISTSERV_URL`) | vercel.com, team **TAMU-ERC**, project **erc-content-desk**, Settings > Environment Variables | The desk's owner only, named in READ ME FIRST - ERC Content Desk |
+| READ ME FIRST - ERC Content Desk | Team drive > ERC Content Desk, at the top. https://docs.google.com/document/d/1DHzMJCA_Alep8suiZi7iICzLGSKtexvm6Z1yqVEoUFg/edit | Anyone on the team drive |
 | The existing how-to | https://erc-content-desk.vercel.app/how-to/google-scripts/ (its Redeploy tab is where the desk's Listserv page sends people while the script is down) | Anyone, no login |
 
 ## 1. What stopped, and what keeps working
@@ -51,7 +51,7 @@ You need:
 - Unconfirmed: your access to the scripts. An Oct 22 note reads that the team drive gives you "access to all but the Google Apps Scripts". The test is the step above.
 - Unconfirmed: your role on the team drive. The desk script moves an older copy of a file to the trash when it saves a new one under the same name, and on a team drive that takes Content manager or Manager. Contributor cannot trash.
 - About 15 minutes.
-- The desk's owner, named in READ ME FIRST - ERC handoff, for the Vercel step.
+- The desk's owner, named in READ ME FIRST - ERC Content Desk, for the Vercel step.
 
 Who changes the Vercel settings:
 
@@ -121,7 +121,7 @@ Where the old script lived is not known (section 0). It does not matter: a deplo
 
 ### Send the two addresses
 
-Email both to the desk's owner, named in READ ME FIRST - ERC handoff. Say which is which: "erc-content-desk script" and "subscribe to listserve script". Email only: never a shared doc, a chat or a page.
+Email both to the desk's owner, named in READ ME FIRST - ERC Content Desk. Say which is which: "erc-content-desk script" and "subscribe to listserve script". Email only: never a shared doc, a chat or a page.
 
 ## 4. The Vercel step (the desk's owner only)
 
@@ -140,7 +140,7 @@ Once the owner says the redeploy is done:
 
 1. **Listserv count.** Open https://erc-content-desk.vercel.app/#listserv. Under **To be added** there is a number, with "Rows on Sheet 1, counted as this page opened." A blank with "Sheet 1 couldn't be counted just now." means not yet. Under Status, "Live, taking sign-ups" means the script answered the count; "Down: the sign-up script isn't answering, so sign-ups fail." means it did not (since Oct 25).
 2. **A test sign-up.** On https://erc-share.vercel.app/listserv/, sign up as "Test, delete me" with your own email, pass the check box, and send. The page says "Thank you. You are on the list." Your test is the last row on Sheet 1 of subscribe to listserve. Delete that row. The desk keeps its own copy of every sign-up, so the hub's Last sign-up shows today's date, and Last updated may change to today too. Both are expected.
-3. **The desk Sheet's new row.** On Submit content (https://erc-content-desk.vercel.app/#team), add an obviously fake item with **Add to the queue**: the link https://example.org/test, the title "Test item, delete me", and your initials (the form needs them). Within a minute it is the last row on the first tab of erc-content-desk. Delete it on Content Sort (the team password is in READ ME FIRST - ERC handoff). Its Sheet row stays, with its status set to trashed: rows are never removed.
+3. **The desk Sheet's new row.** On Submit content (https://erc-content-desk.vercel.app/#team), add an obviously fake item with **Add to the queue**: the link https://example.org/test, the title "Test item, delete me", and your initials (the form needs them). Within a minute it is the last row on the first tab of erc-content-desk. Delete it on Content Sort (the team password is in READ ME FIRST - ERC Content Desk). Its Sheet row stays, with its status set to trashed: rows are never removed.
 4. **The scraper.** On the Content queue (https://erc-content-desk.vercel.app/#queue), under **Scraper**, press **Run the scraper**. The line shimmers while it runs (the last run took under two minutes). When it ends: "Last run <date>, for the <date> issue: ..." with **Open the sheet** and **the files**. "The last run failed on GitHub." means the delivery still failed.
 5. **Research briefs.** Open any brief's page (the team password again). Its files are listed, each a link into Drive. "Drive didn't answer. Use the folder link above." means the desk script still fails.
 6. **Later.** Send dates typed on the Sheet's schedule tab show on Newsletter > Schedule within ten minutes.
@@ -203,7 +203,7 @@ What not to invent:
 
 - Only these steps and these names. No buttons, menus, messages or behavior that are not in this brief. Where it says Unconfirmed, keep the mark or leave the line out.
 - Do not draw or mock Google's screens. Where a picture helps, leave a labeled empty frame ("Your screenshot: the permissions screen") for the teammate's own.
-- Never a password, the token's value or any `/exec` address. Do not name the person who left: say "the desk's owner, named in READ ME FIRST - ERC handoff".
+- Never a password, the token's value or any `/exec` address. Do not name the person who left: say "the desk's owner, named in READ ME FIRST - ERC Content Desk".
 - If the page will be public, leave out the three Drive ids (the two folders and the Scraper sources Sheet) and keep the line on finding a folder's id from its address.
 
 Links to give it:

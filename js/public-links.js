@@ -22,6 +22,12 @@ export const PUBLIC_LINKS = [
  *  Never one of PUBLIC_LINKS, which the team's how-to shares. */
 export const TEAM_SUBMIT = { key: 'team-submit', label: 'Team submit page', href: '/team-submit/', icon: 'thumbtack', line: 'pin', note: 'Open it in its own tab, then right-click the tab and pick Pin.' };
 
+/** The team's handoff doc, READ ME FIRST - ERC Content Desk, at the top of
+ *  ERC Content Desk on the team drive (Oct 26): where the team password and
+ *  the owner's name are kept. The sign-in, the Exchange hub's foot and Who to
+ *  ask link it by its name; what it holds never appears on a page. */
+export const HANDOFF_DOC = 'https://docs.google.com/document/d/1DHzMJCA_Alep8suiZi7iICzLGSKtexvm6Z1yqVEoUFg/edit';
+
 /** Copy link: writes the address and says Copied for two seconds; only this
  *  button changes. Every public link has one. */
 export function copyLinkButton(link) {

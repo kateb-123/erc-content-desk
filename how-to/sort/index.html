@@ -402,6 +402,40 @@
     @media (prefers-reduced-motion: no-preference) {
       .fc-g, .sb-add { transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive); }
     }
+
+    /* A code slide (Oct 26, the Google scripts): the whole script in a box
+       where a still would be, its steps the numbered notes beside it. The box
+       scrolls inside itself, never the page sideways; plain monospace, the
+       desk's ink on white. Without script every line shows, and Copy goes. */
+    .code-frame { display: block; }
+    .codebox { display: flex; flex-direction: column; gap: var(--spacing-03); min-width: 0; }
+    .code-head { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-04); min-width: 0; }
+    .code-name { margin: 0; min-width: 0; font: 600 14px/20px var(--font-sans); color: var(--ink); overflow-wrap: anywhere; }
+    .code-lines { font-weight: 400; color: var(--muted); }
+    .code-copy { display: inline-flex; align-items: center; gap: var(--spacing-03); flex: none; height: 32px; padding: 0 var(--spacing-04); border: 1px solid var(--button-tertiary); border-radius: var(--radius); background: var(--layer-02); color: var(--text-in-outline); font: 600 14px/20px var(--font-sans); cursor: pointer; white-space: nowrap; }
+    .code-copy:hover { background: var(--hover); border-color: var(--text-secondary); color: var(--text-in-outline); }
+    .code-copy .fa-solid { font-size: 12px; }
+    .code-copy.is-done { border-color: var(--notification-success-border); background: var(--notification-success-background); color: var(--text-success-on-tint); }
+    html:not(.js) .code-copy { display: none; }
+    .code-pre { margin: 0; padding: var(--spacing-04); max-height: calc(var(--fh) - 112px); overflow: auto; background: var(--layer-02); border: 1px solid var(--layer-line); border-radius: var(--radius); color: var(--ink); font: 400 12px/18px Menlo, SFMono-Regular, Consolas, ui-monospace, monospace; tab-size: 2; white-space: pre; }   /* Menlo first: Chrome on a Mac draws ui-monospace as Courier */
+    .code-pre code { font: inherit; }   /* the browser's own code rule would set Courier */
+    .code-pre:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+    html:not(.js) .code-pre { max-height: none; overflow: visible; white-space: pre-wrap; }
+    .code-meta { margin: 0; font: var(--meta-type); color: var(--muted); }
+    .code-meta code { padding: 1px 4px; border-radius: 2px; background: var(--layer-02); font: 400 13px/18px Menlo, SFMono-Regular, Consolas, ui-monospace, monospace; color: var(--ink); }
+    @media (prefers-reduced-motion: no-preference) {
+      .code-copy { transition: background-color var(--duration-fast-01) var(--ease-productive), color var(--duration-fast-01) var(--ease-productive), border-color var(--duration-fast-01) var(--ease-productive); }
+    }
+
+    /* A quiet note (Oct 26): an Unconfirmed mark, or the line where the
+       teammate's own screenshot would go. An icon where the number sits. */
+    .note.quiet { color: var(--muted); }
+    .note.quiet .fa-solid { flex: none; width: 22px; text-align: center; font-size: 14px; color: var(--muted); }
+
+    /* A steps group of facts, not actions (Oct 26): a dot in place of the number. */
+    .steps ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-04); font: var(--body-type); color: var(--ink); }
+    .steps ul li { position: relative; padding-left: 36px; }
+    .steps ul li::before { content: ''; position: absolute; left: 7px; top: 9px; width: 8px; height: 8px; border-radius: var(--radius-round); background: var(--border-strong-01); }
   </style>
 </head>
 <body>
@@ -439,11 +473,11 @@
 
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Rows you delete on the Newsletter scrapes tabs stay deleted.</p>
+            <p class="cap">Rows you delete on the <a href="https://docs.google.com/spreadsheets/d/1BtElrce0rR4W8QgtiAZRP_OO4H74n99S2UKmwbJDtko/edit" target="_blank" rel="noopener">Newsletter scrapes<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a> tabs stay deleted. <b>Open the sheet</b> opens it, and <b>the files</b> opens the run's dated folder inside <a href="https://drive.google.com/drive/folders/1P7KCtPTN8QEosahGoth-qp04PZJ3JqwN" target="_blank" rel="noopener">scrapes<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>, on the team drive: Education Research Center &gt; ERC Content Desk &gt; Newsletter &gt; Newsletter Scrape.</p>
             <p class="note"><span class="n">1</span><span>Run the scraper: starts a run now.</span></p>
             <p class="note"><span class="n">2</span><span>Add a source: a site or feed for the scraper to read.</span></p>
             <p class="note"><span class="n">3</span><span>The last run: what it found. Open the sheet goes to Newsletter scrapes.</span></p>
-            <p class="note warn"><span class="n">!</span><span><b>Add a source only adds.</b> To stop one you added, set Switched on to no on the Scraper sources Sheet. The scraper's built-in sources need code.</span></p>
+            <p class="note warn"><span class="n">!</span><span><b>Add a source only adds.</b> To stop one you added, set Switched on to no on the <a href="https://docs.google.com/spreadsheets/d/19gAAU4OTxGrfYqitBS3Nx9KjfIbE4qW_7C51Lq_pZhw/edit" target="_blank" rel="noopener">Scraper sources Sheet<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a> (on the team drive: Education Research Center &gt; ERC Content Desk &gt; Newsletter). The scraper's built-in sources need code.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -673,7 +707,7 @@
           <div class="side">
             <p class="cap">Fix an item where it is now.</p>
             <p class="note warn"><span class="n">!</span><span><b>Delete is final once you reload or close the desk.</b> To bring an item back, add its link again on Submit content.</span></p>
-            <p class="note warn"><span class="n">!</span><span><b>Never fix an item in the Sheet's first tab.</b> It is a copy: the desk never reads it and writes over it.</span></p>
+            <p class="note warn"><span class="n">!</span><span><b>Never fix an item in the Sheet's first tab.</b> It is a copy: the desk never reads it and writes over it. The Sheet is <a href="https://docs.google.com/spreadsheets/d/1dvXdBhMgp1-XmijS0M8wtxARWjy3ejCCFcy-YGKjP4I/edit" target="_blank" rel="noopener">erc-content-desk<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>, on the team drive: Education Research Center &gt; ERC Content Desk &gt; Content queue.</span></p>
             <div class="foot"></div>
           </div>
           <div class="text">
