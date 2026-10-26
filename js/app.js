@@ -1,5 +1,5 @@
 /** Entry point. Owns all state; screens are pure renderers. */
-import { fetchDesk, saveRows, readNewRows, readReply, postJson, plainError } from './sheet-client.js';
+import { fetchDesk, saveRows, readNewRows, readReply, postJson, plainError, jsonInit } from './sheet-client.js';
 import { readAllWaiting } from './reader-client.js';
 import { readerQueue, undoWords, withoutRow } from './sort-view.js';
 import { busyWords } from './icons.js';
@@ -89,12 +89,14 @@ function setStatus(message, kind = 'busy', action = null) {
   // Anything in flight shows the dots loader beside its words; with
   // a retry button, the sentence does not also say to try again.
   if (action) message = message.replace(/ Try again in a minute\.$/, '');
-  if (kind === 'busy' && message) {
-    // Inline, one line tall: a message never moves the page.
-    statusEl.replaceChildren(busyWords(message));
-  } else {
-    statusEl.textContent = message;
-  }
+  // The words in a span of their own, so a long message keeps one line beside
+  // the page's corner and ends in an ellipsis (Oct 24): a message never moves the page.
+  const words = document.createElement('span');
+  words.className = 'status-words';
+  words.append(kind === 'busy' && message ? busyWords(message) : message);
+  if (message) statusEl.replaceChildren(words);
+  else statusEl.replaceChildren();   // empty, so :empty still holds
+
   if (action) {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -899,7 +901,7 @@ function render() {
       savingNotes: state.savingNotes, notesSaved: state.notesSaved, draftRunning: state.draftRunning === state.briefId, draftError: state.draftError, cropFailed: state.cropFailed,
     });
   } else if (state.screen === 'queue') {
-    renderQueue(screens.queue, { ...common, verified: state.verifiedIds, loaded: state.loaded, loadFailed: state.loadFailed, onGoTo: goTo, onRefresh: reload, scraper: state.scraper, onRunScraper: runScraper });
+    renderQueue(screens.queue, { ...common, verified: state.verifiedIds, loaded: state.loaded, loadFailed: state.loadFailed, onGoTo: goTo, onRefresh: reload, scraper: state.scraper, onRunScraper: runScraper, onAddSource: addSource });
   } else if (state.screen === 'exchange') {
     // What waits to publish comes from the live Exchange check: the quiet one the front page asks for.
     if (state.loaded && !state.publishPreview && !laneCheck.inFlight && laneCheck.failedAt !== state.rows) quietPublishCheck();
@@ -1113,6 +1115,17 @@ async function runScraper() {
   }
 }
 loadScraper();
+
+// Add a source (the owner's pick "feeds run on their own", Oct 24): the
+// Content queue's form asks the desk to look for the feed and write the row
+// to the Scraper sources Sheet. The reply comes back whole, a refusal too
+// ({ ok: false, error, field }), so the form can say it beside the field;
+// only a dropped connection throws.
+async function addSource(fields) {
+  const res = await fetch('/api/bulk', jsonInit({ action: 'source', ...fields }));
+  const data = await res.json().catch(() => null);
+  return data ?? { ok: false, error: `The desk couldn't add the source right now (server error ${res.status}). Try again in a minute.` };
+}
 
 // Back, Forward and a typed address switch screens like a menu pick would.
 window.addEventListener('hashchange', () => {

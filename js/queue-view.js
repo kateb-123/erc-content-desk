@@ -140,6 +140,33 @@ export function scraperStatus(data, today) {
   return { state: 'idle', button: true, line: `Last run ${isoToShort(last.date, today)}${issue}: ${countWords(last.counts)}.${tail}`, link, files };
 }
 
+/* ---- Add a source (the owner's pick "feeds run on their own", Oct 24) --- */
+
+/** The form's two kinds and the four things a source can post, in the form's words. */
+export const SOURCE_KINDS = [{ key: 'feed', label: 'Site or feed' }, { key: 'email', label: 'Email newsletter' }];
+export const SOURCE_TYPES = [{ key: 'event', label: 'Events' }, { key: 'research', label: 'Research' }, { key: 'headline', label: 'Headlines' }, { key: 'opportunity', label: 'Opportunities' }];
+
+const SOURCE_ANSWERS = {
+  feed: { tone: 'success', words: 'Added. The scraper reads its feed from next Monday.' },
+  'no feed': { tone: 'info', words: 'Saved, but it has no feed, so the scraper cannot read it yet.' },
+  email: { tone: 'info', words: 'Saved as an email newsletter. The scraper cannot read email.' },
+};
+
+/** What the desk did with the source, in plain words (the desk's outcome:
+ *  feed, no feed, email); null for anything else. */
+export function sourceAnswer(outcome) {
+  return SOURCE_ANSWERS[outcome] ?? null;
+}
+
+/** What the form still needs before it asks the desk, or null. The desk
+ *  checks everything again; this only saves a wait for an empty field. */
+export function sourceFormProblem({ name, address, type }) {
+  if (!String(name ?? '').trim()) return { field: 'name', problem: "Type the source's name." };
+  if (!String(address ?? '').trim()) return { field: 'address', problem: 'Type its address.' };
+  if (!String(type ?? '')) return { field: 'type', problem: 'Pick what it posts.' };
+  return null;
+}
+
 /** The last issue that went out (Kate, Oct 8: the queue holds "what was
  *  submitted from the last newsletter until now"): the newest send date not
  *  after today, the send day itself included, as Ready to add counts it. */

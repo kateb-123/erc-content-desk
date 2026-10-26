@@ -1,39 +1,5 @@
 [
   {
-    "name": "hub",
-    "url": "/?fresh=cap#exchange",
-    "alt": "The Policy Exchange page: the Publish and Highlight doors side by side, Publish with how many wait, then the site's Status box with Waiting to publish, then Edit live items with its note.",
-    "before": [
-      {
-        "waitFor": "#screen-exchange a.qh-edit"
-      }
-    ],
-    "crop": "#screen-exchange .hub-page",
-    "pad": 16,
-    "pins": [
-      {
-        "selector": "#screen-exchange .hub-stat:has-text(\"Waiting to publish\")",
-        "label": "Waiting to publish: what Publish would add now",
-        "nth": 0
-      },
-      {
-        "selector": "#screen-exchange a.sort-door[href=\"/#publish\"]",
-        "label": "Publish: the page that sends the waiting items to the site",
-        "nth": 0
-      },
-      {
-        "selector": "#screen-exchange a.sort-door[href=\"/#highlight\"]",
-        "label": "Highlight: the big card on the site's home page",
-        "nth": 0
-      },
-      {
-        "selector": "#screen-exchange a.qh-edit",
-        "label": "Edit live items: the site's own door to fix, hide or delete a live item",
-        "nth": 0
-      }
-    ]
-  },
-  {
     "name": "publish",
     "url": "/?fresh=cap#publish",
     "alt": "Publish: Checked against the live Exchange, a note that a rewrite is not checked yet, the colored bar with 2 adding, 1 held for newsletter and Already live, the table with each row's Fate, and Publish 2 to the Exchange at the top right.",
@@ -56,11 +22,6 @@
     "crop": "#screen-publish",
     "pad": 16,
     "pins": [
-      {
-        "selector": "#screen-publish .p-unchecked button",
-        "label": "Check them on Finalize: read each rewrite before it goes out",
-        "nth": 0
-      },
       {
         "selector": "#screen-publish .p-legend-item",
         "label": "A color: click it to show only those rows",
@@ -98,7 +59,7 @@
     "pins": [
       {
         "selector": "#publish-password",
-        "label": "Password: the desk password, the one Content Sort asks for",
+        "label": "Password: the team password",
         "nth": 0
       },
       {
@@ -201,7 +162,7 @@
     "pins": [
       {
         "selector": "#screen-highlight .hl-save-btn",
-        "label": "Update the highlight: asks for the password, then Confirm",
+        "label": "Update the highlight: asks for the team password, then Confirm",
         "nth": 0
       },
       {

@@ -47,7 +47,7 @@
                 "<b>Deploy</b>, <b>New deployment</b>. Pick <b>Web app</b> from the gear.",
                 "<b>Execute as</b>: Me. <b>Who has access</b>: Anyone. Then <b>Deploy</b>.",
                 "Allow the permissions. If Google says unverified, choose <b>Advanced</b>, then <b>Go to</b> the project.",
-                "Copy the <b>Web app URL</b>, ending in <code>/exec</code>. Email it to the desk's owner, named in READ ME FIRST - ERC handoff in the shared drive, and say which Sheet."
+                "Copy the <b>Web app URL</b>, ending in <code>/exec</code>. Email it to the desk's owner (<a href=\"/how-to/change-the-desk/#ask\">Who to ask</a>) and say which Sheet."
               ],
               "links": null
             }
@@ -76,26 +76,7 @@
         },
         {
           "cap": "For <b>subscribe to listserve</b>, open <a href=\"/#listserv\">Listserv</a>.",
-          "notes": [
-            {
-              "n": "1",
-              "html": "A number here means the script answered.",
-              "warn": false,
-              "go": false
-            },
-            {
-              "n": "2",
-              "html": "If it did not, the number is blank and this line reads <b>Sheet 1 couldn't be counted just now.</b> with <b>Try again</b>.",
-              "warn": false,
-              "go": false
-            },
-            {
-              "n": "3",
-              "html": "<b>Live, taking sign-ups</b> only means the desk has an address for the script. It is not the check.",
-              "warn": false,
-              "go": false
-            }
-          ],
+          "notes": [],
           "shot": "listserv"
         }
       ]

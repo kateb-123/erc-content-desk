@@ -15,7 +15,6 @@
  */
 import { renderHighlights, placeSaveBar } from './highlight-ui.js';
 import { pickOf, followPicks, samePicks, withoutPhoto, setCardWords, setUntil, wantingWords } from './highlight-view.js';
-import { howToLink } from './hub-head.js';
 import { screenHead } from './screen-info.js';
 import { faIcon } from './icons.js';
 import { el, button, focusKeyIn, restoreFocus, busyLine } from './ui-aids.js';
@@ -66,7 +65,6 @@ function draw() {
   container.replaceChildren();
   const { head, lede } = screenHead('Highlight', 'highlight',
     'Your picks show in the big card on the Exchange\'s home page until their day. Update the highlight saves them; nothing else changes the card.');
-  head.append(howToLink('How to change the Policy Exchange', '/how-to/exchange/#highlight'));
   container.append(head);
 
   if (!preview) {

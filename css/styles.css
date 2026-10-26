@@ -54,7 +54,7 @@ h2, h3 { font-family: var(--font-sans); letter-spacing: 0; }
 .lede { font: var(--lede-type); color: var(--muted); margin: 0 0 var(--spacing-06); }
 
 /* The micro-label over a field: 13px semibold, helper gray, in sentence case since the look of Oct 23 (caps before). */
-label, .type-picker legend, .subtype-label, .card-field-label, .card-type legend, .card-send legend, .f-edit-grid label, .f-edit-media {
+label, .type-picker legend, .subtype-label, .card-field-label, .card-type legend, .card-send legend, .f-edit-grid label, .f-edit-media, .qh-source-kind legend {
   display: block; font: var(--label-type); font-weight: 500; letter-spacing: var(--label-tracking); color: var(--text-helper);
 }
 label { margin: var(--spacing-05) 0 var(--spacing-03); }
@@ -213,10 +213,6 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .nl-door { display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 var(--spacing-05); background: var(--button-primary); color: var(--text-on-accent); text-decoration: none; transition: background-color var(--duration-fast-01) var(--ease-productive); }
 .nl-door:hover { background: var(--button-primary-hover); color: var(--text-on-accent); }
 .nl-door:focus-visible { outline: 2px solid transparent; outline-offset: 0; box-shadow: var(--focus-ring); }
-/* The how-to under the door: a quiet word that acts, so it wears the underline. */
-.nl-howto { display: inline-block; margin-top: var(--spacing-04); font: var(--meta-type); color: var(--text-secondary); text-decoration: underline; }
-.nl-howto:hover { color: var(--ink); }
-.nl-howto:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); border-radius: 2px; }
 .nl-last { border-top: 1px solid var(--line); padding-top: var(--spacing-04); }
 .nl-last .block-label { margin: 0 0 var(--spacing-02); }
 .nl-last-date { margin: 0; font-size: 14px; }
@@ -232,6 +228,14 @@ button:disabled { cursor: default; color: var(--text-on-color-disabled); border-
 .bulk-door .bulk-status { min-height: 0; margin: 0; }   /* takes no room until it has words */
 
 .status { min-height: 20px; margin: 0; font-size: 14px; position: sticky; top: 0; z-index: 2; background: var(--background); }   /* stays in view down a long list (design audit b3) */
+/* Today's date and the How-tos button sit at the right end of the status line's row (Kate, Oct 24, her picks E and D):
+   the words and their action end before the corner starts. --corner-w is the corner's width, measured by js/page-corner.js. */
+.desk-main > #desk-status { padding-right: calc(var(--corner-w, 272px) + var(--spacing-05)); }
+/* One line, so a message never moves the page: the words end in an ellipsis (the whole message is the line's title),
+   and the action follows them, never squeezed. Content Sort's band keeps its own line below. */
+.desk-main > #desk-status:not(:empty) { display: flex; align-items: center; gap: var(--spacing-02); }
+.desk-main > #desk-status > .status-words { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.desk-main > #desk-status > button { flex: none; }
 .submit-form .status { background: var(--layer); }   /* the form sits on a white card, not on the gray page */
 .status-ok { color: var(--ok); }
 .status-error { color: var(--err); }
@@ -468,18 +472,11 @@ button.primary.list-keep:active:not(:disabled) { background: var(--button-second
 /* The front page (Kate, Oct 23, 2026, her pick E, in her pick A of the looks):
    the hubs as one white grouped list per step under a quiet label, Bring it
    in, Send it out and Research, with Public links as a 304px menu at the
-   right. The title and its lede at the left of the head, How it all connects
-   at its right. */
+   right. The title and its lede at the left of the head; the How-tos button
+   at the page's top right holds the guides (Oct 24). */
 .home-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--spacing-05); margin: 0 0 var(--spacing-07); }
 .home-title { font: var(--page-title); letter-spacing: -.6px; margin: 0; }   /* the page title: 34px bold */
 .home-page .lede { margin: var(--spacing-02) 0 0; }
-.home-guide {
-  display: inline-flex; align-items: center; gap: var(--spacing-03); height: 32px; padding: 0 var(--spacing-04);
-  border: 1px solid var(--border-subtle-01); border-radius: var(--radius); background: var(--layer); box-shadow: var(--shadow-card);
-  font: 500 13px/18px var(--font-sans); color: var(--ink); text-decoration: none; white-space: nowrap;
-}
-.home-guide:hover { background: var(--wash-hover); color: var(--ink); }
-.home-guide .line-icon { width: 16px; height: 16px; color: var(--icon-secondary); }
 .home-hubs { display: grid; grid-template-columns: minmax(0, 1fr) 304px; gap: var(--spacing-07); align-items: start; }
 .home-groups { display: flex; flex-direction: column; gap: var(--spacing-06); }
 .home-hubs .hub-label { margin-bottom: var(--spacing-03); }
@@ -693,21 +690,21 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   max-width: none; padding: 0; min-height: 100vh;
   display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr;
 }
-.desk-main:has(> main > #screen-sort:not([hidden])) > #desk-banner, .desk-main:has(> main > #screen-finalize:not([hidden])) > #desk-banner { grid-row: 1; margin: var(--spacing-04) var(--sort-pad) 0; }
+.desk-main:has(> main > #screen-sort:not([hidden])) > #desk-banner, .desk-main:has(> main > #screen-finalize:not([hidden])) > #desk-banner { grid-row: 1; margin: var(--spacing-04) calc(var(--sort-pad) + var(--corner-w, 112px) + var(--spacing-05)) 0 var(--sort-pad); }
 /* One line, 24px tall, 16px down: the middle of the 56px band (review,
    Oct 23). The box is as wide as its words, up to the wait at the right; a
    longer message ends in an ellipsis, and its action (Undo, Try again) keeps
    a slot of its own at the right end, so it follows the words and is never cut. */
 .desk-main:has(> main > #screen-sort:not([hidden])) > #desk-status, .desk-main:has(> main > #screen-finalize:not([hidden])) > #desk-status {
-  --status-start: calc(var(--sort-list-w) + var(--spacing-07)); --status-end: 0px; --status-act: 0px;
-  grid-row: 2; grid-column: 1; align-self: start; justify-self: start; position: sticky; top: 0; z-index: 3;
+  --status-start: calc(var(--sort-list-w) + var(--spacing-07)); --status-end: calc(var(--corner-w, 112px) + var(--sort-pad) + var(--spacing-05)); --status-act: 0px;
+  display: block; grid-row: 2; grid-column: 1; align-self: start; justify-self: start; position: sticky; top: 0; z-index: 3;
   margin: var(--spacing-05) var(--status-end) 0 var(--status-start); max-width: calc(100% - var(--status-start) - var(--status-end));
   height: 24px; min-height: 0; padding-right: var(--status-act);
   font-size: 13px; line-height: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   background: transparent; pointer-events: none;
 }
-/* The right end is kept clear only while the band has a wait note there to protect (review, Oct 23). */
-.desk-main:has(> main > #screen-sort:not([hidden]) .page-tabs-note) > #desk-status, .desk-main:has(> main > #screen-finalize:not([hidden]) .page-tabs-note) > #desk-status { --status-end: 200px; }
+/* The right end keeps the How-tos button clear (Oct 24), and the wait note left of it while the band has one (review, Oct 23). */
+.desk-main:has(> main > #screen-sort:not([hidden]) .page-tabs-note) > #desk-status, .desk-main:has(> main > #screen-finalize:not([hidden]) .page-tabs-note) > #desk-status { --status-end: calc(200px + var(--corner-w, 112px) + var(--spacing-05)); }
 .desk-main:has(> main > #screen-sort:not([hidden])) > #desk-status:not(:empty), .desk-main:has(> main > #screen-finalize:not([hidden])) > #desk-status:not(:empty) { background: var(--gray-50); pointer-events: auto; }
 .desk-main:has(> main > #screen-sort:not([hidden])) > #desk-status:has(> button), .desk-main:has(> main > #screen-finalize:not([hidden])) > #desk-status:has(> button) { --status-act: var(--spacing-09); }   /* Undo: 48px */
 .desk-main:has(> main > #screen-sort:not([hidden])) > #desk-status.status-error:has(> button), .desk-main:has(> main > #screen-finalize:not([hidden])) > #desk-status.status-error:has(> button) { --status-act: calc(var(--spacing-10) + var(--spacing-05)); }   /* Try again, Retry now: 80px */
@@ -733,6 +730,14 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .sort-bar .tab:focus-visible, .sort-bar .tab.is-active:focus-visible { box-shadow: var(--focus-ring); }
 .sort-bar .tab-count, .sort-bar .tab.is-active .tab-count { min-width: 0; height: auto; padding: 0; border-radius: 0; background: none; color: var(--muted); font: 500 13px/18px var(--font-sans); font-variant-numeric: tabular-nums; }
 .sort-bar .page-tabs-note { margin-left: auto; font: var(--meta-type); color: var(--text-secondary); }
+/* The How-tos button (Oct 24) sits at the band's right end, in the middle of its 56px; the date stays off this page
+   (her pick E), and the wait note moves left of the button. */
+/* Only while the band is there: Sort's sign-in has none, so its corner is every other page's. */
+body:has(> .desk-main > main > #screen-sort:not([hidden]) .sort-bar) > .page-corner, body:has(> .desk-main > main > #screen-finalize:not([hidden]) .sort-bar) > .page-corner {
+  margin: var(--spacing-04) var(--sort-pad) 0 0; padding: 0; background: transparent;
+}
+body:has(> .desk-main > main > #screen-sort:not([hidden]) .sort-bar) > .page-corner .today-line, body:has(> .desk-main > main > #screen-finalize:not([hidden]) .sort-bar) > .page-corner .today-line { display: none; }
+body:has(> .page-corner) .sort-bar { padding-right: calc(var(--sort-pad) + var(--corner-w, 112px) + var(--spacing-05)); }
 
 /* Under the band: the list pane, then the stage. */
 .sort-split { flex: 1 0 auto; display: grid; grid-template-columns: var(--sort-list-w) minmax(0, 1fr); align-items: stretch; }
@@ -1181,15 +1186,42 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .qh-scraper-body { display: flex; flex-direction: column; gap: var(--spacing-04); align-items: flex-start; }
 .qh-scraper-line { font: var(--meta-type); color: var(--text-helper); margin: 0; }
 .qh-scraper-line.is-warn { color: var(--text-warning); }
-.qh-scraper-body > .load-line { margin: 0; }
+.qh-scraper-status { display: flex; flex-direction: column; gap: var(--spacing-04); align-items: flex-start; }
+.qh-scraper-status > .load-line { margin: 0; }
 .qh-scraper-link { color: var(--link-primary); text-decoration: underline; }
+/* Add a source (Oct 24, the owner's pick "feeds run on their own"): the two
+   outline buttons in one row, the short form under them in a white box, and
+   its answer as a note that stays for the visit. */
+.qh-scraper-actions { display: flex; flex-wrap: wrap; gap: var(--spacing-04); }
+.qh-source-slot { align-self: stretch; }
+.qh-source { background: var(--layer); border: 1px solid var(--layer-line); border-radius: var(--radius-card); padding: var(--spacing-05); }
+.qh-source > * + * { margin-top: var(--spacing-05); }
+.qh-source-field label, .qh-source-kind legend { margin: 0 0 var(--spacing-03); padding: 0; }
+.qh-source-kind { border: 0; padding: 0; min-width: 0; }
+.qh-source-kind label.check { display: flex; align-items: center; gap: var(--spacing-03); margin: var(--spacing-03) 0 0; }
+.qh-source-kind input[type="radio"] { flex: none; width: var(--spacing-05); height: var(--spacing-05); margin: 0; accent-color: var(--accent); }
+.qh-source-hint { margin: var(--spacing-03) 0 0; font: var(--meta-type); color: var(--text-helper); }
+.qh-source-foot { display: flex; flex-wrap: wrap; gap: var(--spacing-04); }
+.qh-source-foot[hidden] { display: none; }
+.qh-source-status:empty { display: none; }
+.qh-source-status .load-line, .qh-source-error { margin: 0; }
+.qh-source-status .load-line { text-align: left; }
+.qh-source-error { font: var(--meta-type); }
+.qh-source input.is-invalid, .qh-source select.is-invalid { border-color: var(--err); }
+.qh-source-answer { display: flex; align-items: flex-start; gap: var(--spacing-03); padding: var(--spacing-04) var(--spacing-05); border: 1px solid; border-left-width: 4px; border-radius: var(--radius); font: var(--meta-type); color: var(--text-primary); }
+.qh-source-answer .fa-solid { flex: none; margin-top: var(--spacing-01); }
+.qh-source-answer.is-success { background: var(--notification-success-background); border-color: var(--notification-success-border); border-left-color: var(--support-success); }
+.qh-source-answer.is-success .fa-solid { color: var(--ok-mark); }
+.qh-source-answer.is-info { background: var(--notification-info-background); border-color: var(--notification-info-border); border-left-color: var(--support-info); }
+.qh-source-answer.is-info .fa-solid { color: var(--support-info); }
 
 /* Research briefs (Kate, Oct 20 and 21, her picks A and D): the hub as a
    full-width table with a stepper per row; a brief's page as the stepper,
    then the stage it is at beside the folder's files. */
-.briefs-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-06); }
+/* New brief sits level with the lede, under the page's corner (Oct 24). */
+.briefs-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--spacing-06); }
 .briefs-head .hub-head { margin-bottom: var(--spacing-06); }
-.briefs-head button.primary { flex: none; margin-top: var(--spacing-02); }
+.briefs-head button.primary { flex: none; margin: 0 0 var(--spacing-06); }
 .briefs-table { width: 100%; border-collapse: collapse; font: var(--meta-type); background: var(--layer); border: 1px solid var(--layer-line); }
 .briefs-table th { text-align: left; font: var(--label-type); letter-spacing: var(--label-tracking); color: var(--ink); padding: var(--spacing-04) var(--spacing-05); border-bottom: 1px solid var(--line-in); background: var(--layer-01); }
 .briefs-table td { padding: var(--spacing-05); border-bottom: 1px solid var(--line-in); vertical-align: top; }
@@ -1220,6 +1252,8 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
 .steps-small .step-words { display: none; }
 .steps-small > .step.is-now .step-words { display: block; }
 .brief-page .steps { margin: 0 0 var(--spacing-08); }
+/* A brief's title is the paper's, often long: it keeps clear of the date and the How-tos button above its end (Oct 24). */
+.brief-page .page-title { margin-right: calc(var(--corner-w, 272px) + var(--spacing-05)); }
 .brief-split { margin-top: 0; }
 /* Two columns from 1024 up, as the desk's other pages; narrower (the app's side pane) the folder goes under the brief, so the brief keeps its width. */
 @media (max-width: 1255px) { .brief-split { grid-template-columns: minmax(0, 1fr); } }
@@ -1349,10 +1383,12 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
 
 /* The newsletter's HTML pages (Kate, Oct 8): the blank template and the sample,
    each the email drawn in a sheet under a head with Copy HTML; the read me, prose. */
-.email-page { max-width: 1280px; margin: 0 auto; padding: var(--spacing-06) var(--gap-56) var(--spacing-09); }
-.email-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-06); }
+.email-page { max-width: 1280px; margin: 0 auto; padding: var(--gap-28) var(--gap-56) var(--spacing-09); }
+/* Copy HTML sits at the head's foot, under the page's corner (Oct 24). */
+.email-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--spacing-06); }
 .email-head .lede { margin: var(--spacing-02) 0 0; }
-.email-actions { display: flex; align-items: center; gap: var(--spacing-05); flex: none; padding-top: var(--spacing-02); }
+.email-actions { display: flex; align-items: center; gap: var(--spacing-05); flex: none; }
+.email-actions button { height: 32px; }   /* a screen head's size, so it clears the corner above it */
 .email-status { font: var(--meta-type); color: var(--text-secondary); }
 .email-error { color: var(--support-error); }
 .email-note { font: var(--meta-type); color: var(--text-secondary); margin: var(--spacing-05) 0 0; max-width: 72ch; }
@@ -1367,15 +1403,13 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
 .email-readme a { color: var(--link-primary); }
 @media (max-width: 760px) { .email-page { padding: var(--spacing-05) var(--spacing-05) var(--spacing-08); } .email-head { flex-direction: column; } .email-sheet { height: 70vh; min-height: 480px; } }
 
-/* The handoff (Oct 22, 2026): how-to links under the hubs, and Report a problem in the bar. */
-.howto-link { margin: var(--spacing-04) 0 0; font: var(--meta-type); }
-.howto-link a { color: var(--link-primary); text-decoration: underline; font-weight: 600; }
-.howto-link .fa-book-open { color: var(--muted); }
 
 /* The spring dates note (Kate, Oct 23, her pick B): the warning note under the
    top bar on every desk page, from the day after Thanksgiving until the next
    year's send dates are on the schedule tab. */
 #desk-banner:empty { display: none; }
+/* The note keeps clear of today's date and the How-tos button at the page's top right (Oct 24). */
+.desk-main > #desk-banner { margin-right: calc(var(--corner-w, 272px) + var(--spacing-05)); }
 .spring-banner { display: flex; align-items: center; flex-wrap: wrap; gap: var(--spacing-04); margin: 0 0 var(--spacing-05); padding: var(--spacing-03) var(--spacing-05); border: 1px solid var(--warn-line); border-left: 4px solid var(--warn-mark); border-radius: var(--radius); background: var(--warn-bg); font: var(--body-type); color: var(--ink); }
 .spring-banner .spring-mark { color: var(--warn-mark); }
 .spring-banner .spring-words { margin: 0; flex: 1 1 auto; }
@@ -1407,7 +1441,6 @@ ol.steps { display: flex; align-items: flex-start; margin: 0; padding: 0; list-s
 .nl-head .nl-others { flex-basis: 100%; }
 .nl-head .nl-door { flex: none; min-width: 240px; gap: var(--spacing-06); }
 .nl-side { gap: var(--spacing-03); padding-top: var(--spacing-03); }
-.nl-side .nl-howto { align-self: flex-start; margin-top: 0; }
 .nl-side .nl-builder-note { margin: 0 0 var(--spacing-03); }
 @media (max-width: 1232px) { .nl-page { grid-template-columns: minmax(0, 1fr); } }
 

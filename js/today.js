@@ -12,3 +12,13 @@ const CENTRAL = new Intl.DateTimeFormat('en-CA', {
 export function todayCentral(now = new Date()) {
   return CENTRAL.format(now);
 }
+
+const WORDS = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/Chicago', weekday: 'long', month: 'short', day: 'numeric',
+});
+
+/** Today in Central time, in words, as the top right of every page says it
+ *  (Kate, Oct 24, 2026, her pick E): "Saturday, Oct 24". */
+export function todayWords(now = new Date()) {
+  return WORDS.format(now);
+}

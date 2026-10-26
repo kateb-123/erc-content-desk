@@ -17,6 +17,17 @@
  * Nothing enters the queue by itself: the team opens the files in Drive and
  * drops what it wants on the bulk door, as a run by hand works today.
  *
+ * Add a source (the owner's pick "feeds run on their own", Oct 24): two more
+ * doors on the same function, the checks in api/_lib/sources.js.
+ *
+ *   POST /api/bulk { action: 'source' }  the Content queue's form: the desk
+ *                                        looks for the address's feed and
+ *                                        writes a row to the Scraper sources
+ *                                        Sheet (the script's addSource)
+ *   GET  /api/bulk?sources=feeds         the run asks, with SCRAPER_TOKEN as
+ *                                        a Bearer header, for the Sheet's
+ *                                        switched-on feeds
+ *
  * The scrape by issue (Kate, Oct 19: "a new sheet based on the scrape, by
  * the newsletter send out dates"; her pick: one Sheet, a tab per issue): the
  * haul's spreadsheets are read into one table, each row stamped with the
@@ -30,6 +41,10 @@
  * and SCRAPER_TOKEN from the environment.
  */
 import { timingSafeEqual } from 'node:crypto';
+import { isLocalOrigin } from './cors.js';
+import {
+  sourceChecks, findFeed as realFindFeed, addressKey, yamlSources, sourceObjects, feedSources, sourceRow, PUBLIC_ONLY,
+} from './sources.js';
 
 export const SCRAPER_WORKFLOW = 'scrape.yml';
 const GITHUB = 'https://api.github.com';
@@ -90,6 +105,31 @@ function sameSecret(a, b) {
   return x.length > 0 && x.length === y.length && timingSafeEqual(x, y);
 }
 
+/* ---- Add a source (Oct 24) -------------------------------------------- */
+
+export const NOT_CONNECTED = 'The sources sheet is not connected yet.';
+/** The script before Code.gs is pasted, a missing SOURCES_SHEET_ID, or no Sheet API at all. */
+const notConnected = err => /Unknown action: (listSources|addSource)|SOURCES_SHEET_ID|SHEET_API_(URL|TOKEN) must be set/.test(String(err?.message ?? ''));
+const REFUSALS = {
+  unreachable: "The desk couldn't reach that address. Check it and try again.",
+  missing: 'Nothing is at that address. Check it and try again.',
+  private: PUBLIC_ONLY,
+};
+const already = name => `Already on the scraper's list, as ${name || 'another source'}.`;
+
+/** The desk's own page, or the sandbox: the form is never driven from elsewhere. */
+function fromTheDesk(req) {
+  const origin = String(req.headers?.origin ?? '');
+  const host = String(req.headers?.host ?? '');
+  return isLocalOrigin(origin) || (Boolean(host) && origin === `https://${host}`);
+}
+
+/** The Bearer token on the run's GET. */
+function bearer(req) {
+  const m = /^Bearer\s+(\S+)$/i.exec(String(req.headers?.authorization ?? ''));
+  return m ? m[1] : '';
+}
+
 /** What is wrong with a haul, or null. The token first, before anything is read. */
 export function haulChecks(body, secret) {
   if (!secret || !sameSecret(body?.token, secret)) return 'Bad token.';
@@ -145,10 +185,13 @@ function centralClock(date) {
 
 /**
  * The handler, with GitHub and the Sheet's script injectable for tests.
- * `handles(req)` says whether a request is one of the three doors;
+ * `handles(req)` says whether a request is one of the five doors;
  * `handle(req, res)` answers it.
  */
-export function createScraperHandler({ fetch = globalThis.fetch, saveFile, appendScrape, readSchedule = async () => [], env = process.env, now = () => new Date() } = {}) {
+export function createScraperHandler({
+  fetch = globalThis.fetch, saveFile, appendScrape, readSchedule = async () => [],
+  listSources, addSource, findFeed = realFindFeed, readYaml, env = process.env, now = () => new Date(),
+} = {}) {
   const repo = env.SCRAPER_REPO || DEFAULT_REPO;
   const ghToken = env.SCRAPER_GITHUB_TOKEN || env.GITHUB_TOKEN || '';
   const api = path => `${GITHUB}/repos/${repo}/${path}`;
@@ -186,8 +229,82 @@ export function createScraperHandler({ fetch = globalThis.fetch, saveFile, appen
   }
 
   function handles(req) {
-    if (req.method === 'GET') return req.query?.scraper === 'status';
-    return req.method === 'POST' && ['run', 'haul'].includes(req.body?.action);
+    if (req.method === 'GET') return req.query?.scraper === 'status' || req.query?.sources === 'feeds';
+    return req.method === 'POST' && ['run', 'haul', 'source'].includes(req.body?.action);
+  }
+
+  /** sources.yaml on the scraper's main, read with the desk's token; '' when it cannot be read. */
+  async function yamlText() {
+    if (readYaml) return readYaml();
+    if (!ghToken) return '';
+    const res = await gh('contents/sources.yaml?ref=main');
+    if (!res.ok) return '';
+    const body = await res.json();
+    return Buffer.from(String(body?.content ?? ''), 'base64').toString('utf8');
+  }
+
+  /** The form: check, look for the feed, write the row (Oct 24). */
+  async function source(req, res) {
+    if (!fromTheDesk(req)) return res.status(403).json({ ok: false, error: 'Add a source from the desk.' });
+    const checked = sourceChecks(req.body);
+    if (checked.problem) return res.status(400).json({ ok: false, error: checked.problem, field: checked.field });
+    const { name, address, kind, type } = checked;
+    if (!listSources || !addSource) return res.status(503).json({ ok: false, error: NOT_CONNECTED });
+    let known;
+    try {
+      const [sheet, yaml] = await Promise.all([listSources(), yamlText().catch(() => '')]);
+      known = [...sourceObjects(sheet).map(o => ({ name: o.Source, url: o.Address })), ...yamlSources(yaml)].filter(k => k.url);
+    } catch (err) {
+      if (notConnected(err)) return res.status(503).json({ ok: false, error: NOT_CONNECTED });
+      return res.status(502).json({ ok: false, error: "Couldn't read the sources sheet. Try again in a minute." });
+    }
+    const listed = url => known.find(k => addressKey(k.url) === addressKey(url));
+    let hit = listed(address);
+    if (hit) return res.status(409).json({ ok: false, error: already(hit.name), field: 'address' });
+
+    let row;
+    let outcome;
+    let feed = '';
+    if (kind === 'email') {
+      row = sourceRow({ name, type, address, how: 'email newsletter', on: 'no', why: 'Arrives by email' });
+      outcome = 'email';
+    } else {
+      const found = await findFeed(address);
+      if (found.refused) return res.status(422).json({ ok: false, error: REFUSALS[found.refused] ?? REFUSALS.unreachable, field: 'address' });
+      if (found.feed) {
+        hit = listed(found.feed);
+        if (hit) return res.status(409).json({ ok: false, error: already(hit.name), field: 'address' });
+        feed = found.feed;
+        row = sourceRow({ name, type, address: feed, how: 'feed', on: 'yes', why: '' });
+        outcome = 'feed';
+      } else {
+        row = sourceRow({ name, type, address, how: 'no feed', on: 'no', why: 'No feed found' });
+        outcome = 'no feed';
+      }
+    }
+    try {
+      const reply = await addSource(row);
+      if (reply?.added === false) return res.status(409).json({ ok: false, error: already(reply.duplicate), field: 'address' });
+    } catch (err) {
+      if (notConnected(err)) return res.status(503).json({ ok: false, error: NOT_CONNECTED });
+      const full = /sources sheet is full/i.test(String(err?.message ?? ''));
+      return res.status(502).json({ ok: false, error: full ? 'The sources sheet is full.' : "Couldn't save it to the sources sheet. Try again in a minute." });
+    }
+    return res.status(200).json({ ok: true, outcome, feed });
+  }
+
+  /** The run's ask: the Sheet's switched-on feeds, behind the shared token. */
+  async function feeds(req, res) {
+    const secret = env.SCRAPER_TOKEN || '';
+    if (!secret || !sameSecret(bearer(req), secret)) return res.status(401).json({ ok: false, error: 'Bad token.' });
+    if (!listSources) return res.status(503).json({ ok: false, error: NOT_CONNECTED });
+    try {
+      const { sources, unusable } = feedSources(sourceObjects(await listSources()));
+      return res.status(200).json({ ok: true, sources, unusable });
+    } catch (err) {
+      if (notConnected(err)) return res.status(503).json({ ok: false, error: NOT_CONNECTED });
+      return res.status(502).json({ ok: false, error: `Couldn't read the sources sheet: ${err.message}` });
+    }
   }
 
   async function status(res) {
@@ -258,8 +375,9 @@ export function createScraperHandler({ fetch = globalThis.fetch, saveFile, appen
   }
 
   async function handle(req, res) {
-    if (req.method === 'GET') return status(res);
+    if (req.method === 'GET') return req.query?.sources === 'feeds' ? feeds(req, res) : status(res);
     if (req.body?.action === 'run') return run(res);
+    if (req.body?.action === 'source') return source(req, res);
     return haul(req, res);
   }
 

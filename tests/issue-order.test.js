@@ -105,17 +105,17 @@ test('the later issues stay on the head line as quiet words, and pressing one op
   assert.equal(container.querySelector('.nl-door').href, '/builder/?issue=2026-11-10');
 });
 
-test('then the lists in their order, then the how-tos, the builder note and the last issue', () => {
+// Oct 24 (her pick D): the side column's two how-to links went to the How-tos panel at the page's top right.
+test('then the lists in their order, then the builder note and the last issue', () => {
   const page = draw().querySelector('.nl-page');
   const order = ['Oct 27 issue', 'Sends in 4 days', 'Later: Nov 10', 'Open the builder', 'In this issue', 'Quick add',
     'Howdy Policy Trivia Night recap', 'Ready to add', 'Reveille naps through the budget hearing', 'Past items (1)',
-    'How to build an issue', 'The email: read me', 'The builder takes in Adds and Removes each time it opens. Make edits there.', 'Last issue', 'Oct 20'];
+    'The builder takes in Adds and Removes each time it opens. Make edits there.', 'Last issue', 'Oct 20'];
   const places = order.map(words => at(page, words));
   assert.deepEqual([...places].sort((a, b) => a - b), places, 'the page reads in this order');
   const side = page.querySelector('.nl-side');
-  assert.deepEqual(side.children.map(c => c.className), ['nl-howto', 'nl-howto', 'nl-meta nl-builder-note', 'nl-last']);
-  assert.equal(side.querySelector('.nl-howto').href, '/how-to/newsletter/');
-  assert.equal(side.querySelectorAll('.nl-howto')[1].href, '/newsletter/read-me/');
+  assert.deepEqual(side.children.map(c => c.className), ['nl-meta nl-builder-note', 'nl-last']);
+  assert.equal(side.querySelector('.nl-howto'), null, 'no how-to link on the page: the panel holds them');
   assert.equal(page.querySelector('.nl-main').querySelector('.nl-door'), null, 'no second door down the page');
 });
 

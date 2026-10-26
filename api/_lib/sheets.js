@@ -112,6 +112,21 @@ export async function appendScrape({ issue, run, header, rows }) {
   return { ok: true, sheetUrl: body.sheetUrl ?? '', tab: body.tab ?? '' };
 }
 
+/** The Scraper sources Sheet (Oct 24; the script opens it by its
+ *  SOURCES_SHEET_ID property): its header and every row, as the Sheet shows them. */
+export async function listSources() {
+  const body = await callSheetApi('listSources', {}, { timeoutMs: 30000 });
+  return { header: Array.isArray(body.header) ? body.header : [], rows: Array.isArray(body.rows) ? body.rows : [] };
+}
+
+/** One row for the Scraper sources Sheet, by column name. The script writes it
+ *  under the Sheet's own header, as plain text, unless the address is there
+ *  already: { added: true } or { added: false, duplicate: <its name> }. */
+export async function addSource(source) {
+  const body = await callSheetApi('addSource', { source }, { timeoutMs: 30000 });
+  return { ok: true, added: body.added !== false, duplicate: body.duplicate ?? '' };
+}
+
 export async function appendRow(row) {
   await callSheetApi('append', { values: rowToValues(row) });
 }

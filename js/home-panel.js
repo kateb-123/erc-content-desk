@@ -62,7 +62,7 @@ export function hubCards({ rows = [], schedule = [], today = '', loaded = false,
   const exchange = exchangeStatus({ rows, today, loaded, preview, hubUpdated });
 
   return [
-    card('team', { counts: false, sub: "The team's form", links: [{ label: 'How to submit content', href: '/how-to/submit-content/' }] }),
+    card('team', { counts: false, sub: "The team's form" }),   // its how-to is in the How-tos panel (Oct 24)
     card('queue', { count: loaded ? waiting.length : null, sub: `waiting for Sort${outside ? ` · ${outside} from outside` : ''}`, foot: 'Sort, password protected', lock: true }),
     // The newsletter's HTML (Kate, Oct 8): three pages linked at the card's foot, never downloads.
     card('newsletter', { next: next ? isoToShort(next, today) : '', ...(next

@@ -30,15 +30,21 @@ test('sr-only and the skip link live in the stylesheet every page loads', () => 
 });
 
 // The reader's uncertainty reaches the desk as the desk's own words, never the
-// model's name or its warnings (the sentence lives in js/sort-ui.js).
-test('no screen string names the model', () => {
+// model's name or its warnings (the sentence lives in js/sort-ui.js). The one
+// exception is a guide's own name: the How-tos panel (Kate, Oct 24, her pick
+// D) lists every guide by its page's title and parts, Ask Claude about the desk
+// and Design's Claude Design among them, quoted exactly from js/howto-index.js.
+test('no screen string names the model', async () => {
+  const { GUIDES } = await import('../js/howto-index.js');
+  const names = GUIDES.flatMap(g => [g.title, ...g.parts.map(p => p[0])]);
   const offenders = [];
   for (const dir of ['js', 'builder/js']) {
     for (const file of readdirSync(new URL(`../${dir}`, import.meta.url))) {
       if (!file.endsWith('.js')) continue;
       const text = read(`${dir}/${file}`);
       for (const [i, line] of text.split('\n').entries()) {
-        const code = line.split('//')[0];
+        let code = line.split('//')[0];
+        if (`${dir}/${file}` === 'js/howto-index.js') for (const name of names) code = code.replaceAll(`'${name}'`, "''");
         if (/['"`][^'"`]*\b(Claude|Anthropic|GPT|the AI)\b/.test(code)) offenders.push(`${dir}/${file}:${i + 1}`);
       }
     }

@@ -1,6 +1,7 @@
 /**
  * POST /api/bulk — split a dropped file into submission items. Also the
- * scraper's doors (GET ?scraper=status, POST action run or haul): api/_lib/scraper.js.
+ * scraper's doors (GET ?scraper=status, POST action run or haul) and Add a
+ * source's (POST action source, GET ?sources=feeds): api/_lib/scraper.js.
  * Two pipelines: spreadsheets (.xlsx/.csv) are row-mapped — one row, one
  * item, no model call (submit-time enrichment fills gaps per item); docs
  * (.docx/.md/.txt) go through the Claude split. Text formats arrive as
@@ -16,7 +17,7 @@ import { parseModelJson } from './_lib/reply-json.js';
 import { rowsToItems } from './_lib/bulk-rows.js';
 import { parseCsv } from './_lib/hub.js';
 import { createScraperHandler } from './_lib/scraper.js';
-import { saveFile, appendScrape } from './_lib/sheets.js';
+import { saveFile, appendScrape, listSources, addSource } from './_lib/sheets.js';
 import { readSchedule } from './_lib/store.js';
 
 export const config = { maxDuration: 300 };
@@ -26,8 +27,9 @@ const MAX_SHEET_ROWS = 500;   // a spreadsheet needs no model call, so it may ru
 const MAX_FILE_BYTES = 3 * 1024 * 1024;
 const anthropic = new Anthropic();
 // Run the scraper (Kate, Oct 19): its status, a run, and the haul it delivers
-// ride this function too, since api/ holds the Hobby plan's twelve.
-const scraper = createScraperHandler({ saveFile, appendScrape, readSchedule });
+// ride this function too, since api/ holds the Hobby plan's twelve; so does
+// Add a source and the run's ask for the Sheet's feeds (Oct 24).
+const scraper = createScraperHandler({ saveFile, appendScrape, readSchedule, listSources, addSource });
 
 export default async function handler(req, res) {
   if (scraper.handles(req)) return scraper.handle(req, res);

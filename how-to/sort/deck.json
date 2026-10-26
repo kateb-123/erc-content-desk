@@ -1,12 +1,31 @@
 {
-  "title": "How to sort",
+  "title": "Sort the queue",
   "h1": "Sort the queue",
-  "lede": "What to keep, where it goes, and checking the rewrites.",
+  "lede": "The scraper, what to keep, where it goes, the rewrites, and fixing an item later.",
   "open": {
     "label": "Open Content Sort",
     "href": "https://erc-content-desk.vercel.app/#sort"
   },
   "chapters": [
+    {
+      "id": "scraper",
+      "name": "The scraper",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Rows you delete on the Newsletter scrapes tabs stay deleted.",
+          "notes": [
+            {
+              "n": "!",
+              "html": "<b>Add a source only adds.</b> To stop one you added, set Switched on to no on the Scraper sources Sheet. The scraper's built-in sources need code.",
+              "warn": true,
+              "go": false
+            }
+          ],
+          "shot": "scraper"
+        }
+      ]
+    },
     {
       "id": "keep",
       "name": "Keep or delete",
@@ -31,7 +50,7 @@
           "shot": "sort"
         },
         {
-          "cap": "About two in five papers, events and opportunities are kept, and one headline in five. An issue wants 3 to 5 outside research items or reports and 3 to 5 headlines.",
+          "cap": "About two in five papers, events and opportunities are kept, and one headline in five.",
           "steps": [
             {
               "title": "Keep when",
@@ -42,6 +61,7 @@
                 "A policy webinar comes from a think tank or research group.",
                 "It is an ERC event or an A&amp;M research talk.",
                 "It offers education researchers money, a fellowship or a call for proposals, with the deadline ahead.",
+                "It is a conference on education policy or research, or its call for proposals.",
                 "A person added it: their initials or name follow <b>added by</b> (<b>bulk upload</b> means none were given). Keep it unless it repeats."
               ],
               "links": "<a href=\"/how-to/submit-content/#types\">Which type and subtype to pick</a>"
@@ -60,7 +80,7 @@
                 "It is one district's news with no wider point: “Austin ISD faces deeper budget cuts as enrollment declines”.",
                 "It is opinion, an interview, a podcast, a guide or a roundup.",
                 "A webinar teaches classroom practice or sells something.",
-                "It is a job, an award or a conference listing. Grants with no deadline or for another field go too.",
+                "It is a job, an award, or a teaching or trade conference. Grants with no deadline or for another field go too.",
                 "The research has no policy in it: a method, a theory or a program description.",
                 "It is a repeat. Keep the best copy."
               ],
@@ -81,8 +101,6 @@
             {
               "title": "A clear rule",
               "items": [
-                "<b>ECS State Policy Tracker</b>, 0 of 54 kept: delete. Each is one state bill.",
-                "<b>Austin American-Statesman</b>, 0 of 24: delete. Austin ISD and UT campus news.",
                 "<b>Urban Institute</b>, 6 of 41: delete unless it is about schools.",
                 "<b>NBER</b>, 3 of 18: delete unless it is about schooling.",
                 "<b>K-12 Dive</b>, 6 of 17: keep findings and state counts. Delete Week In Review.",
@@ -188,7 +206,55 @@
           ]
         }
       ]
+    },
+    {
+      "id": "fix",
+      "name": "Fix an item later",
+      "step": null,
+      "slides": [
+        {
+          "cap": "Fix an item where it is now.",
+          "notes": [
+            {
+              "n": "!",
+              "html": "<b>Delete is final once you reload or close the desk.</b> To bring an item back, add its link again on Submit content.",
+              "warn": true,
+              "go": false
+            },
+            {
+              "n": "!",
+              "html": "<b>Never fix an item in the Sheet's first tab.</b> It is a copy: the desk never reads it and writes over it.",
+              "warn": true,
+              "go": false
+            }
+          ],
+          "steps": [
+            {
+              "title": "Where it is now",
+              "items": [
+                "On <b>Content Sort</b>: type over the title, or press <b>Edit</b> under the description; each saves when you click away. For the link, press <b>Change</b>, then <b>Save</b>.",
+                "Kept, and not yet in an issue or live: <b>Edit</b> on Finalize, then <b>Save</b>.",
+                "On <b>Next issue</b>: <b>Edit</b> on its row.",
+                "Waiting on <b>Publish</b>: click the row, then <b>Edit</b>."
+              ],
+              "links": null
+            }
+          ]
+        },
+        {
+          "cap": "<b>Edit</b> on Next issue, Finalize and Publish opens this form.",
+          "notes": [
+            {
+              "n": "1",
+              "html": "Fix an item kept under the wrong type here, without deleting it.",
+              "warn": false,
+              "go": false
+            }
+          ],
+          "shot": "issue-edit"
+        }
+      ]
     }
   ],
-  "below": "<p>Next: <a href=\"/how-to/exchange/\">publish to the Policy Exchange</a>.</p>"
+  "below": null
 }

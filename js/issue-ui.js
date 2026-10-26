@@ -283,16 +283,12 @@ export function renderIssue(container, props) {
   door.append(faIcon('arrow-right'));
   head.append(words, door);
 
-  // ── Beside the lists, a slim column: the how-tos, the builder note, the last issue sent. ──
+  // ── Beside the lists, a slim column: the builder note, the last issue sent.
+  // Its two how-tos are in the How-tos panel at the page's top right (Oct 24). ──
   const side = el('aside', 'nl-side');
-  // The how-to for whoever builds the issue (Kate, Sep 30), a quiet link.
-  const howTo = el('a', 'nl-howto', 'How to build an issue');
-  howTo.href = '/how-to/newsletter/';
   // The builder takes what is here when it opens; later changes here stay out
-  // of a draft already open (review, Oct 23). And the email's read me.
-  const readMe = el('a', 'nl-howto', 'The email: read me');
-  readMe.href = '/newsletter/read-me/';
-  side.append(howTo, readMe, el('p', 'nl-meta nl-builder-note', 'The builder takes in Adds and Removes each time it opens. Make edits there.'));
+  // of a draft already open (review, Oct 23).
+  side.append(el('p', 'nl-meta nl-builder-note', 'The builder takes in Adds and Removes each time it opens. Make edits there.'));
   const last = lastIssue(archive, rows);
   if (last) {
     const lastBox = el('section', 'nl-last');

@@ -353,14 +353,16 @@ test('the forced-colors rules use system colors alone: a token or a hex would be
 });
 
 // Review of the review (Oct 23): a cut message keeps its full words on hover, and the
-// band's right reserve holds only while a wait note is there to protect.
+// band's right reserve grows while a wait note is there to protect.
 test('a status message carries its full words as a title, so an ellipsis hides nothing for good', () => {
   const app = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
   assert.match(app, /statusEl\.title = message;/);
 });
 
-test('the status line reserves the right end only when the band has a wait note', () => {
+// Oct 24 (her pick D): the How-tos button sits at the band's right end on every visit, so the
+// right end always keeps the button's room, and a wait note beside it adds its own.
+test('the status line keeps the How-tos button clear, and the wait note too when the band has one', () => {
   const css = readFileSync(new URL('../css/styles.css', import.meta.url), 'utf8');
-  assert.match(css, /#desk-status \{[^}]*--status-end: 0px;/, 'no reserve by default');
-  assert.match(css, /\.desk-main:has\(> main > #screen-sort:not\(\[hidden\]\) \.page-tabs-note\) > #desk-status, \.desk-main:has\(> main > #screen-finalize:not\(\[hidden\]\) \.page-tabs-note\) > #desk-status \{ --status-end: 200px; \}/, 'the reserve only beside a note');
+  assert.match(css, /#desk-status \{[^}]*--status-end: calc\(var\(--corner-w, \d+px\) \+ var\(--sort-pad\) \+ var\(--spacing-05\)\);/, 'the button\'s room by default');
+  assert.match(css, /\.desk-main:has\(> main > #screen-sort:not\(\[hidden\]\) \.page-tabs-note\) > #desk-status, \.desk-main:has\(> main > #screen-finalize:not\(\[hidden\]\) \.page-tabs-note\) > #desk-status \{ --status-end: calc\(200px \+ var\(--corner-w, \d+px\) \+ var\(--spacing-05\)\); \}/, 'and the note beside it');
 });

@@ -1,5 +1,5 @@
 {
-  "title": "How to make a research brief",
+  "title": "Make a research brief",
   "h1": "Make a research brief",
   "lede": "From the paper to a live brief, in the desk's seven stages.",
   "open": {
@@ -13,7 +13,7 @@
       "step": 1,
       "slides": [
         {
-          "cap": "Sign in with the desk password, then press <b>New brief</b>.",
+          "cap": "Sign in, then press <b>New brief</b>.",
           "notes": [],
           "shot": "hub"
         },
@@ -70,7 +70,7 @@
             },
             {
               "n": "!",
-              "html": "If it fails again after <b>Try again</b> for any other reason, write to the desk's owner. READ ME FIRST - ERC handoff has the address.",
+              "html": "If it fails again after <b>Try again</b> for any other reason, see <a href=\"/how-to/change-the-desk/#ask\">Who to ask</a>.",
               "warn": true,
               "go": false
             }
@@ -207,17 +207,17 @@
               "items": [
                 "Save the PDF in the folder, named like <code>Economics-of-Encouragement-ERC-RB-26.pdf</code>. In Drive, share it as Anyone with the link, Viewer, and copy the link.",
                 "Add a row to <code>ERC-Research-Briefs-Library-Metadata.xlsx</code> in <code>erc-research-briefs/</code>, copying the rows above. Ask at the ERC who at the library takes it.",
-                "On <a href=\"/#team\">Submit content</a>, paste the link and pick <b>New research</b>, then <b>ERC Research</b>. The brief's title is the <b>Title</b>, the Executive Summary's first paragraph the <b>Description</b>. Press <b>Add to the queue</b>.",
-                "On <a href=\"/#sort\">Content Sort</a>, fill any blank <b>Date</b>, <b>Authors</b>, <b>Source</b> or <b>Topic</b>. Leave <b>ERC Newsletter only</b> unticked and press <b>Keep and next</b>.",
+                "On <a href=\"/#team\">Submit content</a>, paste the link and pick <b>New research</b>, then <b>ERC Research</b>. The brief's title is the <b>Title</b>, the Executive Summary's first paragraph the <b>Description</b>.",
+                "On <a href=\"/#sort\">Content Sort</a>, fill any blank <b>Date</b>, <b>Authors</b>, <b>Source</b> or <b>Topic</b>, then press <b>Keep and next</b>.",
                 "On <a href=\"/#newsletter\">Newsletter</a>'s <b>Next issue</b>, press <b>Add</b> on it under <b>Ready to add</b>.",
                 "Email the author of record the public link, with thanks."
               ],
-              "links": "<a href=\"/how-to/sort/#finalize\">How to sort, for Finalize</a> <a href=\"/how-to/exchange/#publish\">How to publish to the Exchange</a>"
+              "links": "<a href=\"/how-to/sort/#finalize\">Sort the queue: Finalize</a> <a href=\"/how-to/exchange/#publish\">Publish and the Exchange: Publish</a>"
             }
           ]
         }
       ]
     }
   ],
-  "below": "<section class=\"need\" aria-labelledby=\"h-need\"><h2 id=\"h-need\">What you need</h2><ul><li>The desk password. It is in READ ME FIRST - ERC handoff, in the shared drive.</li><li>Google Drive for desktop, with the shared drive in Finder. Each brief lives in <code>ERC Content Desk / ERC Research Briefs / your brief's folder</code>.</li><li>Claude Code, opened on <code>ERC Content Desk / ERC Research Briefs</code>. The house rules, template and scripts are in <code>ERC Content Desk / ERC Research Briefs / erc-research-briefs</code>.</li><li>Node.js, Grammarly, Word, Outlook and Chrome.</li></ul></section>"
+  "below": "<section class=\"need\" aria-labelledby=\"h-need\"><h2 id=\"h-need\">What you need</h2><ul><li>The <a href=\"/how-to/change-the-desk/#ask\">team password</a>.</li><li>Google Drive for desktop, with the shared drive in Finder. Each brief lives in <code>ERC Content Desk / ERC Research Briefs / your brief's folder</code>.</li><li>Claude Code, opened on <code>ERC Content Desk / ERC Research Briefs</code>. The house rules, template and scripts are in <code>ERC Content Desk / ERC Research Briefs / erc-research-briefs</code>.</li><li>Node.js, Grammarly, Word, Outlook and Chrome.</li></ul></section>"
 }

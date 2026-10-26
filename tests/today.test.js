@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { todayCentral } from '../js/today.js';
+import { todayCentral, todayWords } from '../js/today.js';
 
 // Kate, Sep 23: the desk's "today" is College Station's date, not UTC. In UTC
 // the desk ran a day ahead from 7 pm Central (Next issue, Sends in N days, the
@@ -31,4 +31,17 @@ test('no desk page takes the UTC date as today any more', async () => {
   for (const f of readdirSync(dir).filter(n => n.endsWith('.js'))) {
     assert.doesNotMatch(readFileSync(new URL(f, dir), 'utf8'), /new Date\(\)\.toISOString\(\)\.slice\(0, ?10\)/, `${f} takes the UTC date`);
   }
+});
+
+// Kate, Oct 24 (her pick E): today's date in words at the top right of every
+// page, College Station's, as the desk's today is.
+test('today in words: the weekday, then the short month and the day', () => {
+  assert.equal(todayWords(new Date('2026-10-24T15:00:00Z')), 'Saturday, Oct 24');
+  assert.equal(todayWords(new Date('2026-09-30T17:00:00Z')), 'Wednesday, Sep 30');
+});
+
+test('today in words turns at midnight in College Station, not in UTC', () => {
+  assert.equal(todayWords(new Date('2026-10-24T04:30:00Z')), 'Friday, Oct 23');     // 11:30 pm CDT
+  assert.equal(todayWords(new Date('2026-10-24T05:30:00Z')), 'Saturday, Oct 24');   // 12:30 am CDT
+  assert.equal(todayWords(new Date('2026-12-01T05:30:00Z')), 'Monday, Nov 30');     // 11:30 pm CST
 });

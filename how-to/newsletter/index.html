@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex" />
-  <title>How to build the newsletter · ERC Content Desk</title>
+  <title>Build the newsletter · ERC Content Desk</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6bde'/%3E%3Cpath d='M9 16.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
-  <link rel="stylesheet" href="/css/styles.css?v=190" />
-  <link rel="stylesheet" href="/css/shell.css?v=9" />
+  <link rel="stylesheet" href="/css/styles.css?v=194" />
+  <link rel="stylesheet" href="/css/shell.css?v=10" />
   <script>
     (() => {
       const html = document.documentElement;
@@ -81,7 +81,7 @@
     html:not(.js) .progress, html:not(.js) .controls, html:not(.js) .foot { display: none; }
     .js .chapter:not(.is-on), .js .slide:not(.is-on), .js .sg-group:not(.is-on), .js .sg-look:not(.is-on) { display: none; }
     .js .deck[data-mode="styles"] .chapter, .js .deck:not([data-mode="styles"]) .styles { display: none; }
-    .chapter, .styles, .from { scroll-margin-top: 100vh; }   /* a link to a part opens the page at its top, the band and chips in view */
+    .chapter, .styles { scroll-margin-top: 100vh; }   /* a link to a part opens the page at its top, the band and chips in view */
     html:not(.js) .slide + .slide, html:not(.js) .chapter + .chapter, html:not(.js) .styles { border-top: 1px solid var(--layer-line); }
 
     /* A pane, the slides' or Styles': its title and words in the left column,
@@ -106,15 +106,6 @@
     .cap { margin: 0; font: var(--sub-title); font-weight: 400; color: var(--ink); }
     .foot { margin-top: auto; padding-top: var(--spacing-03); }
     .frame { container-type: inline-size; min-width: 0; min-height: calc(var(--fh) + 2 * var(--pad)); padding: var(--pad); display: flex; align-items: flex-start; justify-content: center; background: var(--layer-01); border-radius: var(--radius); }
-
-    /* Where items come from: the desk's path to the builder, a few lines on the first Outline slide. */
-    .from { padding-top: var(--spacing-04); border-top: 1px solid var(--layer-line); }
-    .from h3 { margin: 0 0 var(--spacing-03); font: var(--label-type); color: var(--muted); }
-    .from ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-02); font: var(--meta-type); color: var(--ink); }
-    .from li { position: relative; padding-left: var(--spacing-05); }
-    .from li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: var(--radius-round); background: var(--accent); }
-    .from li:not(:last-child)::after { content: ''; position: absolute; left: 2px; top: 17px; bottom: calc(-1 * var(--spacing-02) - 3px); width: 2px; background: var(--accent-20); }
-    .from b { font-weight: 700; }
 
     /* A still: a window on the picture (the crop). Every number is the
        picture's own pixels, so the crop holds at any width. */
@@ -308,6 +299,7 @@
 
   <main class="page" id="main">
     <nav class="chips" aria-label="Parts">
+      <a href="#dates">Send dates</a>
       <a href="#outline"><span class="step" aria-hidden="true">1</span>Outline</a>
       <a href="#tweak"><span class="step" aria-hidden="true">2</span>Preview &amp; Tweak</a>
       <a href="#export"><span class="step" aria-hidden="true">3</span>Save &amp; Export</a>
@@ -319,26 +311,40 @@
       <div class="progress" aria-hidden="true"><span></span></div>
       <p class="sr-only" aria-live="polite" data-said></p>
 
+      <!-- ===== Send dates (from Change the desk, Oct 24) ===== -->
+      <section class="chapter" id="dates" data-name="Send dates" aria-labelledby="h-dates">
+        <h2 class="pane-title" id="h-dates">Send dates</h2>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">The send dates live on the Sheet's schedule tab. A change there reaches the desk within ten minutes; reload to see it. If it never does, see <a href="/how-to/google-scripts/">Bring back the Google scripts</a>.</p>
+            <p class="note"><span class="n">1</span><span>Shows a week before the last send date: time to add the next ones.</span></p>
+            <p class="note"><span class="n">2</span><span>A send date: press it to open that issue on Next issue.</span></p>
+            <p class="note"><span class="n">3</span><span>The Sheet's schedule tab: opens it in a new tab. Type each date in column A, from row 2, as <b>2026-11-10</b>.</span></p>
+            <p class="note warn"><span class="n"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span><b>A date shown as 11/10/2026 is skipped.</b></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:512;--cy:72;--cw:2000;--ch:606">
+              <div class="crop"><div class="zoom"><img src="shots/schedule.png" width="2560" height="1800" loading="lazy" alt="Newsletter's Schedule tab: a warning that send dates end Oct 27, the Oct 27 date marked Next with 4 in the issue, and Edit dates on the Sheet's schedule tab." /></div></div>
+              <button type="button" class="pin" style="--x:50;--y:51.8" aria-label="Shows a week before the last send date: time to add the next ones"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Shows a week before the last send date: time to add the next ones</span></button>
+              <button type="button" class="pin up" style="--x:50;--y:75.2" aria-label="A send date: press it to open that issue on Next issue"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">A send date: press it to open that issue on Next issue</span></button>
+              <button type="button" class="pin up" style="--x:16.4;--y:91.9" aria-label="The Sheet's schedule tab: opens it in a new tab"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">The Sheet's schedule tab: opens it in a new tab</span></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ===== 1 Outline ===== -->
       <section class="chapter" id="outline" data-name="Outline" aria-labelledby="h-outline">
         <h2 class="pane-title" id="h-outline"><span class="step" aria-hidden="true">1</span><span class="sr-only">Step 1: </span>Outline</h2>
 
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">On Next issue, Open the builder. Pick the issue's date: everything staged for it comes in, and anything new each time it opens.</p>
+            <p class="cap">On Next issue, Add what the issue needs from Ready to add, then Open the builder. Pick the issue's date: everything staged for it comes in, and anything new each time it opens.</p>
             <p class="note"><span class="n">1</span><span>Issue: the date; picking it brings in what the desk holds for it. To practice, pick Sample issue (fictional) under Samples.</span></p>
+            <p class="note"><span class="n go"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span><span>Aim for 3 to 5 research items or reports from outside and 3 to 5 headlines, all policy relevant.</span></p>
             <p class="note warn"><span class="n"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span><b>The draft is saved only in the browser you build it in. Finish the issue there.</b></p>
-            <section class="from" id="items" aria-labelledby="h-items">
-              <h3 id="h-items">Where items come from</h3>
-              <ol>
-                <li><b>Submit content</b>: anyone on the team sends a link; it waits in the queue.</li>
-                <li><b>Sort</b>: each link gets a type and is kept, skipped or deleted.</li>
-                <li><b>Finalize</b> and <b>Publish</b>: the description is checked and the item goes on the Policy Exchange.</li>
-                <li><b>Next issue</b>: kept items wait under Ready to add. Add puts one in the issue; Quick add types in something new.</li>
-                <li>Aim for 3 to 5 research items or reports from outside and 3 to 5 headlines, all policy relevant.</li>
-                <li><b>The builder</b>: picking the issue brings in what is in it.</li>
-              </ol>
-            </section>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -402,6 +408,7 @@
             <p class="note"><span class="n">2</span><span>How it is laid out: pick a look. Styles shows each one.</span></p>
             <p class="note"><span class="n">3</span><span>Its words: title, link, description, date, time, place, media.</span></p>
             <p class="note"><span class="n">4</span><span>Done closes the card. Undo changes puts it all back.</span></p>
+            <p class="note"><span class="n go"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span><span>An edit here changes this email, not the item on the desk.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -441,7 +448,7 @@
             <p class="note"><span class="n">1</span><span>Copy HTML: the whole email, ready for Outlook.</span></p>
             <p class="note"><span class="n">2</span><span>Save to the archive: keeps it under Past issues. Off on a sample.</span></p>
             <p class="note"><span class="n">3</span><span>Download .html: the same file, saved to your computer.</span></p>
-            <p class="note"><span class="n go"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span><span><b>Start the next issue</b> clears the draft for the next one.</span></p>
+            <p class="note"><span class="n go"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span><span><b>Start the next issue</b> clears the draft for the next one. To fix an archived issue, do it before then, on the same computer: fix it here and press <b>Save to the archive</b> again.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -896,7 +903,7 @@
         [i - 1, i + 1].forEach((n) => run.items[n]?.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; }));
       }
 
-      // What a hash opens: a chapter's first slide (#items is on the first Outline slide), or Styles,
+      // What a hash opens: the slide holding it, or its chapter's first slide, or Styles,
       // where it was left, or at a group's first look.
       function target(hash) {
         let el = null;
@@ -955,7 +962,7 @@
       ready = true;
     })();
   </script>
-  <script type="module" src="/js/howto-sidebar.js?v=1"></script>
+  <script type="module" src="/js/howto-sidebar.js?v=2"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

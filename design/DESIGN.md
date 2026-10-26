@@ -203,6 +203,11 @@ template and the public Exchange site.
   /#highlight, /#briefs. The content sits in a 1280px column beside it; the
   desk's status line keeps its one-line slot at the top of that column. Under
   760px wide the sidebar sits above the page.
+- **The page's corner** (Kate, Oct 24; see "The page's corner" at the end):
+  at the top right of every page with the sidebar, in the status line's row,
+  today's date as a small gray line and the How-tos button just right of it,
+  staying put while the page scrolls. The How-tos panel is the one place a
+  page links its how-to.
 
 ## Icons
 
@@ -245,19 +250,21 @@ white cards, three to a row on a laptop, in her order: Submit content,
 Content queue, Newsletter, Listserv, Public links, Policy Exchange. A card is
 its name with the arrow, the count as a big numeral, what it counts, and a
 line at its foot; the teal bar on hover. The name is the card's link,
-stretched over the whole box, so a card's own links (How to submit content,
-Copy link) stay links and never nest. Public links opens nothing: each row is
+stretched over the whole box, so a card's own links (Copy link) stay links
+and never nest. Public links opens nothing: each row is
 a public page, opening in a new tab, with Copy link. Documentation went: each
 how-to sits in its hub. The cards of Sep 22 to Oct 6 (Submit content,
 Content Sort, Newsletter, Policy Exchange and a Documentation card) are gone.
 
 The team's page, Submit content at /#team: since Oct 6 (her answer) the form
-in a white box, at a reading width, with the bulk door, and "How to submit
-content" in the lede, nothing else. Its Queue fold went to the Content queue
+in a white box, at a reading width, with the bulk door, and "The team's
+form." in the lede, nothing else; its how-to is in the How-tos panel (Oct
+24). The Team submit page, which has no sidebar and so no panel, keeps "How to
+submit content" as its lede. Its Queue fold went to the Content queue
 hub, its Quick links to the Public links card (`js/public-links.js`, in her
-drawing's order: the Exchange, Submit content, Join listserv; Kate's set D
-icons stay on the team's how-to, which draws its Links to share from the same
-list; no row ever shows its address), and its filled doors with the top bar's
+drawing's order: the Exchange, Submit content, Join listserv; no row ever
+shows its address; the team's how-to drew its Links to share, in Kate's set D
+icons, from the same list until the trim of Oct 24), and its filled doors with the top bar's
 lanes. The Sort page is Content Sort everywhere since Sep 22.
 
 The front page of Sep 17 to 22 (Kate's wireframes; `design/mockups/index.png`) was the
@@ -388,7 +395,8 @@ thing everywhere (see the vocabulary table).
 
 Since Oct 23 it wears the desk's look (see the end of this file): the
 sidebar, the head with its blue door, the parts as the segmented control.
-The navy band, its maize rule and white button below are its Sep 30 look.
+The navy band, its maize rule and white button below are its Sep 30 look;
+Links to share went in the trim of Oct 24 (at the end of this file).
 
 The team's how-to lives on the desk's open side at `/how-to/submit-content/`
 (Kate, Sep 30: "it should live in vercel, on the content desk page, for how to
@@ -444,10 +452,10 @@ tabs of the box it lands in. The band's white button is Open Newsletter,
 to /#newsletter, where an issue starts. No Claude note: the builder never
 calls it (her call, "No Claude note on this page"). The one line outside
 the slides sits under the builder's tabs: "Every fix in Preview & Edit,
-never in Outlook, so the archive matches what went out." Next issue links
-it as a quiet underlined word under Open the builder, "How to build an
-issue". The front page's Documentation card listed both how-tos until the
-six hubs (Oct 6); the team's how-to is linked from Submit content now.
+never in Outlook, so the archive matches what went out." Next issue opens
+it first in the How-tos panel, at Outline; the builder, at its step (Oct 24).
+Until then Next issue linked it as a quiet underlined word, "How to build an
+issue", beside "The email: read me".
 
 ## The six hubs (Oct 6)
 
@@ -456,14 +464,16 @@ answers to nine questions, asked one at a time, then a wireframe: six hubs,
 each a card on the front page and a page of its own. The page heads read the
 same: the hub's name as the title and one line under it.
 
-- **Submit content** (/#team): the form and its how-to (above).
+- **Submit content** (/#team): the form (above); its how-to is in the How-tos panel.
 - **Content queue** (/#queue): everything ever submitted, newest first,
   deleted items left out, each wearing where it stands: Waiting (the review
   tint), Kept (gray), In the <date> issue (blue), On the Exchange (green),
   the word always saying it. A search by title or source. An outside
   submission (it came with an email) is tagged From outside and shows no name
   or email: the page is open. On the right, Content Sort's filled door with a
-  lock and how many wait, "Password protected", and How to sort, forthcoming.
+  lock and how many wait, and "Password protected". Its guide, Sort the
+  queue, leads the How-tos panel (Oct 24; How to sort and How it all connects
+  sat under the Scraper block from Oct 22).
   Since Oct 19 (Kate: "a button that will run the scraper", the haul in
   Drive "so it's available to everyone") a Scraper block sits under the
   door: Run the scraper, an outline button, starts the scraper's run on
@@ -484,6 +494,24 @@ same: the hub's name as the title and one line under it.
   Oct 20). Nothing enters the queue by itself: the team reads the tab, and
   drops the files it wants on the bulk door, as before. Counts and links
   only, since the page is open.
+  Since Oct 24 (the owner's pick "feeds run on their own", Option 2 of
+  `.superpowers/tmp/oct23-options/data/sources.md`) Add a source sits beside
+  Run the scraper, an outline button that gives way to a short form in a
+  white box: Name, Address, What kind (Site or feed, or Email newsletter,
+  with "Pick Email newsletter for one that only arrives by email."), What it
+  posts (the scraper files every item under one of its four types), then
+  Add the source (blue) and Cancel. While the desk looks, the buttons go and
+  the wait shimmers ("Looking for its feed", "Saving it"). The answer is a
+  note that stays for the visit: green "Added. The scraper reads its feed
+  from next Monday."; blue "Saved, but it has no feed, so the scraper cannot
+  read it yet." and "Saved as an email newsletter. The scraper cannot read
+  email." A refusal (a duplicate, a private address, the sheet not connected
+  yet) is the red line under the buttons, the form and what was typed kept.
+  The row goes to the Scraper sources Sheet; each run reads its switched-on
+  feeds as plain feeds (`docs/handbook/connections.md`, "Add a source").
+  Sort the queue's The scraper pins it and says the one thing the screen
+  does not: it only adds, and a source it added stops when its Switched on
+  cell says no; the scraper's built-in sources still need code.
   Since Oct 8 (Kate: "the queue has too many items. It should just be what
   was submitted from the last newsletter until now"; her pick of a second
   tab): the desk's tab row under the head, Since the last issue (opens
@@ -723,6 +751,8 @@ The share form and the listserv sign-up live in `public-pages/`, a Vercel projec
 Kate's answers to the usability audit, each one decided by her:
 
 - **Today** is College Station's date (`js/today.js`, America/Chicago), never UTC.
+  Since Oct 24 every page with the sidebar shows it at its top right,
+  "Saturday, Oct 24" (`todayWords`).
 - **Focus** where a list clips what is drawn outside a control (the type
   picker, the Sort and Finalize list rows) is drawn inside instead: 2px teal,
   and on the picked, teal-filled type a 2px white line. Everywhere else the
@@ -877,7 +907,8 @@ calls, one question at a time; the desk goes to the team after today.
   a long title wraps on the Sort card; the bulk fold's chevron points right;
   a link with no class is teal; Crimson Text no longer loads; the sign-in and
   the how-tos say the password is in READ ME FIRST - ERC handoff (the password
-  itself never appears).
+  itself never appears; since the trim of Oct 24 only Who to ask says where,
+  and every guide that asks for it links there).
 - **How-tos**: every step listed beside its picture, pins at rest; Submit
   content re-recorded on today's page.
 - **Said plainly instead of rebuilt** (her picks, for today): the builder's
@@ -904,8 +935,8 @@ sandbox before anything goes live:
    card is white on the gray page with soft corners. Every other screen keeps
    its layout and takes the new look through the tokens.
 2. **The front page** as A's grouped lists, with the line rules (done):
-   the title and its lede at the left of the head and How it all connects as
-   a white button at its right (All how-tos lives in the sidebar now); each
+   the title and its lede at the left of the head (How it all connects, a
+   white button at its right until Oct 24, is in the How-tos panel); each
    group a white list with 12px corners; a row is the hub's icon on a pale
    blue tile, its name, one line for what the count counts (that first fact
    darker: "waiting for Sort", then "· 1 from outside" in gray), one for its
@@ -934,8 +965,9 @@ sandbox before anything goes live:
 clicks listserv, they probably want to see the new ones to add first"):
 Listserv opens on To be added (the count, Open the sign-up sheet and the
 three steps), then the sign-up form; Policy Exchange on the Publish and
-Highlight doors, then the site's status, Edit live items, then the how-to
-links and the code line, in one 720px column; Newsletter's Next issue on a
+Highlight doors, then the site's status, Edit live items, then the code
+line, in one 720px column (its three how-to links went to the How-tos panel,
+Oct 24); Newsletter's Next issue on a
 head line ("Oct 27 issue", sends in N days, Open the builder), then the
 lists. The Policy Exchange count is one number everywhere (the sidebar, the
 front page, the door), what the live check says Publish would add, and
@@ -944,3 +976,97 @@ under its boxes below 1232px wide.
 
 The how-tos wear the desk's look, sidebar and all, and every picture in them
 is of it, shot with `how-to/capture.mjs` and built with `how-to/make-deck.mjs`.
+
+## The page's corner (Oct 24)
+
+Two picks of Kate's, each from five drawn in the real desk
+(`.superpowers/tmp/oct23-options/`), sharing the top right of every page with
+the sidebar: the desk's screens, the builder, the email's three pages and
+every how-to. `js/page-corner.js` draws them once a page, called by
+`renderSidebar`; `css/shell.css` seats them in the grid's second cell, 40px in
+from the window's right, centered on the desk's status line row (32px down)
+and sticky at the top as the page scrolls, on the page's ground so words
+scrolling under them never show through.
+
+- **Today's date, her pick E**: a small gray line, the calendar icon and
+  "Saturday, Oct 24", College Station's (`todayWords` in `js/today.js`), a
+  `time` element. It turns over past midnight without a reload (a 30 second
+  clock, and again when the tab comes back). It is not on Content Sort, whose
+  band carries the How-tos button alone. The status line's words and their
+  action end before the corner starts: the corner measures itself into
+  `--corner-w`, the status line pads its right end by that and 16px, the spring
+  note keeps the same room, and on Sort the band's wait note and the status
+  line's right reserve move left of the button. The status line keeps one line
+  on every page, as on Sort: the words end in an ellipsis (the whole message is
+  its title) and the action follows them, so a message never moves the page,
+  1024 wide included. A brief's title, the paper's and often long, keeps the
+  same room. Sort's sign-in has no band, so its corner is every other page's,
+  date and all.
+- **How-tos, her pick D**: a quiet white button, the book icon and "How-tos",
+  just right of the date. It opens a panel from the right, 380px, the
+  window's height, over the page: the browser's own modal dialog, named by its
+  heading "How-tos", focus moving in as it opens and back to the button as it
+  closes, closed by X, Escape wherever focus is, a click beside it, or a link
+  followed. First "For this page": the page's guide as a card with its parts,
+  the part for this page tagged This page (the builder's part is its step on
+  screen); on a how-to "This guide", its parts as places on the page and the
+  one on screen marked; on All how-tos no card. Then "Every other guide" under
+  the sidebar's own headings, Bring it in, Send it out and Research, then
+  Behind the scenes for the guides no hub owns.
+- **One data module**, `js/howto-index.js`: the guides, each under its
+  heading, by its page's own title; their parts as their pages' own chips
+  name them, at their anchors; and which page opens which guide at which part
+  (since the trim below, a page's topic has a part in its hub's guide; the
+  front page, Policy Exchange and Research briefs open theirs with none
+  tagged). It lists
+  only what exists: a test reads each guide's page for its parts and ids. The
+  newsletter's read me is a guide here, "The email: read me", with its
+  headings as parts; the blank template and the sample open it.
+- **The scattered links went**, replaced by the panel: the front page's How
+  it all connects and the Submit content row's How to submit content; the
+  team page's lede link; the Content queue's How to sort and How it all
+  connects; Next issue's How to build an issue and The email: read me;
+  Listserv's Google scripts line; the Policy Exchange foot's three; the
+  Highlight's and Research briefs' head links. Kept: the sidebar's All how-tos
+  and I need help!, the links inside the how-tos between guides, the
+  Newsletter row's Read me, Blank template and Sample issue (her trio of Oct
+  8), and the Team submit page's own link, since it has no sidebar.
+
+## The how-tos, trimmed (Oct 24)
+
+The owner, of the guides: "some of the how-tos are SOOOOO redundant". The
+proposal in `.superpowers/tmp/oct23-options/data/howtos.md`, followed: each
+repeated topic told once, in the guide the How-tos panel opens for its page,
+and cut wherever the screen already says it.
+
+- **One copy each:** Publish, the highlight and its photo rule, and fixing
+  what is live in Publish and the Exchange (renamed from Change the Policy
+  Exchange); ERC Newsletter only and Finalize in Sort the queue; "3 to 5 of
+  each" on Build the newsletter's Outline; what the builder can do in Build
+  the newsletter; where items come from in How it all connects alone.
+- **Change the desk** keeps what is its own: Who to ask, the Exchange's look
+  (from the Exchange guide) and the Needs code table. Its hub chapters moved
+  with their stills: An item and the scraper to Sort the queue (Fix an item
+  later, The scraper), Issues and send dates to Build the newsletter (Send
+  dates, first; fixing an archived issue under Save & Export); The Exchange
+  and the listserv slide were cut, the screens and the other guides saying
+  them.
+- **The team password** is the one name for the one password, the
+  handoff's; Who to ask says once where it is kept, and every guide that asks
+  for it links there. I need help! is in the sidebar, and Ask Claude says so.
+- **Submit content** lost Links to share (the front page's Public links has
+  Copy link) for one line: "Never send the desk's address." Its four unused
+  pictures of Oct 7 are gone.
+- **The read me** stays a page (her pick of Oct 8, linked from the Newsletter
+  card): the two pages and changing the template itself; a change to one issue
+  links to Build the newsletter.
+- **All how-tos** and `desk-guide.txt` are drawn from `js/howto-index.js`:
+  the panel's headings, each guide by its own title and line.
+- **How it all connects** is her pick A of three (Tidied): her three bands
+  and every box, the six pages in one row, three filters on the picture and
+  the rest listed under it.
+- **Sort's conference rule** (the owner's decision): a conference on
+  education policy or research, or its call for proposals, is kept; a job, an
+  award, or a teaching or trade conference is deleted. ECS State Policy
+  Tracker and the Austin American-Statesman left the Sources slide, switched
+  off in the scraper on Oct 22.

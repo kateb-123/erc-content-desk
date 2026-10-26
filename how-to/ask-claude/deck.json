@@ -82,7 +82,7 @@
             {
               "title": "When Claude cannot answer",
               "items": [
-                "Press <b>I need help!</b> in the top bar. It sends a note to the desk's owner."
+                "Press <b>I need help!</b> in the sidebar. It sends a note to the desk's owner."
               ],
               "links": null
             }

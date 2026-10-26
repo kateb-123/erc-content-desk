@@ -14,7 +14,7 @@
  * Exchange how-to pins it (how-to/exchange/shots.json).
  */
 import { exchangeStatus } from './exchange-view.js';
-import { hubHead, HUB_LEDES, howToLink } from './hub-head.js';
+import { hubHead, HUB_LEDES } from './hub-head.js';
 import { faIcon } from './icons.js';
 import { el, focusKeyIn, restoreFocus } from './ui-aids.js';
 
@@ -77,8 +77,7 @@ export function renderExchange(container, { rows, today, loaded, preview, hubUpd
   editing.append(edit, el('p', 'qh-side-note', 'Fix, hide or delete what is already live. It asks the team password.'));
 
   const foot = el('div', 'ex-foot');
-  foot.append(howToLink('How to publish to the Exchange', '/how-to/exchange/#publish'), howToLink('How to change the Policy Exchange', '/how-to/exchange/'), howToLink('How it all connects', '/how-to/pipeline/'),
-    el('p', 'qh-side-note', 'Code: github.com/kateb-123/erc-policy-exchange-app. Who holds the logins: READ ME FIRST, in the shared drive.'));
+  foot.append(el('p', 'qh-side-note', 'Code: github.com/kateb-123/erc-policy-exchange-app. Who holds the logins: READ ME FIRST, in the shared drive.'));
 
   page.append(hubHead('Policy Exchange', HUB_LEDES.exchange), doors, status, editing, foot);
   container.replaceChildren(page);

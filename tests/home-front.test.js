@@ -90,10 +90,9 @@ test('the page draws one list per group under its label, a row a hub, and no car
   assert.deepEqual(texts(page.querySelectorAll('h3.hub-label')), ['Bring it in', 'Send it out', 'Research', 'Public links']);
   const lists = page.querySelectorAll('.home-groups .home-list');
   assert.deepEqual(lists.map(l => l.querySelectorAll('.home-row').map(r => r.dataset.key)), [['team', 'queue'], ['newsletter', 'listserv', 'exchange'], ['briefs']]);
-  // The page title and its lede stay; How it all connects is the head's one button (All how-tos is in the sidebar).
+  // The page title and its lede stay; How it all connects, the head's button until Oct 24, is in the How-tos panel (her pick D).
   assert.equal(page.querySelector('.home-title').textContent, 'Content Desk');
-  const guide = page.querySelector('a.home-guide');
-  assert.deepEqual([guide.textContent, guide.href], ['How it all connects', '/how-to/pipeline/']);
+  assert.equal(page.querySelector('a.home-guide'), null);
   assert.equal(page.querySelectorAll('.howto-link').length, 0);
 });
 
@@ -129,7 +128,7 @@ test('a row: its icon, the name as the link, a line per kind of fact with the fi
   assert.equal(warn.textContent.trim(), "Send dates end Oct 27. Add the next ones on the Sheet's schedule tab.");
   assert.ok(warn.querySelector('.line-icon-warning'));
   const links = key => row(key).querySelector('.home-row-links')?.children ?? [];
-  assert.deepEqual(texts(links('team')), ['How to submit content']);
+  assert.deepEqual(texts(links('team')), [], 'its how-to is in the How-tos panel (Oct 24)');
   assert.deepEqual(texts(links('newsletter')), ['Read me (opens in a new tab)', 'Blank template (opens in a new tab)', 'Sample issue (opens in a new tab)']);
   assert.deepEqual(texts(links('listserv')), ['Sign-up sheet (opens in a new tab)']);
   for (const a of [...links('newsletter'), ...links('listserv')]) assert.deepEqual([a.target, a.rel], ['_blank', 'noopener']);

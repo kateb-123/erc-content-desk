@@ -57,7 +57,8 @@ test('the queue page draws the block from the status, under the Sort door, and t
   assert.match(ui, /s\.state === 'running' \? busyLine\(s\.line\)/, 'the wait shimmers');
   assert.match(ui, /target = '_blank'/, 'the sheet and the folder open in a new tab');
   assert.match(ui, /s\.files/, 'the files beside the sheet');
-  assert.match(ui, /side\.append\(door, .*scraperBox, howToLink\('How to sort', '\/how-to\/sort\/'\)/, 'the block sits under the door, above the How to sort link (the handoff, Oct 22)');
+  // The block sits under the door; the How to sort link that followed it is in the How-tos panel (Oct 24, her pick D).
+  assert.match(ui, /side\.append\(door, .*scraperBox\);/, 'the block sits under the door, last in the column');
   const app = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
   assert.match(app, /async function loadScraper\(/);
   assert.match(app, /fetch\('\/api\/bulk\?scraper=status'\)/);

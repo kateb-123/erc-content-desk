@@ -29,14 +29,14 @@ test('exchangeStatus: while asked it says so; a site that did not answer is neve
   assert.deepEqual(exchangeStatus({ rows: [], today: '2026-10-07', loaded: true, preview: null, hubUpdated: '' }), { site: "Didn't answer just now", updated: '', waiting: null });
 });
 
-test('the hub says where the code, the handoff and the logins are, with how-to links in place of the forthcoming lines (the handoff, Oct 22: no dead ends), and never the logins themselves', async () => {
+test('the hub says where the code, the handoff and the logins are, its how-tos in the How-tos panel (Oct 24), and never the logins themselves', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../js/exchange-ui.js', import.meta.url), 'utf8');
   assert.doesNotMatch(src, /forthcoming\(/);
   assert.match(src, /github\.com\/kateb-123\/erc-policy-exchange-app/);
   assert.match(src, /READ ME FIRST/);
-  // The publish how-to is the Exchange guide's Publish part (Kate, Oct 23): How to sort has no #exchange.
-  assert.match(src, /howToLink\('How to publish to the Exchange', '\/how-to\/exchange\/#publish'\)/);
+  // The handoff's how-to links (Oct 22) went to the How-tos panel at the page's top right (Kate, Oct 24, her pick D).
+  assert.doesNotMatch(src, /howToLink|\/how-to\//);
   assert.doesNotMatch(src, /DESK_PASSWORD|password\s*[:=]/i, 'no login on the page');
   assert.match(src, /'\/#publish'/, 'Publish opens from the hub');
   assert.match(src, /'https:\/\/erc-policy-exchange\.vercel\.app\/'/, 'the live link');
@@ -86,7 +86,7 @@ test('Publish sends no highlight picks and points to the Highlight page; the hub
 // what waits to publish, so the doors lead (Publish with its count, then
 // Highlight), then Status, then Edit live items with its line, and at the foot
 // the how-tos and where the code and the logins are. Waiting to publish stays
-// in Status: the Exchange how-to pins it (how-to/exchange/shots.json).
+// in Status.
 
 // A small stand-in for the browser's document, enough for the page's helpers.
 class FakeText { constructor(text) { this.text = String(text); } get textContent() { return this.text; } }
@@ -133,7 +133,6 @@ test('the Exchange page leads with the Publish door and its count, and keeps eve
     if (n.has('hub-label')) return [`label: ${words(n)}`];
     if (n.has('hub-stat-k')) return [`stat: ${words(n)}`];
     if (n.has('qh-edit')) return [`link: ${words(n)}`];
-    if (n.has('howto-link')) return [`how-to: ${words(n)}`];
     if (n.has('qh-side-note')) return [`note: ${words(n)}`];
     return [];
   });
@@ -147,9 +146,6 @@ test('the Exchange page leads with the Publish door and its count, and keeps eve
     'stat: Waiting to publish',
     'link: Edit live items (opens in a new tab)',
     'note: Fix, hide or delete what is already live. It asks the team password.',
-    'how-to: How to publish to the Exchange',
-    'how-to: How to change the Policy Exchange',
-    'how-to: How it all connects',
     'note: Code: github.com/kateb-123/erc-policy-exchange-app. Who holds the logins: READ ME FIRST, in the shared drive.',
   ]);
 });
@@ -168,5 +164,5 @@ test('the Exchange page keeps its doors, links and status values as they were', 
   assert.deepEqual(values, ['Live · Open the Exchange (opens in a new tab)', 'Oct 1', '2']);
   const edit = page.querySelector('.qh-edit');
   assert.deepEqual([edit.href, edit.target, edit.rel], ['https://erc-policy-exchange.vercel.app/2ujhtc8daz/', '_blank', 'noopener']);
-  assert.deepEqual(page.all().filter(n => n.has('howto-link')).map(p => p.children[1].href), ['/how-to/exchange/#publish', '/how-to/exchange/', '/how-to/pipeline/']);
+  assert.deepEqual(page.all().filter(n => n.has('howto-link')), [], 'its how-tos are in the How-tos panel (Oct 24)');
 });

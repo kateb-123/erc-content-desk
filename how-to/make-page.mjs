@@ -19,8 +19,8 @@ const html = `<!DOCTYPE html>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6bde'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
-  <link rel="stylesheet" href="/css/shell.css?v=9" />
-  <link rel="stylesheet" href="/how-to/howto.css?v=3" />
+  <link rel="stylesheet" href="/css/shell.css?v=10" />
+  <link rel="stylesheet" href="/how-to/howto.css?v=4" />
 </head>
 <body>
   <a class="skip-to-main" href="#main">Skip to content</a>
@@ -31,7 +31,7 @@ const html = `<!DOCTYPE html>
     <p class="ht-lede">${esc(lede)}</p>
 ${body}
   </main>
-  <script type="module" src="/js/howto-sidebar.js?v=1"></script>
+  <script type="module" src="/js/howto-sidebar.js?v=2"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

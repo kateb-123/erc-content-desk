@@ -66,15 +66,20 @@ test('each page draws its issue through the builder\'s own template, with Copy H
   assert.match(script, /renderNewsletter\(await res\.json\(\)\)/);
 });
 
-test('the read me lists what the builder does, keeps Claude Code for big style changes, and names no one', () => {
+// The read me stays a page (Kate, Oct 8: the Newsletter card links it), and
+// since the trim (Oct 24) its list of what the builder does is the builder
+// guide's alone: it keeps the two pages and the template's one file, and sends
+// a change to one issue to Build the newsletter.
+test('the read me keeps the two pages and Claude Code for big style changes, sends one issue\'s changes to the builder guide, and names no one', () => {
   const readme = read('../newsletter/read-me/index.html');
   assert.match(readme, /builder\/js\/template\.js/, 'the one file a permanent change goes in');
   assert.match(readme, /Claude Code/);
-  // Kate, Oct 8: "some of those things you can do in the builder ... big editing is only for like big style changes".
-  for (const words of ['Move to…', 'Remove', 'Undo', 'Add an item', 'Add a callout', 'Contents strip', 'Reset layout', 'Use original', 'Title and details', 'With description', 'Stamp beside the text', 'Headshot beside it all', 'Date card', 'Add media', 'Research Brief', 'ERC Explains', 'Maroon block', 'Light gray box', 'Dotted rule', 'Save to the archive']) {
-    assert.ok(readme.includes(words), `the builder's own words: ${words}`);
-  }
   assert.match(readme, /big style change/i);
+  assert.match(readme, /<a href="\/how-to\/newsletter\/">Build the newsletter<\/a>/, 'one issue\'s changes: the builder guide');
+  assert.match(readme, /<a href="\/how-to\/change-the-desk\/#ask">Who to ask<\/a>/, 'who can push it: Change the desk');
+  // Kate, Oct 8: "some of those things you can do in the builder"; the builder guide lists them since Oct 24.
+  for (const words of ['Move to…', 'Add a callout', 'Contents strip', 'Reset layout', 'Maroon block', 'Headshot beside it all']) assert.ok(!readme.includes(words), `the builder guide's: ${words}`);
+  assert.doesNotMatch(readme, /Policy Exchange hub's handoff/, 'the Exchange hub holds the Exchange\'s code alone');
   assert.doesNotMatch(readme, /paste the code into Claude/, 'one email is never edited outside the builder');
   assert.match(readme, /Blank template/);
   assert.match(readme, /Sample issue/);

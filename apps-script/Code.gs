@@ -9,7 +9,9 @@
  *
  * WHAT IT DOES: reads rows, appends a row, overwrites a row, or writes the
  * header row. Since October 19, 2026 it also files the scraper's spreadsheets
- * into the shared drive (saveFile, below). It never runs arbitrary code sent
+ * into the shared drive (saveFile, below). Since October 24, 2026 it also
+ * reads the Scraper sources Sheet and adds one row to it for the desk's Add a
+ * source form (listSources, addSource). It never runs arbitrary code sent
  * to it and only touches the one sheet tab it's told to; the one thing it
  * ever trashes is an older copy of a scraper file being delivered again.
  *
@@ -40,6 +42,12 @@ var SCRAPE_FOLDER_PROPERTY_NAME = 'SCRAPE_FOLDER_ID';
  *  its own (Kate, Oct 20 and 21, 2026). The id is the last part of the
  *  folder's address. Not the id itself. */
 var BRIEFS_FOLDER_PROPERTY_NAME = 'BRIEFS_FOLDER_ID';
+/** Name of the script property holding the id of the Scraper sources Sheet
+ *  (ERC Content Desk/Newsletter/Scraper sources on the team drive): the list
+ *  of sources the scraper watches, where the desk's Add a source form writes
+ *  (Oct 24, 2026). The id is the long part of the Sheet's address between
+ *  /d/ and /edit. Not the id itself. */
+var SOURCES_SHEET_PROPERTY_NAME = 'SOURCES_SHEET_ID';
 var FILE_NAME_RULE = /^[A-Za-z0-9][A-Za-z0-9 _.-]{0,120}\.(xlsx|txt|pdf|md|docx|png|jpg|jpeg)$/;
 /** A folder inside a brief's folder, by name: the figures (Oct 22). */
 var SUB_RULE = /^[a-z]{1,20}$/;
@@ -117,6 +125,10 @@ function handleAction(body) {
       return handleListFiles(body);
     case 'getFile':
       return handleGetFile(body);
+    case 'listSources':
+      return handleListSources();   // the Scraper sources Sheet, by its id
+    case 'addSource':
+      return withLock(function () { return handleAddSource(body); });
   }
   var sheet = getTargetSheet(body.sheetName);
 
@@ -408,6 +420,89 @@ function handleGetFile(body) {
   if (!files.hasNext()) return { ok: false, error: 'No file named ' + body.name + ' in that folder.' };
   var blob = files.next().getBlob();
   return { ok: true, name: blob.getName(), contentType: blob.getContentType(), b64: Utilities.base64Encode(blob.getBytes()) };
+}
+
+/** The Scraper sources Sheet's columns (Oct 22, 2026), for a Sheet with no header yet. */
+var SOURCES_HEADER = ['Source', 'Type', 'Subtype', 'Address', 'How it is read', 'Switched on', 'Why off'];
+var MAX_SOURCE_ROWS = 500;
+var MAX_SOURCE_CELL = 500;
+var SOURCES_NOT_SET = 'Server is not configured: the ' + SOURCES_SHEET_PROPERTY_NAME + ' script property is not set.';
+
+/** The Scraper sources Sheet's first tab, or null while its id is not set. */
+function sourcesSheet() {
+  var id = PropertiesService.getScriptProperties().getProperty(SOURCES_SHEET_PROPERTY_NAME);
+  return id ? SpreadsheetApp.openById(id).getSheets()[0] : null;
+}
+
+/** Row 1 as the Sheet shows it. */
+function sourcesHeaderOf(sheet) {
+  if (sheet.getLastRow() < 1 || sheet.getLastColumn() < 1) return [];
+  return sheet.getRange(1, 1, 1, sheet.getLastColumn()).getDisplayValues()[0].map(function (h) { return String(h).trim(); });
+}
+
+/** One address however it was typed (the desk's addressKey): scheme, www, a fragment and trailing slashes aside. */
+function sourceKey(address) {
+  return String(address || '').trim().toLowerCase().replace(/#.*$/, '').replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/+$/, '');
+}
+
+/** A cell written as plain text: a value that would start a formula keeps a leading apostrophe. */
+function plainCell(value) {
+  var text = String(value == null ? '' : value).slice(0, MAX_SOURCE_CELL);
+  return /^[=+\-@]/.test(text) ? "'" + text : text;
+}
+
+/** The Scraper sources Sheet: its header and every row, as shown (Oct 24, 2026). */
+function handleListSources() {
+  var sheet = sourcesSheet();
+  if (!sheet) return { ok: false, error: SOURCES_NOT_SET };
+  var header = sourcesHeaderOf(sheet);
+  var last = sheet.getLastRow();
+  if (last < 2 || !header.length) return { ok: true, header: header, rows: [] };
+  return { ok: true, header: header, rows: sheet.getRange(2, 1, last - 1, header.length).getDisplayValues() };
+}
+
+/**
+ * Adds one source from the desk's Add a source form (Oct 24, 2026), by column
+ * name under the Sheet's own header, every cell as plain text. An address
+ * already on the Sheet is not written twice: the answer names that row's
+ * source. Nothing on the Sheet is ever changed or removed here; switching a
+ * source off is done by hand, in its Switched on cell.
+ */
+function handleAddSource(body) {
+  var sheet = sourcesSheet();
+  if (!sheet) return { ok: false, error: SOURCES_NOT_SET };
+  var source = body.source;
+  if (!source || typeof source !== 'object') return { ok: false, error: 'addSource needs a "source".' };
+  if (!String(source.Source || '').trim() || !/^https?:\/\/\S+$/i.test(String(source.Address || ''))) {
+    return { ok: false, error: 'addSource needs a "Source" name and an http(s) "Address".' };
+  }
+  var header = sourcesHeaderOf(sheet);
+  if (!header.some(function (h) { return h; })) {
+    sheet.getRange(1, 1, 1, SOURCES_HEADER.length).setValues([SOURCES_HEADER]).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+    header = SOURCES_HEADER.slice();
+  }
+  var lower = header.map(function (h) { return h.toLowerCase(); });
+  var addressCol = lower.indexOf('address');
+  var nameCol = lower.indexOf('source');
+  if (addressCol < 0) return { ok: false, error: 'The sources sheet has no Address column.' };
+  var last = sheet.getLastRow();
+  if (last - 1 >= MAX_SOURCE_ROWS) return { ok: false, error: 'The sources sheet is full.' };
+  if (last > 1) {
+    var want = sourceKey(source.Address);
+    var rows = sheet.getRange(2, 1, last - 1, header.length).getDisplayValues();
+    for (var i = 0; i < rows.length; i++) {
+      if (sourceKey(rows[i][addressCol]) === want) return { ok: true, added: false, duplicate: nameCol >= 0 ? rows[i][nameCol] : '' };
+    }
+  }
+  var row = lower.map(function (h) {
+    for (var j = 0; j < SOURCES_HEADER.length; j++) {
+      if (SOURCES_HEADER[j].toLowerCase() === h) return plainCell(source[SOURCES_HEADER[j]]);
+    }
+    return '';
+  });
+  sheet.appendRow(row);
+  return { ok: true, added: true };
 }
 
 /** Wraps a JS object as the JSON response Apps Script sends back. */

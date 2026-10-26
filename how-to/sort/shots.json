@@ -1,5 +1,34 @@
 [
   {
+    "name": "scraper",
+    "url": "/?fresh=cap#queue",
+    "alt": "The Content queue's right column: the Content Sort door, then Scraper with Run the scraper and Add a source, the last run's line, Open the sheet and the files.",
+    "before": [
+      {
+        "waitFor": "#screen-queue .qh-scraper .qh-scraper-link"
+      }
+    ],
+    "crop": "#screen-queue .qh-side",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": "#screen-queue .qh-scraper button:has-text(\"Run the scraper\")",
+        "label": "Run the scraper: starts a run now",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-queue .qh-scraper button:has-text(\"Add a source\")",
+        "label": "Add a source: a site or feed for the scraper to read",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-queue p.qh-scraper-line:has(.qh-scraper-link)",
+        "label": "The last run: what it found. Open the sheet goes to Newsletter scrapes",
+        "nth": 0
+      }
+    ]
+  },
+  {
     "name": "sort",
     "url": "/?fresh=cap#sort",
     "alt": "Content Sort: the waiting items in the white list down the left, newest first, a working paper chosen in blue; its card in the middle, and the decisions on the right: New research with the Working Paper subtype, ERC Newsletter only as a switch, Keep and next, Skip for now and Delete.",
@@ -179,6 +208,41 @@
       {
         "selector": "#screen-finalize .f-verify-actions .edit-link",
         "label": "Edit: write or fix the description by hand",
+        "nth": 0
+      }
+    ]
+  },
+  {
+    "name": "issue-edit",
+    "url": "/?fresh=cap#newsletter",
+    "alt": "Next issue with Edit open on Rural Schools Symposium: Save and Cancel at the top, its fields, then Type, Subtype, ERC Newsletter only and Add media.",
+    "before": [
+      {
+        "waitFor": "#screen-issue .nl-row .edit-link"
+      },
+      {
+        "click": "#screen-issue .nl-row:has-text(\"Rural Schools Symposium\") .edit-link"
+      },
+      {
+        "waitFor": "#screen-issue .nl-row.is-editing [data-focus=\"edit-type\"]"
+      }
+    ],
+    "crop": "#screen-issue .nl-row.is-editing",
+    "pad": 16,
+    "pins": [
+      {
+        "selector": "#screen-issue .nl-row.is-editing [data-focus=\"edit-type\"]",
+        "label": "Type and Subtype: what the item is, open to change even after Keep",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-issue .nl-row.is-editing .media-add",
+        "label": "Add media: a picture or a PDF flyer",
+        "nth": 0
+      },
+      {
+        "selector": "#screen-issue .nl-row.is-editing [data-focus=\"edit-save-top\"]",
+        "label": "Save: keeps the changes. Cancel drops them",
         "nth": 0
       }
     ]

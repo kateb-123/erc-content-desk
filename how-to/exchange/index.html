@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex" />
-  <title>How to change the Policy Exchange · ERC Content Desk</title>
+  <title>Publish and the Exchange · ERC Content Desk</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6bde'/%3E%3Cpath d='M9 16.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
-  <link rel="stylesheet" href="/css/styles.css?v=190" />
-  <link rel="stylesheet" href="/css/shell.css?v=9" />
+  <link rel="stylesheet" href="/css/styles.css?v=194" />
+  <link rel="stylesheet" href="/css/shell.css?v=10" />
   <script>document.documentElement.classList.add('js');</script>
   <!-- Built by how-to/make-deck.mjs from exchange/deck.json; the styles and script are the newsletter how-to's. -->
   <style>
@@ -77,7 +77,7 @@
     html:not(.js) .progress, html:not(.js) .controls, html:not(.js) .foot { display: none; }
     .js .chapter:not(.is-on), .js .slide:not(.is-on), .js .sg-group:not(.is-on), .js .sg-look:not(.is-on) { display: none; }
     .js .deck[data-mode="styles"] .chapter, .js .deck:not([data-mode="styles"]) .styles { display: none; }
-    .chapter, .styles, .from { scroll-margin-top: 100vh; }   /* a link to a part opens the page at its top, the band and chips in view */
+    .chapter, .styles { scroll-margin-top: 100vh; }   /* a link to a part opens the page at its top, the band and chips in view */
     html:not(.js) .slide + .slide, html:not(.js) .chapter + .chapter, html:not(.js) .styles { border-top: 1px solid var(--layer-line); }
 
     /* A pane, the slides' or Styles': its title and words in the left column,
@@ -102,15 +102,6 @@
     .cap { margin: 0; font: var(--sub-title); font-weight: 400; color: var(--ink); }
     .foot { margin-top: auto; padding-top: var(--spacing-03); }
     .frame { container-type: inline-size; min-width: 0; min-height: calc(var(--fh) + 2 * var(--pad)); padding: var(--pad); display: flex; align-items: flex-start; justify-content: center; background: var(--layer-01); border-radius: var(--radius); }
-
-    /* Where items come from: the desk's path to the builder, a few lines on the first Outline slide. */
-    .from { padding-top: var(--spacing-04); border-top: 1px solid var(--layer-line); }
-    .from h3 { margin: 0 0 var(--spacing-03); font: var(--label-type); color: var(--muted); }
-    .from ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-02); font: var(--meta-type); color: var(--ink); }
-    .from li { position: relative; padding-left: var(--spacing-05); }
-    .from li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: var(--radius-round); background: var(--accent); }
-    .from li:not(:last-child)::after { content: ''; position: absolute; left: 2px; top: 17px; bottom: calc(-1 * var(--spacing-02) - 3px); width: 2px; background: var(--accent-20); }
-    .from b { font-weight: 700; }
 
     /* A still: a window on the picture (the crop). Every number is the
        picture's own pixels, so the crop holds at any width. */
@@ -296,8 +287,8 @@
   <header class="howto-head">
     <div>
       <p class="eyebrow">How to</p>
-      <h1>Change the Policy Exchange</h1>
-      <p class="lede">Publish new items, set the home page's big card, fix or remove what is live, and change the look.</p>
+      <h1>Publish and the Exchange</h1>
+      <p class="lede">Publish new items, set the home page's big card, and fix or remove what is live.</p>
     </div>
     <a class="open" href="https://erc-content-desk.vercel.app/#exchange" target="_blank" rel="noopener">Open Policy Exchange<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
   </header>
@@ -307,10 +298,9 @@
       <a href="#publish">Publish</a>
       <a href="#highlight">Highlight</a>
       <a href="#fix">Fix or remove a live item</a>
-      <a href="#look">Change the look</a>
     </nav>
 
-    <div class="deck" role="region" aria-roledescription="carousel" aria-label="Change the Policy Exchange">
+    <div class="deck" role="region" aria-roledescription="carousel" aria-label="Publish and the Exchange">
       <div class="progress" aria-hidden="true"><span></span></div>
       <p class="sr-only" aria-live="polite" data-said></p>
 
@@ -320,48 +310,26 @@
 
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Open <b>Policy Exchange</b> from the desk's front page.</p>
-            <p class="note"><span class="n">1</span><span>Waiting to publish: what Publish would add now. An item reaches the site only if <b>ERC Newsletter only</b> stays unticked. An A&amp;M campus event comes ticked.</span></p>
-            <p class="note"><span class="n">2</span><span>Publish: the page that sends the waiting items to the site.</span></p>
-            <p class="note"><span class="n">3</span><span>Highlight: the big card on the site's home page.</span></p>
-            <p class="note"><span class="n">4</span><span>Edit live items: the site's own door to fix, hide or delete a live item.</span></p>
-            <div class="foot"></div>
-          </div>
-          <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:512;--cy:72;--cw:2000;--ch:1256">
-              <div class="crop"><div class="zoom"><img src="shots/hub.png" width="2560" height="1800" loading="lazy" alt="The Policy Exchange page: the Publish and Highlight doors side by side, Publish with how many wait, then the site's Status box with Waiting to publish, then Edit live items with its note." /></div></div>
-              <button type="button" class="pin" style="--x:37.6;--y:57.1" aria-label="Waiting to publish: what Publish would add now"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Waiting to publish: what Publish would add now</span></button>
-              <button type="button" class="pin" style="--x:19.2;--y:23.4" aria-label="Publish: the page that sends the waiting items to the site"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Publish: the page that sends the waiting items to the site</span></button>
-              <button type="button" class="pin" style="--x:56;--y:23.4" aria-label="Highlight: the big card on the site's home page"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Highlight: the big card on the site's home page</span></button>
-              <button type="button" class="pin" style="--x:7.2;--y:67.2" aria-label="Edit live items: the site's own door to fix, hide or delete a live item"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">Edit live items: the site's own door to fix, hide or delete a live item</span></button>
-            </div>
-          </div>
-        </div>
-
-        <div class="slide" role="group" aria-roledescription="slide">
-          <div class="side">
             <p class="cap">Only the <b>Adding</b> rows go to the site.</p>
-            <p class="note"><span class="n">1</span><span>Check them on Finalize: read each rewrite before it goes out.</span></p>
-            <p class="note"><span class="n">2</span><span>A color: click it to show only those rows.</span></p>
-            <p class="note"><span class="n">3</span><span>Fate: Adding, Held for newsletter, Needs a fix or Already live. A row that needs a fix names what is missing. Click those words to fix it in place.</span></p>
-            <p class="note"><span class="n">4</span><span>Publish N to the Exchange: asks for the password next.</span></p>
+            <p class="note"><span class="n">1</span><span>A color: click it to show only those rows.</span></p>
+            <p class="note"><span class="n">2</span><span>Fate: Adding, Held for newsletter, Needs a fix or Already live. A row that needs a fix names what is missing. Click those words to fix it in place.</span></p>
+            <p class="note"><span class="n">3</span><span>Publish N to the Exchange: asks for the password next.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
             <div class="shot" style="--iw:2560;--ih:1800;--cx:512;--cy:104;--cw:2000;--ch:1190">
               <div class="crop"><div class="zoom"><img src="shots/publish.png" width="2560" height="1800" loading="lazy" alt="Publish: Checked against the live Exchange, a note that a rewrite is not checked yet, the colored bar with 2 adding, 1 held for newsletter and Already live, the table with each row's Fate, and Publish 2 to the Exchange at the top right." /></div></div>
-              <button type="button" class="pin" style="--x:58.9;--y:23.9" aria-label="Check them on Finalize: read each rewrite before it goes out"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Check them on Finalize: read each rewrite before it goes out</span></button>
-              <button type="button" class="pin" style="--x:5.4;--y:36.3" aria-label="A color: click it to show only those rows"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">A color: click it to show only those rows</span></button>
-              <button type="button" class="pin" style="--x:90.8;--y:51.9" aria-label="Fate: Adding, Held for newsletter, Needs a fix or Already live"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Fate: Adding, Held for newsletter, Needs a fix or Already live</span></button>
-              <button type="button" class="pin" style="--x:87.5;--y:9.5" aria-label="Publish N to the Exchange: asks for the password next"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">Publish N to the Exchange: asks for the password next</span></button>
+              <button type="button" class="pin" style="--x:5.4;--y:36.3" aria-label="A color: click it to show only those rows"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">A color: click it to show only those rows</span></button>
+              <button type="button" class="pin" style="--x:90.8;--y:51.9" aria-label="Fate: Adding, Held for newsletter, Needs a fix or Already live"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Fate: Adding, Held for newsletter, Needs a fix or Already live</span></button>
+              <button type="button" class="pin" style="--x:87.5;--y:9.5" aria-label="Publish N to the Exchange: asks for the password next"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Publish N to the Exchange: asks for the password next</span></button>
             </div>
           </div>
         </div>
 
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Press <b>Publish N to the Exchange</b>, type the desk password, and press <b>Confirm</b>.</p>
-            <p class="note"><span class="n">1</span><span>Password: the desk password, the one Content Sort asks for. It is in READ ME FIRST - ERC handoff, in the shared drive.</span></p>
+            <p class="cap">Press <b>Publish N to the Exchange</b>.</p>
+            <p class="note"><span class="n">1</span><span>Password: the team password. <a href="/how-to/change-the-desk/#ask">Where it is kept</a>.</span></p>
             <p class="note"><span class="n">2</span><span>Confirm: adds the rows to the live site.</span></p>
             <p class="note"><span class="n">3</span><span>Cancel: nothing is sent.</span></p>
             <p class="note"><span class="n go">→</span><span>Each publish files a copy of the site's list in the shared drive, in ERC Content Desk, Policy Exchange.</span></p>
@@ -370,7 +338,7 @@
           <div class="frame">
             <div class="shot" style="--iw:2560;--ih:1800;--cx:512;--cy:104;--cw:2000;--ch:244">
               <div class="crop"><div class="zoom"><img src="shots/publish-ask.png" width="2560" height="1800" loading="lazy" alt="The ask that replaces the Publish button: Publish 2 to the live Exchange?, a Password field, Confirm and Cancel." /></div></div>
-              <button type="button" class="pin" style="--x:73;--y:63.1" aria-label="Password: the desk password, the one Content Sort asks for"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Password: the desk password, the one Content Sort asks for</span></button>
+              <button type="button" class="pin" style="--x:73;--y:63.1" aria-label="Password: the team password"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Password: the team password</span></button>
               <button type="button" class="pin" style="--x:86;--y:63.1" aria-label="Confirm: adds the rows to the live site"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Confirm: adds the rows to the live site</span></button>
               <button type="button" class="pin" style="--x:93.9;--y:63.1" aria-label="Cancel: nothing is sent"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Cancel: nothing is sent</span></button>
             </div>
@@ -384,11 +352,11 @@
 
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Open <b>Highlight</b> on the Policy Exchange page. It works any day, and publishing never changes the card.</p>
+            <p class="cap">It works any day, and publishing never changes the card.</p>
             <p class="note"><span class="n">1</span><span>On the site now: what the big card shows this minute. Cards made on the edit door with <b>Add to New &amp; Upcoming</b> show here too, after the picks.</span></p>
-            <p class="note"><span class="n">2</span><span>Add photo or Replace photo: a picture file from your computer. A Drive picture link never shows on the card. If the item has one, press <b>Replace photo</b> and choose a file.</span></p>
+            <p class="note"><span class="n">2</span><span>Add photo or Replace photo: a picture file from your computer. A Drive picture link never shows on the card: replace it with a file.</span></p>
             <p class="note"><span class="n">3</span><span>Until: the last day the pick stays on the card.</span></p>
-            <p class="note"><span class="n">4</span><span>Write the card: the card's own words for an event or opportunity. An event or opportunity pick gets card words. The card shows them, and the photo, in place of the item's own.</span></p>
+            <p class="note"><span class="n">4</span><span>Write the card: the card's own words for an event or opportunity. The card shows them, and the photo, in place of the item's own.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -424,15 +392,15 @@
 
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Press <b>Update the highlight</b>, type the desk password, and press <b>Confirm</b>.</p>
-            <p class="note"><span class="n">1</span><span>Update the highlight: asks for the password, then Confirm.</span></p>
+            <p class="cap">Nothing on the card changes until you press <b>Update the highlight</b> and <b>Confirm</b>.</p>
+            <p class="note"><span class="n">1</span><span>Update the highlight: asks for the team password, then Confirm. <a href="/how-to/change-the-desk/#ask">Where the password is kept</a>.</span></p>
             <p class="note"><span class="n">2</span><span>Cancel changes: back to what the site shows now.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
             <div class="shot" style="--iw:2560;--ih:1800;--cx:1424;--cy:1080;--cw:1070;--ch:176">
               <div class="crop"><div class="zoom"><img src="shots/highlight-save.png" width="2560" height="1800" loading="lazy" alt="Under Your picks once a pick changed: Update the highlight and Cancel changes." /></div></div>
-              <button type="button" class="pin" style="--x:21.6;--y:50" aria-label="Update the highlight: asks for the password, then Confirm"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Update the highlight: asks for the password, then Confirm</span></button>
+              <button type="button" class="pin" style="--x:21.6;--y:50" aria-label="Update the highlight: asks for the team password, then Confirm"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Update the highlight: asks for the team password, then Confirm</span></button>
               <button type="button" class="pin" style="--x:52.6;--y:50" aria-label="Cancel changes: back to what the site shows now"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Cancel changes: back to what the site shows now</span></button>
             </div>
           </div>
@@ -445,8 +413,8 @@
 
         <div class="slide words" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Publish only adds lines, so a desk edit to a live item stays on the desk. Fix the site on its own edit door, on a laptop.</p>
-            <p class="note warn"><span class="n">!</span><span><b>It asks the team password, the same as the desk's. It is in READ ME FIRST - ERC handoff, in the shared drive.</b></span></p>
+            <p class="cap">Publish only adds lines, so a desk edit to a live item stays on the desk. Fix the site on its own edit door.</p>
+            
             <div class="foot"></div>
           </div>
           <div class="text">
@@ -454,7 +422,7 @@
               <h3 id="h-fix-0-0">Fix a live item</h3>
               <ol>
                 <li>On the Policy Exchange page, open <b>Edit live items</b>. The site's sign-in opens in a new tab.</li>
-                <li>Type the team password and press <b>Sign in</b>.</li>
+                <li>Type the <a href="/how-to/change-the-desk/#ask">team password</a> and press <b>Sign in</b>.</li>
                 <li>Press <b>Edit</b> on the item, fix it, and press <b>Save</b>.</li>
               </ol>
             </section>
@@ -481,33 +449,6 @@
                 <li>Press <b>Delete…</b>, then <b>Delete it</b>.</li>
                 <li><b>Undo</b> works only while its note shows.</li>
               </ol>
-            </section>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== Change the look ===== -->
-      <section class="chapter" id="look" data-name="Change the look" aria-labelledby="h-look">
-        <h2 class="pane-title" id="h-look">Change the look</h2>
-
-        <div class="slide words" role="group" aria-roledescription="slide">
-          <div class="side">
-            <p class="cap">Logos, words and section names are code in the Exchange's GitHub repo. Open it in Claude Code and say what to change. A push to main is live in a minute.</p>
-            
-            <div class="foot"></div>
-          </div>
-          <div class="text">
-            <section class="steps" aria-labelledby="h-look-0-0">
-              <h3 id="h-look-0-0">Where each part lives</h3>
-              <ol>
-                <li>Top bar mark: <code>assets/logo/erc-icon-simple.svg</code>, drawn white</li>
-                <li>Footer logo: <code>assets/ERC_Horizontal_MaroonText-519.png</code>, in four pages</li>
-                <li>Welcome line: <code>index.html</code></li>
-                <li>About page: <code>about/index.html</code></li>
-                <li>Section names: <code>NEWS_TABS</code> in <code>js/app.js</code>, and the top bar of <code>about/</code>, <code>newsletter/</code> and <code>share/</code></li>
-                <li>Quick search order: <code>SUBTYPE_ORDER</code> in <code>js/app.js</code></li>
-              </ol>
-              <p class="links"><a href="https://github.com/kateb-123/erc-policy-exchange-app" target="_blank" rel="noopener">The Exchange's GitHub repo<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></p>
             </section>
           </div>
         </div>
@@ -633,7 +574,7 @@
         [i - 1, i + 1].forEach((n) => run.items[n]?.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; }));
       }
 
-      // What a hash opens: a chapter's first slide (#items is on the first Outline slide), or Styles,
+      // What a hash opens: the slide holding it, or its chapter's first slide, or Styles,
       // where it was left, or at a group's first look.
       function target(hash) {
         let el = null;
@@ -692,7 +633,7 @@
       ready = true;
     })();
   </script>
-  <script type="module" src="/js/howto-sidebar.js?v=1"></script>
+  <script type="module" src="/js/howto-sidebar.js?v=2"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

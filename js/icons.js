@@ -64,6 +64,9 @@ const LINE_ICONS = {
   pin: [['path', { d: 'M9 4h6l-1 5 3 3v2H7v-2l3-3z' }], ['path', { d: 'M12 14v6' }]],
   chevron: [['path', { d: 'm9.5 6 6 6-6 6' }]],
   warning: [['path', { d: 'M10.4 4.8a1.8 1.8 0 0 1 3.2 0l7 12.4a1.8 1.8 0 0 1-1.6 2.8H5a1.8 1.8 0 0 1-1.6-2.8z' }], ['path', { d: 'M12 10v3.6' }], ['path', { d: 'M12 16.8v.1' }]],
+  // The page's corner (Oct 24): today's date, and the How-tos panel's close.
+  calendar: [['rect', { x: 4, y: 5.5, width: 16, height: 14.5, rx: 2.5 }], ['path', { d: 'M4 10h16' }], ['path', { d: 'M8.5 3.5v4' }], ['path', { d: 'M15.5 3.5v4' }]],
+  close: [['path', { d: 'm7 7 10 10' }], ['path', { d: 'M17 7 7 17' }]],
 };
 
 /** One of the line icons, for decoration: hidden from assistive tech, sized and colored by CSS. */

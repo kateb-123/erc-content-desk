@@ -7,8 +7,8 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6bde'/%3E%3Cpath d='M9 16.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
-  <link rel="stylesheet" href="/css/shell.css?v=9" />
-  <link rel="stylesheet" href="/css/styles.css?v=189" />
+  <link rel="stylesheet" href="/css/shell.css?v=10" />
+  <link rel="stylesheet" href="/css/styles.css?v=194" />
 </head>
 <body>
   <a class="skip-to-main" href="#main">Skip to content</a>
@@ -16,36 +16,23 @@
   <nav class="sidebar" aria-label="Desk"></nav>
   <main id="main" class="email-page email-readme">
     <h1 class="home-title">Read me</h1>
-    <p class="lede">The newsletter's HTML: the two pages, what the builder changes, and when to change the template itself.</p>
+    <p class="lede">The newsletter's HTML: the two pages, and when to change the template itself.</p>
 
-    <h2>The two pages</h2>
+    <h2 id="pages">The two pages</h2>
     <ul>
       <li><a href="/newsletter/template/">Blank template</a>: every section and callout, with placeholder words in each slot, so you can see every place an item can go.</li>
       <li><a href="/newsletter/sample/">Sample issue</a>: a fictional issue with every kind of item, as the builder would send it. The builder's Issue list offers the same sample to practice on.</li>
     </ul>
     <p>Both are drawn from the builder's own template the moment they open, so they always match what the builder makes. Copy HTML on either page puts that email's code on the clipboard.</p>
 
-    <h2>Change an issue in the builder</h2>
-    <p>Nearly everything about one issue is done in the <a href="/builder/">Newsletter builder</a>, in its Preview &amp; Tweak step, never in Outlook, so the archive matches what went out. The builder can:</p>
-    <ul>
-      <li>Put the issue in order: drag a section or an item by its grip. Move to… files an item under another section or group. Remove takes it out, and Undo puts it back.</li>
-      <li>Edit any words in place: a title, a description, the introduction, a callout. Use original and Undo changes put the text back.</li>
-      <li>Choose how an item is laid out: Title and details, With description, Stamp beside the text, Headshot beside it all, or a Date card for an event.</li>
-      <li>Add a picture or a flyer to an item (Add media), and set the picture's size.</li>
-      <li>Set a research item's kind: Research Brief, Research Report, Journal Article or ERC Explains.</li>
-      <li>Add an item by hand, or Add a callout in one of three styles: Maroon block, Light gray box or Dotted rule.</li>
-      <li>Turn the Contents strip on or off. Reset layout puts every option back to its default.</li>
-      <li>Copy HTML into Outlook, then Save to the archive, so Past issues shows the email as it went out.</li>
-    </ul>
-
-    <h2>Change the template itself</h2>
+    <h2 id="template">Change the template itself</h2>
     <p>Only for a big style change that every issue after should carry: the masthead, the colors and type, a new section, a new layout. The email's look lives in one file of the desk's code, <code>builder/js/template.js</code>, and a change there reaches the builder, the blank template and the sample at once. Open the desk's folder in Claude Code and ask for the change; it writes the code and runs the desk's tests, and the change goes live when it is pushed. Example asks:</p>
     <ul>
       <li>"Add a Podcasts section after Headlines, with its own label."</li>
       <li>"Change the masthead to the new ERC banner."</li>
       <li>"Use a darker maroon for every section rule and button."</li>
     </ul>
-    <p>If the change is for one issue only, it belongs in the builder. Where the desk's code lives, and who can push it, is in the Policy Exchange hub's handoff.</p>
+    <p>A change to one issue belongs in the builder: see <a href="/how-to/newsletter/">Build the newsletter</a>. Who can push a change: <a href="/how-to/change-the-desk/#ask">Who to ask</a>.</p>
   </main>
   <script type="module">
     import { renderSidebar } from "/js/shell-ui.js";

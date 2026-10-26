@@ -2,119 +2,7 @@ ERC Content Desk guide, for Claude
 Every how-to for the ERC Content Desk (https://erc-content-desk.vercel.app) in one file. Answer questions about the desk from it: name the page and the button. If it does not say, say so.
 
 
-# How it all connects
-https://erc-content-desk.vercel.app/how-to/pipeline/
-
-## How it all connects
-
-Who sends an item, what the desk does with it, and where it ends up.
-
-Three layers. On top, who sends and who reads: your team, anyone using the public form, the public site and the listserv inboxes. In the middle, the desk: Submit content, the Content queue, Content Sort, Finalize, then the Policy Exchange and the newsletter. Underneath, the parts: Drive and the scraper, the database with its Sheet copy, Claude, Outlook and GitHub. Filters on the way: you review a split doc, you pick the scraper files, a bot check, repeats stop, you keep, skip or delete, newsletter-only and already-live items stay off the Exchange, and you pick 3 to 5 of each for the newsletter. Beside it, sign-ups go to a Google Sheet and you add them to the listserv; research briefs are drafted by Claude and filed in Drive.
-
-Out in the world
-On the desk
-Underneath
-Your team
-links and files
-Anyone
-the public form
-The site
-the Exchange
-Inboxes
-the listserv
-Submit content
-form, bulk door
-Content queue
-waits for you
-Content Sort
-keep, skip, delete
-Finalize
-Policy Exchange
-Publish
-Newsletter
-Next issue, builder
-Already in?
-repeats stop
-Deleted: off the lists,
-kept on record
-Skipped: waits for later
-links, files
-You review the split
-for a doc or a sheet
-Bot check
-stops spam
-tagged From outside
-Drive
-what it found
-The scraper
-GitHub, Mondays 7:00
-files
-You pick the files
-the rest stay in Drive
-Database
-the record
-Google Sheet
-a copy
-Claude
-reads each link; rewrites events, opportunities, reports
-reads
-rewrites
-Outlook
-erc@tamu.edu
-GitHub
-the site's list
-Newsletter only?
-held back
-Already live?
-skipped
-You pick
-3 to 5 of each
-Beside it, on the same parts
-Anyone
-the sign-up form
-Google Sheet
-Sheet 1, sign-ups
-Listserv
-who to add
-You add them
-then clear Sheet 1
-Inboxes on the listserv
-the same ones as above
-Research briefs
-a paper becomes a brief
-Claude
-drafts it
-Drive
-the brief's folder
-Your proof
-then the author, then live
-a page of the desk
-a system underneath
-a filter
-items move
-a copy is kept
-where it ends up
-
-Read the middle row left to right. Look up to see who an item comes from and where it ends up, down to see the part that does the work. Every orange pill is a filter: it says what gets through, or what stops.
-
-## The two weeks
-
-Monday
-The scraper runs at 7:00. Drop the files you want on the bulk door.
- 
-All week
-Sort what comes in. Check rewrites on Finalize.
- 
-Monday, 5 pm
-Cutoff. Add items on Next issue, then build it.
- 
-Tuesday
-Send. Save to the archive.
-
-Any day: publish to the Exchange.
-
-
-# How to submit content
+# Submit content to the desk
 https://erc-content-desk.vercel.app/how-to/submit-content/
 
 ## Add content
@@ -149,7 +37,7 @@ Claude then reads each link.
 
  The spreadsheet dropped, the items listed, then added.Pause
 
-Everything is reviewed before it goes out.
+Everything is reviewed before it goes out. Never send the desk's address. Public links, on the front page, has Copy link for each public page.
 
 ## Item types
 
@@ -157,13 +45,21 @@ Type | Use it for | On the Exchange now |
 
 Not sure? Pick the closest. It can be changed later.
 
-## Links to share
 
-These pages are live and public. Copy link copies the address. Never send the desk's address.
-
-
-# How to sort
+# Sort the queue
 https://erc-content-desk.vercel.app/how-to/sort/
+
+## The scraper
+
+Rows you delete on the Newsletter scrapes tabs stay deleted.
+ 
+1Run the scraper: starts a run now.
+ 
+2Add a source: a site or feed for the scraper to read.
+ 
+3The last run: what it found. Open the sheet goes to Newsletter scrapes.
+ 
+!Add a source only adds. To stop one you added, set Switched on to no on the Scraper sources Sheet. The scraper's built-in sources need code.
 
 ## Keep or delete
 
@@ -177,7 +73,7 @@ Keep what helps someone make or study education policy. Delete the rest, and kee
  
 4Delete: takes it out of the queue. D does the same. Undo is on the line at the top, and on the grayed row at the bottom of the list.
 
-About two in five papers, events and opportunities are kept, and one headline in five. An issue wants 3 to 5 outside research items or reports and 3 to 5 headlines.
+About two in five papers, events and opportunities are kept, and one headline in five.
 
 ## Keep when
 
@@ -192,6 +88,8 @@ About two in five papers, events and opportunities are kept, and one headline in
 - It is an ERC event or an A&M research talk.
  
 - It offers education researchers money, a fellowship or a call for proposals, with the deadline ahead.
+ 
+- It is a conference on education policy or research, or its call for proposals.
  
 - A person added it: their initials or name follow added by (bulk upload means none were given). Keep it unless it repeats.
 
@@ -213,7 +111,7 @@ Delete it when any of these is true.
  
 - A webinar teaches classroom practice or sells something.
  
-- It is a job, an award or a conference listing. Grants with no deadline or for another field go too.
+- It is a job, an award, or a teaching or trade conference. Grants with no deadline or for another field go too.
  
 - The research has no policy in it: a method, a theory or a program description.
  
@@ -225,10 +123,6 @@ Some sources have a clear rule, from how often they were kept.
 
 ## A clear rule
 
-- ECS State Policy Tracker, 0 of 54 kept: delete. Each is one state bill.
- 
-- Austin American-Statesman, 0 of 24: delete. Austin ISD and UT campus news.
- 
 - Urban Institute, 6 of 41: delete unless it is about schools.
  
 - NBER, 3 of 18: delete unless it is about schooling.
@@ -297,37 +191,61 @@ A rewrite that is back waits under To check, its changed words marked.
  
 - Keep the rest (N) keeps every rewrite still to check.
 
+## Fix an item later
+
+Fix an item where it is now.
+ 
+!Delete is final once you reload or close the desk. To bring an item back, add its link again on Submit content.
+ 
+!Never fix an item in the Sheet's first tab. It is a copy: the desk never reads it and writes over it.
+
+## Where it is now
+
+- On Content Sort: type over the title, or press Edit under the description; each saves when you click away. For the link, press Change, then Save.
+ 
+- Kept, and not yet in an issue or live: Edit on Finalize, then Save.
+ 
+- On Next issue: Edit on its row.
+ 
+- Waiting on Publish: click the row, then Edit.
+
+Edit on Next issue, Finalize and Publish opens this form.
+ 
+1Type and Subtype: what the item is, open to change even after Keep. Fix an item kept under the wrong type here, without deleting it.
+ 
+2Add media: a picture or a PDF flyer.
+ 
+3Save: keeps the changes. Cancel drops them.
+
  Back
 
  Next
 
-Next: publish to the Policy Exchange (https://erc-content-desk.vercel.app/how-to/exchange/).
 
-
-# How to build the newsletter
+# Build the newsletter
 https://erc-content-desk.vercel.app/how-to/newsletter/
+
+## Send dates
+
+The send dates live on the Sheet's schedule tab. A change there reaches the desk within ten minutes; reload to see it. If it never does, see Bring back the Google scripts (https://erc-content-desk.vercel.app/how-to/google-scripts/).
+ 
+1Shows a week before the last send date: time to add the next ones.
+ 
+2A send date: press it to open that issue on Next issue.
+ 
+3The Sheet's schedule tab: opens it in a new tab. Type each date in column A, from row 2, as 2026-11-10.
+ 
+A date shown as 11/10/2026 is skipped.
 
 ## 1Step 1: Outline
 
-On Next issue, Open the builder. Pick the issue's date: everything staged for it comes in, and anything new each time it opens.
+On Next issue, Add what the issue needs from Ready to add, then Open the builder. Pick the issue's date: everything staged for it comes in, and anything new each time it opens.
  
 1Issue: the date; picking it brings in what the desk holds for it. To practice, pick Sample issue (fictional) under Samples.
  
+Aim for 3 to 5 research items or reports from outside and 3 to 5 headlines, all policy relevant.
+ 
 The draft is saved only in the browser you build it in. Finish the issue there.
-
-## Where items come from
-
-- Submit content: anyone on the team sends a link; it waits in the queue.
- 
-- Sort: each link gets a type and is kept, skipped or deleted.
- 
-- Finalize and Publish: the description is checked and the item goes on the Policy Exchange.
- 
-- Next issue: kept items wait under Ready to add. Add puts one in the issue; Quick add types in something new.
- 
-- Aim for 3 to 5 research items or reports from outside and 3 to 5 headlines, all policy relevant.
- 
-- The builder: picking the issue brings in what is in it.
 
 Put the issue in the order it should print. Drag a section or an item by its grip; it lands where you drop it.
  
@@ -362,6 +280,8 @@ Click an item and its card opens beside it. Every change shows on the email as y
 3Its words: title, link, description, date, time, place, media.
  
 4Done closes the card. Undo changes puts it all back.
+ 
+An edit here changes this email, not the item on the desk.
 
 Reorder here too: point at an item or a section heading and drag it by the grip that appears at its left.
  
@@ -379,7 +299,7 @@ Copy HTML and send it (the next part). Once it has gone out, Save to the archive
  
 3Download .html: the same file, saved to your computer.
  
-Start the next issue clears the draft for the next one.
+Start the next issue clears the draft for the next one. To fix an archived issue, do it before then, on the same computer: fix it here and press Save to the archive again.
 
 ## Send from erc@tamu.edu
 
@@ -576,34 +496,50 @@ The row of section names under the masthead, each a link into the email. On or o
  Next
 
 
-# How to change the Policy Exchange
+# The email: read me
+https://erc-content-desk.vercel.app/newsletter/read-me/
+
+## Read me
+
+The newsletter's HTML: the two pages, and when to change the template itself.
+
+## The two pages
+
+- Blank template (https://erc-content-desk.vercel.app/newsletter/template/): every section and callout, with placeholder words in each slot, so you can see every place an item can go.
+ 
+- Sample issue (https://erc-content-desk.vercel.app/newsletter/sample/): a fictional issue with every kind of item, as the builder would send it. The builder's Issue list offers the same sample to practice on.
+
+Both are drawn from the builder's own template the moment they open, so they always match what the builder makes. Copy HTML on either page puts that email's code on the clipboard.
+
+## Change the template itself
+
+Only for a big style change that every issue after should carry: the masthead, the colors and type, a new section, a new layout. The email's look lives in one file of the desk's code, builder/js/template.js, and a change there reaches the builder, the blank template and the sample at once. Open the desk's folder in Claude Code and ask for the change; it writes the code and runs the desk's tests, and the change goes live when it is pushed. Example asks:
+
+- "Add a Podcasts section after Headlines, with its own label."
+ 
+- "Change the masthead to the new ERC banner."
+ 
+- "Use a darker maroon for every section rule and button."
+
+A change to one issue belongs in the builder: see Build the newsletter (https://erc-content-desk.vercel.app/how-to/newsletter/). Who can push a change: Who to ask (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask).
+
+
+# Publish and the Exchange
 https://erc-content-desk.vercel.app/how-to/exchange/
 
 ## Publish
 
-Open Policy Exchange from the desk's front page.
- 
-1Waiting to publish: what Publish would add now. An item reaches the site only if ERC Newsletter only stays unticked. An A&M campus event comes ticked.
- 
-2Publish: the page that sends the waiting items to the site.
- 
-3Highlight: the big card on the site's home page.
- 
-4Edit live items: the site's own door to fix, hide or delete a live item.
-
 Only the Adding rows go to the site.
  
-1Check them on Finalize: read each rewrite before it goes out.
+1A color: click it to show only those rows.
  
-2A color: click it to show only those rows.
+2Fate: Adding, Held for newsletter, Needs a fix or Already live. A row that needs a fix names what is missing. Click those words to fix it in place.
  
-3Fate: Adding, Held for newsletter, Needs a fix or Already live. A row that needs a fix names what is missing. Click those words to fix it in place.
- 
-4Publish N to the Exchange: asks for the password next.
+3Publish N to the Exchange: asks for the password next.
 
-Press Publish N to the Exchange, type the desk password, and press Confirm.
+Press Publish N to the Exchange.
  
-1Password: the desk password, the one Content Sort asks for. It is in READ ME FIRST - ERC handoff, in the shared drive.
+1Password: the team password. Where it is kept (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask).
  
 2Confirm: adds the rows to the live site.
  
@@ -613,15 +549,15 @@ Press Publish N to the Exchange, type the desk password, and press Confirm.
 
 ## Highlight
 
-Open Highlight on the Policy Exchange page. It works any day, and publishing never changes the card.
+It works any day, and publishing never changes the card.
  
 1On the site now: what the big card shows this minute. Cards made on the edit door with Add to New & Upcoming show here too, after the picks.
  
-2Add photo or Replace photo: a picture file from your computer. A Drive picture link never shows on the card. If the item has one, press Replace photo and choose a file.
+2Add photo or Replace photo: a picture file from your computer. A Drive picture link never shows on the card: replace it with a file.
  
 3Until: the last day the pick stays on the card.
  
-4Write the card: the card's own words for an event or opportunity. An event or opportunity pick gets card words. The card shows them, and the photo, in place of the item's own.
+4Write the card: the card's own words for an event or opportunity. The card shows them, and the photo, in place of the item's own.
 
 In Pick from, press Highlight on a row, then give it a photo above. A blank Until becomes the event's date or the deadline, else two weeks.
  
@@ -633,23 +569,21 @@ In Pick from, press Highlight on a row, then give it a photo above. A blank Unti
  
 4In, 2nd: already picked, and its place on the card.
 
-Press Update the highlight, type the desk password, and press Confirm.
+Nothing on the card changes until you press Update the highlight and Confirm.
  
-1Update the highlight: asks for the password, then Confirm.
+1Update the highlight: asks for the team password, then Confirm. Where the password is kept (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask).
  
 2Cancel changes: back to what the site shows now.
 
 ## Fix or remove a live item
 
-Publish only adds lines, so a desk edit to a live item stays on the desk. Fix the site on its own edit door, on a laptop.
- 
-!It asks the team password, the same as the desk's. It is in READ ME FIRST - ERC handoff, in the shared drive.
+Publish only adds lines, so a desk edit to a live item stays on the desk. Fix the site on its own edit door.
 
 ## Fix a live item
 
 - On the Policy Exchange page, open Edit live items. The site's sign-in opens in a new tab.
  
-- Type the team password and press Sign in.
+- Type the team password (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask) and press Sign in.
  
 - Press Edit on the item, fix it, and press Save.
 
@@ -669,158 +603,17 @@ The desk's Delete never touches the site. On the edit door, press Edit on the it
  
 - Undo works only while its note shows.
 
-## Change the look
-
-Logos, words and section names are code in the Exchange's GitHub repo. Open it in Claude Code and say what to change. A push to main is live in a minute.
-
-## Where each part lives
-
-- Top bar mark: assets/logo/erc-icon-simple.svg, drawn white
- 
-- Footer logo: assets/ERC_Horizontal_MaroonText-519.png, in four pages
- 
-- Welcome line: index.html
- 
-- About page: about/index.html
- 
-- Section names: NEWS_TABS in js/app.js, and the top bar of about/, newsletter/ and share/
- 
-- Quick search order: SUBTYPE_ORDER in js/app.js
-
-The Exchange's GitHub repo (https://github.com/kateb-123/erc-policy-exchange-app)
-
  Back
 
  Next
 
 
-# How to change the desk
-https://erc-content-desk.vercel.app/how-to/change-the-desk/
-
-## An item
-
-Fix an item where it is now. Content Sort asks for the desk password.
- 
-!Delete is final once you reload or close the desk. To bring an item back, add its link again on Submit content.
- 
-!Never fix an item in the Sheet's first tab. It is a copy: the desk never reads it and writes over it.
-
-## Where it is now
-
-- On Content Sort: type over the title, or press Edit under the description; each saves when you click away. For the link, press Change, then Save.
- 
-- Kept, and not yet in an issue or live: Edit on Finalize, then Save.
- 
-- On Next issue: Edit on its row.
- 
-- Waiting on Publish: click the row, then Edit.
-
-Edit on Next issue, Finalize and Publish opens this form.
- 
-1Type and Subtype: what the item is, open to change even after Keep. Fix an item kept under the wrong type here, without deleting it.
- 
-2ERC Newsletter only: ticked, it skips the Policy Exchange.
- 
-3Add media: a picture or a PDF flyer. Keep a GIF under 2.5 MB.
- 
-4Save: keeps the changes. Cancel drops them.
-
-## Issues and send dates
-
-Next issue holds the items. The builder holds the draft.
-
-## An issue
-
-- To fill a later issue, press its date beside Later under This issue.
- 
-- Build each issue on one computer: the draft lives in that browser.
- 
-- Edits on Preview & Tweak (https://erc-content-desk.vercel.app/how-to/newsletter/#tweak) change the email, not the desk.
- 
-- To fix an archived issue, fix it in the builder on the same computer and press Save to the archive again. This works only until you press Start the next issue.
-
-A change on the Sheet reaches the desk within ten minutes; reload to see it. If it never does, see Bring back the Google scripts (https://erc-content-desk.vercel.app/how-to/google-scripts/).
- 
-1Shows a week before the last send date: time to add the next ones.
- 
-2A send date: press it to open that issue on Next issue.
- 
-3The Sheet's schedule tab: opens it in a new tab. Type each date in column A, from row 2, as 2026-11-10.
- 
-!A date shown as 11/10/2026 is skipped.
-
-## The Exchange
-
-Once an item is live, no Edit on the desk reaches the site. Only Highlight's card words and photo do, in the home page's big card.
- 
-1Already live: the item is on the site. Click its row to open it.
- 
-2Edit: changes the desk's copy, never the site.
- 
-!The desk's Delete never touches the site.
-
-Fix a live item on the site itself. Use a laptop: the site's Edit buttons do not show on a phone.
- 
-1Find the item on the site, press Edit, fix it, press Save. Hide from the site, in the same Edit, takes it down.
- 
-2The big card never shows a Drive picture. Use Add photo on Highlight, or a picture link ending .jpg, .png or .webp.
- 
-iPublish and Highlight ask for the desk password at Confirm.
-
- 1Edit live items: the site's own editor, in a new tab, with the team password
- 2Highlight: the home page's big card, with Add photo for each pick
-
-## The listserv and the scraper
-
-To see Sheet 1 as it is now, reload the browser page.
- 
-1To be added: the rows on Sheet 1 when the desk was loaded.
- 
-2Open the sign-up sheet: names and addresses, in a new tab.
-
-Rows you delete on the Newsletter scrapes tabs stay deleted.
- 
-1Run the scraper: starts a run now.
- 
-2The last run: what it found. Open the sheet goes to Newsletter scrapes.
- 
-!The scraper does not read the Scraper sources Sheet. Changing its sources needs code.
-
- Back
-
- Next
-
-## Needs code
-
-Ask the desk's owner, named in READ ME FIRST - ERC handoff, in the shared drive. With access to the repo, Claude Code can make the change.
-
-What | Where it lives | 
-
-Either password, or which pages ask for the desk's | Each site's Vercel settings; js/auth-view.js | 
- 
-The scraper's sources or its Monday time | sources.yaml and .github/workflows/scrape.yml in the erc-scraper repo | 
- 
-Item types and subtypes | js/schema.js, builder/js/model.js, public-pages/submit/ and the Exchange's js/app.js | 
- 
-A screen's words or button names | That screen's file in js/ or builder/js/ | 
- 
-The front page's lists and its Public links menu | js/home-panel.js, js/home-ui.js, js/public-links.js | 
- 
-How rewrites read | api/_lib/voice.js | 
- 
-The desk's look, or the email's and its blank template | css/tokens.css, builder/js/template.js, builder/fixtures/blank-issue.json | 
- 
-Taking an issue out of Past issues | builder/newsletters/ | 
- 
-A how-to, or where I need help! sends | how-to/, js/report-problem.js |
-
-
-# How to make a research brief
+# Make a research brief
 https://erc-content-desk.vercel.app/how-to/research-briefs/
 
 ## 1Step 1: Paper and notes
 
-Sign in with the desk password, then press New brief.
+Sign in, then press New brief.
  
 1New brief: starts one from the paper and your notes.
  
@@ -866,7 +659,7 @@ Press Write the draft. Notes typed in the box go with it, saved or not.
  
 !If a step fails with a Drive or script message, see Bring back the Google scripts (https://erc-content-desk.vercel.app/how-to/google-scripts/).
  
-!If it fails again after Try again for any other reason, write to the desk's owner. READ ME FIRST - ERC handoff has the address.
+!If it fails again after Try again for any other reason, see Who to ask (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask).
 
 When it is done, the stage is Your proof and the page shows the brief, its word count and its table or chart.
  
@@ -952,15 +745,15 @@ Put the PDF online, then send it through the desk like any other item.
  
 - Add a row to ERC-Research-Briefs-Library-Metadata.xlsx in erc-research-briefs/, copying the rows above. Ask at the ERC who at the library takes it.
  
-- On Submit content (https://erc-content-desk.vercel.app/#team), paste the link and pick New research, then ERC Research. The brief's title is the Title, the Executive Summary's first paragraph the Description. Press Add to the queue.
+- On Submit content (https://erc-content-desk.vercel.app/#team), paste the link and pick New research, then ERC Research. The brief's title is the Title, the Executive Summary's first paragraph the Description.
  
-- On Content Sort (https://erc-content-desk.vercel.app/#sort), fill any blank Date, Authors, Source or Topic. Leave ERC Newsletter only unticked and press Keep and next.
+- On Content Sort (https://erc-content-desk.vercel.app/#sort), fill any blank Date, Authors, Source or Topic, then press Keep and next.
  
 - On Newsletter (https://erc-content-desk.vercel.app/#newsletter)'s Next issue, press Add on it under Ready to add.
  
 - Email the author of record the public link, with thanks.
 
-How to sort, for Finalize (https://erc-content-desk.vercel.app/how-to/sort/#finalize) How to publish to the Exchange (https://erc-content-desk.vercel.app/how-to/exchange/#publish)
+Sort the queue: Finalize (https://erc-content-desk.vercel.app/how-to/sort/#finalize) Publish and the Exchange: Publish (https://erc-content-desk.vercel.app/how-to/exchange/#publish)
 
  Back
 
@@ -968,10 +761,250 @@ How to sort, for Finalize (https://erc-content-desk.vercel.app/how-to/sort/#fina
 
 ## What you need
 
-- The desk password. It is in READ ME FIRST - ERC handoff, in the shared drive.
+- The team password (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask).
 - Google Drive for desktop, with the shared drive in Finder. Each brief lives in ERC Content Desk / ERC Research Briefs / your brief's folder.
 - Claude Code, opened on ERC Content Desk / ERC Research Briefs. The house rules, template and scripts are in ERC Content Desk / ERC Research Briefs / erc-research-briefs.
 - Node.js, Grammarly, Word, Outlook and Chrome.
+
+
+# How it all connects
+https://erc-content-desk.vercel.app/how-to/pipeline/
+
+## How it all connects
+
+Who sends an item, what the desk does with it, and where it ends up.
+
+How an item moves through the desk. Out in the world, your team sends links and files to Submit content, and anyone can use the public form, which goes straight to the Content queue tagged From outside. On the desk, in one row: Bring it in, Submit content then the Content queue, where repeats stop; Decide, Content Sort, where you keep, skip or delete, then Finalize; Send it out, the Policy Exchange and the Newsletter. The Policy Exchange ends up on the site and the Newsletter in inboxes, with 3 to 5 items of each kind. Underneath, the parts that do the work: the scraper runs Mondays at 7:00 on GitHub and puts what it found in Drive for Submit content; the database keeps the record of the queue, with a copy in a Google Sheet; Claude reads each link in the queue and rewrites events, opportunities and reports for Finalize; GitHub holds the site's list; Outlook sends the newsletter from erc@tamu.edu. Beside it: anyone can sign up on the sign-up form, which fills a Google Sheet that the Listserv page counts, and the people end up in the listserv's inboxes; and Research briefs turn a paper into a brief, drafted by Claude and filed in Drive, then your proof, the author, and live.
+
+Out in the world
+
+On the desk
+
+Underneath
+
+Bring it in
+
+Decide
+
+Send it out
+
+tagged From outside
+
+Your team
+
+links and files
+
+Anyone
+
+the public form
+
+The site
+
+the Exchange
+
+Inboxes
+
+the listserv
+
+Submit content
+
+form, bulk door
+
+Content queue
+
+waits for you
+
+Content Sort
+
+Finalize
+
+Policy Exchange
+
+Publish
+
+Newsletter
+
+Next issue, builder
+
+Already in?
+
+repeats stop
+
+You keep,
+
+skip or delete
+
+You pick
+
+3 to 5 of each
+
+Drive
+
+what it found
+
+The scraper
+
+Mondays 7:00
+
+on GitHub
+
+Database
+
+the record
+
+Google Sheet
+
+a copy
+
+Claude
+
+reads each link
+
+rewrites events, opportunities, reports
+
+GitHub
+
+the site's list
+
+Outlook
+
+erc@tamu.edu
+
+Beside it, on the same parts
+
+Anyone
+
+the sign-up form
+
+Google Sheet
+
+Sheet 1, sign-ups
+
+Listserv
+
+who to add
+
+Inboxes on the listserv
+
+the same ones as above
+
+Research briefs
+
+a paper becomes a brief
+
+Claude
+
+drafts it
+
+Drive
+
+the brief's folder
+
+Your proof
+
+then the author, then live
+
+a page of the desk
+
+a system underneath
+
+a filter
+
+items move
+
+a copy is kept
+
+where it ends up
+
+- Coming in You review a split doc or sheet. You pick the scraper's files; the rest stay in Drive. A bot check stops spam.
+ 
+- Going out Skipped waits; deleted stays on record. Newsletter-only and already-live items skip the Exchange. You add sign-ups, then clear Sheet 1.
+
+Read the middle row left to right. Look up for who sends an item and where it ends up, down for the part that does the work. An orange pill is a filter.
+
+## The two weeks
+
+Monday
+The scraper runs at 7:00. Drop the files you want on the bulk door.
+ 
+All week
+Sort what comes in. Check rewrites on Finalize.
+ 
+Monday, 5 pm
+Cutoff. Add items on Next issue, then build it.
+ 
+Tuesday
+Send. Save to the archive.
+
+Any day: publish to the Exchange.
+
+
+# Change the desk
+https://erc-content-desk.vercel.app/how-to/change-the-desk/
+
+## Who to ask
+
+Anything a screen can't change goes to the desk's owner.
+ 
+!Never write the team password anywhere else.
+
+## The owner and the password
+
+- The team password is the one password. Content Sort and Research briefs ask for it, Publish and Highlight ask for it at Confirm, and so does the Exchange's edit door.
+ 
+- It is in READ ME FIRST - ERC handoff, in the shared drive, with the owner's name.
+
+## A change in code
+
+- With access to the repo, Claude Code can make the change, and a push to main is live in a minute. The table under these slides says where each part lives.
+
+## The Exchange's look
+
+Logos, words and section names are code in the Exchange's GitHub repo. Open it in Claude Code and say what to change.
+
+## Where each part lives
+
+- Top bar mark: assets/logo/erc-icon-simple.svg, drawn white
+ 
+- Footer logo: assets/ERC_Horizontal_MaroonText-519.png, in four pages
+ 
+- Welcome line: index.html
+ 
+- About page: about/index.html
+ 
+- Section names: NEWS_TABS in js/app.js, and the top bar of about/, newsletter/ and share/
+ 
+- Quick search order: SUBTYPE_ORDER in js/app.js
+
+The Exchange's GitHub repo (https://github.com/kateb-123/erc-policy-exchange-app)
+
+ Back
+
+ Next
+
+## Needs code
+
+What | Where it lives | 
+
+The team password, or which pages ask for it | Each site's Vercel settings; js/auth-view.js | 
+ 
+The scraper's built-in sources or its Monday time | sources.yaml and .github/workflows/scrape.yml in the erc-scraper repo | 
+ 
+Item types and subtypes | js/schema.js, builder/js/model.js, public-pages/submit/ and the Exchange's js/app.js | 
+ 
+A screen's words or button names | That screen's file in js/ or builder/js/ | 
+ 
+The front page's lists and its Public links menu | js/home-panel.js, js/home-ui.js, js/public-links.js | 
+ 
+How rewrites read | api/_lib/voice.js | 
+ 
+The desk's look | css/tokens.css | 
+ 
+The email's look and its blank template (see The email: read me (https://erc-content-desk.vercel.app/newsletter/read-me/#template)) | builder/js/template.js, builder/fixtures/blank-issue.json | 
+ 
+Taking an issue out of Past issues | builder/newsletters/ | 
+ 
+A how-to, or where I need help! sends | how-to/, js/report-problem.js |
 
 
 # Bring back the Google scripts
@@ -1005,7 +1038,7 @@ Do this in each Sheet. Each gets a new address, and the desk uses it once its ow
  
 - Allow the permissions. If Google says unverified, choose Advanced, then Go to the project.
  
-- Copy the Web app URL, ending in /exec. Email it to the desk's owner, named in READ ME FIRST - ERC handoff in the shared drive, and say which Sheet.
+- Copy the Web app URL, ending in /exec. Email it to the desk's owner (Who to ask (https://erc-content-desk.vercel.app/how-to/change-the-desk/#ask)) and say which Sheet.
 
 ## 2Step 2: Check it
 
@@ -1021,15 +1054,11 @@ Once the owner says the new addresses are in, check each script.
 
 For subscribe to listserve, open Listserv (https://erc-content-desk.vercel.app/#listserv).
  
-1A number here means the script answered.
+1To be added: a number means the sign-up script answered.
  
-2If it did not, the number is blank and this line reads Sheet 1 couldn't be counted just now. with Try again.
+2If the script is down this reads: Sheet 1 couldn't be counted just now.
  
-3Live, taking sign-ups only means the desk has an address for the script. It is not the check.
-
- 1To be added: a number means the sign-up script answered
- 2If the script is down this reads: Sheet 1 couldn't be counted just now.
- 3Status: Live means the desk has the script's address, not that it works
+3Status: Live means the desk has the script's address, not that it works.
 
 ## If it goes wrong
 
@@ -1052,6 +1081,56 @@ Code.gs on GitHub (https://github.com/kateb-123/erc-content-desk/blob/main/apps-
 ## No Extensions menu
 
 - You need edit access to the Sheet. Ask for it, then start again.
+
+ Back
+
+ Next
+
+
+# Ask Claude about the desk
+https://erc-content-desk.vercel.app/how-to/ask-claude/
+
+## Set it up once
+
+A Claude project holds the desk guide, every how-to in one file.
+
+## Make the project
+
+- On claude.ai, open Projects, then Create project. Name it "ERC Content Desk help".
+ 
+- Download the desk guide (https://erc-content-desk.vercel.app/how-to/desk-guide.txt). In the project, add it under Project knowledge.
+ 
+- In the project's instructions, paste: Answer questions about the ERC Content Desk from the guide in this project. Name the page and the button. If the guide does not say, say so.
+
+## Ask
+
+Every chat inside the project reads the guide.
+ 
+!Never paste a password into Claude.
+
+## In the project
+
+- Start a chat inside the project.
+ 
+- Ask in plain words, for example "How do I take an item out of the next issue?" or "Why didn't my item reach the Policy Exchange?"
+
+## No project?
+
+- Start any chat, attach the desk guide (https://erc-content-desk.vercel.app/how-to/desk-guide.txt), and ask.
+
+## Keep it current
+
+The project keeps the copy you added. It never updates itself.
+
+## When a how-to changes
+
+- Download the desk guide (https://erc-content-desk.vercel.app/how-to/desk-guide.txt) again.
+ 
+- In the project, replace the old file under Project knowledge with it.
+
+## When Claude cannot answer
+
+- Press I need help! in the sidebar. It sends a note to the desk's owner.
 
  Back
 

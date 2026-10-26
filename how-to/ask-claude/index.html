@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
-  <link rel="stylesheet" href="/css/styles.css?v=190" />
-  <link rel="stylesheet" href="/css/shell.css?v=9" />
+  <link rel="stylesheet" href="/css/styles.css?v=194" />
+  <link rel="stylesheet" href="/css/shell.css?v=10" />
   <script>document.documentElement.classList.add('js');</script>
   <!-- Built by how-to/make-deck.mjs from ask-claude/deck.json; the styles and script are the newsletter how-to's. -->
   <style>
@@ -77,7 +77,7 @@
     html:not(.js) .progress, html:not(.js) .controls, html:not(.js) .foot { display: none; }
     .js .chapter:not(.is-on), .js .slide:not(.is-on), .js .sg-group:not(.is-on), .js .sg-look:not(.is-on) { display: none; }
     .js .deck[data-mode="styles"] .chapter, .js .deck:not([data-mode="styles"]) .styles { display: none; }
-    .chapter, .styles, .from { scroll-margin-top: 100vh; }   /* a link to a part opens the page at its top, the band and chips in view */
+    .chapter, .styles { scroll-margin-top: 100vh; }   /* a link to a part opens the page at its top, the band and chips in view */
     html:not(.js) .slide + .slide, html:not(.js) .chapter + .chapter, html:not(.js) .styles { border-top: 1px solid var(--layer-line); }
 
     /* A pane, the slides' or Styles': its title and words in the left column,
@@ -102,15 +102,6 @@
     .cap { margin: 0; font: var(--sub-title); font-weight: 400; color: var(--ink); }
     .foot { margin-top: auto; padding-top: var(--spacing-03); }
     .frame { container-type: inline-size; min-width: 0; min-height: calc(var(--fh) + 2 * var(--pad)); padding: var(--pad); display: flex; align-items: flex-start; justify-content: center; background: var(--layer-01); border-radius: var(--radius); }
-
-    /* Where items come from: the desk's path to the builder, a few lines on the first Outline slide. */
-    .from { padding-top: var(--spacing-04); border-top: 1px solid var(--layer-line); }
-    .from h3 { margin: 0 0 var(--spacing-03); font: var(--label-type); color: var(--muted); }
-    .from ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-02); font: var(--meta-type); color: var(--ink); }
-    .from li { position: relative; padding-left: var(--spacing-05); }
-    .from li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: var(--radius-round); background: var(--accent); }
-    .from li:not(:last-child)::after { content: ''; position: absolute; left: 2px; top: 17px; bottom: calc(-1 * var(--spacing-02) - 3px); width: 2px; background: var(--accent-20); }
-    .from b { font-weight: 700; }
 
     /* A still: a window on the picture (the crop). Every number is the
        picture's own pixels, so the crop holds at any width. */
@@ -385,7 +376,7 @@
             <section class="steps" aria-labelledby="h-current-0-1">
               <h3 id="h-current-0-1">When Claude cannot answer</h3>
               <ol>
-                <li>Press <b>I need help!</b> in the top bar. It sends a note to the desk's owner.</li>
+                <li>Press <b>I need help!</b> in the sidebar. It sends a note to the desk's owner.</li>
               </ol>
             </section>
           </div>
@@ -512,7 +503,7 @@
         [i - 1, i + 1].forEach((n) => run.items[n]?.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; }));
       }
 
-      // What a hash opens: a chapter's first slide (#items is on the first Outline slide), or Styles,
+      // What a hash opens: the slide holding it, or its chapter's first slide, or Styles,
       // where it was left, or at a group's first look.
       function target(hash) {
         let el = null;
@@ -571,7 +562,7 @@
       ready = true;
     })();
   </script>
-  <script type="module" src="/js/howto-sidebar.js?v=1"></script>
+  <script type="module" src="/js/howto-sidebar.js?v=2"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

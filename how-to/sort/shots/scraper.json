@@ -1,0 +1,26 @@
+{
+  "iw": 2560,
+  "ih": 1800,
+  "cx": 1728,
+  "cy": 406,
+  "cw": 784,
+  "ch": 676,
+  "alt": "The Content queue's right column: the Content Sort door, then Scraper with Run the scraper and Add a source, the last run's line, Open the sheet and the files.",
+  "pins": [
+    {
+      "x": 23.2,
+      "y": 55.6,
+      "label": "Run the scraper: starts a run now"
+    },
+    {
+      "x": 61.9,
+      "y": 55.6,
+      "label": "Add a source: a site or feed for the scraper to read"
+    },
+    {
+      "x": 50,
+      "y": 73.1,
+      "label": "The last run: what it found. Open the sheet goes to Newsletter scrapes"
+    }
+  ]
+}

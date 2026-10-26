@@ -11,16 +11,18 @@ import { PUBLIC_LINKS } from '../js/public-links.js';
 // page, so its words are read from the file.
 const page = readFileSync(new URL('../how-to/submit-content/index.html', import.meta.url), 'utf8');
 
-test('the deck links the team page and the three public pages, and only those addresses', () => {
+// Oct 24 (the trim, the owner: "some of the how-tos are SOOOOO redundant"):
+// Links to share repeated the front page's Public links, which has Copy link
+// on each row, so the page keeps one line of it and lists no public page.
+test('the page links the team page, lists no public page, and keeps the one line about the desk\'s address', () => {
   assert.match(page, /https:\/\/erc-content-desk\.vercel\.app\/#team/);
-  // The Links to share rows are drawn from PUBLIC_LINKS itself, so the three
-  // public addresses are never retyped here.
   const words = page.replace('https://erc-policy-exchange.vercel.app/data/news.csv', '');
-  for (const { href } of PUBLIC_LINKS) assert.ok(!words.includes(href), `${href} retyped on the page`);
+  for (const { href } of PUBLIC_LINKS) assert.ok(!words.includes(href), `${href} on the page`);
+  assert.doesNotMatch(page, /PUBLIC_LINKS|id="links"|Links to share/, 'no Links to share: the front page\'s Public links has them');
+  assert.ok(page.includes("Never send the desk's address. Public links, on the front page, has Copy link for each public page."), 'the one line');
   const addresses = new Set(page.match(/https?:\/\/[^\s"'<)]+/g));
-  const allowed = new Set(['https://erc-content-desk.vercel.app/#team', ...PUBLIC_LINKS.map(l => l.href), 'https://erc-policy-exchange.vercel.app/data/news.csv', 'https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css', 'http://www.w3.org/2000/svg', 'https://example.org/aggie/whoop-webinar', 'https://example.org/aggie/gig-em-grants', 'https://example.org/aggie/reveille-superintendent']);
+  const allowed = new Set(['https://erc-content-desk.vercel.app/#team', 'https://erc-policy-exchange.vercel.app/data/news.csv', 'https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&display=swap', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css', 'http://www.w3.org/2000/svg', 'https://example.org/aggie/whoop-webinar', 'https://example.org/aggie/gig-em-grants', 'https://example.org/aggie/reveille-superintendent']);
   for (const a of addresses) assert.ok(allowed.has(a), `an address the deck should not carry: ${a}`);
-  assert.match(page, /import \{ PUBLIC_LINKS \} from '\/js\/public-links\.js'/, 'the Links to share rows are the desk’s own public links');
 });
 
 test('the templates can be downloaded from the page, and the spreadsheet is the one to use', () => {
@@ -85,10 +87,13 @@ test('the newsletter how-to opens the Newsletter page and carries only the addre
 test('the deck: the three steps and Send as chapters of slides, then Styles, in the order the work happens', () => {
   const chips = nl.match(/<nav class="chips"[\s\S]*?<\/nav>/)[0];
   const parts = [...chips.matchAll(/href="#([a-z]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(parts, ['outline', 'tweak', 'export', 'send', 'options'], 'the chips, Styles last');
-  for (const id of ['outline', 'tweak', 'export', 'send']) assert.match(nl, new RegExp(`<section class="chapter" id="${id}"`), `${id} is a chapter`);
+  // Oct 24 (the trim): the send dates moved here from Change the desk, first,
+  // since they are set before any issue; Where items come from went, the
+  // pipeline's alone (How it all connects).
+  assert.deepEqual(parts, ['dates', 'outline', 'tweak', 'export', 'send', 'options'], 'the chips, Send dates first and Styles last');
+  for (const id of ['dates', 'outline', 'tweak', 'export', 'send']) assert.match(nl, new RegExp(`<section class="chapter" id="${id}"`), `${id} is a chapter`);
   assert.match(nl, /<section class="styles" id="options"/, 'Styles keeps the #options address the practice note links');
-  assert.match(nl, /<section class="from" id="items"/, 'Where items come from sits on the first Outline slide');
+  assert.doesNotMatch(nl, /id="items"|Where items come from/, 'where items come from is How it all connects\' alone');
   const order = parts.map((id) => nl.indexOf(`id="${id}"`));
   assert.deepEqual([...order].sort((a, b) => a - b), order, 'the parts run in the order the work happens');
   // Each builder step is a chapter, numbered and named as the builder names it.
@@ -96,7 +101,7 @@ test('the deck: the three steps and Send as chapters of slides, then Styles, in 
     assert.match(nl, new RegExp(`<h2 class="pane-title" id="h-[a-z]+"><span class="step" aria-hidden="true">${n}</span><span class="sr-only">Step ${n}: </span>${step.replace(/[&;]/g, (c) => `\\${c}`)}</h2>`), `${step} is chapter ${n}`);
     assert.ok(builderPage.includes(step), `${step} is the builder's own name for the step`);
   }
-  for (const words of ['Where items come from', 'Send from erc@tamu.edu', 'Styles']) assert.ok(nl.includes(words), words);
+  for (const words of ['Send dates', 'Send from erc@tamu.edu', 'Styles']) assert.ok(nl.includes(words), words);
   assert.doesNotMatch(nl, /<video|\.webm/, 'stills, not recordings');
   assert.doesNotMatch(nl, /[–—]/, 'no en or em dash');
   assert.doesNotMatch(nl, /Kate|Kathy/, 'no name on a team page');
@@ -105,8 +110,11 @@ test('the deck: the three steps and Send as chapters of slides, then Styles, in 
   assert.doesNotMatch(nl, /Pull from the desk/, 'no Pull button since Oct 7: picking the issue pulls');
 });
 
+// Submit content, Sort, Finalize, Publish and Quick add were Where items come
+// from's words; since the trim (Oct 24) they are How it all connects' alone.
 test('the newsletter how-to says what it should in the desk\'s own words', () => {
-  for (const words of ['Ready to add', 'Quick add', 'Open the builder', 'Samples', 'Copy HTML', 'Save to the archive', 'Past issues', 'never in Outlook', 'Submit content', 'Sort', 'Finalize', 'Publish']) assert.ok(nl.includes(words), words);
+  for (const words of ['Ready to add', 'Open the builder', 'Samples', 'Copy HTML', 'Save to the archive', 'Start the next issue', 'Past issues', 'never in Outlook', 'Schedule', 'Next issue']) assert.ok(nl.includes(words), words);
+  assert.ok(nl.includes('Aim for 3 to 5 research items or reports from outside and 3 to 5 headlines, all policy relevant.'), 'the aim, once, where the issue is filled');
 });
 
 test('every still and every look is a file beside the page, drawn at its own shape, with words for a screen reader', () => {
@@ -179,8 +187,11 @@ test('every control the how-to names is a control the builder names, in the buil
   }
 });
 
-test('Next issue links the newsletter how-to beside Open the builder', () => {
-  assert.match(issueUi, /'\/how-to\/newsletter\/'/);
+// Oct 24 (her pick D): Next issue's link went to the How-tos panel, which opens the newsletter how-to first there.
+test('Next issue opens the newsletter how-to first in the How-tos panel', async () => {
+  const { SCREEN_GUIDES } = await import('../js/howto-index.js');
+  assert.deepEqual(SCREEN_GUIDES.issue, ['newsletter', 'outline']);
+  assert.doesNotMatch(issueUi, /'\/how-to\/newsletter\/'/, 'no link of its own on the page');
 });
 
 // ── The guides made by how-to/make-deck.mjs (Kate, Oct 23: steps 1 and 2
@@ -250,11 +261,20 @@ test('every pin on a newsletter still is its capture\'s, with its step in the wo
 
 // Where the password is (Kate, Oct 23): in READ ME FIRST - ERC handoff, and
 // the how-tos say so plainly. The value itself is never written anywhere.
-test('the how-tos say the password is in the handoff doc, never only who has it', () => {
+// Oct 24 (the trim): one password, one name, the handoff's: the team
+// password. Where it is kept is said once, in Change the desk's Who to ask,
+// and every guide that asks for it links there.
+test('the how-tos call it the team password, and say once where it is kept', () => {
   const files = readdirSync(howToDir, { recursive: true }).filter((f) => /\.(html|json|txt)$/.test(f));
-  for (const f of files) assert.doesNotMatch(readFileSync(new URL(f, howToDir), 'utf8'), /who has the password|says who has it/i, f);
-  assert.ok(deckPage('exchange').includes('Password: the desk password, the one Content Sort asks for. It is in READ ME FIRST - ERC handoff, in the shared drive.'), 'Publish\'s ask');
-  assert.ok(deckPage('research-briefs').includes('The desk password. It is in READ ME FIRST - ERC handoff, in the shared drive.'), 'What you need');
+  for (const f of files) {
+    const text = readFileSync(new URL(f, howToDir), 'utf8');
+    assert.doesNotMatch(text, /who has the password|says who has it/i, f);
+    assert.doesNotMatch(text, /desk password|desk's password|Either password/i, `${f}: one password, one name`);
+  }
+  const ask = deckPage('change-the-desk');
+  assert.ok(ask.includes('The team password is the one password.'), 'Who to ask names it');
+  assert.ok(ask.includes('It is in READ ME FIRST - ERC handoff, in the shared drive, with the owner\'s name.'), 'and says where it is kept');
+  for (const d of ['exchange', 'research-briefs']) assert.ok(deckPage(d).includes('<a href="/how-to/change-the-desk/#ask">team password</a>'), `${d} links the team password to where it is kept`);
 });
 
 // The help button's script changes with the desk's (Oct 23: I need help! in
@@ -300,18 +320,22 @@ test('every link to a part of a how-to lands on an id on that page', () => {
   assert.ok(seen >= 5, `links to a part of a how-to (${seen})`);
 });
 
+// Since the trim (Oct 24) a link to a guide says the guide's own title.
 test('the research brief how-to sends Publish readers to the Exchange guide\'s Publish part', () => {
   const page = deckPage('research-briefs');
-  assert.ok(page.includes('<a href="/how-to/exchange/#publish">How to publish to the Exchange</a>'), 'the Publish link');
-  assert.doesNotMatch(page, /How to sort, for Finalize and Publish/, 'How to sort has no Publish');
+  assert.ok(page.includes('<a href="/how-to/exchange/#publish">Publish and the Exchange: Publish</a>'), 'the Publish link');
+  assert.ok(page.includes('<a href="/how-to/sort/#finalize">Sort the queue: Finalize</a>'), 'the Finalize link');
+  assert.doesNotMatch(page, /How to sort|How to publish/, 'link words are the guides\' titles');
 });
 
-// I need help! (Kate, Oct 23): a quiet word in the top bar that sends a note
-// to the desk's owner through a form. Ask Claude says so, in the button's words.
+// I need help! (Kate, Oct 23): a quiet word that sends a note to the desk's
+// owner through a form, in the sidebar's foot since the look of Oct 23. Ask
+// Claude says so, in the button's words.
 test('Ask Claude names the help button as the screen does, where it sits and where it sends', async () => {
   const { HELP_LABEL } = await import('../js/report-problem.js');
   const page = deckPage('ask-claude');
-  assert.ok(page.includes(`Press <b>${HELP_LABEL}</b> in the top bar. It sends a note to the desk's owner.`), 'the help line');
+  assert.ok(page.includes(`Press <b>${HELP_LABEL}</b> in the sidebar. It sends a note to the desk's owner.`), 'the help line: in the sidebar\'s foot since the look of Oct 23');
+  assert.doesNotMatch(page, /top bar/, 'the desk has no top bar');
   assert.doesNotMatch(page, /Report a problem|bottom right corner/, 'the corner button is gone');
 });
 
@@ -341,19 +365,26 @@ test('the newsletter how-to says the draft is saved in one browser, on the first
   assert.ok(readFileSync(new URL('desk-guide.txt', howToDir), 'utf8').includes(line), 'and in the desk guide');
 });
 
-// Kate, Oct 23: How it all connects is her drawn diagram (pick B of three) in place of the
-// three boxes and "Beside the pipeline"; "The two weeks" stays.
-test('How it all connects shows the drawn diagram, keeps The two weeks, and drops the three boxes', () => {
+// Kate, Oct 23: How it all connects is a drawn diagram in place of the three
+// boxes and "Beside the pipeline"; "The two weeks" stays. Oct 24, her pick of
+// three redrawn versions: A, Tidied (her three bands and every box, the six
+// pages in one row under the sidebar's groups, three filters on the picture
+// and the rest listed under it), drawn for the 1200px column.
+test('How it all connects shows version A of the diagram, keeps The two weeks, and drops the old drawings', () => {
   const page = readFileSync(new URL('../how-to/pipeline/index.html', import.meta.url), 'utf8');
-  assert.match(page, /<figure class="pl-diagram">\s*<svg viewBox="0 0 1150 760"[^>]*role="img" aria-label="Three layers\./);
+  assert.match(page, /<figure class="pa-fig">\s*<svg class="pa-svg" viewBox="0 0 934 820" role="img" aria-label="How an item moves through the desk\./, 'version A, a picture with its words for a screen reader');
+  assert.match(page, /<ul class="pa-more" aria-label="The other filters">/, 'the filters not on the picture, listed under it');
   assert.match(page, /<figcaption>Read the middle row left to right\./);
+  assert.match(page, /\.ht-page\{max-width:1200px\}/, 'the column A is drawn for');
   assert.match(page, /<h2>The two weeks<\/h2>/);
   assert.match(page, /Who sends an item, what the desk does with it, and where it ends up\./, 'the lede says what the diagram shows (Kate, Oct 23)');
   assert.doesNotMatch(page, /Open a box for the whole step/);
   assert.match(page, /Any day: publish to the Exchange\./);
   assert.doesNotMatch(page, /class="pl-row"/);
+  assert.doesNotMatch(page, /pl-diagram|viewBox="0 0 1150 760"/, 'the drawing of Oct 23 is gone');
   assert.doesNotMatch(page, /<h2>Beside the pipeline<\/h2>/);
-  assert.ok(page.indexOf('class="pl-diagram"') < page.indexOf('<h2>The two weeks</h2>'), 'the diagram comes before The two weeks');
+  assert.equal(page.split('<figure').length - 1, 1, 'one figure');
+  assert.ok(page.indexOf('<figure class="pa-fig">') < page.indexOf('<h2>The two weeks</h2>'), 'the diagram comes before The two weeks');
 });
 
 // The desk guide reads the drawn diagram as words (review, Oct 23): what it
@@ -362,13 +393,145 @@ test('How it all connects shows the drawn diagram, keeps The two weeks, and drop
 test('the desk guide reads the pipeline diagram as words, a label to a line', () => {
   const page = readFileSync(new URL('../how-to/pipeline/index.html', import.meta.url), 'utf8');
   const guide = readFileSync(new URL('desk-guide.txt', howToDir), 'utf8');
-  const part = guide.slice(guide.indexOf('# How it all connects'), guide.indexOf('# How to submit content'));
-  const said = page.match(/<svg viewBox="0 0 1150 760"[^>]*aria-label="([^"]+)"/)[1];
+  const from = guide.indexOf('\n# How it all connects\n');
+  assert.ok(from >= 0, 'the diagram\'s guide is in the desk guide');
+  const next = guide.indexOf('\n# ', from + 1);
+  const part = guide.slice(from, next < 0 ? undefined : next);
+  const said = page.match(/<svg class="pa-svg" viewBox="0 0 934 820"[^>]*aria-label="([^"]+)"/)[1];
   assert.ok(part.includes(said), 'what the diagram shows, in its own words');
   const lines = part.split('\n');
-  const labels = [...page.slice(page.indexOf('<figure class="pl-diagram">'), page.indexOf('</figure>')).matchAll(/<text\b[^>]*>([^<]+)<\/text>/g)].map((m) => unesc(m[1].replace(/&#x27;/g, "'")));
+  const labels = [...page.slice(page.indexOf('<figure class="pa-fig">'), page.indexOf('</figure>')).matchAll(/<text\b[^>]*>([^<]+)<\/text>/g)].map((m) => unesc(m[1].replace(/&#x27;/g, "'")));
   assert.ok(labels.length >= 60, `the diagram's labels (${labels.length})`);
   for (const label of labels) assert.ok(lines.includes(label), `"${label}" on a line of its own`);
   assert.doesNotMatch(part, /Out in the worldOn the desk|&#x27;/, 'nothing run together or left as code');
   assert.ok(part.includes('Read the middle row left to right.'), 'and its caption');
+  assert.ok(part.includes('Coming in You review a split doc or sheet.'), 'the listed filters, each name apart from its words');
+});
+
+// ── The trim (Oct 24, 2026; the owner: "some of the how-tos are SOOOOO
+// redundant"). One copy of each repeated topic, in the guide the How-tos panel
+// opens for its page. Change the desk keeps only what is its own, who to ask
+// and what needs code: its four hub chapters went to the hubs' guides (An item
+// and the scraper to Sort the queue, the send dates to Build the newsletter)
+// or were cut where the screen says it (the Exchange, the listserv), and the
+// Exchange's look came in from the Exchange guide.
+test('Change the desk is who to ask and what needs code, and nothing a hub\'s guide says', () => {
+  const deck = JSON.parse(readFileSync(new URL('change-the-desk/deck.json', howToDir), 'utf8'));
+  assert.deepEqual(deck.chapters.map((c) => [c.id, c.name]), [['ask', 'Who to ask'], ['look', 'The Exchange\'s look']]);
+  const page = deckPage('change-the-desk');
+  assert.match(page, /<h2 [^>]*id="h-code">Needs code<\/h2>/, 'the table of what needs code');
+  assert.doesNotMatch(page, /<img /, 'no screen pictured: each lives in its hub\'s guide');
+  assert.ok(!existsSync(new URL('change-the-desk/shots/', howToDir)), 'no stills left behind');
+  for (const gone of ['Where it is now', 'Issues and send dates', 'Edit live items', 'To see Sheet 1', 'Newsletter scrapes']) assert.ok(!page.includes(gone), `${gone} is a hub guide's`);
+  const exchange = JSON.parse(readFileSync(new URL('exchange/deck.json', howToDir), 'utf8'));
+  assert.deepEqual(exchange.chapters.map((c) => c.id), ['publish', 'highlight', 'fix'], 'the look moved out of the Exchange guide');
+  assert.equal(exchange.h1, 'Publish and the Exchange', 'named for what it holds now');
+});
+
+test('the hub chapters of Change the desk live in their hubs\' guides, their stills with them', () => {
+  const sort = JSON.parse(readFileSync(new URL('sort/deck.json', howToDir), 'utf8'));
+  assert.deepEqual(sort.chapters.map((c) => [c.id, c.name]), [['scraper', 'The scraper'], ['keep', 'Keep or delete'], ['sources', 'Sources'], ['card', 'Card and list'], ['finalize', 'Finalize'], ['fix', 'Fix an item later']]);
+  const shots = JSON.parse(readFileSync(new URL('sort/shots.json', howToDir), 'utf8')).map((s) => s.name);
+  for (const shot of ['scraper', 'issue-edit']) {
+    assert.ok(existsSync(new URL(`sort/shots/${shot}.png`, howToDir)), `${shot} moved with its chapter`);
+    assert.ok(shots.includes(shot), `${shot} is captured with Sort's stills`);
+  }
+  assert.ok(deckPage('sort').includes('Never fix an item in the Sheet\'s first tab.'));
+  assert.ok(existsSync(new URL('newsletter/shots/schedule.png', howToDir)), 'the Schedule still moved with Send dates');
+  assert.ok(JSON.parse(readFileSync(new URL('newsletter/shots.json', howToDir), 'utf8')).some((s) => s.name === 'schedule'));
+  assert.ok(nl.includes('A date shown as 11/10/2026 is skipped.'));
+  assert.ok(nl.includes('To fix an archived issue'), 'fixing an archived issue sits with Save to the archive');
+});
+
+// Add a source (Oct 24, the owner's pick "feeds run on their own"): the
+// Content queue's form puts a site's feed on the Scraper sources Sheet and
+// each run reads the Sheet's switched-on feeds, so no guide may still say the
+// scraper never reads that Sheet, and the scraper's slide shows the button.
+test('the guides say what Add a source does: the scraper reads the Sheet\'s feeds', () => {
+  const sort = JSON.parse(readFileSync(new URL('sort/deck.json', howToDir), 'utf8'));
+  const slide = JSON.stringify(sort.chapters.find((c) => c.id === 'scraper'));
+  const pins = JSON.parse(readFileSync(new URL('sort/shots/scraper.json', howToDir), 'utf8')).pins.map((p) => p.label);
+  assert.ok(pins.some((l) => l.startsWith('Add a source')), 'the still pins Add a source');
+  assert.match(slide, /Scraper sources Sheet/, 'the slide says where a source it adds goes');
+  for (const d of readdirSync(howToDir).filter((x) => existsSync(new URL(`${x}/index.html`, howToDir)))) {
+    assert.doesNotMatch(deckPage(d), /does not read the Scraper sources Sheet/, `${d} says the scraper ignores the Sheet`);
+  }
+  assert.doesNotMatch(readFileSync(new URL('desk-guide.txt', howToDir), 'utf8'), /does not read the Scraper sources Sheet/);
+  assert.doesNotMatch(deckPage('change-the-desk'), /<td>The scraper's sources or its Monday time<\/td>/, 'Add a source is no code');
+});
+
+test('each repeated topic is told once, in its guide', () => {
+  const visible = (html) => unesc(html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, '').replace(/<span class="tip"[^>]*>[^<]*<\/span>/g, '').replace(/ aria-label="[^"]*"/g, '').replace(/<[^>]+>/g, ' ')).replace(/&#39;|&rsquo;/g, '\'').replace(/\s+/g, ' ');
+  const pages = Object.fromEntries(readdirSync(howToDir).filter((d) => existsSync(new URL(`${d}/index.html`, howToDir))).map((d) => [d, visible(deckPage(d))]));
+  pages['read-me'] = visible(readFileSync(new URL('../newsletter/read-me/index.html', import.meta.url), 'utf8'));
+  const on = (phrase) => Object.keys(pages).filter((k) => pages[k].toLowerCase().includes(phrase.toLowerCase())).sort();
+  const topics = [
+    ['READ ME FIRST', ['change-the-desk']],                // who to ask, and where the team password is kept
+    ['3 to 5 research', ['newsletter']],                  // the issue's aim
+    ['ERC Newsletter only', ['sort']],                    // what reaches the Exchange
+    ['Use original', ['sort']],                           // Finalize
+    ['Publish N to the Exchange', ['exchange']],          // Publish
+    ['Drive picture', ['exchange']],                      // the highlight's photo rule
+    ['Hide from the site', ['exchange']],                 // fixing what is live
+    ['Exchange\'s GitHub repo', ['change-the-desk']],     // the Exchange's look, in code
+    ['Contents strip', ['newsletter']],                   // what the builder can do
+  ];
+  for (const [phrase, home] of topics) assert.deepEqual(on(phrase), home, `"${phrase}"`);
+  for (const [k, text] of Object.entries(pages)) assert.doesNotMatch(text, /on a phone|in the top bar/i, `${k}: the desk is computer-only and has a sidebar`);
+});
+
+// All how-tos (Oct 24): the panel's guides, under the panel's headings, by
+// their own titles, each with its line, so the list and the panel never drift.
+test('All how-tos lists every guide under the panel\'s headings, by title, with its line', async () => {
+  const { GROUPS, GUIDES } = await import('../js/howto-index.js');
+  const index = readFileSync(new URL('index.html', howToDir), 'utf8');
+  assert.deepEqual([...index.matchAll(/<h2 class="ht-group"[^>]*>([^<]+)<\/h2>/g)].map((m) => m[1]), GROUPS);
+  const rows = [...index.matchAll(/<li><a href="([^"]+)">([^<]+)<\/a><br>([^<]+)<\/li>/g)].map((m) => [m[1], unesc(m[2]), unesc(m[3])]);
+  assert.deepEqual(rows, GROUPS.flatMap((g) => GUIDES.filter((x) => x.group === g).map((x) => [x.href, x.title, x.line])));
+  assert.doesNotMatch(index, /How to /, 'the guides\' own titles');
+});
+
+// Verification of the trim (Oct 24): each slide that has the reader type the
+// team password links to where it is kept, so a reader who opens a guide at
+// that part (the How-tos panel on Publish or Highlight lands there) is never
+// left without it. Change the desk's Who to ask is that place.
+test('every slide that asks for the team password links to where it is kept', () => {
+  let seen = 0;
+  for (const d of decks.filter((x) => x !== 'change-the-desk')) {
+    for (const slide of deckPage(d).split(/<div class="slide[ "]/).slice(1)) {
+      const words = slide.split('<div class="frame">')[0];
+      if (!/team password/i.test(words)) continue;
+      seen += 1;
+      assert.ok(slide.includes('href="/how-to/change-the-desk/#ask"'), `${d}: a slide names the team password and does not link to Who to ask: ${words.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120)}`);
+    }
+  }
+  assert.ok(seen >= 3, `slides that ask for it (${seen})`);
+});
+
+// The how-tos load the desk's own stylesheet at the desk's version, bumped
+// together (make-page.mjs: "at index.html's versions: bump them together").
+test('every how-to loads the desk\'s stylesheets at the desk\'s own versions', () => {
+  const desk = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const files = [
+    ...readdirSync(howToDir, { recursive: true }).filter((f) => /(^|\/)index\.html$|^make-(deck|page)\.mjs$/.test(f)).map((f) => new URL(f, howToDir)),
+    new URL('../newsletter/read-me/index.html', import.meta.url),
+  ];
+  for (const sheet of ['styles', 'shell', 'tokens']) {
+    const want = desk.match(new RegExp(`/css/${sheet}\\.css\\?v=(\\d+)`))[1];
+    for (const f of files) {
+      const v = readFileSync(f, 'utf8').match(new RegExp(`/css/${sheet}\\.css\\?v=(\\d+)`));
+      if (v) assert.equal(v[1], want, `${f.pathname.split('/').slice(-2).join('/')} loads ${sheet}.css at the desk's v=${want}`);
+    }
+  }
+});
+
+// An id names one place on a page: a link to #types landed on the section
+// only because it came first; the types table carried the same id.
+test('no how-to page gives two elements the same id', () => {
+  const files = readdirSync(howToDir, { recursive: true }).filter((f) => /(^|\/)index\.html$/.test(f));
+  for (const f of files) {
+    const ids = [...readFileSync(new URL(f, howToDir), 'utf8').replace(/<script[\s\S]*?<\/script>/g, '').matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
+    const twice = ids.filter((id, i) => ids.indexOf(id) !== i);
+    assert.deepEqual(twice, [], `${f}: ids used twice`);
+  }
 });

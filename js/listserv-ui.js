@@ -11,7 +11,7 @@
  */
 import { listservStatus, SIGNUP_SHEET, SHEET_STEPS } from './listserv-view.js';
 import { PUBLIC_LINKS, copyLinkButton } from './public-links.js';
-import { hubHead, HUB_LEDES, howToLink } from './hub-head.js';
+import { hubHead, HUB_LEDES } from './hub-head.js';
 import { faIcon } from './icons.js';
 import { el, button, focusKeyIn, restoreFocus } from './ui-aids.js';
 
@@ -74,7 +74,7 @@ export function renderListserv(container, { signups, today, onRetry }) {
   const split = el('div', 'qh-split');
   split.append(main, side);
   const page = el('div', 'hub-page');
-  page.append(hubHead('Listserv', HUB_LEDES.listserv), split, howToLink('If sign-ups stop recording: bring back the Google script', '/how-to/google-scripts/'));
+  page.append(hubHead('Listserv', HUB_LEDES.listserv), split);
   container.replaceChildren(page);
   if (focusKey !== null) restoreFocus(container, focusKey, page.querySelector('.page-title'));
 }

@@ -123,11 +123,8 @@ export function renderHome(container, props) {
     const head = el('div', 'page-head home-head');
     const titles = el('div', 'home-titles');
     titles.append(el('h2', 'home-title', 'Content Desk'), el('p', 'lede', 'What waits in each hub.'));
-    // The handoff (Oct 22, 2026): the whole pipeline in one picture. Every how-to is in the sidebar.
-    const guide = el('a', 'home-guide');
-    guide.href = '/how-to/pipeline/';
-    guide.append(lineIcon('book'), 'How it all connects');
-    head.append(titles, guide);
+    // How it all connects, and every other guide, is in the How-tos panel at the page's top right (Oct 24).
+    head.append(titles);
     const groups = el('div', 'home-groups');
     for (const { label } of HOME_GROUPS) {
       const group = el('section', 'home-group');

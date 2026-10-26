@@ -154,7 +154,7 @@ test('the Listserv page leads with To be added: the count, its lines, the sheet\
   assert.match(form.children[2].textContent, /Open it .*Copy link/);
 
   assert.equal(side.textContent, 'Names and addresses are in the sign-up sheet.', 'the side note keeps its place beside the sections');
-  assert.equal(page.children.at(-1).className, 'howto-link', 'the how-to stays last');
+  assert.equal(page.children.at(-1).className, 'qh-split', 'the boxes end the page: its how-to is in the How-tos panel (Oct 24, her pick D)');
 });
 
 // On a narrow window the side note drops under the boxes (Kate, Oct 23): at

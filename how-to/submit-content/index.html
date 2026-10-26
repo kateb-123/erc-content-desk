@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex" />
-  <title>How to submit content · ERC Content Desk</title>
+  <title>Submit content to the desk · ERC Content Desk</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6bde'/%3E%3Cpath d='M9 16.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
-  <link rel="stylesheet" href="/css/styles.css?v=190" />
-  <link rel="stylesheet" href="/css/shell.css?v=9" />
+  <link rel="stylesheet" href="/css/styles.css?v=194" />
+  <link rel="stylesheet" href="/css/shell.css?v=10" />
   <style>
     /* The team's how-to (Kate, Sep 30, 2026): one page on the desk's open
        side that scrolls, a jump menu at its side, and under a heading a few
@@ -97,10 +97,6 @@
     table.types .live a { font-weight: 600; }
     .types-wrap { width: 100%; overflow-x: auto; }
 
-    .links-box { max-width: 560px; border-radius: var(--radius-card); box-shadow: var(--shadow-card); }
-    .links-box .ql-copy { flex: none; margin: 0; height: 24px; }
-    .links-box .ql-copy.is-copied { color: var(--ok); }
-
     @media (max-width: 900px) {
       .howto-main { padding: var(--spacing-06) var(--spacing-05) var(--spacing-08); }
       .howto-head h1 { font-size: 26px; line-height: 32px; }
@@ -133,7 +129,6 @@
       <div class="jump-label">On this page</div>
       <a href="#add">Add content</a>
       <a href="#types">Item types</a>
-      <a href="#links">Links to share</a>
     </nav>
 
     <main class="sections" id="main">
@@ -175,32 +170,24 @@
             </figure>
           </div>
         </div>
-        <p class="quiet" style="margin-top: var(--spacing-05)">Everything is reviewed before it goes out.</p>
+        <p class="quiet" style="margin-top: var(--spacing-05)">Everything is reviewed before it goes out. Never send the desk's address. Public links, on the front page, has Copy link for each public page.</p>
       </section>
 
       <section id="types" aria-labelledby="h-types">
         <h2 id="h-types">Item types</h2>
-        <div class="types-wrap"><table class="types" id="types">
+        <div class="types-wrap"><table class="types" id="types-table">
           <thead><tr><th>Type</th><th>Use it for</th><th>On the Exchange now</th></tr></thead>
           <tbody></tbody>
         </table></div>
         <p class="quiet" style="margin-top: var(--spacing-05)">Not sure? Pick the closest. It can be changed later.</p>
       </section>
-
-      <section id="links" aria-labelledby="h-links">
-        <h2 id="h-links">Links to share</h2>
-        <p>These pages are live and public. Copy link copies the address. Never send the desk's address.</p>
-        <div class="side-box links-box" id="links-box"></div>
-      </section>
     </main>
   </div>
   </div>
 
-  <script type="module" src="/js/howto-sidebar.js?v=1"></script>
+  <script type="module" src="/js/howto-sidebar.js?v=2"></script>
   <script type="module">
-    import { PUBLIC_LINKS } from '/js/public-links.js';
     import { TYPES, TYPE_ORDER, typeDisplay } from '/js/schema.js';
-    import { faIcon } from '/js/icons.js';
     import { el } from '/js/ui-aids.js';
 
     const stillMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -309,7 +296,7 @@
     const kindOf = (type, sub) => sub
       ? r => r.type === type && r.subtype === sub
       : type === 'erc_event' ? r => r.type === 'event' && r.subtype === 'ERC Events' : r => r.type === type;
-    const tbody = document.querySelector('#types tbody');
+    const tbody = document.querySelector('#types-table tbody');
     const liveSpots = [];
     for (const type of TYPE_ORDER) {
       const subs = TYPES[type].subtypes;
@@ -354,32 +341,6 @@
         live.append(a);
       }
     }).catch(() => {});
-
-    // ---- Links to share: the desk's own public links, Copy link and all ----
-    const WHY = { share: 'For anyone outside the team to send us something.', listserv: 'To get the newsletter.', exchange: 'What we publish.' };
-    const box = document.getElementById('links-box');
-    for (const item of PUBLIC_LINKS) {
-      const row = el('div', 'ql-row');
-      const left = el('div', 'ql-left');
-      const ico = el('span', 'ql-ico');
-      ico.append(faIcon(item.icon));
-      const words = el('div', 'ql-words');
-      const a = el('a', 'ql-name', item.label);
-      a.href = item.href; a.target = '_blank'; a.rel = 'noopener';
-      a.append(' ', faIcon('arrow-up-right-from-square'));
-      words.append(a, el('div', 'ql-sub', WHY[item.key] ?? ''));
-      left.append(ico, words);
-      const copy = el('button', 'linkish ql-copy', 'Copy link');
-      copy.type = 'button';
-      copy.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText(item.href); } catch { copy.textContent = 'Could not copy'; setTimeout(() => { copy.textContent = 'Copy link'; }, 2000); return; }
-        copy.textContent = 'Copied';
-        copy.classList.add('is-copied');
-        setTimeout(() => { copy.textContent = 'Copy link'; copy.classList.remove('is-copied'); }, 2000);
-      });
-      row.append(left, copy);
-      box.append(row);
-    }
   </script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>

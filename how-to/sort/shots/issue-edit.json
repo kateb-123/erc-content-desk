@@ -13,11 +13,6 @@
       "label": "Type and Subtype: what the item is, open to change even after Keep"
     },
     {
-      "x": 8.4,
-      "y": 80,
-      "label": "ERC Newsletter only: ticked, it skips the Policy Exchange"
-    },
-    {
       "x": 12.7,
       "y": 87.3,
       "label": "Add media: a picture or a PDF flyer"

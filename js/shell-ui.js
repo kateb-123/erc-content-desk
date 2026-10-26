@@ -2,7 +2,9 @@
  * The sidebar (Kate's pick A of the looks, Oct 23): the desk as a Mac app.
  * The desk's name, Home, the hubs by step under the front page's group names,
  * each with what waits there; at the foot All how-tos, I need help! (seated
- * by report-problem.js) and Sign out while a sign-in holds. Built once into
+ * by report-problem.js) and Sign out while a sign-in holds; beside it, at the
+ * page's top right, today's date and the How-tos button (js/page-corner.js,
+ * Oct 24). Built once into
  * <nav class="sidebar">; each render marks where you are and what waits. On
  * the desk its links switch screens in place; on the builder's and the
  * email's pages they are plain links.
@@ -10,6 +12,7 @@
 import { DESK, NAV, navCurrent, navLabel, openedScreen } from './shell-view.js';
 import { el } from './ui-aids.js';
 import { lineIcon } from './icons.js';
+import { renderCorner } from './page-corner.js';
 
 const signOuts = new WeakMap();   // each sidebar's Sign out, as the latest render passed it
 
@@ -98,4 +101,6 @@ export function renderSidebar(nav, { screen, onGo, signedIn = false, onSignOut, 
   const out = nav.querySelector('.sidebar-signout');
   const show = Boolean(signedIn && onSignOut);
   if (out.hidden === show) { out.hidden = !show; out.disabled = false; }
+  // Today's date and the How-tos button at the page's top right (Kate, Oct 24, her picks E and D).
+  renderCorner({ screen });
 }

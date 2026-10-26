@@ -5,20 +5,13 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { TYPES, TYPE_ORDER, typeDisplay } from '../js/schema.js';
 import { PUBLIC_LINKS } from '../js/public-links.js';
+import { GUIDES } from '../js/howto-index.js';
 
 const SITE = 'https://erc-content-desk.vercel.app';
 
-const PAGES = [
-  ['How it all connects', 'pipeline'],
-  ['How to submit content', 'submit-content'],
-  ['How to sort', 'sort'],
-  ['How to build the newsletter', 'newsletter'],
-  ['How to change the Policy Exchange', 'exchange'],
-  ['How to change the desk', 'change-the-desk'],
-  ['How to make a research brief', 'research-briefs'],
-  ['Bring back the Google scripts', 'google-scripts'],
-  ['Design for the ERC', 'design'],
-];
+// Every guide the How-tos panel lists, in its order, by its own title (Oct 24),
+// so the guide and the panel never drift.
+const PAGES = GUIDES.map(g => [g.title, g.href]);
 
 const text = html => html
   .replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, '')
@@ -38,8 +31,8 @@ const parts = [
   'ERC Content Desk guide, for Claude',
   'Every how-to for the ERC Content Desk (https://erc-content-desk.vercel.app) in one file. Answer questions about the desk from it: name the page and the button. If it does not say, say so.',
 ];
-for (const [title, slug] of PAGES) {
-  const file = new URL(`./${slug}/index.html`, import.meta.url);
+for (const [title, href] of PAGES) {
+  const file = new URL(`..${href}index.html`, import.meta.url);
   if (!existsSync(file)) continue;
   const body = readFileSync(file, 'utf8');
   let main = body.match(/<main[\s\S]*?<\/main>/i)?.[0] ?? body;
@@ -49,7 +42,7 @@ for (const [title, slug] of PAGES) {
   const pin = /<button type="button" class="pin[^"]*" style="[^"]*" aria-label="([^"]*)"[\s\S]*?<\/button>/g;
   const words = main.replace(pin, '');
   main = main.replace(pin, (button, label) => (words.includes(label) ? '' : button));
-  parts.push(`\n\n# ${title}\nhttps://erc-content-desk.vercel.app/how-to/${slug}/\n\n${text(main)}`);
+  parts.push(`\n\n# ${title}\n${SITE}${href}\n\n${text(main)}`);
 }
 // What the pages draw at load, written out (review, Oct 23): the item types and the public links.
 parts.push('\n\n# Item types\nThe types an item can have on the desk, each with its subtypes.\n\n'

@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex" />
-  <title>How to make a research brief · ERC Content Desk</title>
+  <title>Make a research brief · ERC Content Desk</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6bde'/%3E%3Cpath d='M9 16.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
-  <link rel="stylesheet" href="/css/styles.css?v=190" />
-  <link rel="stylesheet" href="/css/shell.css?v=9" />
+  <link rel="stylesheet" href="/css/styles.css?v=194" />
+  <link rel="stylesheet" href="/css/shell.css?v=10" />
   <script>document.documentElement.classList.add('js');</script>
   <!-- Built by how-to/make-deck.mjs from research-briefs/deck.json; the styles and script are the newsletter how-to's. -->
   <style>
@@ -77,7 +77,7 @@
     html:not(.js) .progress, html:not(.js) .controls, html:not(.js) .foot { display: none; }
     .js .chapter:not(.is-on), .js .slide:not(.is-on), .js .sg-group:not(.is-on), .js .sg-look:not(.is-on) { display: none; }
     .js .deck[data-mode="styles"] .chapter, .js .deck:not([data-mode="styles"]) .styles { display: none; }
-    .chapter, .styles, .from { scroll-margin-top: 100vh; }   /* a link to a part opens the page at its top, the band and chips in view */
+    .chapter, .styles { scroll-margin-top: 100vh; }   /* a link to a part opens the page at its top, the band and chips in view */
     html:not(.js) .slide + .slide, html:not(.js) .chapter + .chapter, html:not(.js) .styles { border-top: 1px solid var(--layer-line); }
 
     /* A pane, the slides' or Styles': its title and words in the left column,
@@ -102,15 +102,6 @@
     .cap { margin: 0; font: var(--sub-title); font-weight: 400; color: var(--ink); }
     .foot { margin-top: auto; padding-top: var(--spacing-03); }
     .frame { container-type: inline-size; min-width: 0; min-height: calc(var(--fh) + 2 * var(--pad)); padding: var(--pad); display: flex; align-items: flex-start; justify-content: center; background: var(--layer-01); border-radius: var(--radius); }
-
-    /* Where items come from: the desk's path to the builder, a few lines on the first Outline slide. */
-    .from { padding-top: var(--spacing-04); border-top: 1px solid var(--layer-line); }
-    .from h3 { margin: 0 0 var(--spacing-03); font: var(--label-type); color: var(--muted); }
-    .from ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-02); font: var(--meta-type); color: var(--ink); }
-    .from li { position: relative; padding-left: var(--spacing-05); }
-    .from li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: var(--radius-round); background: var(--accent); }
-    .from li:not(:last-child)::after { content: ''; position: absolute; left: 2px; top: 17px; bottom: calc(-1 * var(--spacing-02) - 3px); width: 2px; background: var(--accent-20); }
-    .from b { font-weight: 700; }
 
     /* A still: a window on the picture (the crop). Every number is the
        picture's own pixels, so the crop holds at any width. */
@@ -320,7 +311,7 @@
 
         <div class="slide" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Sign in with the desk password, then press <b>New brief</b>.</p>
+            <p class="cap">Sign in, then press <b>New brief</b>.</p>
             <p class="note"><span class="n">1</span><span>New brief: starts one from the paper and your notes.</span></p>
             <p class="note"><span class="n">2</span><span>Where it is: the seven stages, with the current one named.</span></p>
             <p class="note"><span class="n">3</span><span>Waits for: the next thing to do, and since when.</span></p>
@@ -389,7 +380,7 @@
             <p class="note"><span class="n">3</span><span>Write the draft: reads the paper, plans the pages, writes the brief. If you leave the page, <b>Continue</b> picks up where it stopped.</span></p>
             <p class="note"><span class="n">4</span><span>In the folder: each file opens in Drive.</span></p>
             <p class="note warn"><span class="n">!</span><span>If a step fails with a Drive or script message, see <a href="/how-to/google-scripts/">Bring back the Google scripts</a>.</span></p>
-            <p class="note warn"><span class="n">!</span><span>If it fails again after <b>Try again</b> for any other reason, write to the desk's owner. READ ME FIRST - ERC handoff has the address.</span></p>
+            <p class="note warn"><span class="n">!</span><span>If it fails again after <b>Try again</b> for any other reason, see <a href="/how-to/change-the-desk/#ask">Who to ask</a>.</span></p>
             <div class="foot"></div>
           </div>
           <div class="frame">
@@ -542,12 +533,12 @@
               <ol>
                 <li>Save the PDF in the folder, named like <code>Economics-of-Encouragement-ERC-RB-26.pdf</code>. In Drive, share it as Anyone with the link, Viewer, and copy the link.</li>
                 <li>Add a row to <code>ERC-Research-Briefs-Library-Metadata.xlsx</code> in <code>erc-research-briefs/</code>, copying the rows above. Ask at the ERC who at the library takes it.</li>
-                <li>On <a href="/#team">Submit content</a>, paste the link and pick <b>New research</b>, then <b>ERC Research</b>. The brief's title is the <b>Title</b>, the Executive Summary's first paragraph the <b>Description</b>. Press <b>Add to the queue</b>.</li>
-                <li>On <a href="/#sort">Content Sort</a>, fill any blank <b>Date</b>, <b>Authors</b>, <b>Source</b> or <b>Topic</b>. Leave <b>ERC Newsletter only</b> unticked and press <b>Keep and next</b>.</li>
+                <li>On <a href="/#team">Submit content</a>, paste the link and pick <b>New research</b>, then <b>ERC Research</b>. The brief's title is the <b>Title</b>, the Executive Summary's first paragraph the <b>Description</b>.</li>
+                <li>On <a href="/#sort">Content Sort</a>, fill any blank <b>Date</b>, <b>Authors</b>, <b>Source</b> or <b>Topic</b>, then press <b>Keep and next</b>.</li>
                 <li>On <a href="/#newsletter">Newsletter</a>'s <b>Next issue</b>, press <b>Add</b> on it under <b>Ready to add</b>.</li>
                 <li>Email the author of record the public link, with thanks.</li>
               </ol>
-              <p class="links"><a href="/how-to/sort/#finalize">How to sort, for Finalize</a> <a href="/how-to/exchange/#publish">How to publish to the Exchange</a></p>
+              <p class="links"><a href="/how-to/sort/#finalize">Sort the queue: Finalize</a> <a href="/how-to/exchange/#publish">Publish and the Exchange: Publish</a></p>
             </section>
           </div>
         </div>
@@ -561,7 +552,7 @@
         <button type="button" class="go next">Next<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
       </div>
     </div>
-    <section class="need" aria-labelledby="h-need"><h2 id="h-need">What you need</h2><ul><li>The desk password. It is in READ ME FIRST - ERC handoff, in the shared drive.</li><li>Google Drive for desktop, with the shared drive in Finder. Each brief lives in <code>ERC Content Desk / ERC Research Briefs / your brief's folder</code>.</li><li>Claude Code, opened on <code>ERC Content Desk / ERC Research Briefs</code>. The house rules, template and scripts are in <code>ERC Content Desk / ERC Research Briefs / erc-research-briefs</code>.</li><li>Node.js, Grammarly, Word, Outlook and Chrome.</li></ul></section>
+    <section class="need" aria-labelledby="h-need"><h2 id="h-need">What you need</h2><ul><li>The <a href="/how-to/change-the-desk/#ask">team password</a>.</li><li>Google Drive for desktop, with the shared drive in Finder. Each brief lives in <code>ERC Content Desk / ERC Research Briefs / your brief's folder</code>.</li><li>Claude Code, opened on <code>ERC Content Desk / ERC Research Briefs</code>. The house rules, template and scripts are in <code>ERC Content Desk / ERC Research Briefs / erc-research-briefs</code>.</li><li>Node.js, Grammarly, Word, Outlook and Chrome.</li></ul></section>
   </main>
   </div>
 
@@ -674,7 +665,7 @@
         [i - 1, i + 1].forEach((n) => run.items[n]?.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; }));
       }
 
-      // What a hash opens: a chapter's first slide (#items is on the first Outline slide), or Styles,
+      // What a hash opens: the slide holding it, or its chapter's first slide, or Styles,
       // where it was left, or at a group's first look.
       function target(hash) {
         let el = null;
@@ -733,7 +724,7 @@
       ready = true;
     })();
   </script>
-  <script type="module" src="/js/howto-sidebar.js?v=1"></script>
+  <script type="module" src="/js/howto-sidebar.js?v=2"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

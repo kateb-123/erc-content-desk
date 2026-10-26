@@ -23,9 +23,12 @@ body { margin: 0; background: var(--background); color: var(--text-primary); fon
 .ht-page th { text-align: left; font: var(--label-type); color: var(--text-secondary); padding: var(--spacing-03); border-bottom: 1px solid var(--border-subtle-01); }
 .ht-page td { padding: var(--spacing-03); border-bottom: 1px solid var(--border-subtle-01); vertical-align: top; }
 .ht-note { background: var(--notification-info-background); border: 1px solid var(--notification-info-border); border-left: 4px solid var(--support-info); border-radius: var(--radius); padding: var(--spacing-04); margin: 0 0 var(--spacing-05); }
-/* The how-tos' list: a white grouped list, the front page's idiom, a guide a row. */
-.ht-list { list-style: none; margin: 0 0 var(--spacing-05); padding: 0; background: var(--layer-02); border: 1px solid var(--border-subtle-01); border-radius: var(--radius-card); box-shadow: var(--shadow-card); overflow: hidden; }
-.ht-list li { margin: 0; padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--border-subtle-01); color: var(--text-secondary); font: var(--meta-type); }
-.ht-list li:first-child { border-top: 0; }
-.ht-list li a { display: inline-block; margin-bottom: var(--spacing-01); font: 600 15px/22px var(--font-sans); text-decoration: none; }
-.ht-list li a:hover { text-decoration: underline; }
+/* The how-tos' list: a white grouped list, the front page's idiom, a guide a row,
+   under the panel's own headings. `.ht-page .ht-list` outranks the column's list
+   indent, so a row starts at the box's edge. */
+.ht-page .ht-list { list-style: none; margin: 0 0 var(--spacing-05); padding: 0; background: var(--layer-02); border: 1px solid var(--border-subtle-01); border-radius: var(--radius-card); box-shadow: var(--shadow-card); overflow: hidden; }
+.ht-page .ht-list li { margin: 0; padding: var(--spacing-04) var(--spacing-05); border-top: 1px solid var(--border-subtle-01); color: var(--text-secondary); font: var(--meta-type); }
+.ht-page .ht-list li:first-child { border-top: 0; }
+.ht-page .ht-list li a { display: inline-block; margin-bottom: var(--spacing-01); font: 600 15px/22px var(--font-sans); text-decoration: none; }
+.ht-page .ht-list li a:hover { text-decoration: underline; }
+.ht-page h2.ht-group { font: var(--label-type); color: var(--text-secondary); margin: var(--spacing-07) 0 var(--spacing-03); padding: 0; border: 0; }

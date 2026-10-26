@@ -41,3 +41,19 @@ page and is styled deliberately unlike the internal desk; no code here calls
 - **Anthropic API** - submissions save but are never filed (they sit waiting for the reader and never reach a Sort card), bulk doc split fails, and Finalize's rewrite fails.
 - **Crossref** - journal links whose publisher blocks the reader keep their "couldn't open this page" warning; nothing else changes.
 - **`GITHUB_TOKEN` revoked** - Publish (hub) and archive/image saves break together, since both use this one token.
+
+## Add a source (Oct 24, 2026)
+
+The Content queue's Scraper block has an **Add a source** button beside Run the scraper. Anyone can use it: the page is open.
+
+- **What the form does.** It takes a name, an address, what the source posts (events, research, headlines or opportunities) and its kind: a site or feed, or an email newsletter. For a site or feed the desk looks for an RSS or Atom feed: the address itself, the page's own feed link, then `/feed/`, `/rss.xml` and `/feed.xml`. It then writes one row to the Scraper sources Sheet and says what happened: a feed found is switched on ("Added. The scraper reads its feed from next Monday."); no feed is saved switched off ("Saved, but it has no feed, so the scraper cannot read it yet."); an email newsletter is saved switched off and never fetched ("Saved as an email newsletter. The scraper cannot read email."). An address already in the Sheet or in the scraper's `sources.yaml` is not added twice.
+- **Safety.** The check runs on the desk's server (`api/_lib/sources.js`): web addresses only, the usual ports, never localhost, a private or link-local address, or a name that resolves to one (checked when the connection opens, and again at every redirect), 10 seconds in all, and the form only from the desk's own page.
+- **The Sheet.** Scraper sources, in the team drive at `ERC Content Desk/Newsletter/Scraper sources`. Columns: Source, Type, Subtype, Address, How it is read, Switched on, Why off. The form only adds rows. To switch a source off, set its Switched on cell to `no`.
+- **`SOURCES_SHEET_ID`.** A script property on the desk's Apps Script (the one bound to the desk's Sheet, `apps-script/Code.gs`): the Scraper sources Sheet's id, from its address. The script's `listSources` and `addSource` actions open the Sheet by it. Until the new `Code.gs` is deployed and the property is set, the form says "The sources sheet is not connected yet."
+- **The scraper's step.** Each run on GitHub (Mondays, and the Run the scraper button) first asks the desk `GET /api/bulk?sources=feeds`, with `SCRAPER_TOKEN` as a Bearer header (`tools/fetch_sources.py` in the scraper repo). The desk answers with the Sheet's rows read as a feed and switched on. The run reads each one as a plain feed, no code, and skips any address already in `sources.yaml`, switched on or parked. A feed that fails shows in the run log like any source. If the desk does not answer, the run goes on with `sources.yaml` alone and the log says so.
+
+| service | what it holds | authorized by (env-var / token NAME) | read by | written by |
+| --- | --- | --- | --- | --- |
+| **Google Sheet "Scraper sources"** (team drive) | the scraper's source list for people to read, plus the rows Add a source writes | the desk's Apps Script, `SHEET_API_URL` / `SHEET_API_TOKEN`; the script property `SOURCES_SHEET_ID` | `api/_lib/scraper.js` (`listSources`: the form's duplicate check, and `?sources=feeds` for the run) | `api/_lib/scraper.js` (`addSource`, one row per form) |
+
+- **If it goes away.** The form says the sheet is not connected, and runs go on with `sources.yaml` alone.

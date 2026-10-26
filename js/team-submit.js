@@ -17,7 +17,8 @@ export function mountTeamSubmit(container, { load = fetchDesk, render = renderTe
   async function refresh() {
     try { rows = (await load()).rows ?? []; } catch { /* keep what we had */ }
   }
-  render(container, { onSubmitted: refresh, knownLinks: () => rows });
+  // No sidebar here, so no How-tos panel: the page keeps its how-to link in the lede.
+  render(container, { onSubmitted: refresh, knownLinks: () => rows, howTo: true });
   return refresh();
 }
 

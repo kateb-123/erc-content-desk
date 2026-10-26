@@ -1,7 +1,7 @@
 {
-  "title": "How to change the Policy Exchange",
-  "h1": "Change the Policy Exchange",
-  "lede": "Publish new items, set the home page's big card, fix or remove what is live, and change the look.",
+  "title": "Publish and the Exchange",
+  "h1": "Publish and the Exchange",
+  "lede": "Publish new items, set the home page's big card, and fix or remove what is live.",
   "open": {
     "label": "Open Policy Exchange",
     "href": "https://erc-content-desk.vercel.app/#exchange"
@@ -13,22 +13,10 @@
       "step": null,
       "slides": [
         {
-          "cap": "Open <b>Policy Exchange</b> from the desk's front page.",
-          "notes": [
-            {
-              "n": "1",
-              "html": "An item reaches the site only if <b>ERC Newsletter only</b> stays unticked. An A&amp;M campus event comes ticked.",
-              "warn": false,
-              "go": false
-            }
-          ],
-          "shot": "hub"
-        },
-        {
           "cap": "Only the <b>Adding</b> rows go to the site.",
           "notes": [
             {
-              "n": "3",
+              "n": "2",
               "html": "A row that needs a fix names what is missing. Click those words to fix it in place.",
               "warn": false,
               "go": false
@@ -37,11 +25,11 @@
           "shot": "publish"
         },
         {
-          "cap": "Press <b>Publish N to the Exchange</b>, type the desk password, and press <b>Confirm</b>.",
+          "cap": "Press <b>Publish N to the Exchange</b>.",
           "notes": [
             {
               "n": "1",
-              "html": "It is in READ ME FIRST - ERC handoff, in the shared drive.",
+              "html": "<a href=\"/how-to/change-the-desk/#ask\">Where it is kept</a>.",
               "warn": false,
               "go": false
             },
@@ -62,7 +50,7 @@
       "step": null,
       "slides": [
         {
-          "cap": "Open <b>Highlight</b> on the Policy Exchange page. It works any day, and publishing never changes the card.",
+          "cap": "It works any day, and publishing never changes the card.",
           "notes": [
             {
               "n": "1",
@@ -72,13 +60,13 @@
             },
             {
               "n": "2",
-              "html": "A Drive picture link never shows on the card. If the item has one, press <b>Replace photo</b> and choose a file.",
+              "html": "A Drive picture link never shows on the card: replace it with a file.",
               "warn": false,
               "go": false
             },
             {
               "n": "4",
-              "html": "An event or opportunity pick gets card words. The card shows them, and the photo, in place of the item's own.",
+              "html": "The card shows them, and the photo, in place of the item's own.",
               "warn": false,
               "go": false
             }
@@ -91,8 +79,15 @@
           "shot": "highlight-pick"
         },
         {
-          "cap": "Press <b>Update the highlight</b>, type the desk password, and press <b>Confirm</b>.",
-          "notes": [],
+          "cap": "Nothing on the card changes until you press <b>Update the highlight</b> and <b>Confirm</b>.",
+          "notes": [
+            {
+              "n": "1",
+              "html": "<a href=\"/how-to/change-the-desk/#ask\">Where the password is kept</a>.",
+              "warn": false,
+              "go": false
+            }
+          ],
           "shot": "highlight-save"
         }
       ]
@@ -103,21 +98,14 @@
       "step": null,
       "slides": [
         {
-          "cap": "Publish only adds lines, so a desk edit to a live item stays on the desk. Fix the site on its own edit door, on a laptop.",
-          "notes": [
-            {
-              "n": "!",
-              "html": "<b>It asks the team password, the same as the desk's. It is in READ ME FIRST - ERC handoff, in the shared drive.</b>",
-              "warn": true,
-              "go": false
-            }
-          ],
+          "cap": "Publish only adds lines, so a desk edit to a live item stays on the desk. Fix the site on its own edit door.",
+          "notes": [],
           "steps": [
             {
               "title": "Fix a live item",
               "items": [
                 "On the Policy Exchange page, open <b>Edit live items</b>. The site's sign-in opens in a new tab.",
-                "Type the team password and press <b>Sign in</b>.",
+                "Type the <a href=\"/how-to/change-the-desk/#ask\">team password</a> and press <b>Sign in</b>.",
                 "Press <b>Edit</b> on the item, fix it, and press <b>Save</b>."
               ],
               "links": null
@@ -150,31 +138,6 @@
                 "<b>Undo</b> works only while its note shows."
               ],
               "links": null
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "look",
-      "name": "Change the look",
-      "step": null,
-      "slides": [
-        {
-          "cap": "Logos, words and section names are code in the Exchange's GitHub repo. Open it in Claude Code and say what to change. A push to main is live in a minute.",
-          "notes": [],
-          "steps": [
-            {
-              "title": "Where each part lives",
-              "items": [
-                "Top bar mark: <code>assets/logo/erc-icon-simple.svg</code>, drawn white",
-                "Footer logo: <code>assets/ERC_Horizontal_MaroonText-519.png</code>, in four pages",
-                "Welcome line: <code>index.html</code>",
-                "About page: <code>about/index.html</code>",
-                "Section names: <code>NEWS_TABS</code> in <code>js/app.js</code>, and the top bar of <code>about/</code>, <code>newsletter/</code> and <code>share/</code>",
-                "Quick search order: <code>SUBTYPE_ORDER</code> in <code>js/app.js</code>"
-              ],
-              "links": "<a href=\"https://github.com/kateb-123/erc-policy-exchange-app\" target=\"_blank\" rel=\"noopener\">The Exchange's GitHub repo<i class=\"fa-solid fa-arrow-up-right-from-square\" aria-hidden=\"true\"></i></a>"
             }
           ]
         }

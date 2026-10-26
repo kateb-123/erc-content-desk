@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex" />
-  <title>How to sort · ERC Content Desk</title>
+  <title>Sort the queue · ERC Content Desk</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6bde'/%3E%3Cpath d='M9 16.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
-  <link rel="stylesheet" href="/css/styles.css?v=190" />
-  <link rel="stylesheet" href="/css/shell.css?v=9" />
+  <link rel="stylesheet" href="/css/styles.css?v=194" />
+  <link rel="stylesheet" href="/css/shell.css?v=10" />
   <script>document.documentElement.classList.add('js');</script>
   <!-- Built by how-to/make-deck.mjs from sort/deck.json; the styles and script are the newsletter how-to's. -->
   <style>
@@ -77,7 +77,7 @@
     html:not(.js) .progress, html:not(.js) .controls, html:not(.js) .foot { display: none; }
     .js .chapter:not(.is-on), .js .slide:not(.is-on), .js .sg-group:not(.is-on), .js .sg-look:not(.is-on) { display: none; }
     .js .deck[data-mode="styles"] .chapter, .js .deck:not([data-mode="styles"]) .styles { display: none; }
-    .chapter, .styles, .from { scroll-margin-top: 100vh; }   /* a link to a part opens the page at its top, the band and chips in view */
+    .chapter, .styles { scroll-margin-top: 100vh; }   /* a link to a part opens the page at its top, the band and chips in view */
     html:not(.js) .slide + .slide, html:not(.js) .chapter + .chapter, html:not(.js) .styles { border-top: 1px solid var(--layer-line); }
 
     /* A pane, the slides' or Styles': its title and words in the left column,
@@ -102,15 +102,6 @@
     .cap { margin: 0; font: var(--sub-title); font-weight: 400; color: var(--ink); }
     .foot { margin-top: auto; padding-top: var(--spacing-03); }
     .frame { container-type: inline-size; min-width: 0; min-height: calc(var(--fh) + 2 * var(--pad)); padding: var(--pad); display: flex; align-items: flex-start; justify-content: center; background: var(--layer-01); border-radius: var(--radius); }
-
-    /* Where items come from: the desk's path to the builder, a few lines on the first Outline slide. */
-    .from { padding-top: var(--spacing-04); border-top: 1px solid var(--layer-line); }
-    .from h3 { margin: 0 0 var(--spacing-03); font: var(--label-type); color: var(--muted); }
-    .from ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-02); font: var(--meta-type); color: var(--ink); }
-    .from li { position: relative; padding-left: var(--spacing-05); }
-    .from li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: var(--radius-round); background: var(--accent); }
-    .from li:not(:last-child)::after { content: ''; position: absolute; left: 2px; top: 17px; bottom: calc(-1 * var(--spacing-02) - 3px); width: 2px; background: var(--accent-20); }
-    .from b { font-weight: 700; }
 
     /* A still: a window on the picture (the crop). Every number is the
        picture's own pixels, so the crop holds at any width. */
@@ -297,22 +288,48 @@
     <div>
       <p class="eyebrow">How to</p>
       <h1>Sort the queue</h1>
-      <p class="lede">What to keep, where it goes, and checking the rewrites.</p>
+      <p class="lede">The scraper, what to keep, where it goes, the rewrites, and fixing an item later.</p>
     </div>
     <a class="open" href="https://erc-content-desk.vercel.app/#sort" target="_blank" rel="noopener">Open Content Sort<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
   </header>
 
   <main class="page" id="main">
     <nav class="chips" aria-label="Parts">
+      <a href="#scraper">The scraper</a>
       <a href="#keep">Keep or delete</a>
       <a href="#sources">Sources</a>
       <a href="#card">Card and list</a>
       <a href="#finalize">Finalize</a>
+      <a href="#fix">Fix an item later</a>
     </nav>
 
     <div class="deck" role="region" aria-roledescription="carousel" aria-label="Sort the queue">
       <div class="progress" aria-hidden="true"><span></span></div>
       <p class="sr-only" aria-live="polite" data-said></p>
+
+      <!-- ===== The scraper ===== -->
+      <section class="chapter" id="scraper" data-name="The scraper" aria-labelledby="h-scraper">
+        <h2 class="pane-title" id="h-scraper">The scraper</h2>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Rows you delete on the Newsletter scrapes tabs stay deleted.</p>
+            <p class="note"><span class="n">1</span><span>Run the scraper: starts a run now.</span></p>
+            <p class="note"><span class="n">2</span><span>Add a source: a site or feed for the scraper to read.</span></p>
+            <p class="note"><span class="n">3</span><span>The last run: what it found. Open the sheet goes to Newsletter scrapes.</span></p>
+            <p class="note warn"><span class="n">!</span><span><b>Add a source only adds.</b> To stop one you added, set Switched on to no on the Scraper sources Sheet. The scraper's built-in sources need code.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:1728;--cy:406;--cw:784;--ch:676">
+              <div class="crop"><div class="zoom"><img src="shots/scraper.png" width="2560" height="1800" loading="lazy" alt="The Content queue's right column: the Content Sort door, then Scraper with Run the scraper and Add a source, the last run's line, Open the sheet and the files." /></div></div>
+              <button type="button" class="pin" style="--x:23.2;--y:55.6" aria-label="Run the scraper: starts a run now"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Run the scraper: starts a run now</span></button>
+              <button type="button" class="pin" style="--x:61.9;--y:55.6" aria-label="Add a source: a site or feed for the scraper to read"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Add a source: a site or feed for the scraper to read</span></button>
+              <button type="button" class="pin up" style="--x:50;--y:73.1" aria-label="The last run: what it found. Open the sheet goes to Newsletter scrapes"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">The last run: what it found. Open the sheet goes to Newsletter scrapes</span></button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- ===== Keep or delete ===== -->
       <section class="chapter" id="keep" data-name="Keep or delete" aria-labelledby="h-keep">
@@ -340,7 +357,7 @@
 
         <div class="slide words" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">About two in five papers, events and opportunities are kept, and one headline in five. An issue wants 3 to 5 outside research items or reports and 3 to 5 headlines.</p>
+            <p class="cap">About two in five papers, events and opportunities are kept, and one headline in five.</p>
             
             <div class="foot"></div>
           </div>
@@ -354,6 +371,7 @@
                 <li>A policy webinar comes from a think tank or research group.</li>
                 <li>It is an ERC event or an A&amp;M research talk.</li>
                 <li>It offers education researchers money, a fellowship or a call for proposals, with the deadline ahead.</li>
+                <li>It is a conference on education policy or research, or its call for proposals.</li>
                 <li>A person added it: their initials or name follow <b>added by</b> (<b>bulk upload</b> means none were given). Keep it unless it repeats.</li>
               </ol>
               <p class="links"><a href="/how-to/submit-content/#types">Which type and subtype to pick</a></p>
@@ -377,7 +395,7 @@
                 <li>It is one district's news with no wider point: “Austin ISD faces deeper budget cuts as enrollment declines”.</li>
                 <li>It is opinion, an interview, a podcast, a guide or a roundup.</li>
                 <li>A webinar teaches classroom practice or sells something.</li>
-                <li>It is a job, an award or a conference listing. Grants with no deadline or for another field go too.</li>
+                <li>It is a job, an award, or a teaching or trade conference. Grants with no deadline or for another field go too.</li>
                 <li>The research has no policy in it: a method, a theory or a program description.</li>
                 <li>It is a repeat. Keep the best copy.</li>
               </ol>
@@ -400,8 +418,6 @@
             <section class="steps" aria-labelledby="h-sources-0-0">
               <h3 id="h-sources-0-0">A clear rule</h3>
               <ol>
-                <li><b>ECS State Policy Tracker</b>, 0 of 54 kept: delete. Each is one state bill.</li>
-                <li><b>Austin American-Statesman</b>, 0 of 24: delete. Austin ISD and UT campus news.</li>
                 <li><b>Urban Institute</b>, 6 of 41: delete unless it is about schools.</li>
                 <li><b>NBER</b>, 3 of 18: delete unless it is about schooling.</li>
                 <li><b>K-12 Dive</b>, 6 of 17: keep findings and state counts. Delete Week In Review.</li>
@@ -522,6 +538,49 @@
         </div>
       </section>
 
+      <!-- ===== Fix an item later ===== -->
+      <section class="chapter" id="fix" data-name="Fix an item later" aria-labelledby="h-fix">
+        <h2 class="pane-title" id="h-fix">Fix an item later</h2>
+
+        <div class="slide words" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap">Fix an item where it is now.</p>
+            <p class="note warn"><span class="n">!</span><span><b>Delete is final once you reload or close the desk.</b> To bring an item back, add its link again on Submit content.</span></p>
+            <p class="note warn"><span class="n">!</span><span><b>Never fix an item in the Sheet's first tab.</b> It is a copy: the desk never reads it and writes over it.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="text">
+            <section class="steps" aria-labelledby="h-fix-0-0">
+              <h3 id="h-fix-0-0">Where it is now</h3>
+              <ol>
+                <li>On <b>Content Sort</b>: type over the title, or press <b>Edit</b> under the description; each saves when you click away. For the link, press <b>Change</b>, then <b>Save</b>.</li>
+                <li>Kept, and not yet in an issue or live: <b>Edit</b> on Finalize, then <b>Save</b>.</li>
+                <li>On <b>Next issue</b>: <b>Edit</b> on its row.</li>
+                <li>Waiting on <b>Publish</b>: click the row, then <b>Edit</b>.</li>
+              </ol>
+            </section>
+          </div>
+        </div>
+
+        <div class="slide" role="group" aria-roledescription="slide">
+          <div class="side">
+            <p class="cap"><b>Edit</b> on Next issue, Finalize and Publish opens this form.</p>
+            <p class="note"><span class="n">1</span><span>Type and Subtype: what the item is, open to change even after Keep. Fix an item kept under the wrong type here, without deleting it.</span></p>
+            <p class="note"><span class="n">2</span><span>Add media: a picture or a PDF flyer.</span></p>
+            <p class="note"><span class="n">3</span><span>Save: keeps the changes. Cancel drops them.</span></p>
+            <div class="foot"></div>
+          </div>
+          <div class="frame">
+            <div class="shot" style="--iw:2560;--ih:1800;--cx:514;--cy:284;--cw:1388;--ch:1516">
+              <div class="crop"><div class="zoom"><img src="shots/issue-edit.png" width="2560" height="1800" loading="lazy" alt="Next issue with Edit open on Rural Schools Symposium: Save and Cancel at the top, its fields, then Type, Subtype, ERC Newsletter only and Add media." /></div></div>
+              <button type="button" class="pin up" style="--x:20.7;--y:74.9" aria-label="Type and Subtype: what the item is, open to change even after Keep"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Type and Subtype: what the item is, open to change even after Keep</span></button>
+              <button type="button" class="pin up" style="--x:12.7;--y:87.3" aria-label="Add media: a picture or a PDF flyer"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Add media: a picture or a PDF flyer</span></button>
+              <button type="button" class="pin" style="--x:74.8;--y:11.9" aria-label="Save: keeps the changes. Cancel drops them"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Save: keeps the changes. Cancel drops them</span></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="styles" hidden aria-hidden="true"><div class="sg-where"></div></section>
 
       <div class="controls" role="group" aria-label="Slides">
@@ -530,7 +589,6 @@
         <button type="button" class="go next">Next<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
       </div>
     </div>
-    <p>Next: <a href="/how-to/exchange/">publish to the Policy Exchange</a>.</p>
   </main>
   </div>
 
@@ -643,7 +701,7 @@
         [i - 1, i + 1].forEach((n) => run.items[n]?.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; }));
       }
 
-      // What a hash opens: a chapter's first slide (#items is on the first Outline slide), or Styles,
+      // What a hash opens: the slide holding it, or its chapter's first slide, or Styles,
       // where it was left, or at a group's first look.
       function target(hash) {
         let el = null;
@@ -702,7 +760,7 @@
       ready = true;
     })();
   </script>
-  <script type="module" src="/js/howto-sidebar.js?v=1"></script>
+  <script type="module" src="/js/howto-sidebar.js?v=2"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

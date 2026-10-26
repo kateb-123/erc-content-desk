@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex" />
-  <title>How to change the desk · ERC Content Desk</title>
+  <title>Change the desk · ERC Content Desk</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6bde'/%3E%3Cpath d='M9 16.5l5 5 9-11' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- The desk's own sheets, at index.html's versions: bump them together. -->
   <link rel="stylesheet" href="/css/tokens.css?v=12" />
-  <link rel="stylesheet" href="/css/styles.css?v=190" />
-  <link rel="stylesheet" href="/css/shell.css?v=9" />
+  <link rel="stylesheet" href="/css/styles.css?v=194" />
+  <link rel="stylesheet" href="/css/shell.css?v=10" />
   <script>document.documentElement.classList.add('js');</script>
   <!-- Built by how-to/make-deck.mjs from change-the-desk/deck.json; the styles and script are the newsletter how-to's. -->
   <style>
@@ -77,7 +77,7 @@
     html:not(.js) .progress, html:not(.js) .controls, html:not(.js) .foot { display: none; }
     .js .chapter:not(.is-on), .js .slide:not(.is-on), .js .sg-group:not(.is-on), .js .sg-look:not(.is-on) { display: none; }
     .js .deck[data-mode="styles"] .chapter, .js .deck:not([data-mode="styles"]) .styles { display: none; }
-    .chapter, .styles, .from { scroll-margin-top: 100vh; }   /* a link to a part opens the page at its top, the band and chips in view */
+    .chapter, .styles { scroll-margin-top: 100vh; }   /* a link to a part opens the page at its top, the band and chips in view */
     html:not(.js) .slide + .slide, html:not(.js) .chapter + .chapter, html:not(.js) .styles { border-top: 1px solid var(--layer-line); }
 
     /* A pane, the slides' or Styles': its title and words in the left column,
@@ -102,15 +102,6 @@
     .cap { margin: 0; font: var(--sub-title); font-weight: 400; color: var(--ink); }
     .foot { margin-top: auto; padding-top: var(--spacing-03); }
     .frame { container-type: inline-size; min-width: 0; min-height: calc(var(--fh) + 2 * var(--pad)); padding: var(--pad); display: flex; align-items: flex-start; justify-content: center; background: var(--layer-01); border-radius: var(--radius); }
-
-    /* Where items come from: the desk's path to the builder, a few lines on the first Outline slide. */
-    .from { padding-top: var(--spacing-04); border-top: 1px solid var(--layer-line); }
-    .from h3 { margin: 0 0 var(--spacing-03); font: var(--label-type); color: var(--muted); }
-    .from ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--spacing-02); font: var(--meta-type); color: var(--ink); }
-    .from li { position: relative; padding-left: var(--spacing-05); }
-    .from li::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: var(--radius-round); background: var(--accent); }
-    .from li:not(:last-child)::after { content: ''; position: absolute; left: 2px; top: 17px; bottom: calc(-1 * var(--spacing-02) - 3px); width: 2px; background: var(--accent-20); }
-    .from b { font-weight: 700; }
 
     /* A still: a window on the picture (the crop). Every number is the
        picture's own pixels, so the crop holds at any width. */
@@ -297,184 +288,72 @@
     <div>
       <p class="eyebrow">How to</p>
       <h1>Change the desk</h1>
-      <p class="lede">What you can change from the screens, and what needs code.</p>
+      <p class="lede">Who to ask, and what needs code.</p>
     </div>
     <a class="open" href="https://erc-content-desk.vercel.app/" target="_blank" rel="noopener">Open the desk<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
   </header>
 
   <main class="page" id="main">
     <nav class="chips" aria-label="Parts">
-      <a href="#item">An item</a>
-      <a href="#issue">Issues and send dates</a>
-      <a href="#exchange">The Exchange</a>
-      <a href="#more">The listserv and the scraper</a>
+      <a href="#ask">Who to ask</a>
+      <a href="#look">The Exchange's look</a>
     </nav>
 
     <div class="deck" role="region" aria-roledescription="carousel" aria-label="Change the desk">
       <div class="progress" aria-hidden="true"><span></span></div>
       <p class="sr-only" aria-live="polite" data-said></p>
 
-      <!-- ===== An item ===== -->
-      <section class="chapter" id="item" data-name="An item" aria-labelledby="h-item">
-        <h2 class="pane-title" id="h-item">An item</h2>
+      <!-- ===== Who to ask ===== -->
+      <section class="chapter" id="ask" data-name="Who to ask" aria-labelledby="h-ask">
+        <h2 class="pane-title" id="h-ask">Who to ask</h2>
 
         <div class="slide words" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Fix an item where it is now. Content Sort asks for the desk password.</p>
-            <p class="note warn"><span class="n">!</span><span><b>Delete is final once you reload or close the desk.</b> To bring an item back, add its link again on Submit content.</span></p>
-            <p class="note warn"><span class="n">!</span><span><b>Never fix an item in the Sheet's first tab.</b> It is a copy: the desk never reads it and writes over it.</span></p>
+            <p class="cap">Anything a screen can't change goes to the desk's owner.</p>
+            <p class="note warn"><span class="n">!</span><span><b>Never write the team password anywhere else.</b></span></p>
             <div class="foot"></div>
           </div>
           <div class="text">
-            <section class="steps" aria-labelledby="h-item-0-0">
-              <h3 id="h-item-0-0">Where it is now</h3>
+            <section class="steps" aria-labelledby="h-ask-0-0">
+              <h3 id="h-ask-0-0">The owner and the password</h3>
               <ol>
-                <li>On <b>Content Sort</b>: type over the title, or press <b>Edit</b> under the description; each saves when you click away. For the link, press <b>Change</b>, then <b>Save</b>.</li>
-                <li>Kept, and not yet in an issue or live: <b>Edit</b> on Finalize, then <b>Save</b>.</li>
-                <li>On <b>Next issue</b>: <b>Edit</b> on its row.</li>
-                <li>Waiting on <b>Publish</b>: click the row, then <b>Edit</b>.</li>
+                <li>The team password is the one password. Content Sort and Research briefs ask for it, Publish and Highlight ask for it at <b>Confirm</b>, and so does the Exchange's edit door.</li>
+                <li>It is in READ ME FIRST - ERC handoff, in the shared drive, with the owner's name.</li>
+              </ol>
+            </section>
+            <section class="steps" aria-labelledby="h-ask-0-1">
+              <h3 id="h-ask-0-1">A change in code</h3>
+              <ol>
+                <li>With access to the repo, Claude Code can make the change, and a push to main is live in a minute. The table under these slides says where each part lives.</li>
               </ol>
             </section>
           </div>
         </div>
-
-        <div class="slide" role="group" aria-roledescription="slide">
-          <div class="side">
-            <p class="cap"><b>Edit</b> on Next issue, Finalize and Publish opens this form.</p>
-            <p class="note"><span class="n">1</span><span>Type and Subtype: what the item is, open to change even after Keep. Fix an item kept under the wrong type here, without deleting it.</span></p>
-            <p class="note"><span class="n">2</span><span>ERC Newsletter only: ticked, it skips the Policy Exchange.</span></p>
-            <p class="note"><span class="n">3</span><span>Add media: a picture or a PDF flyer. Keep a GIF under 2.5 MB.</span></p>
-            <p class="note"><span class="n">4</span><span>Save: keeps the changes. Cancel drops them.</span></p>
-            <div class="foot"></div>
-          </div>
-          <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:514;--cy:284;--cw:1388;--ch:1516">
-              <div class="crop"><div class="zoom"><img src="shots/issue-edit.png" width="2560" height="1800" loading="lazy" alt="Next issue with Edit open on Rural Schools Symposium: Save and Cancel at the top, its fields, then Type, Subtype, ERC Newsletter only and Add media." /></div></div>
-              <button type="button" class="pin up" style="--x:20.7;--y:74.9" aria-label="Type and Subtype: what the item is, open to change even after Keep"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Type and Subtype: what the item is, open to change even after Keep</span></button>
-              <button type="button" class="pin up" style="--x:8.4;--y:80" aria-label="ERC Newsletter only: ticked, it skips the Policy Exchange"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">ERC Newsletter only: ticked, it skips the Policy Exchange</span></button>
-              <button type="button" class="pin up" style="--x:12.7;--y:87.3" aria-label="Add media: a picture or a PDF flyer"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">Add media: a picture or a PDF flyer</span></button>
-              <button type="button" class="pin" style="--x:74.8;--y:11.9" aria-label="Save: keeps the changes. Cancel drops them"><span class="num" aria-hidden="true">4</span><span class="tip" aria-hidden="true">Save: keeps the changes. Cancel drops them</span></button>
-            </div>
-          </div>
-        </div>
       </section>
 
-      <!-- ===== Issues and send dates ===== -->
-      <section class="chapter" id="issue" data-name="Issues and send dates" aria-labelledby="h-issue">
-        <h2 class="pane-title" id="h-issue">Issues and send dates</h2>
+      <!-- ===== The Exchange's look ===== -->
+      <section class="chapter" id="look" data-name="The Exchange's look" aria-labelledby="h-look">
+        <h2 class="pane-title" id="h-look">The Exchange's look</h2>
 
         <div class="slide words" role="group" aria-roledescription="slide">
           <div class="side">
-            <p class="cap">Next issue holds the items. The builder holds the draft.</p>
+            <p class="cap">Logos, words and section names are code in the Exchange's GitHub repo. Open it in Claude Code and say what to change.</p>
             
             <div class="foot"></div>
           </div>
           <div class="text">
-            <section class="steps" aria-labelledby="h-issue-0-0">
-              <h3 id="h-issue-0-0">An issue</h3>
+            <section class="steps" aria-labelledby="h-look-0-0">
+              <h3 id="h-look-0-0">Where each part lives</h3>
               <ol>
-                <li>To fill a later issue, press its date beside Later under This issue.</li>
-                <li>Build each issue on one computer: the draft lives in that browser.</li>
-                <li>Edits on <a href="/how-to/newsletter/#tweak">Preview &amp; Tweak</a> change the email, not the desk.</li>
-                <li>To fix an archived issue, fix it in the builder on the same computer and press <b>Save to the archive</b> again. This works only until you press <b>Start the next issue</b>.</li>
+                <li>Top bar mark: <code>assets/logo/erc-icon-simple.svg</code>, drawn white</li>
+                <li>Footer logo: <code>assets/ERC_Horizontal_MaroonText-519.png</code>, in four pages</li>
+                <li>Welcome line: <code>index.html</code></li>
+                <li>About page: <code>about/index.html</code></li>
+                <li>Section names: <code>NEWS_TABS</code> in <code>js/app.js</code>, and the top bar of <code>about/</code>, <code>newsletter/</code> and <code>share/</code></li>
+                <li>Quick search order: <code>SUBTYPE_ORDER</code> in <code>js/app.js</code></li>
               </ol>
+              <p class="links"><a href="https://github.com/kateb-123/erc-policy-exchange-app" target="_blank" rel="noopener">The Exchange's GitHub repo<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></p>
             </section>
-          </div>
-        </div>
-
-        <div class="slide" role="group" aria-roledescription="slide">
-          <div class="side">
-            <p class="cap">A change on the Sheet reaches the desk within ten minutes; reload to see it. If it never does, see <a href="/how-to/google-scripts/">Bring back the Google scripts</a>.</p>
-            <p class="note"><span class="n">1</span><span>Shows a week before the last send date: time to add the next ones.</span></p>
-            <p class="note"><span class="n">2</span><span>A send date: press it to open that issue on Next issue.</span></p>
-            <p class="note"><span class="n">3</span><span>The Sheet's schedule tab: opens it in a new tab. Type each date in column A, from row 2, as <b>2026-11-10</b>.</span></p>
-            <p class="note warn"><span class="n">!</span><span><b>A date shown as 11/10/2026 is skipped.</b></span></p>
-            <div class="foot"></div>
-          </div>
-          <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:512;--cy:72;--cw:2000;--ch:606">
-              <div class="crop"><div class="zoom"><img src="shots/schedule.png" width="2560" height="1800" loading="lazy" alt="Newsletter's Schedule tab: a warning that send dates end Oct 27, the Oct 27 date marked Next with 4 in the issue, and Edit dates on the Sheet's schedule tab." /></div></div>
-              <button type="button" class="pin" style="--x:50;--y:51.8" aria-label="Shows a week before the last send date: time to add the next ones"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Shows a week before the last send date: time to add the next ones</span></button>
-              <button type="button" class="pin up" style="--x:50;--y:75.2" aria-label="A send date: press it to open that issue on Next issue"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">A send date: press it to open that issue on Next issue</span></button>
-              <button type="button" class="pin up" style="--x:16.4;--y:91.9" aria-label="The Sheet's schedule tab: opens it in a new tab"><span class="num" aria-hidden="true">3</span><span class="tip" aria-hidden="true">The Sheet's schedule tab: opens it in a new tab</span></button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== The Exchange ===== -->
-      <section class="chapter" id="exchange" data-name="The Exchange" aria-labelledby="h-exchange">
-        <h2 class="pane-title" id="h-exchange">The Exchange</h2>
-
-        <div class="slide" role="group" aria-roledescription="slide">
-          <div class="side">
-            <p class="cap">Once an item is live, no <b>Edit</b> on the desk reaches the site. Only Highlight's card words and photo do, in the home page's big card.</p>
-            <p class="note"><span class="n">1</span><span>Already live: the item is on the site. Click its row to open it.</span></p>
-            <p class="note"><span class="n">2</span><span>Edit: changes the desk's copy, never the site.</span></p>
-            <p class="note warn"><span class="n">!</span><span><b>The desk's Delete never touches the site.</b></span></p>
-            <div class="foot"></div>
-          </div>
-          <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:512;--cy:104;--cw:2000;--ch:1202">
-              <div class="crop"><div class="zoom"><img src="shots/publish-live.png" width="2560" height="1800" loading="lazy" alt="Publish with a live headline's row open: Already live in its Fate column, and under it Edit with the line An edit here changes the desk, not the site." /></div></div>
-              <button type="button" class="pin up" style="--x:90.8;--y:71.2" aria-label="Already live: the item is on the site. Click its row to open it"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Already live: the item is on the site. Click its row to open it</span></button>
-              <button type="button" class="pin up" style="--x:8.2;--y:80.9" aria-label="Edit: changes the desk's copy, never the site"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Edit: changes the desk's copy, never the site</span></button>
-            </div>
-          </div>
-        </div>
-
-        <div class="slide" role="group" aria-roledescription="slide">
-          <div class="side">
-            <p class="cap">Fix a live item on the site itself. Use a laptop: the site's <b>Edit</b> buttons do not show on a phone.</p>
-            <p class="note"><span class="n">1</span><span>Find the item on the site, press <b>Edit</b>, fix it, press <b>Save</b>. <b>Hide from the site</b>, in the same Edit, takes it down.</span></p>
-            <p class="note"><span class="n">2</span><span>The big card never shows a Drive picture. Use <b>Add photo</b> on Highlight, or a picture link ending .jpg, .png or .webp.</span></p>
-            <p class="note"><span class="n go">i</span><span>Publish and Highlight ask for the desk password at <b>Confirm</b>.</span></p>
-            <div class="foot"></div>
-          </div>
-          <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:512;--cy:72;--cw:2000;--ch:1256">
-              <div class="crop"><div class="zoom"><img src="shots/exchange-hub.png" width="2560" height="1800" loading="lazy" alt="The Policy Exchange page: the Publish and Highlight doors, Highlight with 2 on the home page, then the site's status, then Edit live items and its note." /></div></div>
-              <button type="button" class="pin" style="--x:7.2;--y:67.2" aria-label="Edit live items: the site's own editor, in a new tab, with the team password"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Edit live items: the site's own editor, in a new tab, with the team password</span></button>
-              <button type="button" class="pin" style="--x:56;--y:23.4" aria-label="Highlight: the home page's big card, with Add photo for each pick"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Highlight: the home page's big card, with Add photo for each pick</span></button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== The listserv and the scraper ===== -->
-      <section class="chapter" id="more" data-name="The listserv and the scraper" aria-labelledby="h-more">
-        <h2 class="pane-title" id="h-more">The listserv and the scraper</h2>
-
-        <div class="slide" role="group" aria-roledescription="slide">
-          <div class="side">
-            <p class="cap">To see Sheet 1 as it is now, reload the browser page.</p>
-            <p class="note"><span class="n">1</span><span>To be added: the rows on Sheet 1 when the desk was loaded.</span></p>
-            <p class="note"><span class="n">2</span><span>Open the sign-up sheet: names and addresses, in a new tab.</span></p>
-            <div class="foot"></div>
-          </div>
-          <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:512;--cy:270;--cw:1200;--ch:1088">
-              <div class="crop"><div class="zoom"><img src="shots/listserv.png" width="2560" height="1800" loading="lazy" alt="The Listserv page's left column: To be added with a count of 3 counted as the page opened, Open the sign-up sheet and the three steps, then the sign-up form's status." /></div></div>
-              <button type="button" class="pin" style="--x:50;--y:14.2" aria-label="To be added: the rows on Sheet 1 when the desk was loaded"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">To be added: the rows on Sheet 1 when the desk was loaded</span></button>
-              <button type="button" class="pin" style="--x:50;--y:32.9" aria-label="Open the sign-up sheet: names and addresses, in a new tab"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">Open the sign-up sheet: names and addresses, in a new tab</span></button>
-            </div>
-          </div>
-        </div>
-
-        <div class="slide" role="group" aria-roledescription="slide">
-          <div class="side">
-            <p class="cap">Rows you delete on the Newsletter scrapes tabs stay deleted.</p>
-            <p class="note"><span class="n">1</span><span>Run the scraper: starts a run now.</span></p>
-            <p class="note"><span class="n">2</span><span>The last run: what it found. Open the sheet goes to Newsletter scrapes.</span></p>
-            <p class="note warn"><span class="n">!</span><span><b>The scraper does not read the Scraper sources Sheet.</b> Changing its sources needs code.</span></p>
-            <div class="foot"></div>
-          </div>
-          <div class="frame">
-            <div class="shot" style="--iw:2560;--ih:1800;--cx:1728;--cy:406;--cw:784;--ch:796">
-              <div class="crop"><div class="zoom"><img src="shots/scraper.png" width="2560" height="1800" loading="lazy" alt="The Content queue's right column: the Content Sort door, then Scraper with Run the scraper and the last run's line, Open the sheet and the files." /></div></div>
-              <button type="button" class="pin" style="--x:23.2;--y:47.2" aria-label="Run the scraper: starts a run now"><span class="num" aria-hidden="true">1</span><span class="tip" aria-hidden="true">Run the scraper: starts a run now</span></button>
-              <button type="button" class="pin" style="--x:50;--y:62.1" aria-label="The last run: what it found. Open the sheet goes to Newsletter scrapes"><span class="num" aria-hidden="true">2</span><span class="tip" aria-hidden="true">The last run: what it found. Open the sheet goes to Newsletter scrapes</span></button>
-            </div>
           </div>
         </div>
       </section>
@@ -489,17 +368,17 @@
     </div>
     <section class="code-table" aria-labelledby="h-code" style="margin-top: var(--spacing-08)">
       <h2 class="section-label hub-label" id="h-code">Needs code</h2>
-      <p>Ask the desk's owner, named in READ ME FIRST - ERC handoff, in the shared drive. With access to the repo, Claude Code can make the change.</p>
       <table class="queue-table" style="overflow-wrap: anywhere">
         <thead><tr><th scope="col">What</th><th scope="col" style="width: 50%">Where it lives</th></tr></thead>
         <tbody>
-          <tr><td>Either password, or which pages ask for the desk's</td><td>Each site's Vercel settings; js/auth-view.js</td></tr>
-          <tr><td>The scraper's sources or its Monday time</td><td>sources.yaml and .github/workflows/scrape.yml in the erc-scraper repo</td></tr>
+          <tr><td>The team password, or which pages ask for it</td><td>Each site's Vercel settings; js/auth-view.js</td></tr>
+          <tr><td>The scraper's built-in sources or its Monday time</td><td>sources.yaml and .github/workflows/scrape.yml in the erc-scraper repo</td></tr>
           <tr><td>Item types and subtypes</td><td>js/schema.js, builder/js/model.js, public-pages/submit/ and the Exchange's js/app.js</td></tr>
           <tr><td>A screen's words or button names</td><td>That screen's file in js/ or builder/js/</td></tr>
           <tr><td>The front page's lists and its Public links menu</td><td>js/home-panel.js, js/home-ui.js, js/public-links.js</td></tr>
           <tr><td>How rewrites read</td><td>api/_lib/voice.js</td></tr>
-          <tr><td>The desk's look, or the email's and its blank template</td><td>css/tokens.css, builder/js/template.js, builder/fixtures/blank-issue.json</td></tr>
+          <tr><td>The desk's look</td><td>css/tokens.css</td></tr>
+          <tr><td>The email's look and its blank template (see <a href="/newsletter/read-me/#template">The email: read me</a>)</td><td>builder/js/template.js, builder/fixtures/blank-issue.json</td></tr>
           <tr><td>Taking an issue out of Past issues</td><td>builder/newsletters/</td></tr>
           <tr><td>A how-to, or where I need help! sends</td><td>how-to/, js/report-problem.js</td></tr>
         </tbody>
@@ -617,7 +496,7 @@
         [i - 1, i + 1].forEach((n) => run.items[n]?.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; }));
       }
 
-      // What a hash opens: a chapter's first slide (#items is on the first Outline slide), or Styles,
+      // What a hash opens: the slide holding it, or its chapter's first slide, or Styles,
       // where it was left, or at a group's first look.
       function target(hash) {
         let el = null;
@@ -676,7 +555,7 @@
       ready = true;
     })();
   </script>
-  <script type="module" src="/js/howto-sidebar.js?v=1"></script>
+  <script type="module" src="/js/howto-sidebar.js?v=2"></script>
   <script type="module" src="/js/problem-mount.js?v=4"></script>
 </body>
 </html>

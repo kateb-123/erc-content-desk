@@ -61,7 +61,7 @@ test('hubCards: the seven hubs in her order, each with its status', () => {
   // Not signed in, the list is not known: the card says only that it is locked.
   const quiet = hubCards({ rows: hubRows, schedule: hubSchedule, today: '2026-10-07', loaded: true, preview: null, archive: [], hubUpdated: '', signups: null, briefs: null });
   assert.deepEqual([quiet[6].count, quiet[6].sub, quiet[6].foot], [null, '', 'Password protected']);
-  assert.deepEqual(cards[0].links, [{ label: 'How to submit content', href: '/how-to/submit-content/' }]);
+  assert.equal(cards[0].links, undefined, 'its how-to is in the How-tos panel (Oct 24, her pick D)');
   assert.equal(cards[1].lock, true, 'Sort wears the lock on its line');
   assert.deepEqual(cards[4].copies.map(l => l.key), ['exchange', 'share', 'listserv'], 'her drawing\'s order');
   assert.equal(cards.find(c => c.key === 'docs'), undefined, 'Documentation went');
